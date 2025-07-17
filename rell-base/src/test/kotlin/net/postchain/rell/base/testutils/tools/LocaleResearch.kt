@@ -32,7 +32,7 @@ fun main() {
     val fcs = cs
     //val fcs = cs.filter { it.codePoint < 0x10000 }
 
-    SqlTestUtils.createSqlConnection().use { con ->
+    SqlTestUtils.createIsolatedSchemaConnection().use { con ->
         val sqlMgr = ConnectionSqlManager(SqlManagerConnection.create(con))
         sqlCheck(sqlMgr, fcs)
     }

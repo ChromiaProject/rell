@@ -10,7 +10,7 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.utils.PostchainGtvUtils
-import org.junit.Test
+import kotlin.test.Test
 import java.math.BigInteger
 import kotlin.test.assertEquals
 

@@ -8,7 +8,7 @@ import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.Rt_TestPrinter
-import org.junit.Test
+import kotlin.test.Test
 
 internal class RellApiRunTestsTest: BaseRellApiRunTestsTest() {
     @Test fun testRunTestsBasic() {

@@ -6,7 +6,7 @@ package net.postchain.rell.base.lang.expr.expr
 
 import net.postchain.rell.base.compiler.base.core.C_AtAttrShadowing
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 
 class UpdateDeleteTest: BaseRellTest(useSql = true) {
     override fun entityDefs() = listOf(

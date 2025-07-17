@@ -6,7 +6,7 @@ package net.postchain.rell.base.lang.def
 
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.utils.RellVersions
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class StructTest: BaseRellTest() {

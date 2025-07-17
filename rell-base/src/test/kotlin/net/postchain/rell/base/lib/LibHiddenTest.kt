@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.lang.def.ExternalTest
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 

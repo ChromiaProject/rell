@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 
 class LibRequireTest: BaseRellTest() {
     @Test fun testRequireBoolean() {

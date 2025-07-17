@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lang.expr.expr
 
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 
 class IncrementTest: BaseRellTest() {
     @Test fun testStatement() {

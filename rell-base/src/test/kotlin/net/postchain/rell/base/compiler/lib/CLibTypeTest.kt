@@ -11,7 +11,7 @@ import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.testutils.LibModuleTester
-import org.junit.Test
+import kotlin.test.Test
 
 class CLibTypeTest: BaseCLibTest() {
     private val modTst = LibModuleTester(tst)

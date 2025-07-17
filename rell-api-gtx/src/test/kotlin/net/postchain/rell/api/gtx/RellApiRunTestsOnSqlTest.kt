@@ -8,7 +8,7 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.utils.associateToImmMap
 import net.postchain.rell.base.utils.toImmList
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail

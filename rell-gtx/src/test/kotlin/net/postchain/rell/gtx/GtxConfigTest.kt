@@ -12,7 +12,7 @@ import net.postchain.rell.base.utils.plus
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.gtx.testutils.BaseGtxTest
 import org.apache.commons.lang3.StringUtils
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class GtxConfigTest: BaseGtxTest() {

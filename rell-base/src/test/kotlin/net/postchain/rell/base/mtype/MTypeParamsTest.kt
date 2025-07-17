@@ -5,7 +5,7 @@
 package net.postchain.rell.base.mtype
 
 import net.postchain.rell.base.mtype.utils.MTestParser
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MTypeParamsTest: BaseMTypeTest() {

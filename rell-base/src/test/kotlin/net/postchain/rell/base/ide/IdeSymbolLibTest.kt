@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.ide
 
-import org.junit.Test
+import kotlin.test.Test
 
 class IdeSymbolLibTest: BaseIdeSymbolTest() {
     @Test fun testChainContext() {

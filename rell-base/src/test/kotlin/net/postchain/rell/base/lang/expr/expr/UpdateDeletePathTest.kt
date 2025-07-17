@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lang.expr.expr
 
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 
 // Purpose: make sure that complex combinations of path expressions work (i. e. translated into proper JOINs).
 

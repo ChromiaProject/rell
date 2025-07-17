@@ -11,7 +11,7 @@ import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.model.R_TupleType
 import net.postchain.rell.base.model.Rt_TupleValue
-import org.junit.Test
+import kotlin.test.Test
 
 class CLibFunctionPartCallTest: BaseCLibTest() {
     @Test fun testPartCallOptionalParam1() {

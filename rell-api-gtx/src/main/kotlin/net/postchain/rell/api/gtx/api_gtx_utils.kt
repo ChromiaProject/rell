@@ -60,7 +60,7 @@ public object RellApiGtxUtils {
                 runWithSqlConnection(con, schema, sqlLog, sqlErrorLog, sqlInterceptor, code)
             }
         } else {
-            code(NoConnSqlManager)
+            code(NoConnSqlManager())
         }
     }
 

@@ -5,18 +5,18 @@
 package net.postchain.rell.base.lang.expr.atexpr
 
 import net.postchain.rell.base.lang.type.DecimalTest
-import org.junit.Test
+import kotlin.test.Test
 
 class AtExprGroupDbTest: AtExprGroupBaseTest() {
     override fun impKind() = AtExprTestKind_Db()
 
-    override fun testSumOverflowInteger() {
+    @Test override fun testSumOverflowInteger() {
         super.testSumOverflowInteger()
         chkTypeSum("integer", "9223372036854775807 1 -1", "int[9223372036854775807]")
         chkTypeSum("integer", "-9223372036854775807-1 -1 1", "int[-9223372036854775808]")
     }
 
-    override fun testSumOverflowDecimal() {
+    @Test override fun testSumOverflowDecimal() {
         super.testSumOverflowDecimal()
         val dv = DecimalTest.DecVals()
         chkTypeSum("decimal", "decimal('${dv.lim1}') 1.0 -1.0", "dec[${dv.lim1}]")
@@ -37,7 +37,7 @@ class AtExprGroupDbTest: AtExprGroupBaseTest() {
                 "[(Chinese,APAC), (English,AMER), (English,EMEA), (German,EMEA), (Spanish,AMER)]")
     }
 
-    override fun testTypeMinMax() {
+    @Test override fun testTypeMinMax() {
         super.testTypeMinMax()
         chkTypeMinMaxErr("boolean")
         chkTypeMinMaxErr("byte_array")

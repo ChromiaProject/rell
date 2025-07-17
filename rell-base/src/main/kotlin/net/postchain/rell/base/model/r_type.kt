@@ -24,6 +24,7 @@ import net.postchain.rell.base.utils.LazyString
 import net.postchain.rell.base.utils.doc.DocCode
 import net.postchain.rell.base.utils.immListOf
 import org.jooq.DataType
+import org.jooq.impl.SQLDataType
 
 class R_GtvCompatibility(val fromGtv: Boolean, val toGtv: Boolean)
 
@@ -74,6 +75,15 @@ sealed class R_TypeSqlAdapter(val sqlType: DataType<*>?) {
     abstract fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value)
     abstract fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value
     abstract fun metaName(sqlCtx: Rt_SqlContext): String
+
+    companion object {
+        init {
+            // Workaround to fix jOOQ deadlock, which happens (on some systems) when running parallel unit tests.
+            // The class SQLDataType must be loaded before PostgresDataType.
+            // See the org.jooq.util.postgres.PostgresDataType comment.
+            Class.forName(SQLDataType::class.java.name)
+        }
+    }
 }
 
 private class R_TypeSqlAdapter_None(private val type: R_Type): R_TypeSqlAdapter(null) {

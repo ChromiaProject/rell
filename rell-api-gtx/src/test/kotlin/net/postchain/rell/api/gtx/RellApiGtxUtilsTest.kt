@@ -4,7 +4,7 @@
 
 package net.postchain.rell.api.gtx
 
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class RellApiGtxUtilsTest {

@@ -18,13 +18,13 @@ import net.postchain.rell.base.testutils.BaseResourcefulTest
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.SqlTestUtils
 import net.postchain.rell.gtx.testutils.RellGtxTester
-import org.junit.Test
+import kotlin.test.Test
 import java.sql.Connection
 import kotlin.test.assertEquals
 
 class PostchainTest: BaseResourcefulTest() {
     @Test fun testInitializeApp() {
-        val con = resource(SqlTestUtils.createSqlConnection())
+        val con = resource(SqlTestUtils.createIsolatedSchemaConnection())
         SqlUtils.dropAll(SqlTestUtils.createSqlExecutor(con), true)
         chkTables(con, "")
 
@@ -52,7 +52,7 @@ class PostchainTest: BaseResourcefulTest() {
     }
 
     @Test fun testInitializeBlockchain() {
-        val con = resource(SqlTestUtils.createSqlConnection())
+        val con = resource(SqlTestUtils.createIsolatedSchemaConnection())
         SqlUtils.dropAll(SqlTestUtils.createSqlExecutor(con), true)
         val sa = sqlAccess()
         PostchainBaseUtils.initializeApp(sa, con)
@@ -124,7 +124,7 @@ class PostchainTest: BaseResourcefulTest() {
 
     /** Check that test versions of Postchain tables don't differ (much) from the original tables. */
     @Test fun testCreateSysAppTables() {
-        val con = resource(SqlTestUtils.createSqlConnection())
+        val con = resource(SqlTestUtils.createIsolatedSchemaConnection())
 
         val rellTables = createAndDumpTables(con) { sqlExec ->
             SqlTestUtils.createSysAppTables(sqlExec)
@@ -148,7 +148,7 @@ class PostchainTest: BaseResourcefulTest() {
 
     /** Check that test versions of Postchain tables don't differ (much) from the original tables. */
     @Test fun testCreateSysBlockchainTables() {
-        val con = resource(SqlTestUtils.createSqlConnection())
+        val con = resource(SqlTestUtils.createIsolatedSchemaConnection())
         val chainId = 0L
 
         val rellTables = createAndDumpTables(con) { sqlExec ->

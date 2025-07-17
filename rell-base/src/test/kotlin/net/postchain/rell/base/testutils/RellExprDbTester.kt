@@ -8,12 +8,11 @@ import net.postchain.rell.base.lib.type.Lib_BigIntegerMath
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import net.postchain.rell.base.lib.type.Rt_BooleanValue
 import net.postchain.rell.base.utils.CommonUtils
-import java.io.Closeable
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.test.assertEquals
 
-class RellExprDbTester: RellExprTester(), Closeable {
+class RellExprDbTester: RellExprTester(), AutoCloseable {
     private val dataAttrs = listOf(
             Triple("b", "boolean", "false"),
             Triple("i", "integer", "0"),

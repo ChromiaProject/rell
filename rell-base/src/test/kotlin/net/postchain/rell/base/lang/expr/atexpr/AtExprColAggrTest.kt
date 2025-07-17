@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.lang.expr.atexpr
 
-import org.junit.Test
+import kotlin.test.Test
 
 abstract class AtExprColAggrTest: AtExprBaseTest() {
     protected val fromData = impFrom("data")

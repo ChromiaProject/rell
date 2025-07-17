@@ -9,7 +9,7 @@ import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.utils.RellVersions
-import org.junit.Test
+import kotlin.test.Test
 
 class QueryTest: BaseRellTest() {
     @Test fun testResultIntegerLiteral() {

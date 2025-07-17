@@ -5,7 +5,7 @@
 package net.postchain.rell.base.misc
 
 import net.postchain.rell.base.compiler.base.utils.C_GraphUtils
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class GraphUtilsTest {

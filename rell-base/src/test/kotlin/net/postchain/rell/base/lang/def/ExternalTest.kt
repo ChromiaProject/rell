@@ -9,7 +9,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
 import net.postchain.rell.base.testutils.RellTestUtils
-import org.junit.Test
+import kotlin.test.Test
 
 class ExternalTest: BaseRellTest(useSql = true) {
     @Test fun testSimple() {

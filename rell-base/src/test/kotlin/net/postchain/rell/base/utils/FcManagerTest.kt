@@ -5,7 +5,7 @@
 package net.postchain.rell.base.utils
 
 import net.postchain.rell.base.utils.futures.*
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.fail
 

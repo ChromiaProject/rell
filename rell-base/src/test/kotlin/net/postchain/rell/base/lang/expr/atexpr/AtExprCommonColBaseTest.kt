@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.lang.expr.atexpr
 
-import org.junit.Test
+import kotlin.test.Test
 
 abstract class AtExprCommonColBaseTest: AtExprCommonBaseTest() {
     @Test fun testAliasMatchByLocal_Col() {

@@ -12,7 +12,7 @@ import net.postchain.rell.base.testutils.GtvTestUtils
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import net.postchain.rell.base.utils.RellVersions
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class RellConfigGenTest {

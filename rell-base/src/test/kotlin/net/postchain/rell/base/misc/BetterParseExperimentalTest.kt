@@ -11,7 +11,7 @@ import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BetterParseExperimentalTest {

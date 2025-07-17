@@ -8,7 +8,7 @@ import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.mutableMultisetOf
 import net.postchain.rell.base.utils.toImmMultiset
 import net.postchain.rell.base.utils.toImmSet
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertNotNull

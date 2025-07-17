@@ -12,7 +12,7 @@ import net.postchain.rell.base.lmodel.dsl.Ld_BodyResult
 import net.postchain.rell.base.lmodel.dsl.Ld_CommonFunctionDsl
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.testutils.LibModuleTester
-import org.junit.Test
+import kotlin.test.Test
 
 class CLibVersionTest: BaseCLibTest() {
     private val modTst = LibModuleTester(tst, Lib_Rell.MODULE, moduleName = "test")

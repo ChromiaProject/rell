@@ -13,7 +13,7 @@ import net.postchain.rell.base.testutils.Rt_TestOpContext
 import net.postchain.rell.base.utils.hexStringToBytes
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
-import org.junit.Test
+import kotlin.test.Test
 
 class LibOpContextTest: BaseRellTest() {
     @Test fun testLastBlockTime() {

@@ -9,7 +9,7 @@ import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class EntityTest: BaseRellTest() {

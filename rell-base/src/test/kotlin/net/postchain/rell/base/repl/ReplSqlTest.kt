@@ -6,7 +6,7 @@ package net.postchain.rell.base.repl
 
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
-import org.junit.Test
+import kotlin.test.Test
 
 class ReplSqlTest: BaseRellTest(useSql = true) {
     @Test fun testEntityDeclare() {

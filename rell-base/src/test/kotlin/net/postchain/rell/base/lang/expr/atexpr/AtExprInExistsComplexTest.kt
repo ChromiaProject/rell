@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lang.expr.atexpr
 
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 
 class AtExprInExistsComplexTest: BaseRellTest(useSql = true) {
     fun initData() {

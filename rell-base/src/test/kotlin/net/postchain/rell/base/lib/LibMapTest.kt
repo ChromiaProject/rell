@@ -6,7 +6,7 @@ package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 
 class LibMapTest: BaseRellTest() {
     @Test fun testLiteral() {

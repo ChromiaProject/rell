@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.mtype
 
-import org.junit.Test
+import kotlin.test.Test
 
 class MTypeTupleTest: BaseMTypeTest() {
     @Test fun testConstruct() {

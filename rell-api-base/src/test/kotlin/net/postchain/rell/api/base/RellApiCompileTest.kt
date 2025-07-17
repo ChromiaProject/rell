@@ -14,7 +14,7 @@ import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.unwrap
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import net.postchain.rell.base.utils.immListOf
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class RellApiCompileTest: BaseRellApiTest() {

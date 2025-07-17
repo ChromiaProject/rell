@@ -6,7 +6,7 @@ package net.postchain.rell.base.misc
 
 import mu.KLogging
 import net.postchain.rell.base.testutils.SqlTestUtils
-import org.junit.Test
+import kotlin.test.Test
 import org.postgresql.util.PSQLException
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -26,7 +26,7 @@ class PostgresTest {
         val table = "DecimalSumTest"
         val limit = BigDecimal(BigInteger.TEN.pow(131072).subtract(BigInteger.ONE))
 
-        SqlTestUtils.createSqlConnection().use { con ->
+        SqlTestUtils.createIsolatedSchemaConnection().use { con ->
             con.createStatement().use { stmt ->
                 stmt.execute("DROP TABLE IF EXISTS $table;")
                 stmt.execute("CREATE TABLE $table(v DECIMAL NOT NULL);")
@@ -53,7 +53,7 @@ class PostgresTest {
     @Test fun testSelectIntegerOverflow() {
         val table = "Test"
 
-        SqlTestUtils.createSqlConnection().use { con ->
+        SqlTestUtils.createIsolatedSchemaConnection().use { con ->
             con.createStatement().use { stmt ->
                 stmt.execute("DROP TABLE IF EXISTS $table;")
                 stmt.execute("CREATE TABLE $table (a BIGINT NOT NULL);")

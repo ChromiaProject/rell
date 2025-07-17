@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lang.expr.atexpr
 
 import net.postchain.rell.base.lang.type.DecimalTest
-import org.junit.Test
+import kotlin.test.Test
 
 class AtExprGroupColTest: AtExprGroupBaseTest() {
     override fun impKind() = AtExprTestKind_Col_Struct()
@@ -25,19 +25,19 @@ class AtExprGroupColTest: AtExprGroupBaseTest() {
                 "[(German,EMEA), (English,EMEA), (English,AMER), (Spanish,AMER), (Chinese,APAC)]")
     }
 
-    override fun testSumOverflowInteger() {
+    @Test override fun testSumOverflowInteger() {
         super.testSumOverflowInteger()
         chkTypeSum("integer", "9223372036854775807 1 -1", impRtErr("expr:+:overflow:9223372036854775807:1"))
         chkTypeSum("integer", "-9223372036854775807-1 -1 1", impRtErr("expr:+:overflow:-9223372036854775808:-1"))
     }
 
-    override fun testSumOverflowDecimal() {
+    @Test override fun testSumOverflowDecimal() {
         super.testSumOverflowDecimal()
         val dv = DecimalTest.DecVals()
         chkTypeSum("decimal", "decimal('${dv.lim1}') 1.0 -1.0", impRtErr("expr:+:overflow"))
     }
 
-    override fun testTypeGroup() {
+    @Test override fun testTypeGroup() {
         super.testTypeGroup()
 
         def("struct const_struct { q: integer; }")
@@ -60,7 +60,7 @@ class AtExprGroupColTest: AtExprGroupBaseTest() {
         chkTypeGroup("$type?", "null", "null")
     }
 
-    override fun testTypeGroupFormal() {
+    @Test override fun testTypeGroupFormal() {
         super.testTypeGroupFormal()
 
         def("struct const_struct { q: integer; }")
@@ -83,7 +83,7 @@ class AtExprGroupColTest: AtExprGroupBaseTest() {
         chkTypeGroupFormal("map<integer,text>", "ct_err:expr_at_group_type:map<integer,text>")
     }
 
-    override fun testTypeSum() {
+    @Test override fun testTypeSum() {
         super.testTypeSum()
 
         def("struct address { line: text; }")
@@ -101,7 +101,7 @@ class AtExprGroupColTest: AtExprGroupBaseTest() {
         chkTypeSum("text?", "", "ct_err:at:what:aggr:bad_type:SUM:text?")
     }
 
-    override fun testTypeMinMax() {
+    @Test override fun testTypeMinMax() {
         super.testTypeMinMax()
 
         def("struct address { line: text; }")
@@ -124,7 +124,7 @@ class AtExprGroupColTest: AtExprGroupBaseTest() {
         chkTypeMinMaxErr("user?")
     }
 
-    override fun testTypeMinMaxFormal() {
+    @Test override fun testTypeMinMaxFormal() {
         super.testTypeMinMaxFormal()
 
         chkTypeMinMaxFormal("boolean")

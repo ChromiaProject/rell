@@ -6,7 +6,7 @@ package net.postchain.rell.base.lang.module
 
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.expCtError
-import org.junit.Test
+import kotlin.test.Test
 
 class TestModuleTest: BaseRellTest() {
     @Test fun testRunTests() {

@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.ide
 
-import org.junit.Test
+import kotlin.test.Test
 
 class IdeSymbolImportTest: BaseIdeSymbolTest() {
     @Test fun testImportExactBasic() {

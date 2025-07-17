@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.gtv.Gtv
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.VirtualTestUtils
-import org.junit.Test
+import kotlin.test.Test
 
 class LibIterableJoinToTextTest: BaseRellTest() {
     @Test fun testAllCollectionElementTypes() {

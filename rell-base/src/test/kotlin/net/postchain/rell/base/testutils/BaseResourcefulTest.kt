@@ -4,12 +4,16 @@
 
 package net.postchain.rell.base.testutils
 
-import org.junit.After
+import kotlin.test.AfterTest
 
-abstract class BaseResourcefulTest {
+abstract class BaseResourcefulTest : AutoCloseable {
     private val resources = mutableListOf<AutoCloseable>()
 
-    @After fun after() {
+    @AfterTest fun after() {
+        close()
+    }
+
+    override fun close() {
         for (resource in resources) {
             try {
                 resource.close()

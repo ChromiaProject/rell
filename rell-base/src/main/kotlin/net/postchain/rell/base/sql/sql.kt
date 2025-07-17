@@ -13,6 +13,7 @@ import net.postchain.rell.base.utils.plus
 import org.apache.commons.lang3.mutable.MutableBoolean
 import org.apache.commons.lang3.mutable.MutableInt
 import org.apache.commons.lang3.mutable.MutableObject
+import org.intellij.lang.annotations.Language
 import org.jooq.tools.jdbc.MockConnection
 import java.io.Closeable
 import java.sql.Connection
@@ -98,7 +99,7 @@ abstract class AbstractSqlManager: SqlManager {
     protected abstract fun <T> execute0(tx: Boolean, code: (SqlExecutor) -> T): T
 
     final override fun <T> execute(tx: Boolean, code: (SqlExecutor) -> T): T {
-        check(busy.compareAndSet(false, true))
+        check(busy.compareAndSet(false, true)) { "SqlManager is busy" }
         try {
             val res = execute0(tx) { sqlExec ->
                 SingleUseSqlExecutor(sqlExec, MutableBoolean(true)).use(code)
@@ -183,8 +184,8 @@ abstract class SqlExecutor {
 
     abstract fun hasRealConnection(): Boolean
     abstract fun <T> connection(code: (Connection) -> T): T
-    abstract fun execute(sql: String)
-    abstract fun execute(sql: String, preparator: SqlPreparator)
+    abstract fun execute(@Language("SQL") sql: String)
+    abstract fun execute(@Language("SQL") sql: String, preparator: SqlPreparator)
     abstract fun executeUpdate(sql: String, preparator: SqlPreparator): Int
     abstract fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit)
 
@@ -196,7 +197,7 @@ abstract class SqlExecutor {
     open fun withAttributes(attributes: Attributes): SqlExecutor = this
 }
 
-object NoConnSqlManager: AbstractSqlManager() {
+class NoConnSqlManager: AbstractSqlManager() {
     override val hasConnection = false
 
     override fun <T> execute0(tx: Boolean, code: (SqlExecutor) -> T): T {
@@ -305,7 +306,7 @@ class InterceptingSqlManagerConnection(
         }
     }
 
-    private fun invoke(sql: String, code: () -> Unit) {
+    private fun invoke(@Language("SQL") sql: String, code: () -> Unit) {
         interceptor.invoke(sql, SqlExecutor.Attributes.DEFAULT, null) {
             code()
             null

@@ -12,7 +12,7 @@ import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.lmodel.dsl.Ld_ModuleDsl
 import net.postchain.rell.base.testutils.LibModuleTester
-import org.junit.Test
+import kotlin.test.Test
 
 class IdeDocLibTest: BaseIdeSymbolTest() {
     private val modTst = LibModuleTester(tst, Lib_Rell.MODULE)

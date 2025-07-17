@@ -8,7 +8,7 @@ import net.postchain.rell.base.lib.LibBlockTransactionTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.gtx.testutils.BaseGtxTest
-import org.junit.Test
+import kotlin.test.Test
 
 class GtxExternalTest: BaseGtxTest() {
     private val depBcRid = RellTestUtils.strToRidHex("beefdead").toLowerCase()

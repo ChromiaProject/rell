@@ -15,7 +15,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.GtvRtConversion_None
 import net.postchain.rell.base.runtime.Rt_LibValueType
 import net.postchain.rell.base.runtime.Rt_Value
-import org.junit.Test
+import kotlin.test.Test
 
 class CLibFunctionLazyParamTest: BaseCLibTest() {
     @Test fun testLazyParamVarStates() {

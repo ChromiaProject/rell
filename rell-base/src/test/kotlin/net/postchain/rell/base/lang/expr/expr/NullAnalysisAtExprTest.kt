@@ -6,7 +6,7 @@ package net.postchain.rell.base.lang.expr.expr
 
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.iff
-import org.junit.Test
+import kotlin.test.Test
 
 class NullAnalysisAtExprTest: BaseRellTest() {
     @Test fun testDbWhere() {

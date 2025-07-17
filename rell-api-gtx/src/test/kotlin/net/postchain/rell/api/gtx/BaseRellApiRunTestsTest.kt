@@ -24,8 +24,11 @@ internal abstract class BaseRellApiRunTestsTest: BaseRellApiTest() {
     }
 
     protected fun runTestsDbConfig(): RellApiRunTests.Config {
+        val (handle, url) = SqlTestUtils.createTempDbUrl()
+        resource(handle)
+
         return RellApiRunTests.Config.Builder()
-            .databaseUrl(SqlTestUtils.getDbUrl())
+            .databaseUrl(url)
             .build()
     }
 

@@ -6,7 +6,7 @@ package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.mtype.M_Types
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 

@@ -6,7 +6,7 @@ package net.postchain.rell.api.gtx
 
 import net.postchain.rell.api.gtx.testutils.PostchainRellTestProjExt
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 
 internal class ReplTxTest: BaseRellTest(useSql = true) {
     override fun getProjExt() = PostchainRellTestProjExt

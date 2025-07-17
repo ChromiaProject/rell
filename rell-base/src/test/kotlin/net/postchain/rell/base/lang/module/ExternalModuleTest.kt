@@ -9,7 +9,7 @@ import net.postchain.rell.base.lib.LibBlockTransactionTest
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
-import org.junit.Test
+import kotlin.test.Test
 
 class ExternalModuleTest: BaseRellTest(useSql = true) {
     @Test fun testImportMainToExternalAsRegular() {

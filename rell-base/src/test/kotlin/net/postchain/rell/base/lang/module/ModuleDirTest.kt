@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.module
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
-import org.junit.Test
+import kotlin.test.Test
 
 class ModuleDirTest: BaseRellTest() {
     @Test fun testImportFileDirConflict() {

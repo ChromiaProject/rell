@@ -7,10 +7,9 @@ package net.postchain.rell.base.lang.def
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
-import net.postchain.rell.base.testutils.RellTestContext
 import net.postchain.rell.base.testutils.RellTestUtils
 import org.apache.commons.lang3.StringUtils
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MountTest: BaseRellTest(useSql = true) {
@@ -472,8 +471,7 @@ class MountTest: BaseRellTest(useSql = true) {
     }
 
     private fun prepareMountConflict(imp: String): RellCodeTester {
-        val c = RellTestContext()
-        val t = RellCodeTester(c)
+        val t = RellCodeTester(tstCtx)
         t.file("a/obj1.rell", "module; object foo { x: text = 'obj1'; }")
         t.file("a/obj2.rell", "module; object foo { x: text = 'obj2'; }")
         t.file("a/cls1.rell", "module; entity foo { x: text = 'cls1'; }")

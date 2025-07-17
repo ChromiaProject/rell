@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.lang.expr.expr
 
-import org.junit.Test
+import kotlin.test.Test
 
 class OperatorsInterpretedTest: OperatorsBaseTest() {
     @Test fun testPlus2() {

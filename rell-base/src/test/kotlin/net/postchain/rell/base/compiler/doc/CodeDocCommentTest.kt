@@ -5,7 +5,7 @@
 package net.postchain.rell.base.compiler.doc
 
 import net.postchain.rell.base.testutils.unwrap
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class CodeDocCommentTest: BaseCodeDocTest() {

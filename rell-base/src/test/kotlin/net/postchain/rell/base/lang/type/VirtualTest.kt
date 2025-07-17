@@ -10,7 +10,7 @@ import net.postchain.gtv.GtvNull
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.GtvTestUtils
 import net.postchain.rell.base.testutils.VirtualTestUtils
-import org.junit.Test
+import kotlin.test.Test
 
 class VirtualTest: BaseRellTest() {
     init {

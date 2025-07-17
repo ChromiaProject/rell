@@ -9,7 +9,7 @@ import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.gtx.RellApiRunTests
 import net.postchain.rell.base.testutils.RellReplTester
 import net.postchain.rell.base.utils.immListOf
-import org.junit.Test
+import kotlin.test.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 import java.io.File

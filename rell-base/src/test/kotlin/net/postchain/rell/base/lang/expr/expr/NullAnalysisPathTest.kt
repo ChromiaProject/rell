@@ -16,7 +16,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.LibModuleTester
 import net.postchain.rell.base.testutils.iff
 import net.postchain.rell.base.testutils.iffArray
-import org.junit.Test
+import kotlin.test.Test
 
 class NullAnalysisPathTest: BaseRellTest() {
     @Test fun testBasic() {

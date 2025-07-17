@@ -9,7 +9,7 @@ import net.postchain.gtv.GtvByteArray
 import net.postchain.gtv.GtvString
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.utils.CommonUtils
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class GtvRtConversionTest: BaseRellTest(gtv = true) {

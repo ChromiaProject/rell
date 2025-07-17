@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.def
 import net.postchain.rell.base.lang.module.ExternalModuleTest
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
-import org.junit.Test
+import kotlin.test.Test
 
 class GlobalConstantTest: BaseRellTest() {
     @Test fun testSimplest() {

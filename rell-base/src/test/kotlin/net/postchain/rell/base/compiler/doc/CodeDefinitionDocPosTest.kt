@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.compiler.doc
 
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class CodeDefinitionDocPosTest: BaseCodeDocTest() {

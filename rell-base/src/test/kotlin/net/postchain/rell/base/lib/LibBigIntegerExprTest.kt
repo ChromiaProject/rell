@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.lang.type.BigIntegerTest
 import net.postchain.rell.base.lib.type.Lib_BigIntegerMath
 import net.postchain.rell.base.testutils.BaseExprTest
-import org.junit.Test
+import kotlin.test.Test
 import java.math.BigInteger
 import kotlin.test.assertEquals
 
@@ -176,10 +176,12 @@ abstract class LibBigIntegerExprTest: BaseExprTest() {
     }
 
     private fun getIntTest(): LibIntegerExprTest {
-        return when (mode) {
+        val tst = when (mode) {
             Mode.INTERPRETED -> LibIntegerExprTest.LibIntegerExprIpTest()
             Mode.DATABASE -> LibIntegerExprTest.LibIntegerExprDbTest()
         }
+        resource(tst)
+        return tst
     }
 
     @Test fun testPow() {

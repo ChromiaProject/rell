@@ -15,7 +15,7 @@ import net.postchain.rell.base.testutils.unwrap
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.tools.runcfg.RellRunConfigGenerator
 import net.postchain.rell.tools.runcfg.RellRunConfigParams
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.*
 
 class RunConfigGenTest {
@@ -114,32 +114,33 @@ class RunConfigGenTest {
         assertEquals(setOf(), files.keys)
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun testNodeConfigIncludeManyCommaSeparated() {
-        val configFiles = mapOf(
-            "my-config.properties" to """
+    @Test fun testNodeConfigIncludeManyCommaSeparated() {
+        assertFailsWith<IllegalArgumentException> {
+            val configFiles = mapOf(
+                "my-config.properties" to """
                     include=private.properties,public.properties
                     foo=123
                     node.0.pubkey=0350fe40766bc0ce8d08b3f5b810e49a8352fdd458606bd5fafe5acdcdc8ff3f57
                 """.trimIndent(),
-            "private.properties" to "private=456\n",
-            "public.properties" to "public=789\n",
-            "other.properties" to "other=101112"
-        )
+                "private.properties" to "private=456\n",
+                "public.properties" to "public=789\n",
+                "other.properties" to "other=101112"
+            )
 
-        generate(mapOf(), configFiles, """
-            <run>
-                <nodes>
-                    <config src="my-config.properties"/>
-                </nodes>
-                <chains>
-                    <chain name="user" iid="33">
-                        <config height="0">
-                        </config>
-                    </chain>
-                </chains>
-            </run>
-        """)
+            generate(mapOf(), configFiles, """
+                <run>
+                    <nodes>
+                        <config src="my-config.properties"/>
+                    </nodes>
+                    <chains>
+                        <chain name="user" iid="33">
+                            <config height="0">
+                            </config>
+                        </chain>
+                    </chains>
+                </run>
+            """)
+        }
     }
 
     @Test fun testAddSignersFalse() {
@@ -340,22 +341,23 @@ class RunConfigGenTest {
         assertEquals(setOf(), files.keys)
     }
 
-    @Test(expected = RellCliBasicException::class)
-    fun testModuleNotFound() {
-        generate(mapOf(), mapOf(), """
-            <run>
-                <nodes>
-                    <config>x=123</config>
-                </nodes>
-                <chains>
-                    <chain name="user" iid="33">
-                        <config height="0">
-                            <app module="app" />
-                        </config>
-                    </chain>
-                </chains>
-            </run>
-        """)
+    @Test fun testModuleNotFound() {
+        assertFailsWith<RellCliBasicException> {
+            generate(mapOf(), mapOf(), """
+                <run>
+                    <nodes>
+                        <config>x=123</config>
+                    </nodes>
+                    <chains>
+                        <chain name="user" iid="33">
+                            <config height="0">
+                                <app module="app" />
+                            </config>
+                        </chain>
+                    </chains>
+                </run>
+            """)
+        }
     }
 
     @Test fun testModuleArgsValidation() {
@@ -422,48 +424,50 @@ class RunConfigGenTest {
         """))
     }
 
-    @Test(expected = RellCliExitException::class)
-    fun testCompilationError() {
-        val sourceFiles = mapOf(
+    @Test fun testCompilationError() {
+        assertFailsWith<RellCliExitException> {
+            val sourceFiles = mapOf(
                 "app.rell" to "module; struct foo { x: unknown; }"
-        )
+            )
 
-        generate(sourceFiles, mapOf(), """
-            <run>
-                <nodes>
-                    <config>x=123</config>
-                </nodes>
-                <chains>
-                    <chain name="user" iid="33">
-                        <config height="0">
-                            <app module="app" add-defaults="false"/>
-                        </config>
-                    </chain>
-                </chains>
-            </run>
-        """)
+            generate(sourceFiles, mapOf(), """
+                <run>
+                    <nodes>
+                        <config>x=123</config>
+                    </nodes>
+                    <chains>
+                        <chain name="user" iid="33">
+                            <config height="0">
+                                <app module="app" add-defaults="false"/>
+                            </config>
+                        </chain>
+                    </chains>
+                </run>
+            """)
+        }
     }
 
-    @Test(expected = RellCliBasicException::class)
-    fun testTestModuleAsMainModule() {
-        val sourceFiles = mapOf(
+    @Test fun testTestModuleAsMainModule() {
+        assertFailsWith<RellCliBasicException> {
+            val sourceFiles = mapOf(
                 "app.rell" to "@test module; struct foo { x: integer; }"
-        )
+            )
 
-        generate(sourceFiles, mapOf(), """
-            <run>
-                <nodes>
-                    <config>x=123</config>
-                </nodes>
-                <chains>
-                    <chain name="user" iid="33">
-                        <config height="0">
-                            <app module="app" />
-                        </config>
-                    </chain>
-                </chains>
-            </run>
-        """)
+            generate(sourceFiles, mapOf(), """
+                <run>
+                    <nodes>
+                        <config>x=123</config>
+                    </nodes>
+                    <chains>
+                        <chain name="user" iid="33">
+                            <config height="0">
+                                <app module="app" />
+                            </config>
+                        </chain>
+                    </chains>
+                </run>
+            """)
+        }
     }
 
     @Test fun testDependenciesChainName() {
@@ -540,29 +544,30 @@ class RunConfigGenTest {
         assertEquals(setOf<String>(), files.keys)
     }
 
-    @Test(expected = RellCliBasicException::class)
-    fun testDependencyWithGreaterIid() {
-        generate(mapOf(), mapOf(), """
-            <run>
-                <nodes>
-                    <config>
-                        node.0.pubkey=0350fe40766bc0ce8d08b3f5b810e49a8352fdd458606bd5fafe5acdcdc8ff3f57
-                    </config>
-                </nodes>
-                <chains>
-                    <chain name="user" iid="55">
-                        <config height="0"/>
-                    </chain>
-                    <chain name="city" iid="33">
-                        <config height="0">
-                            <dependencies>
-                                <dependency name="user_dep" chain="user" />
-                            </dependencies>
+    @Test fun testDependencyWithGreaterIid() {
+        assertFailsWith<RellCliBasicException> {
+            generate(mapOf(), mapOf(), """
+                <run>
+                    <nodes>
+                        <config>
+                            node.0.pubkey=0350fe40766bc0ce8d08b3f5b810e49a8352fdd458606bd5fafe5acdcdc8ff3f57
                         </config>
-                    </chain>
-                </chains>
-            </run>
-        """)
+                    </nodes>
+                    <chains>
+                        <chain name="user" iid="55">
+                            <config height="0"/>
+                        </chain>
+                        <chain name="city" iid="33">
+                            <config height="0">
+                                <dependencies>
+                                    <dependency name="user_dep" chain="user" />
+                                </dependencies>
+                            </config>
+                        </chain>
+                    </chains>
+                </run>
+            """)
+        }
     }
 
     @Test fun testGeneratedBrid() {
@@ -787,13 +792,14 @@ class RunConfigGenTest {
         )
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun testGtvMergeDictStrict() {
-        chkGtvMerge(
+    @Test fun testGtvMergeDictStrict() {
+        assertFailsWith<IllegalStateException> {
+            chkGtvMerge(
                 """<dict><entry key="A"><int>1</int></entry><entry key="B"><int>2</int></entry></dict>""",
                 """<dict merge="strict"><entry key="B"><int>3</int></entry><entry key="C"><int>4</int></entry></dict>""",
                 ""
-        )
+            )
+        }
     }
 
     @Test fun testGtvMergeDictEntry() {
@@ -854,13 +860,14 @@ class RunConfigGenTest {
         )
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun testGtvMergeDictEntryStrict() {
-        chkGtvMerge(
+    @Test fun testGtvMergeDictEntryStrict() {
+        assertFailsWith<IllegalStateException> {
+            chkGtvMerge(
                 """<dict><entry key="A"><int>1</int></entry><entry key="B"><int>2</int></entry></dict>""",
                 """<dict><entry key="A" merge="strict"><int>3</int></entry><entry key="B"><int>4</int></entry></dict>""",
                 ""
-        )
+            )
+        }
     }
 
     private fun chkGtvMerge(gtv1: String, gtv2: String, expected: String) {

@@ -5,7 +5,7 @@
 package net.postchain.rell.gtx
 
 import net.postchain.rell.gtx.testutils.BaseGtxTest
-import org.junit.Test
+import kotlin.test.Test
 
 class GtxMerkleHashTest: BaseGtxTest() {
     @Test fun testHashDefault() {

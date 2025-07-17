@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lang.type
 
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 
 class FunctionTypePartialApplicationTest: BaseRellTest() {
     @Test fun testBasic() {

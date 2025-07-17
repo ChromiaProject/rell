@@ -7,7 +7,7 @@ package net.postchain.rell.base.misc
 import net.postchain.rell.base.model.R_DefinitionName
 import net.postchain.rell.base.utils.UnitTestMatcher
 import net.postchain.rell.base.utils.checkEquals
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class TestMatcherTest {

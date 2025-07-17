@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.expr.atexpr
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.GtvTestUtils
 import net.postchain.rell.base.testutils.VirtualTestUtils
-import org.junit.Test
+import kotlin.test.Test
 
 class AtExprCollectionAttrTest: BaseRellTest() {
     init {

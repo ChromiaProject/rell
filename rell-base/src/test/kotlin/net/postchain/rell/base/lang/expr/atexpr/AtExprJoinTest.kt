@@ -6,7 +6,7 @@ package net.postchain.rell.base.lang.expr.atexpr
 
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.unwrap
-import org.junit.Test
+import kotlin.test.Test
 
 class AtExprJoinTest: BaseRellTest(useSql = true) {
     @Test fun testBasic() {

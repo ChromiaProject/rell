@@ -7,7 +7,7 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
-import org.junit.Test
+import kotlin.test.Test
 
 class LibBlockTransactionTest: BaseRellTest(useSql = true) {
     companion object {

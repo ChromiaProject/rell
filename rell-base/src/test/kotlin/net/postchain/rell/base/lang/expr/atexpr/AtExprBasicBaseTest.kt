@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lang.expr.atexpr
 
 import net.postchain.rell.base.testutils.SqlTestUtils
-import org.junit.Test
+import kotlin.test.Test
 
 abstract class AtExprBasicBaseTest: AtExprBaseTest() {
     private val fromUser = impFrom("user")

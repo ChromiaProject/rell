@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.model.R_ModuleName
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class LModuleTest: BaseLTest() {

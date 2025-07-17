@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.expr.atexpr
 import net.postchain.rell.base.lang.type.BigIntegerTest
 import net.postchain.rell.base.lang.type.DecimalTest
 import net.postchain.rell.base.testutils.RellCodeTester
-import org.junit.Test
+import kotlin.test.Test
 
 abstract class AtExprGroupBaseTest: AtExprBaseTest() {
     private val fromData = impFrom("data")

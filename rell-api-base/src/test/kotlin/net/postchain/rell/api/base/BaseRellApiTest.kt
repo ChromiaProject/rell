@@ -8,11 +8,12 @@ import net.postchain.rell.base.compiler.base.core.C_CompilationResult
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.testutils.BaseResourcefulTest
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.TestSnippetsRecorder
 import net.postchain.rell.base.utils.immListOf
 
-public abstract class BaseRellApiTest {
+public abstract class BaseRellApiTest : BaseResourcefulTest() {
     protected val generalSourceDir: C_SourceDir = C_SourceDir.mapDirOf(
         "a.rell" to "module;",
         "b1/module.rell" to "module;",

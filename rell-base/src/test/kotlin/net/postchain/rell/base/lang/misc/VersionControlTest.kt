@@ -8,7 +8,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.RellVersions
-import org.junit.Test
+import kotlin.test.Test
 
 /** Version control tests for cases with no other suitable test class. */
 class VersionControlTest: BaseRellTest() {

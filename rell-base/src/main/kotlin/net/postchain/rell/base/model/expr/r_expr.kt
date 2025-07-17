@@ -623,7 +623,7 @@ class R_StackTraceExpr(private val subExpr: R_Expr, private val filePos: R_FileP
             } catch (e: Rt_Exception) {
                 throw if (e.info.stack.isNotEmpty()) e else {
                     val stack = frame.stackTrace(filePos)
-                    val info = Rt_ExceptionInfo(extraMessage = e.info.extraMessage, stack = stack.toImmList())
+                    val info = Rt_ExceptionInfo(extraMessage = e.info.extraMessage, stack = stack)
                     Rt_Exception(e.err, info, e)
                 }
             }

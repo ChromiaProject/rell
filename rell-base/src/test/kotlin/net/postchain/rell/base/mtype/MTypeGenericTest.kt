@@ -6,7 +6,7 @@ package net.postchain.rell.base.mtype
 
 import net.postchain.rell.base.mtype.utils.MTestParser
 import net.postchain.rell.base.mtype.utils.MTestScope
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MTypeGenericTest: BaseMTypeTest() {

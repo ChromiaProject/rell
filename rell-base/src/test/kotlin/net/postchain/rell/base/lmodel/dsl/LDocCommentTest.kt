@@ -6,7 +6,7 @@ package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.Rt_UnitValue
-import org.junit.Test
+import kotlin.test.Test
 
 class LDocCommentTest: BaseLTest() {
     @Test fun testIndent() {

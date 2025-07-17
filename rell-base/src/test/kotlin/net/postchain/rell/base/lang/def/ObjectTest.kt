@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lang.def
 
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 
 class ObjectTest: BaseRellTest(useSql = true) {
     @Test fun testInitialization() {

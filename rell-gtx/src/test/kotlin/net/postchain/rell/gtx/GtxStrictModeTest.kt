@@ -9,7 +9,7 @@ import net.postchain.gtv.GtvType
 import net.postchain.gtv.parse.GtvParser
 import net.postchain.rell.base.lang.type.VirtualTest.Companion.argToGtv
 import net.postchain.rell.gtx.testutils.BaseGtxTest
-import org.junit.Test
+import kotlin.test.Test
 
 class GtxStrictModeTest: BaseGtxTest() {
     private var isVirtualTypeTest = false

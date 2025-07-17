@@ -11,7 +11,7 @@ import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.L_ParamImplication
 import net.postchain.rell.base.lmodel.dsl.Ld_CommonFunctionDsl
 import net.postchain.rell.base.testutils.LibModuleTester
-import org.junit.Test
+import kotlin.test.Test
 
 class CLibFunctionNamedArgsTest: BaseCLibTest() {
     private val modTst = LibModuleTester(tst, Lib_Rell.MODULE)

@@ -8,7 +8,7 @@ import net.postchain.rell.base.lang.module.ExternalModuleTest
 import net.postchain.rell.base.lib.LibBlockTransactionTest
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.GtvTestUtils
-import org.junit.Test
+import kotlin.test.Test
 
 class AppGtvMetaTest: BaseRellTest() {
     @Test fun testEmpty() {

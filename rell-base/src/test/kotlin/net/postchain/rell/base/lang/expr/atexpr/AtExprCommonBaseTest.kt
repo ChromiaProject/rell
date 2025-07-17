@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lang.expr.atexpr
 
 import net.postchain.rell.base.compiler.base.core.C_AtAttrShadowing
-import org.junit.Test
+import kotlin.test.Test
 
 abstract class AtExprCommonBaseTest: AtExprBaseTest() {
     protected val fromUser = impFrom("user")

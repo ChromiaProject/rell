@@ -16,7 +16,7 @@ import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.mapToImmList
-import org.junit.Test
+import kotlin.test.Test
 import java.math.BigInteger
 import java.security.MessageDigest
 

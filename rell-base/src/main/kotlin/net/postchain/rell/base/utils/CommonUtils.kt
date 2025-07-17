@@ -10,7 +10,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 object CommonUtils {
-    val IS_UNIT_TEST: Boolean = Thread.currentThread().stackTrace.any { it.className.startsWith("org.junit.runners.") }
+    val IS_UNIT_TEST: Boolean = Thread.currentThread().stackTrace.any { it.className.startsWith("org.junit.") }
 
     fun bytesToHex(bytes: ByteArray): String = DatatypeConverter.printHexBinary(bytes).toLowerCase()
     fun hexToBytes(hex: String): ByteArray = DatatypeConverter.parseHexBinary(hex)

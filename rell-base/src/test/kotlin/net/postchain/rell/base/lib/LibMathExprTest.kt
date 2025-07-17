@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.testutils.BaseExprTest
-import org.junit.Test
+import kotlin.test.Test
 
 abstract class LibMathExprTest: BaseExprTest() {
     class LibMathExprIpTest: LibMathExprTest()

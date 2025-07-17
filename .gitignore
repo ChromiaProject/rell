@@ -1,7 +1,6 @@
 .idea/*
 *.iml
 .DS_Store
-META-INF
 /.run
 /target
 */target

@@ -8,7 +8,7 @@ import net.postchain.rell.base.lib.LibBlockTransactionTest
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.Rt_TestOpContext
 import net.postchain.rell.base.utils.immListOf
-import org.junit.Test
+import kotlin.test.Test
 
 class LogAnnotationTest: BaseRellTest(useSql = true) {
     @Test fun testLegacyAnnotation() {

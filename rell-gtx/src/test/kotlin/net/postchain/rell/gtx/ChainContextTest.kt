@@ -7,7 +7,7 @@ package net.postchain.rell.gtx
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.unwrap
 import net.postchain.rell.gtx.testutils.BaseGtxTest
-import org.junit.Test
+import kotlin.test.Test
 
 class ChainContextTest: BaseGtxTest() {
     @Test fun testRawConfig() {

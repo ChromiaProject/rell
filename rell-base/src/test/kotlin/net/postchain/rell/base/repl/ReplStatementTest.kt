@@ -5,7 +5,7 @@
 package net.postchain.rell.base.repl
 
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 
 class ReplStatementTest: BaseRellTest() {
     @Test fun testSimple() {

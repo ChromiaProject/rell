@@ -11,7 +11,7 @@ import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.SqlTestUtils
 import net.postchain.rell.gtx.testutils.BaseGtxTest
 import net.postchain.rell.gtx.testutils.RellGtxTester
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 

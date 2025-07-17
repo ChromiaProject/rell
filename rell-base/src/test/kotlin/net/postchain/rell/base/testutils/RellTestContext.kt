@@ -66,7 +66,7 @@ class RellTestContext(
     }
 
     private fun initSql() {
-        val conn = SqlTestUtils.createSqlConnection()
+        val conn = SqlTestUtils.createIsolatedSchemaConnection()
         var closeable: Connection? = conn
 
         try {
@@ -149,12 +149,12 @@ class RellTestContext(
 
     fun sqlMgr(): SqlManager {
         init()
-        return if (useSql) sqlMgrHolder!!.outerMgr else NoConnSqlManager
+        return if (useSql) sqlMgrHolder!!.outerMgr else NoConnSqlManager()
     }
 
     fun innerSqlMgr(): SqlManager {
         init()
-        return if (useSql) sqlMgrHolder!!.innerMgr else NoConnSqlManager
+        return if (useSql) sqlMgrHolder!!.innerMgr else NoConnSqlManager()
     }
 
     fun resetSqlBuffer() {

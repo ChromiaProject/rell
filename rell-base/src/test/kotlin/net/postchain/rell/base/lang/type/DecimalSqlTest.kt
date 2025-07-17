@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lang.type
 
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.test.assertEquals

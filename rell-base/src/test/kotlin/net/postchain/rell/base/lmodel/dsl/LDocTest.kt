@@ -12,7 +12,7 @@ import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_Module
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.L_ParamImplication
-import org.junit.Test
+import kotlin.test.Test
 import java.math.BigInteger
 
 class LDocTest: BaseLTest() {

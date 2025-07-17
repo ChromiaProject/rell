@@ -8,17 +8,20 @@ import net.postchain.common.BlockchainRid
 import net.postchain.concurrent.util.get
 import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.crypto.devtools.KeyPairHelper
-import net.postchain.devtools.IntegrationTest
+import net.postchain.devtools.ConfigFileBasedIntegrationTest
 import net.postchain.devtools.PostchainTestNode
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GtxBuilder
 import net.postchain.rell.base.utils.PostchainGtvUtils
-import org.junit.After
-import org.junit.Test
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
+import kotlin.test.AfterTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class BasicGtxModuleTest : IntegrationTest() {
+@Execution(ExecutionMode.SAME_THREAD)
+class BasicGtxModuleTest : ConfigFileBasedIntegrationTest() {
     private var blockchainRid: BlockchainRid? = null
     private val myCS = Secp256K1CryptoSystem()
 
@@ -151,7 +154,7 @@ class BasicGtxModuleTest : IntegrationTest() {
         return blockQueries.query(name, args).get()
     }
 
-    @After override fun tearDown() {
+    @AfterTest override fun tearDown() {
         super.tearDown()
     }
 }

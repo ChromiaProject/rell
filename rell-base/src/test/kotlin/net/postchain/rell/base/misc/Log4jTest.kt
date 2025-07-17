@@ -5,14 +5,17 @@
 package net.postchain.rell.base.misc
 
 import mu.KLogging
-import org.junit.Test
+import org.junit.jupiter.api.Timeout
+import kotlin.test.Test
 import java.net.ServerSocket
+import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
 
 class Log4jTest {
     // Log4j2 vulnerability CVE-2021-44228
     // https://www.lunasec.io/docs/blog/log4j-zero-day/
-    @Test(timeout = 10000) fun testVulnerabilityJndi() {
+    @Timeout(10_000, unit = TimeUnit.MILLISECONDS)
+    @Test fun testVulnerabilityJndi() {
         val l = mutableListOf<String>()
         ServerSocket(0).use { ss ->
             val port = ss.localPort

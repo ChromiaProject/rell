@@ -7,7 +7,7 @@ package net.postchain.rell.base.lang.type
 import net.postchain.rell.base.lib.LibBlockTransactionTest
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
-import org.junit.Test
+import kotlin.test.Test
 
 class MirrorStructEntityTest: BaseRellTest() {
     @Test fun testValidParameterKinds() {

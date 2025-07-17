@@ -5,7 +5,7 @@
 package net.postchain.rell.base.compiler.doc
 
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
-import org.junit.Test
+import kotlin.test.Test
 
 class CodeDefinitionDocTest: BaseCodeDocTest() {
     @Test fun testModule() {

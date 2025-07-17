@@ -6,7 +6,7 @@ package net.postchain.rell.base.sql
 
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
-import org.junit.Test
+import kotlin.test.Test
 
 class SqlInitTest: BaseSqlInitTest() {
     @Test fun testNoMeta() {

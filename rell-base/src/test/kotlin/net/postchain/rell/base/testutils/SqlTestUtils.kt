@@ -9,94 +9,125 @@ import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.sql.*
-import net.postchain.rell.base.utils.CommonUtils
-import net.postchain.rell.base.utils.ImmMap
-import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.*
 import org.postgresql.util.PGobject
 import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.SQLException
 import java.util.*
 
 object SqlTestUtils {
-    fun createSqlConnection(schema: String? = null): Connection {
+    /**
+     * Creates an SQL connection in the default DB's schema. Not suitable for parallel tests that may create
+     * tables with colliding names.
+     *
+     * May be useful for tests that verify DB metadata or other non-writing operations.
+     */
+    @Throws(SQLException::class)
+    fun createSimpleConnection(): Connection {
         val prop = readDbProperties()
-        val url = getDbUrl0(prop, schema)
-
-        val jdbcProperties = Properties()
-        jdbcProperties.setProperty("user", prop.user)
-        jdbcProperties.setProperty("password", prop.password)
-        jdbcProperties.setProperty("binaryTransfer", "false")
-
-        val con = DriverManager.getConnection(url, jdbcProperties)
-        var resource = con
-        try {
-            freeDiskSpace(con)
-            resource = null
-        } finally {
-            resource?.close()
-        }
-
+        val con = DriverManager.getConnection(getDbUrlWithSchema(prop), createJdbcProperties(prop))
         return con
     }
 
-    fun createSqlExecutor(con: Connection): SqlExecutor {
-        return SqlManagerConnection.create(con).createExecutor()
-    }
-
-    fun getDbUrl(schema: String? = null): String {
-        val prop = readDbProperties()
-        var url = getDbUrl0(prop, schema)
-        url = appendUrlParam(url, "user", prop.user)
-        url = appendUrlParam(url, "password", prop.password)
-        url = appendUrlParam(url, "binaryTransfer", "false")
-        return url
-    }
-
-    private fun getDbUrl0(props: DbConnProps, schema: String?): String {
-        var url = props.url
-        if (schema != null) {
-            url = appendUrlParam(url, "currentSchema", schema)
+    /**
+     * Creates an SQL connection along with a temporary schema. The returned connection has `currentSchema` parameter
+     * set to this schema. After the returned connection is closed, the schema is dropped.
+     *
+     * Also, guarantees that all previous test schemas are dropped, and the database is vacuumed.
+     */
+    @Throws(SQLException::class)
+    fun createIsolatedSchemaConnection(): Connection {
+        val schema = SqlSchemaUtils.generateSchemaName()
+        val prop = readDbProperties().copy(schema = schema)
+        val con = DriverManager.getConnection(getDbUrlWithSchema(prop), createJdbcProperties(prop))
+        var failed: Connection? = con
+        try {
+            SqlSchemaUtils.prepareTestSchemaEnvironment(con)
+            SqlSchemaUtils.createSchema(con, schema)
+            failed = null
+        } finally {
+            failed?.close() // if preparation failed, close the connection
         }
-        return url
+
+        return object : Connection by con {
+            override fun close() {
+                try {
+                    SqlSchemaUtils.dropSchema(this, schema)
+                } finally {
+                    con.close()
+                }
+            }
+        }
     }
 
-    private fun appendUrlParam(url: String, name: String, value: String): String {
-        val sep = if ("?" in url) "&" else "?"
-        return "$url$sep$name=$value"
+    fun createSqlExecutor(con: Connection) = SqlManagerConnection.create(con).createExecutor()
+
+    /**
+     * Creates a temporary database URL with an associated schema for testing.
+     *
+     * The returned pair consists of a closeable handle and the JDBC URL string.
+     * The handle **must be closed** after use to ensure the temporary schema is properly dropped and resources are
+     * released.
+     */
+    fun createTempDbUrl(): Pair<AutoCloseable, String> {
+        val schema = SqlSchemaUtils.generateSchemaName()
+        val prop = readDbProperties().copy(schema = schema)
+        val url = StringBuilder(getDbUrlWithSchema(prop))
+        appendUrlParam(url, "user", prop.user)
+        appendUrlParam(url, "password", prop.password)
+        appendUrlParam(url, "binaryTransfer", "false")
+
+        DriverManager.getConnection(url.toString()).use { con ->
+            SqlSchemaUtils.prepareTestSchemaEnvironment(con)
+            SqlSchemaUtils.createSchema(con, schema)
+        }
+
+        val handle = object : AutoCloseable {
+            override fun close() = dropTempDbUrl(prop)
+        }
+
+        return handle to url.toString()
     }
 
-    fun readDbProperties(): DbConnProps {
-        val config = loadProperties("/rell-db-config.properties")
-        val url = System.getenv("POSTCHAIN_DB_URL") ?: config.getProperty("database.url")
-        val user = System.getenv("POSTGRES_USER") ?: config.getProperty("database.username")
-        val password = System.getenv("POSTGRES_PASSWORD") ?: config.getProperty("database.password")
+    private fun dropTempDbUrl(prop: DbConnProps) {
+        val schema = prop.schema ?: return
+
+        DriverManager.getConnection(getDbUrlWithSchema(prop), createJdbcProperties(prop)).use { con ->
+            SqlSchemaUtils.dropSchema(con, schema)
+        }
+    }
+
+    private fun getDbUrlWithSchema(props: DbConnProps): String {
+        val url = StringBuilder(props.url)
+        if (props.schema != null) {
+            appendUrlParam(url, "currentSchema", props.schema)
+        }
+        return url.toString()
+    }
+
+    private fun appendUrlParam(url: StringBuilder, name: String, value: String) {
+        url.append(if ("?" in url) "&" else "?")
+        url.append(name)
+        url.append('=')
+        url.append(value)
+    }
+
+    private fun readDbProperties(): DbConnProps {
+        val props = Properties()
+
+        SqlTestUtils.javaClass.getResourceAsStream("/rell-db-config.properties").use { ins ->
+            props.load(ins)
+        }
+
+        val url = System.getenv("POSTCHAIN_DB_URL") ?: props.getProperty("database.url")
+        val user = System.getenv("POSTGRES_USER") ?: props.getProperty("database.username")
+        val password = System.getenv("POSTGRES_PASSWORD") ?: props.getProperty("database.password")
         return DbConnProps(url, user, password)
     }
 
-    private fun loadProperties(fileName: String): Properties {
-        val props = Properties()
-        javaClass.getResourceAsStream(fileName).use { ins ->
-            props.load(ins)
-        }
-        return props
-    }
-
-    data class DbConnProps(val url: String, val user: String, val password: String)
-
-    private var freeDiskSpace = true
-
-    // When running all tests multiple times in a row, sometimes Postgres starts failing with "no space left on device"
-    // error. Executing VACUUM shall fix this.
-    // https://www.postgresql.org/docs/current/sql-vacuum.html
-    // https://dba.stackexchange.com/questions/37028/vacuum-returning-disk-space-to-operating-system
-    private fun freeDiskSpace(con: Connection) {
-        if (!freeDiskSpace) return
-        freeDiskSpace = false
-        con.createStatement().use { stmt ->
-            stmt.execute("VACUUM FULL;")
-        }
-    }
+    data class DbConnProps(val url: String, val user: String, val password: String, val schema: String? = null)
 
     fun resetRowid(sqlExec: SqlExecutor, chainMapping: Rt_ChainSqlMapping) {
         val table = chainMapping.rowidTable
@@ -153,7 +184,7 @@ object SqlTestUtils {
         return "INSERT INTO \"$table\"(\"${SqlConstants.ROWID_COLUMN}\",$quotedColumns) VALUES ($values);"
     }
 
-    fun dumpDatabaseEntity(sqlExec: SqlExecutor, chainMapping: Rt_ChainSqlMapping, app: R_App): List<String> {
+    fun dumpDatabaseEntity(sqlExec: SqlExecutor, chainMapping: Rt_ChainSqlMapping, app: R_App): ImmList<String> {
         val list = mutableListOf<String>()
 
         for (entity in app.sqlDefs.entities) {
@@ -166,10 +197,15 @@ object SqlTestUtils {
             dumpEntity(sqlExec, chainMapping, obj.rEntity, list)
         }
 
-        return list.toList()
+        return list.toImmList()
     }
 
-    private fun dumpEntity(sqlExec: SqlExecutor, chainMapping: Rt_ChainSqlMapping, entity: R_EntityDefinition, list: MutableList<String>) {
+    private fun dumpEntity(
+        sqlExec: SqlExecutor,
+        chainMapping: Rt_ChainSqlMapping,
+        entity: R_EntityDefinition,
+        list: MutableList<String>
+    ) {
         val table = entity.sqlMapping.table(chainMapping)
         val cols = listOf(entity.sqlMapping.rowidColumn()) + entity.attributes.values.map { it.sqlMapping }
         val sql = getTableDumpSql(table, cols, entity.sqlMapping.rowidColumn())
@@ -183,40 +219,30 @@ object SqlTestUtils {
         return list
     }
 
-    private fun getTableDumpSql(table: String, columns: List<String>, sortColumn: String?): String {
-        val buf = StringBuilder()
-        buf.append("SELECT")
-        columns.joinTo(buf, ", ") { "\"$it\"" }
+    private fun getTableDumpSql(table: String, columns: List<String>, sortColumn: String?): String = buildString {
+        append("SELECT")
+        columns.joinTo(this, ", ") { "\"$it\"" }
 
-        buf.append(" FROM \"${table}\"")
+        append(" FROM \"${table}\"")
         if (sortColumn != null) {
-            buf.append(" ORDER BY \"$sortColumn\"")
+            append(" ORDER BY \"$sortColumn\"")
         }
-
-        return buf.toString()
     }
 
     private fun dumpSqlRecord(row: ResultSetRow): String {
         val values = mutableListOf<String>()
 
-        for (idx in 1 .. row.metaData.columnCount) {
+        for (idx in 1..row.metaData.columnCount) {
             val value = row.getObject(idx)
-            val str = if (value is String) {
-                value
-            } else if (value is ByteArray) {
-                "0x" + CommonUtils.bytesToHex(row.getBytes(idx)!!)
-            } else if (value is PGobject) {
-                value.value
-            } else if (value is Int || value is Long) {
-                "" + value
-            } else if (value is Boolean) {
-                "" + value
-            } else if (value is BigDecimal) {
-                "" + value
-            } else if (value == null) {
-                "NULL"
-            } else {
-                throw IllegalStateException(value.javaClass.canonicalName)
+            val str = when (value) {
+                is String -> value
+                is ByteArray -> "0x" + CommonUtils.bytesToHex(row.getBytes(idx)!!)
+                is PGobject -> value.value
+                is Int, is Long -> "" + value
+                is Boolean -> "" + value
+                is BigDecimal -> "" + value
+                null -> "NULL"
+                else -> error(value.javaClass.canonicalName)
             }
             values.add("" + str)
         }
@@ -269,5 +295,13 @@ object SqlTestUtils {
         }
 
         return res.toImmMap()
+    }
+
+    private fun createJdbcProperties(prop: DbConnProps): Properties {
+        return Properties().apply {
+            setProperty("user", prop.user)
+            setProperty("password", prop.password)
+            setProperty("binaryTransfer", "false")
+        }
     }
 }

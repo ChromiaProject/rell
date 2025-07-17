@@ -6,7 +6,7 @@ package net.postchain.rell.base.lang.expr.expr
 
 import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 
 class StatementTest: BaseRellTest() {
     @Test fun testVal() {

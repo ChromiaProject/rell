@@ -23,7 +23,7 @@ import net.postchain.rell.base.testutils.VirtualTestUtils
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.PostchainGtvUtils
-import org.junit.Test
+import kotlin.test.Test
 
 class CLibFunctionTypeExtTest: BaseCLibTest() {
     @Test fun testTypeExtensionMeta() {

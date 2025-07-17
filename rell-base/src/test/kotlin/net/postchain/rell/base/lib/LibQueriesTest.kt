@@ -9,7 +9,7 @@ import net.postchain.rell.base.lib.type.R_TextType
 import net.postchain.rell.base.lib.type.Rt_ListValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.Test
+import kotlin.test.Test
 
 class LibQueriesTest: BaseRellTest() {
     @Test fun testGetMountNamesFilterKind() {

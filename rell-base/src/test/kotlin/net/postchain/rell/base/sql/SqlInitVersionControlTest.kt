@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.sql
 
-import org.junit.Test
+import kotlin.test.Test
 
 class SqlInitVersionControlTest: BaseSqlInitTest() {
     @Test fun testAddEntityAttrKey() {
