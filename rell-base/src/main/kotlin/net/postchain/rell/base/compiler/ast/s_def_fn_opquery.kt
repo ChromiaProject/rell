@@ -45,6 +45,8 @@ class S_OperationDefinition(
         val mods = C_ModifierValues(C_ModifierTargetType.OPERATION, cName)
         val modMount = mods.field(C_ModifierFields.MOUNT)
         val modDeprecated = mods.field(C_ModifierFields.DEPRECATED)
+        val modCompound = mods.field(C_ModifierFields.COMPOUND)
+        val modSingular = mods.field(C_ModifierFields.SINGULAR)
         val docModifiers = modifiers.compile(ctx, mods)
 
         val mountName = ctx.mountName(modMount, cName)
@@ -62,7 +64,8 @@ class S_OperationDefinition(
         val defCtx = cDefBase.defCtx(ctx)
         val defBase = cDefBase.rBase(defCtx.initFrameGetter)
 
-        val rOperation = R_OperationDefinition(defBase, mountName)
+        val rOpMods = R_OperationModifiers.getInstance(modCompound.hasValue(), modSingular.hasValue())
+        val rOperation = R_OperationDefinition(defBase, mountName, rOpMods)
         ctx.appCtx.defsAdder.addStruct(rOperation.mirrorStructs.immutable)
         ctx.appCtx.defsAdder.addStruct(rOperation.mirrorStructs.mutable)
 

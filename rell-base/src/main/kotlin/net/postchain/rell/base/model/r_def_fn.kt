@@ -60,6 +60,7 @@ sealed class R_MountedRoutineDefinition(
 class R_OperationDefinition(
     base: R_DefinitionBase,
     mountName: R_MountName,
+    val modifiers: R_OperationModifiers,
 ): R_MountedRoutineDefinition(base, mountName) {
     val type: R_Type = R_OperationType(this)
     val mirrorStructs = R_MirrorStructs(base, C_DefinitionType.OPERATION, type)
@@ -124,6 +125,16 @@ class R_OperationDefinition(
             body = C_ExprUtils.ERROR_STATEMENT,
             frame = R_CallFrame.ERROR,
         )
+    }
+}
+
+class R_OperationModifiers private constructor(val isCompound: Boolean, val isSingular: Boolean) {
+    companion object {
+        private val DEFAULT_INSTANCE = R_OperationModifiers(isCompound = false, isSingular = false)
+
+        fun getInstance(isCompound: Boolean, isSingular: Boolean): R_OperationModifiers {
+            return if (!isCompound && !isSingular) DEFAULT_INSTANCE else R_OperationModifiers(isCompound, isSingular)
+        }
     }
 }
 

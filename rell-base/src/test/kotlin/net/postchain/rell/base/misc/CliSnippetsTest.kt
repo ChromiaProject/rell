@@ -48,6 +48,7 @@ class CliSnippetsTest {
         chkTestModules("tests")
         chkModule("tests.calc_test")
         chkModule("tests.data_test")
+        chkModule("tests.op_mods_test")
         chkModule("tests.lib_test")
         chkModule("tests.foobar")
     }

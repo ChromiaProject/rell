@@ -7,6 +7,7 @@ package net.postchain.rell.api.gtx
 import net.postchain.rell.api.gtx.testutils.PostchainRellTestProjExt
 import net.postchain.rell.base.testutils.BaseRellTest
 import kotlin.test.Test
+import net.postchain.rell.base.utils.immListOf
 
 internal class TestModuleTxTest: BaseRellTest() {
     override fun getProjExt() = PostchainRellTestProjExt
@@ -87,14 +88,16 @@ internal class TestModuleTxTest: BaseRellTest() {
     }
 
     @Test fun testModuleArgs() {
-        file("app.rell", """module;
+        file("app.rell", """
+            module;
             struct module_args { x: integer; }
             function f() = chain_context.args;
             query q() = chain_context.args;
             operation op() { print('o:' + chain_context.args); }
         """)
 
-        file("test.rell", """@test module;
+        file("test.rell", """
+            @test module;
             import app;
             function test() {
                 print('f:' + app.f());
@@ -157,5 +160,53 @@ internal class TestModuleTxTest: BaseRellTest() {
         """)
 
         chkTests("tests", "test_add_user=OK")
+    }
+
+    @Test fun testCompoundSingularOperations() {
+        tstCtx.useSql = true
+
+        file("op_mods.rell", """
+            module;
+            entity person { name; }
+            operation add_person(name) { create person(name); }
+            @singular operation add_person_singular(name) { create person(name); }
+            @compound operation add_person_compound(name) { create person(name); }
+            @compound operation add_person_compound_2(name) { create person(name); }
+            @singular @compound operation add_person_singular_compound(name) { create person(name); }
+        """)
+
+        file("op_mods_test.rell", """
+            @test module;
+            import op_mods;
+
+            @test function test__singular__once_per_tx__succeeds() {
+                rell.test.tx([op_mods.add_person_singular('Alice')]).run();
+                rell.test.tx([op_mods.add_person_singular('Bob')]).run();
+                rell.test.tx([op_mods.add_person_singular('Charlie')]).run();
+                assert_equals(op_mods.person@*{}(.name), ['Alice', 'Bob', 'Charlie']);
+            }
+
+            @test function test__compound__two_different_no_normal__fails() {
+                rell.test.tx([
+                    op_mods.add_person_compound('Bob'),
+                    op_mods.add_person_compound_2('Alice')
+                ]).run_must_fail("contains no normal operation");
+            }
+
+            @test function test__singular_compound__after_normal__succeeds() {
+                rell.test.tx([
+                    op_mods.add_person('Alice'),
+                    op_mods.add_person_singular_compound('Bob')
+                ]).run();
+                assert_equals(op_mods.person@*{}(.name), ['Alice', 'Bob']);
+            }
+        """)
+
+        val output = immListOf(
+            "test__singular__once_per_tx__succeeds=OK",
+            "test__compound__two_different_no_normal__fails=OK",
+            "test__singular_compound__after_normal__succeeds=OK",
+        ).joinToString(",")
+        chkTests("op_mods_test", output)
     }
 }

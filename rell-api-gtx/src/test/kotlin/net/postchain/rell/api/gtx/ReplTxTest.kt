@@ -4,22 +4,9 @@
 
 package net.postchain.rell.api.gtx
 
-import net.postchain.rell.api.gtx.testutils.PostchainRellTestProjExt
-import net.postchain.rell.base.testutils.BaseRellTest
 import kotlin.test.Test
 
-internal class ReplTxTest: BaseRellTest(useSql = true) {
-    override fun getProjExt() = PostchainRellTestProjExt
-
-    private fun initStuff() {
-        val chainId = 0L
-        val chainRid = "DeadBeef".repeat(8)
-        tst.replModule = ""
-        tst.chainId = chainId
-        tst.blockchainRid = chainRid
-        tstCtx.blockchain(chainId, chainRid)
-    }
-
+internal class ReplTxTest: BaseReplGtxTest() {
     @Test fun testSysEntities() {
         repl.chk("_type_of(transaction@{})", "RES:text[transaction]")
         repl.chk("_type_of(block@{})", "RES:text[block]")
@@ -36,7 +23,7 @@ internal class ReplTxTest: BaseRellTest(useSql = true) {
 
     @Test fun testTxRun() {
         file("module.rell", "operation foo(x: integer) { print('x='+x); }")
-        initStuff()
+        initChain()
 
         repl.chk("val op = foo(123);")
         repl.chk("op", "RES:op[foo(123)]")
@@ -46,7 +33,7 @@ internal class ReplTxTest: BaseRellTest(useSql = true) {
 
     @Test fun testBlockRun() {
         file("module.rell", "operation foo(x: integer) { print('x='+x); }")
-        initStuff()
+        initChain()
 
         repl.chk("val tx1 = rell.test.tx(foo(123));")
         repl.chk("val tx2 = rell.test.tx(foo(456));")
@@ -56,7 +43,7 @@ internal class ReplTxTest: BaseRellTest(useSql = true) {
 
     @Test fun testCallOpByDynamicName() {
         file("module.rell", "operation foo(x: integer) { print('x='+x); }")
-        initStuff()
+        initChain()
 
         repl.chk("val op = rell.test.op('foo', [(123).to_gtv()]);")
         repl.chk("val tx = rell.test.tx(op);")
@@ -68,7 +55,7 @@ internal class ReplTxTest: BaseRellTest(useSql = true) {
             operation foo(x: integer) { print('foo('+x+')'); }
             operation bar(x: integer) { print('bar('+x+')'); }
         """)
-        initStuff()
+        initChain()
 
         repl.chk("rell.test.tx(foo(123)).run();", "OUT:foo(123)", "RES:unit")
         repl.chk("block@*{}", "RES:list<block>[block[1]]")
@@ -94,7 +81,7 @@ internal class ReplTxTest: BaseRellTest(useSql = true) {
         file("module.rell", "module;")
         file("a.rell", "module; operation foo(x: integer){print('foo:'+x);}")
         file("b.rell", "module; operation bar(y: integer){print('bar:'+y);}")
-        initStuff()
+        initChain()
 
         repl.chk("import a;")
         repl.chk("rell.test.tx(a.foo(123)).run();", "OUT:foo:123", "RES:unit")

@@ -10,8 +10,10 @@ import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.sql.SqlUtils
 import net.postchain.rell.base.testutils.RellReplTester
 import net.postchain.rell.base.testutils.RellTestUtils
+import net.postchain.rell.base.testutils.SqlTestUtils
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.plus
@@ -101,6 +103,7 @@ internal class RellApiRunShellTest: BaseRellApiTest() {
         input: ImmList<String>,
         vararg expected: String,
         module: String? = null,
+        useDatabase: Boolean = false,
         compileConfig: RellApiCompile.Config = defaultConfig,
     ) {
         val inChannelFactory = RellReplTester.TestReplInputChannelFactory(input + "\\q")
@@ -110,12 +113,20 @@ internal class RellApiRunShellTest: BaseRellApiTest() {
             .compileConfig(compileConfig)
             .inputChannelFactory(inChannelFactory)
             .outputChannelFactory(outChannelFactory)
-            .build()
+
+        if (useDatabase) {
+            val (handle, url) = SqlTestUtils.createTempDbUrl()
+            resource(handle)
+            runConfig.databaseUrl(url)
+            SqlTestUtils.createIsolatedSchemaConnection().use { con ->
+                SqlUtils.dropAll(SqlTestUtils.createSqlExecutor(con), true)
+            }
+        }
 
         val moduleName = if (module == null) null else R_ModuleName.of(module)
 
         try {
-            RellApiShellInternal.runShell(runConfig, sourceDir, moduleName)
+            RellApiShellInternal.runShell(runConfig.build(), sourceDir, moduleName)
         } catch (e: C_CommonError) {
             val actual = listOf("CME:${e.code}")
             assertEquals(expected.toList(), actual)
@@ -136,5 +147,47 @@ internal class RellApiRunShellTest: BaseRellApiTest() {
         val config = configBuilder().version(version).build()
         val sourceDir = C_SourceDir.mapDirOf("lib.rell" to "module; enum color { red }")
         chkShell(sourceDir, immListOf(), "$err:$version", compileConfig = config)
+    }
+
+    private val OP_MODS_DIR = C_SourceDir.mapDirOf("op_mods.rell" to """
+        module;
+        entity person { name; }
+        operation add_person(name) { create person(name); }
+        @singular operation add_person_singular(name) { create person(name); }
+        @singular operation add_person_singular_2(name) { create person(name); }
+        @compound operation add_person_compound(name) { create person(name); }
+        @singular @compound operation add_person_singular_compound(name) { create person(name); }
+    """)
+
+    @Test fun testSingularOpDifferentOperationsSucceeds() {
+        val shellInput = immListOf(
+            "import op_mods;",
+            "\\db-update",
+            "rell.test.tx([op_mods.add_person_singular('Alice'), op_mods.add_person_singular_2('Bob')]).run();",
+            "op_mods.person@*{}(.name);"
+        )
+        val expected = "RES:unit, RES:list<text>[text[Alice],text[Bob]]"
+        chkShell(OP_MODS_DIR, shellInput, expected, useDatabase = true)
+    }
+
+    @Test fun testCompoundOpAfterNormalSucceeds() {
+        val shellInput = immListOf(
+            "import op_mods;",
+            "\\db-update",
+            "rell.test.tx([op_mods.add_person('Alice'), op_mods.add_person_compound('Bob') ]).run();",
+            "op_mods.person@*{}(.name);"
+        )
+        val expected = "RES:unit, RES:list<text>[text[Alice],text[Bob]]"
+        chkShell(OP_MODS_DIR, shellInput, expected, useDatabase = true)
+    }
+
+    @Test fun testSingularCompoundOpAloneFails() {
+        val shellInput = immListOf(
+            "import op_mods;",
+            "\\db-update",
+            "rell.test.tx([op_mods.add_person_singular_compound('Bob')]).run();",
+        )
+        val expected = "rt_err:fn:rell.test.tx.run:fail:net.postchain.common.exception.TransactionIncorrect"
+        chkShell(OP_MODS_DIR, shellInput, expected, useDatabase = true)
     }
 }

@@ -1,7 +1,24 @@
 UNRELEASED NOTES
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-1. Tests: Function-level @test annotation
+1. Language: Annotations @singular and @compound for operations
+
+Postchain v3.34.0 introduced two new operation types:
+
+- A compound operation. This is an operation that cannot 'stand alone' in a transaction. A transaction that contains a
+  compound operation without any non-compound operations is invalid.
+- A single-per-transaction operation. This is an operation that cannot occur more than once per transaction.
+
+Rell operations can now be marked as compound with the @compound annotation, and as single-per-transaction with the
+@singular annotation.
+
+Examples:
+
+    @compound operation finalize(...) { ... }
+    @singular operation credit_account(...) { ... }
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Tests: Function-level @test annotation
 
 Where one would previously write:
 
@@ -20,7 +37,7 @@ The @test annotation may only be used on functions that are not otherwise annota
 no abstract or override modifiers.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-2. Library: Functions text.match_groups() and text.match_named_groups()
+3. Library: Functions text.match_groups() and text.match_named_groups()
 
 New functions to retrieve capturing groups from a regular expression match:
 

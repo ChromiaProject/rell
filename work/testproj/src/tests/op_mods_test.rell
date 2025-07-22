@@ -1,0 +1,33 @@
+@test module;
+
+import tests.op_mods;
+
+@test function test__singular__twice_different_args__fails() {
+    rell.test.tx([
+        op_mods.add_person_singular('Bob'),
+        op_mods.add_person_singular('Alice')
+    ]).run_must_fail("contains more than one");
+}
+
+@test function test__compound__before_normal__succeeds() {
+    rell.test.tx([
+        op_mods.add_person_compound('Bob'),
+        op_mods.add_person('Alice')
+    ]).run();
+    assert_equals(op_mods.person @* {} (.name), ['Bob', 'Alice']);
+}
+
+@test function test__compound__twice_no_normal__fails() {
+    rell.test.tx([
+        op_mods.add_person_compound('Bob'),
+        op_mods.add_person_compound('Alice')
+    ]).run_must_fail("contains no normal operation");
+}
+
+@test function test__singular_compound__before_normal__succeeds() {
+    rell.test.tx([
+        op_mods.add_person_singular_compound('Bob'),
+        op_mods.add_person('Alice')
+    ]).run();
+    assert_equals(op_mods.person @* {} (.name), ['Bob', 'Alice']);
+}

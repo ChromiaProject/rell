@@ -49,6 +49,8 @@ object C_ModifierFields {
     val OVERRIDE = C_ModifierField.flagKeyword(S_KeywordModifierKind.OVERRIDE)
     val EXTENDABLE = C_ModifierField.flagAnnotation("extendable")
     val EXTEND = C_Annotation_Extend.FIELD
+    val COMPOUND = C_ModifierField.flagAnnotation("compound")
+    val SINGULAR = C_ModifierField.flagAnnotation("singular")
 
     val OUTER = C_ModifierField.flagAnnotation("outer")
 

@@ -100,4 +100,28 @@ class OperationTest: BaseRellTest(useSql = true) {
         def("operation foo(x: integer){}")
         chk("foo(123)", "ct_err:expr:operation_call:no_test:foo")
     }
+
+    @Test fun testCompoundOperation() {
+        tst.testLib = true
+        def("@compound operation foo(x: integer, y: text){}")
+        chk("foo(123,'Hi')", """op[foo(123,"Hi")]""")
+    }
+
+    @Test fun testSingularOperation() {
+        tst.testLib = true
+        def("@singular operation bar(x: integer, y: text){}")
+        chk("bar(456,'Bye')", """op[bar(456,"Bye")]""")
+    }
+
+    @Test fun testSingularCompoundOperation() {
+        tst.testLib = true
+        def("@singular @compound operation baz(x: integer, y: text){}")
+        chk("baz(789,'abcdefg')", """op[baz(789,"abcdefg")]""")
+    }
+
+    @Test fun testCompoundSingularOperation() {
+        tst.testLib = true
+        def("@compound @singular operation quix(x: integer, y: text){}")
+        chk("quix(43110,'xyz')", """op[quix(43110,"xyz")]""")
+    }
 }

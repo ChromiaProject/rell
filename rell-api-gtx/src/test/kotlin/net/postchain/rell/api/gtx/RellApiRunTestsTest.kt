@@ -381,4 +381,54 @@ internal class RellApiRunTestsTest: BaseRellApiRunTestsTest() {
             "test:thisTestFails:FAILED"
         )
     }
+
+    @Test fun testCompoundSingularOperations() {
+        val runConfig = runTestsDbConfig()
+        val sourceDir = C_SourceDir.mapDirOf(
+            "op_mods.rell" to """
+                module;
+                entity person { name; }
+                operation add_person(name) { create person(name); }
+                @singular operation add_person_singular(name) { create person(name); }
+                @compound operation add_person_compound(name) { create person(name); }
+                @singular @compound operation add_person_singular_compound(name) { create person(name); }
+            """,
+            "op_mods_test.rell" to """
+                @test module;
+                import op_mods.*;
+
+                @test function test__singular__twice_same_args__fails() {
+                    rell.test.tx([
+                        add_person_singular('Alice'),
+                        add_person_singular('Alice')
+                    ]).run_must_fail("contains more than one");
+                }
+
+                @test function test__compound__only_operation__fails() {
+                    rell.test.tx([add_person_compound('Bob')]).run_must_fail("contains no normal operation");
+                }
+
+                @test function test__singular__twice_nonconsecutive__fails() {
+                    rell.test.tx([
+                        add_person_singular('Alice'),
+                        add_person('Charlie'),
+                        add_person_singular('Bob')
+                    ]).run_must_fail("contains more than one");
+                }
+
+                @test function test__singular_compound__twice_no_normal__fails() {
+                    rell.test.tx([
+                        add_person_singular_compound('Bob'),
+                        add_person_singular_compound('Alice')
+                    ]).run_must_fail("contains more than one");
+                }
+            """,
+        )
+        chkRunTests(runConfig, sourceDir, listOf(), listOf("op_mods_test"),
+            "op_mods_test:test__singular__twice_same_args__fails:OK",
+            "op_mods_test:test__compound__only_operation__fails:OK",
+            "op_mods_test:test__singular__twice_nonconsecutive__fails:OK",
+            "op_mods_test:test__singular_compound__twice_no_normal__fails:OK",
+        )
+    }
 }

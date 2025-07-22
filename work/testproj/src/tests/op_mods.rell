@@ -1,0 +1,21 @@
+module;
+
+entity person {
+    name;
+}
+
+operation add_person(name) {
+    create person(name);
+}
+
+@singular operation add_person_singular(name) {
+    create person(name);
+}
+
+@compound operation add_person_compound(name) {
+    create person(name);
+}
+
+@singular @compound operation add_person_singular_compound(name) {
+    create person(name);
+}

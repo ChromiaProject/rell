@@ -134,6 +134,9 @@ private class RellGTXOperation(
         }
     }
 
+    override fun isCompound(): Boolean = rOperation.modifiers.isCompound
+    override fun isSinglePerTransaction(): Boolean = rOperation.modifiers.isSingular
+
     override fun apply(ctx: TxEContext): Boolean {
         handleError {
             val blockHeight = DatabaseAccess.of(ctx).getLastBlockHeight(ctx)
