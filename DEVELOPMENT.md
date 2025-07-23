@@ -73,6 +73,17 @@ mvn verify
    https://www.jetbrains.com/help/idea/delegate-build-and-run-actions-to-maven.html#build_through_maven
 2. Use the run configuration `All_tests`.
 
+###### Troubleshooting IntelliJ IDEA test failures
+
+There is an issue with tests run from IntelliJ IDEA failing due to OOM. There are two known workarounds for this:
+
+1. Disable the JVM GC overhead limit. This is achieved by navigating to **Settings** -> **Build, Execution, Deployment**
+   -> **Compiler**. Then under the **Build Process** heading, enter `-XX:UseGCOverheadLimit` into the **Shared VM
+   options** field.
+2. Increase the maximum JVM heap size. This is achieved by navigating to **Settings** -> **Build, Execution, Deployment**
+   -> **Compiler**. Then under the **Build Process** heading, set the **Shared heap size** to a sufficiently large
+   value - 2048 Mbytes is likely to be sufficient.
+
 ### Running Rell Shell (REPL)
 
 To start the interactive Rell shell:
