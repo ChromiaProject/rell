@@ -33,6 +33,7 @@ object C_Annotations {
     const val SORT = "sort"
     const val SORT_DESC = "sort_desc"
     const val TEST = "test"
+    const val DUMMY_ANNOTATION = "dummy_annotation"
 }
 
 object C_ModifierFields {
@@ -57,6 +58,8 @@ object C_ModifierFields {
     val OMIT = C_ModifierField.flagAnnotation("omit")
     val SORT = C_ModifierField.choiceAnnotations(mapOf(C_Annotations.SORT to R_AtWhatSort.ASC, C_Annotations.SORT_DESC to R_AtWhatSort.DESC))
     val SUMMARIZATION = C_ModifierField.choiceAnnotations(C_AtSummarizationKind.values().associateBy { it.annotation })
+
+    val DUMMY_ANNOTATION = C_ModifierField.flagAnnotation(C_Annotations.DUMMY_ANNOTATION, hidden = true)
 }
 
 private object C_Annotation_Deprecated {

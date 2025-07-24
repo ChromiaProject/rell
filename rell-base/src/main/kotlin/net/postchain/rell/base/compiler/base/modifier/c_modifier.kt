@@ -40,6 +40,7 @@ enum class C_ModifierTargetType {
     QUERY(C_DeclarationType.QUERY),
     IMPORT(C_DeclarationType.IMPORT),
     CONSTANT(C_DeclarationType.CONSTANT),
+    PARAMETER(C_DeclarationType.PARAMETER),
     EXPRESSION("expression"),
     ;
 

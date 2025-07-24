@@ -5,6 +5,7 @@
 package net.postchain.rell.base.compiler.doc
 
 import net.postchain.rell.base.testutils.unwrap
+import java.util.Locale
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -708,6 +709,51 @@ class CodeDocCommentTest: BaseCodeDocTest() {
             "Usage example:\n\n```\n    if (f() == 123) {\n        print(456);\n    }\n```\n\nMore info..." +
             "|return:Some value...\n123 if foo\n   1230 if bar\n   1231 if baz\n456 if oof"
         chkComment(code, ":f", exp)
+    }
+
+    @Test fun testAnnotatedParameterTagFunction() {
+        chkAnnotatedParameterTag("function", "{}")
+    }
+
+    @Test fun testAnnotatedParameterTagOperation() {
+        chkAnnotatedParameterTag("operation", "{}")
+    }
+
+    @Test fun testAnnotatedParameterTagQuery() {
+        chkAnnotatedParameterTag("query", "= 0;")
+    }
+
+    private fun chkAnnotatedParameterTag(kw: String, body: String) {
+        val c = """/**
+            * SomeFunction
+            * @param x FirstParam
+            * @param y SecondParam
+        */"""
+        val code = "$c $kw f(x: integer, @dummy_annotation /** ParamNo2 */ y: text, /** ParamNo3 */ @dummy_annotation z: boolean) $body"
+        val warning1 = "param:dummy_annotation:annotation_present:${kw.uppercase(Locale.getDefault())}:[:f]:y"
+        val warning2 = "param:dummy_annotation:annotation_present:${kw.uppercase(Locale.getDefault())}:[:f]:z"
+        chkComment(code, ":f", "SomeFunction|param:x=FirstParam;y=SecondParam;z=ParamNo3", warning1, warning2)
+        chkComment(code, ":f.x", "FirstParam", warning1, warning2)
+        chkComment(code, ":f.y", "SecondParam", warning1, warning2)
+        chkComment(code, ":f.z", "ParamNo3", warning1, warning2)
+    }
+
+    @Test fun testFirstParamCommentWinsFunction() {
+        chkFirstParamCommentWins("function", "{}")
+    }
+
+    @Test fun testFirstParamCommentWinsOperation() {
+        chkFirstParamCommentWins("operation", "{}")
+    }
+
+    @Test fun testFirstParamCommentWinsQuery() {
+        chkFirstParamCommentWins("query", "= 0;")
+    }
+
+    private fun chkFirstParamCommentWins(kw: String, body: String) {
+        val code = "$kw f(/** first */ @dummy_annotation /** second */ x: integer) $body"
+        val warning = "param:dummy_annotation:annotation_present:${kw.uppercase(Locale.getDefault())}:[:f]:x"
+        chkComment(code, ":f.x", "first", warning)
     }
 
     private fun chkCommentEx(code: String, name: String, vararg otherNames: String) {

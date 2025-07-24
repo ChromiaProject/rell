@@ -190,4 +190,35 @@ internal class RellApiRunShellTest: BaseRellApiTest() {
         val expected = "rt_err:fn:rell.test.tx.run:fail:net.postchain.common.exception.TransactionIncorrect"
         chkShell(OP_MODS_DIR, shellInput, expected, useDatabase = true)
     }
+
+    @Test fun testFunctionHiddenParamAnnotationInvalid() {
+        val expected = "CTE:<console>:modifier:invalid:ann:dummy_annotation"
+        chkSingleNoCtx("function foo(@dummy_annotation x: integer): integer { return x + 17; }", expected)
+        chkSingleNoCtx("function bar(x: integer, @dummy_annotation y: text) = y.repeat(x);", expected)
+        chkSingleNoCtx("function baz(@dummy_annotation a: gtv, z: big_integer) { return 10L; }", expected)
+        chkSingleNoCtx("function quix(@dummy_annotation name) = \"We're here.\";", expected)
+        chkSingleNoCtx("function quam(@dummy_annotation dec: decimal) = dec * 3.1415;", expected)
+    }
+
+    @Test fun testOperationHiddenParamAnnotationInvalid() {
+        val expected = "CTE:<console>:def_repl:OPERATION, CTE:<console>:modifier:invalid:ann:dummy_annotation"
+        chkSingleNoCtx("operation foo(@dummy_annotation x: integer) {}", expected)
+        chkSingleNoCtx("operation bar(x: integer, @dummy_annotation y: text) {}", expected)
+        chkSingleNoCtx("operation baz(@dummy_annotation a: gtv, z: big_integer) {}", expected)
+        chkSingleNoCtx("operation quix(@dummy_annotation name) {}", expected)
+        chkSingleNoCtx("operation quam(@dummy_annotation arr: byte_array) {}", expected)
+    }
+
+    @Test fun testQueryHiddenParamAnnotationInvalid() {
+        val expected = "CTE:<console>:def_repl:QUERY, CTE:<console>:modifier:invalid:ann:dummy_annotation"
+        chkSingleNoCtx("query foo(@dummy_annotation x: integer): integer = x + 1;", expected)
+        chkSingleNoCtx("query bar(x: integer, @dummy_annotation y: text): text { return (x).to_text() + y; }", expected)
+        chkSingleNoCtx("query baz(@dummy_annotation a: gtv, z: big_integer): boolean { return z.to_gtv() == a; }", expected)
+        chkSingleNoCtx("query quix(@dummy_annotation name): text = name.reversed();", expected)
+        chkSingleNoCtx("query quam(@dummy_annotation dec: decimal) = dec * 3.1415;", expected)
+    }
+
+    private fun chkSingleNoCtx(code: String, expected: String) {
+        chkShell(C_SourceDir.EMPTY, immListOf(code), expected)
+    }
 }

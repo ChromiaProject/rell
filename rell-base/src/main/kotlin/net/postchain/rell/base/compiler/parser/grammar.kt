@@ -763,8 +763,9 @@ object S_Grammar {
             or guardStmt
     )
 
-    private val formalParameter by attrHeader * optional(-ASSIGN * expression) map {
-        (attr, expr) -> S_FormalParameter(attr.value, expr, attr.firstToken.comment)
+    private val formalParameter by modifiers * attrHeader * optional(-ASSIGN * expression) map { (mods, attr, expr) ->
+        val firstToken = mods?.firstToken ?: attr.firstToken
+        S_FormalParameter(mods?.value ?: S_Modifiers(), attr.value, expr, firstToken.comment)
     }
 
     private val formalParameters by commaSeparatedZeroMany(formalParameter) map { it.items }
