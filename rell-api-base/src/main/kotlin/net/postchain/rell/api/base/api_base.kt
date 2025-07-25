@@ -276,7 +276,7 @@ public object RellApiBaseInternal {
         modules: List<R_ModuleName>,
         files: List<C_SourcePath>,
     ): Gtv {
-        val sources = RellConfigGen.getModuleFiles(sourceDir, files)
+        val sources = RellConfigGen.getNormalizedModuleFiles(sourceDir, files)
 
         val map = mutableMapOf(
             "modules" to GtvFactory.gtv(modules.map { GtvFactory.gtv(it.str()) }),

@@ -145,7 +145,6 @@ public final class net/postchain/rell/api/base/RellConfigGen$Companion {
 	public final fun create (Lnet/postchain/rell/api/base/RellCliEnv;Lnet/postchain/rell/api/base/RellCliTarget;)Lnet/postchain/rell/api/base/RellConfigGen;
 	public final fun create (Lnet/postchain/rell/api/base/RellCliEnv;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;Lnet/postchain/rell/base/model/R_LangVersion;)Lnet/postchain/rell/api/base/RellConfigGen;
 	public static synthetic fun create$default (Lnet/postchain/rell/api/base/RellConfigGen$Companion;Lnet/postchain/rell/api/base/RellCliEnv;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;Lnet/postchain/rell/base/model/R_LangVersion;ILjava/lang/Object;)Lnet/postchain/rell/api/base/RellConfigGen;
-	public final fun getModuleFiles (Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;)Ljava/util/Map;
 	public final fun makeConfig (Lnet/postchain/gtv/Gtv;Lnet/postchain/gtv/Gtv;)Lnet/postchain/gtv/Gtv;
 }
 

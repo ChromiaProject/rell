@@ -18,6 +18,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal class RellApiCompileTest: BaseRellApiTest() {
+    private val rellVer = RellTestUtils.RELL_VER
+
     @Test fun testCompileAppBasic() {
         val sourceDir = C_SourceDir.mapDirOf("main.rell" to "module; function main() {}")
         chkCompileAppMods(defaultConfig, sourceDir, listOf("main"), listOf(), "main")
@@ -248,8 +250,6 @@ internal class RellApiCompileTest: BaseRellApiTest() {
     }
 
     @Test fun testCompileGtv() {
-        val rellVer = RellTestUtils.RELL_VER
-
         chkCompileGtv(defaultConfig, generalSourceDir, "a",
             """{"compilerVersion":"$rellVer","modules":["a"],"sources":{"a.rell":"module;"},"version":"$rellVer"}"""
         )
@@ -387,6 +387,33 @@ internal class RellApiCompileTest: BaseRellApiTest() {
         chkCompileGtvRellVersion(RellTestUtils.NEXT_VER, "CME:config:version:unknown")
     }
 
+    @Test fun testCompileGtvSourcesNormalizedLineEndings() {
+        chkSourceInCompiledGtv(
+            "module;\r\nentity foo {}\r\noperation bar() {}\r\n",
+            """module;\nentity foo {}\noperation bar() {}\n""",
+        )
+
+        chkSourceInCompiledGtv(
+            "module;\rentity foo {}\roperation bar() {}\r",
+            """module;\nentity foo {}\noperation bar() {}\n""",
+        )
+
+        chkSourceInCompiledGtv(
+            "module;\nentity foo {}\noperation bar() {}\n",
+            """module;\nentity foo {}\noperation bar() {}\n""",
+        )
+
+        chkSourceInCompiledGtv(
+            "module;\rentity foo {}\r\noperation bar() {}\n",
+            """module;\nentity foo {}\noperation bar() {}\n""",
+        )
+
+        chkSourceInCompiledGtv(
+            "module; entity foo {}",
+            """module; entity foo {}""",
+        )
+    }
+
     private fun chkCompileGtvRellVersion(version: String, err: String) {
         val sourceDir = C_SourceDir.mapDirOf("foo/module.rell" to "module;")
         val config = configBuilder().version(version).build()
@@ -398,6 +425,20 @@ internal class RellApiCompileTest: BaseRellApiTest() {
         checkNotNull(f)
         val text = f.readText().replace("=", "\\u003d")
         return "\"$path\":\"$text\""
+    }
+
+
+    private fun chkSourceInCompiledGtv(
+        fileSourceCode: String,
+        expectedSourceInGtv: String,
+        moduleName: String = "main",
+        config: RellApiCompile.Config = defaultConfig,
+    ) {
+        val sourceDir = C_SourceDir.mapDirOf(
+            "${moduleName}.rell" to fileSourceCode,
+        )
+
+        chkCompileGtv(config, sourceDir, moduleName, """{"compilerVersion":"$rellVer","modules":["$moduleName"],"sources":{"${moduleName}.rell":"$expectedSourceInGtv"},"version":"$rellVer"}""")
     }
 
     private fun chkCompileGtv(

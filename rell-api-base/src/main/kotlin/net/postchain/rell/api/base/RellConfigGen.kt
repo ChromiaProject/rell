@@ -76,7 +76,7 @@ public class RellConfigGen(
 
     private fun getModuleSources(): RellModuleSources {
         return RellApiBaseInternal.catchCommonError {
-            val fileMap = getModuleFiles(sourceDir, moduleFiles).toImmMap()
+            val fileMap = getNormalizedModuleFiles(sourceDir, moduleFiles).toImmMap()
             val strModules = modules.mapToImmList { it.str() }
             RellModuleSources(strModules, fileMap)
         }
@@ -109,7 +109,7 @@ public class RellConfigGen(
             return xml
         }
 
-        public fun getModuleFiles(
+        internal fun getNormalizedModuleFiles(
             sourceDir: C_SourceDir,
             files: List<C_SourcePath>,
         ): Map<String, String> {
@@ -120,7 +120,8 @@ public class RellConfigGen(
                     val file = sourceDir.file(path)
                     file ?: throw C_CommonError("file_not_found:$path", "File not found: $path")
                     val text = file.readText()
-                    fileMap[path.str()] = text
+                    val normalizedText = text.replace("\r\n", "\n").replace("\r", "\n")
+                    fileMap[path.str()] = normalizedText
                 }
             } catch (e: C_Error) {
                 throw C_CommonError(e.code, e.errMsg)
