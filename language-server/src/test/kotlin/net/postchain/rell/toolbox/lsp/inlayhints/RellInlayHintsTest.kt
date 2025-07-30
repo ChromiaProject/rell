@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.hasSize
 import assertk.assertions.isNotEmpty
 import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
 import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.InlayHintKind
@@ -211,6 +212,52 @@ internal class RellInlayHintsTest : WorkspaceManagerTestBase() {
 
         val integerHint = typeHints.find { it.label.left.contains("integer") }
         assertThat(integerHint).isNotNull()
+    }
+
+    @Test
+    fun `No parameter hints when argument name matches parameter name`() {
+        val testDataBuilder = testData(sourceDir) {
+            addFile(
+                testFilePath,
+                """
+                module;
+                
+                function test_function(param1: integer, param2: text) {
+                    return param1;
+                }
+                
+                function main() {
+                    val param1 = 42;
+                    val different_name = "hello";
+                    val result = test_function(param1, different_name);
+                }
+                """.trimIndent()
+            )
+        }
+
+        val config = RellInlayHintsConfig(
+            isReturnTypesEnabled = false,
+            isVariableTypesEnabled = false,
+            isParameterNamesEnabled = true
+        )
+        inlayHintManager.updateConfig(config)
+
+        initializeWorkspace()
+        val testFile = testDataBuilder.sourceFile(testFilePath)
+        workspaceManager.didOpen(testFile.toURI(), 1, testFile.readText())
+
+        val range = Range(Position(9, 0), Position(9, 60))
+        val hints = inlayHintManager.getInlayHints(testFile.toURI(), range)
+
+        val parameterHints = hints.filter { it.kind == InlayHintKind.Parameter }
+
+        assertThat(parameterHints).hasSize(1)
+
+        val param2Hint = parameterHints.find { it.label.left.contains("param2") }
+        assertThat(param2Hint).isNotNull()
+
+        val param1Hint = parameterHints.find { it.label.left.contains("param1") }
+        assertThat(param1Hint).isNull()
     }
 
     @Test

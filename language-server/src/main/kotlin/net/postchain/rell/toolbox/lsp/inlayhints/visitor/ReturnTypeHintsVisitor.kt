@@ -4,7 +4,6 @@ import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider.Companion.createTypeInlayHint
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider.Companion.isInRange
-import net.postchain.rell.toolbox.lsp.inlayhints.RellTypeProcessor
 import net.postchain.rell.toolbox.parser.RellBaseVisitor
 import net.postchain.rell.toolbox.parser.RellParser
 import org.antlr.v4.runtime.ParserRuleContext
@@ -61,9 +60,7 @@ class ReturnTypeHintsVisitor(
         resource.locationInfo[Interval(offset, offset)]?.ideSymbolInfo
 
     private fun extractReturnTypeFromSymbolInfo(symbolInfo: IdeSymbolInfo): String? =
-        symbolInfo.doc?.declaration?.completion?.result?.let { rawType ->
-            RellTypeProcessor.processType(rawType.trim())
-        }
+        symbolInfo.doc?.declaration?.completion?.result
 
     private fun getPositionAfterParameters(
         context: ParserRuleContext,

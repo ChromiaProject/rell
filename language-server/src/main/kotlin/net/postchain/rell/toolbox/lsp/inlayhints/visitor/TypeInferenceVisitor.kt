@@ -6,7 +6,6 @@ import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider.Companion.createTypeInlayHint
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider.Companion.isInRange
-import net.postchain.rell.toolbox.lsp.inlayhints.RellTypeProcessor
 import net.postchain.rell.toolbox.parser.RellBaseVisitor
 import net.postchain.rell.toolbox.parser.RellParser
 import org.antlr.v4.runtime.ParserRuleContext
@@ -109,14 +108,8 @@ class TypeInferenceVisitor(
             symbolInfo.doc?.let { extractTypeFromDocSymbol(it) }
         }
 
-    private fun extractTypeFromDocSymbol(docSymbol: DocSymbol): String? {
-        val typeStr = docSymbol.declaration
-            .completion
-            ?.result
-            ?: return null
-
-        return RellTypeProcessor.processType(typeStr.trim())
-    }
+    private fun extractTypeFromDocSymbol(docSymbol: DocSymbol): String? =
+        docSymbol.declaration.completion?.result
 
     private fun getPositionAfterVariableName(varDeclarator: RellParser.RuleX_VarDeclaratorContext): Position? =
         varDeclarator.ruleX_SimpleVarDeclarator()

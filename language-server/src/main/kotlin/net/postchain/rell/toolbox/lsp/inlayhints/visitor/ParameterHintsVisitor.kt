@@ -1,6 +1,5 @@
 package net.postchain.rell.toolbox.lsp.inlayhints.visitor
 
-import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider.Companion.createParameterInlayHint
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider.Companion.isInRange
@@ -28,48 +27,50 @@ class ParameterHintsVisitor(
         val callArgs = callExpr.ruleX_CallArgs()
         val callArgsRule = callArgs?.ruleX_CommaSeparated_28()?.ruleX_CommaSeparated_27()
 
-        val functionInfo = resolveIdeSymbolFrom(callExpr)
-        val callArgsList = getFunAnonymousParams(callArgsRule)
+        val paramIndices = resolveFunctionParams(callExpr)
+        val callArgsList = getFunAnonymousArguments(callArgsRule)
 
-        callArgsList?.forEach { (paramIndex, position) ->
-            val parameterName = functionInfo?.doc
-                ?.declaration
-                ?.completion
-                ?.params
-                ?.getOrNull(paramIndex)
-                ?.name
+        callArgsList?.forEach { argument ->
+            val parameterName = paramIndices[argument.index]
 
-            if (parameterName != null) {
-                hints.add(createParameterInlayHint(position, parameterName))
+            if (parameterName != null && argument.name != parameterName) {
+                hints.add(createParameterInlayHint(argument.position, parameterName))
             }
         }
     }
 
-    private fun getFunAnonymousParams(
+    private fun getFunAnonymousArguments(
         functionParamRule: RellParser.RuleX_CommaSeparated_27Context?
-    ): MutableList<Pair<Int, Position>>? {
-        functionParamRule ?: return null
-        val anonymousParams = mutableListOf<Pair<Int, Position>>()
-        functionParamRule.children.filter {
-            it is RellParser.RuleX_CallArgContext
-        }.forEachIndexed { i, child ->
-            if ((child as RellParser.RuleX_CallArgContext).ruleX_Name() == null) {
-                anonymousParams.add(
-                    i to Position(
-                        child.ruleX_CallArgValue().start.line - 1,
-                        child.ruleX_CallArgValue().start.charPositionInLine
-                    )
+    ) = functionParamRule
+        ?.children
+        ?.filterIsInstance<RellParser.RuleX_CallArgContext>()
+        ?.mapIndexedNotNull { index, callArgContext ->
+            when {
+                callArgContext.ruleX_Name() != null -> null
+                else -> CallArgument(
+                    index,
+                    Position(
+                        callArgContext.ruleX_CallArgValue().start.line - 1,
+                        callArgContext.ruleX_CallArgValue().start.charPositionInLine
+                    ),
+                    callArgContext.text
                 )
             }
         }
-        return anonymousParams
+
+    private fun resolveFunctionParams(
+        callExpr: RellParser.RuleX_BaseExprTailCallContext
+    ): Map<Int, String> {
+        val baseExpr = (callExpr.parent?.parent as? RellParser.RuleX_BaseExprContext)
+        val offset = baseExpr?.start?.startIndex ?: return mapOf()
+        val ideSymbolInfo = resource.locationInfo[Interval(offset, offset)]?.ideSymbolInfo
+
+        val paramIndices = ideSymbolInfo?.doc?.declaration?.completion?.params
+            ?.mapIndexed { index, param -> index to param.name }
+            ?.toMap() ?: mapOf()
+
+        return paramIndices
     }
 
-    private fun resolveIdeSymbolFrom(
-        callExpr: RellParser.RuleX_BaseExprTailCallContext
-    ): IdeSymbolInfo? {
-        val baseExpr = (callExpr.parent?.parent as? RellParser.RuleX_BaseExprContext)
-        val offset = baseExpr?.start?.startIndex ?: return null
-        return resource.locationInfo[Interval(offset, offset)]?.ideSymbolInfo
-    }
+    data class CallArgument(val index: Int, val position: Position, val name: String)
 }

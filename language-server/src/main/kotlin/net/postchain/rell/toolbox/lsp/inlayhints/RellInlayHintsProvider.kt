@@ -62,7 +62,7 @@ class RellInlayHintsProvider {
         ): InlayHint =
             InlayHint().apply {
                 this.position = position
-                this.label = Either.forLeft("$parameterName:")
+                this.label = Either.forLeft("$parameterName=")
                 this.kind = InlayHintKind.Parameter
                 this.paddingLeft = false
                 this.paddingRight = true
