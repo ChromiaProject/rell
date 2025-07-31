@@ -79,6 +79,13 @@ class S_AttributeClause(
 ): S_RelClause() {
     override fun compile(ctx: C_EntityContext) {
         val attrHeader = attr.header.compile(ctx.defCtx)
+        val name = attrHeader.name
+
+        val mods = C_ModifierValues(C_ModifierTargetType.ATTRIBUTE, name)
+        mods.field(C_ModifierFields.DUMMY_ANNOTATION)
+        mods.field(C_ModifierFields.MUTABLE)
+        attr.modifiers.compile(ctx.defCtx.mntCtx, mods)
+
         ctx.addAttribute(attr, attrHeader, true, comment)
     }
 
@@ -134,10 +141,10 @@ class S_KeyIndexClause(
     private class AttrRec(val header: C_AttrHeaderHandle, val sAttr: S_AttributeDefinition)
 }
 
-class S_AttributeDefinition(val mutablePos: S_Pos?, val header: S_AttrHeader, val expr: S_Expr?): S_Node() {
+class S_AttributeDefinition(val modifiers: S_Modifiers, val header: S_AttrHeader, val expr: S_Expr?): S_Node() {
     fun checkMultiAttrKeyIndex(msgCtx: C_MessageContext, kind: R_KeyIndexKind, name: R_Name): Boolean {
-        return if (mutablePos != null) {
-            errKeyIndexTooComplex(msgCtx, kind, name, mutablePos, "mutable")
+        return if (modifiers.pos != null) {
+            errKeyIndexTooComplex(msgCtx, kind, name, modifiers.pos, "modifiers")
             false
         } else if (expr != null) {
             errKeyIndexTooComplex(msgCtx, kind, name, expr.startPos, "expr")
@@ -157,6 +164,10 @@ class S_AttributeDefinition(val mutablePos: S_Pos?, val header: S_AttrHeader, va
         msgCtx.error(pos, "attr:key_index:too_complex:$name:$kind:$reasonCode",
                 "${kind.nameMsg.capital} definition is too complex; write each attribute definition separately " +
                         "and use only attribute names in the index clause")
+    }
+
+    internal fun getMutableModifier(): S_Modifier? {
+        return modifiers.modifiers.find { it.isKeywordModifier(S_KeywordModifierKind.MUTABLE) }
     }
 }
 

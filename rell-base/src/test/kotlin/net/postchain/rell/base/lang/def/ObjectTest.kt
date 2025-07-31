@@ -355,4 +355,17 @@ class ObjectTest: BaseRellTest(useSql = true) {
         chk("state.to_struct()", "struct<state>[value=int[123]]")
         chkSql("""SELECT A00."value" FROM "c0.state" A00""")
     }
+
+    @Test fun testBadAttrModifiersSemanticErr() {
+        chkCompile("object x { abstract y: integer = 1; }", "ct_err:modifier:invalid:kw:abstract")
+        chkCompile("object x { override y: integer = 1; }", "ct_err:modifier:invalid:kw:override")
+        chkCompile("object x { mutable abstract y: integer = 1; }", "ct_err:modifier:invalid:kw:abstract")
+        chkCompile("object x { mutable override y: integer = 1; }", "ct_err:modifier:invalid:kw:override")
+        chkCompile("object x { abstract mutable y: integer = 1; }", "ct_err:modifier:invalid:kw:abstract")
+        chkCompile("object x { override mutable y: integer = 1; }", "ct_err:modifier:invalid:kw:override")
+        chkCompile("object x { abstract override y: integer = 1; }",
+            "ct_err:[modifier:invalid:kw:abstract][modifier:invalid:kw:override]")
+        chkCompile("object x { abstract y: integer = 1; override z: integer = 2; }",
+            "ct_err:[modifier:invalid:kw:abstract][modifier:invalid:kw:override]")
+    }
 }

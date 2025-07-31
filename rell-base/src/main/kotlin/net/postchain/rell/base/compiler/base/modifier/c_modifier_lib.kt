@@ -5,6 +5,8 @@
 package net.postchain.rell.base.compiler.base.modifier
 
 import net.postchain.rell.base.compiler.ast.S_KeywordModifierKind
+import net.postchain.rell.base.compiler.base.core.C_DefinitionContext
+import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.core.C_QualifiedNameHandle
 import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
@@ -53,13 +55,15 @@ object C_ModifierFields {
     val COMPOUND = C_ModifierField.flagAnnotation("compound")
     val SINGULAR = C_ModifierField.flagAnnotation("singular")
 
+    val MUTABLE = C_ModifierField.flagKeyword(S_KeywordModifierKind.MUTABLE)
+
     val OUTER = C_ModifierField.flagAnnotation("outer")
 
     val OMIT = C_ModifierField.flagAnnotation("omit")
     val SORT = C_ModifierField.choiceAnnotations(mapOf(C_Annotations.SORT to R_AtWhatSort.ASC, C_Annotations.SORT_DESC to R_AtWhatSort.DESC))
     val SUMMARIZATION = C_ModifierField.choiceAnnotations(C_AtSummarizationKind.values().associateBy { it.annotation })
 
-    val DUMMY_ANNOTATION = C_ModifierField.flagAnnotation(C_Annotations.DUMMY_ANNOTATION, hidden = true)
+    val DUMMY_ANNOTATION = C_Annotation_DummyAnnotation.FIELD
 }
 
 private object C_Annotation_Deprecated {
@@ -84,6 +88,23 @@ private object C_Annotation_Extend {
         ): C_QualifiedNameHandle? {
             val arg = C_AnnUtils.checkArgsOne(ctx, modLink.name, args)
             return arg?.name(ctx)
+        }
+    }
+}
+
+object C_Annotation_DummyAnnotation {
+    val FIELD = C_ModifierField.valueAnnotation("dummy_annotation", Evaluator, hidden = true)
+
+    private object Evaluator: C_ModifierEvaluator<Unit>() {
+        override fun evaluate(
+            ctx: C_ModifierContext,
+            modLink: C_ModifierLink,
+            args: List<C_AnnotationArg>,
+        ) {
+            val tgtName = modLink.target.name
+            val msg = "Got @${modLink.name} on ${modLink.target.type.description} $tgtName."
+            val code = "param:dummy_annotation:annotation_present:${modLink.target.type}:$tgtName"
+            ctx.msgCtx.warning(modLink.pos, code, msg)
         }
     }
 }

@@ -19,6 +19,7 @@ import kotlin.reflect.KProperty
 
 object S_Keywords {
     const val ABSTRACT = "abstract"
+    const val MUTABLE = "mutable"
     const val OVERRIDE = "override"
 }
 
@@ -94,7 +95,7 @@ object S_Grammar {
     private val KEY by relltok("key")
     private val LIMIT by relltok("limit")
     private val MODULE by relltok("module")
-    private val MUTABLE by relltok("mutable")
+    private val MUTABLE by relltok(S_Keywords.MUTABLE)
     private val NAMESPACE by relltok("namespace")
     private val NULL by relltok("null")
     private val OBJECT by relltok("object")
@@ -225,6 +226,7 @@ object S_Grammar {
 
     private val keywordModifier0 by (
         ( ABSTRACT map { it to S_KeywordModifierKind.ABSTRACT } )
+        or ( MUTABLE map { it to S_KeywordModifierKind.MUTABLE } )
         or ( OVERRIDE map { it to S_KeywordModifierKind.OVERRIDE } )
     )
 
@@ -255,9 +257,9 @@ object S_Grammar {
 
     private val attrHeader by nameTypeAttrHeader or anonAttrHeader
 
-    private val baseAttributeDefinition by optional(MUTABLE) * attrHeader * optional(-ASSIGN * expressionRef) map { (mutable, header, expr) ->
-        val firstToken = mutable ?: header.firstToken
-        G_Node(S_AttributeDefinition(mutable?.pos, header.value, expr), firstToken)
+    private val baseAttributeDefinition by modifiers * attrHeader * optional(-ASSIGN * expressionRef) map { (mods, header, expr) ->
+        val firstToken = mods?.firstToken ?: header.firstToken
+        G_Node(S_AttributeDefinition(mods?.value ?: S_Modifiers(), header.value, expr), firstToken)
     }
 
     private val attributeDefinition by baseAttributeDefinition * -SEMI

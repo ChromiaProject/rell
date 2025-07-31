@@ -315,8 +315,8 @@ class EntityTest: BaseRellTest() {
 
         chkKeyIndexSyntax("KW x: integer, y: text;", "OK")
         chkKeyIndexSyntax("KW x: integer = 123, y: text = 'abc';", "ct_err:attr:key_index:too_complex:x:KW:expr")
-        chkKeyIndexSyntax("KW mutable x: integer, mutable y: text;", "ct_err:attr:key_index:too_complex:x:KW:mutable")
-        chkKeyIndexSyntax("KW mutable x: integer = 123, mutable y: text = 'abc';", "ct_err:attr:key_index:too_complex:x:KW:mutable")
+        chkKeyIndexSyntax("KW mutable x: integer, mutable y: text;", "ct_err:attr:key_index:too_complex:x:KW:modifiers")
+        chkKeyIndexSyntax("KW mutable x: integer = 123, mutable y: text = 'abc';", "ct_err:attr:key_index:too_complex:x:KW:modifiers")
 
         chkKeyIndexSyntax("KW x: integer, y: text; KW x, y;", "ct_err:entity:key_index:dup_attr:KW:x,y")
         chkKeyIndexSyntax("KW x: integer, y: text; KW x;", "OK")
@@ -441,27 +441,27 @@ class EntityTest: BaseRellTest() {
                 "name:text; mutable value:integer; KW name,value")
 
         chkKeyIndex("entity data { name; value: integer; KW mutable name: text, value: integer; }",
-                "ct_err:[attr:key_index:too_complex:name:KW:mutable][entity:attr:mutable_not_primary:name]")
+                "ct_err:[attr:key_index:too_complex:name:KW:modifiers][entity:attr:mutable_not_primary:name]")
         chkKeyIndex("entity data { KW mutable name: text, value: integer; name; value: integer; }",
-                "ct_err:[attr:key_index:too_complex:name:KW:mutable][entity:attr:mutable_not_primary:name]")
+                "ct_err:[attr:key_index:too_complex:name:KW:modifiers][entity:attr:mutable_not_primary:name]")
         chkKeyIndex("entity data { name; value: integer; KW name: text, mutable value: integer; }",
-                "ct_err:[attr:key_index:too_complex:value:KW:mutable][entity:attr:mutable_not_primary:value]")
+                "ct_err:[attr:key_index:too_complex:value:KW:modifiers][entity:attr:mutable_not_primary:value]")
         chkKeyIndex("entity data { KW name: text, mutable value: integer; name; value: integer; }",
-                "ct_err:[attr:key_index:too_complex:value:KW:mutable][entity:attr:mutable_not_primary:value]")
+                "ct_err:[attr:key_index:too_complex:value:KW:modifiers][entity:attr:mutable_not_primary:value]")
     }
 
     @Test fun testEntityDetailsKeyIndexNoPrimary() {
         chkKeyIndex("entity data { KW name, value: integer; }", "name:text; value:integer; KW name,value")
-        chkKeyIndex("entity data { KW mutable name, value: integer; }", "ct_err:attr:key_index:too_complex:name:KW:mutable")
-        chkKeyIndex("entity data { KW name, mutable value: integer; }", "ct_err:attr:key_index:too_complex:value:KW:mutable")
-        chkKeyIndex("entity data { KW mutable name, mutable value: integer; }", "ct_err:attr:key_index:too_complex:name:KW:mutable")
+        chkKeyIndex("entity data { KW mutable name, value: integer; }", "ct_err:attr:key_index:too_complex:name:KW:modifiers")
+        chkKeyIndex("entity data { KW name, mutable value: integer; }", "ct_err:attr:key_index:too_complex:value:KW:modifiers")
+        chkKeyIndex("entity data { KW mutable name, mutable value: integer; }", "ct_err:attr:key_index:too_complex:name:KW:modifiers")
         chkKeyIndex("entity data { KW name = 'joe', value: integer; }", "ct_err:attr:key_index:too_complex:name:KW:expr")
         chkKeyIndex("entity data { KW name, value: integer = 123; }", "ct_err:attr:key_index:too_complex:value:KW:expr")
         chkKeyIndex("entity data { KW name = 'joe', value: integer = 123; }", "ct_err:attr:key_index:too_complex:name:KW:expr")
-        chkKeyIndex("entity data { KW mutable name = 'joe', value: integer = 123; }", "ct_err:attr:key_index:too_complex:name:KW:mutable")
+        chkKeyIndex("entity data { KW mutable name = 'joe', value: integer = 123; }", "ct_err:attr:key_index:too_complex:name:KW:modifiers")
         chkKeyIndex("entity data { KW name = 'joe', mutable value: integer = 123; }", "ct_err:attr:key_index:too_complex:name:KW:expr")
         chkKeyIndex("entity data { KW mutable name = 'joe', mutable value: integer = 123; }",
-                "ct_err:attr:key_index:too_complex:name:KW:mutable")
+                "ct_err:attr:key_index:too_complex:name:KW:modifiers")
     }
 
     @Test fun testEntityDetailsKeyIndexLogTransaction() {
@@ -575,6 +575,19 @@ class EntityTest: BaseRellTest() {
             """SELECT A00."rowid" FROM "c0.data" A00""",
             """SELECT A00."value" FROM "c0.data" A00 WHERE A00."rowid" = ?""",
         )
+    }
+
+    @Test fun testBadAttrModifiersSemanticErr() {
+        chkCompile("entity x { abstract y: integer; }", "ct_err:modifier:invalid:kw:abstract")
+        chkCompile("entity x { override y: integer; }", "ct_err:modifier:invalid:kw:override")
+        chkCompile("entity x { mutable abstract y: integer; }", "ct_err:modifier:invalid:kw:abstract")
+        chkCompile("entity x { mutable override y: integer; }", "ct_err:modifier:invalid:kw:override")
+        chkCompile("entity x { abstract mutable y: integer; }", "ct_err:modifier:invalid:kw:abstract")
+        chkCompile("entity x { override mutable y: integer; }", "ct_err:modifier:invalid:kw:override")
+        chkCompile("entity x { abstract override y: integer; }",
+            "ct_err:[modifier:invalid:kw:abstract][modifier:invalid:kw:override]")
+        chkCompile("entity x { abstract y: integer = 10; override z: integer; }",
+            "ct_err:[modifier:invalid:kw:abstract][modifier:invalid:kw:override]")
     }
 
     private fun chkEntity(code: String, exp: String) {

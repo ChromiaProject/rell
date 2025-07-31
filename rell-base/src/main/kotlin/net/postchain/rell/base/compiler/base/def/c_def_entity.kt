@@ -52,8 +52,8 @@ private class C_EntityAttributeClause(
         val conflictDefs = primaryDefs.drop(1)
         val otherDefs = secondaryDefs.filter { it !== mainDef }
 
-        val mutable = mainDef.attrDef.mutablePos != null
-        val ideKind = C_AttrUtils.getIdeSymbolKind(persistent, mutable, keyIndexKind)
+        val mutable = mainDef.attrDef.getMutableModifier()
+        val ideKind = C_AttrUtils.getIdeSymbolKind(persistent, mutable != null, keyIndexKind)
 
         val docSymLate = C_LateInit<DocSymbol?>(C_CompilerPass.DOCS, null)
         val ideData = C_GlobalAttrHeaderIdeData(IdeSymbolCategory.ATTRIBUTE, ideKind, null, docSymLate.getter)
@@ -73,7 +73,7 @@ private class C_EntityAttributeClause(
 
         defCtx.executor.onPass(C_CompilerPass.DOCS) {
             val docExpr = exprGetter?.get()?.vDocExpr
-            val docDec = makeDocDeclaration(mainDef.name, type, mutable, docExpr, keys, indices)
+            val docDec = makeDocDeclaration(mainDef.name, type, mutable != null, docExpr, keys, indices)
             val docSym = makeDocSymbol(mainDef.name, docDec, comment)
             docSymLate.set(docSym)
         }
@@ -82,7 +82,7 @@ private class C_EntityAttributeClause(
             index,
             mainDef.name.rName,
             type,
-            mutable = mutable,
+            mutable = mutable != null,
             keyIndexKind = keyIndexKind,
             ideInfo = mainHeader.ideInfo,
             docSourcePos = mainDef.name.pos.toDocPos(),
@@ -206,8 +206,9 @@ private class C_EntityAttributeClause(
             }
         }
 
-        if (def.attrDef.mutablePos != null) {
-            msgCtx.error(def.attrDef.mutablePos, "entity:attr:mutable_not_primary:${def.name}",
+        val mutable = def.attrDef.getMutableModifier()
+        if (mutable != null) {
+            msgCtx.error(mutable.pos, "entity:attr:mutable_not_primary:${def.name}",
                     "Mutability can be specified only in the primary definition of the attribute '${def.name}'")
         }
 
@@ -290,7 +291,7 @@ class C_EntityContext(
             msgCtx.error(attrHeader.pos, "unallowed_attr_name:$nameStr", "Unallowed attribute name: '$nameStr'")
         }
 
-        if (attrDef.mutablePos != null && logAnnotation) {
+        if (attrDef.getMutableModifier() != null && logAnnotation) {
             val ann = C_Constants.LOG_ANNOTATION
             msgCtx.error(attrHeader.pos, "entity_attr_mutable_log:$entityName:$nameStr",
                     "Entity '$entityName' cannot have mutable attributes because of the '$ann' annotation")

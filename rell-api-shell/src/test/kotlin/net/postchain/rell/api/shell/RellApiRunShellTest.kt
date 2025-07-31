@@ -218,6 +218,33 @@ internal class RellApiRunShellTest: BaseRellApiTest() {
         chkSingleNoCtx("query quam(@dummy_annotation dec: decimal) = dec * 3.1415;", expected)
     }
 
+    @Test fun testEntityHiddenAttrAnnotationInvalid() {
+        val expected = "CTE:<console>:def_repl:ENTITY, CTE:<console>:modifier:invalid:ann:dummy_annotation"
+        chkSingleNoCtx("entity foo { @dummy_annotation x: integer; }", expected)
+        chkSingleNoCtx("entity bar { x: integer = 10; @dummy_annotation y: text; }", expected)
+        chkSingleNoCtx("entity baz { @dummy_annotation a: boolean; z: big_integer = 987654321L; }", expected)
+        chkSingleNoCtx("entity quix { @dummy_annotation name; }", expected)
+        chkSingleNoCtx("entity quam { @dummy_annotation dec: decimal; }", expected)
+    }
+
+    @Test fun testObjectHiddenAttrAnnotationInvalid() {
+        val expected = "CTE:<console>:def_repl:OBJECT, CTE:<console>:modifier:invalid:ann:dummy_annotation"
+        chkSingleNoCtx("object foo { @dummy_annotation x: integer = 0; }", expected)
+        chkSingleNoCtx("object bar { x: integer = -2; @dummy_annotation y: text = \"Old Tom Paine\"; }", expected)
+        chkSingleNoCtx("object baz { @dummy_annotation a: boolean = false; z: big_integer = 0L; }", expected)
+        chkSingleNoCtx("object quix { @dummy_annotation name = 'He ran so fast!'; }", expected)
+        chkSingleNoCtx("object quam { @dummy_annotation arr: byte_array = x\"acce55ed\"; }", expected)
+    }
+
+    @Test fun testStructHiddenAttrAnnotationInvalid() {
+        val expected = "CTE:<console>:modifier:invalid:ann:dummy_annotation"
+        chkSingleNoCtx("struct foo { @dummy_annotation x: integer; }", expected)
+        chkSingleNoCtx("struct bar { x: integer = 10; @dummy_annotation y: text; }", expected)
+        chkSingleNoCtx("struct baz { @dummy_annotation a: gtv; z: big_integer = -12L; }", expected)
+        chkSingleNoCtx("struct quix { @dummy_annotation name; }", expected)
+        chkSingleNoCtx("struct quam { @dummy_annotation dec: decimal; }", expected)
+    }
+
     private fun chkSingleNoCtx(code: String, expected: String) {
         chkShell(C_SourceDir.EMPTY, immListOf(code), expected)
     }

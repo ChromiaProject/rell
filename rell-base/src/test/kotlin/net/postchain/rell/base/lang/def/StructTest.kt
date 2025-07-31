@@ -558,4 +558,17 @@ class StructTest: BaseRellTest() {
     private fun chkFromGtv(f: String, json: String, exp: String) {
         chk("""$f(gtv.from_json('$json'))""", exp)
     }
+
+    @Test fun testBadAttrModifiersSemanticErr() {
+        chkCompile("struct x { abstract y: integer; }", "ct_err:modifier:invalid:kw:abstract")
+        chkCompile("struct x { override y: integer; }", "ct_err:modifier:invalid:kw:override")
+        chkCompile("struct x { mutable abstract y: integer; }", "ct_err:modifier:invalid:kw:abstract")
+        chkCompile("struct x { mutable override y: integer; }", "ct_err:modifier:invalid:kw:override")
+        chkCompile("struct x { abstract mutable y: integer; }", "ct_err:modifier:invalid:kw:abstract")
+        chkCompile("struct x { override mutable y: integer; }", "ct_err:modifier:invalid:kw:override")
+        chkCompile("struct x { abstract override y: integer; }",
+            "ct_err:[modifier:invalid:kw:abstract][modifier:invalid:kw:override]")
+        chkCompile("struct x { abstract y: integer = 10; override z: integer; }",
+            "ct_err:[modifier:invalid:kw:abstract][modifier:invalid:kw:override]")
+    }
 }

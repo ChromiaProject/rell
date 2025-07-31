@@ -41,6 +41,7 @@ enum class C_ModifierTargetType {
     IMPORT(C_DeclarationType.IMPORT),
     CONSTANT(C_DeclarationType.CONSTANT),
     PARAMETER(C_DeclarationType.PARAMETER),
+    ATTRIBUTE(C_DeclarationType.ATTRIBUTE),
     EXPRESSION("expression"),
     ;
 

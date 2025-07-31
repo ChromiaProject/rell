@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.expr.C_ExprHint
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.expr.C_StmtContext
 import net.postchain.rell.base.compiler.base.fn.C_FormalParameter
+import net.postchain.rell.base.compiler.base.modifier.C_Annotation_DummyAnnotation
 import net.postchain.rell.base.compiler.base.modifier.C_ModifierFields
 import net.postchain.rell.base.compiler.base.modifier.C_ModifierTargetType
 import net.postchain.rell.base.compiler.base.modifier.C_ModifierValues
@@ -26,7 +27,6 @@ import net.postchain.rell.base.utils.MutableTypedKeyMap
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import java.util.Locale
 
 class S_FormalParameter(
     private val modifiers: S_Modifiers,
@@ -53,16 +53,8 @@ class S_FormalParameter(
         val type = attrHeader.type ?: R_CtErrorType
 
         val mods = C_ModifierValues(C_ModifierTargetType.PARAMETER, name)
-        val modDummyAnn = mods.field(C_ModifierFields.DUMMY_ANNOTATION)
+        mods.field(C_ModifierFields.DUMMY_ANNOTATION)
         modifiers.compile(defCtx.mntCtx, mods)
-
-        val modDummyAnnPos = modDummyAnn.pos()
-        if (modDummyAnnPos != null) {
-            val defType = defCtx.definitionType
-            val defName = defCtx.cDefName.str()
-            val msg = "Got @${C_ModifierFields.DUMMY_ANNOTATION} on parameter $name of ${defType.decType.msg} $defName."
-            defCtx.msgCtx.warning(modDummyAnnPos, "param:dummy_annotation:annotation_present:$defType:[$defName]:$name", msg)
-        }
 
         val docType = L_TypeUtils.docType(type.mType)
         val docParam = DocFunctionParam(name.str, docType, arity = M_ParamArity.ONE, exact = false, nullable = false)

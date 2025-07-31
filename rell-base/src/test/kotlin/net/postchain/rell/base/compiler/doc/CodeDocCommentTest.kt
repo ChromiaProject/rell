@@ -730,8 +730,8 @@ class CodeDocCommentTest: BaseCodeDocTest() {
             * @param y SecondParam
         */"""
         val code = "$c $kw f(x: integer, @dummy_annotation /** ParamNo2 */ y: text, /** ParamNo3 */ @dummy_annotation z: boolean) $body"
-        val warning1 = "param:dummy_annotation:annotation_present:${kw.uppercase(Locale.getDefault())}:[:f]:y"
-        val warning2 = "param:dummy_annotation:annotation_present:${kw.uppercase(Locale.getDefault())}:[:f]:z"
+        val warning1 = "param:dummy_annotation:annotation_present:PARAMETER:y"
+        val warning2 = "param:dummy_annotation:annotation_present:PARAMETER:z"
         chkComment(code, ":f", "SomeFunction|param:x=FirstParam;y=SecondParam;z=ParamNo3", warning1, warning2)
         chkComment(code, ":f.x", "FirstParam", warning1, warning2)
         chkComment(code, ":f.y", "SecondParam", warning1, warning2)
@@ -752,7 +752,53 @@ class CodeDocCommentTest: BaseCodeDocTest() {
 
     private fun chkFirstParamCommentWins(kw: String, body: String) {
         val code = "$kw f(/** first */ @dummy_annotation /** second */ x: integer) $body"
-        val warning = "param:dummy_annotation:annotation_present:${kw.uppercase(Locale.getDefault())}:[:f]:x"
+        val warning = "param:dummy_annotation:annotation_present:PARAMETER:x"
+        chkComment(code, ":f.x", "first", warning)
+    }
+
+    @Test fun testAnnotatedAttrTagEntity() {
+        chkAnnotatedAttrTag("entity")
+    }
+
+    @Test fun testAnnotatedAttrTagObject() {
+        chkAnnotatedAttrTag("object", " = 1" to " = 'Hello world!'")
+    }
+
+    @Test fun testAnnotatedAttrTagStruct() {
+        chkAnnotatedAttrTag("struct", " = 16" to " = 'my_default_text'")
+        chkAnnotatedAttrTag("struct")
+    }
+
+    private fun chkAnnotatedAttrTag(kw: String, values: Pair<String, String> = "" to "") {
+        val (val1, val2) = values
+        val code = """
+            $kw f {
+                /** Attr1 */ @dummy_annotation x: integer$val1;
+                @dummy_annotation /** Attr2 */ y: text$val2;
+            }
+        """
+        val warning1 = "param:dummy_annotation:annotation_present:ATTRIBUTE:x"
+        val warning2 = "param:dummy_annotation:annotation_present:ATTRIBUTE:y"
+        chkComment(code, ":f.x", "Attr1", warning1, warning2)
+        chkComment(code, ":f.y", "n/a", warning1, warning2)
+    }
+
+    @Test fun testFirstAttrCommentWinsEntity() {
+        chkFirstAttrCommentWins("entity")
+    }
+
+    @Test fun testFirstAttrCommentWinsObject() {
+        chkFirstAttrCommentWins("object", " = 0")
+    }
+
+    @Test fun testFirstAttrCommentWinsStruct() {
+        chkFirstAttrCommentWins("struct", "= -500")
+        chkFirstAttrCommentWins("struct")
+    }
+
+    private fun chkFirstAttrCommentWins(kw: String, xval: String = "") {
+        val code = "$kw f { /** first */ @dummy_annotation /** second */ x: integer$xval; }"
+        val warning = "param:dummy_annotation:annotation_present:ATTRIBUTE:x"
         chkComment(code, ":f.x", "first", warning)
     }
 

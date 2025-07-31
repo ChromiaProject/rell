@@ -20,16 +20,16 @@ internal class ParameterAnnotationTest: BaseRellTest() {
     }
 
     @Test fun testFunctionHiddenParamAnnotationWarning() {
-        chkCompileDummyWarn("function foo(@dummy_annotation x: integer): integer { return x + 17; }", "FUNCTION:[:foo]:x")
-        chkCompileDummyWarn("function bar(x: integer, @dummy_annotation y: text) = y.repeat(x);", "FUNCTION:[:bar]:y")
-        chkCompileDummyWarn("function baz(@dummy_annotation a: gtv, z: big_integer) { return 10L; }", "FUNCTION:[:baz]:a")
-        chkCompileDummyWarn("function quix(@dummy_annotation name) = \"We're here.\";", "FUNCTION:[:quix]:name")
-        chkCompileDummyWarn("function quam(@dummy_annotation dec: decimal) = dec * 3.1415;", "FUNCTION:[:quam]:dec")
-        chkCompileDummyWarn("function thud(@dummy_annotation text?) = \"Riders in black\";", "FUNCTION:[:thud]:text")
+        chkCompileDummyWarn("function foo(@dummy_annotation x: integer): integer { return x + 17; }", "x")
+        chkCompileDummyWarn("function bar(x: integer, @dummy_annotation y: text) = y.repeat(x);", "y")
+        chkCompileDummyWarn("function baz(@dummy_annotation a: gtv, z: big_integer) { return 10L; }", "a")
+        chkCompileDummyWarn("function quix(@dummy_annotation name) = \"We're here.\";", "name")
+        chkCompileDummyWarn("function quam(@dummy_annotation dec: decimal) = dec * 3.1415;", "dec")
+        chkCompileDummyWarn("function thud(@dummy_annotation text?) = \"Riders in black\";", "text")
 
         val ns = "namespace a { namespace b { struct c {} } }"
-        chkCompileDummyWarn("$ns function fred(@dummy_annotation a.b.c): integer { return 0; }", "FUNCTION:[:fred]:c")
-        chkCompileDummyWarn("$ns function waldo(@dummy_annotation a.b.c?): boolean { return false; }", "FUNCTION:[:waldo]:c")
+        chkCompileDummyWarn("$ns function fred(@dummy_annotation a.b.c): integer { return 0; }", "c")
+        chkCompileDummyWarn("$ns function waldo(@dummy_annotation a.b.c?): boolean { return false; }", "c")
     }
 
     @Test fun testFunctionHiddenParamAnnotationNoHiddenLib() {
@@ -78,16 +78,16 @@ internal class ParameterAnnotationTest: BaseRellTest() {
     }
 
     @Test fun testOperationHiddenParamAnnotationWarning() {
-        chkCompileDummyWarn("operation foo(@dummy_annotation x: integer) {}", "OPERATION:[:foo]:x")
-        chkCompileDummyWarn("operation bar(x: integer, @dummy_annotation y: text) {}", "OPERATION:[:bar]:y")
-        chkCompileDummyWarn("operation baz(@dummy_annotation a: gtv, z: big_integer) {}", "OPERATION:[:baz]:a")
-        chkCompileDummyWarn("operation quix(@dummy_annotation name) {}", "OPERATION:[:quix]:name")
-        chkCompileDummyWarn("operation quam(@dummy_annotation arr: byte_array) {}", "OPERATION:[:quam]:arr")
-        chkCompileDummyWarn("operation thud(@dummy_annotation text?) {}", "OPERATION:[:thud]:text")
+        chkCompileDummyWarn("operation foo(@dummy_annotation x: integer) {}", "x")
+        chkCompileDummyWarn("operation bar(x: integer, @dummy_annotation y: text) {}", "y")
+        chkCompileDummyWarn("operation baz(@dummy_annotation a: gtv, z: big_integer) {}", "a")
+        chkCompileDummyWarn("operation quix(@dummy_annotation name) {}", "name")
+        chkCompileDummyWarn("operation quam(@dummy_annotation arr: byte_array) {}", "arr")
+        chkCompileDummyWarn("operation thud(@dummy_annotation text?) {}", "text")
 
         val ns = "namespace a { namespace b { struct c {} } }"
-        chkCompileDummyWarn("$ns operation fred(@dummy_annotation a.b.c) {}", "OPERATION:[:fred]:c")
-        chkCompileDummyWarn("$ns operation waldo(@dummy_annotation a.b.c?) {}", "OPERATION:[:waldo]:c")
+        chkCompileDummyWarn("$ns operation fred(@dummy_annotation a.b.c) {}", "c")
+        chkCompileDummyWarn("$ns operation waldo(@dummy_annotation a.b.c?) {}", "c")
     }
 
     @Test fun testOperationHiddenParamAnnotationNoHiddenLib() {
@@ -135,16 +135,16 @@ internal class ParameterAnnotationTest: BaseRellTest() {
     }
 
     @Test fun testQueryHiddenParamAnnotationWarning() {
-        chkCompileDummyWarn("query foo(@dummy_annotation x: integer): integer = x + 1;", "QUERY:[:foo]:x")
-        chkCompileDummyWarn("query bar(x: integer, @dummy_annotation y: text): text { return (x).to_text() + y; }", "QUERY:[:bar]:y")
-        chkCompileDummyWarn("query baz(@dummy_annotation a: gtv, z: big_integer): boolean { return z.to_gtv() == a; }", "QUERY:[:baz]:a")
-        chkCompileDummyWarn("query quix(@dummy_annotation name): text = name.reversed();", "QUERY:[:quix]:name")
-        chkCompileDummyWarn("query quam(@dummy_annotation dec: decimal) = dec * 3.1415;", "QUERY:[:quam]:dec")
-        chkCompileDummyWarn("query thud(@dummy_annotation text?) = \"Riders in black\";", "QUERY:[:thud]:text")
+        chkCompileDummyWarn("query foo(@dummy_annotation x: integer): integer = x + 1;", "x")
+        chkCompileDummyWarn("query bar(x: integer, @dummy_annotation y: text): text { return (x).to_text() + y; }", "y")
+        chkCompileDummyWarn("query baz(@dummy_annotation a: gtv, z: big_integer): boolean { return z.to_gtv() == a; }", "a")
+        chkCompileDummyWarn("query quix(@dummy_annotation name): text = name.reversed();", "name")
+        chkCompileDummyWarn("query quam(@dummy_annotation dec: decimal) = dec * 3.1415;", "dec")
+        chkCompileDummyWarn("query thud(@dummy_annotation text?) = \"Riders in black\";", "text")
 
         val ns = "namespace a { namespace b { struct c {} } }"
-        chkCompileDummyWarn("$ns query fred(@dummy_annotation a.b.c): integer { return 0; }", "QUERY:[:fred]:c")
-        chkCompileDummyWarn("$ns query waldo(@dummy_annotation a.b.c?): boolean { return false; }", "QUERY:[:waldo]:c")
+        chkCompileDummyWarn("$ns query fred(@dummy_annotation a.b.c): integer { return 0; }", "c")
+        chkCompileDummyWarn("$ns query waldo(@dummy_annotation a.b.c?): boolean { return false; }", "c")
     }
 
     @Test fun testQueryHiddenParamAnnotationNoHiddenLib() {
@@ -178,7 +178,7 @@ internal class ParameterAnnotationTest: BaseRellTest() {
     }
 
     private fun chkCompileDummyWarn(code: String, warningSuffix: String) {
-        val warningPrefix = "param:dummy_annotation:annotation_present"
+        val warningPrefix = "param:dummy_annotation:annotation_present:PARAMETER"
         chkCompile(code, "OK")
         chkWarn("$warningPrefix:$warningSuffix")
     }

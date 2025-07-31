@@ -19,16 +19,20 @@ import net.postchain.rell.base.utils.mapNotNullToImmList
 sealed class S_Modifier(val pos: S_Pos) {
     abstract fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier?
     open fun ideIsTestFile(): Boolean = false
+    internal abstract fun isKeywordModifier(kind: S_KeywordModifierKind): Boolean
 }
 
 class S_KeywordModifier(private val kw: C_Name, private val kind: S_KeywordModifierKind): S_Modifier(kw.pos) {
     override fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier? {
         return modValues.compileKeyword(ctx, kw, kind)
     }
+
+    override fun isKeywordModifier(kind: S_KeywordModifierKind): Boolean = kind == this.kind
 }
 
 enum class S_KeywordModifierKind(val kw: String) {
     ABSTRACT(S_Keywords.ABSTRACT),
+    MUTABLE(S_Keywords.MUTABLE),
     OVERRIDE(S_Keywords.OVERRIDE),
 }
 
@@ -63,6 +67,8 @@ class S_Annotation(val name: S_Name, val args: ImmList<S_AnnotationArg>): S_Modi
         val rName = name.getRNameSpecial()
         return rName.str == C_Annotations.TEST
     }
+
+    override fun isKeywordModifier(kind: S_KeywordModifierKind): Boolean = false
 }
 
 class S_Modifiers(val modifiers: ImmList<S_Modifier> = immListOf()) {
