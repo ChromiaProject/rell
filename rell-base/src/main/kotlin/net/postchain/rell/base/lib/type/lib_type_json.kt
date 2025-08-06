@@ -117,12 +117,13 @@ class Rt_JsonValue private constructor(private val str: String): Rt_Value() {
     override fun hashCode() = str.hashCode()
 
     companion object {
+        // https://stackoverflow.com/questions/3907929/should-i-declare-jacksons-objectmapper-as-a-static-field
+        private val mapper = ObjectMapper()
+
         fun parse(s: String): Rt_Value {
             if (s.isBlank()) {
                 throw IllegalArgumentException(s)
             }
-
-            val mapper = ObjectMapper()
 
             val json = try {
                 mapper.readTree(s)

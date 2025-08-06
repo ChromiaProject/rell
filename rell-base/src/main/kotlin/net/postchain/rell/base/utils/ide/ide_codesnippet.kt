@@ -73,7 +73,6 @@ class IdeCodeSnippet(
             "comments" to comments,
         )
 
-        val mapper = ObjectMapper()
         val res = mapper.writeValueAsString(obj)
         deserializeOne(res) // Verification
         return res
@@ -85,20 +84,21 @@ class IdeCodeSnippet(
 
     @Suppress("UNCHECKED_CAST")
     companion object {
+        // https://stackoverflow.com/questions/3907929/should-i-declare-jacksons-objectmapper-as-a-static-field
+        private val mapper = ObjectMapper()
+
         @JvmStatic fun serialize(snippets: Collection<IdeCodeSnippet>): String {
             val json = snippets.joinToString(separator = ",", prefix = "[", postfix = "]") { it.serialized }
             return prettyFormatJson(json)
         }
 
         @JvmStatic fun deserialize(s: String): List<IdeCodeSnippet> {
-            val mapper = ObjectMapper()
             val any = mapper.readValue(s, Any::class.java)
             val list = any as List<Any>
             return list.map { deserialize0(it) }
         }
 
         private fun deserializeOne(s: String): IdeCodeSnippet {
-            val mapper = ObjectMapper()
             val any = mapper.readValue(s, Any::class.java)
             return deserialize0(any)
         }
@@ -136,7 +136,6 @@ class IdeCodeSnippet(
         }
 
         private fun prettyFormatJson(json: String): String {
-            val mapper = ObjectMapper()
             val separators = Separators()
                 .withArrayEmptySeparator("")
                 .withObjectEmptySeparator("")
