@@ -18,9 +18,7 @@ import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.C_PosCodeMsg
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.Db_Expr
-import net.postchain.rell.base.model.expr.R_BlockCheckExpr
 import net.postchain.rell.base.model.expr.R_Expr
-import net.postchain.rell.base.model.expr.R_StackTraceExpr
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.*
 
@@ -73,7 +71,7 @@ class V_ExprInfo(
     }
 }
 
-class V_ConstantValueEvalContext {
+internal class V_ConstantValueEvalContext {
     private val constIds = mutableSetOf<R_GlobalConstantId>()
 
     fun <T> addConstId(constId: R_GlobalConstantId, code: () -> T): T? {
@@ -90,7 +88,7 @@ class V_ConstantValueEvalContext {
 
 class V_GlobalConstantRestriction(val code: String, val msg: String?)
 
-class V_ExprWrapper(
+internal class V_ExprWrapper(
     private val msgCtx: C_MessageContext,
     private val expr: V_Expr,
     private val msgSupplier: () -> C_PosCodeMsg? = { null },
@@ -113,15 +111,15 @@ abstract class V_Expr(
 ) {
     protected val msgCtx = exprCtx.msgCtx
 
-    val info: V_ExprInfo by lazy {
+    internal val info: V_ExprInfo by lazy {
         exprInfo0()
     }
 
-    val type: R_Type by lazy {
+    internal val type: R_Type by lazy {
         info.type
     }
 
-    val varStatesDelta: C_ExprVarStatesDelta by lazy {
+    internal val varStatesDelta: C_ExprVarStatesDelta by lazy {
         varStatesDelta0()
     }
 
@@ -131,20 +129,11 @@ abstract class V_Expr(
         return C_ExprVarStatesDelta.forExpressions(info.subExprs)
     }
 
-    protected abstract fun toRExpr0(): R_Expr
     protected open fun toDbExpr0(): Db_Expr = throw C_Errors.errExprDbNotAllowed(pos)
 
-    fun toRExpr(): R_Expr {
-        var rExpr = toRExpr0()
-        val filePos = pos.toFilePos()
-        rExpr = R_StackTraceExpr(rExpr, filePos)
-        if (exprCtx.globalCtx.compilerOptions.blockCheck) {
-            rExpr = R_BlockCheckExpr(rExpr, exprCtx.blkCtx.blockUid)
-        }
-        return rExpr
-    }
+    internal abstract fun toRExpr(): R_Expr
 
-    fun toDbExpr(): Db_Expr {
+    internal fun toDbExpr(): Db_Expr {
         if (info.dependsOnDbAtEntity) {
             return toDbExpr0()
         }
@@ -152,7 +141,7 @@ abstract class V_Expr(
         return C_ExprUtils.toDbExpr(exprCtx.msgCtx, pos, rExpr)
     }
 
-    fun toDbExprWhat(): C_DbAtWhatValue {
+    internal fun toDbExprWhat(): C_DbAtWhatValue {
         val compilerOptions = exprCtx.globalCtx.compilerOptions
         val direct = (info.canBeDbExpr && type.sqlAdapter.isSqlCompatible(compilerOptions))
                 || !compilerOptions.complexWhatEnabled
@@ -172,11 +161,11 @@ abstract class V_Expr(
         return C_DbAtWhatValue_Simple(dbExpr)
     }
 
-    open fun destination(): C_Destination {
+    internal open fun destination(): C_Destination {
         throw C_Errors.errBadDestination(pos)
     }
 
-    fun member(ctx: C_ExprContext, memberNameHand: C_NameHandle, safe: Boolean, exprHint: C_ExprHint): C_Expr {
+    internal fun member(ctx: C_ExprContext, memberNameHand: C_NameHandle, safe: Boolean, exprHint: C_ExprHint): C_Expr {
         val memberName = memberNameHand.name
 
         var self = this
@@ -290,17 +279,17 @@ abstract class V_Expr(
         }
     }
 
-    open fun constantValue(ctx: V_ConstantValueEvalContext): Rt_Value? = null
+    internal open fun constantValue(ctx: V_ConstantValueEvalContext): Rt_Value? = null
 
-    open fun isAtExprItem(): Boolean = false
-    open fun implicitTargetAttrName(): R_Name? = null
-    open fun implicitAtWhereAttrName(): R_Name? = implicitTargetAttrName()
-    open fun implicitAtWhatAttrName(): C_Name? = null
-    open fun varKey(): C_VarStateKey? = null
-    open fun globalConstantId(): R_GlobalConstantId? = null
-    open fun globalConstantRestriction(): V_GlobalConstantRestriction? = null
-    open fun asNullable(): V_ExprWrapper = asWrapper()
-    open fun getDefMeta(): R_DefinitionMeta? = null
+    internal open fun isAtExprItem(): Boolean = false
+    internal open fun implicitTargetAttrName(): R_Name? = null
+    internal open fun implicitAtWhereAttrName(): R_Name? = implicitTargetAttrName()
+    internal open fun implicitAtWhatAttrName(): C_Name? = null
+    internal open fun varKey(): C_VarStateKey? = null
+    internal open fun globalConstantId(): R_GlobalConstantId? = null
+    internal open fun globalConstantRestriction(): V_GlobalConstantRestriction? = null
+    internal open fun asNullable(): V_ExprWrapper = asWrapper()
+    internal open fun getDefMeta(): R_DefinitionMeta? = null
 
-    fun asWrapper(): V_ExprWrapper = V_ExprWrapper(msgCtx, this)
+    internal fun asWrapper(): V_ExprWrapper = V_ExprWrapper(msgCtx, this)
 }

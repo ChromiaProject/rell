@@ -30,13 +30,13 @@ import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
 
-class C_Statement(
-    val rStmt: R_Statement,
-    val alwaysReturns: Boolean,
-    val varStatesDelta: C_VarStatesDelta = C_VarStatesDelta.EMPTY,
-    val guardBlock: Boolean = false,
+class C_Statement internal constructor(
+    internal val rStmt: R_Statement,
+    internal val alwaysReturns: Boolean,
+    internal val varStatesDelta: C_VarStatesDelta = C_VarStatesDelta.EMPTY,
+    internal val guardBlock: Boolean = false,
 ) {
-    fun copy(
+    internal fun copy(
         rStmt: R_Statement = this.rStmt,
         alwaysReturns: Boolean = this.alwaysReturns,
         varStatesDelta: C_VarStatesDelta = this.varStatesDelta,
@@ -75,7 +75,7 @@ class C_Statement(
     }
 }
 
-class C_BlockCode(
+internal class C_BlockCode(
     val rStmts: ImmList<R_Statement>,
     val alwaysReturns: Boolean,
     val guardBlock: Boolean,
@@ -86,11 +86,11 @@ class C_BlockCode(
     }
 }
 
-class C_BlockCodeProto(val varStatesDelta: C_VarStatesDelta) {
+internal class C_BlockCodeProto(val varStatesDelta: C_VarStatesDelta) {
     companion object { val EMPTY = C_BlockCodeProto(C_VarStatesDelta.EMPTY) }
 }
 
-class C_BlockCodeBuilder(
+internal class C_BlockCodeBuilder(
     private val ctx: C_StmtContext,
     private val repl: Boolean,
     hasGuardBlock: Boolean,
@@ -121,7 +121,7 @@ class C_BlockCodeBuilder(
             exprCtx = subExprCtx,
             afterGuardBlock = afterGuardBlock,
         )
-        val cStmt = stmt.compile(subCtx, repl)
+        val cStmt = stmt.compileSafe(subCtx, repl)
 
         if (alwaysReturns && !deadCode) {
             ctx.msgCtx.error(stmt.startPos, "stmt_deadcode", "Dead code")
@@ -149,7 +149,7 @@ class C_BlockCodeBuilder(
     }
 }
 
-sealed class C_VarDeclarator(
+internal sealed class C_VarDeclarator(
     protected val ctx: C_StmtContext,
     protected val mutable: Boolean,
 ) {
@@ -159,7 +159,7 @@ sealed class C_VarDeclarator(
     class Result(val rDeclarator: R_VarDeclarator, val varStatesDelta: C_VarStatesDelta)
 }
 
-class C_WildcardVarDeclarator(
+internal class C_WildcardVarDeclarator(
     ctx: C_StmtContext,
     mutable: Boolean,
 ): C_VarDeclarator(ctx, mutable) {
@@ -170,7 +170,7 @@ class C_WildcardVarDeclarator(
     }
 }
 
-class C_SimpleVarDeclarator(
+internal class C_SimpleVarDeclarator(
     ctx: C_StmtContext,
     mutable: Boolean,
     private val attrHeader: C_AttrHeader,
@@ -231,7 +231,7 @@ class C_SimpleVarDeclarator(
     }
 }
 
-class C_TupleVarDeclarator(
+internal class C_TupleVarDeclarator(
     ctx: C_StmtContext,
     mutable: Boolean,
     private val pos: S_Pos,

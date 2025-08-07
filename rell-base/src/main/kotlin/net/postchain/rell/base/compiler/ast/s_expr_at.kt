@@ -26,8 +26,8 @@ import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
 sealed class S_AtExprFrom(val startPos: S_Pos) {
-    abstract fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext): C_AtFrom
-    abstract fun compileJoin(ctx: C_ExprContext, fromCtx: C_AtFromContext, alias: C_Name?): C_AtFrom
+    internal abstract fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext): C_AtFrom
+    internal abstract fun compileJoin(ctx: C_ExprContext, fromCtx: C_AtFromContext, alias: C_Name?): C_AtFrom
 }
 
 class S_AtExprFrom_Simple(val expr: S_Expr): S_AtExprFrom(expr.startPos) {
@@ -183,7 +183,7 @@ class S_AtExprFromItem(
 }
 
 sealed class S_AtExprWhat {
-    abstract fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat
+    internal abstract fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat
 }
 
 class S_AtExprWhat_Default: S_AtExprWhat() {
@@ -481,7 +481,7 @@ class S_AtExprWhere(
     private val exprs: ImmList<S_Expr>,
     private val posRange: S_PosRange,
 ) {
-    fun compile(ctx: C_ExprContext, atExprId: R_AtExprId, subValues: MutableList<V_Expr>): V_Expr? {
+    internal fun compile(ctx: C_ExprContext, atExprId: R_AtExprId, subValues: MutableList<V_Expr>): V_Expr? {
         ctx.blkCtx.frameCtx.ideCompCtx.trackScope(posRange, ctx)
 
         var whereCtx = ctx

@@ -74,7 +74,7 @@ class S_Annotation(val name: S_Name, val args: ImmList<S_AnnotationArg>): S_Modi
 class S_Modifiers(val modifiers: ImmList<S_Modifier> = immListOf()) {
     val pos = modifiers.firstOrNull()?.pos
 
-    fun compile(modifierCtx: C_ModifierContext, modValues: C_ModifierValues): DocModifiers {
+    internal fun compile(modifierCtx: C_ModifierContext, modValues: C_ModifierValues): DocModifiers {
         val fixModValues = modValues.fix()
 
         val docMods = modifiers.mapNotNullToImmList {
@@ -84,11 +84,11 @@ class S_Modifiers(val modifiers: ImmList<S_Modifier> = immListOf()) {
         return DocModifiers.make(docMods)
     }
 
-    fun compile(ctx: C_MountContext, modValues: C_ModifierValues): DocModifiers {
+    internal fun compile(ctx: C_MountContext, modValues: C_ModifierValues): DocModifiers {
         return compile(ctx.nsCtx, modValues)
     }
 
-    fun compile(ctx: C_NamespaceContext, modValues: C_ModifierValues): DocModifiers {
+    internal fun compile(ctx: C_NamespaceContext, modValues: C_ModifierValues): DocModifiers {
         val modifierCtx = C_ModifierContext(ctx.msgCtx, ctx.symCtx)
         return compile(modifierCtx, modValues)
     }

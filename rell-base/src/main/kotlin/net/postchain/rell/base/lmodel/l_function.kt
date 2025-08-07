@@ -140,7 +140,7 @@ class L_FunctionHeader(
     }
 }
 
-class L_FunctionParamsMatch(
+internal class L_FunctionParamsMatch(
     private val mMatch: M_FunctionParamsMatch,
     val actualParams: ImmList<L_FunctionParam>,
     val argMatching: C_ArgMatching,
@@ -168,7 +168,7 @@ class L_FunctionParamsMatch(
     }
 }
 
-class L_FunctionHeaderMatch(
+internal class L_FunctionHeaderMatch(
     val actualHeader: L_FunctionHeader,
     val adapters: ImmList<C_TypeAdapter>,
     val typeArgs: ImmMap<R_Name, M_Type>,

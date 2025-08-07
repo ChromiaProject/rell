@@ -25,7 +25,7 @@ import net.postchain.rell.base.utils.capitalizeEx
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmSet
 
-class V_LocalVarExpr(
+internal class V_LocalVarExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val varRef: C_LocalVarRef,
@@ -41,7 +41,7 @@ class V_LocalVarExpr(
     override fun isAtExprItem() = varRef.target.atExprId != null
     override fun implicitTargetAttrName() = varRef.target.rName
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         checkInitialized()
         return varRef.toRExpr()
     }
@@ -67,7 +67,12 @@ class V_LocalVarExpr(
         override fun type() = varRef.target.type
         override fun effectiveType() = varRef.target.type
 
-        override fun compileAssignStatement(ctx: C_ExprContext, srcExpr: R_Expr, op: C_AssignOp?): R_Statement {
+        override fun compileAssignStatement(
+            ctx: C_ExprContext,
+            pos: S_Pos,
+            srcExpr: R_Expr,
+            op: C_AssignOp?,
+        ): R_Statement {
             if (op != null) {
                 checkInitialized()
             }
@@ -90,7 +95,7 @@ class V_LocalVarExpr(
     }
 }
 
-class V_SmartNullableExpr private constructor(
+internal class V_SmartNullableExpr private constructor(
     exprCtx: C_ExprContext,
     private val subExpr: V_Expr,
     private val nulled: Boolean,
@@ -108,9 +113,9 @@ class V_SmartNullableExpr private constructor(
     override fun implicitAtWhereAttrName() = subExpr.implicitAtWhereAttrName()
     override fun implicitAtWhatAttrName() = subExpr.implicitAtWhatAttrName()
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rExpr = subExpr.toRExpr()
-        return if (smartType == null) rExpr else R_NotNullExpr(smartType, rExpr)
+        return if (smartType == null) rExpr else R_NotNullExpr(smartType, rExpr, pos.toErrorPos())
     }
 
     override fun asNullable(): V_ExprWrapper {
@@ -167,7 +172,7 @@ private class C_Destination_ImplicitCast(
         return destination.compileAssignExpr(ctx, startPos, resType, srcExpr, op, post)
     }
 
-    override fun compileAssignStatement(ctx: C_ExprContext, srcExpr: R_Expr, op: C_AssignOp?): R_Statement {
-        return destination.compileAssignStatement(ctx, srcExpr, op)
+    override fun compileAssignStatement(ctx: C_ExprContext, pos: S_Pos, srcExpr: R_Expr, op: C_AssignOp?): R_Statement {
+        return destination.compileAssignStatement(ctx, pos, srcExpr, op)
     }
 }

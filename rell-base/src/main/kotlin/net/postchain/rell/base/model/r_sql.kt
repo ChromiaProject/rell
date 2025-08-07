@@ -10,7 +10,7 @@ import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.sql.SqlConstants
 
-abstract class R_EntitySqlMapping(val mountName: R_MountName) {
+internal abstract class R_EntitySqlMapping(val mountName: R_MountName) {
     abstract val metaName: String
 
     abstract fun rowidColumn(): String
@@ -22,14 +22,22 @@ abstract class R_EntitySqlMapping(val mountName: R_MountName) {
     abstract fun selectExistingObjects(sqlCtx: Rt_SqlContext, where: String): String
 
     companion object {
-        fun makeTransactionBlockHeightExpr(txEntity: R_EntityDefinition, txExpr: Db_TableExpr, chain: R_ExternalChainRef): Db_Expr {
+        fun makeTransactionBlockHeightExpr(
+            txEntity: R_EntityDefinition,
+            txExpr: Db_TableExpr,
+            chain: R_ExternalChainRef,
+        ): Db_Expr {
             val blockAttr = txEntity.attribute("block")
             val blockEntity = (blockAttr.type as R_EntityType).rEntity
             val blockExpr = Db_RelExpr(txExpr, blockAttr, blockEntity)
             return makeBlockHeightExpr(blockEntity, blockExpr, chain)
         }
 
-        fun makeBlockHeightExpr(blockEntity: R_EntityDefinition, blockExpr: Db_TableExpr, chain: R_ExternalChainRef): Db_Expr {
+        fun makeBlockHeightExpr(
+            blockEntity: R_EntityDefinition,
+            blockExpr: Db_TableExpr,
+            chain: R_ExternalChainRef,
+        ): Db_Expr {
             val heightAttr = blockEntity.attribute("block_height")
             val blockHeightExpr = Db_AttrExpr(blockExpr, heightAttr)
             val chainHeightExpr = Db_InterpretedExpr(R_ChainHeightExpr(chain))
@@ -38,7 +46,7 @@ abstract class R_EntitySqlMapping(val mountName: R_MountName) {
     }
 }
 
-class R_EntitySqlMapping_Regular(mountName: R_MountName): R_EntitySqlMapping(mountName) {
+internal class R_EntitySqlMapping_Regular(mountName: R_MountName): R_EntitySqlMapping(mountName) {
     override val metaName = mountName.str()
 
     override fun rowidColumn() = SqlConstants.ROWID_COLUMN
@@ -57,7 +65,7 @@ class R_EntitySqlMapping_Regular(mountName: R_MountName): R_EntitySqlMapping(mou
     }
 }
 
-class R_EntitySqlMapping_External(
+internal class R_EntitySqlMapping_External(
     mountName: R_MountName,
     private val chain: R_ExternalChainRef,
 ): R_EntitySqlMapping(mountName) {
@@ -103,7 +111,7 @@ class R_EntitySqlMapping_External(
     }
 }
 
-abstract class R_EntitySqlMapping_TxBlk(
+internal abstract class R_EntitySqlMapping_TxBlk(
     tableName: String,
     final override val metaName: String,
     private val rowid: String,
@@ -119,7 +127,11 @@ abstract class R_EntitySqlMapping_TxBlk(
         return res
     }
 
-    protected abstract fun extraWhereExpr0(entity: R_EntityDefinition, entityExpr: Db_EntityExpr, chain: R_ExternalChainRef?): Db_Expr?
+    protected abstract fun extraWhereExpr0(
+        entity: R_EntityDefinition,
+        entityExpr: Db_EntityExpr,
+        chain: R_ExternalChainRef?,
+    ): Db_Expr?
 
     final override fun extraWhereExpr(atEntity: R_DbAtEntity): Db_Expr? {
         check(atEntity.rEntity.sqlMapping === this)
@@ -129,7 +141,7 @@ abstract class R_EntitySqlMapping_TxBlk(
     }
 }
 
-class R_EntitySqlMapping_Transaction(
+internal class R_EntitySqlMapping_Transaction(
     chain: R_ExternalChainRef?,
 ): R_EntitySqlMapping_TxBlk(SqlConstants.TRANSACTIONS_TABLE, "transaction", "tx_iid", chain) {
     override fun table(chainMapping: Rt_ChainSqlMapping) = chainMapping.transactionsTable
@@ -154,7 +166,7 @@ class R_EntitySqlMapping_Transaction(
     }
 }
 
-class R_EntitySqlMapping_Block(
+internal class R_EntitySqlMapping_Block(
     chain: R_ExternalChainRef?,
 ): R_EntitySqlMapping_TxBlk(SqlConstants.BLOCKS_TABLE, "block", "block_iid", chain) {
     override fun table(chainMapping: Rt_ChainSqlMapping) = chainMapping.blocksTable

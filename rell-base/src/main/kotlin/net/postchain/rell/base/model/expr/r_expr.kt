@@ -18,16 +18,20 @@ import java.math.BigDecimal
 import kotlin.math.max
 
 abstract class R_Expr(val type: R_Type) {
+    internal abstract fun evaluate(frame: Rt_CallFrame): Rt_Value
+}
+
+internal abstract class R_BaseExpr(type: R_Type): R_Expr(type) {
     protected abstract fun evaluate0(frame: Rt_CallFrame): Rt_Value
 
-    fun evaluate(frame: Rt_CallFrame): Rt_Value {
+    final override fun evaluate(frame: Rt_CallFrame): Rt_Value {
         val res = evaluate0(frame)
         typeCheck(frame, type, res)
         return res
     }
 
     companion object {
-        fun typeCheck(frame: Rt_CallFrame, type: R_Type, value: Rt_Value) {
+        internal fun typeCheck(frame: Rt_CallFrame, type: R_Type, value: Rt_Value) {
             if (frame.defCtx.globalCtx.typeCheck) {
                 val resType = value.type()
                 check(type == R_UnitType || type.isAssignableFrom(resType)) {
@@ -38,13 +42,13 @@ abstract class R_Expr(val type: R_Type) {
     }
 }
 
-class R_ErrorExpr(type: R_Type, private val message: String): R_Expr(type) {
+internal class R_ErrorExpr(type: R_Type, private val message: String): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         throw RellInterpreterCrashException(message)
     }
 }
 
-sealed class R_DestinationExpr(type: R_Type): R_Expr(type) {
+internal sealed class R_DestinationExpr(type: R_Type): R_BaseExpr(type) {
     abstract fun evaluateRef(frame: Rt_CallFrame): Rt_ValueRef?
 
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
@@ -54,16 +58,16 @@ sealed class R_DestinationExpr(type: R_Type): R_Expr(type) {
     }
 }
 
-class R_VarExpr(type: R_Type, val ptr: R_VarPtr, val name: String): R_DestinationExpr(type) {
+internal class R_VarExpr(type: R_Type, private val ptr: R_VarPtr, private val name: String): R_DestinationExpr(type) {
     override fun evaluateRef(frame: Rt_CallFrame): Rt_ValueRef {
         return Rt_VarValueRef(type, ptr, name, frame)
     }
 
     private class Rt_VarValueRef(
-            val type: R_Type,
-            val ptr: R_VarPtr,
-            val name: String,
-            val frame: Rt_CallFrame
+        val type: R_Type,
+        val ptr: R_VarPtr,
+        val name: String,
+        val frame: Rt_CallFrame,
     ): Rt_ValueRef() {
         override fun get(): Rt_Value {
             val value = frame.getOpt(ptr)
@@ -79,7 +83,7 @@ class R_VarExpr(type: R_Type, val ptr: R_VarPtr, val name: String): R_Destinatio
     }
 }
 
-class R_StructMemberExpr(val base: R_Expr, val attr: R_Attribute): R_DestinationExpr(attr.type) {
+internal class R_StructMemberExpr(val base: R_Expr, val attr: R_Attribute): R_DestinationExpr(attr.type) {
     override fun evaluateRef(frame: Rt_CallFrame): Rt_ValueRef? {
         val baseValue = base.evaluate(frame)
         if (baseValue is Rt_NullValue) {
@@ -103,7 +107,7 @@ class R_StructMemberExpr(val base: R_Expr, val attr: R_Attribute): R_Destination
     }
 }
 
-class R_ConstantValueExpr(type: R_Type, private val value: Rt_Value): R_Expr(type) {
+internal class R_ConstantValueExpr(type: R_Type, private val value: Rt_Value): R_BaseExpr(type) {
     constructor(value: Rt_Value): this(value.type(), value)
 
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value = value
@@ -117,31 +121,35 @@ class R_ConstantValueExpr(type: R_Type, private val value: Rt_Value): R_Expr(typ
     }
 }
 
-class R_TupleExpr(private val tupleType: R_TupleType, private val exprs: ImmList<R_Expr>): R_Expr(tupleType) {
+internal class R_TupleExpr(
+    private val tupleType: R_TupleType,
+    private val exprs: ImmList<R_Expr>,
+): R_BaseExpr(tupleType) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val values = exprs.map { it.evaluate(frame) }
         return Rt_TupleValue(tupleType, values)
     }
 }
 
-class R_ListLiteralExpr(type: R_ListType, val exprs: ImmList<R_Expr>): R_Expr(type) {
+internal class R_ListLiteralExpr(type: R_ListType, private val exprs: ImmList<R_Expr>): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val list = MutableList(exprs.size) { exprs[it].evaluate(frame) }
         return Rt_ListValue(type, list)
     }
 }
 
-class R_MapLiteralExpr(
+internal class R_MapLiteralExpr(
     private val mapType: R_MapType,
     private val entries: ImmList<Pair<R_Expr, R_Expr>>,
-): R_Expr(mapType) {
+    private val errPos: R_ErrorPos,
+): R_BaseExpr(mapType) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val map = mutableMapOf<Rt_Value, Rt_Value>()
         for ((keyExpr, valueExpr) in entries) {
             val key = keyExpr.evaluate(frame)
             val value = valueExpr.evaluate(frame)
             if (key in map) {
-                throw Rt_Exception.common("expr_map_dupkey:${key.strCode()}", "Duplicate map key: ${key.str()}")
+                frame.error(errPos, "expr_map_dupkey:${key.strCode()}", "Duplicate map key: ${key.str()}")
             }
             map[key] = value
         }
@@ -149,13 +157,18 @@ class R_MapLiteralExpr(
     }
 }
 
-class R_ListSubscriptExpr(type: R_Type, val base: R_Expr, val expr: R_Expr): R_DestinationExpr(type) {
+internal class R_ListSubscriptExpr(
+    type: R_Type,
+    private val base: R_Expr,
+    private val expr: R_Expr,
+    private val errPos: R_ErrorPos,
+): R_DestinationExpr(type) {
     override fun evaluateRef(frame: Rt_CallFrame): Rt_ValueRef {
         val baseValue = base.evaluate(frame)
         val indexValue = expr.evaluate(frame)
         val list = baseValue.asList()
         val index = indexValue.asInteger()
-        Rt_ListValue.checkIndex(list.size, index)
+        Rt_ListValue.checkIndex(frame, errPos, list.size, index)
         return Rt_ListValueRef(list, index.toInt())
     }
 
@@ -170,7 +183,11 @@ class R_ListSubscriptExpr(type: R_Type, val base: R_Expr, val expr: R_Expr): R_D
     }
 }
 
-class R_VirtualListSubscriptExpr(type: R_Type, val base: R_Expr, val expr: R_Expr): R_Expr(type) {
+internal class R_VirtualListSubscriptExpr(
+    type: R_Type,
+    private val base: R_Expr,
+    private val expr: R_Expr,
+): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val baseValue = base.evaluate(frame)
         val indexValue = expr.evaluate(frame)
@@ -181,16 +198,26 @@ class R_VirtualListSubscriptExpr(type: R_Type, val base: R_Expr, val expr: R_Exp
     }
 }
 
-class R_MapSubscriptExpr(type: R_Type, val base: R_Expr, val expr: R_Expr): R_DestinationExpr(type) {
+internal class R_MapSubscriptExpr(
+    type: R_Type,
+    private val base: R_Expr,
+    private val expr: R_Expr,
+    private val errPos: R_ErrorPos,
+): R_DestinationExpr(type) {
     override fun evaluateRef(frame: Rt_CallFrame): Rt_ValueRef {
         val baseValue = base.evaluate(frame)
         val keyValue = expr.evaluate(frame)
         val map = baseValue.asMutableMap()
-        return Rt_MapValueRef(map, keyValue)
+        return Rt_MapValueRef(frame, errPos, map, keyValue)
     }
 
-    private class Rt_MapValueRef(val map: MutableMap<Rt_Value, Rt_Value>, val key: Rt_Value): Rt_ValueRef() {
-        override fun get() = getValue(map, key)
+    private class Rt_MapValueRef(
+        val frame: Rt_CallFrame,
+        val errPos: R_ErrorPos,
+        val map: MutableMap<Rt_Value, Rt_Value>,
+        val key: Rt_Value,
+    ): Rt_ValueRef() {
+        override fun get() = getValue(frame, errPos, map, key)
 
         override fun set(value: Rt_Value) {
             map.put(key, value)
@@ -198,27 +225,36 @@ class R_MapSubscriptExpr(type: R_Type, val base: R_Expr, val expr: R_Expr): R_De
     }
 
     companion object {
-        fun getValue(map: Map<Rt_Value, Rt_Value>, key: Rt_Value): Rt_Value {
+        fun getValue(frame: Rt_CallFrame, errPos: R_ErrorPos, map: Map<Rt_Value, Rt_Value>, key: Rt_Value): Rt_Value {
             val value = map[key]
             if (value == null) {
-                throw Rt_Exception.common("fn_map_get_novalue:${key.strCode()}", "Key not in map: ${key.str()}")
+                frame.error(errPos, "fn_map_get_novalue:${key.strCode()}", "Key not in map: ${key.str()}")
             }
             return value
         }
     }
 }
 
-class R_VirtualMapSubscriptExpr(type: R_Type, val base: R_Expr, val expr: R_Expr): R_Expr(type) {
+internal class R_VirtualMapSubscriptExpr(
+    type: R_Type,
+    private val base: R_Expr,
+    private val expr: R_Expr,
+    private val errPos: R_ErrorPos,
+): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val baseValue = base.evaluate(frame)
         val keyValue = expr.evaluate(frame)
         val map = baseValue.asMap()
-        val res = R_MapSubscriptExpr.getValue(map, keyValue)
+        val res = R_MapSubscriptExpr.getValue(frame, errPos, map, keyValue)
         return res
     }
 }
 
-class R_TextSubscriptExpr(val base: R_Expr, val expr: R_Expr): R_Expr(R_TextType) {
+internal class R_TextSubscriptExpr(
+    private val base: R_Expr,
+    private val expr: R_Expr,
+    private val errPos: R_ErrorPos,
+): R_BaseExpr(R_TextType) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val baseValue = base.evaluate(frame)
         val indexValue = expr.evaluate(frame)
@@ -226,8 +262,11 @@ class R_TextSubscriptExpr(val base: R_Expr, val expr: R_Expr): R_Expr(R_TextType
         val index = indexValue.asInteger()
 
         if (index < 0 || index >= str.length) {
-            throw Rt_Exception.common("expr_text_subscript_index:${str.length}:$index",
-                    "Index out of bounds: $index (length ${str.length})")
+            frame.error(
+                errPos,
+                "expr_text_subscript_index:${str.length}:$index",
+                "Index out of bounds: $index (length ${str.length})",
+            )
         }
 
         val i = index.toInt()
@@ -236,7 +275,11 @@ class R_TextSubscriptExpr(val base: R_Expr, val expr: R_Expr): R_Expr(R_TextType
     }
 }
 
-class R_ByteArraySubscriptExpr(val base: R_Expr, val expr: R_Expr): R_Expr(R_IntegerType) {
+internal class R_ByteArraySubscriptExpr(
+    private val base: R_Expr,
+    private val expr: R_Expr,
+    private val errPos: R_ErrorPos,
+): R_BaseExpr(R_IntegerType) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val baseValue = base.evaluate(frame)
         val indexValue = expr.evaluate(frame)
@@ -244,8 +287,11 @@ class R_ByteArraySubscriptExpr(val base: R_Expr, val expr: R_Expr): R_Expr(R_Int
         val index = indexValue.asInteger()
 
         if (index < 0 || index >= array.size) {
-            throw Rt_Exception.common("expr_bytearray_subscript_index:${array.size}:$index",
-                    "Index out of bounds: $index (length ${array.size})")
+            frame.error(
+                errPos,
+                "expr_bytearray_subscript_index:${array.size}:$index",
+                "Index out of bounds: $index (length ${array.size})",
+            )
         }
 
         val i = index.toInt()
@@ -255,7 +301,11 @@ class R_ByteArraySubscriptExpr(val base: R_Expr, val expr: R_Expr): R_Expr(R_Int
     }
 }
 
-class R_ElvisExpr(type: R_Type, val left: R_Expr, val right: R_Expr): R_Expr(type) {
+internal class R_ElvisExpr(
+    type: R_Type,
+    private val left: R_Expr,
+    private val right: R_Expr,
+): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val leftVal = left.evaluate(frame)
         if (leftVal != Rt_NullValue) {
@@ -267,17 +317,26 @@ class R_ElvisExpr(type: R_Type, val left: R_Expr, val right: R_Expr): R_Expr(typ
     }
 }
 
-class R_NotNullExpr(type: R_Type, val expr: R_Expr): R_Expr(type) {
+internal class R_NotNullExpr(
+    type: R_Type,
+    private val expr: R_Expr,
+    private val errPos: R_ErrorPos,
+): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val v = expr.evaluate(frame)
         if (v == Rt_NullValue) {
-            throw Rt_Exception.common("null_value", "Null value")
+            frame.error(errPos, "null_value", "Null value")
         }
         return v
     }
 }
 
-class R_IfExpr(type: R_Type, val cond: R_Expr, val trueExpr: R_Expr, val falseExpr: R_Expr): R_Expr(type) {
+internal class R_IfExpr(
+    type: R_Type,
+    private val cond: R_Expr,
+    private val trueExpr: R_Expr,
+    private val falseExpr: R_Expr,
+): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val v = cond.evaluate(frame)
         val b = v.asBoolean()
@@ -287,11 +346,15 @@ class R_IfExpr(type: R_Type, val cond: R_Expr, val trueExpr: R_Expr, val falseEx
     }
 }
 
-sealed class R_WhenChooser {
+internal sealed class R_WhenChooser {
     abstract fun choose(frame: Rt_CallFrame): Int?
 }
 
-class R_IterativeWhenChooser(val keyExpr: R_Expr, val exprs: ImmList<IndexedValue<R_Expr>>, val elseIdx: Int?): R_WhenChooser() {
+internal class R_IterativeWhenChooser(
+    private val keyExpr: R_Expr,
+    private val exprs: ImmList<IndexedValue<R_Expr>>,
+    private val elseIdx: Int?,
+): R_WhenChooser() {
     override fun choose(frame: Rt_CallFrame): Int? {
         val keyValue = keyExpr.evaluate(frame)
         for ((i, expr) in exprs) {
@@ -304,7 +367,11 @@ class R_IterativeWhenChooser(val keyExpr: R_Expr, val exprs: ImmList<IndexedValu
     }
 }
 
-class R_LookupWhenChooser(val keyExpr: R_Expr, val map: ImmMap<Rt_Value, Int>, val elseIdx: Int?): R_WhenChooser() {
+internal class R_LookupWhenChooser(
+    private val keyExpr: R_Expr,
+    private val map: ImmMap<Rt_Value, Int>,
+    private val elseIdx: Int?,
+): R_WhenChooser() {
     override fun choose(frame: Rt_CallFrame): Int? {
         val keyValue = keyExpr.evaluate(frame)
         val idx = map[keyValue]
@@ -312,7 +379,11 @@ class R_LookupWhenChooser(val keyExpr: R_Expr, val map: ImmMap<Rt_Value, Int>, v
     }
 }
 
-class R_WhenExpr(type: R_Type, val chooser: R_WhenChooser, val exprs: ImmList<R_Expr>): R_Expr(type) {
+internal class R_WhenExpr(
+    type: R_Type,
+    private val chooser: R_WhenChooser,
+    private val exprs: ImmList<R_Expr>,
+): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val choice = chooser.choose(frame)
         check(choice != null)
@@ -322,15 +393,27 @@ class R_WhenExpr(type: R_Type, val chooser: R_WhenChooser, val exprs: ImmList<R_
     }
 }
 
-class R_CreateExprAttr(val attr: R_Attribute, private val expr: R_Expr) {
+internal class R_CreateExprAttr(val attr: R_Attribute, private val expr: R_Expr) {
     fun evaluate(frame: Rt_CallFrame) = expr.evaluate(frame)
 }
 
-sealed class R_CreateExpr(type: R_Type, private val rEntity: R_EntityDefinition): R_Expr(type) {
+internal sealed class R_CreateExpr(
+    type: R_Type,
+    private val rEntity: R_EntityDefinition,
+    private val errPos: R_ErrorPos,
+): R_BaseExpr(type) {
     protected abstract fun evaluateData(frame: Rt_CallFrame): InsertData
     protected abstract fun evaluateResult(entities: List<Rt_Value>): Rt_Value
 
     final override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
+        return try {
+            evaluateCreate(frame)
+        } catch (e: Rt_Exception) {
+            frame.error(errPos, e)
+        }
+    }
+
+    private fun evaluateCreate(frame: Rt_CallFrame): Rt_Value {
         frame.checkDbUpdateAllowed()
 
         val allValues = evaluateData(frame)
@@ -469,10 +552,11 @@ sealed class R_CreateExpr(type: R_Type, private val rEntity: R_EntityDefinition)
     }
 }
 
-class R_RegularCreateExpr(
+internal class R_RegularCreateExpr(
     rEntity: R_EntityDefinition,
-    val attrs: ImmList<R_CreateExprAttr>,
-): R_CreateExpr(rEntity.type, rEntity) {
+    errPos: R_ErrorPos,
+    private val attrs: ImmList<R_CreateExprAttr>,
+): R_CreateExpr(rEntity.type, rEntity, errPos) {
     override fun evaluateData(frame: Rt_CallFrame): InsertData {
         val resAttrs = attrs.mapToImmList { it.attr }
         val rowidSql = buildDefaultRowidSql(frame.sqlCtx)
@@ -487,11 +571,12 @@ class R_RegularCreateExpr(
     }
 }
 
-class R_StructCreateExpr(
+internal class R_StructCreateExpr(
     rEntity: R_EntityDefinition,
+    errPos: R_ErrorPos,
     private val structType: R_StructType,
     private val structExpr: R_Expr,
-): R_CreateExpr(rEntity.type, rEntity) {
+): R_CreateExpr(rEntity.type, rEntity, errPos) {
     override fun evaluateData(frame: Rt_CallFrame): InsertData {
         val structValue = structExpr.evaluate(frame).asStruct()
         val attrs = structType.struct.attributesList
@@ -507,12 +592,13 @@ class R_StructCreateExpr(
     }
 }
 
-class R_StructListCreateExpr(
+internal class R_StructListCreateExpr(
     rEntity: R_EntityDefinition,
+    errPos: R_ErrorPos,
     private val structType: R_StructType,
     private val resultListType: R_ListType,
     private val listExpr: R_Expr,
-): R_CreateExpr(resultListType, rEntity) {
+): R_CreateExpr(resultListType, rEntity, errPos) {
     override fun evaluateData(frame: Rt_CallFrame): InsertData {
         val listValue = listExpr.evaluate(frame).asList()
         val attrs = structType.struct.attributesList
@@ -559,7 +645,10 @@ class R_StructListCreateExpr(
     }
 }
 
-class R_StructExpr(private val struct: R_Struct, private val attrs: ImmList<R_CreateExprAttr>): R_Expr(struct.type) {
+internal class R_StructExpr(
+    private val struct: R_Struct,
+    private val attrs: ImmList<R_CreateExprAttr>,
+): R_BaseExpr(struct.type) {
     init {
         checkEquals(attrs.map { it.attr.index }.sorted(), struct.attributesList.indices.toList())
     }
@@ -574,13 +663,13 @@ class R_StructExpr(private val struct: R_Struct, private val attrs: ImmList<R_Cr
     }
 }
 
-class R_AssignExpr(
-        type: R_Type,
-        val op: R_BinaryOp,
-        val dstExpr: R_DestinationExpr,
-        val srcExpr: R_Expr,
-        val post: Boolean
-): R_Expr(type) {
+internal class R_AssignExpr(
+    type: R_Type,
+    private val op: R_BinaryOp,
+    private val dstExpr: R_DestinationExpr,
+    private val srcExpr: R_Expr,
+    private val post: Boolean,
+): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val ref = dstExpr.evaluateRef(frame)
         ref ?: return Rt_NullValue // Null-safe access operator
@@ -594,7 +683,7 @@ class R_AssignExpr(
     }
 }
 
-class R_StatementExpr(val stmt: R_Statement): R_Expr(R_UnitType) {
+internal class R_StatementExpr(private val stmt: R_Statement): R_BaseExpr(R_UnitType) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val res = stmt.execute(frame)
         check(res == null)
@@ -602,36 +691,18 @@ class R_StatementExpr(val stmt: R_Statement): R_Expr(R_UnitType) {
     }
 }
 
-class R_ChainHeightExpr(val chain: R_ExternalChainRef): R_Expr(R_IntegerType) {
+internal class R_ChainHeightExpr(private val chain: R_ExternalChainRef): R_BaseExpr(R_IntegerType) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val rtChain = frame.defCtx.sqlCtx.linkedChain(chain)
         return Rt_IntValue.get(rtChain.height)
     }
 }
 
-class R_StackTraceExpr(private val subExpr: R_Expr, private val filePos: R_FilePos): R_Expr(subExpr.type) {
-    override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
-        return trackStack(frame, filePos) {
-            subExpr.evaluate(frame)
-        }
-    }
-
-    companion object {
-        fun <T> trackStack(frame: Rt_CallFrame, filePos: R_FilePos, code: () -> T): T {
-            try {
-                return code()
-            } catch (e: Rt_Exception) {
-                throw if (e.info.stack.isNotEmpty()) e else {
-                    val stack = frame.stackTrace(filePos)
-                    val info = Rt_ExceptionInfo(extraMessage = e.info.extraMessage, stack = stack)
-                    Rt_Exception(e.err, info, e)
-                }
-            }
-        }
-    }
-}
-
-class R_TypeAdapterExpr(type: R_Type, private val expr: R_Expr, private val adapter: R_TypeAdapter): R_Expr(type) {
+internal class R_TypeAdapterExpr(
+    type: R_Type,
+    private val expr: R_Expr,
+    private val adapter: R_TypeAdapter,
+): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val value = expr.evaluate(frame)
         val value2 = adapter.adaptValue(value)
@@ -639,29 +710,29 @@ class R_TypeAdapterExpr(type: R_Type, private val expr: R_Expr, private val adap
     }
 }
 
-sealed class R_TypeAdapter {
+internal sealed class R_TypeAdapter {
     abstract fun adaptValue(value: Rt_Value): Rt_Value
 }
 
-object R_TypeAdapter_Direct: R_TypeAdapter() {
+internal data object R_TypeAdapter_Direct: R_TypeAdapter() {
     override fun adaptValue(value: Rt_Value) = value
 }
 
-object R_TypeAdapter_IntegerToBigInteger: R_TypeAdapter() {
+internal data object R_TypeAdapter_IntegerToBigInteger: R_TypeAdapter() {
     override fun adaptValue(value: Rt_Value): Rt_Value {
         val r = Lib_Type_BigInteger.calcFromInteger(value)
         return r
     }
 }
 
-object R_TypeAdapter_IntegerToDecimal: R_TypeAdapter() {
+internal data object R_TypeAdapter_IntegerToDecimal: R_TypeAdapter() {
     override fun adaptValue(value: Rt_Value): Rt_Value {
         val r = Lib_Type_Decimal.calcFromInteger(value)
         return r
     }
 }
 
-object R_TypeAdapter_BigIntegerToDecimal: R_TypeAdapter() {
+internal data object R_TypeAdapter_BigIntegerToDecimal: R_TypeAdapter() {
     override fun adaptValue(value: Rt_Value): Rt_Value {
         val bigInt = value.asBigInteger()
         val bigDec = BigDecimal(bigInt)
@@ -670,7 +741,7 @@ object R_TypeAdapter_BigIntegerToDecimal: R_TypeAdapter() {
     }
 }
 
-class R_TypeAdapter_Nullable(private val innerAdapter: R_TypeAdapter): R_TypeAdapter() {
+internal class R_TypeAdapter_Nullable(private val innerAdapter: R_TypeAdapter): R_TypeAdapter() {
     override fun adaptValue(value: Rt_Value): Rt_Value {
         return if (value == Rt_NullValue) {
             Rt_NullValue
@@ -680,40 +751,49 @@ class R_TypeAdapter_Nullable(private val innerAdapter: R_TypeAdapter): R_TypeAda
     }
 }
 
-class R_ParameterDefaultValueExpr(
+internal class R_ParameterDefaultValueExpr(
     type: R_Type,
     private val callFilePos: R_FilePos,
     private val initFrameGetter: C_LateGetter<R_CallFrame>,
     private val exprGetter: C_LateGetter<R_Expr>,
-): R_Expr(type) {
+): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val expr = exprGetter.get()
-        val res = Rt_Utils.evaluateInNewFrame(frame.defCtx, frame, expr, callFilePos, initFrameGetter)
+        val res = R_AttributeDefaultValueExpr.evaluate(frame, expr, callFilePos, initFrameGetter)
         return res
     }
 }
 
-class R_AttributeDefaultValueExpr(
+internal class R_AttributeDefaultValueExpr(
     private val attr: R_Attribute,
     private val createFilePos: R_FilePos?,
     private val initFrameGetter: C_LateGetter<R_CallFrame>,
-): R_Expr(attr.type) {
+): R_BaseExpr(attr.type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
-        return Rt_Utils.evaluateInNewFrame(frame.defCtx, frame, attr.expr!!, createFilePos, initFrameGetter)
+        return evaluate(frame, attr.expr!!, createFilePos, initFrameGetter)
+    }
+
+    companion object {
+        fun evaluate(
+            frame: Rt_CallFrame,
+            expr: R_Expr,
+            filePos: R_FilePos?,
+            rFrameGetter: C_LateGetter<R_CallFrame>,
+        ): Rt_Value {
+            return try {
+                Rt_Utils.evaluateInNewFrame(frame.defCtx, frame, expr, rFrameGetter)
+            } catch (e: Rt_Exception) {
+                filePos ?: throw e
+                frame.error(R_ErrorPos(filePos), e, true)
+            }
+        }
     }
 }
 
-class R_BlockCheckExpr(private val expr: R_Expr, private val blockUid: R_FrameBlockUid): R_Expr(expr.type) {
-    override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
-        frame.checkBlock(blockUid)
-        return expr.evaluate(frame)
-    }
-}
-
-class R_GlobalConstantExpr(
-        type: R_Type,
-        private val constId: R_GlobalConstantId
-): R_Expr(type) {
+internal class R_GlobalConstantExpr(
+    type: R_Type,
+    private val constId: R_GlobalConstantId,
+): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         return frame.appCtx.getGlobalConstant(constId)
     }

@@ -108,7 +108,7 @@ object Lib_Type_Entity {
         return C_EntityAttrRef.getEntityAttrs(type.rEntity).mapToImmList { C_TypeValueMember_EntityAttr(it) }
     }
 
-    fun pathToDbExpr(
+    internal fun pathToDbExpr(
         ctx: C_ExprContext,
         atEntity: R_DbAtEntity,
         path: List<C_EntityAttrRef>,
@@ -208,7 +208,7 @@ object Lib_Type_Entity {
         }
     }
 
-    abstract class C_SysFn_ToStruct_Common: C_SpecialLibMemberFunctionBody() {
+    internal abstract class C_SysFn_ToStruct_Common: C_SpecialLibMemberFunctionBody() {
         protected abstract fun compile0(ctx: C_ExprContext, selfType: R_Type): V_SpecialMemberFunctionCall?
 
         final override fun compileCall(

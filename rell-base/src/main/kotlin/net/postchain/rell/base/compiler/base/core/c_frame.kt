@@ -17,7 +17,7 @@ import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import kotlin.math.max
 
-class C_LocalVarRef(
+internal class C_LocalVarRef(
     val target: C_LocalVar,
     val ptr: R_VarPtr,
 ) {
@@ -34,7 +34,7 @@ class C_LocalVarRef(
     }
 }
 
-class C_LocalVar(
+internal class C_LocalVar(
     val metaName: String,
     val rName: R_Name?,
     val type: R_Type,
@@ -46,13 +46,13 @@ class C_LocalVar(
     val varKey = C_VarStateKey(uid)
 
     fun toRef(blockUid: R_FrameBlockUid): C_LocalVarRef {
-        val ptr = R_VarPtr(metaName, blockUid, offset)
+        val ptr = R_VarPtr(blockUid, offset)
         return C_LocalVarRef(this, ptr)
     }
 }
 
-class C_FrameContext private constructor(
-    val fnCtx: C_FunctionContext,
+internal class C_FrameContext private constructor(
+    internal val fnCtx: C_FunctionContext,
     proto: C_CallFrameProto,
 ) {
     val msgCtx = fnCtx.msgCtx
@@ -84,19 +84,19 @@ class C_FrameContext private constructor(
     }
 }
 
-class C_CallFrame(val rFrame: R_CallFrame, val proto: C_CallFrameProto)
+internal class C_CallFrame(val rFrame: R_CallFrame, val proto: C_CallFrameProto)
 
-class C_CallFrameProto(val size: Int, val rootBlockScope: C_BlockScope) {
+internal class C_CallFrameProto(val size: Int, val rootBlockScope: C_BlockScope) {
     companion object { val EMPTY = C_CallFrameProto(0, C_BlockScope.EMPTY) }
 }
 
-class C_BlockScopeVar(val localVar: C_LocalVar, val ideInfo: C_IdeSymbolInfo)
+internal class C_BlockScopeVar(val localVar: C_LocalVar, val ideInfo: C_IdeSymbolInfo)
 
-class C_BlockScope(val localVars: ImmMap<R_Name, C_BlockScopeVar>) {
+internal class C_BlockScope(val localVars: ImmMap<R_Name, C_BlockScopeVar>) {
     companion object { val EMPTY = C_BlockScope(immMapOf()) }
 }
 
-sealed class C_BlockEntry {
+internal sealed class C_BlockEntry {
     abstract fun toLocalVarOpt(): C_LocalVar?
     abstract fun ideSymbolInfo(): C_IdeSymbolInfo
     abstract fun compile(ctx: C_ExprContext, pos: S_Pos, ambiguous: Boolean): V_Expr
@@ -120,7 +120,7 @@ sealed class C_BlockEntry {
     }
 }
 
-class C_BlockEntry_Var(
+internal class C_BlockEntry_Var(
     private val localVar: C_LocalVar,
     private val ideInfo: C_IdeSymbolInfo,
 ): C_BlockEntry() {
@@ -139,7 +139,7 @@ class C_BlockEntry_Var(
     }
 }
 
-class C_BlockEntry_AtEntity(
+internal class C_BlockEntry_AtEntity(
     private val atEntity: C_AtEntity,
     private val ideInfo: C_IdeSymbolInfo,
     private val isOuter: Boolean,
@@ -152,7 +152,7 @@ class C_BlockEntry_AtEntity(
     }
 }
 
-class C_BlockScopeBuilder(
+internal class C_BlockScopeBuilder(
     private val fnCtx: C_FunctionContext,
     startOffset: Int,
     private val ideParentCompletionsScopeProvider: C_IdeCompletionsScopeProvider,
@@ -262,7 +262,7 @@ class C_BlockScopeBuilder(
     }
 }
 
-sealed class C_BlockContext(
+internal sealed class C_BlockContext(
     val frameCtx: C_FrameContext,
     val blockUid: R_FrameBlockUid,
 ): C_IdeCompletionsScopeProvider {
@@ -308,7 +308,7 @@ sealed class C_BlockContext(
     ): C_LocalVar
 }
 
-class C_FrameBlock(val rBlock: R_FrameBlock, val scope: C_BlockScope)
+internal class C_FrameBlock(val rBlock: R_FrameBlock, val scope: C_BlockScope)
 
 sealed class C_BlockEntryResolution {
     abstract fun ideSymbolInfo(): C_IdeSymbolInfo
@@ -345,7 +345,7 @@ private class C_BlockEntryResolution_Ambiguous(
     }
 }
 
-class C_OwnerBlockContext(
+internal class C_OwnerBlockContext(
     frameCtx: C_FrameContext,
     blockUid: R_FrameBlockUid,
     private val parent: C_OwnerBlockContext?,
@@ -373,7 +373,7 @@ class C_OwnerBlockContext(
 
     override fun createSubContext(location: String, atFrom: C_AtFrom?): C_OwnerBlockContext {
         check(!build) { "Block has been built: $blockUid" }
-        val blockUid = fnCtx.nextBlockUid(location)
+        val blockUid = fnCtx.nextBlockUid()
         return C_OwnerBlockContext(frameCtx, blockUid, this, atFrom, C_BlockScope.EMPTY)
     }
 
@@ -565,18 +565,17 @@ class C_OwnerBlockContext(
     companion object {
         fun createRoot(frameCtx: C_FrameContext, protoScope: C_BlockScope): C_OwnerBlockContext {
             val fnCtx = frameCtx.fnCtx
-            val name = fnCtx.fnUid.name
-            val blockUid = fnCtx.nextBlockUid("root:$name")
+            val blockUid = fnCtx.nextBlockUid()
             return C_OwnerBlockContext(frameCtx, blockUid, null, null, protoScope)
         }
     }
 }
 
-class C_LambdaBlock(
-        val rLambda: R_LambdaBlock,
-        private val exprCtx: C_ExprContext,
-        private val localVar: C_LocalVar,
-        private val blockUid: R_FrameBlockUid
+internal class C_LambdaBlock(
+    val rLambda: R_LambdaBlock,
+    private val exprCtx: C_ExprContext,
+    private val localVar: C_LocalVar,
+    private val blockUid: R_FrameBlockUid,
 ) {
     fun compileVarRExpr(blockUid: R_FrameBlockUid = this.blockUid): R_Expr {
         val varRef = localVar.toRef(blockUid)
@@ -598,7 +597,7 @@ class C_LambdaBlock(
     }
 }
 
-class C_LambdaBlockBuilder(ctx: C_ExprContext, private val varType: R_Type) {
+internal class C_LambdaBlockBuilder(ctx: C_ExprContext, private val varType: R_Type) {
     val innerBlkCtx = ctx.blkCtx.createSubContext("<lambda>")
     val innerExprCtx = ctx.copy(blkCtx = innerBlkCtx)
 

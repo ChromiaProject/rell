@@ -86,7 +86,7 @@ class C_SystemDefsScope(
     val modules: ImmList<C_LibModule>,
 )
 
-class C_SystemDefsCommon(
+internal class C_SystemDefsCommon(
     val blockEntity: R_EntityDefinition,
     val transactionEntity: R_EntityDefinition,
     val mntTables: C_MountTables,
@@ -94,20 +94,20 @@ class C_SystemDefsCommon(
     val queries: ImmList<R_QueryDefinition>,
 )
 
-class C_SystemDefs private constructor(
+internal class C_SystemDefs private constructor(
     val common: C_SystemDefsCommon,
     val appScope: C_SystemDefsScope,
     val testScope: C_SystemDefsScope,
 ) {
     companion object {
-        fun create(appCtx: C_AppContext, stamp: R_AppUid, extraMod: C_LibModule?): C_SystemDefs {
+        internal fun create(appCtx: C_AppContext, stamp: R_AppUid, extraMod: C_LibModule?): C_SystemDefs {
             val blockEntity = C_Utils.createBlockEntity(appCtx, null)
             val transactionEntity = C_Utils.createTransactionEntity(appCtx, null, blockEntity)
             val queries = Lib_SysQueries.createQueries(appCtx.executor)
             return create(appCtx.globalCtx, stamp, blockEntity, transactionEntity, queries, extraMod)
         }
 
-        fun create(
+        internal fun create(
             globalCtx: C_GlobalContext,
             stamp: R_AppUid,
             blockEntity: R_EntityDefinition,

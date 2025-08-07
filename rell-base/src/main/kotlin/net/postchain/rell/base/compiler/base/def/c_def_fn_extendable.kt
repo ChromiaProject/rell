@@ -22,7 +22,7 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.utils.*
 
-class C_ExtendableFunctionDescriptor(
+internal class C_ExtendableFunctionDescriptor(
     val uid: R_ExtendableFunctionUid,
     val moduleName: R_ModuleName,
     val fullName: R_FullName?,
@@ -55,7 +55,7 @@ class C_FunctionExtensionsTable(val list: ImmList<C_FunctionExtensions>) {
     }
 }
 
-class C_ExtendableUserGlobalFunction(
+internal class C_ExtendableUserGlobalFunction(
     appCtx: C_AppContext,
     rFunction: R_FunctionDefinition,
     private val extFnUid: R_ExtendableFunctionUid,

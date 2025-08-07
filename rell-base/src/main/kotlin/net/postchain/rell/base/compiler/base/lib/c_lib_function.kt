@@ -28,7 +28,7 @@ import net.postchain.rell.base.model.expr.R_MemberCalculator
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
 
-object C_LibFunctionUtils {
+internal object C_LibFunctionUtils {
     val RESTRICTIONS_NAMED_ARGS = C_FeatureRestrictions.make(
         "0.13.9",
         "lib_call_named_arg" toCodeMsg "Named arguments of library functions are",
@@ -49,11 +49,11 @@ object C_LibFunctionUtils {
     }
 }
 
-abstract class C_LibGlobalFunction: C_GlobalFunction() {
+internal abstract class C_LibGlobalFunction: C_GlobalFunction() {
     abstract fun replaceTypeParams(rep: C_TypeMemberReplacement): C_LibGlobalFunction
 }
 
-sealed class C_LibMemberFunction {
+internal sealed class C_LibMemberFunction {
     abstract fun getDefaultIdeInfo(): C_IdeSymbolInfo
     abstract fun getDefaultArgIdeInfos(): Map<R_Name, C_IdeSymbolInfo>
     abstract fun getCallTypeHints(selfType: R_Type): C_CallTypeHints
@@ -85,7 +85,7 @@ abstract class C_SpecialLibGlobalFunctionBody {
     abstract fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: ImmList<S_Expr>): V_Expr
 }
 
-class C_SpecialLibGlobalFunction(
+internal class C_SpecialLibGlobalFunction(
     private val body: C_SpecialLibGlobalFunctionBody,
     private val ideInfo: C_IdeSymbolInfo,
     private val restrictions: C_MemberRestrictions,
@@ -142,7 +142,7 @@ class C_SpecialLibGlobalFunction(
 }
 
 abstract class C_SpecialLibMemberFunctionBody {
-    abstract fun compileCall(
+    internal abstract fun compileCall(
         ctx: C_ExprContext,
         callCtx: C_LibFuncCaseCtx,
         selfType: R_Type,
@@ -150,7 +150,10 @@ abstract class C_SpecialLibMemberFunctionBody {
     ): V_SpecialMemberFunctionCall?
 }
 
-abstract class V_SpecialMemberFunctionCall(protected val exprCtx: C_ExprContext, val returnType: R_Type) {
+internal abstract class V_SpecialMemberFunctionCall(
+    protected val exprCtx: C_ExprContext,
+    val returnType: R_Type,
+) {
     abstract fun calculator(): R_MemberCalculator
 
     open fun globalConstantRestriction(): V_GlobalConstantRestriction? = null
@@ -158,7 +161,7 @@ abstract class V_SpecialMemberFunctionCall(protected val exprCtx: C_ExprContext,
     open fun dbExprWhat(base: V_Expr, safe: Boolean): C_DbAtWhatValue? = null
 }
 
-class C_SpecialLibMemberFunction(
+internal class C_SpecialLibMemberFunction(
     private val body: C_SpecialLibMemberFunctionBody,
     private val ideInfo: C_IdeSymbolInfo,
     private val restrictions: C_MemberRestrictions,

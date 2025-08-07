@@ -14,7 +14,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.utils.mapToImmList
 
-class V_InCollectionExpr(
+internal class V_InCollectionExpr(
     exprCtx: C_ExprContext,
     private val elemType: R_Type,
     private val left: V_Expr,
@@ -23,12 +23,13 @@ class V_InCollectionExpr(
 ): V_Expr(exprCtx, left.pos) {
     override fun exprInfo0() = V_ExprInfo.simple(R_BooleanType, left, right)
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rLeft = left.toRExpr()
         val rRight = right.toRExpr()
-        var rExpr: R_Expr = R_BinaryExpr(R_BooleanType, R_BinaryOp_In_Collection, rLeft, rRight)
+        val errPos = pos.toErrorPos()
+        var rExpr: R_Expr = R_BinaryExpr(R_BooleanType, R_BinaryOp_In_Collection, rLeft, rRight, errPos)
         if (not) {
-            rExpr = R_UnaryExpr(R_BooleanType, R_UnaryOp_Not, rExpr)
+            rExpr = R_UnaryExpr(R_BooleanType, R_UnaryOp_Not, rExpr, errPos)
         }
         return rExpr
     }

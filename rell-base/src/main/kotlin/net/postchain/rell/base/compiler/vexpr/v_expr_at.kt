@@ -18,7 +18,7 @@ import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.R_IterableAdapter
 import net.postchain.rell.base.utils.*
 
-class V_AtEntityExpr(
+internal class V_AtEntityExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val cAtEntity: C_AtEntity,
@@ -42,7 +42,7 @@ class V_AtEntityExpr(
     override fun isAtExprItem() = true
     override fun implicitTargetAttrName() = cAtEntity.alias
 
-    override fun toRExpr0() = throw C_Errors.errExprDbNotAllowed(pos)
+    override fun toRExpr() = throw C_Errors.errExprDbNotAllowed(pos)
 
     override fun toDbExpr0(): Db_Expr {
         val rAtEntity = cAtEntity.toRAtEntityValidated(exprCtx, pos, isAmbiguous)
@@ -54,7 +54,7 @@ class V_AtEntityExpr(
     }
 }
 
-class V_DbAtFromItem(
+internal class V_DbAtFromItem(
     private val entity: R_DbAtEntity,
     private val isOuter: Boolean,
     private val where: V_Expr?,
@@ -93,7 +93,7 @@ class V_AtWhatFieldFlags(
     }
 }
 
-class V_DbAtWhatField(
+internal class V_DbAtWhatField internal constructor(
     private val appCtx: C_AppContext,
     val name: R_IdeName?,
     val resultType: R_Type,
@@ -146,7 +146,7 @@ class V_DbAtWhatField(
     }
 }
 
-class V_DbAtExprFrom(
+internal class V_DbAtExprFrom(
     private val items: ImmList<V_DbAtFromItem>,
     private val block: R_FrameBlock?,
 ) {
@@ -156,7 +156,7 @@ class V_DbAtExprFrom(
     }
 }
 
-class V_AtExprBase(
+internal class V_AtExprBase(
     private val from: V_DbAtExprFrom,
     private val what: ImmList<V_DbAtWhatField>,
     private val where: V_Expr?,
@@ -173,7 +173,7 @@ class V_AtExprBase(
     }
 }
 
-class V_TopDbAtExpr(
+class V_TopDbAtExpr internal constructor(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val resultType: R_Type,
@@ -188,14 +188,15 @@ class V_TopDbAtExpr(
 
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("at_expr", null)
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val dbBase = base.toDbBase(false)
         val rExtras = extras.toRExtras()
-        return R_DbAtExpr(resultType, dbBase, cardinality, rExtras, internals)
+        val errPos = pos.toErrorPos()
+        return R_DbAtExpr(resultType, dbBase, cardinality, rExtras, internals, errPos)
     }
 }
 
-class V_NestedDbAtExpr(
+internal class V_NestedDbAtExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val resultType: R_Type,
@@ -214,7 +215,7 @@ class V_NestedDbAtExpr(
 
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("at_expr", null)
 
-    override fun toRExpr0() = throw C_Errors.errExprDbNotAllowed(pos)
+    override fun toRExpr() = throw C_Errors.errExprDbNotAllowed(pos)
 
     override fun toDbExpr0(): Db_Expr {
         val dbBase = base.toDbBase(true)
@@ -223,7 +224,7 @@ class V_NestedDbAtExpr(
     }
 }
 
-class V_AtExprExtras(private val limit: V_Expr?, private val offset: V_Expr?) {
+internal class V_AtExprExtras(private val limit: V_Expr?, private val offset: V_Expr?) {
     fun innerExprs(): List<V_Expr> = listOfNotNull(limit, offset)
 
     fun toRExtras(): R_AtExprExtras {
@@ -233,7 +234,7 @@ class V_AtExprExtras(private val limit: V_Expr?, private val offset: V_Expr?) {
     }
 }
 
-class V_ColAtFrom(
+internal class V_ColAtFrom(
     private val rIterableAdapter: R_IterableAdapter,
     private val expr: V_Expr,
     private val block: R_FrameBlock?,
@@ -269,7 +270,7 @@ class V_ColAtWhat(
     }
 }
 
-class V_ColAtExpr(
+internal class V_ColAtExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val result: C_AtExprResult,
@@ -289,7 +290,7 @@ class V_ColAtExpr(
 
     override fun varStatesDelta0() = resVarStates
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rFrom = from.toRFrom()
         val rWhat = what.toRWhat()
         val rWhere = where?.toRExpr() ?: R_ConstantValueExpr.makeBool(true)
@@ -306,6 +307,7 @@ class V_ColAtExpr(
             summarization = summarization,
             cardinality = cardinality,
             extras = rExtras,
+            errPos = pos.toErrorPos(),
         )
     }
 
@@ -320,7 +322,7 @@ class V_ColAtExpr(
     }
 }
 
-object V_AtUtils {
+internal object V_AtUtils {
     fun hasWhatModifiers(flags: V_AtWhatFieldFlags): Boolean {
         return flags.sort != null || flags.group != null || flags.aggregate != null
     }

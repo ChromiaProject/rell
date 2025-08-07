@@ -7,7 +7,7 @@ package net.postchain.rell.base.compiler.base.modifier
 import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.module.C_ExtChainName
 
-object C_Annotation_External {
+internal object C_Annotation_External {
     val FIELD_EXTERNAL_MODULE = C_ModifierField.flagAnnotation("external")
     val FIELD_EXTERNAL_CHAIN = C_ModifierField.valueAnnotation("external", Evaluator_ExternalChain)
 

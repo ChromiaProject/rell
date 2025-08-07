@@ -65,9 +65,9 @@ class C_ModuleReaderContext(val appCtx: S_AppContext) {
     val msgCtx = appCtx.msgCtx
 }
 
-class C_ModuleReader(
-        readerCtx: C_ModuleReaderContext,
-        sourceDir: C_SourceDir
+internal class C_ModuleReader(
+    readerCtx: C_ModuleReaderContext,
+    sourceDir: C_SourceDir,
 ) {
     private val dirTree = C_ModuleDirTree(readerCtx, sourceDir)
     private val cache = mutableMapOf<R_ModuleName, CacheEntry>()
@@ -504,7 +504,7 @@ class C_SourceModuleHeader(
     val docModifiers: DocModifiers,
 )
 
-sealed class C_ModuleSource(protected val appCtx: S_AppContext, val moduleName: R_ModuleName) {
+internal sealed class C_ModuleSource(protected val appCtx: S_AppContext, val moduleName: R_ModuleName) {
     private val compiledHeader: C_SourceModuleHeader? by lazy {
         compileHeader0()
     }
@@ -526,7 +526,7 @@ sealed class C_ModuleSource(protected val appCtx: S_AppContext, val moduleName: 
     fun compile(): ImmList<C_MidModuleFile> = compiledFiles
 }
 
-class C_FileModuleSource(
+internal class C_FileModuleSource(
     appCtx: S_AppContext,
     moduleName: R_ModuleName,
     val file: C_ParsedRellFile,
@@ -547,7 +547,7 @@ class C_FileModuleSource(
     }
 }
 
-class C_DirModuleSource(
+internal class C_DirModuleSource(
     appCtx: S_AppContext,
     moduleName: R_ModuleName,
     val path: C_SourcePath,
@@ -578,7 +578,7 @@ class C_DirModuleSource(
     }
 }
 
-class C_ParsedRellFile(
+internal class C_ParsedRellFile(
     val path: C_SourcePath,
     val idePath: IdeFilePath,
     private val ast: S_RellFile?,

@@ -31,7 +31,7 @@ class C_NamespaceContext(
     val scopeBuilder: C_ScopeBuilder,
 ): C_IdeCompletionsScopeProvider {
     val globalCtx = modCtx.globalCtx
-    val appCtx = modCtx.appCtx
+    internal val appCtx = modCtx.appCtx
     val msgCtx = modCtx.msgCtx
     val executor = modCtx.executor
 

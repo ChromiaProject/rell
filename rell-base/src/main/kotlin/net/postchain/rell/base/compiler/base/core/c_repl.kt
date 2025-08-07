@@ -22,7 +22,7 @@ private const val REPL_NAME = "<REPL>"
 
 private val REPL_POS_RANGE = S_PosRange(C_Parser.REPL_NULL_POS, C_Parser.REPL_NULL_POS)
 
-class C_ExtReplCommand(
+class C_ExtReplCommand internal constructor(
     private val extModules: ImmList<C_ExtModule>,
     private val extMembers: ImmList<C_ExtModuleMember>,
     private val currentModuleName: R_ModuleName?,
@@ -30,7 +30,7 @@ class C_ExtReplCommand(
     private val preModules: ImmMap<C_ModuleKey, C_PrecompiledModule>,
     val newModuleHeaders: ImmMap<R_ModuleName, C_ModuleHeader>,
 ) {
-    fun compile(appCtx: C_AppContext, codeState: ReplCodeState): C_LateGetter<ReplCode> {
+    internal fun compile(appCtx: C_AppContext, codeState: ReplCodeState): C_LateGetter<ReplCode> {
         val extCompiler = C_ExtModuleCompiler(appCtx, extModules, preModules)
         extCompiler.compileModules()
 
@@ -130,7 +130,7 @@ class C_ExtReplCommand(
     }
 }
 
-object C_ReplCompiler {
+internal object C_ReplCompiler {
     fun compile(
         sourceDir: C_SourceDir,
         currentModuleName: R_ModuleName?,
@@ -206,7 +206,7 @@ object C_ReplCompiler {
     }
 }
 
-class C_ReplAppState(
+internal class C_ReplAppState(
     val nsAsmState: C_NsAsm_ReplState,
     val moduleHeaders: ImmMap<R_ModuleName, C_ModuleHeader>,
     val modules: ImmMap<C_ModuleKey, C_PrecompiledModule>,
@@ -232,11 +232,11 @@ class C_ReplAppState(
     }
 }
 
-class C_ReplDefsState(val appState: C_ReplAppState) {
+internal class C_ReplDefsState(val appState: C_ReplAppState) {
     companion object {
         val EMPTY = C_ReplDefsState(C_ReplAppState.EMPTY)
     }
 }
 
-class C_ReplSuccess(val app: R_App, val defsState: C_ReplDefsState, val code: ReplCode)
-class C_ReplResult(val success: C_ReplSuccess?, messages: ImmList<C_Message>): C_AbstractResult(messages)
+internal class C_ReplSuccess(val app: R_App, val defsState: C_ReplDefsState, val code: ReplCode)
+internal class C_ReplResult(val success: C_ReplSuccess?, messages: ImmList<C_Message>): C_AbstractResult(messages)

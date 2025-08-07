@@ -20,7 +20,7 @@ import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
-class C_FormalParameter internal constructor(
+internal class C_FormalParameter(
     val name: C_Name,
     val type: R_Type,
     val ideInfo: C_IdeSymbolInfo,
@@ -68,7 +68,7 @@ class C_FormalParameter internal constructor(
     }
 }
 
-class C_FormalParameters(val list: ImmList<C_FormalParameter>) {
+internal class C_FormalParameters(val list: ImmList<C_FormalParameter>) {
     val map = list.associateByToImmMap { it.name.str }
 
     val callParameters by lazy {
@@ -154,7 +154,7 @@ class C_FormalParameters(val list: ImmList<C_FormalParameter>) {
     }
 }
 
-class C_ActualParameters(
+internal class C_ActualParameters(
     val stmtCtx: C_StmtContext,
     val rParams: ImmList<R_FunctionParam>,
     val rParamVars: ImmList<R_ParamVar>,

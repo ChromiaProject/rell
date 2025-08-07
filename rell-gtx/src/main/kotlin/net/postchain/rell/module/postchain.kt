@@ -162,8 +162,8 @@ private class RellGTXOperation(
             val rtArgs = rOperation.params().mapIndexed { i, param ->
                 val rtArg = opArgs.getOrNull(i)
                 if (rtArg != null) rtArg else {
-                    val expr = param.exprGetter!!.get()
-                    Rt_Utils.evaluateInNewFrame(defCtx, null, expr, null, param.initFrameGetter)
+                    val evaluator = param.getDefaultValueEvaluator()!!
+                    evaluator(defCtx)
                 }
             }
 
@@ -177,7 +177,7 @@ private class RellGTXOperation(
     private fun getOpArgs(gtvCtx: GtvToRtContext): List<Rt_Value> {
         val params = rOperation.params()
 
-        val minParams = params.dropLastWhile { it.exprGetter != null }.size
+        val minParams = params.dropLastWhile { it.getDefaultValueEvaluator() != null }.size
         if (gtvArgs.size < minParams || gtvArgs.size > params.size) {
             throw Rt_Exception.common(
                 "operation:[${rOperation.appLevelName}]:arg_count:${data.args.size}:${params.size}",
@@ -257,8 +257,6 @@ private class RellPostchainModule(
         globalCtx,
         chainCtx,
         rApp,
-        repl = false,
-        test = false,
         moduleArgsSource = moduleArgsSource,
         gtvHashCalculator = gtvHashCalculator,
     )
@@ -383,12 +381,12 @@ private class RellPostchainModule(
         val rtArgsList = mutableListOf<Rt_Value>()
         for (param in params) {
             val arg = argMap[param.name.str]
+            val evaluator = param.getDefaultValueEvaluator()
             if (arg != null) {
                 val rtArg = RellPcUtils.convertArg(gtvToRtCtx, param, arg)
                 rtArgsList.add(rtArg)
-            } else if (param.exprGetter != null) {
-                val expr = param.exprGetter!!.get()
-                val rtArg = Rt_Utils.evaluateInNewFrame(defCtx, null, expr, null, param.initFrameGetter)
+            } else if (evaluator != null) {
+                val rtArg = evaluator(defCtx)
                 rtArgsList.add(rtArg)
             } else {
                 missingArgs.add(param.name.str)

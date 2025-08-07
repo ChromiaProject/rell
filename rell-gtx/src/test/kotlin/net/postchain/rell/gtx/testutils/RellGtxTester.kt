@@ -31,7 +31,6 @@ import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.module.RellPostchainModuleEnvironment
 import net.postchain.rell.module.RellPostchainModuleFactory
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class RellGtxTester(

@@ -105,7 +105,7 @@ object C_ReservedMountNames {
     ).map { R_MountName.of(it) }.toImmSet()
 }
 
-class C_ParameterDefaultValue(
+internal class C_ParameterDefaultValue(
     private val pos: S_Pos,
     private val paramName: R_Name,
     val rExprGetter: C_LateGetter<R_Expr>,
@@ -129,7 +129,7 @@ class C_ParameterDefaultValue(
     }
 }
 
-object C_Utils {
+internal object C_Utils {
     fun effectiveMemberType(formalType: R_Type, safe: Boolean): R_Type {
         return if (!safe || formalType is R_NullableType || formalType == R_NullType) {
             formalType

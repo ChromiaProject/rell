@@ -58,7 +58,7 @@ class C_AtEntity(
     }
 }
 
-class C_AtFrom_Entities(
+internal class C_AtFrom_Entities(
     outerExprCtx: C_ExprContext,
     fromCtx: C_AtFromContext,
     fromBlock: R_FrameBlock?,
@@ -357,11 +357,11 @@ class C_AtFrom_Entities(
 }
 
 sealed class C_DbAtWhatValue {
-    abstract fun toDbWhatTop(appCtx: C_AppContext, field: V_DbAtWhatField): Db_AtWhatValue
-    abstract fun toDbWhatSub(): Db_AtWhatValue
+    internal abstract fun toDbWhatTop(appCtx: C_AppContext, field: V_DbAtWhatField): Db_AtWhatValue
+    internal abstract fun toDbWhatSub(): Db_AtWhatValue
 }
 
-class C_DbAtWhatValue_Simple(private val dbExpr: Db_Expr): C_DbAtWhatValue() {
+internal class C_DbAtWhatValue_Simple(private val dbExpr: Db_Expr): C_DbAtWhatValue() {
     override fun toDbWhatTop(appCtx: C_AppContext, field: V_DbAtWhatField): Db_AtWhatValue {
         var resExpr = dbExpr
         if (field.summarization != null) {
@@ -375,7 +375,7 @@ class C_DbAtWhatValue_Simple(private val dbExpr: Db_Expr): C_DbAtWhatValue() {
     }
 }
 
-class C_DbAtWhatValue_Complex(
+internal class C_DbAtWhatValue_Complex internal constructor(
     val vExprs: ImmList<V_Expr>,
     private val evaluator: Db_ComplexAtWhatEvaluator,
 ): C_DbAtWhatValue() {
@@ -403,7 +403,7 @@ class C_DbAtWhatValue_Complex(
     }
 }
 
-class C_DbAtWhatValue_Other(private val dbWhatValue: Db_AtWhatValue): C_DbAtWhatValue() {
+internal class C_DbAtWhatValue_Other(private val dbWhatValue: Db_AtWhatValue): C_DbAtWhatValue() {
     override fun toDbWhatTop(appCtx: C_AppContext, field: V_DbAtWhatField): Db_AtWhatValue {
         V_AtUtils.checkNoWhatModifiersDb(appCtx.msgCtx, field)
         return dbWhatValue

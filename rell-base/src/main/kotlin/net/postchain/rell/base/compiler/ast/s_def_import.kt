@@ -22,7 +22,7 @@ import net.postchain.rell.base.utils.ide.*
 
 private val INVALID_MODULE_SYMBOL_INFO = C_IdeSymbolInfo.UNKNOWN
 
-class C_ImportModulePathHandle(
+internal class C_ImportModulePathHandle(
     val moduleName: R_ModuleName,
     val implicitAlias: C_Name?,
     private val nameHand: C_QualifiedNameHandle?,
@@ -74,7 +74,7 @@ class S_ImportModulePath(
 ) {
     fun ideImplicitAlias() = moduleName?.last
 
-    fun compile(
+    internal fun compile(
         msgMgr: C_MessageManager,
         symCtx: C_SymbolContext,
         importPos: S_Pos,
@@ -140,7 +140,7 @@ class C_ImportAlias(val explicit: C_Name?, val implicit: C_Name?, val anonymous:
     }
 }
 
-sealed class C_ImportTarget {
+internal sealed class C_ImportTarget {
     open fun moduleIdeDefId(): IdeSymbolId? = null
 
     abstract fun aliasIdeInfo(): C_IdeSymbolInfo
@@ -156,7 +156,7 @@ sealed class C_ImportTarget {
 }
 
 sealed class S_ImportTarget {
-    abstract fun compile(
+    internal abstract fun compile(
         ctx: S_DefinitionContext,
         moduleName: R_ModuleName,
         importAlias: C_ImportAlias?,
@@ -302,7 +302,7 @@ class S_ExactImportTargetItem(
     private val wildcard: Boolean,
     private val comment: S_Comment?,
 ) {
-    fun addToNamespace(ctx: C_MountContext, nsBuilder: C_UserNsProtoBuilder, details: Details) {
+    internal fun addToNamespace(ctx: C_MountContext, nsBuilder: C_UserNsProtoBuilder, details: Details) {
         if (wildcard) {
             addToNsWildcard(ctx, nsBuilder, details)
         } else {
@@ -376,7 +376,7 @@ class S_ExactImportTargetItem(
         nsBuilder.addExactImport(realAlias.name, details.targetModule, nameHand, aliasPair)
     }
 
-    class Details(
+    internal class Details(
         val docModifiers: DocModifiers,
         val importAlias: C_Name?,
         val currentModuleName: R_ModuleName,

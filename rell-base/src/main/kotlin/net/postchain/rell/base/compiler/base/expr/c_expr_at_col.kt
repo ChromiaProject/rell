@@ -23,7 +23,7 @@ import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmMultimap
 
-class C_AtFrom_Iterable(
+internal class C_AtFrom_Iterable(
     outerExprCtx: C_ExprContext,
     fromCtx: C_AtFromContext,
     fromBlock: R_FrameBlock?,

@@ -18,8 +18,8 @@ import net.postchain.rell.base.testutils.BaseResourcefulTest
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.SqlTestUtils
 import net.postchain.rell.gtx.testutils.RellGtxTester
-import kotlin.test.Test
 import java.sql.Connection
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class PostchainTest: BaseResourcefulTest() {

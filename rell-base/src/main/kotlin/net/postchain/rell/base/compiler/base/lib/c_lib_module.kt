@@ -10,11 +10,11 @@ import net.postchain.rell.base.lmodel.dsl.Ld_ModuleDsl
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.associateByToImmMap
 
-class C_LibModule(
+class C_LibModule internal constructor(
     val lModule: L_Module,
     typeDefs: List<C_LibTypeDef>,
     val namespace: C_LibNamespace,
-    val extensionTypes: ImmList<C_LibTypeExtension>,
+    internal val extensionTypes: ImmList<C_LibTypeExtension>,
 ) {
     private val typeDefsByName = typeDefs.associateByToImmMap { it.typeName }
 

@@ -11,8 +11,8 @@ import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.mapToImmList
-import kotlin.test.Test
 import java.io.File
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class CliSnippetsTest {

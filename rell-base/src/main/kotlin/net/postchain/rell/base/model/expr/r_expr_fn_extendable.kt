@@ -150,9 +150,9 @@ private class Rt_ExtendableFunctionCombiner_Map(private val mapType: R_MapType):
     }
 }
 
-class R_FunctionCallTarget_ExtendableUserFunction(
-        private val baseFn: R_FunctionDefinition,
-        private val descriptor: R_ExtendableFunctionDescriptor
+internal class R_FunctionCallTarget_ExtendableUserFunction(
+    private val baseFn: R_FunctionDefinition,
+    private val descriptor: R_ExtendableFunctionDescriptor,
 ): R_FunctionCallTarget() {
     override fun call(callCtx: Rt_CallContext, baseValue: Rt_Value?, values: List<Rt_Value>): Rt_Value {
         checkEquals(baseValue, null)

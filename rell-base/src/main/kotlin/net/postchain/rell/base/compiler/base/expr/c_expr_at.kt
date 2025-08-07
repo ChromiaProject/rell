@@ -73,7 +73,7 @@ class C_AtFromMember(
     }
 }
 
-abstract class C_AtFrom(
+internal abstract class C_AtFrom(
     protected val outerExprCtx: C_ExprContext,
     fromCtx: C_AtFromContext,
     protected val fromBlock: R_FrameBlock?,
@@ -145,9 +145,9 @@ sealed class C_AtFromItem_Entity(
 ): C_AtFromItem(pos, atEntity.aliasIdeDef) {
     abstract fun isOuter(): Boolean
     abstract fun getExprs(): List<V_Expr>
-    abstract fun compile(): V_DbAtFromItem
+    internal abstract fun compile(): V_DbAtFromItem
 
-    abstract fun compileJoin(
+    internal abstract fun compileJoin(
         msgCtx: C_MessageContext,
         isOuter: Boolean,
         where: V_Expr?,
@@ -177,7 +177,7 @@ class C_AtFromItem_Entity_Simple(
     }
 }
 
-class C_AtFromItem_Entity_Join(
+internal class C_AtFromItem_Entity_Join(
     pos: S_Pos,
     atEntity: C_AtEntity,
     private val isOuter: Boolean,
@@ -204,7 +204,7 @@ class C_AtFromItem_Entity_Join(
     }
 }
 
-class C_AtFromItem_Iterable(
+internal class C_AtFromItem_Iterable(
     pos: S_Pos,
     aliasIdeDef: C_IdeSymbolDef,
     val alias: C_Name?,
@@ -217,7 +217,7 @@ class C_AtFromItem_Iterable(
     }
 }
 
-class C_AtWhat(
+internal class C_AtWhat(
     val allFields: ImmList<V_DbAtWhatField>,
     private val explicitPos: S_Pos?,
 ) {
@@ -230,7 +230,7 @@ class C_AtWhat(
     }
 }
 
-class C_AtExprBase(
+internal class C_AtExprBase(
     val what: C_AtWhat,
     val where: V_Expr?,
 ) {
@@ -261,7 +261,7 @@ class C_AtExprResult(
     }
 }
 
-class C_AtDetails(
+internal class C_AtDetails(
     val startPos: S_Pos,
     val cardinality: S_PosValue<R_AtCardinality>,
     val base: C_AtExprBase,
@@ -292,15 +292,15 @@ class C_AtDetails(
 
 class C_AtSummarizationPos(val exprPos: S_Pos, val ann: C_AtSummarizationKind)
 
-sealed class C_AtSummarization(
+internal sealed class C_AtSummarization(
     protected val pos: C_AtSummarizationPos,
     protected val valueType: R_Type,
 ) {
     abstract fun isGroup(): Boolean
     open fun isCollectionAggregation(): Boolean = false
     abstract fun getResultType(hasGroup: Boolean): R_Type
-    abstract fun compileR(appCtx: C_AppContext): R_ColAtFieldSummarization
-    abstract fun compileDb(appCtx: C_AppContext, dbExpr: Db_Expr): Db_Expr
+    internal abstract fun compileR(appCtx: C_AppContext): R_ColAtFieldSummarization
+    internal abstract fun compileDb(appCtx: C_AppContext, dbExpr: Db_Expr): Db_Expr
 
     companion object {
         fun typeError(msgCtx: C_MessageContext, type: R_Type, pos: C_AtSummarizationPos) {
@@ -311,7 +311,7 @@ sealed class C_AtSummarization(
     }
 }
 
-class C_AtSummarization_Group(pos: C_AtSummarizationPos, valueType: R_Type): C_AtSummarization(pos, valueType) {
+internal class C_AtSummarization_Group(pos: C_AtSummarizationPos, valueType: R_Type): C_AtSummarization(pos, valueType) {
     override fun isGroup() = true
     override fun getResultType(hasGroup: Boolean) = valueType
 
@@ -323,7 +323,7 @@ class C_AtSummarization_Group(pos: C_AtSummarizationPos, valueType: R_Type): C_A
     override fun compileDb(appCtx: C_AppContext, dbExpr: Db_Expr) = dbExpr
 }
 
-sealed class C_AtSummarization_Aggregate(
+internal sealed class C_AtSummarization_Aggregate(
     pos: C_AtSummarizationPos,
     valueType: R_Type,
 ): C_AtSummarization(pos, valueType) {
@@ -338,7 +338,7 @@ sealed class C_AtSummarization_Aggregate(
     }
 }
 
-class C_AtSummarization_Aggregate_Sum(
+internal class C_AtSummarization_Aggregate_Sum(
     pos: C_AtSummarizationPos,
     valueType: R_Type,
     private val rOp: R_BinaryOp,
@@ -349,7 +349,7 @@ class C_AtSummarization_Aggregate_Sum(
     override fun compileDb0(msgCtx: C_MessageContext) = Db_SysFn_Aggregation.Sum
 }
 
-class C_AtSummarization_Aggregate_MinMax(
+internal class C_AtSummarization_Aggregate_MinMax(
     pos: C_AtSummarizationPos,
     valueType: R_Type,
     private val rCmpOp: R_CmpOp,
@@ -381,7 +381,7 @@ class C_AtSummarization_Aggregate_MinMax(
     }
 }
 
-abstract class C_AtSummarization_Aggregate_Collection(
+internal abstract class C_AtSummarization_Aggregate_Collection(
     pos: C_AtSummarizationPos,
     valueType: R_Type,
 ): C_AtSummarization_Aggregate(pos, valueType) {
@@ -395,7 +395,7 @@ abstract class C_AtSummarization_Aggregate_Collection(
     }
 }
 
-class C_AtSummarization_Aggregate_List(
+internal class C_AtSummarization_Aggregate_List(
     pos: C_AtSummarizationPos,
     valueType: R_Type,
 ): C_AtSummarization_Aggregate_Collection(pos, valueType) {
@@ -405,7 +405,7 @@ class C_AtSummarization_Aggregate_List(
     override fun compileR(appCtx: C_AppContext) = R_ColAtFieldSummarization_Aggregate_List(listType)
 }
 
-class C_AtSummarization_Aggregate_Set(
+internal class C_AtSummarization_Aggregate_Set(
     pos: C_AtSummarizationPos,
     valueType: R_Type,
 ): C_AtSummarization_Aggregate_Collection(pos, valueType) {
@@ -415,7 +415,7 @@ class C_AtSummarization_Aggregate_Set(
     override fun compileR(appCtx: C_AppContext) = R_ColAtFieldSummarization_Aggregate_Set(setType)
 }
 
-class C_AtSummarization_Aggregate_Map(
+internal class C_AtSummarization_Aggregate_Map(
     pos: C_AtSummarizationPos,
     valueType: R_Type,
     private val mapType: R_MapType,

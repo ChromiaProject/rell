@@ -6,9 +6,9 @@ package net.postchain.rell.base.misc
 
 import mu.KLogging
 import org.junit.jupiter.api.Timeout
-import kotlin.test.Test
 import java.net.ServerSocket
 import java.util.concurrent.TimeUnit
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class Log4jTest {

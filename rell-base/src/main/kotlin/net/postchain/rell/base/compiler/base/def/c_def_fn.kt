@@ -24,11 +24,11 @@ import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.ide.IdeCompletion
 
 abstract class C_GlobalFunction {
-    open fun getFunctionDefinition(): R_FunctionDefinition? = null
-    open fun getAbstractDescriptor(): C_AbstractFunctionDescriptor? = null
-    open fun getExtendableDescriptor(): C_ExtendableFunctionDescriptor? = null
-    open fun getDefMeta(): R_DefinitionMeta? = null
-    open fun ideGetParameterCompletions(): ImmMultimap<String, IdeCompletion> = immMultimapOf()
+    internal open fun getFunctionDefinition(): R_FunctionDefinition? = null
+    internal open fun getAbstractDescriptor(): C_AbstractFunctionDescriptor? = null
+    internal open fun getExtendableDescriptor(): C_ExtendableFunctionDescriptor? = null
+    internal open fun getDefMeta(): R_DefinitionMeta? = null
+    internal open fun ideGetParameterCompletions(): ImmMultimap<String, IdeCompletion> = immMultimapOf()
 
     protected abstract fun compileCall0(
         ctx: C_ExprContext,
@@ -55,7 +55,7 @@ abstract class C_GlobalFunction {
     }
 }
 
-class C_UserFunctionHeader(
+internal class C_UserFunctionHeader(
     params: C_FormalParameters,
     docComment: DocComment?,
     explicitType: R_Type?,
@@ -73,7 +73,7 @@ class C_UserFunctionHeader(
     }
 }
 
-abstract class C_UserGlobalFunction(
+internal abstract class C_UserGlobalFunction(
     val rFunction: R_FunctionDefinition,
 ): C_GlobalFunction() {
     private val headerLate = C_LateInit(C_CompilerPass.MEMBERS, C_UserFunctionHeader.ERROR)
@@ -111,7 +111,7 @@ abstract class C_UserGlobalFunction(
     }
 }
 
-class C_UserFunctionDeepDefinitionBody(
+internal class C_UserFunctionDeepDefinitionBody(
     private val bodyCtx: C_FunctionBodyContext,
     private val sBody: S_FunctionBody,
 ): C_CommonDeepDefinitionBody<R_FunctionBody>(bodyCtx.appCtx) {
@@ -121,7 +121,7 @@ class C_UserFunctionDeepDefinitionBody(
     override fun compileBody() = sBody.compileFunction(bodyCtx)
 }
 
-class C_RegularUserGlobalFunction(
+internal class C_RegularUserGlobalFunction(
     rFunction: R_FunctionDefinition,
     private val abstractDescriptor: C_AbstractFunctionDescriptor?,
 ): C_UserGlobalFunction(rFunction) {
@@ -132,7 +132,7 @@ class C_RegularUserGlobalFunction(
     }
 }
 
-class C_FunctionCallTarget_RegularUserFunction(
+internal class C_FunctionCallTarget_RegularUserFunction(
     base: C_FunctionCallTargetBase,
     retType: R_Type?,
     private val rFunction: R_RoutineDefinition,

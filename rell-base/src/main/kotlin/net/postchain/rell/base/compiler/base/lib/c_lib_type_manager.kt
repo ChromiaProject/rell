@@ -14,7 +14,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.flatMapToImmList
 import net.postchain.rell.base.utils.mapNotNullToImmList
 
-class C_LibTypeManager(modules: List<C_LibModule>) {
+internal class C_LibTypeManager(modules: List<C_LibModule>) {
     private val allExtensionTypes = modules.flatMapToImmList { it.extensionTypes }
 
     private val typeCache = mutableMapOf<R_Type, C_TypeCacheEntry>()

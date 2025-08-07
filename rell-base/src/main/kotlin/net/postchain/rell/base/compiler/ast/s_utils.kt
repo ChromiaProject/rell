@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.utils.C_FeatureRestrictions
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.parser.RellTokenMatch
+import net.postchain.rell.base.model.R_ErrorPos
 import net.postchain.rell.base.model.R_FilePos
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_Name
@@ -31,8 +32,9 @@ abstract class S_Pos: Comparable<S_Pos> {
     fun str() = "${path()}(${line()}:${column()})"
     fun strLine() = "${path()}:${line()}"
 
-    fun toFilePos() = R_FilePos(path().str(), line())
-    fun toDocPos() = DocSourcePos(path().str(), line())
+    internal fun toFilePos() = R_FilePos(path().str(), line())
+    internal fun toErrorPos() = R_ErrorPos(path().str(), line())
+    internal fun toDocPos() = DocSourcePos(path().str(), line())
 
     final override fun compareTo(other: S_Pos): Int {
         var d = path().compareTo(other.path())
@@ -125,7 +127,7 @@ data class S_PosValue<T>(val pos: S_Pos, val value: T) {
 class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
     private val str = rName.str
 
-    fun compile(ctx: C_NameContext, def: Boolean = false): C_NameHandle {
+    internal fun compile(ctx: C_NameContext, def: Boolean = false): C_NameHandle {
         if (def) {
             val resName = RESERVED_NAMES[rName]
             resName?.access(ctx, pos, rName)
@@ -133,11 +135,11 @@ class S_Name(val pos: S_Pos, private val rName: R_Name): S_Node() {
         return ctx.addName(this, rName)
     }
 
-    fun compile(ctx: C_SymbolContext, def: Boolean = false) = compile(ctx.nameCtx, def = def)
-    fun compile(ctx: C_MountContext, def: Boolean = false) = compile(ctx.symCtx, def = def)
-    fun compile(ctx: C_ExprContext, def: Boolean = false) = compile(ctx.symCtx, def = def)
+    internal fun compile(ctx: C_SymbolContext, def: Boolean = false) = compile(ctx.nameCtx, def = def)
+    internal fun compile(ctx: C_MountContext, def: Boolean = false) = compile(ctx.symCtx, def = def)
+    internal fun compile(ctx: C_ExprContext, def: Boolean = false) = compile(ctx.symCtx, def = def)
 
-    fun getRNameSpecial(): R_Name {
+    internal fun getRNameSpecial(): R_Name {
         // This method shall be called only in special cases. Whenever possible, one of compile(...) methods must be
         // used in order to add the name to the context and attach IDE meta-information to the name.
         return rName

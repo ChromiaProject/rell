@@ -20,7 +20,7 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.NoConnSqlExecutor
 import net.postchain.rell.base.utils.*
 
-class Rt_GlobalConstantState(val constId: R_GlobalConstantId, val value: Rt_Value)
+internal class Rt_GlobalConstantState(val constId: R_GlobalConstantId, val value: Rt_Value)
 
 abstract class Rt_ModuleArgsSource {
     abstract fun getModuleArgs(exeCtx: Rt_ExecutionContext, moduleName: R_ModuleName): Rt_Value?
@@ -75,7 +75,7 @@ class Rt_GtvModuleArgsSource(
     }
 }
 
-class Rt_GlobalConstants(
+internal class Rt_GlobalConstants(
     private val appCtx: Rt_AppContext,
     private val moduleArgsSource: Rt_ModuleArgsSource,
     oldState: State,

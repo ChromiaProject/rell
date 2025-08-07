@@ -12,19 +12,19 @@ import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.*
 
-sealed class R_UpdateTarget {
+internal sealed class R_UpdateTarget {
     abstract fun entity(): R_DbAtEntity
     abstract fun extraEntities(): List<R_DbAtEntity>
     abstract fun where(): Db_Expr?
 
-    abstract fun execute(stmt: R_BaseUpdateStatement, frame: Rt_CallFrame)
+    abstract fun execute(stmt: R_BaseUpdateStatement, frame: Rt_CallFrame, errPos: R_ErrorPos)
 }
 
-class R_UpdateTarget_Simple(
-    val entity: R_DbAtEntity,
-    val extraEntities: ImmList<R_DbAtEntity>,
-    val cardinality: R_AtCardinality,
-    val where: Db_Expr?,
+internal class R_UpdateTarget_Simple(
+    private val entity: R_DbAtEntity,
+    private val extraEntities: ImmList<R_DbAtEntity>,
+    private val cardinality: R_AtCardinality,
+    private val where: Db_Expr?,
 ): R_UpdateTarget() {
     init {
         val intersect = extraEntities.filter { it.id == entity.id }
@@ -37,8 +37,8 @@ class R_UpdateTarget_Simple(
     override fun extraEntities() = extraEntities
     override fun where() = where
 
-    override fun execute(stmt: R_BaseUpdateStatement, frame: Rt_CallFrame) {
-        executeCommon(stmt, frame, fromItems, cardinality)
+    override fun execute(stmt: R_BaseUpdateStatement, frame: Rt_CallFrame, errPos: R_ErrorPos) {
+        executeCommon(stmt, frame, fromItems, cardinality, errPos)
     }
 
     companion object {
@@ -47,19 +47,20 @@ class R_UpdateTarget_Simple(
             return allEntities.mapToImmList { RedDb_AtFromItem(it, null, false) }
         }
 
-        fun executeCommon(
+        internal fun executeCommon(
             stmt: R_BaseUpdateStatement,
             frame: Rt_CallFrame,
             fromItems: List<RedDb_AtFromItem>,
             cardinality: R_AtCardinality,
+            errPos: R_ErrorPos,
         ) {
             val count = stmt.executeSqlCount(frame, fromItems)
-            R_AtExpr.checkCount(cardinality, count, "records")
+            R_AtExpr.checkCount(frame, errPos, cardinality, count, "records")
         }
     }
 }
 
-sealed class R_UpdateTarget_Expr(
+internal sealed class R_UpdateTarget_Expr(
     private val entity: R_DbAtEntity,
     extraEntities: List<R_DbAtEntity>,
     private val where: Db_Expr,
@@ -75,7 +76,7 @@ sealed class R_UpdateTarget_Expr(
 
     protected abstract fun execute0(stmt: R_BaseUpdateStatement, frame: Rt_CallFrame, value: Rt_Value)
 
-    final override fun execute(stmt: R_BaseUpdateStatement, frame: Rt_CallFrame) {
+    final override fun execute(stmt: R_BaseUpdateStatement, frame: Rt_CallFrame, errPos: R_ErrorPos) {
         val value = expr.evaluate(frame)
         execute0(stmt, frame, value)
     }
@@ -87,8 +88,13 @@ sealed class R_UpdateTarget_Expr(
     }
 }
 
-class R_UpdateTarget_Expr_One(entity: R_DbAtEntity, extraEntities: List<R_DbAtEntity>, where: Db_Expr, expr: R_Expr, lambda: R_LambdaBlock)
-: R_UpdateTarget_Expr(entity, extraEntities, where, expr, lambda) {
+internal class R_UpdateTarget_Expr_One(
+    entity: R_DbAtEntity,
+    extraEntities: List<R_DbAtEntity>,
+    where: Db_Expr,
+    expr: R_Expr,
+    lambda: R_LambdaBlock,
+): R_UpdateTarget_Expr(entity, extraEntities, where, expr, lambda) {
     override fun execute0(stmt: R_BaseUpdateStatement, frame: Rt_CallFrame, value: Rt_Value) {
         if (value != Rt_NullValue) {
             executeStmt(frame, stmt, value)
@@ -96,13 +102,13 @@ class R_UpdateTarget_Expr_One(entity: R_DbAtEntity, extraEntities: List<R_DbAtEn
     }
 }
 
-class R_UpdateTarget_Expr_Many(
-        entity: R_DbAtEntity,
-        where: Db_Expr,
-        expr: R_Expr,
-        lambda: R_LambdaBlock,
-        private val set: Boolean,
-        private val listType: R_Type
+internal class R_UpdateTarget_Expr_Many(
+    entity: R_DbAtEntity,
+    where: Db_Expr,
+    expr: R_Expr,
+    lambda: R_LambdaBlock,
+    private val set: Boolean,
+    private val listType: R_Type,
 ): R_UpdateTarget_Expr(entity, immListOf(), where, expr, lambda) {
     override fun execute0(stmt: R_BaseUpdateStatement, frame: Rt_CallFrame, value: Rt_Value) {
         val lst = if (set) {
@@ -125,24 +131,32 @@ class R_UpdateTarget_Expr_Many(
     }
 }
 
-class R_UpdateTarget_Object(private val entity: R_DbAtEntity): R_UpdateTarget() {
+internal class R_UpdateTarget_Object(private val entity: R_DbAtEntity): R_UpdateTarget() {
     private val fromItems = R_UpdateTarget_Simple.getFromItems(entity, listOf())
 
     override fun entity() = entity
     override fun extraEntities(): List<R_DbAtEntity> = listOf()
     override fun where() = null
 
-    override fun execute(stmt: R_BaseUpdateStatement, frame: Rt_CallFrame) {
-        R_UpdateTarget_Simple.executeCommon(stmt, frame, fromItems, R_AtCardinality.ONE)
+    override fun execute(stmt: R_BaseUpdateStatement, frame: Rt_CallFrame, errPos: R_ErrorPos) {
+        R_UpdateTarget_Simple.executeCommon(stmt, frame, fromItems, R_AtCardinality.ONE, errPos)
     }
 }
 
 class R_UpdateStatementWhat(val attr: R_Attribute, val expr: Db_Expr)
 
-sealed class R_BaseUpdateStatement(val target: R_UpdateTarget, val fromBlock: R_FrameBlock): R_Statement() {
+internal sealed class R_BaseUpdateStatement(
+    protected val target: R_UpdateTarget,
+    private val fromBlock: R_FrameBlock,
+    private val errPos: R_ErrorPos,
+): R_Statement() {
     // "returning" is always false, but it may be needed in the future (when update expression returning updated
     // entities is supported), so keeping it.
-    protected abstract fun buildSql(frame: Rt_CallFrame, ctx: SqlGenContext, returning: Boolean): ParameterizedSql
+    protected abstract fun buildSql(
+        frame: Rt_CallFrame,
+        ctx: SqlGenContext,
+        @Suppress("SameParameterValue") returning: Boolean,
+    ): ParameterizedSql
 
     fun executeSql(frame: Rt_CallFrame, fromItems: List<RedDb_AtFromItem>) {
         frame.block(fromBlock) {
@@ -163,7 +177,7 @@ sealed class R_BaseUpdateStatement(val target: R_UpdateTarget, val fromBlock: R_
 
     final override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         frame.checkDbUpdateAllowed()
-        target.execute(this, frame)
+        target.execute(this, frame, errPos)
         return null
     }
 
@@ -246,11 +260,12 @@ sealed class R_BaseUpdateStatement(val target: R_UpdateTarget, val fromBlock: R_
     }
 }
 
-class R_UpdateStatement(
-        target: R_UpdateTarget,
-        fromBlock: R_FrameBlock,
-        private val what: ImmList<R_UpdateStatementWhat>
-): R_BaseUpdateStatement(target, fromBlock) {
+internal class R_UpdateStatement(
+    target: R_UpdateTarget,
+    fromBlock: R_FrameBlock,
+    errPos: R_ErrorPos,
+    private val what: ImmList<R_UpdateStatementWhat>,
+): R_BaseUpdateStatement(target, fromBlock, errPos) {
     override fun buildSql(frame: Rt_CallFrame, ctx: SqlGenContext, returning: Boolean): ParameterizedSql {
         val redWhere = target.where()?.toRedExpr(frame)
 
@@ -267,11 +282,11 @@ class R_UpdateStatement(
     }
 
     private fun buildSql0(
-            sqlCtx: Rt_SqlContext,
-            returning: Boolean,
-            fromInfo: SqlFromInfo,
-            whatSql: ParameterizedSql,
-            whereSql: ParameterizedSql?
+        sqlCtx: Rt_SqlContext,
+        returning: Boolean,
+        fromInfo: SqlFromInfo,
+        whatSql: ParameterizedSql,
+        whereSql: ParameterizedSql?,
     ): ParameterizedSql {
         val b = SqlBuilder()
 
@@ -305,7 +320,11 @@ class R_UpdateStatement(
     }
 }
 
-class R_DeleteStatement(target: R_UpdateTarget, fromBlock: R_FrameBlock): R_BaseUpdateStatement(target, fromBlock) {
+internal class R_DeleteStatement(
+    target: R_UpdateTarget,
+    fromBlock: R_FrameBlock,
+    errPos: R_ErrorPos,
+): R_BaseUpdateStatement(target, fromBlock, errPos) {
     override fun buildSql(frame: Rt_CallFrame, ctx: SqlGenContext, returning: Boolean): ParameterizedSql {
         val redWhere = target.where()?.toRedExpr(frame)
         val whereSql = translateWhere(ctx, redWhere)
@@ -314,10 +333,10 @@ class R_DeleteStatement(target: R_UpdateTarget, fromBlock: R_FrameBlock): R_Base
     }
 
     private fun buildSql0(
-            sqlCtx: Rt_SqlContext,
-            returning: Boolean,
-            fromInfo: SqlFromInfo,
-            whereSql: ParameterizedSql?
+        sqlCtx: Rt_SqlContext,
+        returning: Boolean,
+        fromInfo: SqlFromInfo,
+        whereSql: ParameterizedSql?,
     ): ParameterizedSql {
         val b = SqlBuilder()
 

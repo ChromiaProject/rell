@@ -22,7 +22,7 @@ import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.doc.DocComment
 
-class C_QueryHeader(
+internal class C_QueryHeader(
     params: C_FormalParameters,
     docComment: DocComment?,
     explicitType: R_Type?,
@@ -35,14 +35,14 @@ class C_QueryHeader(
     }
 }
 
-class C_QueryGlobalFunction(val rQuery: R_QueryDefinition): C_GlobalFunction() {
+internal class C_QueryGlobalFunction(val rQuery: R_QueryDefinition): C_GlobalFunction() {
     private val headerLate = C_LateInit(C_CompilerPass.MEMBERS, C_QueryHeader.ERROR)
 
     override fun getDefMeta(): R_DefinitionMeta {
         return R_DefinitionMeta("query", rQuery.defName, mountName = rQuery.mountName)
     }
 
-    fun setHeader(header: C_QueryHeader) {
+    internal fun setHeader(header: C_QueryHeader) {
         headerLate.set(header)
     }
 
@@ -60,7 +60,7 @@ class C_QueryGlobalFunction(val rQuery: R_QueryDefinition): C_GlobalFunction() {
     }
 }
 
-class C_QueryDeepDefinitionBody(
+internal class C_QueryDeepDefinitionBody(
     private val bodyCtx: C_FunctionBodyContext,
     private val sBody: S_FunctionBody,
 ): C_CommonDeepDefinitionBody<R_QueryBody>(bodyCtx.appCtx) {

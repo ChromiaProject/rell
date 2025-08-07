@@ -10,8 +10,8 @@ import net.postchain.rell.base.lib.type.Lib_BigIntegerMath
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import net.postchain.rell.base.testutils.BaseExprTest
 import net.postchain.rell.base.testutils.RellExprTester.TstVal
-import kotlin.test.Test
 import java.math.BigInteger
+import kotlin.test.Test
 
 abstract class OperatorsBaseTest: BaseExprTest() {
     @Test fun testCmpBoolean() {

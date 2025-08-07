@@ -33,15 +33,15 @@ abstract class C_VarId {
     abstract fun nameMsg(): String
 }
 
-data class C_LocalVarUid(val id: Long, val name: String, val fn: R_FnUid): C_VarId() {
+internal data class C_LocalVarUid(val id: Long, val name: String, val fn: R_FnUid): C_VarId() {
     override fun nameMsg() = name
 }
 
-data class C_GlobalConstantUid(val id: Long, val name: String, val container: R_ContainerUid): C_VarId() {
+internal data class C_GlobalConstantUid(val id: Long, val name: String, val container: R_ContainerUid): C_VarId() {
     override fun nameMsg() = name
 }
 
-data class C_LoopUid(val id: Long, val fn: R_FnUid)
+internal data class C_LoopUid(val id: Long, val fn: R_FnUid)
 
 class C_GlobalContext(
     val compilerOptions: C_CompilerOptions,
@@ -49,7 +49,7 @@ class C_GlobalContext(
 ) {
     companion object {
         private val appUidGen = C_UidGen { id, _ -> R_AppUid(id) }
-        fun nextAppUid(): R_AppUid = synchronized(appUidGen) { appUidGen.next("") }
+        internal fun nextAppUid(): R_AppUid = synchronized(appUidGen) { appUidGen.next("") }
     }
 }
 
@@ -64,9 +64,9 @@ class C_MessageContext private constructor(
     }
 }
 
-class C_ModuleProvider(
+internal class C_ModuleProvider(
     private val modules: ImmMap<C_ModuleKey, C_Module>,
-    private val preModules: ImmMap<C_ModuleKey, C_PrecompiledModule>
+    private val preModules: ImmMap<C_ModuleKey, C_PrecompiledModule>,
 ) {
     fun getModule(name: R_ModuleName, extChain: C_ExternalChain?): C_ModuleDescriptor? {
         val key = C_ModuleKey(name, extChain)
@@ -75,67 +75,67 @@ class C_ModuleProvider(
 }
 
 sealed class C_ModuleContext(
-    val appCtx: C_AppContext,
+    internal val appCtx: C_AppContext,
     private val modProvider: C_ModuleProvider,
-    val moduleName: R_ModuleName,
-    val extChain: C_ExternalChain?,
-    val containerKey: C_ContainerKey,
+    internal val moduleName: R_ModuleName,
+    internal val extChain: C_ExternalChain?,
+    internal val containerKey: C_ContainerKey,
 ) {
-    val globalCtx = appCtx.globalCtx
-    val msgCtx = appCtx.msgCtx
-    val executor = appCtx.executor
+    internal val globalCtx = appCtx.globalCtx
+    internal val msgCtx = appCtx.msgCtx
+    internal val executor = appCtx.executor
 
-    abstract val abstract: Boolean
-    abstract val external: Boolean
-    abstract val directory: Boolean
-    abstract val test: Boolean
-    abstract val selected: Boolean
-    abstract val mountName: R_MountName
-    abstract val repl: Boolean
+    internal abstract val abstract: Boolean
+    internal abstract val external: Boolean
+    internal abstract val directory: Boolean
+    internal abstract val test: Boolean
+    internal abstract val selected: Boolean
+    internal abstract val mountName: R_MountName
+    internal abstract val repl: Boolean
 
-    abstract val scopeBuilder: C_ScopeBuilder
+    internal abstract val scopeBuilder: C_ScopeBuilder
 
     open val isTestDependency: Boolean = false
 
-    val rModuleKey = R_ModuleKey(moduleName, extChain?.name)
+    internal val rModuleKey = R_ModuleKey(moduleName, extChain?.name)
 
     private val sysDefs = extChain?.sysDefs ?: appCtx.sysDefs
-    val sysDefsCommon: C_SystemDefsCommon get() = sysDefs.common
-    val sysDefsScope: C_SystemDefsScope get() = if (isTestLib()) sysDefs.testScope else sysDefs.appScope
+    internal val sysDefsCommon: C_SystemDefsCommon get() = sysDefs.common
+    internal val sysDefsScope: C_SystemDefsScope get() = if (isTestLib()) sysDefs.testScope else sysDefs.appScope
 
-    val typeMgr: C_LibTypeManager by lazy {
+    internal val typeMgr: C_LibTypeManager by lazy {
         C_LibTypeManager(sysDefsScope.modules)
     }
 
-    private val containerUid = appCtx.nextContainerUid(containerKey.keyStr())
-    private val fnUidGen = C_UidGen { id, name -> R_FnUid(id, name, containerUid) }
+    private val containerUid = appCtx.nextContainerUid()
+    private val fnUidGen = C_UidGen { id, _ -> R_FnUid(id, containerUid) }
     private val constUidGen = C_UidGen { id, name -> C_GlobalConstantUid(id, name, containerUid) }
 
     private val namelessFunctionIds = mutableMapOf<C_RNamePath, MutableLong>()
 
-    fun nextFnUid(name: String) = fnUidGen.next(name)
-    fun nextConstVarUid(name: String): C_VarId = constUidGen.next(name)
+    internal fun nextFnUid(name: String) = fnUidGen.next(name)
+    internal fun nextConstVarUid(name: String): C_VarId = constUidGen.next(name)
 
-    fun nextNamelessFunctionId(namespace: C_RNamePath): Long {
+    internal fun nextNamelessFunctionId(namespace: C_RNamePath): Long {
         val idCtr = namelessFunctionIds.computeIfAbsent(namespace) { MutableLong(0) }
         val res = idCtr.toLong()
         idCtr.increment()
         return res
     }
 
-    fun isTestLib(): Boolean = test || repl || globalCtx.compilerOptions.testLib
+    internal fun isTestLib(): Boolean = test || repl || globalCtx.compilerOptions.testLib
 
-    fun getModule(name: R_ModuleName, extChain: C_ExternalChain?): C_ModuleDescriptor? {
+    internal fun getModule(name: R_ModuleName, extChain: C_ExternalChain?): C_ModuleDescriptor? {
         return modProvider.getModule(name, extChain)
     }
 
-    abstract fun createFileNsAssembler(): C_NsAsm_ComponentAssembler
-    abstract fun getModuleDefs(): C_ModuleDefs
-    abstract fun getModuleArgsStruct(): C_Struct?
-    abstract fun getModuleDefMeta(): R_DefinitionMeta
+    internal abstract fun createFileNsAssembler(): C_NsAsm_ComponentAssembler
+    internal abstract fun getModuleDefs(): C_ModuleDefs
+    internal abstract fun getModuleArgsStruct(): C_Struct?
+    internal abstract fun getModuleDefMeta(): R_DefinitionMeta
 }
 
-class C_RegularModuleContext(
+internal class C_RegularModuleContext(
     appCtx: C_AppContext,
     modProvider: C_ModuleProvider,
     private val module: C_Module,
@@ -181,7 +181,7 @@ class C_RegularModuleContext(
     override fun getModuleDefMeta() = module.descriptor.defMeta
 }
 
-class C_ReplModuleContext(
+internal class C_ReplModuleContext(
     appCtx: C_AppContext,
     modProvider: C_ModuleProvider,
     moduleName: R_ModuleName,
@@ -209,7 +209,7 @@ class C_ReplModuleContext(
     override fun getModuleDefMeta() = R_DefinitionMeta.forModule(moduleName, mountName)
 }
 
-class C_FileContext(
+internal class C_FileContext(
     val modCtx: C_ModuleContext,
     val symCtx: C_SymbolContext,
     val path: C_SourcePath,
@@ -262,13 +262,13 @@ class C_FileContext(
     )
 }
 
-class C_ExternalChain(
+internal class C_ExternalChain(
     val name: String,
     val ref: R_ExternalChainRef,
     val sysDefs: C_SystemDefs,
 )
 
-class C_MountContext(
+internal class C_MountContext(
     val fileCtx: C_FileContext,
     val nsCtx: C_NamespaceContext,
     val extChain: C_ExternalChain?,
@@ -341,7 +341,7 @@ class C_MountContext(
         return if (ann == null) extChain else appCtx.addExternalChain(ann.name)
     }
 
-    internal fun defBaseCommon(
+    fun defBaseCommon(
         defType: C_DefinitionType,
         ideKind: IdeSymbolKind,
         qualifiedName: C_StringQualifiedName,
@@ -362,7 +362,7 @@ class C_MountContext(
         )
     }
 
-    internal fun defBase(
+    fun defBase(
         simpleName: C_Name,
         defType: C_DefinitionType,
         ideKind: IdeSymbolKind,
@@ -375,7 +375,7 @@ class C_MountContext(
         return base.userBase(simpleName.pos)
     }
 
-    internal fun defBase(
+    fun defBase(
         nameHand: C_NameHandle,
         defType: C_DefinitionType,
         ideKind: IdeSymbolKind,
@@ -409,8 +409,8 @@ enum class C_DefinitionType(
     fun isEntityOrObject() = this == ENTITY || this == OBJECT
 }
 
-class C_DefinitionContext(
-    val mntCtx: C_MountContext,
+class C_DefinitionContext internal constructor(
+    internal val mntCtx: C_MountContext,
     val definitionType: C_DefinitionType,
     val defId: R_DefinitionId,
     val cDefName: C_DefinitionName,
@@ -419,14 +419,14 @@ class C_DefinitionContext(
 ) {
     val nsCtx = mntCtx.nsCtx
     val modCtx = nsCtx.modCtx
-    val appCtx = modCtx.appCtx
+    internal val appCtx = modCtx.appCtx
     val symCtx = mntCtx.symCtx
     val msgCtx = appCtx.msgCtx
     val globalCtx = modCtx.globalCtx
     val executor = modCtx.executor
 
     private val initFrameLate = C_LateInit(C_CompilerPass.FRAMES, R_CallFrame.ERROR)
-    val initFrameGetter = initFrameLate.getter
+    internal val initFrameGetter = initFrameLate.getter
 
     val initExprCtx: C_ExprContext = let {
         val fnCtx = C_FunctionContext(this, "${defName.appLevelName}.<init>", null, ImmTypedKeyMap())
@@ -464,7 +464,7 @@ class C_DefinitionContext(
     }
 }
 
-class C_FunctionContext(
+internal class C_FunctionContext(
     val defCtx: C_DefinitionContext,
     name: String,
     val explicitReturnType: R_Type?,
@@ -478,7 +478,7 @@ class C_FunctionContext(
     val executor = modCtx.executor
 
     val fnUid = defCtx.modCtx.nextFnUid(name)
-    private val blockUidGen = C_UidGen { id, name -> R_FrameBlockUid(id, name, fnUid) }
+    private val blockUidGen = C_UidGen { id, _ -> R_FrameBlockUid(id, fnUid) }
     private val varUidGen = C_UidGen { id, name -> C_LocalVarUid(id, name, fnUid) }
     private val loopUidGen = C_UidGen { id, _ -> C_LoopUid(id, fnUid) }
 
@@ -487,7 +487,7 @@ class C_FunctionContext(
         else -> RetTypeTracker.Implicit(msgCtx)
     }
 
-    fun nextBlockUid(name: String) = blockUidGen.next(name)
+    fun nextBlockUid() = blockUidGen.next("")
     fun nextVarUid(name: String) = varUidGen.next(name)
     fun nextLoopUid() = loopUidGen.next("")
 
@@ -560,14 +560,14 @@ class C_FunctionContext(
     }
 }
 
-class C_FunctionBodyContext(
-    val defCtx: C_DefinitionContext,
-    val namePos: S_Pos,
-    val explicitRetType: R_Type?,
-    val formalParams: C_FormalParameters,
-    val ideCompsLate: C_LateInit<ImmMultimap<String, IdeCompletion>>,
+class C_FunctionBodyContext internal constructor(
+    internal val defCtx: C_DefinitionContext,
+    internal val namePos: S_Pos,
+    internal val explicitRetType: R_Type?,
+    internal val formalParams: C_FormalParameters,
+    internal val ideCompsLate: C_LateInit<ImmMultimap<String, IdeCompletion>>,
 ) {
-    val appCtx = defCtx.appCtx
-    val executor = defCtx.executor
-    val defName = defCtx.defName
+    internal val appCtx = defCtx.appCtx
+    internal val executor = defCtx.executor
+    internal val defName = defCtx.defName
 }

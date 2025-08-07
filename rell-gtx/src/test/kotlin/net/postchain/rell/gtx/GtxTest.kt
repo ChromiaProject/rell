@@ -9,8 +9,8 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.base.lang.type.DecimalTest
 import net.postchain.rell.base.lib.LibBlockTransactionTest
 import net.postchain.rell.gtx.testutils.BaseGtxTest
-import kotlin.test.Test
 import java.math.BigInteger
+import kotlin.test.Test
 
 class GtxTest: BaseGtxTest() {
     @Test fun testObject() {

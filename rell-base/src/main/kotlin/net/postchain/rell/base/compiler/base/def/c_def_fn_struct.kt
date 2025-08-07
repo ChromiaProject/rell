@@ -20,7 +20,7 @@ import net.postchain.rell.base.model.R_Struct
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
 
-class C_StructGlobalFunction(private val struct: R_Struct): C_GlobalFunction() {
+internal class C_StructGlobalFunction(private val struct: R_Struct): C_GlobalFunction() {
     override fun compileCall0(
         ctx: C_ExprContext,
         name: LazyPosString,

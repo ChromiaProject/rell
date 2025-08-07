@@ -32,7 +32,7 @@ import net.postchain.rell.base.utils.One
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmMap
 
-class C_GlobalConstantDefinition(
+internal class C_GlobalConstantDefinition(
     val rDef: R_GlobalConstantDefinition,
     private val typePos: S_Pos,
     varId: C_VarId,
@@ -119,7 +119,7 @@ class C_GlobalConstantDefinition(
     }
 }
 
-class C_GlobalConstantHeader(
+internal class C_GlobalConstantHeader(
     explicitType: R_Type?,
     val constBody: C_GlobalConstantDeepDefinitionBody?,
 ) {
@@ -131,7 +131,7 @@ class C_GlobalConstantHeader(
     }
 }
 
-class C_GlobalConstantDeepDefinitionBody(
+internal class C_GlobalConstantDeepDefinitionBody(
     private val defCtx: C_DefinitionContext,
     private val sExpr: S_Expr,
     private val constId: R_GlobalConstantId,

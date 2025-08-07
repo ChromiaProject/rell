@@ -6,16 +6,13 @@ package net.postchain.rell.base.runtime
 
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.model.expr.R_Expr
+import net.postchain.rell.base.model.expr.R_BaseExpr
 import net.postchain.rell.base.utils.*
 import java.util.*
 
-class Rt_CallStack(val prev: Rt_CallStack?, val pos: R_StackPos)
-
-class Rt_CallFrame(
+internal class Rt_CallFrame(
     val defCtx: Rt_DefinitionContext,
     private val rFrame: R_CallFrame,
-    private val stack: Rt_CallStack?,
     state: Rt_CallFrameState?,
 ) {
     val exeCtx = defCtx.exeCtx
@@ -68,7 +65,7 @@ class Rt_CallFrame(
     }
 
     fun set(ptr: R_VarPtr, varType: R_Type, value: Rt_Value, overwrite: Boolean) {
-        R_Expr.typeCheck(this, varType, value)
+        R_BaseExpr.typeCheck(this, varType, value)
         val offset = checkPtr(ptr)
         if (!overwrite) {
             check(values[offset] == null)
@@ -97,31 +94,7 @@ class Rt_CallFrame(
         return offset
     }
 
-    fun callCtx() = Rt_CallContext(defCtx, stack, dbUpdateAllowed())
-
-    fun callCtx(filePos: R_FilePos): Rt_CallContext {
-        val subStack = subStack(filePos)
-        return Rt_CallContext(defCtx, subStack, dbUpdateAllowed())
-    }
-
-    fun stackTrace(lastPos: R_FilePos): ImmList<R_StackPos> {
-        val res = mutableListOf<R_StackPos>()
-
-        res.add(R_StackPos(defCtx.defId, lastPos))
-
-        var ptr = stack
-        while (ptr != null) {
-            res.add(ptr.pos)
-            ptr = ptr.prev
-        }
-
-        return res.toImmList()
-    }
-
-    fun subStack(filePos: R_FilePos): Rt_CallStack {
-        val stackPos = R_StackPos(defCtx.defId, filePos)
-        return Rt_CallStack(stack, stackPos)
-    }
+    fun callCtx() = Rt_CallContext(defCtx, dbUpdateAllowed())
 
     fun dumpState(): Rt_CallFrameState {
         checkEquals(curBlock.uid, rFrame.rootBlock.uid)
@@ -143,8 +116,19 @@ class Rt_CallFrame(
         }
     }
 
-    fun checkBlock(block: R_FrameBlockUid) {
-        check(block == curBlock.uid) { "wrong block: expected $block was ${curBlock.uid}" }
+    fun error(pos: R_ErrorPos, code: String, msg: String): Nothing {
+        val err = Rt_CommonError(code, msg)
+        val filePos = R_FilePos(pos.file, pos.line)
+        val fullStack = immListOf(R_StackPos(defCtx.defId, filePos))
+        val info = Rt_ExceptionInfo(extraMessage = null, stack = fullStack)
+        throw Rt_Exception(err, info)
+    }
+
+    fun error(pos: R_ErrorPos, e: Rt_Exception, nested: Boolean = false): Nothing {
+        val stackPos = R_StackPos(defCtx.defId, R_FilePos(pos.file, pos.line))
+        val fullStack = if (nested || e.info.stack.isEmpty()) (e.info.stack + stackPos) else e.info.stack
+        val info = Rt_ExceptionInfo(extraMessage = e.info.extraMessage, stack = fullStack)
+        throw Rt_Exception(e.err, info, e)
     }
 
     companion object {
@@ -164,12 +148,12 @@ class Rt_CallFrame(
         ): Rt_CallFrame {
             val defCtx = Rt_DefinitionContext(exeCtx, modsAllowed, defId)
             val rInitFrame = initFrameGetter.get()
-            return rInitFrame.createRtFrame(defCtx, null, null)
+            return rInitFrame.createRtFrame(defCtx, null)
         }
     }
 }
 
-class Rt_CallFrameState(val values: ImmList<Optional<Rt_Value>>) {
+internal class Rt_CallFrameState(val values: ImmList<Optional<Rt_Value>>) {
     companion object {
         val EMPTY = Rt_CallFrameState(immListOf())
     }

@@ -15,18 +15,17 @@ import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.*
 
-class V_ErrorExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val resType: R_Type,
-        private val message: String
+internal class V_ErrorExpr(
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val resType: R_Type,
+    private val message: String,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(resType)
-
-    override fun toRExpr0() = R_ErrorExpr(type, message)
+    override fun toRExpr(): R_Expr = R_ErrorExpr(type, message)
 }
 
-class V_ConstantValueExpr(
+internal class V_ConstantValueExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val value: Rt_Value,
@@ -34,11 +33,11 @@ class V_ConstantValueExpr(
     private val dependsOnAtExprs: ImmSet<R_AtExprId> = immSetOf(),
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(valueType, dependsOnAtExprs = dependsOnAtExprs)
-    override fun toRExpr0() = R_ConstantValueExpr(type, value)
+    override fun toRExpr(): R_Expr = R_ConstantValueExpr(type, value)
     override fun constantValue(ctx: V_ConstantValueEvalContext) = value
 }
 
-class V_IfExpr(
+internal class V_IfExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val resType: R_Type,
@@ -50,7 +49,7 @@ class V_IfExpr(
     override fun exprInfo0() = V_ExprInfo.simple(resType, condExpr, trueExpr, falseExpr)
     override fun varStatesDelta0() = resVarStates
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rCond = condExpr.toRExpr()
         val rTrue = trueExpr.toRExpr()
         val rFalse = falseExpr.toRExpr()
@@ -66,15 +65,15 @@ class V_IfExpr(
     }
 }
 
-class V_TupleExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val tupleType: R_TupleType,
-        private val exprs: ImmList<V_Expr>
+internal class V_TupleExpr(
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val tupleType: R_TupleType,
+    private val exprs: ImmList<V_Expr>,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(tupleType, exprs, canBeDbExpr = false)
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rExprs = exprs.mapToImmList { it.toRExpr() }
         return R_TupleExpr(tupleType, rExprs)
     }
@@ -96,15 +95,15 @@ class V_TupleExpr(
     }
 }
 
-class V_TypeAdapterExpr(
-        exprCtx: C_ExprContext,
-        private val resType: R_Type,
-        private val expr: V_Expr,
-        private val adapter: C_TypeAdapter
+internal class V_TypeAdapterExpr(
+    exprCtx: C_ExprContext,
+    private val resType: R_Type,
+    private val expr: V_Expr,
+    private val adapter: C_TypeAdapter,
 ): V_Expr(exprCtx, expr.pos) {
     override fun exprInfo0() = V_ExprInfo.simple(resType, expr)
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rExpr = expr.toRExpr()
         return adapter.adaptExprR(rExpr)
     }
@@ -122,19 +121,19 @@ class V_TypeAdapterExpr(
     }
 }
 
-class V_CreateExprAttr(val attr: R_Attribute, val expr: V_Expr) {
+internal class V_CreateExprAttr(val attr: R_Attribute, val expr: V_Expr) {
     fun toRAttr(): R_CreateExprAttr {
         val rExpr = expr.toRExpr()
         return R_CreateExprAttr(attr, rExpr)
     }
 }
 
-class V_StructExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val struct: R_Struct,
-        explicitAttrs: ImmList<V_CreateExprAttr>,
-        implicitAttrs: ImmList<V_CreateExprAttr>
+internal class V_StructExpr(
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val struct: R_Struct,
+    explicitAttrs: ImmList<V_CreateExprAttr>,
+    implicitAttrs: ImmList<V_CreateExprAttr>,
 ): V_Expr(exprCtx, pos) {
     private val allAttrs = let {
         val impIdxs = implicitAttrs.map { it.attr.index }.toSet()
@@ -155,12 +154,12 @@ class V_StructExpr(
     }
 
     override fun exprInfo0() = V_ExprInfo.simple(
-            struct.type,
-            allAttrs.map { it.expr },
-            canBeDbExpr = false
+        struct.type,
+        allAttrs.map { it.expr },
+        canBeDbExpr = false,
     )
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rAttrs = allAttrs.mapToImmList { it.toRAttr() }
         return R_StructExpr(struct, rAttrs)
     }
@@ -187,7 +186,7 @@ class V_StructExpr(
     }
 }
 
-class V_GlobalConstantExpr(
+internal class V_GlobalConstantExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val name: R_Name,
@@ -198,7 +197,7 @@ class V_GlobalConstantExpr(
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(resType)
 
-    override fun toRExpr0() = R_GlobalConstantExpr(resType, constId)
+    override fun toRExpr(): R_Expr = R_GlobalConstantExpr(resType, constId)
 
     override fun constantValue(ctx: V_ConstantValueEvalContext): Rt_Value? {
         val cBody = header.constBody
@@ -211,7 +210,7 @@ class V_GlobalConstantExpr(
     override fun implicitTargetAttrName() = name
 }
 
-class V_ParameterDefaultValueExpr(
+internal class V_ParameterDefaultValueExpr internal constructor(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val resType: R_Type,
@@ -223,24 +222,24 @@ class V_ParameterDefaultValueExpr(
 
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("param_default_value", null)
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         return R_ParameterDefaultValueExpr(resType, callFilePos, initFrameGetter, exprGetter)
     }
 }
 
-class V_AttributeDefaultValueExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        private val attr: R_Attribute,
-        private val createFilePos: R_FilePos?,
-        private val initFrameGetter: C_LateGetter<R_CallFrame>
+internal class V_AttributeDefaultValueExpr(
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    private val attr: R_Attribute,
+    private val createFilePos: R_FilePos?,
+    private val initFrameGetter: C_LateGetter<R_CallFrame>,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(attr.type)
 
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("attr_default_value:${attr.name}",
             "using default value for attribute '${attr.name}' (not supported yet)")
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         return R_AttributeDefaultValueExpr(attr, createFilePos, initFrameGetter)
     }
 }

@@ -45,9 +45,9 @@ abstract class C_TypeValueMember(optionalName: R_Name?): C_TypeMember(optionalNa
 
     abstract override fun replaceTypeParams(rep: C_TypeMemberReplacement): C_TypeValueMember
 
-    abstract fun value(ctx: C_ExprContext, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember
+    internal abstract fun value(ctx: C_ExprContext, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember
 
-    open fun call(
+    internal open fun call(
         ctx: C_ExprContext,
         selfType: R_Type,
         linkPos: S_Pos,
@@ -69,7 +69,7 @@ abstract class C_TypeValueMember(optionalName: R_Name?): C_TypeMember(optionalNa
     }
 }
 
-abstract class C_TypeValueMember_Value(
+internal abstract class C_TypeValueMember_Value(
     rName: R_Name?,
     val valueType: R_Type,
     private val restrictions: C_MemberRestrictions,
@@ -85,7 +85,7 @@ abstract class C_TypeValueMember_Value(
     }
 }
 
-class C_TypeValueMember_BasicAttr(
+internal class C_TypeValueMember_BasicAttr(
     private val attr: C_MemberAttr,
 ): C_TypeValueMember_Value(attr.rName, attr.type, attr.restrictions()) {
     override fun kindMsg() = "attribute"
@@ -126,7 +126,7 @@ class C_TypeValueMember_BasicAttr(
     }
 }
 
-class C_TypeValueMember_Function(
+internal class C_TypeValueMember_Function(
     private val rName: R_Name,
     private val fn: C_LibMemberFunction,
     private val naming: C_MemberNaming,
@@ -231,9 +231,9 @@ abstract class C_MemberAttr(
 }
 
 abstract class V_MemberAttr(val type: R_Type) {
-    abstract fun calculator(): R_MemberCalculator
-    abstract fun destination(pos: S_Pos, base: R_Expr): R_DestinationExpr
-    abstract fun varPathItem(): C_VarPathItem?
+    internal abstract fun calculator(): R_MemberCalculator
+    internal abstract fun destination(pos: S_Pos, base: R_Expr): R_DestinationExpr
+    internal abstract fun varPathItem(): C_VarPathItem?
     open fun canBeDbExpr(): Boolean = false
     open fun dbExpr(base: Db_Expr): Db_Expr? = null
 }
@@ -330,7 +330,7 @@ class C_MemberAttr_SysProperty(
     }
 }
 
-sealed class C_EntityAttrRef(
+internal sealed class C_EntityAttrRef(
     val rEntity: R_EntityDefinition,
     val ideName: R_IdeName,
     val type: R_Type,

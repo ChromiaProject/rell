@@ -222,7 +222,7 @@ abstract class R_Type(
     open fun isAssignableFrom(type: R_Type): Boolean = type == this
     protected open fun calcCommonType(other: R_Type): R_Type? = null
 
-    open fun getTypeAdapter(sourceType: R_Type): C_TypeAdapter? {
+    internal open fun getTypeAdapter(sourceType: R_Type): C_TypeAdapter? {
         val assignable = isAssignableFrom(sourceType)
         return if (assignable) C_TypeAdapter_Direct else null
     }

@@ -17,7 +17,7 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 
-class C_MidModuleContext(
+internal class C_MidModuleContext(
     val msgCtx: C_MessageContext,
     val modImporter: C_MidModuleImporter,
     val moduleName: R_ModuleName,
@@ -26,7 +26,7 @@ class C_MidModuleContext(
     val globalCtx = msgCtx.globalCtx
 }
 
-class C_MidMemberContext(
+internal class C_MidMemberContext(
     val modCtx: C_MidModuleContext,
     val modifierCtx: C_ModifierContext,
     val extChain: C_ExtChainName?,
@@ -36,14 +36,14 @@ class C_MidMemberContext(
     }
 }
 
-class C_MidModuleHeader(
+internal class C_MidModuleHeader(
     val pos: S_Pos,
     val abstract: S_Pos?,
     val external: Boolean,
     val test: Boolean,
 )
 
-class C_MidModule(
+internal class C_MidModule(
     val moduleName: R_ModuleName,
     val parentName: R_ModuleName?,
     val mountName: R_MountName,
@@ -67,7 +67,7 @@ class C_MidModule(
     override fun toString() = moduleName.toString()
 }
 
-class C_MidModuleFile(
+internal class C_MidModuleFile(
     val path: C_SourcePath,
     val members: ImmList<C_MidModuleMember>,
     val startPos: S_Pos?,
@@ -83,19 +83,19 @@ class C_MidModuleFile(
     override fun toString() = path.toString()
 }
 
-sealed class C_MidModuleMember {
+internal sealed class C_MidModuleMember {
     abstract fun compile(ctx: C_MidMemberContext): C_ExtModuleMember
 }
 
-class C_MidModuleMember_Basic(
-        private val def: S_BasicDefinition
+internal class C_MidModuleMember_Basic(
+    private val def: S_BasicDefinition,
 ): C_MidModuleMember() {
     override fun compile(ctx: C_MidMemberContext): C_ExtModuleMember {
         return C_ExtModuleMember_Basic(def)
     }
 }
 
-class C_MidModuleMember_Enum(
+internal class C_MidModuleMember_Enum(
     private val cName: C_Name,
     private val rEnum: R_EnumDefinition,
     private val memBase: C_NamespaceMemberBase,
@@ -109,7 +109,7 @@ class C_ImportDefinition(
     val pos: S_Pos,
 )
 
-class C_MidModuleMember_Import(
+internal class C_MidModuleMember_Import(
     private val importDef: C_ImportDefinition,
     private val target: C_ImportTarget,
     private val moduleName: R_ModuleName,
@@ -122,7 +122,7 @@ class C_MidModuleMember_Import(
     }
 }
 
-class C_MidModuleMember_Namespace(
+internal class C_MidModuleMember_Namespace(
     private val modifiers: S_Modifiers,
     private val qualifiedName: ImmList<NamePart>,
     private val comment: S_Comment?,
@@ -186,7 +186,7 @@ class C_MidModuleMember_Namespace(
     )
 }
 
-class C_MidModuleCompiler(
+internal class C_MidModuleCompiler(
     private val msgCtx: C_MessageContext,
     private val symCtxProvider: C_SymbolContextProvider,
     midModules: List<C_MidModule>,
@@ -273,6 +273,6 @@ class C_MidModuleCompiler(
     private data class C_ExtModuleKey(val name: R_ModuleName, val chain: C_ExtChainName?)
 }
 
-abstract class C_MidModuleImporter {
+internal abstract class C_MidModuleImporter {
     abstract fun importModule(name: R_ModuleName, extChainName: C_ExtChainName?)
 }

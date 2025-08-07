@@ -8,8 +8,8 @@ import net.postchain.rell.base.lib.type.Lib_BigIntegerMath
 import net.postchain.rell.base.lib.type.Rt_BigIntegerValue
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.utils.toImmList
-import kotlin.test.Test
 import java.math.BigInteger
+import kotlin.test.Test
 
 class BigIntegerTest: BaseRellTest() {
     @Test fun testType() {

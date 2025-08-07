@@ -136,7 +136,7 @@ private class V_ExistsExpr(
     override fun exprInfo0() = V_ExprInfo.simple(R_BooleanType, subExpr)
     override fun varStatesDelta0() = resVarStates
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val fn = R_SysFn_Exists(condition, not)
         val rArgs = immListOf(subExpr.toRExpr())
         return C_ExprUtils.createSysCallRExpr(R_BooleanType, fn, rArgs, name)

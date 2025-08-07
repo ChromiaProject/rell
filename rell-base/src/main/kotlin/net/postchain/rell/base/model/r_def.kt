@@ -54,12 +54,12 @@ class R_EntityBody(
 
 class R_ExternalEntity(val chain: R_ExternalChainRef, val metaCheck: Boolean)
 
-class R_EntityDefinition(
+class R_EntityDefinition internal constructor(
     base: R_DefinitionBase,
     defType: C_DefinitionType,
     val rName: R_Name,
     val flags: R_EntityFlags,
-    val sqlMapping: R_EntitySqlMapping,
+    internal val sqlMapping: R_EntitySqlMapping,
     val external: R_ExternalEntity?,
 ): R_Definition(base) {
     val mountName = sqlMapping.mountName
@@ -112,13 +112,13 @@ class R_EntityDefinition(
     }
 }
 
-class R_ObjectDefinition(
+class R_ObjectDefinition internal constructor(
     base: R_DefinitionBase,
     val rEntity: R_EntityDefinition,
 ): R_Definition(base) {
-    val type = R_ObjectType(this)
+    internal val type = R_ObjectType(this)
 
-    fun insert(frame: Rt_CallFrame) {
+    internal fun insert(frame: Rt_CallFrame) {
         val createExprAttrs = rEntity.attributes.values.map {
             val expr = R_AttributeDefaultValueExpr(it, null, initFrameGetter)
             R_CreateExprAttr(it, expr)
@@ -144,10 +144,10 @@ class R_StructFlags(
         val infinite: Boolean
 )
 
-class R_Struct(
+class R_Struct internal constructor(
     val name: String,
     val typeMetaGtv: Gtv,
-    val rDefBase: R_DefinitionBase?,
+    internal val rDefBase: R_DefinitionBase?,
     val mirrorStructs: R_MirrorStructs?,
 ) {
     private val bodyLate = LateInit(ERROR_BODY)
@@ -206,7 +206,7 @@ class R_Struct(
     }
 }
 
-class R_MirrorStructs(
+class R_MirrorStructs internal constructor(
     defBase: R_DefinitionBase,
     defType: C_DefinitionType,
     val innerType: R_Type,
@@ -237,7 +237,7 @@ class R_MirrorStructs(
     }
 }
 
-class R_StructDefinition(
+class R_StructDefinition internal constructor(
     base: R_DefinitionBase,
     val struct: R_Struct,
 ): R_Definition(base) {
@@ -266,7 +266,7 @@ class R_EnumAttr(
     ).toGtv()
 }
 
-class R_EnumDefinition(
+class R_EnumDefinition internal constructor(
     base: R_DefinitionBase,
     val attrs: ImmList<R_EnumAttr>,
 ): R_Definition(base) {
@@ -295,7 +295,7 @@ class R_EnumDefinition(
     override fun getDocMembers0() = attrMap
 }
 
-class R_GlobalConstantId(
+internal class R_GlobalConstantId(
     val index: Int,
     val app: R_AppUid,
     val module: R_ModuleKey,
@@ -315,10 +315,9 @@ class R_GlobalConstantBody(val type: R_Type, val expr: R_Expr, val value: Rt_Val
     }
 }
 
-class R_GlobalConstantDefinition(
+class R_GlobalConstantDefinition internal constructor(
     base: R_DefinitionBase,
-    val constId: R_GlobalConstantId,
-    private val filePos: R_FilePos,
+    internal val constId: R_GlobalConstantId,
     private val bodyGetter: C_LateGetter<R_GlobalConstantBody>,
 ): R_Definition(base) {
     fun evaluate(exeCtx: Rt_ExecutionContext): Rt_Value {
@@ -327,7 +326,7 @@ class R_GlobalConstantDefinition(
             body.value
         } else {
             val defCtx = Rt_DefinitionContext(exeCtx, false, defId)
-            Rt_Utils.evaluateInNewFrame(defCtx, null, body.expr, filePos, initFrameGetter)
+            Rt_Utils.evaluateInNewFrame(defCtx, null, body.expr, initFrameGetter)
         }
     }
 

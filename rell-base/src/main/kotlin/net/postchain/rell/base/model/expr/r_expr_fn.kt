@@ -4,10 +4,7 @@
 
 package net.postchain.rell.base.model.expr
 
-import net.postchain.rell.base.model.R_FilePos
-import net.postchain.rell.base.model.R_SysFunction
-import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.model.Rt_NullValue
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.utils.ImmList
@@ -61,11 +58,11 @@ object R_SysFunctionUtils {
     private fun extraMessage(name: String) = "System function '$name'"
 }
 
-abstract class R_FunctionCall(val returnType: R_Type) {
+internal abstract class R_FunctionCall(val returnType: R_Type) {
     abstract fun evaluate(frame: Rt_CallFrame, baseValue: Rt_Value?): Rt_Value
 }
 
-class R_FullFunctionCall(
+internal class R_FullFunctionCall(
     returnType: R_Type,
     private val target: R_FunctionCallTarget,
     private val callPos: R_FilePos,
@@ -79,8 +76,12 @@ class R_FullFunctionCall(
     override fun evaluate(frame: Rt_CallFrame, baseValue: Rt_Value?): Rt_Value {
         val values = args.map { it.evaluate(frame) }
         val values2 = mapping.map { values[it] }
-        val callCtx = frame.callCtx(callPos)
-        val res = target.call(callCtx, baseValue, values2)
+        val callCtx = frame.callCtx()
+        val res = try {
+            target.call(callCtx, baseValue, values2)
+        } catch (e: Rt_Exception) {
+            frame.error(R_ErrorPos(callPos), e, true)
+        }
         return res
     }
 }
@@ -97,7 +98,7 @@ class R_PartialCallMapping(val exprCount: Int, val wildCount: Int, val args: Imm
     }
 }
 
-class R_PartialFunctionCall(
+internal class R_PartialFunctionCall(
     returnType: R_Type,
     private val target: R_FunctionCallTarget,
     private val mapping: R_PartialCallMapping,
@@ -113,12 +114,12 @@ class R_PartialFunctionCall(
     }
 }
 
-class R_FunctionCallExpr(
+internal class R_FunctionCallExpr(
     type: R_Type,
     private val base: R_Expr?,
     private val call: R_FunctionCall,
     private val safe: Boolean,
-): R_Expr(type) {
+): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val baseValue = base?.evaluate(frame)
         return if (safe && baseValue == Rt_NullValue) {

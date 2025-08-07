@@ -57,19 +57,19 @@ class S_RellFile(
     val header: S_ModuleHeader?,
     private val definitions: ImmList<S_Definition>,
 ): S_Node() {
-    val startPos = header?.pos ?: definitions.firstOrNull()?.startPos
+    internal val startPos = header?.pos ?: definitions.firstOrNull()?.startPos
 
-    fun compileHeader(modifierCtx: C_ModifierContext): C_SourceModuleHeader? {
+    internal fun compileHeader(modifierCtx: C_ModifierContext): C_SourceModuleHeader? {
         return header?.compile(modifierCtx)
     }
 
-    fun compile(ctx: S_FileContext): C_MidModuleFile {
+    internal fun compile(ctx: S_FileContext): C_MidModuleFile {
         val defCtx = ctx.createDefinitionContext()
         val members = definitions.mapNotNullToImmList { it.compile(defCtx) }
         return C_MidModuleFile(ctx.path, members, startPos, defCtx.symCtx)
     }
 
-    fun ideModuleInfo(path: C_SourcePath): IdeModuleInfo? {
+    internal fun ideModuleInfo(path: C_SourcePath): IdeModuleInfo? {
         val (moduleName, directory) = C_ModuleUtils.getModuleInfo(path, this)
         moduleName ?: return null
 
@@ -83,14 +83,14 @@ class S_RellFile(
         return IdeModuleInfo(moduleName, directory, app = !test, test = test, imports = imports.toImmSet())
     }
 
-    fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {
+    internal fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {
         for (def in definitions) {
             def.ideBuildOutlineTree(b)
         }
     }
 
     companion object {
-        fun createMountContext(
+        internal fun createMountContext(
             fileCtx: C_FileContext,
             mountName: R_MountName,
             nsAssembler: C_NsAsm_ComponentAssembler,

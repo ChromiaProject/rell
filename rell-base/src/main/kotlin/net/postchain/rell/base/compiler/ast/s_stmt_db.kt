@@ -24,10 +24,10 @@ import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.mapNotNullToImmList
 import net.postchain.rell.base.utils.mapToImmList
 
-class C_UpdateTarget(val rTarget: R_UpdateTarget, val cFrom: C_AtFrom_Entities)
+internal class C_UpdateTarget(val rTarget: R_UpdateTarget, val cFrom: C_AtFrom_Entities)
 
 sealed class S_UpdateTarget {
-    abstract fun compile(
+    internal abstract fun compile(
         ctx: C_ExprContext,
         stmtPos: S_Pos,
         atExprId: R_AtExprId,
@@ -203,7 +203,7 @@ class S_UpdateWhat(val pos: S_Pos, val name: S_Name?, val op: S_AssignOpCode?, v
             val resExpr = if (op == null) expr else {
                 val tableExpr = Db_EntityExpr(entity)
                 val attrExpr = Db_AttrExpr(tableExpr, attr)
-                Db_BinaryExpr(attr.type, op, attrExpr, expr) //TODO determine the result type in a cleaner way
+                Db_BinaryExpr(attr.type, op, attrExpr, expr)
             }
             return R_UpdateStatementWhat(attr, resExpr)
         }
@@ -216,7 +216,7 @@ class S_UpdateStatement(
     val target: S_UpdateTarget,
     val what: ImmList<S_UpdateWhat>,
 ): S_Statement(startPos, endPos) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
+    override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         ctx.checkDbUpdateAllowed(startPos)
 
         val atExprId = ctx.appCtx.nextAtExprId()
@@ -236,7 +236,8 @@ class S_UpdateStatement(
         val rWhat = compileWhat(cTarget.cFrom.innerExprCtx(), cTarget.rTarget, rEntity, subValues)
 
         val rFromBlock = cTarget.cFrom.compileUpdate()
-        val rStmt = R_UpdateStatement(cTarget.rTarget, rFromBlock, rWhat)
+        val errPos = startPos.toErrorPos()
+        val rStmt = R_UpdateStatement(cTarget.rTarget, rFromBlock, errPos, rWhat)
 
         val resState = C_ExprVarStatesDelta.forExpressions(subValues)
         return C_Statement(rStmt, false, resState.always)
@@ -281,7 +282,7 @@ class S_DeleteStatement(
     endPos: S_Pos,
     private val target: S_UpdateTarget,
 ): S_Statement(startPos, endPos) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
+    override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         ctx.checkDbUpdateAllowed(startPos)
 
         val atExprId = ctx.appCtx.nextAtExprId()
@@ -299,7 +300,8 @@ class S_DeleteStatement(
         }
 
         val rFromBlock = cTarget.cFrom.compileUpdate()
-        val rStmt = R_DeleteStatement(cTarget.rTarget, rFromBlock)
+        val errPos = startPos.toErrorPos()
+        val rStmt = R_DeleteStatement(cTarget.rTarget, rFromBlock, errPos)
 
         val resState = C_ExprVarStatesDelta.forExpressions(subValues)
         return C_Statement(rStmt, false, resState.always)

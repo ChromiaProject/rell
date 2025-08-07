@@ -16,29 +16,30 @@ import net.postchain.rell.base.model.R_AtExprId
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.R_DbAtEntity
+import net.postchain.rell.base.utils.ImmList
 
 class C_ExprContext private constructor(
-    val blkCtx: C_BlockContext,
-    val varStates: C_VarStates,
-    val atCtx: C_AtContext?,
-    val insideGuardBlock: Boolean,
+    internal val blkCtx: C_BlockContext,
+    internal val varStates: C_VarStates,
+    internal val atCtx: C_AtContext?,
+    internal val insideGuardBlock: Boolean,
 ): C_IdeCompletionsScopeProvider {
-    val defCtx = blkCtx.defCtx
-    val modCtx = defCtx.modCtx
-    val nsCtx = defCtx.nsCtx
-    val globalCtx = defCtx.globalCtx
-    val symCtx = defCtx.symCtx
-    val nameCtx = symCtx.nameCtx
-    val appCtx = defCtx.appCtx
-    val msgCtx = nsCtx.msgCtx
-    val typeMgr = modCtx.typeMgr
-    val executor = defCtx.executor
+    internal val defCtx = blkCtx.defCtx
+    internal val modCtx = defCtx.modCtx
+    internal val nsCtx = defCtx.nsCtx
+    internal val globalCtx = defCtx.globalCtx
+    internal val symCtx = defCtx.symCtx
+    internal val nameCtx = symCtx.nameCtx
+    internal val appCtx = defCtx.appCtx
+    internal val msgCtx = nsCtx.msgCtx
+    internal val typeMgr = modCtx.typeMgr
+    internal val executor = defCtx.executor
 
-    fun makeAtEntity(rEntity: R_EntityDefinition, atExprId: R_AtExprId): R_DbAtEntity {
+    internal fun makeAtEntity(rEntity: R_EntityDefinition, atExprId: R_AtExprId): R_DbAtEntity {
         return R_DbAtEntity(rEntity, appCtx.nextAtEntityId(atExprId))
     }
 
-    fun copy(
+    internal fun copy(
         blkCtx: C_BlockContext = this.blkCtx,
         varStates: C_VarStates = this.varStates,
         atCtx: C_AtContext? = this.atCtx,
@@ -58,12 +59,12 @@ class C_ExprContext private constructor(
         )
     }
 
-    fun updateVarStates(delta: C_VarStatesDelta): C_ExprContext {
+    internal fun updateVarStates(delta: C_VarStatesDelta): C_ExprContext {
         val resVarStates = varStates.and(delta)
         return copy(varStates = resVarStates)
     }
 
-    fun getDbModificationRestriction(): C_CodeMsg? {
+    internal fun getDbModificationRestriction(): C_CodeMsg? {
         val r = defCtx.getDbModificationRestriction()
         return r ?: if (insideGuardBlock) {
             C_CodeMsg("no_db_update:guard", "Database modifications are not allowed inside or before a guard block")
@@ -72,19 +73,22 @@ class C_ExprContext private constructor(
         }
     }
 
-    fun checkDbUpdateAllowed(pos: S_Pos) {
+    internal fun checkDbUpdateAllowed(pos: S_Pos) {
         val r = getDbModificationRestriction()
         if (r != null) {
             msgCtx.error(pos, r.code, r.msg)
         }
     }
 
-    fun findWhereAttributesByName(name: C_Name) = blkCtx.lookupAtImplicitAttributesByName(this, name)
-    fun findWhereAttributesByType(pos: S_Pos, type: R_Type) = blkCtx.lookupAtImplicitAttributesByType(this, pos, type)
+    internal fun findWhereAttributesByName(name: C_Name) = blkCtx.lookupAtImplicitAttributesByName(this, name)
+
+    internal fun findWhereAttributesByType(pos: S_Pos, type: R_Type): ImmList<C_AtFromImplicitAttr> {
+        return blkCtx.lookupAtImplicitAttributesByType(this, pos, type)
+    }
 
     override fun ideCompletionsScope(): C_IdeCompletionsScope = blkCtx.ideCompletionsScope()
 
-    companion object {
+    internal companion object {
         fun createRoot(blkCtx: C_BlockContext) = C_ExprContext(
             blkCtx = blkCtx,
             varStates = C_VarStates.EMPTY,
@@ -95,14 +99,14 @@ class C_ExprContext private constructor(
 }
 
 class C_StmtContext private constructor(
-    val blkCtx: C_BlockContext,
-    val exprCtx: C_ExprContext,
-    val loop: C_LoopUid?,
-    val afterGuardBlock: Boolean = false,
-    val topLevel: Boolean = false,
+    internal val blkCtx: C_BlockContext,
+    internal val exprCtx: C_ExprContext,
+    internal val loop: C_LoopUid?,
+    internal val afterGuardBlock: Boolean = false,
+    internal val topLevel: Boolean = false,
 ) {
-    val appCtx = blkCtx.appCtx
-    val fnCtx = blkCtx.fnCtx
+    internal val appCtx = blkCtx.appCtx
+    internal val fnCtx = blkCtx.fnCtx
     val defCtx = fnCtx.defCtx
     val nsCtx = defCtx.nsCtx
     val symCtx = defCtx.symCtx
@@ -110,7 +114,7 @@ class C_StmtContext private constructor(
     val globalCtx = defCtx.globalCtx
     val executor = defCtx.executor
 
-    fun copy(
+    internal fun copy(
         blkCtx: C_BlockContext = this.blkCtx,
         exprCtx: C_ExprContext = this.exprCtx,
         loop: C_LoopUid? = this.loop,
@@ -135,7 +139,7 @@ class C_StmtContext private constructor(
         return copy(exprCtx = exprCtx.updateVarStates(delta))
     }
 
-    fun subBlock(loop: C_LoopUid?): Pair<C_StmtContext, C_OwnerBlockContext> {
+    internal fun subBlock(loop: C_LoopUid?): Pair<C_StmtContext, C_OwnerBlockContext> {
         val subBlkCtx = blkCtx.createSubContext("blk")
         val subExprCtx = exprCtx.copy(blkCtx = subBlkCtx)
         val subCtx = copy(blkCtx = subBlkCtx, exprCtx = subExprCtx, loop = loop, topLevel = subBlkCtx.isTopLevelBlock())
@@ -147,7 +151,7 @@ class C_StmtContext private constructor(
     }
 
     companion object {
-        fun createRoot(blkCtx: C_BlockContext): C_StmtContext {
+        internal fun createRoot(blkCtx: C_BlockContext): C_StmtContext {
             val exprCtx = C_ExprContext.createRoot(blkCtx)
             return C_StmtContext(blkCtx, exprCtx, loop = null, topLevel = true)
         }

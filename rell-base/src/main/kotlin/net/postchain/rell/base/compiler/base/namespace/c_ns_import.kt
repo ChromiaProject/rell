@@ -23,7 +23,7 @@ sealed class C_NsImp_Def
 
 class C_NsImp_Def_Simple(val member: C_NamespaceMember): C_NsImp_Def()
 
-class C_NsImp_Def_Namespace(
+internal class C_NsImp_Def_Namespace(
     private val getter: LateGetter<C_NsImp_Namespace>,
     val defName: C_DefinitionName,
     val ideInfo: C_IdeSymbolInfo,
@@ -33,7 +33,7 @@ class C_NsImp_Def_Namespace(
     fun ns() = getter.get()
 }
 
-object C_NsImp_ImportsProcessor {
+internal object C_NsImp_ImportsProcessor {
     fun process(
         msgCtx: C_MessageContext,
         modules: ImmMap<C_ModuleKey, C_NsAsm_Namespace>,

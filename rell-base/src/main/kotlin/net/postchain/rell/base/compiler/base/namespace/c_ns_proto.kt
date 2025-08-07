@@ -81,29 +81,29 @@ sealed class C_NamespaceMember(base: C_NamespaceMemberBase) {
         getIdeCompletions0().toImmList()
     }
 
-    abstract fun declarationType(): C_DeclarationType
+    internal abstract fun declarationType(): C_DeclarationType
 
-    abstract fun hasTag(tag: C_NamespaceMemberTag): Boolean
+    internal abstract fun hasTag(tag: C_NamespaceMemberTag): Boolean
 
-    fun hasTag(tags: List<C_NamespaceMemberTag>): Boolean {
+    internal fun hasTag(tags: List<C_NamespaceMemberTag>): Boolean {
         return when {
             tags.isEmpty() -> true
             else -> tags.any { hasTag(it) }
         }
     }
 
-    fun isCallable() = hasTag(C_NamespaceMemberTag.CALLABLE)
+    internal fun isCallable() = hasTag(C_NamespaceMemberTag.CALLABLE)
 
-    open fun getTargetMember(): C_NamespaceMember = this
+    internal open fun getTargetMember(): C_NamespaceMember = this
 
-    open fun getNamespaceOpt(): C_Namespace? = null
-    open fun getTypeOpt(): C_TypeDef? = null
-    open fun getEntityOpt(): R_EntityDefinition? = null
-    open fun getFunctionOpt(): C_GlobalFunction? = null // getFunctionOpt() is not always non-null when matching CALLBLE
-    open fun getObjectOpt(): R_ObjectDefinition? = null
-    open fun getOperationOpt(): R_OperationDefinition? = null
+    internal open fun getNamespaceOpt(): C_Namespace? = null
+    internal open fun getTypeOpt(): C_TypeDef? = null
+    internal open fun getEntityOpt(): R_EntityDefinition? = null
+    internal open fun getFunctionOpt(): C_GlobalFunction? = null // getFunctionOpt() is not always non-null when matching CALLBLE
+    internal open fun getObjectOpt(): R_ObjectDefinition? = null
+    internal open fun getOperationOpt(): R_OperationDefinition? = null
 
-    open fun addToDefs(b: C_ModuleDefsBuilder) {
+    internal open fun addToDefs(b: C_ModuleDefsBuilder) {
     }
 
     protected open fun getDocDefinition0(): DocDefinition = DefaultDocDefinition()
@@ -113,7 +113,11 @@ sealed class C_NamespaceMember(base: C_NamespaceMemberBase) {
         return immListOf(ideComp)
     }
 
-    abstract fun toExpr(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoPtr: C_UniqueDefaultIdeInfoPtr): C_Expr
+    internal abstract fun toExpr(
+        ctx: C_ExprContext,
+        qName: C_QualifiedName,
+        ideInfoPtr: C_UniqueDefaultIdeInfoPtr,
+    ): C_Expr
 
     protected fun makeIdeCompletion(doc: DocSymbol): IdeCompletion {
         return C_IdeCompletionsUtils.makeIdeCompletion(defName, doc)
@@ -182,7 +186,7 @@ private class C_NamespaceMember_Property(
     }
 }
 
-class C_NamespaceMember_Namespace(
+internal class C_NamespaceMember_Namespace(
     base: C_NamespaceMemberBase,
     val ns: C_Namespace,
     private val importModule: C_ModuleDescriptor? = null,
@@ -667,7 +671,7 @@ class C_SysNsProtoBuilder {
     }
 }
 
-class C_UserNsProtoBuilder(private val assembler: C_NsAsm_ComponentAssembler) {
+internal class C_UserNsProtoBuilder(private val assembler: C_NsAsm_ComponentAssembler) {
     fun futureNs() = assembler.futureNs()
 
     private fun addDef(name: C_Name, def: C_NamespaceMember) {

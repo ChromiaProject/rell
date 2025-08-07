@@ -42,7 +42,7 @@ class V_FunctionCallArgs(
     }
 }
 
-class V_FunctionCallExpr(
+internal class V_FunctionCallExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val base: V_Expr?,
@@ -70,7 +70,7 @@ class V_FunctionCallExpr(
 
     override fun globalConstantRestriction() = call.globalConstantRestriction()
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rBase = base?.toRExpr()
         val rCall = call.rCall()
         return R_FunctionCallExpr(actualType, rBase, rCall, safe)
@@ -88,8 +88,8 @@ class V_FunctionCallExpr(
     override fun varKey() = varKey
 }
 
-sealed class V_CommonFunctionCall(
-    protected val pos: S_Pos,
+internal sealed class V_CommonFunctionCall(
+    val pos: S_Pos,
     val returnType: R_Type,
     protected val target: V_FunctionCallTarget,
     val args: ImmList<V_Expr>,
@@ -137,7 +137,7 @@ sealed class V_CommonFunctionCall(
     }
 }
 
-class V_CommonFunctionCall_Full(
+internal class V_CommonFunctionCall_Full(
     pos: S_Pos,
     callPos: S_Pos,
     returnType: R_Type,
@@ -157,8 +157,7 @@ class V_CommonFunctionCall_Full(
         argValues: List<Rt_Value>,
     ): Rt_Value {
         val values2 = callArgs.paramsToExprs.map { argValues[it] }
-        val subCallCtx = callCtx.subContext(callFilePos)
-        return rTarget.call(subCallCtx, baseValue, values2)
+        return rTarget.call(callCtx, baseValue, values2)
     }
 
     override fun rCall0(rTarget: R_FunctionCallTarget, rArgExprs: ImmList<R_Expr>): R_FunctionCall {
@@ -171,7 +170,7 @@ class V_CommonFunctionCall_Full(
     }
 }
 
-class V_CommonFunctionCall_Partial(
+internal class V_CommonFunctionCall_Partial(
     pos: S_Pos,
     returnType: R_Type,
     target: V_FunctionCallTarget,
@@ -209,9 +208,9 @@ class V_FunctionCallTarget_RegularUserFunction(
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("fn:${fn.appLevelName}", "user function call")
 }
 
-class V_FunctionCallTarget_AbstractUserFunction(
-        private val baseFn: R_FunctionDefinition,
-        private val overrideGetter: C_LateGetter<R_FunctionBase>
+internal class V_FunctionCallTarget_AbstractUserFunction(
+    private val baseFn: R_FunctionDefinition,
+    private val overrideGetter: C_LateGetter<R_FunctionBase>,
 ): V_FunctionCallTarget() {
     override fun toRTarget(): R_FunctionCallTarget {
         return R_FunctionCallTarget_AbstractUserFunction(baseFn, overrideGetter)
@@ -298,7 +297,7 @@ class V_GlobalFunctionCall(
     fun vExpr() = expr
 }
 
-abstract class V_MemberFunctionCall(
+internal abstract class V_MemberFunctionCall(
     protected val exprCtx: C_ExprContext,
     val ideInfo: C_IdeSymbolInfo,
     paramIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>,
@@ -315,7 +314,7 @@ abstract class V_MemberFunctionCall(
     open fun dbExprWhat(base: V_Expr, safe: Boolean): C_DbAtWhatValue? = null
 }
 
-class V_MemberFunctionCall_CommonCall(
+internal class V_MemberFunctionCall_CommonCall(
     exprCtx: C_ExprContext,
     ideInfo: C_IdeSymbolInfo,
     argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>,
@@ -336,14 +335,17 @@ class V_MemberFunctionCall_CommonCall(
     override fun dbExpr(base: Db_Expr) = call.dbExpr(base)
     override fun dbExprWhat(base: V_Expr, safe: Boolean) = call.dbExprWhat(base, safe)
 
-    private class R_MemberCalculator_CommonCall(type: R_Type, private val call: R_FunctionCall): R_MemberCalculator(type) {
+    private class R_MemberCalculator_CommonCall(
+        type: R_Type,
+        private val call: R_FunctionCall,
+    ): R_MemberCalculator(type) {
         override fun calculate(frame: Rt_CallFrame, baseValue: Rt_Value): Rt_Value {
             return call.evaluate(frame, baseValue)
         }
     }
 }
 
-class V_MemberFunctionCall_Error(
+internal class V_MemberFunctionCall_Error(
     exprCtx: C_ExprContext,
     ideInfo: C_IdeSymbolInfo,
     private val returnType: R_Type = R_CtErrorType,

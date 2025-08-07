@@ -26,12 +26,12 @@ abstract class C_FunctionCallTargetInfo {
     abstract fun typeHints(): C_CallTypeHints
 }
 
-abstract class C_FunctionCallTarget: C_FunctionCallTargetInfo() {
+internal abstract class C_FunctionCallTarget: C_FunctionCallTargetInfo() {
     abstract fun compileFull(args: C_FullCallArguments, resTypeHint: C_TypeHint): V_GlobalFunctionCall?
     abstract fun compilePartial(args: C_PartialCallArguments, resTypeHint: R_FunctionType?): V_GlobalFunctionCall?
 }
 
-class C_FunctionCallTargetBase(
+internal class C_FunctionCallTargetBase(
     val ctx: C_ExprContext,
     val callInfo: C_FunctionCallInfo,
     val callParams: C_FunctionCallParameters,
@@ -54,7 +54,7 @@ class C_FunctionCallTargetBase(
     }
 }
 
-abstract class C_FunctionCallTarget_Regular(
+internal abstract class C_FunctionCallTarget_Regular(
     private val targetBase: C_FunctionCallTargetBase,
     private val retType: R_Type?,
 ): C_FunctionCallTarget() {
@@ -102,7 +102,7 @@ abstract class C_FunctionCallTarget_Regular(
     }
 }
 
-class C_FunctionCallTarget_FunctionType(
+internal class C_FunctionCallTarget_FunctionType(
     base: C_FunctionCallTargetBase,
     private val fnExpr: V_Expr,
     fnType: R_FunctionType,
@@ -120,7 +120,7 @@ class C_FunctionCallInfo(
     fun functionNameCode() = functionName?.value ?: "?"
 }
 
-class C_FunctionCallParameters(val list: ImmList<C_FunctionCallParameter>) {
+internal class C_FunctionCallParameters(val list: ImmList<C_FunctionCallParameter>) {
     val typeHints: C_CallTypeHints = C_FunctionCallParametersTypeHints(this.list)
 
     val bindParams: C_ArgMatchParams = let {
@@ -138,7 +138,7 @@ class C_FunctionCallParameters(val list: ImmList<C_FunctionCallParameter>) {
     }
 }
 
-class C_FunctionCallParameter(
+internal class C_FunctionCallParameter(
     val name: R_Name?,
     val type: R_Type,
     val index: Int,

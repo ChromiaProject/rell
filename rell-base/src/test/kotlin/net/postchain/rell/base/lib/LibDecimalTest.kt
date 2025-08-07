@@ -7,8 +7,8 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
-import kotlin.test.Test
 import java.math.BigDecimal
+import kotlin.test.Test
 
 class LibDecimalTest: BaseRellTest() {
     @Test fun testConstants() {

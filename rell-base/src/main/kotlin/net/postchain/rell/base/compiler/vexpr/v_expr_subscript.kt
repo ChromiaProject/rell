@@ -20,7 +20,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.utils.immListOf
 
-sealed class V_CommonSubscriptKind(val resType: R_Type) {
+internal sealed class V_CommonSubscriptKind(val resType: R_Type) {
     abstract fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr): R_Expr
 
     open fun canBeDbExpr() = false
@@ -29,8 +29,11 @@ sealed class V_CommonSubscriptKind(val resType: R_Type) {
     open fun compileDestination(pos: S_Pos, rBase: R_Expr, rKey: R_Expr): R_DestinationExpr? = null
 }
 
-object V_CommonSubscriptKind_Text: V_CommonSubscriptKind(R_TextType) {
-    override fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr) = R_TextSubscriptExpr(rBase, rKey)
+internal data object V_CommonSubscriptKind_Text: V_CommonSubscriptKind(R_TextType) {
+    override fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr): R_Expr {
+        val errPos = pos.toErrorPos()
+        return R_TextSubscriptExpr(rBase, rKey, errPos)
+    }
 
     override fun canBeDbExpr() = true
 
@@ -39,8 +42,11 @@ object V_CommonSubscriptKind_Text: V_CommonSubscriptKind(R_TextType) {
     }
 }
 
-object V_CommonSubscriptKind_ByteArray: V_CommonSubscriptKind(R_IntegerType) {
-    override fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr) = R_ByteArraySubscriptExpr(rBase, rKey)
+internal data object V_CommonSubscriptKind_ByteArray: V_CommonSubscriptKind(R_IntegerType) {
+    override fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr): R_Expr {
+        val errPos = pos.toErrorPos()
+        return R_ByteArraySubscriptExpr(rBase, rKey, errPos)
+    }
 
     override fun canBeDbExpr() = true
 
@@ -49,46 +55,57 @@ object V_CommonSubscriptKind_ByteArray: V_CommonSubscriptKind(R_IntegerType) {
     }
 }
 
-class V_CommonSubscriptKind_List(elementType: R_Type): V_CommonSubscriptKind(elementType) {
-    override fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr) = R_ListSubscriptExpr(resType, rBase, rKey)
-    override fun compileDestination(pos: S_Pos, rBase: R_Expr, rKey: R_Expr) = R_ListSubscriptExpr(resType, rBase, rKey)
-}
+internal class V_CommonSubscriptKind_List(elementType: R_Type): V_CommonSubscriptKind(elementType) {
+    override fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr): R_Expr = compileDestination(pos, rBase, rKey)
 
-class V_CommonSubscriptKind_VirtualList(resType: R_Type): V_CommonSubscriptKind(resType) {
-    override fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr) = R_VirtualListSubscriptExpr(resType, rBase, rKey)
-}
-
-class V_CommonSubscriptKind_Map(valueType: R_Type): V_CommonSubscriptKind(valueType) {
-    override fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr) = R_MapSubscriptExpr(resType, rBase, rKey)
-    override fun compileDestination(pos: S_Pos, rBase: R_Expr, rKey: R_Expr) = R_MapSubscriptExpr(resType, rBase, rKey)
-}
-
-class V_CommonSubscriptKind_VirtualMap(valueType: R_Type): V_CommonSubscriptKind(valueType) {
-    override fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr): R_Expr {
-        val virtualValueType = S_VirtualType.virtualMemberType(resType)
-        return R_VirtualMapSubscriptExpr(virtualValueType, rBase, rKey)
+    override fun compileDestination(pos: S_Pos, rBase: R_Expr, rKey: R_Expr): R_DestinationExpr {
+        val errPos = pos.toErrorPos()
+        return R_ListSubscriptExpr(resType, rBase, rKey, errPos)
     }
 }
 
-sealed class V_TupleSubscriptKind {
+internal class V_CommonSubscriptKind_VirtualList(resType: R_Type): V_CommonSubscriptKind(resType) {
+    override fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr): R_Expr {
+        return R_VirtualListSubscriptExpr(resType, rBase, rKey)
+    }
+}
+
+internal class V_CommonSubscriptKind_Map(valueType: R_Type): V_CommonSubscriptKind(valueType) {
+    override fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr): R_Expr = compileDestination(pos, rBase, rKey)
+
+    override fun compileDestination(pos: S_Pos, rBase: R_Expr, rKey: R_Expr): R_DestinationExpr {
+        val errPos = pos.toErrorPos()
+        return R_MapSubscriptExpr(resType, rBase, rKey, errPos)
+    }
+}
+
+internal class V_CommonSubscriptKind_VirtualMap(valueType: R_Type): V_CommonSubscriptKind(valueType) {
+    override fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr): R_Expr {
+        val virtualValueType = S_VirtualType.virtualMemberType(resType)
+        val errPos = pos.toErrorPos()
+        return R_VirtualMapSubscriptExpr(virtualValueType, rBase, rKey, errPos)
+    }
+}
+
+internal sealed class V_TupleSubscriptKind {
     abstract fun compile(resType: R_Type, index: Int): R_MemberCalculator
 }
 
-object V_TupleSubscriptKind_Simple: V_TupleSubscriptKind() {
+internal data object V_TupleSubscriptKind_Simple: V_TupleSubscriptKind() {
     override fun compile(resType: R_Type, index: Int) = R_MemberCalculator_TupleAttr(resType, index)
 }
 
-object V_TupleSubscriptKind_Virtual: V_TupleSubscriptKind() {
+internal data object V_TupleSubscriptKind_Virtual: V_TupleSubscriptKind() {
     override fun compile(resType: R_Type, index: Int) = R_MemberCalculator_VirtualTupleAttr(resType, index)
 }
 
-sealed class V_SubscriptExpr(
+internal sealed class V_SubscriptExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     protected val baseExpr: V_Expr,
 ): V_Expr(exprCtx, pos)
 
-class V_CommonSubscriptExpr(
+internal class V_CommonSubscriptExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     baseExpr: V_Expr,
@@ -97,7 +114,7 @@ class V_CommonSubscriptExpr(
 ): V_SubscriptExpr(exprCtx, pos, baseExpr) {
     override fun exprInfo0() = V_ExprInfo.simple(kind.resType, baseExpr, keyExpr, canBeDbExpr = kind.canBeDbExpr())
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rBase = baseExpr.toRExpr()
         val rKey = keyExpr.toRExpr()
         return kind.compileR(pos, rBase, rKey)
@@ -122,7 +139,7 @@ class V_CommonSubscriptExpr(
     }
 }
 
-class V_TupleSubscriptExpr(
+internal class V_TupleSubscriptExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     baseExpr: V_Expr,
@@ -133,7 +150,7 @@ class V_TupleSubscriptExpr(
 ): V_SubscriptExpr(exprCtx, pos, baseExpr) {
     override fun exprInfo0() = V_ExprInfo.simple(resType, baseExpr, canBeDbExpr = false)
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rBase = baseExpr.toRExpr()
         val calculator = kind.compile(resType, index)
         return R_MemberExpr(rBase, calculator, false)

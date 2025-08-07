@@ -26,7 +26,6 @@ data class C_CompilerOptions(
     val compatibility: R_LangVersion?,
     val gtv: Boolean,
     val deprecatedError: Boolean,
-    val blockCheck: Boolean,
     val atAttrShadowing: C_AtAttrShadowing,
     val defaultLib: Boolean,
     val testLib: Boolean,
@@ -101,7 +100,6 @@ data class C_CompilerOptions(
             compatibility = null,
             gtv = true,
             deprecatedError = false,
-            blockCheck = false,
             atAttrShadowing = C_AtAttrShadowing.DEFAULT,
             defaultLib = true,
             testLib = false,
@@ -128,7 +126,6 @@ data class C_CompilerOptions(
         @JvmStatic fun fromPojoMap(map: Map<String, Any>): C_CompilerOptions {
             return C_CompilerOptions(
                 compatibility = (map["compatibility"] as String?)?.let { R_LangVersion.of(it) },
-                blockCheck = true,
                 gtv = map.getValue("gtv") as Boolean,
                 deprecatedError = map.getValue("deprecatedError") as Boolean,
                 atAttrShadowing = (map["atAttrShadowing"] as String?)
@@ -167,7 +164,6 @@ data class C_CompilerOptions(
         private var compatibility = proto.compatibility
         private var gtv = proto.gtv
         private var deprecatedError = proto.deprecatedError
-        private var blockCheck = proto.blockCheck
         private var atAttrShadowing = proto.atAttrShadowing
         private var defaultLib = proto.defaultLib
         private var testLib = proto.testLib
@@ -188,7 +184,6 @@ data class C_CompilerOptions(
         @Suppress("UNUSED") fun compatibility(v: R_LangVersion) = apply { compatibility = v }
         @Suppress("UNUSED") fun gtv(v: Boolean) = apply { gtv = v }
         @Suppress("UNUSED") fun deprecatedError(v: Boolean) = apply { deprecatedError = v }
-        @Suppress("UNUSED") fun blockCheck(v: Boolean) = apply { blockCheck = v }
         @Suppress("UNUSED") fun atAttrShadowing(v: C_AtAttrShadowing) = apply { atAttrShadowing = v }
         @Suppress("UNUSED") fun defaultLib(v: Boolean) = apply { defaultLib = v }
         @Suppress("UNUSED") fun testLib(v: Boolean) = apply { testLib = v }
@@ -211,7 +206,6 @@ data class C_CompilerOptions(
             compatibility = compatibility,
             gtv = gtv,
             deprecatedError = deprecatedError,
-            blockCheck = blockCheck,
             atAttrShadowing = atAttrShadowing,
             defaultLib = defaultLib,
             testLib = testLib,

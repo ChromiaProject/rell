@@ -20,7 +20,7 @@ import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immMapOf
 import net.postchain.rell.base.utils.toImmList
 
-object C_LibAdapter {
+internal object C_LibAdapter {
     fun makeModule(lModule: L_Module): C_LibModule {
         val converter = C_LibNamespaceConverter()
 

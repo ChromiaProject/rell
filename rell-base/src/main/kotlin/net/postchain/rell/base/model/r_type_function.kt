@@ -21,7 +21,7 @@ import net.postchain.rell.base.utils.toImmList
 import java.util.*
 
 class R_FunctionType(val params: ImmList<R_Type>, val result: R_Type): R_Type(calcName(params, result)) {
-    val callParameters by lazy { C_FunctionCallParameters.fromTypes(this.params) }
+    internal val callParameters by lazy { C_FunctionCallParameters.fromTypes(this.params) }
 
     private val isError = result.isError() || params.any { it.isError() }
 
@@ -65,11 +65,11 @@ class R_FunctionType(val params: ImmList<R_Type>, val result: R_Type): R_Type(ca
 }
 
 class Rt_FunctionValue(
-        private val type: R_Type,
-        private val mapping: R_PartialCallMapping,
-        private val target: R_FunctionCallTarget,
-        private val baseValue: Rt_Value?,
-        exprValues: List<Rt_Value>
+    private val type: R_Type,
+    private val mapping: R_PartialCallMapping,
+    private val target: R_FunctionCallTarget,
+    private val baseValue: Rt_Value?,
+    exprValues: List<Rt_Value>,
 ): Rt_Value() {
     private val exprValues = let {
         checkEquals(exprValues.size, mapping.exprCount)

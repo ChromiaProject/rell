@@ -22,7 +22,7 @@ class S_ReplCommand(steps: List<S_ReplStep>, expr: S_Expr?) {
         (steps.mapNotNullToImmList { it.statement() } + listOfNotNull(expr).map { S_ExprStatement(it, it.startPos) })
     }
 
-    fun compile(
+    internal fun compile(
         msgCtx: C_MessageContext,
         symCtxProvider: C_SymbolContextProvider,
         executor: C_CompilerExecutor,

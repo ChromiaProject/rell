@@ -11,7 +11,10 @@ import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
-import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.R_CallFrame
+import net.postchain.rell.base.model.R_FunctionBase
+import net.postchain.rell.base.model.R_StackPos
+import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.ImmList
@@ -182,16 +185,14 @@ object Rt_Utils {
         check(actual in min .. max, mgsProvider)
     }
 
-    fun evaluateInNewFrame(
+    internal fun evaluateInNewFrame(
         defCtx: Rt_DefinitionContext,
         frame: Rt_CallFrame?,
         expr: R_Expr,
-        filePos: R_FilePos?,
         rFrameGetter: C_LateGetter<R_CallFrame>,
     ): Rt_Value {
-        val stack = if (filePos == null || frame == null) null else frame.subStack(filePos)
         val rSubFrame = rFrameGetter.get()
-        val callCtx = Rt_CallContext(defCtx, stack, frame?.dbUpdateAllowed() ?: true)
+        val callCtx = Rt_CallContext(defCtx, frame?.dbUpdateAllowed() ?: true)
         val subFrame = R_FunctionBase.createCallFrame(callCtx, rSubFrame)
         return expr.evaluate(subFrame)
     }

@@ -17,7 +17,7 @@ import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
-class V_WhenChooserDetails(
+internal class V_WhenChooserDetails(
     val keyExpr: V_Expr?,
     val keyVarStatesDelta: C_VarStatesDelta,
     val constantCases: ImmMap<Rt_Value, Int>,
@@ -46,7 +46,7 @@ class V_WhenChooserDetails(
     }
 }
 
-class V_WhenExpr(
+internal class V_WhenExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val chooserDetails: V_WhenChooserDetails,
@@ -61,7 +61,7 @@ class V_WhenExpr(
 
     override fun varStatesDelta0() = resVarStates
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rChooser = chooserDetails.makeChooser()
         val rExprs = valueExprs.mapToImmList { it.toRExpr() }
         return R_WhenExpr(resType, rChooser, rExprs)

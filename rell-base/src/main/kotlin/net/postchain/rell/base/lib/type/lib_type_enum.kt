@@ -154,7 +154,7 @@ object Lib_Type_Enum {
         }
     }
 
-    fun getStaticMembers(type: R_EnumType): ImmList<C_TypeStaticMember> {
+    internal fun getStaticMembers(type: R_EnumType): ImmList<C_TypeStaticMember> {
         val defPath = type.enum.cDefName.toPath()
         return type.enum.attrs.mapToImmList { attr ->
             val defName = defPath.subName(attr.rName)

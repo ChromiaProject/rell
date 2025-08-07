@@ -19,11 +19,11 @@ import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
 
-data class C_ExtChainName(val name: String) {
+internal data class C_ExtChainName(val name: String) {
     fun toExtChain(appCtx: C_AppContext): C_ExternalChain = appCtx.addExternalChain(name)
 }
 
-class C_ExtModule(
+internal class C_ExtModule(
     val midModule: C_MidModule,
     val chain: C_ExtChainName?,
     private val files: ImmList<C_ExtModuleFile>,
@@ -31,7 +31,7 @@ class C_ExtModule(
     fun compileFiles(modCtx: C_ModuleContext) = files.map { it.compile(modCtx) }
 }
 
-class C_ExtModuleFile(
+internal class C_ExtModuleFile(
     private val path: C_SourcePath,
     private val members: ImmList<C_ExtModuleMember>,
     private val symCtx: C_SymbolContext,
@@ -66,7 +66,7 @@ class C_ExtModuleFile(
     }
 }
 
-sealed class C_ExtModuleMember {
+internal sealed class C_ExtModuleMember {
     protected abstract fun compile0(mntCtx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>>
 
     fun compile(mntCtx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
@@ -76,7 +76,7 @@ sealed class C_ExtModuleMember {
     }
 }
 
-class C_ExtModuleMember_Basic(private val def: S_BasicDefinition): C_ExtModuleMember() {
+internal class C_ExtModuleMember_Basic(private val def: S_BasicDefinition): C_ExtModuleMember() {
     override fun compile0(mntCtx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
         val subMntCtx = C_MountContext(
             fileCtx = mntCtx.fileCtx,
@@ -90,7 +90,7 @@ class C_ExtModuleMember_Basic(private val def: S_BasicDefinition): C_ExtModuleMe
     }
 }
 
-class C_ExtModuleMember_Enum(
+internal class C_ExtModuleMember_Enum(
     private val cName: C_Name,
     private val rEnum: R_EnumDefinition,
     private val memBase: C_NamespaceMemberBase,
@@ -101,7 +101,7 @@ class C_ExtModuleMember_Enum(
     }
 }
 
-class C_ExtModuleMember_Import(
+internal class C_ExtModuleMember_Import(
     private val importDef: C_ImportDefinition,
     private val target: C_ImportTarget,
     private val moduleName: R_ModuleName,
@@ -133,7 +133,7 @@ class C_ExtModuleMember_Import(
     }
 }
 
-class C_ExtModuleMember_Namespace(
+internal class C_ExtModuleMember_Namespace(
     private val qualifiedName: C_IdeQualifiedName?,
     private val posRange: S_PosRange,
     private val members: ImmList<C_ExtModuleMember>,
@@ -201,7 +201,7 @@ class C_ExtModuleMember_Namespace(
     }
 }
 
-class C_ExtModuleCompiler(
+internal class C_ExtModuleCompiler(
     private val appCtx: C_AppContext,
     extModules: List<C_ExtModule>,
     preModules: ImmMap<C_ModuleKey, C_PrecompiledModule>,

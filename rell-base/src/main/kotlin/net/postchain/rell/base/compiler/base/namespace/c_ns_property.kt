@@ -52,7 +52,7 @@ class C_NamespaceProperty_RtValue(
         private val varKey: C_VarStateKey?,
     ): V_Expr(exprCtx, pos) {
         override fun exprInfo0() = V_ExprInfo.simple(valueType)
-        override fun toRExpr0() = R_ConstantValueExpr(type, value)
+        override fun toRExpr() = R_ConstantValueExpr(type, value)
         override fun constantValue(ctx: V_ConstantValueEvalContext) = value
         override fun varKey() = varKey
     }

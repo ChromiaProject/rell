@@ -29,7 +29,7 @@ class C_ModuleHeader(
     val docSymbol: DocSymbol,
 )
 
-class C_CompiledRellFile(
+internal class C_CompiledRellFile(
     val path: C_SourcePath,
     val mntTables: C_MountTables,
     val importsDescriptor: C_FileImportsDescriptor,
@@ -47,9 +47,13 @@ class C_CompiledRellFile(
     }
 }
 
-class C_ImportDescriptor(val pos: S_Pos, val module: C_ModuleDescriptor)
+internal class C_ImportDescriptor(val pos: S_Pos, val module: C_ModuleDescriptor)
 
-class C_ModuleImportsDescriptor(val key: C_ContainerKey, val name: R_ModuleName, val files: ImmList<C_FileImportsDescriptor>) {
+internal class C_ModuleImportsDescriptor(
+    val key: C_ContainerKey,
+    val name: R_ModuleName,
+    val files: ImmList<C_FileImportsDescriptor>,
+) {
     companion object {
         fun empty(moduleKey: C_ModuleKey) = C_ModuleImportsDescriptor(
                 C_ModuleContainerKey.of(moduleKey),
@@ -59,7 +63,7 @@ class C_ModuleImportsDescriptor(val key: C_ContainerKey, val name: R_ModuleName,
     }
 }
 
-class C_FileImportsDescriptor(
+internal class C_FileImportsDescriptor(
     val imports: ImmList<C_ImportDescriptor>,
     val abstracts: ImmList<C_AbstractFunctionDescriptor>,
     val overrides: ImmList<C_OverrideFunctionDescriptor>,
@@ -67,7 +71,10 @@ class C_FileImportsDescriptor(
     companion object { val EMPTY = C_FileImportsDescriptor(immListOf(), immListOf(), immListOf()) }
 }
 
-class C_ModuleKey(val name: R_ModuleName, val extChain: C_ExternalChain?) {
+internal class C_ModuleKey internal constructor(
+    val name: R_ModuleName,
+    val extChain: C_ExternalChain?,
+) {
     fun keyStr() = R_ModuleKey.str(name, extChain?.name)
     override fun equals(other: Any?) = other is C_ModuleKey && name == other.name && extChain == other.extChain
     override fun hashCode() = Objects.hash(name, extChain)
@@ -80,7 +87,7 @@ sealed class C_ContainerKey {
     final override fun toString() = defModuleName().str()
 }
 
-class C_ModuleContainerKey private constructor (val moduleKey: C_ModuleKey): C_ContainerKey() {
+internal class C_ModuleContainerKey private constructor(val moduleKey: C_ModuleKey): C_ContainerKey() {
     override fun defModuleName() = C_DefinitionModuleName(moduleKey.name.str(), moduleKey.extChain?.name)
     override fun equals(other: Any?) = other is C_ModuleContainerKey && moduleKey == other.moduleKey
     override fun hashCode() = moduleKey.hashCode()
@@ -94,7 +101,7 @@ object C_ReplContainerKey: C_ContainerKey() {
     override fun defModuleName() = C_DefinitionModuleName("<console>")
 }
 
-class C_ModuleDescriptor(
+internal class C_ModuleDescriptor(
     val key: C_ModuleKey,
     val header: C_ModuleHeader,
     val directory: Boolean,
@@ -112,21 +119,21 @@ class C_ModuleDescriptor(
     fun importsDescriptor() = importsDescriptorGetter.get()
 }
 
-class C_PrecompiledModule(val descriptor: C_ModuleDescriptor, val asmModule: C_NsAsm_Module)
+internal class C_PrecompiledModule(val descriptor: C_ModuleDescriptor, val asmModule: C_NsAsm_Module)
 
-class C_ModuleInternals(
-        val contents: C_ModuleContents,
-        val importsDescriptor: C_ModuleImportsDescriptor
+internal class C_ModuleInternals(
+    val contents: C_ModuleContents,
+    val importsDescriptor: C_ModuleImportsDescriptor,
 ) {
     companion object {
         fun empty(moduleKey: C_ModuleKey) = C_ModuleInternals(
-                C_ModuleContents.EMPTY,
-                C_ModuleImportsDescriptor.empty(moduleKey)
+            C_ModuleContents.EMPTY,
+            C_ModuleImportsDescriptor.empty(moduleKey),
         )
     }
 }
 
-class C_Module(
+internal class C_Module(
     private val executor: C_CompilerExecutor,
     val descriptor: C_ModuleDescriptor,
     val parentKey: C_ModuleKey?,
@@ -141,13 +148,13 @@ class C_Module(
     }
 }
 
-class C_CompiledModule(
-        val rModule: R_Module,
-        val contents: C_ModuleContents,
-        val importsDescriptor: C_ModuleImportsDescriptor
+internal class C_CompiledModule(
+    val rModule: R_Module,
+    val contents: C_ModuleContents,
+    val importsDescriptor: C_ModuleImportsDescriptor,
 )
 
-object C_ModuleCompiler {
+internal object C_ModuleCompiler {
     fun compile(
         modCtx: C_ModuleContext,
         files: List<C_CompiledRellFile>,
@@ -219,7 +226,7 @@ object C_ModuleCompiler {
     }
 }
 
-class C_ModuleDefsBuilder {
+internal class C_ModuleDefsBuilder {
     val entities = C_ModuleDefTableBuilder<R_EntityDefinition>()
     val objects = C_ModuleDefTableBuilder<R_ObjectDefinition>()
     val structs = C_ModuleDefTableBuilder<C_Struct>()
@@ -244,14 +251,14 @@ class C_ModuleDefsBuilder {
 }
 
 class C_ModuleDefs(
-        val entities: ImmMap<String, R_EntityDefinition>,
-        val objects: ImmMap<String, R_ObjectDefinition>,
-        val structs: ImmMap<String, C_Struct>,
-        val enums: ImmMap<String, R_EnumDefinition>,
-        val functions: ImmMap<String, R_FunctionDefinition>,
-        val operations: ImmMap<String, R_OperationDefinition>,
-        val queries: ImmMap<String, R_QueryDefinition>,
-        val constants: ImmMap<String, R_GlobalConstantDefinition>
+    val entities: ImmMap<String, R_EntityDefinition>,
+    val objects: ImmMap<String, R_ObjectDefinition>,
+    val structs: ImmMap<String, C_Struct>,
+    val enums: ImmMap<String, R_EnumDefinition>,
+    val functions: ImmMap<String, R_FunctionDefinition>,
+    val operations: ImmMap<String, R_OperationDefinition>,
+    val queries: ImmMap<String, R_QueryDefinition>,
+    val constants: ImmMap<String, R_GlobalConstantDefinition>,
 ) {
     companion object {
         val EMPTY = C_ModuleDefs(
@@ -285,9 +292,9 @@ class C_ModuleDefTableBuilder<T: Any> {
     fun build() = map.toImmMap()
 }
 
-class C_ModuleContents(
-        val mntTables: C_MountTables,
-        val defs: C_ModuleDefs
+internal class C_ModuleContents(
+    val mntTables: C_MountTables,
+    val defs: C_ModuleDefs,
 ) {
     companion object { val EMPTY = C_ModuleContents(C_MountTables.EMPTY, C_ModuleDefs.EMPTY) }
 }

@@ -7,9 +7,9 @@ package net.postchain.rell.base.lmodel.dsl
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.model.R_Name
-import kotlin.test.Test
 import java.math.BigDecimal
 import java.math.BigInteger
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue

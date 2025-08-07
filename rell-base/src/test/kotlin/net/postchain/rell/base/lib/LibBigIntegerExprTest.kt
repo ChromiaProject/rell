@@ -7,8 +7,8 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.lang.type.BigIntegerTest
 import net.postchain.rell.base.lib.type.Lib_BigIntegerMath
 import net.postchain.rell.base.testutils.BaseExprTest
-import kotlin.test.Test
 import java.math.BigInteger
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 abstract class LibBigIntegerExprTest: BaseExprTest() {

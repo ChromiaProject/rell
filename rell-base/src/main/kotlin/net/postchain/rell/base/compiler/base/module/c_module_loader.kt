@@ -34,7 +34,7 @@ sealed class C_ImportModuleLoader {
     abstract fun loadModuleEx(name: R_ModuleName): Map<R_ModuleName, C_ModuleInfo>
 }
 
-class C_ModuleLoader(
+internal class C_ModuleLoader(
     msgCtx: C_MessageContext,
     symCtxProvider: C_SymbolContextProvider,
     executor: C_CompilerExecutor,

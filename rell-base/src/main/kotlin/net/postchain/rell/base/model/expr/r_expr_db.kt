@@ -25,7 +25,7 @@ sealed class Db_BinaryOp(val code: String) {
 
     abstract fun toSql(ctx: SqlGenContext, bld: SqlBuilder, left: RedDb_Expr, right: RedDb_Expr)
 
-    open fun toRedExpr(frame: Rt_CallFrame, type: R_Type, redLeft: RedDb_Expr, right: Db_Expr): RedDb_Expr {
+    internal open fun toRedExpr(frame: Rt_CallFrame, type: R_Type, redLeft: RedDb_Expr, right: Db_Expr): RedDb_Expr {
         val redRight = right.toRedExpr(frame)
 
         val leftValue = redLeft.constantValue()
@@ -148,13 +148,13 @@ object Db_BinaryOp_Div_BigInteger: Db_BinaryOp("/") {
     }
 }
 
-object Db_BinaryOp_Div_Decimal: Db_BinaryOp_Basic("/", "/")
-object Db_BinaryOp_Mod_Integer: Db_BinaryOp_Basic("%", "%")
-object Db_BinaryOp_Mod_BigInteger: Db_BinaryOp_Basic("%", "%")
-object Db_BinaryOp_Mod_Decimal: Db_BinaryOp_Basic("%", "%")
-object Db_BinaryOp_Concat: Db_BinaryOp_Basic("+", "||")
-object Db_BinaryOp_In: Db_BinaryOp_Basic("in", "IN")
-object Db_BinaryOp_NotIn: Db_BinaryOp_Basic("not_in", "NOT IN")
+data object Db_BinaryOp_Div_Decimal: Db_BinaryOp_Basic("/", "/")
+data object Db_BinaryOp_Mod_Integer: Db_BinaryOp_Basic("%", "%")
+data object Db_BinaryOp_Mod_BigInteger: Db_BinaryOp_Basic("%", "%")
+data object Db_BinaryOp_Mod_Decimal: Db_BinaryOp_Basic("%", "%")
+data object Db_BinaryOp_Concat: Db_BinaryOp_Basic("+", "||")
+data object Db_BinaryOp_In: Db_BinaryOp_Basic("in", "IN")
+data object Db_BinaryOp_NotIn: Db_BinaryOp_Basic("not_in", "NOT IN")
 
 sealed class Db_BinaryOp_AndOr(
     code: String,
@@ -184,13 +184,13 @@ object Db_BinaryOp_And: Db_BinaryOp_AndOr("and", "AND", false)
 object Db_BinaryOp_Or: Db_BinaryOp_AndOr("or", "OR", true)
 
 sealed class Db_UnaryOp(val code: String, val sql: String, val postfix: Boolean = false)
-object Db_UnaryOp_Minus_Integer: Db_UnaryOp("-", "-")
-object Db_UnaryOp_Minus_BigInteger: Db_UnaryOp("-", "-")
-object Db_UnaryOp_Minus_Decimal: Db_UnaryOp("-", "-")
-object Db_UnaryOp_Not: Db_UnaryOp("not", "NOT")
+data object Db_UnaryOp_Minus_Integer: Db_UnaryOp("-", "-")
+data object Db_UnaryOp_Minus_BigInteger: Db_UnaryOp("-", "-")
+data object Db_UnaryOp_Minus_Decimal: Db_UnaryOp("-", "-")
+data object Db_UnaryOp_Not: Db_UnaryOp("not", "NOT")
 
 abstract class Db_Expr(val type: R_Type) {
-    abstract fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr
+    internal abstract fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr
 }
 
 abstract class RedDb_Expr {
@@ -208,7 +208,7 @@ abstract class RedDb_Expr {
     }
 }
 
-class Db_InterpretedExpr(val expr: R_Expr): Db_Expr(expr.type) {
+internal class Db_InterpretedExpr(val expr: R_Expr): Db_Expr(expr.type) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
         val value = expr.evaluate(frame)
         return RedDb_ConstantExpr(value)
@@ -224,7 +224,12 @@ private class RedDb_ConstantExpr(val value: Rt_Value): RedDb_Expr() {
     }
 }
 
-class Db_BinaryExpr(type: R_Type, val op: Db_BinaryOp, val left: Db_Expr, val right: Db_Expr): Db_Expr(type) {
+internal class Db_BinaryExpr(
+    type: R_Type,
+    private val op: Db_BinaryOp,
+    private val left: Db_Expr,
+    private val right: Db_Expr,
+): Db_Expr(type) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
         val redLeft = left.toRedExpr(frame)
         return op.toRedExpr(frame, type, redLeft, right)
@@ -237,7 +242,11 @@ private class RedDb_BinaryExpr(val op: Db_BinaryOp, val left: RedDb_Expr, val ri
     }
 }
 
-class Db_UnaryExpr(type: R_Type, val op: Db_UnaryOp, val expr: Db_Expr): Db_Expr(type) {
+internal class Db_UnaryExpr(
+    type: R_Type,
+    private val op: Db_UnaryOp,
+    private val expr: Db_Expr,
+): Db_Expr(type) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
         val redExpr = expr.toRedExpr(frame)
         return RedDb_UnaryExpr(op, redExpr)
@@ -258,11 +267,14 @@ class Db_UnaryExpr(type: R_Type, val op: Db_UnaryOp, val expr: Db_Expr): Db_Expr
     }
 }
 
-sealed class Db_TableExpr(val rEntity: R_EntityDefinition, type: R_Type): Db_Expr(type) {
+internal sealed class Db_TableExpr(protected val rEntity: R_EntityDefinition, type: R_Type): Db_Expr(type) {
     abstract fun alias(ctx: SqlGenContext): SqlTableAlias
 }
 
-class Db_EntityExpr(val entity: R_DbAtEntity, type: R_Type = entity.rEntity.type): Db_TableExpr(entity.rEntity, type) {
+internal class Db_EntityExpr(
+    private val entity: R_DbAtEntity,
+    type: R_Type = entity.rEntity.type,
+): Db_TableExpr(entity.rEntity, type) {
     override fun alias(ctx: SqlGenContext) = ctx.getEntityAlias(entity)
 
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
@@ -280,9 +292,9 @@ class Db_EntityExpr(val entity: R_DbAtEntity, type: R_Type = entity.rEntity.type
     }
 }
 
-class Db_RelExpr(
-    val base: Db_TableExpr,
-    val attr: R_Attribute,
+internal class Db_RelExpr(
+    private val base: Db_TableExpr,
+    private val attr: R_Attribute,
     targetEntity: R_EntityDefinition,
     type: R_Type = targetEntity.type,
 ): Db_TableExpr(targetEntity, type) {
@@ -305,7 +317,11 @@ class Db_RelExpr(
     }
 }
 
-class Db_AttrExpr(val base: Db_TableExpr, val attr: R_Attribute, type: R_Type = attr.type): Db_Expr(type) {
+internal class Db_AttrExpr(
+    private val base: Db_TableExpr,
+    private val attr: R_Attribute,
+    type: R_Type = attr.type,
+): Db_Expr(type) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
         val redExpr = RedDb_AttrExpr(base, attr)
         return RedDb_Utils.wrapDecimalExpr(type, redExpr)
@@ -321,13 +337,13 @@ class Db_AttrExpr(val base: Db_TableExpr, val attr: R_Attribute, type: R_Type = 
     }
 }
 
-class Db_RowidExpr(val base: Db_TableExpr): Db_Expr(C_EntityAttrRef.ROWID_TYPE) {
+internal class Db_RowidExpr(private val base: Db_TableExpr): Db_Expr(C_EntityAttrRef.ROWID_TYPE) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
         return base.toRedExpr(frame)
     }
 }
 
-class Db_CollectionInterpretedExpr(val expr: R_Expr): Db_Expr(expr.type) {
+internal class Db_CollectionInterpretedExpr(private val expr: R_Expr): Db_Expr(expr.type) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
         val value = expr.evaluate(frame)
         val collection = value.asCollection()
@@ -347,7 +363,11 @@ class Db_CollectionInterpretedExpr(val expr: R_Expr): Db_Expr(expr.type) {
     }
 }
 
-class Db_InExpr(val keyExpr: Db_Expr, val exprs: ImmList<Db_Expr>, val not: Boolean): Db_Expr(R_BooleanType) {
+internal class Db_InExpr(
+    private val keyExpr: Db_Expr,
+    private val exprs: ImmList<Db_Expr>,
+    private val not: Boolean,
+): Db_Expr(R_BooleanType) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
         val redKeyExpr = keyExpr.toRedExpr(frame)
         val redExprTypes = toRedExprs(frame, redKeyExpr, exprs)
@@ -397,7 +417,11 @@ private class RedDb_InExpr(val keyExpr: RedDb_Expr, val exprs: ImmList<RedDb_Exp
     }
 }
 
-class Db_ElvisExpr(type: R_Type, private val left: Db_Expr, private val right: Db_Expr): Db_Expr(type) {
+internal class Db_ElvisExpr(
+    type: R_Type,
+    private val left: Db_Expr,
+    private val right: Db_Expr,
+): Db_Expr(type) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
         val redLeft = left.toRedExpr(frame)
 
@@ -413,7 +437,11 @@ class Db_ElvisExpr(type: R_Type, private val left: Db_Expr, private val right: D
     }
 }
 
-class Db_CallExpr(type: R_Type, val fn: Db_SysFunction, val args: ImmList<Db_Expr>): Db_Expr(type) {
+internal class Db_CallExpr(
+    type: R_Type,
+    private val fn: Db_SysFunction,
+    private val args: ImmList<Db_Expr>,
+): Db_Expr(type) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
         val redArgs = args.mapToImmList { it.toRedExpr(frame) }
         val redExpr = RedDb_CallExpr(fn, redArgs)
@@ -426,7 +454,10 @@ private class RedDb_CallExpr(val fn: Db_SysFunction, val args: ImmList<RedDb_Exp
     override fun toSql0(ctx: SqlGenContext, bld: SqlBuilder) = fn.toSql(ctx, bld, args)
 }
 
-class Db_ExistsExpr(val subExpr: Db_Expr, val not: Boolean): Db_Expr(R_BooleanType) {
+internal class Db_ExistsExpr(
+    private val subExpr: Db_Expr,
+    private val not: Boolean,
+): Db_Expr(R_BooleanType) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
         val redSubExpr = subExpr.toRedExpr(frame)
         return RedDb_ExistsExpr(not, redSubExpr)
@@ -444,7 +475,11 @@ class Db_ExistsExpr(val subExpr: Db_Expr, val not: Boolean): Db_Expr(R_BooleanTy
     }
 }
 
-class Db_InCollectionExpr(val left: Db_Expr, val right: R_Expr, val not: Boolean): Db_Expr(R_BooleanType) {
+internal class Db_InCollectionExpr(
+    private val left: Db_Expr,
+    private val right: R_Expr,
+    private val not: Boolean,
+): Db_Expr(R_BooleanType) {
     override fun toRedExpr(frame: Rt_CallFrame): RedDb_Expr {
         val redLeft = left.toRedExpr(frame)
 

@@ -115,12 +115,12 @@ class CLibFunctionLazyParamTest: BaseCLibTest() {
     private fun chkIfIntRuntimeError(expr: String) {
         tst.extraMod = IfIntDefs.MODULE
         chk(expr.format(true, "f(-123)", 456), "rt_err:throw:x_is_negative:-123")
-        chkStack(":f(main.rell:1)", ":q(main.rell:2)")
+        chkStack(":f(main.rell:1)", ":q(main.rell:2)", ":q(main.rell:2)")
         chk(expr.format(false, "f(-123)", 456), "int[456]")
 
         chk(expr.format(true, 123, "f(-456)"), "int[123]")
         chk(expr.format(false, 123, "f(-456)"), "rt_err:throw:x_is_negative:-456")
-        chkStack(":f(main.rell:1)", ":q(main.rell:2)")
+        chkStack(":f(main.rell:1)", ":q(main.rell:2)", ":q(main.rell:2)")
     }
 
     @Test fun testIfIntComplexWhat() {

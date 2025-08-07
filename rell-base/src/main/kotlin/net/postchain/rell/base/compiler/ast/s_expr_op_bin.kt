@@ -81,9 +81,9 @@ enum class S_AssignOpCode(val op: S_AssignOp) {
 }
 
 sealed class S_AssignOp {
-    abstract fun compile(ctx: C_BinOpContext, dstExpr: V_Expr, srcExpr: V_Expr): C_Statement
+    internal abstract fun compile(ctx: C_BinOpContext, dstExpr: V_Expr, srcExpr: V_Expr): C_Statement
 
-    abstract fun compileDbUpdate(
+    internal abstract fun compileDbUpdate(
         ctx: C_BinOpContext,
         entity: R_DbAtEntity,
         attr: R_Attribute,
@@ -112,7 +112,7 @@ object S_AssignOp_Eq: S_AssignOp() {
         val srcAdapterExpr = adapter.adaptExpr(ctx.exprCtx, srcExpr)
         val rSrcAdapterExpr = srcAdapterExpr.toRExpr()
 
-        val rStmt = destination.compileAssignStatement(ctx.exprCtx, rSrcAdapterExpr, null)
+        val rStmt = destination.compileAssignStatement(ctx.exprCtx, dstExpr.pos, rSrcAdapterExpr, null)
 
         val varStates = compileVarStates(dstExpr, destination, srcExpr, srcType)
         return C_Statement(rStmt, false, varStates)
@@ -155,7 +155,10 @@ object S_AssignOp_Eq: S_AssignOp() {
     }
 }
 
-class S_AssignOp_Op(val code: String, val op: C_BinOp_Common): S_AssignOp() {
+class S_AssignOp_Op internal constructor(
+    val code: String,
+    internal val op: C_BinOp_Common,
+): S_AssignOp() {
     override fun compile(ctx: C_BinOpContext, dstExpr: V_Expr, srcExpr: V_Expr): C_Statement {
         val destination = dstExpr.destination()
         val dstType = destination.effectiveType()
@@ -166,7 +169,7 @@ class S_AssignOp_Op(val code: String, val op: C_BinOp_Common): S_AssignOp() {
 
         val binOp = compileBinOp(ctx, dstType, srcType)
         val cOp = C_AssignOp(ctx.opPos, code, binOp.rOp, binOp.dbOp)
-        val rStmt = destination.compileAssignStatement(ctx.exprCtx, rSrcExpr, cOp)
+        val rStmt = destination.compileAssignStatement(ctx.exprCtx, dstExpr.pos, rSrcExpr, cOp)
 
         val varStates = compileVarStates(dstExpr, destination, srcExpr, rSrcExpr.type)
         return C_Statement(rStmt, false, varStates)
@@ -229,7 +232,7 @@ class C_BinOpContext(val exprCtx: C_ExprContext, val opPos: S_Pos) {
     val msgCtx = exprCtx.msgCtx
 }
 
-sealed class C_BinOp_Common: C_BinOp() {
+internal sealed class C_BinOp_Common: C_BinOp() {
     abstract fun compileOp(ctx: C_BinOpContext, left: R_Type, right: R_Type): V_BinaryOp?
 
     override fun compile(ctx: C_BinOpContext, left: V_Expr, right: V_Expr): V_Expr? {
@@ -311,7 +314,7 @@ sealed class C_BinOp_Common: C_BinOp() {
     }
 }
 
-sealed class C_BinOp_EqNe(private val eq: Boolean, private val rOp: R_BinaryOp): C_BinOp_Common() {
+internal sealed class C_BinOp_EqNe(private val eq: Boolean, private val rOp: R_BinaryOp): C_BinOp_Common() {
     protected open fun isTypeSupported(type: R_Type) = true
 
     final override fun compile(ctx: C_BinOpContext, left: V_Expr, right: V_Expr): V_Expr? {
@@ -395,17 +398,17 @@ sealed class C_BinOp_EqNe(private val eq: Boolean, private val rOp: R_BinaryOp):
     }
 }
 
-object C_BinOp_Eq: C_BinOp_EqNe(true, R_BinaryOp_Eq)
-object C_BinOp_Ne: C_BinOp_EqNe(false, R_BinaryOp_Ne)
+internal data object C_BinOp_Eq: C_BinOp_EqNe(true, R_BinaryOp_Eq)
+internal data object C_BinOp_Ne: C_BinOp_EqNe(false, R_BinaryOp_Ne)
 
-sealed class C_BinOp_EqNeRef(eq: Boolean, rOp: R_BinaryOp): C_BinOp_EqNe(eq, rOp) {
+internal sealed class C_BinOp_EqNeRef(eq: Boolean, rOp: R_BinaryOp): C_BinOp_EqNe(eq, rOp) {
     final override fun isTypeSupported(type: R_Type) = type.isReference()
 }
 
-object C_BinOp_EqRef: C_BinOp_EqNeRef(true, R_BinaryOp_EqRef)
-object C_BinOp_NeRef: C_BinOp_EqNeRef(false, R_BinaryOp_NeRef)
+internal data object C_BinOp_EqRef: C_BinOp_EqNeRef(true, R_BinaryOp_EqRef)
+internal data object C_BinOp_NeRef: C_BinOp_EqNeRef(false, R_BinaryOp_NeRef)
 
-sealed class C_BinOp_Cmp(val cmpOp: R_CmpOp, val dbOp: Db_BinaryOp): C_BinOp_Common() {
+internal sealed class C_BinOp_Cmp(private val cmpOp: R_CmpOp, private val dbOp: Db_BinaryOp): C_BinOp_Common() {
     final override fun compileOp(ctx: C_BinOpContext, left: R_Type, right: R_Type): V_BinaryOp? {
         if (left != right) {
             return null
@@ -420,12 +423,12 @@ sealed class C_BinOp_Cmp(val cmpOp: R_CmpOp, val dbOp: Db_BinaryOp): C_BinOp_Com
     }
 }
 
-object C_BinOp_Lt: C_BinOp_Cmp(R_CmpOp_Lt, Db_BinaryOp_Lt)
-object C_BinOp_Gt: C_BinOp_Cmp(R_CmpOp_Gt, Db_BinaryOp_Gt)
-object C_BinOp_Le: C_BinOp_Cmp(R_CmpOp_Le, Db_BinaryOp_Le)
-object C_BinOp_Ge: C_BinOp_Cmp(R_CmpOp_Ge, Db_BinaryOp_Ge)
+internal data object C_BinOp_Lt: C_BinOp_Cmp(R_CmpOp_Lt, Db_BinaryOp_Lt)
+internal data object C_BinOp_Gt: C_BinOp_Cmp(R_CmpOp_Gt, Db_BinaryOp_Gt)
+internal data object C_BinOp_Le: C_BinOp_Cmp(R_CmpOp_Le, Db_BinaryOp_Le)
+internal data object C_BinOp_Ge: C_BinOp_Cmp(R_CmpOp_Ge, Db_BinaryOp_Ge)
 
-object C_BinOp_Plus: C_BinOp_Common() {
+internal data object C_BinOp_Plus: C_BinOp_Common() {
     override fun compileOp(ctx: C_BinOpContext, left: R_Type, right: R_Type): V_BinaryOp? {
         if (left != right) {
             return null
@@ -503,7 +506,7 @@ object C_BinOp_Plus: C_BinOp_Common() {
     }
 }
 
-sealed class C_BinOp_Arith(
+internal sealed class C_BinOp_Arith(
     private val rOpInt: R_BinaryOp,
     private val dbOpInt: Db_BinaryOp,
     private val rOpBigInt: R_BinaryOp,
@@ -525,7 +528,7 @@ sealed class C_BinOp_Arith(
     }
 }
 
-object C_BinOp_Minus: C_BinOp_Arith(
+internal data object C_BinOp_Minus: C_BinOp_Arith(
     R_BinaryOp_Sub_Integer,
     Db_BinaryOp_Sub_Integer,
     R_BinaryOp_Sub_BigInteger,
@@ -534,7 +537,7 @@ object C_BinOp_Minus: C_BinOp_Arith(
     Db_BinaryOp_Sub_Decimal,
 )
 
-object C_BinOp_Mul: C_BinOp_Arith(
+internal data object C_BinOp_Mul: C_BinOp_Arith(
     R_BinaryOp_Mul_Integer,
     Db_BinaryOp_Mul_Integer,
     R_BinaryOp_Mul_BigInteger,
@@ -543,7 +546,7 @@ object C_BinOp_Mul: C_BinOp_Arith(
     Db_BinaryOp_Mul_Decimal,
 )
 
-object C_BinOp_Div: C_BinOp_Arith(
+internal data object C_BinOp_Div: C_BinOp_Arith(
     R_BinaryOp_Div_Integer,
     Db_BinaryOp_Div_Integer,
     R_BinaryOp_Div_BigInteger,
@@ -552,7 +555,7 @@ object C_BinOp_Div: C_BinOp_Arith(
     Db_BinaryOp_Div_Decimal,
 )
 
-object C_BinOp_Mod: C_BinOp_Arith(
+internal data object C_BinOp_Mod: C_BinOp_Arith(
     R_BinaryOp_Mod_Integer,
     Db_BinaryOp_Mod_Integer,
     R_BinaryOp_Mod_BigInteger,
@@ -561,7 +564,7 @@ object C_BinOp_Mod: C_BinOp_Arith(
     Db_BinaryOp_Mod_Decimal,
 )
 
-sealed class C_BinOp_Logic(val rOp: R_BinaryOp, val dbOp: Db_BinaryOp): C_BinOp_Common() {
+internal sealed class C_BinOp_Logic(val rOp: R_BinaryOp, val dbOp: Db_BinaryOp): C_BinOp_Common() {
     override fun compileOp(ctx: C_BinOpContext, left: R_Type, right: R_Type): V_BinaryOp? {
         if (left != R_BooleanType || right != R_BooleanType) {
             return null
@@ -570,7 +573,7 @@ sealed class C_BinOp_Logic(val rOp: R_BinaryOp, val dbOp: Db_BinaryOp): C_BinOp_
     }
 }
 
-object C_BinOp_And: C_BinOp_Logic(R_BinaryOp_And, Db_BinaryOp_And) {
+internal data object C_BinOp_And: C_BinOp_Logic(R_BinaryOp_And, Db_BinaryOp_And) {
     override fun compileExprVarStatesDelta(left: V_Expr, right: V_Expr): C_ExprVarStatesDelta {
         val leftVarStates = left.varStatesDelta
         val rightVarStates = right.varStatesDelta
@@ -583,7 +586,7 @@ object C_BinOp_And: C_BinOp_Logic(R_BinaryOp_And, Db_BinaryOp_And) {
     }
 }
 
-object C_BinOp_Or: C_BinOp_Logic(R_BinaryOp_Or, Db_BinaryOp_Or) {
+internal data object C_BinOp_Or: C_BinOp_Logic(R_BinaryOp_Or, Db_BinaryOp_Or) {
     override fun compileExprVarStatesDelta(left: V_Expr, right: V_Expr): C_ExprVarStatesDelta {
         val leftVarStates = left.varStatesDelta
         val rightVarStates = right.varStatesDelta
@@ -596,7 +599,7 @@ object C_BinOp_Or: C_BinOp_Logic(R_BinaryOp_Or, Db_BinaryOp_Or) {
     }
 }
 
-class C_BinOp_In(private val not: Boolean): C_BinOp() {
+internal class C_BinOp_In(private val not: Boolean): C_BinOp() {
     override fun compile(ctx: C_BinOpContext, left: V_Expr, right: V_Expr): V_Expr? {
         val leftType = left.type
         val rightType = right.type

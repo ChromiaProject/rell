@@ -26,7 +26,7 @@ import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.plus
 
-abstract class V_TypeValueMember(val type: R_Type, val ideInfo: C_IdeSymbolInfo) {
+internal abstract class V_TypeValueMember(val type: R_Type, val ideInfo: C_IdeSymbolInfo) {
     abstract fun implicitAttrName(): C_Name?
     abstract fun vExprs(): List<V_Expr>
     open fun varStatesDelta(): C_VarStatesDelta = C_VarStatesDelta.forExpressions(vExprs())
@@ -50,7 +50,7 @@ abstract class V_TypeValueMember(val type: R_Type, val ideInfo: C_IdeSymbolInfo)
     ): V_TypeValueMember? = null
 }
 
-class V_TypeValueMember_Error(
+internal class V_TypeValueMember_Error(
     type: R_Type,
     ideInfo: C_IdeSymbolInfo,
     private val pos: S_Pos,
@@ -58,11 +58,11 @@ class V_TypeValueMember_Error(
 ): V_TypeValueMember(type, ideInfo) {
     override fun implicitAttrName() = null
     override fun vExprs() = immListOf<V_Expr>()
-    override fun calculator() = R_MemberCalculator_Error(type, msg)
+    override fun calculator(): R_MemberCalculator = R_MemberCalculator_Error(type, msg)
     override fun destination(base: V_Expr) = throw C_Errors.errBadDestination(pos)
 }
 
-class V_ValueMemberExpr private constructor(
+internal class V_ValueMemberExpr private constructor(
     exprCtx: C_ExprContext,
     private val base: V_Expr,
     private val actualType: R_Type,
@@ -102,7 +102,7 @@ class V_ValueMemberExpr private constructor(
 
     override fun globalConstantRestriction() = member.globalConstantRestriction()
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rBase = base.toRExpr()
         val calculator = member.calculator()
         return R_MemberExpr(rBase, calculator, safe)

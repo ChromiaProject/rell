@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.model.stmt
 
-import net.postchain.rell.base.model.R_FilePos
 import net.postchain.rell.base.model.R_FrameBlock
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_VarPtr
@@ -13,33 +12,39 @@ import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.ImmList
 
-sealed class R_StatementResult
-class R_StatementResult_Return(val value: Rt_Value?): R_StatementResult()
-object R_StatementResult_Break: R_StatementResult()
-object R_StatementResult_Continue: R_StatementResult()
+internal sealed class R_StatementResult
+internal class R_StatementResult_Return(val value: Rt_Value?): R_StatementResult()
+internal data object R_StatementResult_Break: R_StatementResult()
+internal data object R_StatementResult_Continue: R_StatementResult()
 
-abstract class R_Statement {
-    abstract fun execute(frame: Rt_CallFrame): R_StatementResult?
+internal abstract class R_Statement {
+    internal abstract fun execute(frame: Rt_CallFrame): R_StatementResult?
 }
 
-object R_EmptyStatement: R_Statement() {
+internal object R_EmptyStatement: R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         return null
     }
 }
 
-sealed class R_VarDeclarator {
+internal sealed class R_VarDeclarator {
     abstract fun initialize(frame: Rt_CallFrame, value: Rt_Value, overwrite: Boolean)
 }
 
-class R_SimpleVarDeclarator(val ptr: R_VarPtr, val type: R_Type, val adapter: R_TypeAdapter): R_VarDeclarator() {
+internal class R_SimpleVarDeclarator(
+    private val ptr: R_VarPtr,
+    private val type: R_Type,
+    private val adapter: R_TypeAdapter,
+): R_VarDeclarator() {
     override fun initialize(frame: Rt_CallFrame, value: Rt_Value, overwrite: Boolean) {
         val value2 = adapter.adaptValue(value)
         frame.set(ptr, type, value2, overwrite)
     }
 }
 
-class R_TupleVarDeclarator(val subDeclarators: ImmList<R_VarDeclarator>): R_VarDeclarator() {
+internal class R_TupleVarDeclarator(
+    private val subDeclarators: ImmList<R_VarDeclarator>,
+): R_VarDeclarator() {
     override fun initialize(frame: Rt_CallFrame, value: Rt_Value, overwrite: Boolean) {
         val tuple = value.asTuple()
         for ((i, declarator) in subDeclarators.withIndex()) {
@@ -49,13 +54,16 @@ class R_TupleVarDeclarator(val subDeclarators: ImmList<R_VarDeclarator>): R_VarD
     }
 }
 
-object R_WildcardVarDeclarator: R_VarDeclarator() {
+internal data object R_WildcardVarDeclarator: R_VarDeclarator() {
     override fun initialize(frame: Rt_CallFrame, value: Rt_Value, overwrite: Boolean) {
         // Do nothing.
     }
 }
 
-class R_VarStatement(val declarator: R_VarDeclarator, val expr: R_Expr?): R_Statement() {
+internal class R_VarStatement(
+    private val declarator: R_VarDeclarator,
+    private val expr: R_Expr?,
+): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         if (expr != null) {
             val value = expr.evaluate(frame)
@@ -65,14 +73,17 @@ class R_VarStatement(val declarator: R_VarDeclarator, val expr: R_Expr?): R_Stat
     }
 }
 
-class R_ReturnStatement(val expr: R_Expr?): R_Statement() {
-    override fun execute(frame: Rt_CallFrame): R_StatementResult? {
+internal class R_ReturnStatement(private val expr: R_Expr?): R_Statement() {
+    override fun execute(frame: Rt_CallFrame): R_StatementResult {
         val value = expr?.evaluate(frame)
         return R_StatementResult_Return(value)
     }
 }
 
-class R_BlockStatement(val stmts: ImmList<R_Statement>, val frameBlock: R_FrameBlock): R_Statement() {
+internal class R_BlockStatement(
+    private val stmts: ImmList<R_Statement>,
+    private val frameBlock: R_FrameBlock,
+): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         val res = frame.block(frameBlock) {
             executeStatements(frame, stmts)
@@ -94,14 +105,14 @@ class R_BlockStatement(val stmts: ImmList<R_Statement>, val frameBlock: R_FrameB
     }
 }
 
-class R_ExprStatement(private val expr: R_Expr): R_Statement() {
+internal class R_ExprStatement(private val expr: R_Expr): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         expr.evaluate(frame)
         return null
     }
 }
 
-class R_ReplExprStatement(private val expr: R_Expr): R_Statement() {
+internal class R_ReplExprStatement(private val expr: R_Expr): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         val res = expr.evaluate(frame)
         frame.defCtx.appCtx.replOut?.printValue(res)
@@ -109,7 +120,11 @@ class R_ReplExprStatement(private val expr: R_Expr): R_Statement() {
     }
 }
 
-class R_AssignStatement(val dstExpr: R_DestinationExpr, val expr: R_Expr, val op: R_BinaryOp?): R_Statement() {
+internal class R_AssignStatement(
+    private val dstExpr: R_DestinationExpr,
+    private val expr: R_Expr,
+    private val op: R_BinaryOp?,
+): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         val dstRef = dstExpr.evaluateRef(frame)
         dstRef ?: return null // Null-safe access (operator ?.).
@@ -127,7 +142,11 @@ class R_AssignStatement(val dstExpr: R_DestinationExpr, val expr: R_Expr, val op
     }
 }
 
-class R_IfStatement(val expr: R_Expr, val trueStmt: R_Statement, val falseStmt: R_Statement): R_Statement() {
+internal class R_IfStatement(
+    private val expr: R_Expr,
+    private val trueStmt: R_Statement,
+    private val falseStmt: R_Statement,
+): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         val cond = expr.evaluate(frame)
         val b = cond.asBoolean()
@@ -137,7 +156,10 @@ class R_IfStatement(val expr: R_Expr, val trueStmt: R_Statement, val falseStmt: 
     }
 }
 
-class R_WhenStatement(val chooser: R_WhenChooser, val stmts: ImmList<R_Statement>): R_Statement() {
+internal class R_WhenStatement(
+    private val chooser: R_WhenChooser,
+    private val stmts: ImmList<R_Statement>,
+): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         val choice = chooser.choose(frame)
         val res = if (choice == null) null else stmts[choice].execute(frame)
@@ -145,7 +167,11 @@ class R_WhenStatement(val chooser: R_WhenChooser, val stmts: ImmList<R_Statement
     }
 }
 
-class R_WhileStatement(val expr: R_Expr, val stmt: R_Statement, val frameBlock: R_FrameBlock): R_Statement() {
+internal class R_WhileStatement(
+    private val expr: R_Expr,
+    private val stmt: R_Statement,
+    private val frameBlock: R_FrameBlock,
+): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         while (true) {
             val cond = expr.evaluate(frame)
@@ -189,12 +215,12 @@ object R_IterableAdapter_LegacyMap: R_IterableAdapter() {
     }
 }
 
-class R_ForStatement(
-    val varDeclarator: R_VarDeclarator,
-    val expr: R_Expr,
-    val iterator: R_IterableAdapter,
-    val stmt: R_Statement,
-    val frameBlock: R_FrameBlock
+internal class R_ForStatement(
+    private val varDeclarator: R_VarDeclarator,
+    private val expr: R_Expr,
+    private val iterator: R_IterableAdapter,
+    private val stmt: R_Statement,
+    private val frameBlock: R_FrameBlock,
 ): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         val value = expr.evaluate(frame)
@@ -229,27 +255,19 @@ class R_ForStatement(
     }
 }
 
-class R_BreakStatement: R_Statement() {
+internal class R_BreakStatement: R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult {
         return R_StatementResult_Break
     }
 }
 
-class R_ContinueStatement: R_Statement() {
+internal class R_ContinueStatement: R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult {
         return R_StatementResult_Continue
     }
 }
 
-class R_StackTraceStatement(private val subStmt: R_Statement, private val filePos: R_FilePos): R_Statement() {
-    override fun execute(frame: Rt_CallFrame): R_StatementResult? {
-        return R_StackTraceExpr.trackStack(frame, filePos) {
-            subStmt.execute(frame)
-        }
-    }
-}
-
-class R_GuardStatement(private val subStmt: R_Statement): R_Statement() {
+internal class R_GuardStatement(private val subStmt: R_Statement): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         val res = subStmt.execute(frame)
         frame.guardCompleted()
@@ -257,10 +275,10 @@ class R_GuardStatement(private val subStmt: R_Statement): R_Statement() {
     }
 }
 
-class R_LambdaStatement(
+internal class R_LambdaStatement(
     private val args: ImmList<Pair<R_Expr, R_VarPtr>>,
     private val block: R_FrameBlock,
-    private val stmt: R_Statement
+    private val stmt: R_Statement,
 ): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         val values = args.map { it to it.first.evaluate(frame) }

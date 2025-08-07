@@ -8,6 +8,7 @@ import com.google.common.math.LongMath
 import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.R_EntityType
 import net.postchain.rell.base.model.R_EnumType
+import net.postchain.rell.base.model.R_ErrorPos
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Exception
@@ -136,7 +137,7 @@ object R_CmpType_Enum: R_CmpType() {
     }
 }
 
-sealed class R_BinaryOp(val code: String) {
+internal sealed class R_BinaryOp(val code: String) {
     open fun evaluate(left: Rt_Value): Rt_Value? = null
     abstract fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value
 
@@ -153,23 +154,23 @@ sealed class R_BinaryOp(val code: String) {
     }
 }
 
-object R_BinaryOp_Eq: R_BinaryOp("==") {
+internal data object R_BinaryOp_Eq: R_BinaryOp("==") {
     override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value = Rt_BooleanValue.get(left == right)
 }
 
-object R_BinaryOp_Ne: R_BinaryOp("!=") {
+internal data object R_BinaryOp_Ne: R_BinaryOp("!=") {
     override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value = Rt_BooleanValue.get(left != right)
 }
 
-object R_BinaryOp_EqRef: R_BinaryOp("===") {
+internal data object R_BinaryOp_EqRef: R_BinaryOp("===") {
     override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value = Rt_BooleanValue.get(left === right)
 }
 
-object R_BinaryOp_NeRef: R_BinaryOp("!==") {
+internal data object R_BinaryOp_NeRef: R_BinaryOp("!==") {
     override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value = Rt_BooleanValue.get(left !== right)
 }
 
-class R_BinaryOp_Cmp(val cmpOp: R_CmpOp, val cmpType: R_CmpType): R_BinaryOp(cmpOp.code) {
+internal class R_BinaryOp_Cmp(val cmpOp: R_CmpOp, val cmpType: R_CmpType): R_BinaryOp(cmpOp.code) {
     override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
         val cmp = cmpType.compare(left, right)
         val res = cmpOp.check(cmp)
@@ -177,7 +178,7 @@ class R_BinaryOp_Cmp(val cmpOp: R_CmpOp, val cmpType: R_CmpType): R_BinaryOp(cmp
     }
 }
 
-sealed class R_BinaryOp_Logic(code: String): R_BinaryOp(code) {
+internal sealed class R_BinaryOp_Logic(code: String): R_BinaryOp(code) {
     abstract fun evaluate(left: Boolean): Boolean?
     abstract fun evaluate(left: Boolean, right: Boolean): Boolean
 
@@ -195,7 +196,7 @@ sealed class R_BinaryOp_Logic(code: String): R_BinaryOp(code) {
     }
 }
 
-object R_BinaryOp_And: R_BinaryOp_Logic("and") {
+internal data object R_BinaryOp_And: R_BinaryOp_Logic("and") {
     override fun evaluate(left: Boolean): Boolean? {
         return if (!left) false else null
     }
@@ -205,7 +206,7 @@ object R_BinaryOp_And: R_BinaryOp_Logic("and") {
     }
 }
 
-object R_BinaryOp_Or: R_BinaryOp_Logic("or") {
+internal data object R_BinaryOp_Or: R_BinaryOp_Logic("or") {
     override fun evaluate(left: Boolean): Boolean? {
         return if (left) true else null
     }
@@ -215,14 +216,24 @@ object R_BinaryOp_Or: R_BinaryOp_Logic("or") {
     }
 }
 
-class R_BinaryExpr(type: R_Type, val op: R_BinaryOp, val left: R_Expr, val right: R_Expr): R_Expr(type) {
+internal class R_BinaryExpr(
+    type: R_Type,
+    private val op: R_BinaryOp,
+    private val left: R_Expr,
+    private val right: R_Expr,
+    private val errPos: R_ErrorPos?,
+): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
-        val resValue = op.evaluate(frame, left, right)
-        return resValue
+        return try {
+            op.evaluate(frame, left, right)
+        } catch (e: Rt_Exception) {
+            errPos ?: throw e
+            frame.error(errPos, e)
+        }
     }
 }
 
-sealed class R_BinaryOp_Arith_Integer(code: String): R_BinaryOp(code) {
+internal sealed class R_BinaryOp_Arith_Integer(code: String): R_BinaryOp(code) {
     abstract fun evaluate(left: Long, right: Long): Long
 
     final override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
@@ -239,7 +250,7 @@ sealed class R_BinaryOp_Arith_Integer(code: String): R_BinaryOp(code) {
     }
 }
 
-sealed class R_BinaryOp_Arith_BigInteger(code: String): R_BinaryOp(code) {
+internal sealed class R_BinaryOp_Arith_BigInteger(code: String): R_BinaryOp(code) {
     abstract fun evaluate(left: BigInteger, right: BigInteger): BigInteger
 
     final override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
@@ -250,7 +261,7 @@ sealed class R_BinaryOp_Arith_BigInteger(code: String): R_BinaryOp(code) {
     }
 }
 
-sealed class R_BinaryOp_Arith_Decimal(code: String): R_BinaryOp(code) {
+internal sealed class R_BinaryOp_Arith_Decimal(code: String): R_BinaryOp(code) {
     abstract fun evaluate(left: BigDecimal, right: BigDecimal): BigDecimal
 
     final override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
@@ -261,43 +272,43 @@ sealed class R_BinaryOp_Arith_Decimal(code: String): R_BinaryOp(code) {
     }
 }
 
-object R_BinaryOp_Add_Integer: R_BinaryOp_Arith_Integer("+") {
+internal data object R_BinaryOp_Add_Integer: R_BinaryOp_Arith_Integer("+") {
     override fun evaluate(left: Long, right: Long) = LongMath.checkedAdd(left, right)
 }
 
-object R_BinaryOp_Add_BigInteger: R_BinaryOp_Arith_BigInteger("+") {
+internal data object R_BinaryOp_Add_BigInteger: R_BinaryOp_Arith_BigInteger("+") {
     override fun evaluate(left: BigInteger, right: BigInteger) = Lib_BigIntegerMath.add(left, right)
 }
 
-object R_BinaryOp_Add_Decimal: R_BinaryOp_Arith_Decimal("+") {
+internal data object R_BinaryOp_Add_Decimal: R_BinaryOp_Arith_Decimal("+") {
     override fun evaluate(left: BigDecimal, right: BigDecimal) = Lib_DecimalMath.add(left, right)
 }
 
-object R_BinaryOp_Sub_Integer: R_BinaryOp_Arith_Integer("-") {
+internal data object R_BinaryOp_Sub_Integer: R_BinaryOp_Arith_Integer("-") {
     override fun evaluate(left: Long, right: Long) = LongMath.checkedSubtract(left, right)
 }
 
-object R_BinaryOp_Sub_BigInteger: R_BinaryOp_Arith_BigInteger("-") {
+internal data object R_BinaryOp_Sub_BigInteger: R_BinaryOp_Arith_BigInteger("-") {
     override fun evaluate(left: BigInteger, right: BigInteger) = Lib_BigIntegerMath.subtract(left, right)
 }
 
-object R_BinaryOp_Sub_Decimal: R_BinaryOp_Arith_Decimal("-") {
+internal data object R_BinaryOp_Sub_Decimal: R_BinaryOp_Arith_Decimal("-") {
     override fun evaluate(left: BigDecimal, right: BigDecimal) = Lib_DecimalMath.subtract(left, right)
 }
 
-object R_BinaryOp_Mul_Integer: R_BinaryOp_Arith_Integer("*") {
+internal data object R_BinaryOp_Mul_Integer: R_BinaryOp_Arith_Integer("*") {
     override fun evaluate(left: Long, right: Long) = LongMath.checkedMultiply(left, right)
 }
 
-object R_BinaryOp_Mul_BigInteger: R_BinaryOp_Arith_BigInteger("*") {
+internal data object R_BinaryOp_Mul_BigInteger: R_BinaryOp_Arith_BigInteger("*") {
     override fun evaluate(left: BigInteger, right: BigInteger) = Lib_BigIntegerMath.multiply(left, right)
 }
 
-object R_BinaryOp_Mul_Decimal: R_BinaryOp_Arith_Decimal("*") {
+internal data object R_BinaryOp_Mul_Decimal: R_BinaryOp_Arith_Decimal("*") {
     override fun evaluate(left: BigDecimal, right: BigDecimal) = Lib_DecimalMath.multiply(left, right)
 }
 
-object R_BinaryOp_Div_Integer: R_BinaryOp_Arith_Integer("/") {
+internal data object R_BinaryOp_Div_Integer: R_BinaryOp_Arith_Integer("/") {
     override fun evaluate(left: Long, right: Long): Long {
         if (right == 0L) {
             throw Rt_Exception.common("expr:/:div0:$left", "Division by zero: $left / $right")
@@ -306,7 +317,7 @@ object R_BinaryOp_Div_Integer: R_BinaryOp_Arith_Integer("/") {
     }
 }
 
-object R_BinaryOp_Div_BigInteger: R_BinaryOp_Arith_BigInteger("/") {
+internal data object R_BinaryOp_Div_BigInteger: R_BinaryOp_Arith_BigInteger("/") {
     override fun evaluate(left: BigInteger, right: BigInteger): BigInteger {
         if (right.signum() == 0) {
             throw Rt_Exception.common("expr:/:div0:$left", "Division by zero: $left / $right")
@@ -315,7 +326,7 @@ object R_BinaryOp_Div_BigInteger: R_BinaryOp_Arith_BigInteger("/") {
     }
 }
 
-object R_BinaryOp_Div_Decimal: R_BinaryOp_Arith_Decimal("/") {
+internal data object R_BinaryOp_Div_Decimal: R_BinaryOp_Arith_Decimal("/") {
     override fun evaluate(left: BigDecimal, right: BigDecimal): BigDecimal {
         if (right.signum() == 0) {
             throw Rt_Exception.common("expr:/:div0", "Division by zero: /")
@@ -324,7 +335,7 @@ object R_BinaryOp_Div_Decimal: R_BinaryOp_Arith_Decimal("/") {
     }
 }
 
-object R_BinaryOp_Mod_Integer: R_BinaryOp_Arith_Integer("%") {
+internal data object R_BinaryOp_Mod_Integer: R_BinaryOp_Arith_Integer("%") {
     override fun evaluate(left: Long, right: Long): Long {
         if (right == 0L) {
             throw Rt_Exception.common("expr:%:div0:$left", "Division by zero: $left % $right")
@@ -333,7 +344,7 @@ object R_BinaryOp_Mod_Integer: R_BinaryOp_Arith_Integer("%") {
     }
 }
 
-object R_BinaryOp_Mod_BigInteger: R_BinaryOp_Arith_BigInteger("%") {
+internal data object R_BinaryOp_Mod_BigInteger: R_BinaryOp_Arith_BigInteger("%") {
     override fun evaluate(left: BigInteger, right: BigInteger): BigInteger {
         if (right.signum() == 0) {
             throw Rt_Exception.common("expr:%:div0", "Division by zero: %")
@@ -342,7 +353,7 @@ object R_BinaryOp_Mod_BigInteger: R_BinaryOp_Arith_BigInteger("%") {
     }
 }
 
-object R_BinaryOp_Mod_Decimal: R_BinaryOp_Arith_Decimal("%") {
+internal data object R_BinaryOp_Mod_Decimal: R_BinaryOp_Arith_Decimal("%") {
     override fun evaluate(left: BigDecimal, right: BigDecimal): BigDecimal {
         if (right.signum() == 0) {
             throw Rt_Exception.common("expr:%:div0", "Division by zero: %")
@@ -351,7 +362,7 @@ object R_BinaryOp_Mod_Decimal: R_BinaryOp_Arith_Decimal("%") {
     }
 }
 
-object R_BinaryOp_Concat_Text: R_BinaryOp("+") {
+internal data object R_BinaryOp_Concat_Text: R_BinaryOp("+") {
     override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
         val leftVal = left.asString()
         val rightVal = right.asString()
@@ -360,7 +371,7 @@ object R_BinaryOp_Concat_Text: R_BinaryOp("+") {
     }
 }
 
-object R_BinaryOp_Concat_ByteArray: R_BinaryOp("+") {
+internal data object R_BinaryOp_Concat_ByteArray: R_BinaryOp("+") {
     override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
         val leftVal = left.asByteArray()
         val rightVal = right.asByteArray()
@@ -369,7 +380,7 @@ object R_BinaryOp_Concat_ByteArray: R_BinaryOp("+") {
     }
 }
 
-object R_BinaryOp_In_Collection: R_BinaryOp("in") {
+internal data object R_BinaryOp_In_Collection: R_BinaryOp("in") {
     override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
         val c = right.asCollection()
         val r = c.contains(left)
@@ -377,7 +388,7 @@ object R_BinaryOp_In_Collection: R_BinaryOp("in") {
     }
 }
 
-object R_BinaryOp_In_VirtualList: R_BinaryOp("in") {
+internal data object R_BinaryOp_In_VirtualList: R_BinaryOp("in") {
     override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
         val index = left.asInteger()
         val list = right.asVirtualList()
@@ -386,7 +397,7 @@ object R_BinaryOp_In_VirtualList: R_BinaryOp("in") {
     }
 }
 
-object R_BinaryOp_In_VirtualSet: R_BinaryOp("in") {
+internal data object R_BinaryOp_In_VirtualSet: R_BinaryOp("in") {
     override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
         val set = right.asVirtualSet()
         val r = set.contains(left)
@@ -394,7 +405,7 @@ object R_BinaryOp_In_VirtualSet: R_BinaryOp("in") {
     }
 }
 
-object R_BinaryOp_In_Map: R_BinaryOp("in") {
+internal data object R_BinaryOp_In_Map: R_BinaryOp("in") {
     override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
         val c = right.asMap()
         val r = c.containsKey(left)
@@ -402,7 +413,7 @@ object R_BinaryOp_In_Map: R_BinaryOp("in") {
     }
 }
 
-object R_BinaryOp_In_Range: R_BinaryOp("in") {
+internal data object R_BinaryOp_In_Range: R_BinaryOp("in") {
     override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
         val x = left.asInteger()
         val c = right.asRange()

@@ -16,34 +16,35 @@ import net.postchain.rell.base.model.expr.R_StructCreateExpr
 import net.postchain.rell.base.model.expr.R_StructListCreateExpr
 import net.postchain.rell.base.utils.mapToImmList
 
-sealed class V_CreateExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        protected val entity: R_EntityDefinition
+internal sealed class V_CreateExpr(
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    protected val entity: R_EntityDefinition,
 ): V_Expr(exprCtx, pos)
 
-class V_RegularCreateExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        entity: R_EntityDefinition,
-        private val attrs: C_CreateAttributes
+internal class V_RegularCreateExpr(
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    entity: R_EntityDefinition,
+    private val attrs: C_CreateAttributes,
 ): V_CreateExpr(exprCtx, pos, entity) {
     override fun exprInfo0() = V_ExprInfo.simple(
-            entity.type,
-            attrs.explicitAttrs.map { it.expr },
-            hasDbModifications = true,
-            canBeDbExpr = false
+        entity.type,
+        attrs.explicitAttrs.map { it.expr },
+        hasDbModifications = true,
+        canBeDbExpr = false,
     )
 
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("create", null)
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rAttrs = (attrs.explicitAttrs + attrs.implicitAttrs).mapToImmList { it.toRAttr() }
-        return R_RegularCreateExpr(entity, rAttrs)
+        val errPos = pos.toErrorPos()
+        return R_RegularCreateExpr(entity, errPos, rAttrs)
     }
 }
 
-class V_StructCreateExpr(
+internal class V_StructCreateExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     entity: R_EntityDefinition,
@@ -59,13 +60,14 @@ class V_StructCreateExpr(
 
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("create:struct", null)
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rStructExpr = structExpr.toRExpr()
-        return R_StructCreateExpr(entity, structType, rStructExpr)
+        val errPos = pos.toErrorPos()
+        return R_StructCreateExpr(entity, errPos, structType, rStructExpr)
     }
 }
 
-class V_StructListCreateExpr(
+internal class V_StructListCreateExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     entity: R_EntityDefinition,
@@ -81,9 +83,10 @@ class V_StructListCreateExpr(
 
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("create:struct", null)
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rListExpr = listExpr.toRExpr()
+        val errPos = pos.toErrorPos()
         val resultListType = R_ListType(entity.type)
-        return R_StructListCreateExpr(entity, structType, resultListType, rListExpr)
+        return R_StructListCreateExpr(entity, errPos, structType, resultListType, rListExpr)
     }
 }

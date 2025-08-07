@@ -8,8 +8,8 @@ import net.postchain.rell.base.lang.type.DecimalTest
 import net.postchain.rell.base.lib.type.Lib_BigIntegerMath
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import net.postchain.rell.base.testutils.BaseExprTest
-import kotlin.test.Test
 import java.math.BigInteger
+import kotlin.test.Test
 
 abstract class LibDecimalExprTest: BaseExprTest() {
     class LibDecimalExprIpTest: LibDecimalExprTest()

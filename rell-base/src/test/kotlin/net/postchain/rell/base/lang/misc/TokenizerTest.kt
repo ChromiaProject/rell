@@ -4,13 +4,9 @@
 
 package net.postchain.rell.base.lang.misc
 
-import net.postchain.rell.base.compiler.parser.RellTokenizer
-import net.postchain.rell.base.compiler.parser.RellTokens
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.utils.immListOf
-import kotlin.test.assertFalse
 import kotlin.test.Test
-import kotlin.test.assertTrue
 
 class TokenizerTest: BaseRellTest() {
     @Test fun testName() {

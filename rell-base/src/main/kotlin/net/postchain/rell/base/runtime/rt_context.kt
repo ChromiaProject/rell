@@ -270,18 +270,34 @@ class Rt_RegularSqlContext private constructor(
     }
 }
 
-class Rt_AppContext(
+class Rt_AppContext internal constructor(
     val globalCtx: Rt_GlobalContext,
     val chainCtx: Rt_ChainContext,
-    val app: R_App,
-    val repl: Boolean,
-    val test: Boolean,
-    val replOut: ReplOutputChannel? = null,
-    val blockRunner: Rt_UnitTestBlockRunner = Rt_NullUnitTestBlockRunner,
-    val gtvHashCalculator: PostchainGtvUtils.HashCalculator = getDefaultHashCalculator(globalCtx),
+    internal val app: R_App,
+    internal val repl: Boolean,
+    internal val test: Boolean,
+    internal val replOut: ReplOutputChannel? = null,
+    internal val blockRunner: Rt_UnitTestBlockRunner = Rt_NullUnitTestBlockRunner,
+    internal val gtvHashCalculator: PostchainGtvUtils.HashCalculator = getDefaultHashCalculator(globalCtx),
     moduleArgsSource: Rt_ModuleArgsSource = Rt_ModuleArgsSource.NULL,
     globalConstantsState: Rt_GlobalConstants.State = Rt_GlobalConstants.State(),
 ) {
+    constructor(
+        globalCtx: Rt_GlobalContext,
+        chainCtx: Rt_ChainContext,
+        app: R_App,
+        gtvHashCalculator: PostchainGtvUtils.HashCalculator = getDefaultHashCalculator(globalCtx),
+        moduleArgsSource: Rt_ModuleArgsSource = Rt_ModuleArgsSource.NULL,
+    ): this (
+        globalCtx,
+        chainCtx,
+        app,
+        repl = false,
+        test = false,
+        moduleArgsSource = moduleArgsSource,
+        gtvHashCalculator = gtvHashCalculator,
+    )
+
     private var objsInit: SqlObjectsInit? = null
     private var objsInited = false
 
@@ -291,7 +307,7 @@ class Rt_AppContext(
         globalConstants.initialize()
     }
 
-    fun objectsInitialization(objsInit: SqlObjectsInit, code: () -> Unit) {
+    internal fun objectsInitialization(objsInit: SqlObjectsInit, code: () -> Unit) {
         check(this.objsInit == null)
         check(!objsInited)
         objsInited = true
@@ -303,7 +319,7 @@ class Rt_AppContext(
         }
     }
 
-    fun forceObjectInit(obj: R_ObjectDefinition): Boolean {
+    internal fun forceObjectInit(obj: R_ObjectDefinition): Boolean {
         val ref = objsInit
         return if (ref == null) false else {
             ref.forceObject(obj)
@@ -311,15 +327,15 @@ class Rt_AppContext(
         }
     }
 
-    fun getGlobalConstant(constId: R_GlobalConstantId): Rt_Value {
+    internal fun getGlobalConstant(constId: R_GlobalConstantId): Rt_Value {
         return globalConstants.getConstantValue(constId)
     }
 
-    fun getModuleArgs(moduleName: R_ModuleName): Rt_Value? {
+    internal fun getModuleArgs(moduleName: R_ModuleName): Rt_Value? {
         return globalConstants.getModuleArgsValue(moduleName)
     }
 
-    fun dumpGlobalConstants(): Rt_GlobalConstants.State {
+    internal fun dumpGlobalConstants(): Rt_GlobalConstants.State {
         return globalConstants.dump()
     }
 
@@ -366,9 +382,8 @@ class Rt_ExecutionContext(
     }
 }
 
-class Rt_CallContext(
-    val defCtx: Rt_DefinitionContext,
-    val stack: Rt_CallStack?,
+class Rt_CallContext internal constructor(
+    internal val defCtx: Rt_DefinitionContext,
     private val dbUpdateAllowed: Boolean,
 ) {
     val exeCtx = defCtx.exeCtx
@@ -378,16 +393,6 @@ class Rt_CallContext(
     val chainCtx = appCtx.chainCtx
 
     fun dbUpdateAllowed() = dbUpdateAllowed && defCtx.dbUpdateAllowed
-
-    fun subContext(filePos: R_FilePos): Rt_CallContext {
-        val subStack = subStack(filePos)
-        return Rt_CallContext(defCtx, subStack, dbUpdateAllowed)
-    }
-
-    private fun subStack(filePos: R_FilePos): Rt_CallStack {
-        val stackPos = R_StackPos(defCtx.defId, filePos)
-        return Rt_CallStack(stack, stackPos)
-    }
 }
 
 class Rt_DefinitionContext(val exeCtx: Rt_ExecutionContext, val dbUpdateAllowed: Boolean, val defId: R_DefinitionId) {

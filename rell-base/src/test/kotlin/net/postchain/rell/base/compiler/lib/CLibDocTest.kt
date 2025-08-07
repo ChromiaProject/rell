@@ -11,8 +11,8 @@ import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.testutils.RellTestUtils
-import kotlin.test.Test
 import java.math.BigInteger
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class CLibDocTest: BaseCLibTest() {

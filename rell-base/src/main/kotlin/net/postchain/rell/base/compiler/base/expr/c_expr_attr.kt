@@ -23,7 +23,7 @@ import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmMap
 import net.postchain.rell.base.utils.toImmSet
 
-class C_CreateContext(
+internal class C_CreateContext(
     val exprCtx: C_ExprContext,
     val initFrameGetter: C_LateGetter<R_CallFrame>,
     val filePos: R_FilePos,
@@ -31,7 +31,7 @@ class C_CreateContext(
     val msgCtx = exprCtx.msgCtx
 }
 
-class C_CreateAttributes(
+internal class C_CreateAttributes(
     val explicitAttrs: ImmList<V_CreateExprAttr>,
     val implicitAttrs: ImmList<V_CreateExprAttr>
 )
@@ -39,7 +39,7 @@ class C_CreateAttributes(
 class C_AttrArgument(val index: Int, val name: C_Name?, val vExpr: V_Expr)
 class C_AttrMatch(val attr: R_Attribute, val vExpr: V_Expr)
 
-object C_AttributeResolver {
+internal object C_AttributeResolver {
     fun resolveCreate(
         ctx: C_CreateContext,
         defName: String,

@@ -19,7 +19,7 @@ import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.flatMapToImmList
 import net.postchain.rell.base.utils.mapToImmList
 
-class V_ListLiteralExpr(
+internal class V_ListLiteralExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     val elems: ImmList<V_Expr>,
@@ -27,7 +27,7 @@ class V_ListLiteralExpr(
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(listType, elems, canBeDbExpr = false)
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rExprs = elems.mapToImmList { it.toRExpr() }
         return R_ListLiteralExpr(listType, rExprs)
     }
@@ -49,17 +49,18 @@ class V_ListLiteralExpr(
     }
 }
 
-class V_MapLiteralExpr(
-        exprCtx: C_ExprContext,
-        pos: S_Pos,
-        val entries: ImmList<Pair<V_Expr, V_Expr>>,
-        private val mapType: R_MapType
+internal class V_MapLiteralExpr(
+    exprCtx: C_ExprContext,
+    pos: S_Pos,
+    val entries: ImmList<Pair<V_Expr, V_Expr>>,
+    private val mapType: R_MapType,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(mapType, entries.flatMap { it.toList() }, canBeDbExpr = false)
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rEntries = entries.mapToImmList { it.first.toRExpr() to it.second.toRExpr() }
-        return R_MapLiteralExpr(mapType, rEntries)
+        val errPos = pos.toErrorPos()
+        return R_MapLiteralExpr(mapType, rEntries, errPos)
     }
 
     override fun toDbExprWhat0(): C_DbAtWhatValue {

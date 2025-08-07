@@ -25,7 +25,7 @@ import net.postchain.rell.base.utils.toImmList
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // public part
 
-class C_EffectivePartialArguments(
+internal class C_EffectivePartialArguments(
     private val callParams: C_FunctionCallParameters,
     val exprArgs: ImmList<V_Expr>,
     val wildArgs: ImmList<R_Type>,
@@ -49,7 +49,7 @@ sealed class C_AbstractCallArguments(private val argHands: ImmList<C_CallArgumen
     }
 }
 
-sealed class C_FullCallArguments(
+internal sealed class C_FullCallArguments(
     protected val ctx: C_ExprContext,
     val rawArgs: C_CallArguments,
     argHands: ImmList<C_CallArgumentHandle>,
@@ -62,7 +62,7 @@ sealed class C_FullCallArguments(
     ): V_FunctionCallArgs?
 }
 
-sealed class C_PartialCallArguments(
+internal sealed class C_PartialCallArguments(
     protected val ctx: C_ExprContext,
     val wildcardPos: S_Pos,
     rawArgs: ImmList<C_CallArgumentHandle>,
@@ -77,7 +77,7 @@ sealed class C_PartialCallArguments(
     abstract fun errPartialNotSupportedCase(fnCase: C_CodeMsg)
 }
 
-object C_FunctionCallArgsUtils {
+internal object C_FunctionCallArgsUtils {
     fun makeCallArguments(msgCtx: C_MessageContext, args: ImmList<C_CallArgument>): C_CallArguments? {
         val positional = mutableListOf<C_CallArgument>()
         val namedNames = mutableSetOf<R_Name>()

@@ -132,7 +132,6 @@ abstract class RellBaseTester(
             compatibility = compatibilityVer,
             gtv = gtv,
             deprecatedError = deprecatedError,
-            blockCheck = true,
             atAttrShadowing = atAttrShadowing,
             defaultLib = defaultLib,
             testLib = testLib,

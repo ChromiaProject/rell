@@ -182,21 +182,21 @@ object Lib_Type_Object {
     }
 }
 
-class V_ObjectExpr(
+internal class V_ObjectExpr(
     exprCtx: C_ExprContext,
     qName: C_QualifiedName,
     private val rObject: R_ObjectDefinition
 ): V_Expr(exprCtx, qName.pos) {
     override fun exprInfo0() = V_ExprInfo.simple(rObject.type)
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("object", null)
-    override fun toRExpr0(): R_Expr = R_ObjectExpr(rObject.type)
+    override fun toRExpr(): R_Expr = R_ObjectExpr(rObject.type)
 
     override fun getDefMeta(): R_DefinitionMeta {
         return R_DefinitionMeta("object", rObject.defName, mountName = rObject.rEntity.mountName)
     }
 }
 
-private class R_ObjectExpr(private val objType: R_ObjectType): R_Expr(objType) {
+private class R_ObjectExpr(private val objType: R_ObjectType): R_BaseExpr(objType) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         return Rt_ObjectValue(objType)
     }
@@ -206,7 +206,7 @@ private class R_ObjectAttrExpr(
     type: R_Type,
     private val rObject: R_ObjectDefinition,
     private val atBase: Db_AtExprBase,
-): R_Expr(type) {
+): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val redFrom = atBase.toRedFrom(frame)
         val redBase = redFrom.toRedBase(frame)

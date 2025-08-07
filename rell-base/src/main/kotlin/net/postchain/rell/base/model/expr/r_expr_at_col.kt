@@ -6,10 +6,7 @@ package net.postchain.rell.base.model.expr
 
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.type.*
-import net.postchain.rell.base.model.R_FrameBlock
-import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.model.R_VarPtr
-import net.postchain.rell.base.model.Rt_NullValue
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.stmt.R_IterableAdapter
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Exception
@@ -19,7 +16,7 @@ import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
 import kotlin.math.min
 
-class R_ColAtParam(val type: R_Type, val ptr: R_VarPtr)
+internal class R_ColAtParam(val type: R_Type, val ptr: R_VarPtr)
 
 sealed class R_ColAtFieldSummarization {
     abstract fun newSummarizer(): R_ColAtValueSummarizer
@@ -41,9 +38,9 @@ sealed class R_ColAtFieldSummarization_Aggregate: R_ColAtFieldSummarization() {
     abstract fun result(value: Rt_Value?): Rt_Value
 }
 
-class R_ColAtFieldSummarization_Aggregate_Sum(
-        private val op: R_BinaryOp,
-        private val zeroValue: Rt_Value
+internal class R_ColAtFieldSummarization_Aggregate_Sum(
+    private val op: R_BinaryOp,
+    private val zeroValue: Rt_Value,
 ): R_ColAtFieldSummarization_Aggregate() {
     override fun summarize(value1: Rt_Value, value2: Rt_Value) = op.evaluate(value1, value2)
     override fun result(value: Rt_Value?) = value ?: zeroValue
@@ -310,7 +307,7 @@ class R_ColAtLimiter_Late(private val limit: Long, private val offset: Long): R_
     }
 }
 
-class R_ColAtFrom(
+internal class R_ColAtFrom internal constructor(
     private val iterableAdapter: R_IterableAdapter,
     private val expr: R_Expr,
     private val block: R_FrameBlock?,
@@ -323,14 +320,15 @@ class R_ColAtFrom(
     }
 }
 
-class R_ColAtExpr(
+internal class R_ColAtExpr internal constructor(
     type: R_Type,
-    val block: R_FrameBlock,
-    val param: R_ColAtParam,
-    val from: R_ColAtFrom,
-    val what: R_ColAtWhat,
-    val where: R_Expr,
-    val summarization: R_ColAtSummarization,
+    private val block: R_FrameBlock,
+    private val param: R_ColAtParam,
+    private val from: R_ColAtFrom,
+    private val what: R_ColAtWhat,
+    private val where: R_Expr,
+    private val summarization: R_ColAtSummarization,
+    private val errPos: R_ErrorPos,
     cardinality: R_AtCardinality,
     extras: R_AtExprExtras,
 ): R_AtExpr(type, cardinality, extras) {
@@ -339,7 +337,7 @@ class R_ColAtExpr(
 
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val resList = evalList(frame)
-        checkCount(cardinality, resList.size, "values")
+        checkCount(frame, errPos, cardinality, resList.size, "values")
 
         val res = evalResult(resList)
         return res

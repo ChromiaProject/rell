@@ -23,7 +23,7 @@ interface C_NsAsm_BasicAssembler {
     fun futureNs(): Getter<C_Namespace>
 }
 
-interface C_NsAsm_ComponentAssembler: C_NsAsm_BasicAssembler {
+internal interface C_NsAsm_ComponentAssembler: C_NsAsm_BasicAssembler {
     fun namespacePath(): C_RNamePath
     fun addDef(name: C_Name, member: C_NamespaceMember)
 
@@ -46,22 +46,22 @@ interface C_NsAsm_ComponentAssembler: C_NsAsm_BasicAssembler {
     fun addWildcardImport(module: C_ModuleKey, pathHands: ImmList<C_NameHandle>)
 }
 
-interface C_NsAsm_ModuleAssembler: C_NsAsm_BasicAssembler {
+internal interface C_NsAsm_ModuleAssembler: C_NsAsm_BasicAssembler {
     fun futureDefs(): C_LateGetter<C_ModuleDefs>
     fun addComponent(): C_NsAsm_ComponentAssembler
 }
 
-interface C_NsAsm_ReplAssembler: C_NsAsm_BasicAssembler {
+internal interface C_NsAsm_ReplAssembler: C_NsAsm_BasicAssembler {
     fun addComponent(): C_NsAsm_ComponentAssembler
 }
 
-interface C_NsAsm_AppAssembler {
+internal interface C_NsAsm_AppAssembler {
     fun addModule(moduleKey: C_ModuleKey, sysNsProto: C_SysNsProto, exportSysEntities: Boolean): C_NsAsm_ModuleAssembler
     fun addRepl(sysNsProto: C_SysNsProto, linkedModule: C_ModuleKey?, oldState: C_NsAsm_ReplState): C_NsAsm_ReplAssembler
     fun assemble(): C_NsAsm_App
 
     companion object {
-        fun create(
+        internal fun create(
                 executor: C_CompilerExecutor,
                 msgCtx: C_MessageContext,
                 appUid: R_AppUid,
@@ -72,9 +72,9 @@ interface C_NsAsm_AppAssembler {
     }
 }
 
-class C_NsAsm_Module(val rawNs: C_NsAsm_RawNamespace, val impNs: C_NsImp_Namespace, val ns: C_Namespace)
+internal class C_NsAsm_Module(val rawNs: C_NsAsm_RawNamespace, val impNs: C_NsImp_Namespace, val ns: C_Namespace)
 
-class C_NsAsm_App(val newReplState: C_NsAsm_ReplState, val modules: ImmMap<C_ModuleKey, C_NsAsm_Module>) {
+internal class C_NsAsm_App(val newReplState: C_NsAsm_ReplState, val modules: ImmMap<C_ModuleKey, C_NsAsm_Module>) {
     companion object { val EMPTY = C_NsAsm_App(C_NsAsm_ReplState.EMPTY, immMapOf()) }
 }
 
@@ -82,9 +82,16 @@ sealed class C_NsAsm_ReplState {
     companion object { val EMPTY: C_NsAsm_ReplState = C_NsAsm_InternalReplState.EMPTY }
 }
 
-class C_NsAsm_WildcardImport(val module: C_ModuleKey, val path: ImmList<C_Name>, val names: C_NsAsm_WildcardImportNames)
+internal class C_NsAsm_WildcardImport(
+    val module: C_ModuleKey,
+    val path: ImmList<C_Name>,
+    val names: C_NsAsm_WildcardImportNames,
+)
 
-class C_NsAsm_ExactImport(val module: C_ModuleKey, val qName: C_QualifiedName)
+internal class C_NsAsm_ExactImport(
+    val module: C_ModuleKey,
+    val qName: C_QualifiedName,
+)
 
 class C_NsAsm_WildcardImportNames(executor: C_CompilerExecutor, private val pathHands: ImmList<C_NameHandle>) {
     private var ideInfoDefined = false
@@ -163,7 +170,7 @@ class C_NsAsm_ExactImportNames(
     )
 }
 
-class C_NsAsm_Namespace(
+internal class C_NsAsm_Namespace(
     val defs: ImmMap<R_Name, C_NsAsm_Def>,
     val importDefs: ImmMultimap<R_Name, C_NsAsm_Def>,
     val wildcardImports: ImmList<C_NsAsm_WildcardImport>,
@@ -175,12 +182,12 @@ sealed class C_NsAsm_Def
 
 class C_NsAsm_Def_Simple(val member: C_NamespaceMember): C_NsAsm_Def()
 
-class C_NsAsm_Def_ExactImport(
+internal class C_NsAsm_Def_ExactImport(
     val imp: C_NsAsm_ExactImport,
     val names: C_NsAsm_ExactImportNames,
 ): C_NsAsm_Def()
 
-sealed class C_NsAsm_Def_Namespace(
+internal sealed class C_NsAsm_Def_Namespace(
     val defName: C_DefinitionName,
     val deprecated: C_Deprecated?,
     val importModule: C_ModuleDescriptor?,
@@ -471,7 +478,7 @@ private class C_NsAsm_InternalReplAssembler(
 
 private class C_NsAsm_RawModule(val rawNs: C_NsAsm_RawNamespace, val ns: C_NsAsm_Namespace)
 
-class C_NsAsm_RawNamespace(
+internal class C_NsAsm_RawNamespace(
     val entries: ImmList<C_NsAsm_RawEntry>,
     val wildcardImports: ImmList<C_NsAsm_RawWildcardImport>,
 ) {
@@ -481,7 +488,7 @@ class C_NsAsm_RawNamespace(
         }
     }
 
-    fun filterByStamp(stamp: R_AppUid): C_NsAsm_RawNamespace {
+    internal fun filterByStamp(stamp: R_AppUid): C_NsAsm_RawNamespace {
         val resEntries = entries.mapNotNullToImmList { it.filterByStamp(stamp) }
         val resWildcards = wildcardImports.filterToImmList { it.stamp == stamp}
         return C_NsAsm_RawNamespace(resEntries, resWildcards)
@@ -521,13 +528,13 @@ class C_NsAsm_RawNamespace(
     companion object { val EMPTY = C_NsAsm_RawNamespace(immListOf(), immListOf()) }
 }
 
-class C_NsAsm_RawEntry(
-        val name: C_Name,
-        val type: C_DeclarationType,
-        val def: C_NsAsm_RawDef,
-        val identity: C_NsAsm_Identity,
-        val container: C_ContainerKey,
-        val stamp: R_AppUid
+internal class C_NsAsm_RawEntry(
+    val name: C_Name,
+    val type: C_DeclarationType,
+    val def: C_NsAsm_RawDef,
+    val identity: C_NsAsm_Identity,
+    val container: C_ContainerKey,
+    val stamp: R_AppUid,
 ) {
     fun filterByStamp(targetStamp: R_AppUid): C_NsAsm_RawEntry? {
         if (stamp != targetStamp) {
@@ -540,16 +547,16 @@ class C_NsAsm_RawEntry(
     }
 }
 
-class C_NsAsm_RawWildcardImport(
-        val module: C_ModuleKey,
-        val path: ImmList<C_Name>,
-        private val names: C_NsAsm_WildcardImportNames,
-        val stamp: R_AppUid
+internal class C_NsAsm_RawWildcardImport(
+    val module: C_ModuleKey,
+    val path: ImmList<C_Name>,
+    private val names: C_NsAsm_WildcardImportNames,
+    val stamp: R_AppUid,
 ) {
     fun assemble() = C_NsAsm_WildcardImport(module, path, names)
 }
 
-sealed class C_NsAsm_RawDef {
+internal sealed class C_NsAsm_RawDef {
     abstract fun filterByStamp(targetStamp: R_AppUid): C_NsAsm_RawDef
     open fun addToDefs(b: C_ModuleDefsBuilder) {}
     abstract fun assemble(): C_NsAsm_Def

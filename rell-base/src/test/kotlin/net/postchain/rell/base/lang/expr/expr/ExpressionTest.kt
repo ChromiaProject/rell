@@ -6,9 +6,9 @@ package net.postchain.rell.base.lang.expr.expr
 
 import net.postchain.rell.base.lib.type.Rt_BooleanValue
 import net.postchain.rell.base.testutils.BaseRellTest
-import kotlin.test.Test
 import java.math.BigInteger
 import kotlin.math.sign
+import kotlin.test.Test
 
 class ExpressionTest: BaseRellTest() {
     @Test fun testPrecedence() {

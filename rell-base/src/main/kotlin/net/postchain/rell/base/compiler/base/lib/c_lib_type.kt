@@ -25,7 +25,7 @@ import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocCode
 import net.postchain.rell.base.utils.doc.DocSymbol
 
-class C_LibTypeExtension(
+internal class C_LibTypeExtension(
     private val lTypeExt: L_TypeExtension,
     private val body: C_LibTypeBody,
 ) {
@@ -51,13 +51,13 @@ class C_LibTypeExtension(
     }
 }
 
-sealed class C_LibType(val mType: M_Type) {
-    abstract fun hasConstructor(): Boolean
-    abstract fun getConstructor(): C_GlobalFunction?
-    abstract fun getStaticMembers(): C_LibTypeMembers<C_TypeStaticMember>
-    abstract fun getValueMembers(): C_LibTypeMembers<C_TypeValueMember>
+sealed class C_LibType(internal val mType: M_Type) {
+    internal abstract fun hasConstructor(): Boolean
+    internal abstract fun getConstructor(): C_GlobalFunction?
+    internal abstract fun getStaticMembers(): C_LibTypeMembers<C_TypeStaticMember>
+    internal abstract fun getValueMembers(): C_LibTypeMembers<C_TypeValueMember>
 
-    companion object {
+    internal companion object {
         fun make(
             rType: R_Type,
             doc: DocCode,
@@ -150,8 +150,8 @@ private class C_LibType_TypeDef(
 sealed class C_TypeDef {
     abstract fun hasConstructor(): Boolean
     open fun isEntity(): Boolean = false
-    abstract fun compileExpr(msgCtx: C_MessageContext, pos: S_Pos): C_Expr
-    abstract fun compileType(ctx: C_AppContext, pos: S_Pos, args: List<S_PosValue<R_Type>>): R_Type
+    internal abstract fun compileExpr(msgCtx: C_MessageContext, pos: S_Pos): C_Expr
+    internal abstract fun compileType(ctx: C_AppContext, pos: S_Pos, args: List<S_PosValue<R_Type>>): R_Type
 
     companion object {
         fun makeRType(rType: R_Type): C_TypeDef {
@@ -182,36 +182,36 @@ class C_LibTypeItem<T>(
     val member: T,
 )
 
-class C_LibTypeConstructors(
+internal class C_LibTypeConstructors(
     val constructors: ImmList<C_LibTypeItem<L_Constructor>>,
     val specialConstructors: ImmList<C_LibTypeItem<C_SpecialLibGlobalFunctionBody>>,
 )
 
-class C_LibTypeBody(
+internal class C_LibTypeBody(
     val constructors: C_LibTypeConstructors,
     val rawConstructor: C_GlobalFunction?,
     val staticMembers: C_LibTypeMembers<C_TypeStaticMember>,
     val valueMembers: C_LibTypeMembers<C_TypeValueMember>,
 )
 
-class C_LibTypeDef(
+class C_LibTypeDef internal constructor(
     val typeName: String,
     val lTypeDef: L_TypeDef,
     body: C_LibTypeBody,
 ): C_TypeDef() {
-    val mGenericType: M_GenericType = lTypeDef.mGenericType
+    internal val mGenericType: M_GenericType = lTypeDef.mGenericType
 
     private val mType0: M_Type? = if (mGenericType.params.isEmpty()) mGenericType.getType() else null
 
-    val mType: M_Type
+    internal val mType: M_Type
         get() {
             return checkNotNull(mType0) { "Not a simple type: ${mGenericType.strCode()}" }
         }
 
-    val constructors = body.constructors
-    val rawConstructor = body.rawConstructor
-    val staticMembers = body.staticMembers
-    val valueMembers = body.valueMembers
+    internal val constructors = body.constructors
+    internal val rawConstructor = body.rawConstructor
+    internal val staticMembers = body.staticMembers
+    internal val valueMembers = body.valueMembers
 
     override fun hasConstructor() = rawConstructor != null
 

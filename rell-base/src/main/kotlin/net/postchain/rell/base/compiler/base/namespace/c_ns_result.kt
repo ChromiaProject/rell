@@ -8,7 +8,7 @@ import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.module.C_ModuleKey
 import net.postchain.rell.base.utils.*
 
-object C_NsRes_ResultMaker {
+internal object C_NsRes_ResultMaker {
     fun make(modules: Map<C_ModuleKey, C_NsImp_Namespace>): Map<C_ModuleKey, C_Namespace> {
         val (impList, listVsMap) = ListVsMap.mapToList(modules)
         val nsList = make0(impList)

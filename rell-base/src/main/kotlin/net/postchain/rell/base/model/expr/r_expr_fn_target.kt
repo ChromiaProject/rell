@@ -17,7 +17,12 @@ import net.postchain.rell.base.utils.mapToImmList
 abstract class R_FunctionCallTarget {
     abstract fun call(callCtx: Rt_CallContext, baseValue: Rt_Value?, values: List<Rt_Value>): Rt_Value
 
-    open fun createFunctionValue(resType: R_Type, mapping: R_PartialCallMapping, baseValue: Rt_Value?, args: List<Rt_Value>): Rt_Value {
+    open fun createFunctionValue(
+        resType: R_Type,
+        mapping: R_PartialCallMapping,
+        baseValue: Rt_Value?,
+        args: List<Rt_Value>,
+    ): Rt_Value {
         return Rt_FunctionValue(resType, mapping, this, baseValue, args)
     }
 
@@ -31,8 +36,8 @@ abstract class R_FunctionCallTarget {
     }
 }
 
-class R_FunctionCallTarget_RegularUserFunction(
-        private val fn: R_RoutineDefinition
+internal class R_FunctionCallTarget_RegularUserFunction(
+    private val fn: R_RoutineDefinition,
 ): R_FunctionCallTarget() {
     override fun call(callCtx: Rt_CallContext, baseValue: Rt_Value?, values: List<Rt_Value>): Rt_Value {
         checkEquals(baseValue, null)
@@ -43,9 +48,9 @@ class R_FunctionCallTarget_RegularUserFunction(
     override fun str() = fn.appLevelName
 }
 
-class R_FunctionCallTarget_AbstractUserFunction(
-        private val baseFn: R_FunctionDefinition,
-        private val overrideGetter: C_LateGetter<R_FunctionBase>
+internal class R_FunctionCallTarget_AbstractUserFunction(
+    private val baseFn: R_FunctionDefinition,
+    private val overrideGetter: C_LateGetter<R_FunctionBase>,
 ): R_FunctionCallTarget() {
     override fun call(callCtx: Rt_CallContext, baseValue: Rt_Value?, values: List<Rt_Value>): Rt_Value {
         checkEquals(baseValue, null)
@@ -57,8 +62,8 @@ class R_FunctionCallTarget_AbstractUserFunction(
     override fun str() = baseFn.appLevelName
 }
 
-class R_FunctionCallTarget_Operation(
-        private val op: R_OperationDefinition
+internal class R_FunctionCallTarget_Operation(
+    private val op: R_OperationDefinition,
 ): R_FunctionCallTarget() {
     override fun call(callCtx: Rt_CallContext, baseValue: Rt_Value?, values: List<Rt_Value>): Rt_Value {
         checkEquals(baseValue, null)
@@ -69,7 +74,7 @@ class R_FunctionCallTarget_Operation(
     override fun str() = op.appLevelName
 }
 
-object R_FunctionCallTarget_FunctionValue: R_FunctionCallTarget() {
+internal object R_FunctionCallTarget_FunctionValue: R_FunctionCallTarget() {
     override fun call(callCtx: Rt_CallContext, baseValue: Rt_Value?, values: List<Rt_Value>): Rt_Value {
         val fnValue = getFnValue(baseValue)
         return fnValue.call(callCtx, values)
@@ -91,9 +96,9 @@ object R_FunctionCallTarget_FunctionValue: R_FunctionCallTarget() {
     }
 }
 
-class R_FunctionCallTarget_SysGlobalFunction(
-        private val fn: R_SysFunction,
-        private val fullName: LazyString
+internal class R_FunctionCallTarget_SysGlobalFunction(
+    private val fn: R_SysFunction,
+    private val fullName: LazyString,
 ): R_FunctionCallTarget() {
     override fun call(callCtx: Rt_CallContext, baseValue: Rt_Value?, values: List<Rt_Value>): Rt_Value {
         checkEquals(baseValue, null)
@@ -103,9 +108,9 @@ class R_FunctionCallTarget_SysGlobalFunction(
     override fun str() = fullName.value
 }
 
-class R_FunctionCallTarget_SysMemberFunction(
-        private val fn: R_SysFunction,
-        private val fullName: LazyString
+internal class R_FunctionCallTarget_SysMemberFunction(
+    private val fn: R_SysFunction,
+    private val fullName: LazyString,
 ): R_FunctionCallTarget() {
     override fun call(callCtx: Rt_CallContext, baseValue: Rt_Value?, values: List<Rt_Value>): Rt_Value {
         checkNotNull(baseValue)

@@ -19,7 +19,7 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.*
 
-class C_WhenChooserDetailsBuilder(
+internal class C_WhenChooserDetailsBuilder(
     val keyExpr: V_Expr?,
     val keyVarStatesDelta: C_VarStatesDelta,
     val bodyExprCtx: C_ExprContext,
@@ -32,7 +32,7 @@ class C_WhenChooserDetailsBuilder(
     var elseVarStatesDelta = C_VarStatesDelta.EMPTY
 }
 
-class C_WhenChooserDetails(b: C_WhenChooserDetailsBuilder) {
+internal class C_WhenChooserDetails(b: C_WhenChooserDetailsBuilder) {
     val keyExpr = b.keyExpr
     val keyVarStatesDelta = b.keyVarStatesDelta
     val bodyExprCtx = b.bodyExprCtx
@@ -56,7 +56,7 @@ class C_WhenChooserDetails(b: C_WhenChooserDetailsBuilder) {
     )
 }
 
-class C_WhenChooser(details: C_WhenChooserDetails) {
+internal class C_WhenChooser(details: C_WhenChooserDetails) {
     val bodyExprCtx = details.bodyExprCtx
     val keyVarStatesDelta = details.keyVarStatesDelta
     val full = details.full
@@ -70,9 +70,9 @@ class C_WhenChooser(details: C_WhenChooserDetails) {
 }
 
 sealed class S_WhenCondition {
-    abstract fun compileBad(ctx: C_ExprContext)
+    internal abstract fun compileBad(ctx: C_ExprContext)
 
-    abstract fun compile(
+    internal abstract fun compile(
         ctx: C_ExprContext,
         builder: C_WhenChooserDetailsBuilder,
         keyVarKey: C_VarStateKey?,
@@ -242,7 +242,7 @@ class S_WhenExpr(
     }
 
     companion object {
-        fun compileChooser(
+        internal fun compileChooser(
             ctx: C_ExprContext,
             expr: S_Expr?,
             conds: List<S_WhenCondition>,

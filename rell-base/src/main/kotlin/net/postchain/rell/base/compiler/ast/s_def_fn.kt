@@ -34,7 +34,7 @@ class S_FormalParameter(
     private val expr: S_Expr?,
     private val comment: S_Comment?,
 ) {
-    fun compile(
+    internal fun compile(
         defCtx: C_DefinitionContext,
         index: Int,
         docCommentsGetter: C_LateGetter<DocFunctionParamComments>,
@@ -165,9 +165,9 @@ abstract class S_FunctionBody {
     protected abstract fun compileQuery0(bodyCtx: C_FunctionBodyContext, stmtCtx: C_StmtContext): C_Statement
     protected abstract fun compileFunction0(bodyCtx: C_FunctionBodyContext, stmtCtx: C_StmtContext): C_Statement
 
-    abstract fun returnsValue(): Boolean
+    internal abstract fun returnsValue(): Boolean
 
-    fun compileQuery(ctx: C_FunctionBodyContext): R_QueryBody {
+    internal fun compileQuery(ctx: C_FunctionBodyContext): R_QueryBody {
         val statementVars = processStatementVars()
         val fnCtx = C_FunctionContext(ctx.defCtx, ctx.defName.appLevelName, ctx.explicitRetType, statementVars)
         val frameCtx = C_FrameContext.create(fnCtx)
@@ -184,7 +184,7 @@ abstract class S_FunctionBody {
         return R_UserQueryBody(rRetType, actParams.rParams, actParams.rParamVars, cBody.rStmt, callFrame.rFrame)
     }
 
-    fun compileFunction(ctx: C_FunctionBodyContext): R_FunctionBody {
+    internal fun compileFunction(ctx: C_FunctionBodyContext): R_FunctionBody {
         val statementVars = processStatementVars()
         val fnCtx = C_FunctionContext(ctx.defCtx, ctx.defName.appLevelName, ctx.explicitRetType, statementVars)
         val frameCtx = C_FrameContext.create(fnCtx)
@@ -258,7 +258,7 @@ class S_FunctionBodyFull(private val body: S_Statement): S_FunctionBody() {
     }
 
     override fun compileQuery0(bodyCtx: C_FunctionBodyContext, stmtCtx: C_StmtContext): C_Statement {
-        val cBody = body.compile(stmtCtx)
+        val cBody = body.compileSafe(stmtCtx)
 
         C_Errors.check(cBody.alwaysReturns, bodyCtx.namePos) {
             val nameStr = bodyCtx.defName.qualifiedName
@@ -269,7 +269,7 @@ class S_FunctionBodyFull(private val body: S_Statement): S_FunctionBody() {
     }
 
     override fun compileFunction0(bodyCtx: C_FunctionBodyContext, stmtCtx: C_StmtContext): C_Statement {
-        val cBody = body.compile(stmtCtx)
+        val cBody = body.compileSafe(stmtCtx)
 
         val retType = stmtCtx.fnCtx.actualReturnType()
         if (retType != R_UnitType) {

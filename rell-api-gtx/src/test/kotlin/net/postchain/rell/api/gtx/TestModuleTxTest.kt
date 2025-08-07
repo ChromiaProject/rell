@@ -6,8 +6,8 @@ package net.postchain.rell.api.gtx
 
 import net.postchain.rell.api.gtx.testutils.PostchainRellTestProjExt
 import net.postchain.rell.base.testutils.BaseRellTest
-import kotlin.test.Test
 import net.postchain.rell.base.utils.immListOf
+import kotlin.test.Test
 
 internal class TestModuleTxTest: BaseRellTest() {
     override fun getProjExt() = PostchainRellTestProjExt

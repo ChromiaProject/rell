@@ -24,17 +24,17 @@ import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.*
 
 sealed class S_AttrHeader: S_Node() {
-    abstract fun discoverVar(): R_Name
-    abstract fun compile(ctx: C_DefinitionContext): C_AttrHeaderHandle
-    abstract fun ideOutlineTreeNodeName(): S_Name
+    internal abstract fun discoverVar(): R_Name
+    internal abstract fun compile(ctx: C_DefinitionContext): C_AttrHeaderHandle
+    internal abstract fun ideOutlineTreeNodeName(): S_Name
 
-    fun compile(ctx: C_DefinitionContext, canInferType: Boolean, ideData: C_AttrHeaderIdeData): C_AttrHeader {
+    internal fun compile(ctx: C_DefinitionContext, canInferType: Boolean, ideData: C_AttrHeaderIdeData): C_AttrHeader {
         val handle = compile(ctx)
         return handle.compile(ctx, canInferType, ideData)
     }
 
     companion object {
-        fun checkUnitType(msgCtx: C_MessageContext, pos: S_Pos, rType: R_Type, cName: C_Name): R_Type {
+        internal fun checkUnitType(msgCtx: C_MessageContext, pos: S_Pos, rType: R_Type, cName: C_Name): R_Type {
             return C_Types.checkNotUnit(msgCtx, pos, rType, cName.str) { "attr_var" toCodeMsg "attribute or variable" }
         }
     }
@@ -184,24 +184,11 @@ abstract class S_Definition(base: S_DefinitionBase): S_Node() {
 
     val startPos = modifiers.pos ?: kwPos
 
-    abstract fun compile(ctx: S_DefinitionContext): C_MidModuleMember?
+    internal abstract fun compile(ctx: S_DefinitionContext): C_MidModuleMember?
 
-    abstract fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder)
+    internal abstract fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder)
 
-    open fun ideGetImportedModules(moduleName: R_ModuleName, res: MutableSet<R_ModuleName>) {
-    }
-
-    protected fun checkSysMountNameConflict(
-        ctx: C_MountContext,
-        pos: S_Pos,
-        declType: C_DeclarationType,
-        mountName: R_MountName,
-        sysDefs: Set<R_MountName>,
-    ) {
-        if (mountName in sysDefs) {
-            ctx.msgCtx.error(pos, "mount:conflict:sys:$declType:$mountName",
-                    "Mount name conflict: system ${declType.msg} '$mountName' exists")
-        }
+    internal open fun ideGetImportedModules(moduleName: R_ModuleName, res: MutableSet<R_ModuleName>) {
     }
 }
 
@@ -210,7 +197,7 @@ abstract class S_BasicDefinition(base: S_DefinitionBase): S_Definition(base) {
         return C_MidModuleMember_Basic(this)
     }
 
-    abstract fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>>
+    internal abstract fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>>
 }
 
 class   S_EntityDefinition(
@@ -854,9 +841,8 @@ class S_GlobalConstantDefinition(
         val exprLate = C_LateInit(C_CompilerPass.EXPRESSIONS, errorExpr)
 
         val cDef = ctx.appCtx.addConstant(ctx.modCtx.rModuleKey, cDefBase.defName) { constId ->
-            val filePos = cName.pos.toFilePos()
             val defBase = cDefBase.rBase(defCtx.initFrameGetter)
-            val rDef = R_GlobalConstantDefinition(defBase, constId, filePos, bodyLate.getter)
+            val rDef = R_GlobalConstantDefinition(defBase, constId, bodyLate.getter)
             val typePos = type?.pos ?: cName.pos
             val varId = ctx.modCtx.nextConstVarUid(cDefBase.qualifiedName)
             C_GlobalConstantDefinition(rDef, typePos, varId, headerLate.getter, exprLate.getter)

@@ -36,7 +36,7 @@ class C_LibNamespace private constructor(
         return b.build()
     }
 
-    abstract class Maker(val basePath: C_RFullNamePath) {
+    internal abstract class Maker(val basePath: C_RFullNamePath) {
         abstract fun addMember(name: R_Name, member: C_NamespaceMember)
 
         abstract fun addFunction(
@@ -53,7 +53,7 @@ class C_LibNamespace private constructor(
         )
     }
 
-    class Builder private constructor(
+    internal class Builder private constructor(
         basePath: C_RFullNamePath,
         private var active: Boolean,
     ): Maker(basePath) {

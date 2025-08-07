@@ -9,6 +9,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
+import net.postchain.rell.base.model.R_ErrorPos
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_VirtualListType
 import net.postchain.rell.base.runtime.*
@@ -408,9 +409,24 @@ class Rt_ListValue(private val type: R_Type, private val elements: MutableList<R
     }
 
     companion object {
-        fun checkIndex(size: Int, index: Long) {
-            if (index < 0 || index >= size) {
-                throw Rt_Exception.common("list:index:$size:$index", "List index out of bounds: $index (size $size)")
+        internal fun checkIndex(frame: Rt_CallFrame, errPos: R_ErrorPos, size: Int, index: Long) {
+            val codeMsg = checkIndex0(size, index)
+            if (codeMsg != null) {
+                frame.error(errPos, codeMsg.first, codeMsg.second)
+            }
+        }
+
+        internal fun checkIndex(size: Int, index: Long) {
+            val codeMsg = checkIndex0(size, index)
+            if (codeMsg != null) {
+                throw Rt_Exception.common(codeMsg.first, codeMsg.second)
+            }
+        }
+
+        private fun checkIndex0(size: Int, index: Long): Pair<String, String>? {
+            return when {
+                index in 0 ..< size -> null
+                else -> "list:index:$size:$index" to "List index out of bounds: $index (size $size)"
             }
         }
 

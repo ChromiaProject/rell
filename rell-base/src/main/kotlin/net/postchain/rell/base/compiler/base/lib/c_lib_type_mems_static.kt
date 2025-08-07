@@ -16,7 +16,7 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.LazyPosString
 
-sealed class C_TypeStaticMember(
+internal sealed class C_TypeStaticMember(
     protected val defName: C_DefinitionName,
     protected val simpleName: R_Name,
 ): C_TypeMember(simpleName) {

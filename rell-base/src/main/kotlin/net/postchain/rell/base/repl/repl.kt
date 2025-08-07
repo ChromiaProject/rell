@@ -15,28 +15,28 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.*
 
-class C_ReplCodeState(
-        val frameProto: C_CallFrameProto,
-        val blockCodeProto: C_BlockCodeProto
+internal class C_ReplCodeState(
+    val frameProto: C_CallFrameProto,
+    val blockCodeProto: C_BlockCodeProto,
 ) {
     companion object { val EMPTY = C_ReplCodeState(C_CallFrameProto.EMPTY, C_BlockCodeProto.EMPTY) }
 }
 
-class Rt_ReplCodeState(
+internal class Rt_ReplCodeState(
     val frameState: Rt_CallFrameState,
     val globalConstants: Rt_GlobalConstants.State,
 ) {
     companion object { val EMPTY = Rt_ReplCodeState(Rt_CallFrameState.EMPTY, Rt_GlobalConstants.State()) }
 }
 
-class ReplCodeState(val cState: C_ReplCodeState, val rtState: Rt_ReplCodeState) {
+internal class ReplCodeState(val cState: C_ReplCodeState, val rtState: Rt_ReplCodeState) {
     companion object { val EMPTY = ReplCodeState(C_ReplCodeState.EMPTY, Rt_ReplCodeState.EMPTY) }
 }
 
-class ReplCode(
-        private val rCode: R_ReplCode,
-        private val newCtState: C_ReplCodeState,
-        private val oldRtState: Rt_ReplCodeState
+internal class ReplCode(
+    private val rCode: R_ReplCode,
+    private val newCtState: C_ReplCodeState,
+    private val oldRtState: Rt_ReplCodeState,
 ) {
     fun execute(exeCtx: Rt_ExecutionContext): ReplCodeState {
         val newRtState = rCode.execute(exeCtx, oldRtState)
@@ -48,7 +48,10 @@ class ReplCode(
     }
 }
 
-class C_ReplCommandContext(val frameCtx: C_FrameContext, val codeState: ReplCodeState) {
+internal class C_ReplCommandContext(
+    val frameCtx: C_FrameContext,
+    val codeState: ReplCodeState,
+) {
     val fnCtx = frameCtx.fnCtx
     val defCtx = fnCtx.defCtx
     val mntCtx = defCtx.mntCtx
@@ -65,10 +68,13 @@ class C_ReplCommandContext(val frameCtx: C_FrameContext, val codeState: ReplCode
     fun setCommand(code: ReplCode) = commandLate.set(code)
 }
 
-class R_ReplCode(private val frame: R_CallFrame, private val stmts: ImmList<R_Statement>) {
-    fun execute(exeCtx: Rt_ExecutionContext, oldState: Rt_ReplCodeState): Rt_ReplCodeState {
+class R_ReplCode internal constructor(
+    private val frame: R_CallFrame,
+    private val stmts: ImmList<R_Statement>,
+) {
+    internal fun execute(exeCtx: Rt_ExecutionContext, oldState: Rt_ReplCodeState): Rt_ReplCodeState {
         val rtDefCtx = Rt_DefinitionContext(exeCtx, false, R_DefinitionId("", "<console>"))
-        val rtFrame = frame.createRtFrame(rtDefCtx, null, oldState.frameState)
+        val rtFrame = frame.createRtFrame(rtDefCtx, oldState.frameState)
 
         R_BlockStatement.executeStatements(rtFrame, stmts)
 

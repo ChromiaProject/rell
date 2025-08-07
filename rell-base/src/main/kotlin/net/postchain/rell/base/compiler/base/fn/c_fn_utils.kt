@@ -21,12 +21,12 @@ import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocFunctionParamComments
 import net.postchain.rell.base.utils.ide.IdeCompletion
 
-abstract class C_SubprogramHeader(
+internal abstract class C_SubprogramHeader(
     val params: C_FormalParameters,
     val docComment: DocComment?,
 )
 
-object C_FunctionUtils {
+internal object C_FunctionUtils {
     fun compileFunctionHeader(
         defCtx: C_DefinitionContext,
         fnPos: S_Pos,

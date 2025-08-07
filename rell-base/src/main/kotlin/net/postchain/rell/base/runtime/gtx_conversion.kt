@@ -104,10 +104,10 @@ class GtvToRtContext private constructor(
     val symbol: GtvToRtSymbol?,
     private val keepSymbol: Boolean,
 ) {
-    val pretty = state.pretty
-    val strictGtvConversion = state.strictGtvConversion
-    val bigIntegerSupport = state.bigIntegerSupport
-    val defaultValueEvaluator = state.defaultValueEvaluator
+    internal val pretty = state.pretty
+    internal val strictGtvConversion = state.strictGtvConversion
+    internal val bigIntegerSupport = state.bigIntegerSupport
+    internal val defaultValueEvaluator = state.defaultValueEvaluator
 
     fun updateSymbol(symbol: GtvToRtSymbol, keep: Boolean = false): GtvToRtContext {
         if (this.symbol != null && this.keepSymbol) return this

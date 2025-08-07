@@ -10,8 +10,8 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.utils.PostchainGtvUtils
-import kotlin.test.Test
 import java.math.BigInteger
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class LibGtvTest: BaseRellTest() {

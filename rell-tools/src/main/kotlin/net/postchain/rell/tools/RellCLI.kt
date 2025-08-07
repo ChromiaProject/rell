@@ -359,7 +359,7 @@ private fun findEntryPoint(app: R_App, moduleName: R_ModuleName, routineName: R_
 
 private fun createRegularAppContext(globalCtx: Rt_GlobalContext, app: R_App): Rt_AppContext {
     val chainCtx = RellApiBaseUtils.createChainContext()
-    return Rt_AppContext(globalCtx, chainCtx, app, repl = false, test = false)
+    return Rt_AppContext(globalCtx, chainCtx, app)
 }
 
 private fun createGlobalCtx(args: RellCliArgsEx): Rt_GlobalContext {

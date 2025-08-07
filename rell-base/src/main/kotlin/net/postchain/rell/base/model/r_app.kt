@@ -40,22 +40,22 @@ class R_DefinitionName(
     }
 }
 
-class R_DefinitionBase(
+class R_DefinitionBase internal constructor(
     val defId: R_DefinitionId,
     val defName: R_DefinitionName,
-    val cDefName: C_DefinitionName,
-    val initFrameGetter: C_LateGetter<R_CallFrame>,
-    val docPos: DocSourcePos?,
-    val docGetter: C_LateGetter<DocSymbol>,
+    internal val cDefName: C_DefinitionName,
+    internal val initFrameGetter: C_LateGetter<R_CallFrame>,
+    internal val docPos: DocSourcePos?,
+    internal val docGetter: C_LateGetter<DocSymbol>,
 )
 
-abstract class R_Definition(
+abstract class R_Definition internal constructor(
     base: R_DefinitionBase,
 ): DocDefinition() {
     val defId = base.defId
     val defName = base.defName
-    val cDefName = base.cDefName
-    val initFrameGetter = base.initFrameGetter
+    internal val cDefName = base.cDefName
+    internal val initFrameGetter = base.initFrameGetter
 
     private val docGetter = base.docGetter
 
@@ -66,7 +66,7 @@ abstract class R_Definition(
     final override val docSymbol: DocSymbol get() = docGetter.get()
     final override val docSourcePos = base.docPos
 
-    abstract fun toMetaGtv(): Gtv
+    internal abstract fun toMetaGtv(): Gtv
 
     final override fun toString() = "${javaClass.simpleName}[$appLevelName]"
 }
@@ -110,23 +110,23 @@ class R_DefinitionMeta(
 class R_ExternalChainsRoot
 class R_ExternalChainRef(val root: R_ExternalChainsRoot, val name: String, val index: Int)
 
-data class R_AppUid(val id: Long) {
+internal class R_AppUid(val id: Long) {
     override fun toString() = "App[$id]"
 }
 
-data class R_ContainerUid(val id: Long, val name: String, val app: R_AppUid) {
+internal class R_ContainerUid(val id: Long, val app: R_AppUid) {
     override fun toString(): String {
-        val params = listOf(id.toString(), name).filter { it.isNotEmpty() }.joinToString(",")
+        val params = listOf(id.toString()).filter { it.isNotEmpty() }.joinToString(",")
         return "$app/Container[$params]"
     }
 }
 
-data class R_FnUid(val id: Long, val name: String, val container: R_ContainerUid) {
-    override fun toString() = "$container/Fn[$id,$name]"
+internal class R_FnUid(val id: Long, private val container: R_ContainerUid) {
+    override fun toString() = "$container/Fn[$id]"
 }
 
-data class R_FrameBlockUid(val id: Long, val name: String, val fn: R_FnUid) {
-    override fun toString() = "$fn/Block[$id,$name]"
+internal class R_FrameBlockUid(val id: Long, val fn: R_FnUid) {
+    override fun toString() = "$fn/Block[$id]"
 }
 
 data class R_AtExprId(val id: Long) {
@@ -289,9 +289,9 @@ class R_AppSqlDefs(
     }
 }
 
-class R_App(
+class R_App internal constructor(
     val valid: Boolean,
-    val uid: R_AppUid,
+    internal val uid: R_AppUid,
     val modules: ImmList<R_Module>,
     val operations: ImmMap<R_MountName, R_OperationDefinition>,
     val queries: ImmMap<R_MountName, R_QueryDefinition>,

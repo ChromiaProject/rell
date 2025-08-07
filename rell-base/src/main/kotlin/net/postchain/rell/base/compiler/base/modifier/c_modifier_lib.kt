@@ -38,7 +38,7 @@ object C_Annotations {
     const val DUMMY_ANNOTATION = "dummy_annotation"
 }
 
-object C_ModifierFields {
+internal object C_ModifierFields {
     val MOUNT = C_Annotation_Mount.FIELD
 
     val EXTERNAL_MODULE = C_Annotation_External.FIELD_EXTERNAL_MODULE

@@ -12,6 +12,7 @@ import net.postchain.rell.base.compiler.vexpr.V_ExprInfo
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.Db_ComplexAtWhatEvaluator
+import net.postchain.rell.base.model.expr.R_BaseExpr
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.expr.Rt_AtWhatItem
 import net.postchain.rell.base.runtime.GtvRtConversion_None
@@ -23,12 +24,15 @@ import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.DocCode
 import net.postchain.rell.base.utils.immListOf
 
-class V_LazyExpr(exprCtx: C_ExprContext, private val innerExpr: V_Expr): V_Expr(exprCtx, innerExpr.pos) {
+internal class V_LazyExpr(
+    exprCtx: C_ExprContext,
+    private val innerExpr: V_Expr,
+): V_Expr(exprCtx, innerExpr.pos) {
     private val resType: R_Type = R_LazyType(innerExpr.type)
 
     override fun exprInfo0() = V_ExprInfo.simple(resType, innerExpr)
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rInnerExpr = innerExpr.toRExpr()
         return R_LazyExpr(resType, rInnerExpr)
     }
@@ -46,7 +50,7 @@ class V_LazyExpr(exprCtx: C_ExprContext, private val innerExpr: V_Expr): V_Expr(
     }
 }
 
-private class R_LazyExpr(type: R_Type, private val innerExpr: R_Expr): R_Expr(type) {
+private class R_LazyExpr(type: R_Type, private val innerExpr: R_Expr): R_BaseExpr(type) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         return Rt_ExprLazyValue(type, innerExpr, frame)
     }

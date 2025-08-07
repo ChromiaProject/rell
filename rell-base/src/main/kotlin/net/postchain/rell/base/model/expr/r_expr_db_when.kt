@@ -13,7 +13,7 @@ import net.postchain.rell.base.utils.partitionMap
 
 class Db_WhenCase(val conds: ImmList<Db_Expr>, val expr: Db_Expr)
 
-class Db_WhenExpr(
+internal class Db_WhenExpr(
     type: R_Type,
     private val keyExpr: Db_Expr?,
     private val cases: ImmList<Db_WhenCase>,

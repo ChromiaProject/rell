@@ -73,7 +73,7 @@ sealed class C_DeepDefinitionBody(appCtx: C_AppContext) {
     }
 }
 
-abstract class C_CommonDeepDefinitionBody<T>(
+internal abstract class C_CommonDeepDefinitionBody<T> (
     private val appCtx: C_AppContext,
 ): C_DeepDefinitionBody(appCtx) {
     private val compileLazy: T by lazy {

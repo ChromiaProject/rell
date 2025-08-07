@@ -15,7 +15,6 @@ import net.postchain.rell.base.testutils.unwrap
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.tools.runcfg.RellRunConfigGenerator
 import net.postchain.rell.tools.runcfg.RellRunConfigParams
-import kotlin.test.Test
 import kotlin.test.*
 
 class RunConfigGenTest {

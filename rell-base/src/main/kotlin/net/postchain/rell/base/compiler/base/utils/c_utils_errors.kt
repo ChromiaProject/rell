@@ -17,7 +17,7 @@ import net.postchain.rell.base.model.R_MountName
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.LazyString
 
-object C_Errors {
+internal object C_Errors {
     fun errTypeMismatch(srcType: R_Type, dstType: R_Type, errCode: String, errMsg: String): C_CodeMsg {
         val code = "$errCode:[${dstType.strCode()}]:[${srcType.strCode()}]"
         val msg = "$errMsg: ${srcType.str()} instead of ${dstType.str()}"
@@ -151,11 +151,11 @@ object C_Errors {
     }
 
     fun errMountConflict(
-            chain: String?,
-            mountName: R_MountName,
-            def: R_Definition,
-            pos: S_Pos,
-            otherEntry: C_MntEntry
+        chain: String?,
+        mountName: R_MountName,
+        def: R_Definition,
+        pos: S_Pos,
+        otherEntry: C_MntEntry,
     ): C_Error {
         val baseCode = "mnt_conflict"
         val commonCode = "[${def.appLevelName}]:$mountName:${otherEntry.type}:[${otherEntry.def.appLevelName}]"

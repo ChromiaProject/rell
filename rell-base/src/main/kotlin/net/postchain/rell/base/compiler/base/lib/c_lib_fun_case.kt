@@ -23,7 +23,7 @@ import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
-object C_LibFuncCaseUtils {
+internal object C_LibFuncCaseUtils {
     fun makeGlobalCase(
         naming: C_MemberNaming,
         lFunction: L_Function,
@@ -65,7 +65,7 @@ class C_LibFuncCaseCtx(val linkPos: S_Pos, val fullNameLazy: LazyString) {
     fun qualifiedNameMsg() = fullNameLazy.value
 }
 
-abstract class C_LibFuncCase<CallT: V_FunctionCall>(
+internal abstract class C_LibFuncCase<CallT: V_FunctionCall>(
     val ideInfo: C_IdeSymbolInfo,
 ) {
     abstract val argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>
@@ -157,7 +157,7 @@ abstract class C_LibFuncCaseMatch<CallT: V_FunctionCall> {
     abstract fun compileCall(ctx: C_ExprContext, caseCtx: C_LibFuncCaseCtx): CallT
 }
 
-abstract class C_LibPartialCallTarget<CallT: V_FunctionCall>(
+internal abstract class C_LibPartialCallTarget<CallT: V_FunctionCall>(
     val callPos: S_Pos,
     val fullName: LazyString,
 ) {
@@ -166,7 +166,7 @@ abstract class C_LibPartialCallTarget<CallT: V_FunctionCall>(
     abstract fun match(fnType: R_FunctionType): C_LibPartialCallTargetMatch<CallT>?
 }
 
-abstract class C_LibPartialCallTargetMatch<CallT: V_FunctionCall>(val exact: Boolean) {
+internal abstract class C_LibPartialCallTargetMatch<CallT: V_FunctionCall>(val exact: Boolean) {
     abstract fun parameters(): ImmList<C_FunctionCallParameter>?
     abstract fun compileCall(ctx: C_ExprContext, args: C_EffectivePartialArguments): CallT
 }

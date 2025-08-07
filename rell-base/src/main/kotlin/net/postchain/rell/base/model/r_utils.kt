@@ -23,6 +23,11 @@ class R_FilePos(val file: String, val line: Int) {
     override fun toString() = "$file:$line"
 }
 
+internal class R_ErrorPos(val file: String, val line: Int) {
+    constructor(filePos: R_FilePos): this(filePos.file, filePos.line)
+    override fun toString() = "$file:$line"
+}
+
 class R_StackPos(val def: R_DefinitionId, val file: R_FilePos) {
     override fun toString() = "$def($file)"
 }
@@ -229,9 +234,9 @@ class R_LangVersion(private val ver: VersionNumber): Comparable<R_LangVersion> {
     }
 }
 
-object R_Utils {
+internal object R_Utils {
     private val ERROR_APP_UID = R_AppUid(-1)
-    private val ERROR_CONTAINER_UID = R_ContainerUid(-1, "<error>", ERROR_APP_UID)
-    private val ERROR_FN_UID = R_FnUid(-1, "<error>", ERROR_CONTAINER_UID)
-    val ERROR_BLOCK_UID = R_FrameBlockUid(-1, "<error>", ERROR_FN_UID)
+    private val ERROR_CONTAINER_UID = R_ContainerUid(-1, ERROR_APP_UID)
+    private val ERROR_FN_UID = R_FnUid(-1, ERROR_CONTAINER_UID)
+    val ERROR_BLOCK_UID = R_FrameBlockUid(-1, ERROR_FN_UID)
 }

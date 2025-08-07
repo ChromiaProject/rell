@@ -103,7 +103,7 @@ abstract class C_NoValueExpr: C_Expr() {
     }
 }
 
-class C_ValueMemberExpr(
+internal class C_ValueMemberExpr(
     private val exprCtx: C_ExprContext,
     memberLink: C_MemberLink,
     private val member: C_TypeValueMember,

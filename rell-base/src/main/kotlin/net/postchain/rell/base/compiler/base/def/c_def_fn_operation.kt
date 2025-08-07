@@ -19,7 +19,7 @@ import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.doc.DocComment
 
-class C_OperationHeader(
+internal class C_OperationHeader(
     params: C_FormalParameters,
     docComment: DocComment?,
 ): C_SubprogramHeader(params, docComment) {
@@ -28,7 +28,7 @@ class C_OperationHeader(
     }
 }
 
-class C_OperationGlobalFunction(val rOp: R_OperationDefinition): C_GlobalFunction() {
+internal class C_OperationGlobalFunction(val rOp: R_OperationDefinition): C_GlobalFunction() {
     private val headerLate = C_LateInit(C_CompilerPass.MEMBERS, C_OperationHeader.ERROR)
 
     override fun getDefMeta(): R_DefinitionMeta {

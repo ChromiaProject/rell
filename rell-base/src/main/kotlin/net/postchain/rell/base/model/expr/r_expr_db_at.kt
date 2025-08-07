@@ -17,7 +17,7 @@ import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.*
 
-class Db_AtFromItem(
+internal class Db_AtFromItem(
     val atEntity: R_DbAtEntity,
     private val isOuter: Boolean,
     private val where: Db_Expr?,
@@ -33,7 +33,7 @@ class Db_AtFromItem(
 
 class RedDb_AtFromItem(val atEntity: R_DbAtEntity, val where: RedDb_Expr?, val isOuter: Boolean)
 
-class RedDb_AtExprFrom(
+internal class RedDb_AtExprFrom(
     private val items: ImmList<RedDb_AtFromItem>,
     private val what: ImmList<Db_AtWhatField>,
     private val where: Db_Expr?,
@@ -41,7 +41,7 @@ class RedDb_AtExprFrom(
     private val selWhat: ImmList<Db_AtWhatValue>,
     private val resultTypes: ImmList<R_Type>,
 ) {
-    fun toRedBase(frame: Rt_CallFrame): RedDb_AtExprBase {
+    internal fun toRedBase(frame: Rt_CallFrame): RedDb_AtExprBase {
         val redWhere = makeFullWhere(frame)
 
         val redWhat = what.flatMapToImmList { whatField ->
@@ -81,7 +81,7 @@ class Rt_AtWhatItem_Value(private val value: Rt_Value): Rt_AtWhatItem() {
     override fun value() = value
 }
 
-class Rt_AtWhatItem_RExpr(private val frame: Rt_CallFrame, private val rExpr: R_Expr): Rt_AtWhatItem() {
+internal class Rt_AtWhatItem_RExpr(private val frame: Rt_CallFrame, private val rExpr: R_Expr): Rt_AtWhatItem() {
     private val valueLazy: Rt_Value by lazy {
         rExpr.evaluate(frame)
     }
@@ -89,10 +89,10 @@ class Rt_AtWhatItem_RExpr(private val frame: Rt_CallFrame, private val rExpr: R_
     override fun value() = valueLazy
 }
 
-class Rt_AtWhatItem_Evaluator(
-        private val evaluator: Db_ComplexAtWhatEvaluator,
-        private val frame: Rt_CallFrame,
-        private val values: ImmList<Rt_AtWhatItem>
+internal class Rt_AtWhatItem_Evaluator(
+    private val evaluator: Db_ComplexAtWhatEvaluator,
+    private val frame: Rt_CallFrame,
+    private val values: ImmList<Rt_AtWhatItem>,
 ): Rt_AtWhatItem() {
     private val resultLazy: Rt_Value by lazy {
         evaluator.evaluate(frame, this.values)
@@ -123,13 +123,13 @@ abstract class Rt_AtWhatCombiner(val dbValueCount: Int) {
     }
 }
 
-sealed class Db_AtWhatValue {
+internal sealed class Db_AtWhatValue {
     abstract fun rawTypes(): List<R_Type>
     abstract fun toRedExprs(frame: Rt_CallFrame): List<RedDb_Expr>
     abstract fun combiner(frame: Rt_CallFrame): Rt_AtWhatCombiner
 }
 
-class Db_AtWhatValue_RExpr(private val expr: R_Expr): Db_AtWhatValue() {
+internal class Db_AtWhatValue_RExpr(private val expr: R_Expr): Db_AtWhatValue() {
     override fun rawTypes() = listOf<R_Type>()
     override fun toRedExprs(frame: Rt_CallFrame) = listOf<RedDb_Expr>()
 
@@ -145,7 +145,7 @@ class Db_AtWhatValue_RExpr(private val expr: R_Expr): Db_AtWhatValue() {
     }
 }
 
-class Db_AtWhatValue_DbExpr(private val expr: Db_Expr, private val resultType: R_Type): Db_AtWhatValue() {
+internal class Db_AtWhatValue_DbExpr(private val expr: Db_Expr, private val resultType: R_Type): Db_AtWhatValue() {
     override fun rawTypes() = listOf(resultType)
 
     override fun toRedExprs(frame: Rt_CallFrame): List<RedDb_Expr> {
@@ -163,11 +163,11 @@ class Db_AtWhatValue_DbExpr(private val expr: Db_Expr, private val resultType: R
     }
 }
 
-abstract class Db_ComplexAtWhatEvaluator {
+internal abstract class Db_ComplexAtWhatEvaluator {
     abstract fun evaluate(frame: Rt_CallFrame, values: List<Rt_AtWhatItem>): Rt_Value
 }
 
-class Db_AtWhatValue_Complex(
+internal class Db_AtWhatValue_Complex(
     private val subWhatValues: ImmList<Db_AtWhatValue>,
     private val rExprs: ImmList<R_Expr>,
     private val items: ImmList<Pair<Boolean, Int>>,
@@ -218,7 +218,10 @@ class Db_AtWhatValue_Complex(
     }
 }
 
-class Db_AtWhatValue_ToStruct(private val rStruct: R_Struct, private val exprs: ImmList<Db_Expr>): Db_AtWhatValue() {
+internal class Db_AtWhatValue_ToStruct(
+    private val rStruct: R_Struct,
+    private val exprs: ImmList<Db_Expr>,
+): Db_AtWhatValue() {
     override fun rawTypes() = exprs.map { it.type }
 
     override fun toRedExprs(frame: Rt_CallFrame): List<RedDb_Expr> {
@@ -243,14 +246,14 @@ class Db_AtWhatValue_ToStruct(private val rStruct: R_Struct, private val exprs: 
     }
 }
 
-class Db_AtWhatField(
+internal class Db_AtWhatField(
     val flags: R_AtWhatFieldFlags,
     val value: Db_AtWhatValue,
 )
 
 class RedDb_AtWhatField(val expr: RedDb_Expr, val flags: R_AtWhatFieldFlags)
 
-class RedDb_AtExprBase(
+internal class RedDb_AtExprBase(
     private val from: ImmList<RedDb_AtFromItem>,
     private val where: RedDb_Expr?,
     private val what: ImmList<RedDb_AtWhatField>,
@@ -260,7 +263,7 @@ class RedDb_AtExprBase(
 ) {
     private val fromEntities = from.mapToImmList { it.atEntity }
 
-    fun execute(frame: Rt_CallFrame, extras: Rt_AtExprExtras): List<List<Rt_Value>> {
+    internal fun execute(frame: Rt_CallFrame, extras: Rt_AtExprExtras): List<List<Rt_Value>> {
         val rtSql = buildSql(frame.sqlCtx, extras)
         val select = SqlSelect(rtSql, resultTypes)
         val combiners = selWhat.map { it.combiner(frame) }
@@ -474,7 +477,7 @@ class RedDb_AtExprBase(
     }
 }
 
-class Db_AtExprFrom(
+internal class Db_AtExprFrom(
     private val from: ImmList<Db_AtFromItem>,
     private val block: R_FrameBlock? = null,
 ) {
@@ -490,7 +493,7 @@ class Db_AtExprFrom(
     }
 }
 
-class Db_AtExprBase(
+internal class Db_AtExprBase(
     private val from: Db_AtExprFrom,
     private val what: ImmList<Db_AtWhatField>,
     private val where: Db_Expr?,
@@ -499,13 +502,13 @@ class Db_AtExprBase(
     private val selWhat = what.filter { !it.flags.omit }.mapToImmList { it.value }
     private val resultTypes = selWhat.flatMapToImmList { it.rawTypes() }
 
-    fun toRedFrom(frame: Rt_CallFrame): RedDb_AtExprFrom {
+    internal fun toRedFrom(frame: Rt_CallFrame): RedDb_AtExprFrom {
         val redItems = from.toRedItems(frame)
         return RedDb_AtExprFrom(redItems, what, where, isMany, selWhat, resultTypes)
     }
 }
 
-class Db_NestedAtExpr(
+internal class Db_NestedAtExpr internal constructor(
     type: R_Type,
     private val base: Db_AtExprBase,
     private val extras: R_AtExprExtras,

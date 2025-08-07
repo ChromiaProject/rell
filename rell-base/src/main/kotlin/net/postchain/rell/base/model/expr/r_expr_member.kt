@@ -13,11 +13,11 @@ import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.utils.checkEquals
 
-class R_MemberExpr(
+internal class R_MemberExpr(
     private val base: R_Expr,
     private val calculator: R_MemberCalculator,
     private val safe: Boolean,
-): R_Expr(C_Utils.effectiveMemberType(calculator.type, safe)) {
+): R_BaseExpr(C_Utils.effectiveMemberType(calculator.type, safe)) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val baseValue = base.evaluate(frame)
         if (safe && baseValue == Rt_NullValue) {
@@ -32,24 +32,30 @@ class R_MemberExpr(
     }
 }
 
-abstract class R_MemberCalculator(val type: R_Type) {
+internal abstract class R_MemberCalculator(val type: R_Type) {
     abstract fun calculate(frame: Rt_CallFrame, baseValue: Rt_Value): Rt_Value
 }
 
-class R_MemberCalculator_Error(type: R_Type, private val msg: String): R_MemberCalculator(type) {
+internal class R_MemberCalculator_Error(type: R_Type, private val msg: String): R_MemberCalculator(type) {
     override fun calculate(frame: Rt_CallFrame, baseValue: Rt_Value): Rt_Value {
         throw RellInterpreterCrashException(msg)
     }
 }
 
-class R_MemberCalculator_TupleAttr(type: R_Type, val attrIndex: Int): R_MemberCalculator(type) {
+internal class R_MemberCalculator_TupleAttr(
+    type: R_Type,
+    private val attrIndex: Int,
+): R_MemberCalculator(type) {
     override fun calculate(frame: Rt_CallFrame, baseValue: Rt_Value): Rt_Value {
         val values = baseValue.asTuple()
         return values[attrIndex]
     }
 }
 
-class R_MemberCalculator_VirtualTupleAttr(type: R_Type, val fieldIndex: Int): R_MemberCalculator(type) {
+internal class R_MemberCalculator_VirtualTupleAttr(
+    type: R_Type,
+    private val fieldIndex: Int,
+): R_MemberCalculator(type) {
     override fun calculate(frame: Rt_CallFrame, baseValue: Rt_Value): Rt_Value {
         val tuple = baseValue.asVirtualTuple()
         val res = tuple.get(fieldIndex)
@@ -57,14 +63,17 @@ class R_MemberCalculator_VirtualTupleAttr(type: R_Type, val fieldIndex: Int): R_
     }
 }
 
-class R_MemberCalculator_VirtualStructAttr(type: R_Type, val attr: R_Attribute): R_MemberCalculator(type) {
+internal class R_MemberCalculator_VirtualStructAttr(
+    type: R_Type,
+    private val attr: R_Attribute,
+): R_MemberCalculator(type) {
     override fun calculate(frame: Rt_CallFrame, baseValue: Rt_Value): Rt_Value {
         val structValue = baseValue.asVirtualStruct()
         return structValue.get(attr.index)
     }
 }
 
-class R_MemberCalculator_DataAttribute(
+internal class R_MemberCalculator_DataAttribute(
     type: R_Type,
     private val atBase: Db_AtExprBase,
     private val lambda: R_LambdaBlock,

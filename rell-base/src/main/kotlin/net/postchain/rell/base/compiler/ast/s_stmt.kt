@@ -21,23 +21,19 @@ import net.postchain.rell.base.utils.ide.IdeSymbolKind
 abstract class S_Statement(val startPos: S_Pos, val endPos: S_Pos) {
     private val modifiedVars = TypedKey<Set<R_Name>>()
 
-    protected abstract fun compile0(ctx: C_StmtContext, repl: Boolean = false): C_Statement
+    internal abstract fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement
 
-    fun compile(ctx: C_StmtContext, repl: Boolean = false): C_Statement {
-        val cStmt = ctx.msgCtx.consumeError { compile0(ctx, repl) }
-        cStmt ?: return C_Statement.ERROR
-
-        val filePos = startPos.toFilePos()
-        val rStmt = R_StackTraceStatement(cStmt.rStmt, filePos)
-        return cStmt.copy(rStmt = rStmt)
+    internal fun compileSafe(ctx: C_StmtContext, repl: Boolean = false): C_Statement {
+        val cStmt = ctx.msgCtx.consumeError { compile(ctx, repl) }
+        return cStmt ?: C_Statement.ERROR
     }
 
-    fun compileWithVarStates(ctx: C_StmtContext, delta: C_VarStatesDelta): C_Statement {
+    internal fun compileWithVarStates(ctx: C_StmtContext, delta: C_VarStatesDelta): C_Statement {
         val subCtx = ctx.updateVarStates(delta)
-        return compile(subCtx)
+        return compileSafe(subCtx)
     }
 
-    fun discoverVars(map: MutableTypedKeyMap): C_StatementVars {
+    internal fun discoverVars(map: MutableTypedKeyMap): C_StatementVars {
         val vars = discoverVars0(map)
         map.put(modifiedVars, vars.modified)
         return vars
@@ -45,21 +41,27 @@ abstract class S_Statement(val startPos: S_Pos, val endPos: S_Pos) {
 
     protected open fun discoverVars0(map: MutableTypedKeyMap) = C_StatementVars.EMPTY
 
-    fun getModifiedVars(ctx: C_FunctionContext): Set<R_Name> {
+    internal fun getModifiedVars(ctx: C_FunctionContext): Set<R_Name> {
         val res = ctx.statementVars.get(modifiedVars)
         return res
     }
 
-    open fun returnsValue(): Boolean? = null
+    internal open fun returnsValue(): Boolean? = null
 }
 
 class S_EmptyStatement(pos: S_Pos): S_Statement(pos, pos) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean) = C_Statement.EMPTY
+    override fun compile(ctx: C_StmtContext, repl: Boolean) = C_Statement.EMPTY
 }
 
 sealed class S_VarDeclarator {
-    abstract fun discoverVars(vars: MutableSet<R_Name>)
-    abstract fun compile(ctx: C_StmtContext, mutable: Boolean, hasExpr: Boolean, comment: S_Comment?): C_VarDeclarator
+    internal abstract fun discoverVars(vars: MutableSet<R_Name>)
+
+    internal abstract fun compile(
+        ctx: C_StmtContext,
+        mutable: Boolean,
+        hasExpr: Boolean,
+        comment: S_Comment?,
+    ): C_VarDeclarator
 }
 
 class S_SimpleVarDeclarator(
@@ -115,7 +117,7 @@ class S_VarStatement(
     val mutable: Boolean,
     private val comment: S_Comment?,
 ): S_Statement(startPos, endPos) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
+    override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val cDeclarator = declarator.compile(ctx, mutable, hasExpr = expr != null, comment = comment)
 
         val typeHint = C_TypeHint.ofType(cDeclarator.getHintType())
@@ -145,7 +147,7 @@ class S_ReturnStatement(
     endPos: S_Pos,
     private val expr: S_Expr?,
 ): S_Statement(startPos, endPos) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
+    override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val rStmt = compileInternal(ctx)
         return C_Statement(rStmt, true)
     }
@@ -205,7 +207,7 @@ class S_BlockStatement(
     private val posRange: S_PosRange,
     private val stmts: ImmList<S_Statement>,
 ): S_Statement(posRange.start, posRange.end) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
+    override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val (subCtx, subBlkCtx) = ctx.subBlock(ctx.loop)
 
         val hasGuardBlock = stmts.any { it is S_GuardStatement }
@@ -255,7 +257,7 @@ class S_ExprStatement(
     private val expr: S_Expr,
     endPos: S_Pos,
 ): S_Statement(expr.startPos, endPos) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
+    override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val vExpr = expr.compile(ctx).vExpr()
         val rExpr = vExpr.toRExpr()
         val rStmt = if (repl) R_ReplExprStatement(rExpr) else R_ExprStatement(rExpr)
@@ -269,7 +271,7 @@ class S_AssignStatement(
     private val srcExpr: S_Expr,
     endPos: S_Pos,
 ): S_Statement(dstExpr.startPos, endPos) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
+    override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val cDstExpr = dstExpr.compileOpt(ctx)
         val vDstExpr = cDstExpr?.vExpr()
 
@@ -301,7 +303,7 @@ class S_IfStatement(
     private val trueStmt: S_Statement,
     private val falseStmt: S_Statement?,
 ): S_Statement(startPos, falseStmt?.endPos ?: trueStmt.endPos) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
+    override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val rExpr: R_Expr
         val exprVarStates: C_ExprVarStatesDelta
 
@@ -365,12 +367,12 @@ class S_WhenStatement(
     private val expr: S_Expr?,
     private val cases: ImmList<S_WhenStatementCase>,
 ): S_Statement(startPos, endPos) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
+    override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val conds = cases.map { it.cond }
 
         val chooser = S_WhenExpr.compileChooser(ctx.exprCtx, expr, conds)
         if (chooser == null) {
-            cases.forEach { it.stmt.compile(ctx) }
+            cases.forEach { it.stmt.compileSafe(ctx) }
             return C_Statement.ERROR
         }
 
@@ -411,7 +413,7 @@ class S_WhenStatement(
     }
 }
 
-class C_LoopStatement(
+internal class C_LoopStatement(
     val condCtx: C_StmtContext,
     val condExpr: R_Expr,
     val condVarStatesDelta: C_ExprVarStatesDelta,
@@ -423,10 +425,10 @@ class S_WhileStatement(
     private val expr: S_Expr,
     private val stmt: S_Statement,
 ): S_Statement(startPos, stmt.endPos) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
+    override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val loop = compileLoop(ctx, this, expr)
         if (loop == null) {
-            stmt.compile(ctx)
+            stmt.compileSafe(ctx)
             return C_Statement.ERROR
         }
 
@@ -467,7 +469,7 @@ class S_WhileStatement(
     companion object {
         private val MODIFIED_VAR_COMPATIBILITY_SWITCH = C_FeatureSwitch("0.14.0")
 
-        fun compileLoop(ctx: C_StmtContext, stmt: S_Statement, expr: S_Expr): C_LoopStatement? {
+        internal fun compileLoop(ctx: C_StmtContext, stmt: S_Statement, expr: S_Expr): C_LoopStatement? {
             val modifiedVars = getModifiedVars(stmt, ctx)
             val condCtx = ctx.updateVarStates(calcUpdatedVarStatesDelta(modifiedVars))
 
@@ -518,7 +520,7 @@ class S_ForStatement(
     private val stmt: S_Statement,
     private val headerEndPos: S_Pos,
 ): S_Statement(startPos, stmt.endPos) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
+    override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         val loop = S_WhileStatement.compileLoop(ctx, this, expr)
         if (loop == null) {
             compileBody(ctx)
@@ -557,7 +559,7 @@ class S_ForStatement(
 
     private fun compileBody(ctx: C_StmtContext): C_Statement {
         ctx.blkCtx.frameCtx.ideCompCtx.trackScope(S_PosRange(headerEndPos, stmt.endPos), ctx.exprCtx)
-        return stmt.compile(ctx)
+        return stmt.compileSafe(ctx)
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
@@ -582,7 +584,7 @@ class S_BreakStatement(
     startPos: S_Pos,
     endPos: S_Pos,
 ): S_Statement(startPos, endPos) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
+    override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         if (ctx.loop == null) {
             throw C_Error.more(startPos, "stmt_break_noloop", "Break without a loop")
         }
@@ -595,7 +597,7 @@ class S_ContinueStatement(
     startPos: S_Pos,
     endPos: S_Pos,
 ): S_Statement(startPos, endPos) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
+    override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         if (ctx.loop == null) {
             throw C_Error.more(startPos, "stmt_continue_noloop", "Continue without a loop")
         }
@@ -608,7 +610,7 @@ class S_GuardStatement(
     startPos: S_Pos,
     private val stmt: S_Statement,
 ): S_Statement(startPos, stmt.endPos) {
-    override fun compile0(ctx: C_StmtContext, repl: Boolean): C_Statement {
+    override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         if (repl) {
             ctx.msgCtx.error(startPos, "stmt_guard_repl", "Guard block not allowed in REPL")
         }
@@ -626,7 +628,7 @@ class S_GuardStatement(
             ctx.msgCtx.error(startPos, "stmt_guard_after_guard", "Only one guard block is allowed")
         }
 
-        val cSubStmt = stmt.compile(ctx, repl)
+        val cSubStmt = stmt.compileSafe(ctx, repl)
         val rStmt = R_GuardStatement(cSubStmt.rStmt)
         return cSubStmt.copy(rStmt = rStmt, guardBlock = true)
     }

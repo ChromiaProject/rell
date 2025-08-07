@@ -22,7 +22,7 @@ import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.*
 
-class C_AbstractUserGlobalFunction(
+internal class C_AbstractUserGlobalFunction(
     fnPos: S_Pos,
     rFunction: R_FunctionDefinition,
     hasDefaultBody: Boolean,
@@ -55,11 +55,11 @@ private class C_FunctionCallTarget_AbstractUserFunction(
     }
 }
 
-class C_AbstractFunctionDescriptor(
-        private val fnPos: S_Pos,
-        private val rFunction: R_FunctionDefinition,
-        val hasDefaultBody: Boolean,
-        private val headerGetter: C_LateGetter<C_UserFunctionHeader>
+internal class C_AbstractFunctionDescriptor(
+    private val fnPos: S_Pos,
+    private val rFunction: R_FunctionDefinition,
+    val hasDefaultBody: Boolean,
+    private val headerGetter: C_LateGetter<C_UserFunctionHeader>,
 ) {
     private val overrideFnBaseLate = C_LateInit<R_FunctionBase?>(C_CompilerPass.ABSTRACT, null)
 
@@ -77,7 +77,7 @@ class C_AbstractFunctionDescriptor(
     }
 }
 
-class C_OverrideFunctionDescriptor(val fnPos: S_Pos, private val rFnBase: R_FunctionBase) {
+internal class C_OverrideFunctionDescriptor(val fnPos: S_Pos, private val rFnBase: R_FunctionBase) {
     private val abstractLate = C_LateInit<C_AbstractFunctionDescriptor?>(C_CompilerPass.MEMBERS, null)
     private var bind = false
 
@@ -96,7 +96,7 @@ class C_OverrideFunctionDescriptor(val fnPos: S_Pos, private val rFnBase: R_Func
     }
 }
 
-object C_AbstractCompiler {
+internal object C_AbstractCompiler {
     fun compile(msgCtx: C_MessageContext, modules: ImmList<C_ModuleDescriptor>) {
         val conflictsProcessor = C_OverrideConflictsProcessor(msgCtx)
         val actualOverrides = conflictsProcessor.processApp(modules)

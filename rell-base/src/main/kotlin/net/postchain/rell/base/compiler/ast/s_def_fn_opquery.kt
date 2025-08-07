@@ -50,7 +50,13 @@ class S_OperationDefinition(
         val docModifiers = modifiers.compile(ctx, mods)
 
         val mountName = ctx.mountName(modMount, cName)
-        checkSysMountNameConflict(ctx, name.pos, C_DeclarationType.OPERATION, mountName, C_ReservedMountNames.OPERATIONS)
+        S_QueryDefinition.checkSysMountNameConflict(
+            ctx,
+            name.pos,
+            C_DeclarationType.OPERATION,
+            mountName,
+            C_ReservedMountNames.OPERATIONS,
+        )
 
         val docCommentLate = C_LateInit(C_CompilerPass.MEMBERS, null as DocComment?)
 
@@ -153,7 +159,7 @@ class S_OperationDefinition(
         val frameCtx = C_FrameContext.create(fnCtx)
 
         val actParams = header.params.compile(frameCtx)
-        val cBody = body.compile(actParams.stmtCtx)
+        val cBody = body.compileSafe(actParams.stmtCtx)
         val rBody = cBody.rStmt
         val callFrame = frameCtx.makeCallFrame(cBody.guardBlock)
 
@@ -295,5 +301,18 @@ class S_QueryDefinition(
 
     companion object {
         private val MIXED_TUPLES_SWITCH = C_FeatureSwitch("0.13.11")
+
+        internal fun checkSysMountNameConflict(
+            ctx: C_MountContext,
+            pos: S_Pos,
+            declType: C_DeclarationType,
+            mountName: R_MountName,
+            sysDefs: Set<R_MountName>,
+        ) {
+            if (mountName in sysDefs) {
+                ctx.msgCtx.error(pos, "mount:conflict:sys:$declType:$mountName",
+                        "Mount name conflict: system ${declType.msg} '$mountName' exists")
+            }
+        }
     }
 }

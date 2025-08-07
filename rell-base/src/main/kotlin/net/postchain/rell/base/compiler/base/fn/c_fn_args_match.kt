@@ -18,7 +18,7 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.M_ParamArity
 import net.postchain.rell.base.utils.*
 
-class C_ArgMatchParam(
+internal class C_ArgMatchParam(
     val index: Int,
     val name: R_Name?,
     val arity: M_ParamArity,
@@ -35,7 +35,7 @@ class C_ArgMatchParam(
     }
 }
 
-class C_ArgMatchParams(val all: ImmList<C_ArgMatchParam>) {
+internal class C_ArgMatchParams(val all: ImmList<C_ArgMatchParam>) {
     val mandatoryAndOptional: ImmList<C_ArgMatchParam>
     val vararg: C_ArgMatchParam? // If the vararg is ONE_MANY, it's also added as the last item of the mandatory.
 
@@ -64,18 +64,23 @@ class C_ArgMatchParams(val all: ImmList<C_ArgMatchParam>) {
     }
 }
 
-sealed class C_ArgMatchArg(val param: C_ArgMatchParam)
-class C_ArgMatchArg_Expr(param: C_ArgMatchParam, val vExpr: V_Expr): C_ArgMatchArg(param)
-class C_ArgMatchArg_Default(param: C_ArgMatchParam, val defaultValue: C_ParameterDefaultValue): C_ArgMatchArg(param)
+internal sealed class C_ArgMatchArg(val param: C_ArgMatchParam)
+internal class C_ArgMatchArg_Expr(param: C_ArgMatchParam, val vExpr: V_Expr): C_ArgMatchArg(param)
+internal class C_ArgMatchArg_Default(param: C_ArgMatchParam, val defaultValue: C_ParameterDefaultValue): C_ArgMatchArg(param)
 
-class C_ArgMatchParamArg(val param: C_ArgMatchParam, val wild: Boolean, val index: Int, val callArg: C_CallArgument?)
+internal class C_ArgMatchParamArg(
+    val param: C_ArgMatchParam,
+    val wild: Boolean,
+    val index: Int,
+    val callArg: C_CallArgument?,
+)
 
-class C_ArgMatcherResult(
+internal class C_ArgMatcherResult(
     val matching: C_ArgMatching?,
     val paramValues: ImmList<Pair<C_ArgMatchParam, V_Expr>>,
 )
 
-class C_ArgMatching(
+internal class C_ArgMatching(
     val exprArgs: ImmList<C_ArgMatchArg>,
     val wildArgs: ImmList<C_ArgMatchParam>,
     val mapping: ImmList<C_ArgMatchParamArg>,
@@ -110,7 +115,7 @@ class C_ArgMatching(
     }
 }
 
-object C_ArgMatcher {
+internal object C_ArgMatcher {
     fun bind(
         msgMgr: C_MessageManager,
         callInfo: C_FunctionCallInfo,

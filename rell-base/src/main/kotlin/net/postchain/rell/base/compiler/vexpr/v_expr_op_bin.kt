@@ -13,13 +13,13 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_Value
 
-class V_BinaryOp(val code: String, val resType: R_Type, val rOp: R_BinaryOp, val dbOp: Db_BinaryOp?) {
+internal class V_BinaryOp(val code: String, val resType: R_Type, val rOp: R_BinaryOp, val dbOp: Db_BinaryOp?) {
     companion object {
         fun of(resType: R_Type, rOp: R_BinaryOp, dbOp: Db_BinaryOp?) = V_BinaryOp(rOp.code, resType, rOp, dbOp)
     }
 }
 
-class V_BinaryExpr(
+internal class V_BinaryExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val op: V_BinaryOp,
@@ -38,10 +38,11 @@ class V_BinaryExpr(
         return op.rOp.evaluate(leftValue, rightValue)
     }
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rLeft = left.toRExpr()
         val rRight = right.toRExpr()
-        return R_BinaryExpr(op.resType, op.rOp, rLeft, rRight)
+        val errPos = pos.toErrorPos()
+        return R_BinaryExpr(op.resType, op.rOp, rLeft, rRight, errPos)
     }
 
     override fun toDbExpr0(): Db_Expr {
@@ -56,7 +57,7 @@ class V_BinaryExpr(
     }
 }
 
-class V_ElvisExpr(
+internal class V_ElvisExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val resType: R_Type,
@@ -66,7 +67,7 @@ class V_ElvisExpr(
     override fun exprInfo0() = V_ExprInfo.simple(resType, left, right)
     override fun varStatesDelta0() = C_ExprVarStatesDelta.forExpressions(left) // left is always evaluated, right is not
 
-    override fun toRExpr0(): R_Expr {
+    override fun toRExpr(): R_Expr {
         val rLeft = left.toRExpr()
         val rRight = right.toRExpr()
         return R_ElvisExpr(resType, rLeft, rRight)

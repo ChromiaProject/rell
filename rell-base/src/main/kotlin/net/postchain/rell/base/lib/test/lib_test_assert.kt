@@ -269,7 +269,12 @@ object Lib_Test_Assert {
         }
     }
 
-    fun calcAssertEquals(fn: String, expected: Rt_Value, actual: Rt_Value, op: R_BinaryOp = R_BinaryOp_Eq): Rt_Value {
+    internal fun calcAssertEquals(
+        fn: String,
+        expected: Rt_Value,
+        actual: Rt_Value,
+        op: R_BinaryOp = R_BinaryOp_Eq,
+    ): Rt_Value {
         val equalsValue = op.evaluate(actual, expected)
         if (!equalsValue.asBoolean()) {
             val code = "$fn:${actual.strCode()}:${expected.strCode()}"

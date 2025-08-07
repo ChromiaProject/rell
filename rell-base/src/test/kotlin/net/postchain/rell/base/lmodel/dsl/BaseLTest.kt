@@ -156,7 +156,7 @@ abstract class BaseLTest {
             }
         }
 
-        fun makeTypeFunCall(ctx: C_ExprContext): V_SpecialMemberFunctionCall {
+        internal fun makeTypeFunCall(ctx: C_ExprContext): V_SpecialMemberFunctionCall {
             return object: V_SpecialMemberFunctionCall(ctx, R_CtErrorType) {
                 override fun calculator(): R_MemberCalculator = R_MemberCalculator_Error(R_CtErrorType, "Error")
             }

@@ -61,12 +61,12 @@ private class C_MountConflictsProcessor(private val chain: String?, private val 
     }
 }
 
-class C_MntEntry(
-        val type: C_DeclarationType,
-        val def: R_Definition,
-        val pos: S_Pos?,
-        val mountName: R_MountName,
-        val stamp: R_AppUid
+internal class C_MntEntry(
+    val type: C_DeclarationType,
+    val def: R_Definition,
+    val pos: S_Pos?,
+    val mountName: R_MountName,
+    val stamp: R_AppUid,
 ) {
     companion object {
         private val SYSTEM_MOUNT_NAMES = let {
@@ -121,7 +121,7 @@ class C_MntEntry(
     }
 }
 
-class C_MountTablesBuilder(private val stamp: R_AppUid) {
+internal class C_MountTablesBuilder(private val stamp: R_AppUid) {
     private val chains = mutableMapOf<String, C_ChainMountTablesBuilder>()
 
     fun add(tables: C_MountTables) {
@@ -176,19 +176,19 @@ class C_MountTablesBuilder(private val stamp: R_AppUid) {
     }
 }
 
-class C_MountTables(val chains: ImmMap<String, C_ChainMountTables>) {
+internal class C_MountTables(val chains: ImmMap<String, C_ChainMountTables>) {
     companion object { val EMPTY = C_MountTables(immMapOf()) }
 }
 
-class C_ChainMountTables(val entities: C_MntTable, val operations: C_MntTable, val queries: C_MntTable)
+internal class C_ChainMountTables(val entities: C_MntTable, val operations: C_MntTable, val queries: C_MntTable)
 
-class C_ChainMountTablesBuilder(stamp: R_AppUid) {
+internal class C_ChainMountTablesBuilder(stamp: R_AppUid) {
     val entities = C_MntTableBuilder(stamp)
     val operations = C_MntTableBuilder(stamp)
     val queries = C_MntTableBuilder(stamp)
 }
 
-class C_MntTableBuilder(private val stamp: R_AppUid) {
+internal class C_MntTableBuilder(private val stamp: R_AppUid) {
     private val entries = mutableListOf<C_MntEntry>()
     private var finished = false
 
@@ -214,6 +214,6 @@ class C_MntTableBuilder(private val stamp: R_AppUid) {
     }
 }
 
-class C_MntTable(val entries: ImmList<C_MntEntry>) {
+internal class C_MntTable(val entries: ImmList<C_MntEntry>) {
     companion object { val EMPTY = C_MntTable(immListOf()) }
 }

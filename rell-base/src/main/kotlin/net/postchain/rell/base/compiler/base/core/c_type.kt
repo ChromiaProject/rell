@@ -64,21 +64,21 @@ class C_TypeHint private constructor(val mTypes: ImmSet<M_Type>) {
     }
 }
 
-sealed class C_TypeAdapter {
+internal sealed class C_TypeAdapter {
     abstract fun adaptExpr(ctx: C_ExprContext, expr: V_Expr): V_Expr
     abstract fun adaptExprR(expr: R_Expr): R_Expr
     abstract fun adaptExprDb(expr: Db_Expr): Db_Expr
     abstract fun toRAdapter(): R_TypeAdapter
 }
 
-object C_TypeAdapter_Direct: C_TypeAdapter() {
+internal data object C_TypeAdapter_Direct: C_TypeAdapter() {
     override fun adaptExpr(ctx: C_ExprContext, expr: V_Expr) = expr
     override fun adaptExprR(expr: R_Expr) = expr
     override fun adaptExprDb(expr: Db_Expr) = expr
     override fun toRAdapter(): R_TypeAdapter = R_TypeAdapter_Direct
 }
 
-object C_TypeAdapter_IntegerToBigInteger: C_TypeAdapter() {
+internal data object C_TypeAdapter_IntegerToBigInteger: C_TypeAdapter() {
     override fun adaptExpr(ctx: C_ExprContext, expr: V_Expr): V_Expr {
         return V_TypeAdapterExpr(ctx, R_BigIntegerType, expr, this)
     }
@@ -94,7 +94,7 @@ object C_TypeAdapter_IntegerToBigInteger: C_TypeAdapter() {
     override fun toRAdapter(): R_TypeAdapter = R_TypeAdapter_IntegerToBigInteger
 }
 
-object C_TypeAdapter_IntegerToDecimal: C_TypeAdapter() {
+internal data object C_TypeAdapter_IntegerToDecimal: C_TypeAdapter() {
     override fun adaptExpr(ctx: C_ExprContext, expr: V_Expr): V_Expr {
         return V_TypeAdapterExpr(ctx, R_DecimalType, expr, this)
     }
@@ -110,7 +110,7 @@ object C_TypeAdapter_IntegerToDecimal: C_TypeAdapter() {
     override fun toRAdapter(): R_TypeAdapter = R_TypeAdapter_IntegerToDecimal
 }
 
-object C_TypeAdapter_BigIntegerToDecimal: C_TypeAdapter() {
+internal data object C_TypeAdapter_BigIntegerToDecimal: C_TypeAdapter() {
     override fun adaptExpr(ctx: C_ExprContext, expr: V_Expr): V_Expr {
         return V_TypeAdapterExpr(ctx, R_DecimalType, expr, this)
     }
@@ -126,7 +126,10 @@ object C_TypeAdapter_BigIntegerToDecimal: C_TypeAdapter() {
     override fun toRAdapter(): R_TypeAdapter = R_TypeAdapter_BigIntegerToDecimal
 }
 
-class C_TypeAdapter_Nullable(private val dstType: R_Type, private val innerAdapter: C_TypeAdapter): C_TypeAdapter() {
+internal class C_TypeAdapter_Nullable(
+    private val dstType: R_Type,
+    private val innerAdapter: C_TypeAdapter,
+): C_TypeAdapter() {
     override fun adaptExpr(ctx: C_ExprContext, expr: V_Expr): V_Expr {
         return V_TypeAdapterExpr(ctx, dstType, expr, this)
     }
@@ -144,7 +147,7 @@ class C_TypeAdapter_Nullable(private val dstType: R_Type, private val innerAdapt
     }
 }
 
-object C_Types {
+internal object C_Types {
     fun match(dstType: R_Type, srcType: R_Type, errPos: S_Pos, errSupplier: C_CodeMsgSupplier) {
         val err = match0(dstType, srcType, errPos, errSupplier)
         if (err != null) {

@@ -6,8 +6,8 @@ package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.lib.type.Lib_BigIntegerMath
 import net.postchain.rell.base.testutils.BaseRellTest
-import kotlin.test.Test
 import java.math.BigInteger
+import kotlin.test.Test
 
 class LibBigIntegerTest: BaseRellTest() {
     @Test fun testConstants() {

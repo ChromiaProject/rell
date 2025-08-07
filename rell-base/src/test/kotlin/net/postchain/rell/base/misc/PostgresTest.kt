@@ -6,14 +6,10 @@ package net.postchain.rell.base.misc
 
 import mu.KLogging
 import net.postchain.rell.base.testutils.SqlTestUtils
-import kotlin.test.Test
 import org.postgresql.util.PSQLException
 import java.math.BigDecimal
 import java.math.BigInteger
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 /**
  * Tests for problems with Postgres driver 42.5.1,

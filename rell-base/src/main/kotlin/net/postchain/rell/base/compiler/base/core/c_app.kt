@@ -32,7 +32,7 @@ private object C_InternalAppUtils {
     }
 }
 
-class C_AppContext(
+internal class C_AppContext(
     val msgCtx: C_MessageContext,
     val symCtxProvider: C_SymbolContextProvider,
     val executor: C_CompilerExecutor,
@@ -44,7 +44,7 @@ class C_AppContext(
     val globalCtx = msgCtx.globalCtx
 
     val appUid = C_GlobalContext.nextAppUid()
-    private val containerUidGen = C_UidGen { id, name -> R_ContainerUid(id, name, appUid) }
+    private val containerUidGen = C_UidGen { id, _ -> R_ContainerUid(id, appUid) }
 
     private val defsBuilder = C_AppDefsBuilder(executor)
     val defsAdder: C_AppDefsAdder = defsBuilder
@@ -103,7 +103,7 @@ class C_AppContext(
         }
     }
 
-    fun nextContainerUid(name: String) = containerUidGen.next(name)
+    fun nextContainerUid() = containerUidGen.next("")
 
     fun nextAtExprId() = C_InternalAppUtils.nextAtExprId()
     fun nextAtEntityId(exprId: R_AtExprId) = C_InternalAppUtils.nextAtEntityId(exprId)
@@ -189,9 +189,9 @@ class C_AppContext(
 
         val oldSqlDefs = oldReplState.sqlDefs
         val sqlDefs = R_AppSqlDefs(
-                entities = oldSqlDefs.entities + appDefs.entities.map { it.entity },
-                objects = oldSqlDefs.objects + appDefs.objects,
-                topologicalEntities = oldSqlDefs.topologicalEntities + topologicalEntities,
+            entities = oldSqlDefs.entities + appDefs.entities.map { it.entity },
+            objects = oldSqlDefs.objects + appDefs.objects,
+            topologicalEntities = oldSqlDefs.topologicalEntities + topologicalEntities,
         )
 
         val rFnExtTable = functionExtTableLazy.toR()

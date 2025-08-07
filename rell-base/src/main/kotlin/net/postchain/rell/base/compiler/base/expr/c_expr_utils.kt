@@ -22,7 +22,7 @@ import net.postchain.rell.base.runtime.Rt_CommonError
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.utils.*
 
-object C_ExprUtils {
+internal object C_ExprUtils {
     val ERROR_R_EXPR = errorRExpr()
     val ERROR_DB_EXPR = errorDbExpr()
     val ERROR_STATEMENT = R_ExprStatement(ERROR_R_EXPR)
@@ -39,7 +39,7 @@ object C_ExprUtils {
 
     fun makeDbBinaryExpr(type: R_Type, rOp: R_BinaryOp, dbOp: Db_BinaryOp, left: Db_Expr, right: Db_Expr): Db_Expr {
         return if (left is Db_InterpretedExpr && right is Db_InterpretedExpr) {
-            val rExpr = R_BinaryExpr(type, rOp, left.expr, right.expr)
+            val rExpr = R_BinaryExpr(type, rOp, left.expr, right.expr, errPos = null)
             Db_InterpretedExpr(rExpr)
         } else {
             Db_BinaryExpr(type, dbOp, left, right)
@@ -69,8 +69,7 @@ object C_ExprUtils {
         val rCallTarget: R_FunctionCallTarget = R_FunctionCallTarget_SysGlobalFunction(fn, nameMsg)
         val filePos = pos.toFilePos()
         val rCall: R_FunctionCall = R_FullFunctionCall(type, rCallTarget, filePos, args, args.indices.toImmList())
-        val rCallExpr: R_Expr = R_FunctionCallExpr(type, null, rCall, false)
-        return R_StackTraceExpr(rCallExpr, filePos)
+        return R_FunctionCallExpr(type, null, rCall, false)
     }
 
     fun createSysGlobalPropExpr(

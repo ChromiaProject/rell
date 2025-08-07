@@ -70,7 +70,7 @@ class R_AtWhatFieldFlags(val omit: Boolean, val sort: R_AtWhatSort?, val group: 
     }
 }
 
-class R_AtExprExtras(private val limit: R_Expr?, private val offset: R_Expr?) {
+internal class R_AtExprExtras(private val limit: R_Expr?, private val offset: R_Expr?) {
     fun evaluate(frame: Rt_CallFrame): Rt_AtExprExtras {
         val limitVal = evalLimitOffset(frame, limit, "limit")
         val offsetVal = if (limitVal != null && limitVal <= 0L) null else evalLimitOffset(frame, offset, "offset")
@@ -101,16 +101,16 @@ class Rt_AtExprExtras(val limit: Long?, val offset: Long?) {
     }
 }
 
-class R_DbAtExprInternals(
+internal class R_DbAtExprInternals(
     val block: R_FrameBlock,
     val rowDecoder: R_AtExprRowDecoder,
 )
 
-abstract class R_AtExpr(
+internal abstract class R_AtExpr(
     type: R_Type,
     val cardinality: R_AtCardinality,
     protected val extras: R_AtExprExtras,
-): R_Expr(type) {
+): R_BaseExpr(type) {
     protected fun evalResult(list: MutableList<Rt_Value>): Rt_Value {
         return if (cardinality.many) {
             Rt_ListValue(type, list)
@@ -122,22 +122,29 @@ abstract class R_AtExpr(
     }
 
     companion object {
-        fun checkCount(cardinality: R_AtCardinality, count: Int, itemMsg: String) {
+        fun checkCount(
+            frame: Rt_CallFrame,
+            errPos: R_ErrorPos,
+            cardinality: R_AtCardinality,
+            count: Int,
+            itemMsg: String,
+        ) {
             if (!cardinality.matches(count)) {
                 val code = "at:wrong_count:$count"
                 val msg = if (count == 0) "No $itemMsg found" else "Multiple $itemMsg found: $count"
-                throw Rt_Exception.common(code, msg)
+                frame.error(errPos, code, msg)
             }
         }
     }
 }
 
-class R_DbAtExpr(
+internal class R_DbAtExpr(
     type: R_Type,
-    val base: Db_AtExprBase,
+    private val base: Db_AtExprBase,
     cardinality: R_AtCardinality,
     extras: R_AtExprExtras,
     private val internals: R_DbAtExprInternals,
+    private val errPos: R_ErrorPos,
 ): R_AtExpr(type, cardinality, extras) {
     override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
         val extraVals = extras.evaluate(frame)
@@ -148,7 +155,7 @@ class R_DbAtExpr(
             val redBase = redFrom.toRedBase(frame)
             redBase.execute(frame, extraVals)
         }
-        checkCount(cardinality, records.count(), "records")
+        checkCount(frame, errPos, cardinality, records.count(), "records")
 
         val values = MutableList(records.size) { internals.rowDecoder.decode(records[it]) }
         return evalResult(values)

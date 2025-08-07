@@ -10,8 +10,8 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.toImmList
-import kotlin.test.Test
 import java.math.BigInteger
+import kotlin.test.Test
 
 class DecimalTest: BaseRellTest() {
     @Test fun testType() {

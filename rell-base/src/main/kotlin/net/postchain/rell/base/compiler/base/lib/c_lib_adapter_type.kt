@@ -22,7 +22,7 @@ import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
-object C_LibTypeAdapter {
+internal object C_LibTypeAdapter {
     fun makeConstructor(lType: L_Type, constructors: C_LibTypeConstructors): C_GlobalFunction? {
         return C_LibTypeAdapterInternal.makeConstructor(lType, constructors)
     }
