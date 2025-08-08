@@ -17,10 +17,10 @@ open class DiagnosticsPublisher(
     private val diagnosticsCache = ConcurrentHashMap<URI, Set<RellIssue>>()
     private val logger = KotlinLogging.logger {}
 
-    open fun publishDiagnostics(uri: URI, issues: List<RellIssue>) {
+    open fun publishDiagnostics(uri: URI, issues: List<RellIssue>, skipCache: Boolean = false) {
         val newIssues = issues.toSet()
 
-        if (shouldSend(uri, newIssues)) {
+        if (shouldSend(uri, newIssues) || skipCache) {
             diagnosticsCache[uri] = newIssues
             sendDiagnosticsToClient(uri, issues)
         }

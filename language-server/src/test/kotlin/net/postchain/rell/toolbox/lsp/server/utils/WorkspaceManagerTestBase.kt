@@ -39,7 +39,7 @@ open class WorkspaceManagerTestBase {
     protected val documentManager = RellDocumentManager()
     protected val diagnosticsManager = RellDiagnosticsManager()
     protected val diagnosticsPublisher = object : DiagnosticsPublisher(null, CompletableFuture.completedFuture(null)) {
-        override fun publishDiagnostics(uri: URI, issues: List<RellIssue>) {
+        override fun publishDiagnostics(uri: URI, issues: List<RellIssue>, skipCache: Boolean) {
             diagnostics[uri] = issues
         }
     }
