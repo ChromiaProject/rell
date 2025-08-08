@@ -193,10 +193,10 @@ class RellIndexingManager(
     fun getResource(fileUri: URI): Resource? =
         getIndexerFor(fileUri).getResource(fileUri)
 
-    fun updateFileContent(fileUri: URI, content: String) {
+    fun updateFileContent(fileUri: URI, content: String, skipCache: Boolean = false) {
         val indexer = getIndexerFor(fileUri)
         indexer.updateFileUriResourceMap(fileUri, content)
-        diagnosticsManager.reportDiagnostics(indexer, listOf(fileUri))
+        diagnosticsManager.reportDiagnostics(indexer, listOf(fileUri), skipCache)
     }
 
     fun handleFileChanges(dirtyFiles: List<URI>, deletedFiles: List<URI>, updateAffectedFiles: Boolean): List<URI> {

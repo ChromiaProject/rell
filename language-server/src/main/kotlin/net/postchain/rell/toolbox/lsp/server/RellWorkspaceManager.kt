@@ -73,7 +73,7 @@ class RellWorkspaceManager(
     fun didOpen(fileUri: URI, version: Int, content: String) {
         if (fileUri.scheme == "file" && File(fileUri).exists()) {
             documentManager.openDocument(fileUri, version, content)
-            indexingManager.updateFileContent(fileUri, content)
+            indexingManager.updateFileContent(fileUri, content, skipCache = true)
         }
     }
 

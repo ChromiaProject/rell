@@ -24,7 +24,7 @@ class RellDiagnosticsManager {
         }
     }
 
-    fun reportDiagnostics(indexer: WorkspaceIndexer, fileUris: List<URI> = listOf()) {
+    fun reportDiagnostics(indexer: WorkspaceIndexer, fileUris: List<URI> = listOf(), skipCache: Boolean = false) {
         if (!::diagnosticsPublisher.isInitialized) {
             logger.error { "Diagnostics publisher not initialized" }
             return
@@ -35,12 +35,12 @@ class RellDiagnosticsManager {
             issues = issues.filter { (uri, _) -> fileUris.contains(uri) }
         }
 
-        publishDiagnostics(issues)
+        publishDiagnostics(issues, skipCache)
     }
 
-    private fun publishDiagnostics(issues: Map<URI, List<RellIssue>>) {
+    private fun publishDiagnostics(issues: Map<URI, List<RellIssue>>, skipCache: Boolean = false) {
         issues.forEach { (uri, issueList) ->
-            diagnosticsPublisher.publishDiagnostics(uri, issueList)
+            diagnosticsPublisher.publishDiagnostics(uri, issueList, skipCache)
         }
     }
 
