@@ -261,6 +261,140 @@ internal class RellInlayHintsTest : WorkspaceManagerTestBase() {
     }
 
     @Test
+    fun `Type inlay hints are provided for foreach variables without explicit types`() {
+        val testDataBuilder = testData(sourceDir) {
+            addFile(
+                testFilePath,
+                """
+                module;
+                
+                function main() {
+                    val numbers: list<integer> = [1, 2, 3, 4, 5];
+                    val texts: list<text> = ["hello", "world"];
+                    
+                    for (num in numbers) {
+                        print(num);
+                    }
+                    
+                    for (text in texts) {
+                        print(text);
+                    }
+                }
+                """.trimIndent()
+            )
+        }
+
+        val config = RellInlayHintsConfig(
+            isReturnTypesEnabled = false,
+            isVariableTypesEnabled = true,
+            isParameterNamesEnabled = false
+        )
+        inlayHintManager.updateConfig(config)
+
+        initializeWorkspace()
+        val testFile = testDataBuilder.sourceFile(testFilePath)
+        workspaceManager.didOpen(testFile.toURI(), 1, testFile.readText())
+
+        val range = Range(Position(6, 0), Position(13, 0))
+        val hints = inlayHintManager.getInlayHints(testFile.toURI(), range)
+
+        val typeHints = hints.filter { it.kind == InlayHintKind.Type }
+        assertThat(typeHints).hasSize(2)
+
+        val integerHint = typeHints.find { it.label.left.contains("integer") }
+        assertThat(integerHint).isNotNull()
+
+        val textHint = typeHints.find { it.label.left.contains("text") }
+        assertThat(textHint).isNotNull()
+    }
+
+    @Test
+    fun `No type hints for foreach variables with explicit types`() {
+        val testDataBuilder = testData(sourceDir) {
+            addFile(
+                testFilePath,
+                """
+                module;
+                
+                function main() {
+                    val numbers: list<integer> = [1, 2, 3, 4, 5];
+                    val texts: list<text> = ["hello", "world"];
+                    
+                    for (num: integer in numbers) {
+                        print(num);
+                    }
+                    
+                    for (text: text in texts) {
+                        print(text);
+                    }
+                }
+                """.trimIndent()
+            )
+        }
+
+        val config = RellInlayHintsConfig(
+            isReturnTypesEnabled = false,
+            isVariableTypesEnabled = true,
+            isParameterNamesEnabled = false
+        )
+        inlayHintManager.updateConfig(config)
+
+        initializeWorkspace()
+        val testFile = testDataBuilder.sourceFile(testFilePath)
+        workspaceManager.didOpen(testFile.toURI(), 1, testFile.readText())
+
+        val range = Range(Position(6, 0), Position(13, 0))
+        val hints = inlayHintManager.getInlayHints(testFile.toURI(), range)
+
+        val typeHints = hints.filter { it.kind == InlayHintKind.Type }
+        assertThat(typeHints).hasSize(0)
+    }
+
+    @Test
+    fun `Type inlay hints are provided for tuple destructuring in foreach without explicit types`() {
+        val testDataBuilder = testData(sourceDir) {
+            addFile(
+                testFilePath,
+                """
+                module;
+                
+                function main() {
+                    val pairs: list<(integer, text)> = [(1, "one"), (2, "two")];
+                    
+                    for ((num, text) in pairs) {
+                        print(num);
+                        print(text);
+                    }
+                }
+                """.trimIndent()
+            )
+        }
+
+        val config = RellInlayHintsConfig(
+            isReturnTypesEnabled = false,
+            isVariableTypesEnabled = true,
+            isParameterNamesEnabled = false
+        )
+        inlayHintManager.updateConfig(config)
+
+        initializeWorkspace()
+        val testFile = testDataBuilder.sourceFile(testFilePath)
+        workspaceManager.didOpen(testFile.toURI(), 1, testFile.readText())
+
+        val range = Range(Position(5, 0), Position(9, 0))
+        val hints = inlayHintManager.getInlayHints(testFile.toURI(), range)
+
+        val typeHints = hints.filter { it.kind == InlayHintKind.Type }
+        assertThat(typeHints).hasSize(2)
+
+        val integerHint = typeHints.find { it.label.left.contains("integer") }
+        assertThat(integerHint).isNotNull()
+
+        val textHint = typeHints.find { it.label.left.contains("text") }
+        assertThat(textHint).isNotNull()
+    }
+
+    @Test
     fun `No hints shown when all settings are disabled`() {
         val testDataBuilder = testData(sourceDir) {
             addFile(

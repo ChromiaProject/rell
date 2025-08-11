@@ -48,6 +48,53 @@ class TypeInferenceVisitor(
         )
     }
 
+    override fun visitRuleX_ForStmt(ctx: RellParser.RuleX_ForStmtContext?) {
+        ctx?.ruleX_VarDeclarator()?.let {
+            when {
+                it.ruleX_SimpleVarDeclarator() != null -> processSimpleVarDeclarator(it)
+                it.ruleX_TupleVarDeclarator() != null -> processTupleVarDeclarator(it)
+            }
+        }
+    }
+
+    private fun processTupleVarDeclarator(tupleDecl: RellParser.RuleX_VarDeclaratorContext) {
+        tupleDecl.ruleX_TupleVarDeclarator()
+            ?.ruleX_CommaSeparated_30()
+            ?.ruleX_CommaSeparated_29()
+            ?.ruleX_VarDeclarator()
+            ?.forEach {
+                when {
+                    it.ruleX_SimpleVarDeclarator() != null -> {
+                        processSimpleVarDeclarator(it)
+                    }
+                    it.ruleX_TupleVarDeclarator() != null -> {
+                        processTupleVarDeclarator(it)
+                    }
+                }
+            }
+    }
+
+    private fun processSimpleVarDeclarator(simpleVarDecl: RellParser.RuleX_VarDeclaratorContext) {
+        simpleVarDecl.ruleX_SimpleVarDeclarator()
+            ?.ruleX_AttrHeader()
+            ?.let { header ->
+                val nameNode = header.ruleX_AnonAttrHeader()?.ruleX_QualifiedNameNode()
+                val typeRef = header.ruleX_NameTypeAttrHeader()
+                val type = nameNode?.let {
+                    resource.getSymbolInfoForInterval(
+                        Interval(it.start.startIndex, it.stop.stopIndex + 1)
+                    )
+                }?.let { extractTypeFromSymbolInfo(it) }
+
+                processDeclaration(
+                    typeRef = typeRef,
+                    name = nameNode,
+                    getType = { type },
+                    getPosition = { getPositionAfterVariableName(simpleVarDecl) }
+                )
+            }
+    }
+
     private fun processDeclaration(
         typeRef: ParserRuleContext?,
         name: ParserRuleContext?,
@@ -82,7 +129,7 @@ class TypeInferenceVisitor(
             Position(nameNode.stop.line - 1, nameNode.stop.charPositionInLine + tokenLen)
         }
 
-    // TODO: do we need to show hints, for simple literal expressions eg: `val x = 1;` ??
+    // FIXME: do we need to show hints, for simple literal expressions eg: `val x = 1;` ??
     private fun getSemanticTypeForVariable(varStmt: RellParser.RuleX_VarStmtContext): String? {
         return getIntervalForPosition(varStmt)?.let { interval ->
             resource.getSymbolInfoForInterval(interval)?.let { symbolInfo ->
