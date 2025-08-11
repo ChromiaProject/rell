@@ -11,7 +11,7 @@ class RellInlayHintsManager(
 ) {
     var inlayHintsConfig = RellInlayHintsConfig()
 
-    // TODO: implement type hints for 'forEach', 'struct(..)', 'create entity(..)' ...
+    // TODO: implement type hints for 'struct(..)', 'create entity(..)' ...
     fun getInlayHints(fileUri: URI, range: Range): List<InlayHint> =
         indexingManager.getResource(fileUri)?.let { resource ->
             inlayHintsProvider.provideInlayHints(resource, range, inlayHintsConfig)
