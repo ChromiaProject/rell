@@ -45,10 +45,10 @@ Other directories:
 
 ### Building the Project
 
-To make a clean build of project distribution without running tests (faster, PSQL is not needed):
+To make a build of project distribution without running tests (faster, PSQL is not needed):
 
 ```shell
-mvn clean install -DskipTests -Pdistro
+mvn install -DskipTests -Pdistro
 ```
 
 ### Running Tests
