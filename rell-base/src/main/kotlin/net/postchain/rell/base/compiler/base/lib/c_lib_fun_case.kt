@@ -812,7 +812,7 @@ private abstract class C_ErrorLibFuncCaseMatch<CallT: V_FunctionCall>(
 
     final override fun compileCall(ctx: C_ExprContext, linkPos: S_Pos, args: V_FunctionCallArgs): CallT {
         val fnName = matchBase.fullNameLazy.value
-        ctx.msgCtx.error(linkPos, errCodeMsg.code.formatSafe(fnName), errCodeMsg.msg.formatSafe(fnName))
+        ctx.msgCtx.error(linkPos, errCodeMsg.code.formatOrOriginal(fnName), errCodeMsg.msg.formatOrOriginal(fnName))
         return compileCall0(ctx, linkPos)
     }
 }

@@ -6,6 +6,7 @@ package net.postchain.rell.base.utils.grammar
 
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.RellVersions
+import net.postchain.rell.base.utils.capitalizeEx
 import net.postchain.rell.base.utils.mapToImmList
 
 fun main() {
@@ -70,9 +71,9 @@ private fun camelCaseToUpper(s: String): String {
     val b = StringBuilder(s.length * 2)
     for (i in s.indices) {
         val c = s[i]
-        if (Character.isUpperCase(c) && i > 0 && Character.isLowerCase(s[i - 1])) b.append('_')
-        if (c == '_' && i > 0 && Character.isUpperCase(s[i - 1])) continue
-        b.append(Character.toUpperCase(c))
+        if (c.isUpperCase() && i > 0 && s[i - 1].isLowerCase()) b.append('_')
+        if (c == '_' && i > 0 && s[i - 1].isUpperCase()) continue
+        b.append(c.uppercaseChar())
     }
     return b.toString()
 }
@@ -85,7 +86,7 @@ sealed class XtextAction {
 
 class XtextAction_Token(private val name: String?): XtextAction() {
     override fun generate(type: String): List<String> {
-        val tail = if (name == null) "" else name.toLowerCase().capitalize()
+        val tail = name?.capitalizeEx().orEmpty()
         println("                Object a = RellcUtils.token$tail(obj);")
         return listOf("a")
     }
@@ -99,7 +100,7 @@ class XtextAction_General(private val attrs: ImmList<XtextAttr>): XtextAction() 
         println("                $fullType node = ($fullType) obj;")
 
         for (attr in attrs) {
-            val getter = "get" + attr.name.toUpperCase()
+            val getter = "get" + attr.name.uppercase()
             val expr = if (attr.many) {
                 "RellcUtils.processList(ctx, node.$getter())"
             } else {

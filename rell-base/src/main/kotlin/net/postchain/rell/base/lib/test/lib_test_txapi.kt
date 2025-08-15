@@ -1293,7 +1293,7 @@ class Rt_TestTxValue(
 
         fun strCode(ops: List<RawTestOpValue>, signers: List<BytesKeyPair>): String {
             val opsList = ops.map { Rt_TestOpValue.strCode(it.name, it.args) }
-            val signersList = signers.map { it.pub.toHex().substring(0, 6).lowercase()}
+            val signersList = signers.map { it.pub.toHex().substring(0, 6).lowercase() }
             val innerStr = (opsList + signersList).joinToString(",")
             return "${R_TestTxType.str()}[$innerStr]"
         }

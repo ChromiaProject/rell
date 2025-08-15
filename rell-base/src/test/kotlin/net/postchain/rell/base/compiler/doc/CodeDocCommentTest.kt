@@ -5,7 +5,6 @@
 package net.postchain.rell.base.compiler.doc
 
 import net.postchain.rell.base.testutils.unwrap
-import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

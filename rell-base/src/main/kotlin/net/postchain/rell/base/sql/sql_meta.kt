@@ -199,8 +199,8 @@ object SqlMeta {
     fun genMetaTablesCreate(sqlCtx: Rt_SqlContext): ImmList<String> {
         val sqls = mutableListOf<String>()
         val mainChainMapping = sqlCtx.mainChainMapping()
-        sqls += String.format(CREATE_TABLE_META_ENTITIES, mainChainMapping.metaEntitiesTable)
-        sqls += String.format(CREATE_TABLE_META_ATTRIBUTES, mainChainMapping.metaAttributesTable)
+        sqls += CREATE_TABLE_META_ENTITIES.formatEx(mainChainMapping.metaEntitiesTable)
+        sqls += CREATE_TABLE_META_ATTRIBUTES.formatEx(mainChainMapping.metaAttributesTable)
         return sqls.toImmList()
     }
 

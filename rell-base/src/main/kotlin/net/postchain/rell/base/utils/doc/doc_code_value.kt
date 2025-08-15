@@ -5,6 +5,7 @@
 package net.postchain.rell.base.utils.doc
 
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
+import net.postchain.rell.base.utils.formatEx
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.math.max
@@ -105,7 +106,7 @@ private class DocValue_Text(private val value: String): DocValue() {
             } else if (c == '\t') {
                 buf.append("\\t")
             } else if (c < '\u0020') {
-                buf.append("\\u${"%04X".format(c.code)}")
+                buf.append("\\u${"%04X".formatEx(c.code)}")
             } else {
                 buf.append(c)
             }
@@ -129,7 +130,7 @@ private class DocValue_ByteArray(private val value: ByteArray): DocValue() {
 
         val buf = StringBuilder()
         for (i in 0 until k) {
-            buf.append("%02X".format(value[i]))
+            buf.append("%02X".formatEx(value[i]))
         }
 
         b.raw(buf.toString())

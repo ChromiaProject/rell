@@ -344,7 +344,7 @@ class EntityTest: BaseRellTest() {
     private fun chkKeyIndexSyntax(body: String, exp: String) {
         for (kw in listOf("key", "index")) {
             val code = "entity data { ${body.replace("KW", kw)} }"
-            val realExp = exp.replace("KW", kw.toUpperCase())
+            val realExp = exp.replace("KW", kw.uppercase())
             chkCompile(code, realExp)
         }
     }
@@ -489,7 +489,7 @@ class EntityTest: BaseRellTest() {
 
     private fun chkEntityKeyIndex0(code: String, exp: String, kw: String) {
         val code2 = code.replace("KW", kw)
-        val exp2 = exp.replace("KW", if (exp.startsWith("ct_err:")) kw.toUpperCase() else kw)
+        val exp2 = exp.replace("KW", if (exp.startsWith("ct_err:")) kw.uppercase() else kw)
         chkEntity(code2, exp2)
     }
 

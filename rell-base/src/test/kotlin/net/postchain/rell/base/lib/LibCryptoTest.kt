@@ -213,7 +213,7 @@ class LibCryptoTest: BaseRellTest() {
             val expected = if (res == "error") {
                 "rt_err:fn:error:crypto.eth_ecrecover:java.lang.IllegalArgumentException"
             } else {
-                "byte_array[${res.substring(2).toLowerCase()}]"
+                "byte_array[${res.substring(2).lowercase()}]"
             }
 
             chk("keccak256(eth_ecrecover(x'$r', x'$s', $recId, x'$h')).sub(12)", expected)

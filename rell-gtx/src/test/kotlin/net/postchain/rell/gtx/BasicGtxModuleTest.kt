@@ -6,6 +6,7 @@ package net.postchain.rell.gtx
 
 import net.postchain.common.BlockchainRid
 import net.postchain.concurrent.util.get
+import net.postchain.crypto.KeyPair
 import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.crypto.devtools.KeyPairHelper
 import net.postchain.devtools.ConfigFileBasedIntegrationTest
@@ -105,7 +106,7 @@ class BasicGtxModuleTest : ConfigFileBasedIntegrationTest() {
         return GtxBuilder(blockchainRid!!, listOf(owner), myCS, PostchainGtvUtils.merkleHashCalculator)
             .addOperation(opName, *opArgs.toList().toTypedArray())
             .finish()
-            .sign(myCS.buildSigMaker(owner, KeyPairHelper.privKey(ownerIdx)))
+            .sign(myCS.buildSigMaker(KeyPair(owner, KeyPairHelper.privKey(ownerIdx))))
             .buildGtx()
             .encode()
     }

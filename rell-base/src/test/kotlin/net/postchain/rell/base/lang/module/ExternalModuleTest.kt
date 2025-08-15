@@ -9,6 +9,7 @@ import net.postchain.rell.base.lib.LibBlockTransactionTest
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
+import net.postchain.rell.base.utils.formatEx
 import kotlin.test.Test
 
 class ExternalModuleTest: BaseRellTest(useSql = true) {
@@ -526,7 +527,7 @@ class ExternalModuleTest: BaseRellTest(useSql = true) {
             b.block(blockIid, iBlock.toLong(), "$blockIid", 1500000000000 + 1000000 * iBlock)
             for (k in 0 until nTxPerBlock) {
                 val txIid = calcTxId(iChain, iTx++)
-                val sTx = "%02d".format(iTx)
+                val sTx = "%02d".formatEx(iTx)
                 b.tx(txIid, blockIid, "$txIid", "DEAF${chainId}0$iBlock$sTx", "BEEF${chainId}0$iBlock$sTx")
             }
         }

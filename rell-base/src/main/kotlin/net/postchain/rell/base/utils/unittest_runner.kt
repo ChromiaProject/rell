@@ -39,7 +39,7 @@ class UnitTestResult(val duration: Duration, val error: Throwable?) {
     companion object {
         fun durationToString(duration: Duration): String {
             val durationMs = duration.toMillis()
-            val durationSecStr = if (durationMs == 0L) "0" else String.format("%.3f", durationMs / 1000.0)
+            val durationSecStr = if (durationMs == 0L) "0" else "%.3f".formatEx(durationMs / 1000.0)
             return "${durationSecStr}s"
         }
     }

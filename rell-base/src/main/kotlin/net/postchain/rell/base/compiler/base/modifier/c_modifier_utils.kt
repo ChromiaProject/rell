@@ -8,6 +8,7 @@ import net.postchain.rell.base.compiler.base.core.C_ComparablePos
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.lib.type.R_TextType
+import net.postchain.rell.base.utils.capitalizeEx
 
 object C_AnnUtils {
     fun checkArgsNone(ctx: C_ModifierContext, name: C_Name, args: List<C_AnnotationArg>): Boolean {
@@ -57,7 +58,7 @@ object C_AnnUtils {
         val codeMsgs = sorted.map { it.key.codeMsg() }
         val listCode = codeMsgs.joinToString(",") { it.code }
         val code = "modifier:bad_combination:$listCode"
-        val msg = "${codeMsgs[0].msg.capitalize()} and ${codeMsgs[1].msg} cannot be used at the same time"
+        val msg = "${codeMsgs[0].msg.capitalizeEx()} and ${codeMsgs[1].msg} cannot be used at the same time"
         msgCtx.error(sorted[1].pos, code, msg)
     }
 }

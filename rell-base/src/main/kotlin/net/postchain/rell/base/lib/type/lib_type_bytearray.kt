@@ -25,7 +25,7 @@ import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.CommonUtils
 import org.bouncycastle.util.Arrays
-import org.jooq.util.postgres.PostgresDataType
+import org.jooq.impl.SQLDataType
 import java.util.*
 
 object Lib_Type_ByteArray {
@@ -296,7 +296,7 @@ object R_ByteArrayType: R_PrimitiveType("byte_array") {
 
     override fun getLibTypeDef() = Lib_Rell.BYTE_ARRAY_TYPE
 
-    private object R_TypeSqlAdapter_ByteArray: R_TypeSqlAdapter_Primitive("byte_array", PostgresDataType.BYTEA) {
+    private object R_TypeSqlAdapter_ByteArray: R_TypeSqlAdapter_Primitive("byte_array", SQLDataType.BLOB) {
         override fun toSqlValue(value: Rt_Value) = value.asByteArray()
 
         override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {

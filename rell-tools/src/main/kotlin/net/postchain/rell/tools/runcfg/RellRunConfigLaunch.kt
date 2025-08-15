@@ -251,7 +251,7 @@ private fun getNodeConfig(rellAppConf: RellPostAppCliConfig, rellAppNode: RellPo
     if (rellAppNode.srcPropsPath != null) {
         val file = File(rellAppNode.srcPropsPath)
         val fullFile = if (file.isAbsolute) file else File(rellAppConf.configDir, rellAppNode.srcPropsPath)
-        return AppConfig.fromPropertiesFile(fullFile.absolutePath)
+        return AppConfig.fromPropertiesFile(fullFile)
     }
 
     val text = rellAppNode.srcPropsText!!

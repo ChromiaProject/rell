@@ -428,8 +428,8 @@ private fun parseExtraOption(s: String): ExtraOption {
         "AtAttrShadowing" -> {
             require(params.size == 1)
             val p = params[0]
-            require(p == p.toLowerCase())
-            val v = C_AtAttrShadowing.valueOf(p.toUpperCase())
+            require(p == p.lowercase())
+            val v = C_AtAttrShadowing.valueOf(p.uppercase())
             ExtraOption_AtAttrShadowing(v)
         }
         "HiddenLib" -> {

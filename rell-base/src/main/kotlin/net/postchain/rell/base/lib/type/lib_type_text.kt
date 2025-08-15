@@ -22,7 +22,8 @@ import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.RellVersions
-import org.jooq.util.postgres.PostgresDataType
+import net.postchain.rell.base.utils.formatEx
+import org.jooq.impl.SQLDataType
 import java.nio.ByteBuffer
 import java.util.*
 import java.util.regex.Matcher
@@ -109,7 +110,7 @@ object Lib_Type_Text {
                 comment("Returns the text obtained by converting all alphabetic characters in this text to upper case.")
                 body { text ->
                     val s = text.asString()
-                    Rt_TextValue.get(s.toUpperCase())
+                    Rt_TextValue.get(s.uppercase())
                 }
             }
 
@@ -119,7 +120,7 @@ object Lib_Type_Text {
                 comment("Returns the text obtained by converting all alphabetic characters in this text to lower case.")
                 body { text ->
                     val s = text.asString()
-                    Rt_TextValue.get(s.toLowerCase())
+                    Rt_TextValue.get(s.lowercase())
                 }
             }
 
@@ -241,8 +242,8 @@ object Lib_Type_Text {
                     val s = args[0].asString()
                     val anys = args.drop(1).map { it.toFormatArg() }.toTypedArray()
                     val r = try {
-                        s.format(Locale.US, *anys)
-                    } catch (e: IllegalFormatException) {
+                        s.formatEx(*anys)
+                    } catch (_: IllegalFormatException) {
                         s
                     }
                     Rt_TextValue.get(r)
@@ -479,7 +480,7 @@ object Lib_Type_Text {
                         )
                     }
                     val c = s[i.toInt()]
-                    Rt_IntValue.get(c.toLong())
+                    Rt_IntValue.get(c.code.toLong())
                 }
             }
 
@@ -661,7 +662,7 @@ object Lib_Type_Text {
         val pattern = b.asString()
         val matcher = try {
             Pattern.compile(pattern).matcher(string)
-        } catch (e: PatternSyntaxException) {
+        } catch (_: PatternSyntaxException) {
             throw Rt_Exception.common("fn:text.$fnSimpleName:bad_regex", "Invalid regular expression: $pattern")
         }
         rCode(matcher)
@@ -680,7 +681,7 @@ object R_TextType: R_PrimitiveType("text") {
 
     override fun getLibTypeDef() = Lib_Rell.TEXT_TYPE
 
-    private object R_TypeSqlAdapter_Text: R_TypeSqlAdapter_Primitive("text", PostgresDataType.TEXT) {
+    private object R_TypeSqlAdapter_Text: R_TypeSqlAdapter_Primitive("text", SQLDataType.CLOB) {
         override fun toSqlValue(value: Rt_Value) = value.asString()
 
         override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
@@ -767,7 +768,7 @@ class Rt_TextValue private constructor(val value: String): Rt_Value() {
                     buf.append(c)
                 } else {
                     buf.append("\\u")
-                    buf.append(String.format("%04x", c.toInt()))
+                    buf.append("%04x".formatEx(c.code))
                 }
             }
 
@@ -777,7 +778,7 @@ class Rt_TextValue private constructor(val value: String): Rt_Value() {
 }
 
 private object GtvRtConversion_Text: GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvString(rt.asString())
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {

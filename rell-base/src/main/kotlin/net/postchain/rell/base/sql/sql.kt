@@ -115,40 +115,40 @@ abstract class AbstractSqlManager: SqlManager {
         private val valid: MutableBoolean,
     ): SqlExecutor(), Closeable {
         override fun <T> connection(code: (Connection) -> T): T {
-            check(valid.value)
+            check(valid.get())
             return sqlExec.connection(code)
         }
 
         override fun hasRealConnection() = sqlExec.hasRealConnection()
 
         override fun execute(sql: String) {
-            check(valid.value)
+            check(valid.get())
             sqlExec.execute(sql)
         }
 
         override fun execute(sql: String, preparator: SqlPreparator) {
-            check(valid.value)
+            check(valid.get())
             sqlExec.execute(sql, preparator)
         }
 
         override fun executeUpdate(sql: String, preparator: SqlPreparator): Int {
-            check(valid.value)
+            check(valid.get())
             return sqlExec.executeUpdate(sql, preparator)
         }
 
         override fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit) {
-            check(valid.value)
+            check(valid.get())
             sqlExec.executeQuery(sql, preparator, consumer)
         }
 
         override fun withAttributes(attributes: Attributes): SqlExecutor {
-            check(valid.value)
+            check(valid.get())
             val sqlExec2 = sqlExec.withAttributes(attributes)
             return if (sqlExec2 === sqlExec) this else SingleUseSqlExecutor(sqlExec2, valid)
         }
 
         override fun close() {
-            check(valid.value)
+            check(valid.get())
             valid.setFalse()
         }
     }
@@ -480,7 +480,7 @@ class InterceptingSqlExecutor(
             ref.value = One(res)
             null
         }
-        return ref.value!!.value
+        return ref.get()!!.value
     }
 
     override fun execute(sql: String) {
@@ -510,7 +510,7 @@ class InterceptingSqlExecutor(
                 rowCount.increment()
                 consumer(row)
             }
-            rowCount.value
+            rowCount.get().toInt()
         }
     }
 

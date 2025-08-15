@@ -6,6 +6,7 @@ package net.postchain.rell.base.utils.grammar
 
 import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.ParserReference
+import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.parser.Parser
 import net.postchain.rell.base.compiler.parser.LegacyCombinator
 import net.postchain.rell.base.compiler.parser.RellToken
@@ -54,6 +55,7 @@ object GrammarUtils {
 
     fun andParsers(p: Any): List<Any> {
         return if (p is AndCombinator<*>) {
+            @Suppress("DEPRECATION") // more convenient than use type-safe lists
             p.consumers.flatMap { andParsers(it) }
         } else {
             listOf(p)
@@ -136,21 +138,23 @@ object GrammarUtils {
         return parsers.mapValuesToImmMap { replacer.replace(it.value) }
     }
 
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION") // consumers preserve order
     private fun transformInnerParsers(parser: Parser<*>, fn: (Parser<*>) -> Parser<*>): Parser<*> {
         return when (parser) {
             is AndCombinator<*> -> {
-                val consumers = parser.consumersImpl.map { sub ->
+                val consumers = parser.consumers.map { sub ->
                     when (sub) {
                         is Parser<*> -> fn(sub)
                         is SkipParser -> {
                             val skipSub = fn(sub.innerParser)
                             if (skipSub == sub.innerParser) sub else SkipParser(skipSub)
                         }
-                        else -> TODO(sub.javaClass.simpleName)
+                        else -> throw UnsupportedOperationException(sub.javaClass.simpleName)
                     }
                 }
-                if (consumers == parser.consumersImpl) parser else AndCombinator(consumers, parser.transform)
+
+                // Usage of the internal constructors can be imitated but is too verbose
+                if (consumers == parser.consumers) parser else AndCombinator(consumers, parser.transform)
             }
             is OrCombinator<*> -> {
                 val innerParsers = parser.parsers.map { fn(it) }
@@ -228,19 +232,16 @@ object GrammarUtils {
             return res
         }
 
-        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         private fun processReference(parser: ParserReference<*>): Parser<*> {
             val target = parser.parser
-            val ref = refs.computeIfAbsent(target) {
+            val ref = refs.getOrPut(target) {
                 newRefs.add(target)
                 ParserRef()
             }
-            return ParserReference(ref.getter)
+            return parser { ref.get() }
         }
 
         private class ParserRef {
-            val getter: () -> Parser<*> = this::get
-
             private var target: Parser<*>? = null
 
             fun get(): Parser<*> = target!!

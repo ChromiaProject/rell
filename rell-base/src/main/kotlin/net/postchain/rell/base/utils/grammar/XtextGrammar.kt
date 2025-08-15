@@ -217,7 +217,7 @@ private object XtextNontermGen {
     }
 
     private fun createTokenType(name: String): String {
-        val tail = if (name !in specialTokens) "" else name.toLowerCaseEx().capitalizeEx()
+        val tail = if (name !in specialTokens) "" else name.lowercase().capitalizeEx()
         val type = nontermNameToXtext("token$tail")
         if (type !in actions) {
             val token = if (name in specialTokens) name else null

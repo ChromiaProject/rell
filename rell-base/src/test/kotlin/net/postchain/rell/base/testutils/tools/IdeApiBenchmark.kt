@@ -8,6 +8,7 @@ import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.formatEx
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCompilationResult
 import net.postchain.rell.base.utils.immListOf
@@ -49,7 +50,7 @@ fun main() {
 
 fun durationToStr(duration: Duration): String {
     val durationMs = duration.toMillis()
-    val durationSecStr = if (durationMs == 0L) "0" else String.format("%.3f", durationMs / 1000.0)
+    val durationSecStr = if (durationMs == 0L) "0" else "%.3f".formatEx(durationMs / 1000.0)
     return "${durationSecStr}s"
 }
 

@@ -11,7 +11,6 @@ import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.plus
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.gtx.testutils.BaseGtxTest
-import org.apache.commons.lang3.StringUtils
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -267,7 +266,7 @@ class GtxConfigTest: BaseGtxTest() {
             if (res == "42") "OK" else "OK:$res"
         } catch (e: UserMistake) {
             //e.printStackTrace()
-            val msg = StringUtils.removeStart(e.message ?: "", "Module initialization failed: ")
+            val msg = e.message.orEmpty().removePrefix("Module initialization failed: ")
             "ERR:$msg"
         }
     }

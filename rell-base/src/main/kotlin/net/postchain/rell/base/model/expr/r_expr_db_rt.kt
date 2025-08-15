@@ -32,7 +32,7 @@ private class SqlGenAliasAllocator {
     private var aliasCtr = 0
 
     fun nextAlias(entity: R_EntityDefinition, exprId: R_AtExprId): SqlTableAlias {
-        val aliasStr = String.format("A%02d", aliasCtr++)
+        val aliasStr = "A%02d".formatEx(aliasCtr++)
         return SqlTableAlias(entity, exprId, aliasStr)
     }
 }

@@ -185,13 +185,13 @@ private object SqlChecker_SortDesc: SelectSqlChecker<Int>() {
 
 private object SqlChecker_UpperCase: SelectSqlChecker<String>() {
     override val sql = "SELECT UPPER(s) FROM chars ORDER BY code;"
-    override fun expectedList(ctx: SqlCheckerCtx) = ctx.cs.map { it.plainString.toUpperCaseEx() }
+    override fun expectedList(ctx: SqlCheckerCtx) = ctx.cs.map { it.plainString.uppercase() }
     override fun rowToValue(row: ResultSetRow) = row.getString(1)!!
 }
 
 private object SqlChecker_LowerCase: SelectSqlChecker<String>() {
     override val sql = "SELECT LOWER(s) FROM chars ORDER BY code;"
-    override fun expectedList(ctx: SqlCheckerCtx) = ctx.cs.map { it.plainString.toLowerCaseEx() }
+    override fun expectedList(ctx: SqlCheckerCtx) = ctx.cs.map { it.plainString.lowercase() }
     override fun rowToValue(row: ResultSetRow) = row.getString(1)!!
 }
 

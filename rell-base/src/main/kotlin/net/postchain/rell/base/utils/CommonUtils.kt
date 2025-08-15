@@ -12,7 +12,7 @@ import kotlin.math.min
 object CommonUtils {
     val IS_UNIT_TEST: Boolean = Thread.currentThread().stackTrace.any { it.className.startsWith("org.junit.") }
 
-    fun bytesToHex(bytes: ByteArray): String = DatatypeConverter.printHexBinary(bytes).toLowerCase()
+    fun bytesToHex(bytes: ByteArray): String = DatatypeConverter.printHexBinary(bytes).lowercase()
     fun hexToBytes(hex: String): ByteArray = DatatypeConverter.parseHexBinary(hex)
 
     fun <T> split(lst: MutableList<T>, partSize: Int): List<MutableList<T>> {

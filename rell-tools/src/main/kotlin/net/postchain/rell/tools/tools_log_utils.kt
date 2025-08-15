@@ -50,6 +50,7 @@ object RellToolsLogUtils {
      * Suppress famous Java 9+ warning about illegal reflective access
      * ("WARNING: An illegal reflective access operation has occurred").
      */
+    @Suppress("DEPRECATION")
     private fun disableIllegalAccessWarning() {
         try {
             val unsafeField = sun.misc.Unsafe::class.java.getDeclaredField("theUnsafe")

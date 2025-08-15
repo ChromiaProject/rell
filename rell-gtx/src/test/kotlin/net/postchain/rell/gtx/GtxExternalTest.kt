@@ -11,7 +11,7 @@ import net.postchain.rell.gtx.testutils.BaseGtxTest
 import kotlin.test.Test
 
 class GtxExternalTest: BaseGtxTest() {
-    private val depBcRid = RellTestUtils.strToRidHex("beefdead").toLowerCase()
+    private val depBcRid = RellTestUtils.strToRidHex("beefdead").lowercase()
 
     @Test fun testUnknownChain() {
         def("@external('foo') namespace {}")

@@ -7,6 +7,7 @@ package net.postchain.rell.gtx.testutils
 import net.postchain.common.BlockchainRid
 import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.utils.PostchainGtvUtils
+import net.postchain.rell.base.utils.formatEx
 import net.postchain.rell.module.RellPostchainModuleFactory
 
 fun main() {
@@ -15,7 +16,7 @@ fun main() {
             listOf(
                 "val s$i = '$i';",
                 "val i$i = $i;",
-                "val b$i = x'${String.format("%08x", i)}';",
+                "val b$i = x'${"%08x".formatEx(i)}';",
             )
         }
         .joinToString("\n")

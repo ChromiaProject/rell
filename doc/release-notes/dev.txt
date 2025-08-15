@@ -141,3 +141,19 @@ Unix-style line endings (\n). This ensures consistent behavior across different 
 
 This change affects the GTV compilation process performed by RellApiCompile.compileGtv(...) and ensures that the
 compiled GTV output contains normalized source code regardless of the original file's line-ending format.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+6. Library: text.upper_case() and text.lower_case() now locale-independent
+
+The two case-conversion functions no longer consult the locale of the host machine.
+Previously their result depended on the environment in which the program was executed – for instance, on a machine
+configured for Turkish, 'i'.upper_case() produced 'İ', while on most other locales it produced 'I'.
+Such differences violate the determinism guaranteed by the language.
+
+The locale-dependent behavior could actually surface only on a handful of locales – notably Turkish (tr_TR)
+and Azerbaijani (az_AZ).  Moreover, the vast majority of deployments run inside Docker containers that default to en_US,
+so encountering the bug in production was extremely unlikely.
+
+Both functions now use a language-neutral, universal mapping, so they return the same value on every host. No existing
+Rell code is expected to depend on the previous locale-dependent quirk, so the change should be entirely transparent to
+users while removing a potential source of subtle, hard-to-reproduce bugs.

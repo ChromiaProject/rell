@@ -11,28 +11,19 @@ import java.util.*
 
 fun String.hexStringToBytes(): Bytes = this.hexStringToByteArray().toBytes()
 
-fun String.formatSafe(vararg args: Any?): String {
+fun String.formatEx(vararg args: Any?): String = format(Locale.ROOT, *args)
+
+fun String.formatOrOriginal(vararg args: Any?): String {
     return try {
-        format(Locale.US, *args)
-    } catch (e: IllegalFormatException) {
+        formatEx(*args)
+    } catch (_: IllegalFormatException) {
         this
     }
 }
 
-/** Non-deprecated version of [kotlin.String.capitalize]. */
+/** Non-deprecated version of [capitalize]. */
 fun String.capitalizeEx(): String {
-    val c = first()
-    return if (!c.isLowerCase()) this else replaceFirstChar { it.titlecase(Locale.US) }
-}
-
-/** Non-deprecated version of [kotlin.String.toUpperCase]. */
-fun String.toUpperCaseEx(): String {
-    return uppercase(Locale.getDefault())
-}
-
-/** Non-deprecated version of [kotlin.String.toLowerCase]. */
-fun String.toLowerCaseEx(): String {
-    return lowercase(Locale.getDefault())
+    return replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 }
 
 fun String.nounWithArticle(): String {
@@ -74,8 +65,8 @@ class LazyPosString(val pos: S_Pos, val lazyStr: LazyString) {
 }
 
 class MsgString(s: String) {
-    val normal = s.toLowerCaseEx()
-    val upper = s.toUpperCaseEx()
+    val normal = s.lowercase()
+    val upper = s.uppercase()
     val capital = s.capitalizeEx()
 
     override fun equals(other: Any?) = other is MsgString && normal == other.normal

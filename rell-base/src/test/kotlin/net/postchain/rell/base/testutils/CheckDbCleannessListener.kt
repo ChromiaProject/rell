@@ -5,7 +5,7 @@ import org.junit.platform.launcher.LauncherSessionListener
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal class CheckDbCleannessListener : LauncherSessionListener {
-    override fun launcherSessionClosed(session: LauncherSession?) {
+    override fun launcherSessionClosed(session: LauncherSession) {
         if (!enabled.get()) return
 
         SqlTestUtils.createSimpleConnection().use { con ->
