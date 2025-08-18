@@ -1,6 +1,7 @@
 package net.postchain.rell.toolbox.formatter
 
 import net.postchain.rell.toolbox.common.TextReplacement
+import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
 import net.postchain.rell.toolbox.parser.RellCommonTokenStream
 import net.postchain.rell.toolbox.parser.RellCustomTokenChannels
 import net.postchain.rell.toolbox.parser.RellLexer
@@ -9,7 +10,11 @@ import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.misc.Interval
 import org.antlr.v4.runtime.tree.TerminalNode
 
-class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions: FormatterOptions) :
+class RootFormattableDocument(
+    val formatter: RellFormatter,
+    val tokenAnalyzer: TokenAnalyzer,
+    val formatterOptions: FormatterOptions
+) :
     FormattableDocument {
     private val changes = mutableListOf<Changes>()
 
@@ -90,11 +95,11 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
         val nodeStartToken = interiorNode.start
         val nodeStopToken = interiorNode.stop
 
-        var interiorStartToken = formatter.nextSemanticRegion(nodeStartToken)
-        val interiorStopToken = formatter.previousSemanticRegion(nodeStopToken)
+        var interiorStartToken = tokenAnalyzer.nextSemanticRegion(nodeStartToken)
+        val interiorStopToken = tokenAnalyzer.previousSemanticRegion(nodeStopToken)
 
         if (interiorStopToken == nodeStartToken && interiorStartToken == nodeStopToken) {
-            interiorStartToken = formatter.previousHiddenRegion(nodeStartToken)
+            interiorStartToken = tokenAnalyzer.previousHiddenRegion(nodeStartToken)
         }
 
         if (interiorStartToken != null && interiorStopToken != null) {
@@ -114,8 +119,8 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
         val nodeStartToken = startNode.start
         val nodeStopToken = endNode.stop
 
-        val interiorStartToken = formatter.nextSemanticRegion(nodeStartToken)
-        val interiorStopToken = formatter.previousSemanticRegion(nodeStopToken)
+        val interiorStartToken = tokenAnalyzer.nextSemanticRegion(nodeStartToken)
+        val interiorStopToken = tokenAnalyzer.previousSemanticRegion(nodeStopToken)
 
         if (interiorStartToken != null && interiorStopToken != null) {
             changes.add(
@@ -134,7 +139,7 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
         val nodeStartToken = startNode.start
         val nodeStopToken = endNode.stop
 
-        val interiorStartToken = formatter.nextSemanticRegion(nodeStartToken)
+        val interiorStartToken = tokenAnalyzer.nextSemanticRegion(nodeStartToken)
         if (interiorStartToken != null) {
             changes.add(
                 Changes(
@@ -204,7 +209,7 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
     }
 
     private fun hiddenRegionChangeAppendModifier(change: Changes, appendAfterToken: Token) {
-        val nextHiddenRegion = formatter.nextHiddenRegion(appendAfterToken)
+        val nextHiddenRegion = tokenAnalyzer.nextHiddenRegion(appendAfterToken)
 
         if (nextHiddenRegion != null && startsAfter(
                 appendAfterToken,
@@ -218,7 +223,7 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
     }
 
     private fun hiddenRegionChangePrependModifier(change: Changes, prependAfterToken: Token) {
-        val prevHiddenRegion = formatter.previousHiddenRegion(prependAfterToken)
+        val prevHiddenRegion = tokenAnalyzer.previousHiddenRegion(prependAfterToken)
 
         if (prevHiddenRegion != null && startsBefore(
                 prependAfterToken,
@@ -232,7 +237,7 @@ class RootFormattableDocument(val formatter: RellFormatter, val formatterOptions
     }
 
     private fun commentRegionChangePrepend(token: Token) {
-        val prevCommentRegion = formatter.previousCommentRegion(token)
+        val prevCommentRegion = tokenAnalyzer.previousCommentRegion(token)
         var newLines = 1
         if (prevCommentRegion != null) {
             val diffLines = token.line - prevCommentRegion.line
