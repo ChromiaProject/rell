@@ -5,7 +5,6 @@ import net.postchain.rell.toolbox.indexer.IndexingState
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.indexer.calculateChecksum
-import net.postchain.rell.toolbox.indexer.findRellFilesInWorkspace
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
@@ -13,7 +12,6 @@ import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import org.eclipse.lsp4j.WorkspaceFolder
-import java.io.File
 import java.net.URI
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -27,7 +25,8 @@ class RellIndexingManager(
     private val formattingStyleLinter: FormattingStyleLinter,
     private val formatterOptionsResolver: RellFormatterOptionsResolver,
     private val linterOptionsResolver: RellLinterOptionsResolver
-) {
+) : IndexerRegistry {
+    private val fileChangeHandler: FileChangeHandler = FileChangeHandler(diagnosticsManager, this)
     var indexCachingEnabled: Boolean = false
     val indexers: MutableMap<URI, WorkspaceIndexer> = ConcurrentHashMap()
     internal val orphanIndexers: MutableMap<URI, WorkspaceIndexer> = ConcurrentHashMap()
@@ -102,11 +101,11 @@ class RellIndexingManager(
         return Pair(linterOptions, formatterOptions)
     }
 
-    private fun doIndex(
+    override fun doIndex(
         resolvedSourceDirUri: URI,
         workspaceFolderUri: URI,
-        excludeFolders: Set<Path> = emptySet(),
-        skipCache: Boolean = false
+        excludeFolders: Set<Path>,
+        skipCache: Boolean,
     ): WorkspaceIndexer {
         val cachedIndexer = if (indexCachingEnabled && !skipCache) {
             indexCachingService.getWorkspaceIndexer(resolvedSourceDirUri)
@@ -159,16 +158,17 @@ class RellIndexingManager(
         }
     }
 
-    fun getIndexerFor(fileUri: URI): WorkspaceIndexer = getIndexerForOrNull(fileUri) ?: doSingleFileIndex(fileUri)
+    override fun getIndexerFor(fileUri: URI): WorkspaceIndexer =
+        getIndexerForOrNull(fileUri) ?: doSingleFileIndex(fileUri)
 
-    private fun getIndexerForFolderOrNull(fileUri: URI): WorkspaceIndexer? {
+    override fun getIndexerForFolderOrNull(fileUri: URI): WorkspaceIndexer? {
         return indexers.values
             .filter { fileUri.startsWith(it.projectRootUri) }
             .maxByOrNull { it.projectRootUri?.path?.length ?: 0 }
             ?: getOrphanIndexer(fileUri)
     }
 
-    fun getIndexerForOrNull(fileUri: URI): WorkspaceIndexer? {
+    override fun getIndexerForOrNull(fileUri: URI): WorkspaceIndexer? {
         for (indexer in indexers.entries) {
             val filePath = fileUri.path.trimEnd('/')
             val indexerPath = indexer.key.path?.trimEnd('/') ?: continue
@@ -190,6 +190,8 @@ class RellIndexingManager(
 
     fun getAllIndexers(): List<WorkspaceIndexer> = indexers.values.toList() + orphanIndexers.values.toList()
 
+    override fun getAllIndexersMap(): MutableMap<URI, WorkspaceIndexer> = indexers
+
     fun getResource(fileUri: URI): Resource? =
         getIndexerFor(fileUri).getResource(fileUri)
 
@@ -200,125 +202,19 @@ class RellIndexingManager(
     }
 
     fun handleFileChanges(dirtyFiles: List<URI>, deletedFiles: List<URI>, updateAffectedFiles: Boolean): List<URI> {
-        val affectedUris = mutableSetOf<URI>()
-
-        handleDeletedFiles(deletedFiles, updateAffectedFiles, affectedUris)
-        handleDirtyFiles(dirtyFiles, updateAffectedFiles, affectedUris)
-
-        affectedUris.removeAll((deletedFiles + dirtyFiles).toSet())
-        updateAffectedFiles(affectedUris)
-
-        val allUris = (dirtyFiles + deletedFiles + affectedUris)
-        reportDiagnostics(allUris)
-        return allUris
-    }
-
-    private fun reportDiagnostics(fileUris: List<URI>) {
-        if (fileUris.isNotEmpty()) {
-            for (indexer in indexers.values) {
-                diagnosticsManager.reportDiagnostics(indexer, fileUris)
-            }
-        }
+        return fileChangeHandler.handleFileChanges(
+            dirtyFiles,
+            deletedFiles,
+            updateAffectedFiles
+        )
     }
 
     fun handleFolderChanges(dirtyFolders: List<URI>, deletedFolders: List<URI>) {
-        if (isFolderRename(dirtyFolders, deletedFolders)) {
-            handleFolderRename(dirtyFolders, deletedFolders)
-        } else {
-            syncFileAndFolderState(dirtyFolders, deletedFolders)
-        }
-    }
-
-    private fun isFolderRename(dirtyFolders: List<URI>, deletedFolders: List<URI>): Boolean {
-        return dirtyFolders.size == 1 && deletedFolders.size == 1
-    }
-
-    private fun handleFolderRename(dirtyFolders: List<URI>, deletedFolders: List<URI>) {
-        val deletedFolderUri = deletedFolders.firstOrNull() ?: return
-        val newFolderUri = dirtyFolders.firstOrNull() ?: return
-
-        getIndexerForFolderOrNull(deletedFolderUri)?.let { indexer ->
-            if (deletedFolderIsIndexerRoot(indexer, deletedFolderUri)) {
-                folderRenameOnIndexerProjectRoot(indexer, newFolderUri)
-            } else {
-                syncFileAndFolderState(dirtyFolders, deletedFolders)
-            }
-        }
-    }
-
-    private fun deletedFolderIsIndexerRoot(indexer: WorkspaceIndexer, deletedFolderUri: URI) =
-        indexer.projectRootUri?.path?.trimEnd('/') == deletedFolderUri.path.trimEnd('/')
-
-    private fun folderRenameOnIndexerProjectRoot(indexer: WorkspaceIndexer, newFolderUri: URI) {
-        val indexRoots = IndexRoot.findIndexRoots(newFolderUri)
-
-        val newIndexers = if (indexRoots.isEmpty()) {
-            listOf(doIndex(WorkspaceDirectoryResolver.findSourceDirURI(newFolderUri), newFolderUri))
-        } else {
-            indexRoots.map { indexRoot ->
-                doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri)
-            }
-        }.associateBy { it.workspaceUri }
-
-        indexers.putAll(newIndexers)
-        indexers.remove(indexer.workspaceUri)
-        cleanUpOrphans(newIndexers)
-    }
-
-    private fun syncFileAndFolderState(dirtyFolders: List<URI>, deletedFolders: List<URI>) {
-        val deletedFiles = mutableListOf<URI>()
-        val dirtyFiles = mutableListOf<URI>()
-
-        deletedFolders.forEach { uri ->
-            getIndexerForOrNull(uri)?.let { indexer ->
-                deletedFiles.addAll(indexer.getFileUrisWithPrefix(uri))
-            }
-        }
-
-        dirtyFolders.forEach { uri ->
-            findRellFilesInWorkspace(File(uri), dirtyFiles)
-        }
-
-        // Need to do two passes of the files to guarantee that imports and modules are resolved correctly
-        dirtyFiles.addAll(dirtyFiles)
-        handleFileChanges(dirtyFiles, deletedFiles, true)
-    }
-
-    private fun handleDeletedFiles(
-        deletedFiles: List<URI>,
-        updateAffectedFiles: Boolean,
-        affectedUris: MutableSet<URI>
-    ) {
-        deletedFiles.forEach { uri ->
-            getIndexerFor(uri).let { indexer ->
-                if (updateAffectedFiles) {
-                    affectedUris.addAll(indexer.findAffectedFiles(uri))
-                }
-                indexer.removeFileUriResourceMap(uri)
-                diagnosticsManager.clearDiagnostics(uri)
-            }
-        }
-    }
-
-    private fun handleDirtyFiles(dirtyFiles: List<URI>, updateAffectedFiles: Boolean, affectedUris: MutableSet<URI>) {
-        dirtyFiles.forEach { uri ->
-            getIndexerFor(uri).let { indexer ->
-                val updatedResource = indexer.updateFileUriResourceMap(uri)
-                if (updateAffectedFiles && updatedResource != null) {
-                    affectedUris.addAll(indexer.findAffectedFiles(uri))
-                }
-            }
-        }
-    }
-
-    private fun updateAffectedFiles(affectedUris: Set<URI>) {
-        affectedUris.forEach { uri ->
-            getIndexerFor(uri).updateFileUriResourceMap(uri)
-        }
+        fileChangeHandler.handleFolderChanges(dirtyFolders, deletedFolders)
     }
 
     // TODO: Clean up depth of nesting
-    private fun cleanUpOrphans(indexers: Map<URI, WorkspaceIndexer>) {
+    override fun cleanUpOrphans(indexers: Map<URI, WorkspaceIndexer>) {
         indexers.values.forEach { indexer ->
             orphanIndexers.forEach { orphanIndexer ->
                 orphanIndexer.value.fileUriResourceMap.keys.forEach { uri ->
