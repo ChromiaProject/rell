@@ -5,6 +5,7 @@ import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import net.postchain.rell.toolbox.lsp.caching.RellIndexSerializer
+import net.postchain.rell.toolbox.lsp.completion.CompletionItemFactory
 import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsPublisher
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
@@ -12,10 +13,12 @@ import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsManager
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
+import net.postchain.rell.toolbox.lsp.server.FileChangeHandler
 import net.postchain.rell.toolbox.lsp.server.NotificationType
 import net.postchain.rell.toolbox.lsp.server.RellDiagnosticsManager
 import net.postchain.rell.toolbox.lsp.server.RellDocumentManager
 import net.postchain.rell.toolbox.lsp.server.RellIndexingManager
+import net.postchain.rell.toolbox.lsp.server.RellRenamingService
 import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
 import net.postchain.rell.toolbox.lsp.symbols.RellCompletionSymbolService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
@@ -36,8 +39,11 @@ open class WorkspaceManagerTestBase {
     protected lateinit var sourceDir: File
     protected val symbolService = RellSymbolService()
     protected val completionSymbolService = RellCompletionSymbolService(RellSymbolService())
+    protected val completionItemFactory = CompletionItemFactory()
     protected val documentManager = RellDocumentManager()
     protected val diagnosticsManager = RellDiagnosticsManager()
+    protected lateinit var fileChangeHandler: FileChangeHandler
+    protected lateinit var renamingService: RellRenamingService
     protected val diagnosticsPublisher = object : DiagnosticsPublisher(null, CompletableFuture.completedFuture(null)) {
         override fun publishDiagnostics(uri: URI, issues: List<RellIssue>, skipCache: Boolean) {
             diagnostics[uri] = issues
@@ -69,17 +75,21 @@ open class WorkspaceManagerTestBase {
             rellLinter,
             formattingStyleLinter,
             RellFormatterOptionsResolver(),
-            RellLinterOptionsResolver(),
+            RellLinterOptionsResolver()
         )
+        fileChangeHandler = FileChangeHandler(diagnosticsManager, indexingManager)
+
+        renamingService = RellRenamingService(symbolService, documentManager, indexingManager)
 
         workspaceManager =
             RellWorkspaceManager(
                 symbolService,
                 referenceService,
-                RellCompletionService(completionSymbolService),
+                RellCompletionService(completionSymbolService, completionItemFactory),
                 documentManager,
                 indexingManager,
                 diagnosticsManager,
+                renamingService
             )
         inlayHintManager = RellInlayHintsManager(
             indexingManager,

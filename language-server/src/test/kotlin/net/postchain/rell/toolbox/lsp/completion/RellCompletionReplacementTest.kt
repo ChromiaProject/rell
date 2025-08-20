@@ -12,7 +12,8 @@ import java.net.URI
 class RellCompletionReplacementTest {
     private val symbolService = RellSymbolService()
     private val completionSymbolService = RellCompletionSymbolService(symbolService)
-    private val completionService = RellCompletionService(completionSymbolService)
+    private val completionItemFactory = CompletionItemFactory()
+    private val completionService = RellCompletionService(completionSymbolService, completionItemFactory)
     private val dummyURI = URI.create("file:/test")
 
     @Test

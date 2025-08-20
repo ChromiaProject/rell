@@ -39,7 +39,8 @@ class RellCompletionServiceTest {
     private val linterOptions = LinterOptions()
     private val symbolService = RellSymbolService()
     private val completionSymbolService = RellCompletionSymbolService(symbolService)
-    private val completionService = RellCompletionService(completionSymbolService)
+    private val completionItemFactory = CompletionItemFactory()
+    private val completionService = RellCompletionService(completionSymbolService, completionItemFactory)
     private val importerFilePath = "importer.rell"
     private val libraryFilePath = "library.rell"
     private val explicitImportFilePath = "explicit_token_importer.rell"
