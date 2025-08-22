@@ -78,6 +78,7 @@ class Rt_StructValue(private val type: R_StructType, private val attributes: Mut
     }
 
     fun set(index: Int, value: Rt_Value) {
+        validateAttribute(type.struct.attributesList[index], value)
         attributes[index] = value
     }
 
@@ -100,11 +101,25 @@ class Rt_StructValue(private val type: R_StructType, private val attributes: Mut
             for (index in values.indices) {
                 require(values[index] !== v0) { index }
             }
-            return Rt_StructValue(type, values)
+            return createValidated(type, values)
         }
     }
 
     companion object {
+        fun createValidated(type: R_StructType, attributes: MutableList<Rt_Value>): Rt_StructValue {
+            for (attr in type.struct.attributesList) {
+                validateAttribute(attr, attributes[attr.index])
+            }
+            return Rt_StructValue(type, attributes)
+        }
+
+        private fun validateAttribute(attr: R_Attribute, value: Rt_Value) {
+            val err = attr.validator?.check(value)
+            if (err != null) {
+                throw Rt_Exception.common(err.code, err.msg)
+            }
+        }
+
         private val STR_RECURSION_DETECTOR = Rt_ValueRecursionDetector()
 
         fun str(self: Rt_Value, type: R_Type, struct: R_Struct, attributes: List<Rt_Value?>, format: StrFormat): String {
@@ -183,7 +198,7 @@ class GtvRtConversion_Struct(private val struct: R_Struct): GtvRtConversion() {
         }
 
         return ctx.rtValue {
-            Rt_StructValue(type, rtAttrs.toMutableList())
+            Rt_StructValue.createValidated(type, rtAttrs.toMutableList())
         }
     }
 
@@ -227,7 +242,7 @@ class GtvRtConversion_Struct(private val struct: R_Struct): GtvRtConversion() {
                 }
 
             return ctx.rtValue {
-                Rt_StructValue(type, rtAttrs.toMutableList())
+                Rt_StructValue.createValidated(type, rtAttrs.toMutableList())
             }
         }
     }

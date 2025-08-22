@@ -240,7 +240,7 @@ internal class Db_AtWhatValue_ToStruct(
             }
 
             val attrValues = dbValues.toMutableList()
-            val resValue = Rt_StructValue(rStruct.type, attrValues)
+            val resValue = Rt_StructValue.createValidated(rStruct.type, attrValues)
             return Rt_AtWhatItem_Value(resValue)
         }
     }

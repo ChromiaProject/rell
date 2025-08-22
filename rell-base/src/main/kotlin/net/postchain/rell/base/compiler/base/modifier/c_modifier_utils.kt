@@ -27,6 +27,19 @@ object C_AnnUtils {
         }
     }
 
+    fun checkArgsRange(
+        ctx: C_ModifierContext,
+        name: C_Name,
+        args: List<C_AnnotationArg>,
+        min: Int,
+        max: Int,
+    ) {
+        if (args.size < min || args.size > max) {
+            ctx.msgCtx.error(name.pos, "ann:$name:arg_count:${args.size}",
+                "Wrong number of arguments (expected between $min and $max arguments (inclusive), got ${args.size})")
+        }
+    }
+
     fun checkArgsOneString(ctx: C_ModifierContext, name: C_Name, args: List<C_AnnotationArg>): String? {
         val arg = checkArgsOne(ctx, name, args)
         arg ?: return null

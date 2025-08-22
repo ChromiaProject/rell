@@ -241,6 +241,6 @@ object Lib_Type_Struct {
         }
 
         val values = structType.struct.attributesList.map { v.get(it.index) }.toMutableList()
-        return Rt_StructValue(resultType, values)
+        return Rt_StructValue.createValidated(resultType, values)
     }
 }

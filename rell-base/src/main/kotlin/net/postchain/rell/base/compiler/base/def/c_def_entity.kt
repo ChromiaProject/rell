@@ -10,7 +10,9 @@ import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.C_EntityAttrRef
 import net.postchain.rell.base.compiler.base.expr.C_ExprHint
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
+import net.postchain.rell.base.compiler.base.modifier.C_SizeConstraint
 import net.postchain.rell.base.compiler.base.utils.*
+import net.postchain.rell.base.compiler.vexpr.V_ConstantValueEvalContext
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
@@ -60,6 +62,7 @@ private class C_EntityAttributeClause(
 
         val mainHeader = mainDef.attrHeader.compile(defCtx, false, ideData)
         val type = mainHeader.type ?: R_CtErrorType
+        val validator = mainDef.sizeConstraint?.compile(defCtx, mainHeader, type)
 
         checkAttrType(mainDef, type)
         processOtherDefs(conflictDefs, otherDefs, type, ideKind, mainHeader.ideInfo)
@@ -69,7 +72,7 @@ private class C_EntityAttributeClause(
         }
 
         val comment = (primaryDefs + secondaryDefs).firstNotNullOfOrNull { it.comment }
-        val exprGetter = processAttrExpr(mainDef.name, mainDef.attrDef.expr, type)
+        val exprGetter = processAttrExpr(mainDef.name, mainDef.attrDef.expr, type, validator)
 
         defCtx.executor.onPass(C_CompilerPass.DOCS) {
             val docExpr = exprGetter?.get()?.vDocExpr
@@ -87,6 +90,7 @@ private class C_EntityAttributeClause(
             ideInfo = mainHeader.ideInfo,
             docSourcePos = mainDef.name.pos.toDocPos(),
             exprGetter = exprGetter?.transform { it.rDefaultValue },
+            validator = validator,
         )
 
         return C_CompiledAttribute(mainDef.attrHeader.pos, rAttr)
@@ -165,7 +169,12 @@ private class C_EntityAttributeClause(
         }
     }
 
-    private fun processAttrExpr(name: C_Name, expr: S_Expr?, type: R_Type?): C_LateGetter<C_DefaultValue>? {
+    private fun processAttrExpr(
+        name: C_Name,
+        expr: S_Expr?,
+        type: R_Type?,
+        validator: R_AttributeValidator? = null,
+    ): C_LateGetter<C_DefaultValue>? {
         if (expr == null) {
             return null
         }
@@ -184,6 +193,13 @@ private class C_EntityAttributeClause(
             val vExpr = adapter.adaptExpr(exprCtx, vExpr0)
             val rExpr = vExpr.toRExpr()
             val rDefaultValue = R_DefaultValue(rExpr, vExpr0.info.hasDbModifications)
+            val rtDefaultValue = vExpr.constantValue(V_ConstantValueEvalContext())
+            if (rtDefaultValue != null) {
+                val err = validator?.check(rtDefaultValue)
+                if (err != null) {
+                    msgCtx.error(expr.startPos, err.code, err.msg)
+                }
+            }
             late.set(C_DefaultValue(rDefaultValue, vExpr0))
         }
 
@@ -239,6 +255,7 @@ private class C_EntityAttributeClause(
         val attrHeader: C_AttrHeaderHandle,
         val primary: Boolean,
         val comment: S_Comment?,
+        val sizeConstraint: C_SizeConstraint?,
     ) {
         val name = attrHeader.name
     }
@@ -276,11 +293,12 @@ class C_EntityContext(
         attrHeader: C_AttrHeaderHandle,
         primary: Boolean,
         comment: S_Comment?,
+        sizeConstraint: C_SizeConstraint? = null,
     ) {
         validateAttr(attrDef, attrHeader)
 
         val clause = attrMap.computeIfAbsent(attrHeader.rName) { C_EntityAttributeClause(defCtx, null, persistent) }
-        clause.addDefinition(C_EntityAttributeClause.AttrDef(attrDef, attrHeader, primary, comment))
+        clause.addDefinition(C_EntityAttributeClause.AttrDef(attrDef, attrHeader, primary, comment, sizeConstraint))
     }
 
     private fun validateAttr(attrDef: S_AttributeDefinition, attrHeader: C_AttrHeaderHandle) {

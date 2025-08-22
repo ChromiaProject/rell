@@ -84,9 +84,18 @@ class S_AttributeClause(
         val mods = C_ModifierValues(C_ModifierTargetType.ATTRIBUTE, name)
         mods.field(C_ModifierFields.DUMMY_ANNOTATION)
         mods.field(C_ModifierFields.MUTABLE)
+        val size = mods.field(C_ModifierFields.SIZE)
+        val minSize = mods.field(C_ModifierFields.MIN_SIZE)
+        val maxSize = mods.field(C_ModifierFields.MAX_SIZE)
         attr.modifiers.compile(ctx.defCtx.mntCtx, mods)
 
-        ctx.addAttribute(attr, attrHeader, true, comment)
+        val sizeConstraint = C_SizeConstraint.checkAndCombine(ctx, attrHeader, size.value(), minSize.value(), maxSize.value())
+
+        if (ctx.defCtx.definitionType != C_DefinitionType.STRUCT && sizeConstraint != null) {
+            C_SizeConstraint.reportNonStruct(ctx.defCtx, attrHeader, sizeConstraint.annStrs)
+        }
+
+        ctx.addAttribute(attr, attrHeader, true, comment, sizeConstraint)
     }
 
     override fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {

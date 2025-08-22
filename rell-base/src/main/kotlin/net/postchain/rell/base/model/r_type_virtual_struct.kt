@@ -54,7 +54,7 @@ class Rt_VirtualStructValue(
 
     override fun toFull0(): Rt_Value {
         val fullAttrValues = attributes.map { toFull(it!!) }.toMutableList()
-        return Rt_StructValue(type.innerType, fullAttrValues)
+        return Rt_StructValue.createValidated(type.innerType, fullAttrValues)
     }
 }
 

@@ -5,8 +5,6 @@
 package net.postchain.rell.base.compiler.base.modifier
 
 import net.postchain.rell.base.compiler.ast.S_KeywordModifierKind
-import net.postchain.rell.base.compiler.base.core.C_DefinitionContext
-import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.core.C_QualifiedNameHandle
 import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
@@ -35,7 +33,6 @@ object C_Annotations {
     const val SORT = "sort"
     const val SORT_DESC = "sort_desc"
     const val TEST = "test"
-    const val DUMMY_ANNOTATION = "dummy_annotation"
 }
 
 internal object C_ModifierFields {
@@ -54,6 +51,10 @@ internal object C_ModifierFields {
     val EXTEND = C_Annotation_Extend.FIELD
     val COMPOUND = C_ModifierField.flagAnnotation("compound")
     val SINGULAR = C_ModifierField.flagAnnotation("singular")
+
+    val SIZE = C_Annotation_Size.FIELD
+    val MIN_SIZE = C_Annotation_MinSize.FIELD
+    val MAX_SIZE = C_Annotation_MaxSize.FIELD
 
     val MUTABLE = C_ModifierField.flagKeyword(S_KeywordModifierKind.MUTABLE)
 

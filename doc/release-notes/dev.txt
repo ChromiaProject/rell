@@ -157,3 +157,55 @@ so encountering the bug in production was extremely unlikely.
 Both functions now use a language-neutral, universal mapping, so they return the same value on every host. No existing
 Rell code is expected to depend on the previous locale-dependent quirk, so the change should be entirely transparent to
 users while removing a potential source of subtle, hard-to-reproduce bugs.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+7. Language: Size constraint annotations @size, @min_size and @max_size for struct attributes
+
+One can now add annotations to struct attributes in order to specify size constraints on the values assigned. Supported
+attribute types are text and byte_array.
+
+Example:
+
+    struct user {
+        id: integer;
+        @max_size(50) userName: text;       // userName must have size <= 50
+        @size(32) publicKey: byte_array;    // publicKey must have size == 32
+        @min_size(1) status: text;          // status must have size >= 1
+    }
+
+When a struct value is created (via its constructor, or via from_bytes() or from_gtv()), the values provided for fields
+with size constraint annotations are checked, and if the specified constraints are violated, a runtime error is thrown.
+Values are also checked when mutable struct members are updated:
+
+    struct x {
+        mutable @size(1) name;
+    }
+    ...
+    x.name = 'ab'; // runtime error!
+
+Where default values can be evaluated at compile-time, they are checked against size constraints at compile-time, so the
+following is a compile-time error:
+
+    struct y {
+        @size(3) z: text = 'not three characters!'; // compile-time error!
+    }
+
+The annotations @min_size and @max_size can be used together:
+
+    struct item {
+        quantity: integer;
+        @min_size(5) @max_size(20) description: text;
+    }
+    ...
+    item(3, '') // error, description too small
+    item(7, 'The quick brown fox jumps over the lazy dog') // error, description too long
+    item(0, 'party hat') // ok
+
+Note that @min_size(a) @max_size(b) can be abbreviated @size(a, b). Therefore the previous example can also be written:
+
+    struct item {
+        quantity: integer;
+        @size(5, 20) description: text;
+    }
+
+Size constraint annotations are supported on structs only. Entities and objects are not supported.
