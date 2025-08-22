@@ -245,6 +245,34 @@ internal class RellApiRunShellTest: BaseRellApiTest() {
         chkSingleNoCtx("struct quam { @dummy_annotation dec: decimal; }", expected)
     }
 
+    @Test fun testModuleArgsArePassed() {
+        val sourceDir = C_SourceDir.mapDirOf("op_mods.rell" to """
+            module;
+            struct module_args { default_name: text = 'Iaroslav'; }
+            entity person { name; }
+            operation add_person_d() { create person(chain_context.args.default_name); }
+        """)
+
+        val shellInput = immListOf(
+            "import op_mods;",
+            "\\db-update",
+            "rell.test.tx([op_mods.add_person_d()]).run();",
+            "op_mods.person @ {}(.name)",
+        )
+
+        chkShell(sourceDir, shellInput, "RES:unit, RES:text[Iaroslav]", useDatabase = true)
+
+        chkShell(
+            sourceDir,
+            shellInput,
+            "RES:unit, RES:text[Alex]",
+            useDatabase = true,
+            compileConfig = configBuilder()
+                .moduleArgs("op_mods" to mapOf("default_name" to GtvFactory.gtv("Alex")))
+                .build(),
+        )
+    }
+
     private fun chkSingleNoCtx(code: String, expected: String) {
         chkShell(C_SourceDir.EMPTY, immListOf(code), expected)
     }

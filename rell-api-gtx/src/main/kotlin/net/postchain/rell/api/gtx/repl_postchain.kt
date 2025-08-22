@@ -17,13 +17,16 @@ import net.postchain.rell.base.utils.toImmList
 public class PostchainReplInterpreterProjExt(
     private val sqlInitProjExt: SqlInitProjExt,
     private val runnerConfig: Rt_BlockRunnerConfig,
+    private val compileConfig: RellApiCompile.Config = RellApiCompile.Config.DEFAULT,
 ): ReplInterpreterProjExt() {
     override fun getSqlInitProjExt(): SqlInitProjExt = sqlInitProjExt
 
     override fun createBlockRunner(sourceDir: C_SourceDir, modules: List<R_ModuleName>): Rt_UnitTestBlockRunner {
         val keyPair = Lib_RellTest.BLOCK_RUNNER_KEYPAIR
-        val compileConfig = RellApiCompile.Config.Builder().cliEnv(RellCliEnv.NULL).build()
-        val runnerStrategy = Rt_DynamicBlockRunnerStrategy(sourceDir, keyPair, modules.toImmList(), compileConfig)
+        val compileConfigNullCliEnv = compileConfig.toBuilder().cliEnv(RellCliEnv.NULL).build()
+
+        val runnerStrategy =
+            Rt_DynamicBlockRunnerStrategy(sourceDir, keyPair, modules.toImmList(), compileConfigNullCliEnv)
         return Rt_PostchainUnitTestBlockRunner(keyPair, runnerConfig, runnerStrategy)
     }
 }

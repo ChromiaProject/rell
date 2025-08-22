@@ -163,7 +163,7 @@ public object RellApiShellInternal {
             sqlLog = config.sqlLog,
             dbInitLogLevel = RellPostchainModuleEnvironment.DEFAULT_DB_INIT_LOG_LEVEL,
         )
-        val projExt = PostchainReplInterpreterProjExt(PostchainSqlInitProjExt, blockRunnerCfg)
+        val projExt = PostchainReplInterpreterProjExt(PostchainSqlInitProjExt, blockRunnerCfg, config.compileConfig)
 
         val shellOptions = ReplShellOptions(
             compilerOptions = compilerOptions,

@@ -1,5 +1,6 @@
 public final class net/postchain/rell/api/gtx/PostchainReplInterpreterProjExt : net/postchain/rell/base/repl/ReplInterpreterProjExt {
-	public fun <init> (Lnet/postchain/rell/base/sql/SqlInitProjExt;Lnet/postchain/rell/api/gtx/Rt_BlockRunnerConfig;)V
+	public fun <init> (Lnet/postchain/rell/base/sql/SqlInitProjExt;Lnet/postchain/rell/api/gtx/Rt_BlockRunnerConfig;Lnet/postchain/rell/api/base/RellApiCompile$Config;)V
+	public synthetic fun <init> (Lnet/postchain/rell/base/sql/SqlInitProjExt;Lnet/postchain/rell/api/gtx/Rt_BlockRunnerConfig;Lnet/postchain/rell/api/base/RellApiCompile$Config;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun createBlockRunner (Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Ljava/util/List;)Lnet/postchain/rell/base/utils/Rt_UnitTestBlockRunner;
 	public fun getSqlInitProjExt ()Lnet/postchain/rell/base/sql/SqlInitProjExt;
 }
