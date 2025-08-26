@@ -111,7 +111,7 @@ class C_SizeConstraint private constructor(val min: Long?, val max: Long?, val a
     }
 
     companion object {
-        val COLLECTION_SIZE_LIMIT: Long = 2.0.pow(30.0).toLong()
+        const val COLLECTION_SIZE_LIMIT: Long = 1_073_741_824L // 2^30
 
         private fun from(min: Long?, max: Long?, annStrs: ImmList<String>): C_SizeConstraint? {
             return if (min == null && max == null) null else C_SizeConstraint(min, max, annStrs)
