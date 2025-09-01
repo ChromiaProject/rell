@@ -431,4 +431,31 @@ internal class RellApiRunTestsTest: BaseRellApiRunTestsTest() {
             "op_mods_test:test__singular_compound__twice_no_normal__fails:OK",
         )
     }
+
+    @Test fun testSpecialOperation() {
+        val runConfig = runTestsDbConfig()
+        val sourceDir = C_SourceDir.mapDirOf(
+            "special_op.rell" to """
+                module;
+                entity system_data { id: text; }
+                operation __add_system_id(id: text) { create system_data(id); }
+            """,
+            "special_op_test.rell" to """
+                @test module;
+                import special_op.*;
+
+                @test function test__special_operation() {
+                    assert_equals((system_data @* {}).size(), 0);  
+                    rell.test.tx([
+                        __add_system_id("one"),
+                        __add_system_id("two")
+                    ]).run();
+                    assert_equals((system_data @* {}).size(), 2);  
+                }
+            """,
+        )
+        chkRunTests(runConfig, sourceDir, listOf(), listOf("special_op_test"),
+            "special_op_test:test__special_operation:OK",
+        )
+    }
 }

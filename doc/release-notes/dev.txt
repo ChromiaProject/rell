@@ -209,3 +209,8 @@ Note that @min_size(a) @max_size(b) can be abbreviated @size(a, b). Therefore th
     }
 
 Size constraint annotations are supported on structs only. Entities and objects are not supported.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+8. Tests: Make it possible to include special operations in unit tests
+
+It's now possible to add special operations (starting with "__") with `rell.test.tx()` and `rell.test.op()`.
