@@ -27,7 +27,7 @@
     </modules>
 
     <properties>
-        <postchain.version>3.42.0</postchain.version>
+        <postchain.version>3.42.4</postchain.version>
         <dist-classifier>dist</dist-classifier>
 
         <jacoco.version>0.8.13</jacoco.version>
