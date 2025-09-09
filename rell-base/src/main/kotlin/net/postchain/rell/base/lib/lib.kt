@@ -26,6 +26,7 @@ object Lib_Rell {
         include(Lib_Require.NAMESPACE)
         include(Lib_Crypto.NAMESPACE)
         include(Lib_TryCall.NAMESPACE)
+        include(Lib_RellTimeFormat.NAMESPACE)
 
         include(Lib_ChainContext.NAMESPACE)
         include(Lib_OpContext.NAMESPACE)
@@ -47,6 +48,7 @@ object Lib_Rell {
     val ROWID_TYPE = MODULE.getTypeDef("rowid")
     val SIGNER_TYPE = MODULE.getTypeDef("signer")
     val TEXT_TYPE = MODULE.getTypeDef("text")
+    val RELL_TIME_FORMAT_TYPE = MODULE.getTypeDef("rell.time.format")
     val UNIT_TYPE = MODULE.getTypeDef("unit")
     val ITERABLE_TYPE = MODULE.getTypeDef("iterable")
     val LIST_TYPE = MODULE.getTypeDef("list")

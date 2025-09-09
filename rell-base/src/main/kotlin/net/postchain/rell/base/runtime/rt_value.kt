@@ -5,6 +5,7 @@
 package net.postchain.rell.base.runtime
 
 import net.postchain.gtv.Gtv
+import net.postchain.rell.base.lib.Rt_TimeFormatValue
 import net.postchain.rell.base.lib.type.Rt_MapValue
 import net.postchain.rell.base.lib.type.Rt_RangeValue
 import net.postchain.rell.base.model.*
@@ -48,6 +49,7 @@ enum class Rt_CoreValueTypes {
     RANGE,
     GTV,
     FUNCTION,
+    RELL_TIME_FORMAT,
     VIRTUAL,
     VIRTUAL_COLLECTION,
     VIRTUAL_LIST,
@@ -113,6 +115,7 @@ abstract class Rt_Value {
     open fun asGtv(): Gtv = throw errType(Rt_CoreValueTypes.GTV)
     open fun asFunction(): Rt_FunctionValue = throw errType(Rt_CoreValueTypes.FUNCTION)
     open fun asLazyValue(): Rt_Value = throw errType(Rt_CoreValueTypes.LAZY)
+    internal open fun asRellTimeFormat(): Rt_TimeFormatValue = throw errType(Rt_CoreValueTypes.RELL_TIME_FORMAT)
 
     fun <T: Rt_Value> asType(cls: KClass<T>, valueType: Rt_ValueType): T {
         if (!cls.isInstance(this)) {
