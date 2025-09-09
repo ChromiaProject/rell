@@ -349,7 +349,7 @@ object Lib_Type_Text {
                 matcherBody { Rt_BooleanValue.get(it.matches()) }
             }
 
-            function("match_groups", result = "list<text>?", pure = true, since = RellVersions.SINCE_NOW) {
+            function("match_groups", result = "list<text>?", pure = true, since = "0.14.13") {
                 comment("""
                     Match this text against the specified regular expression, returning all match groups in a list.
 
@@ -398,7 +398,7 @@ object Lib_Type_Text {
                 }
             }
 
-            function("match_named_groups", result = "map<text, text>?", pure = true, since = RellVersions.SINCE_NOW) {
+            function("match_named_groups", result = "map<text, text>?", pure = true, since = "0.14.13") {
                 comment("""
                     Match this text against the specified regular expression, returning a map whose keys are the names
                     of each named group in the regular expression, and values are the text that was matched to the
