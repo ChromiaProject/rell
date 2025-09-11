@@ -98,12 +98,15 @@ class RellResourceFactory(
         )
     }
 
+    private val ideModuleInfoFunction = S_RellFile::class.declaredMemberFunctions.find {
+        it.name == "ideModuleInfo"
+    }?.apply {
+        isAccessible = true
+    }
+
     fun S_RellFile.ideModuleInfoByReflection(sourcePath: C_SourcePath): IdeModuleInfo? {
         return try {
-            S_RellFile::class.declaredMemberFunctions.find { it.name == "ideModuleInfo" }?.let {
-                it.isAccessible = true
-                return it.call(this, sourcePath) as? IdeModuleInfo
-            }
+            ideModuleInfoFunction?.call(this, sourcePath) as? IdeModuleInfo
         } catch (e: Exception) {
             logger.warn(e) { "Failed to call ideModuleInfo by reflection for ${sourcePath.str()}" }
             null
