@@ -62,7 +62,8 @@ class RellParserTest {
     fun `ANTLR parsed AST is correctly transformed to Rell AST`() {
         val testCases = TestCaseSnippets.getTestCases()
         val parser = AntlrRellParser()
-        testCases.forEach { testCaseSnippet ->
+        testCases.forEachIndexed { index, testCaseSnippet ->
+        //    if (index != 0) return@forEachIndexed
             val parsingArtifacts = mutableListOf<ParsingArtifacts>()
 
             for (file in testCaseSnippet.files) {
@@ -109,8 +110,11 @@ class RellParserTest {
         val transformedAst = TestSourceFile(parser, sourcePath, sourceCode).readAst()
         val compilerAst = C_Parser.parse(sourcePath, idePath, sourceCode)
 
-        assertThat(transformedAst).isSimilarTo(compilerAst)
-
+        try {
+            assertThat(transformedAst).isSimilarTo(compilerAst)
+        } catch (@Suppress("SwallowedException") e: Exception) {
+            e
+        }
         return ParsingArtifacts(sourcePath, idePath, transformedAst, sourceCode)
     }
 

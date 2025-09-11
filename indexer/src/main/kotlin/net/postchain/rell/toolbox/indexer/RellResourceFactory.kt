@@ -11,6 +11,7 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCompilationResult
 import net.postchain.rell.base.utils.ide.IdeDirApi
+import net.postchain.rell.base.utils.ide.IdeModuleInfo
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.compiler.AstSourceFile
@@ -79,7 +80,7 @@ class RellResourceFactory(
 
         return Resource(
             parseResult.parseTree,
-            ast.first.ideModuleInfo(rellCompilerSourcePath),
+            ast.first.ideModuleInfoByReflection(rellCompilerSourcePath),
             fileUri,
             workspaceUri,
             ast.first,
@@ -93,6 +94,17 @@ class RellResourceFactory(
             checksum,
             tokenStream
         )
+    }
+
+    fun S_RellFile.ideModuleInfoByReflection(sourcePath: C_SourcePath): IdeModuleInfo? {
+        return try {
+            val method = S_RellFile::class.java.getDeclaredMethod("ideModuleInfo", C_SourcePath::class.java)
+            method.isAccessible = true
+            method.invoke(this, sourcePath) as? IdeModuleInfo
+        } catch (e: Exception) {
+            logger.warn(e) { "Failed to call ideModuleInfo by reflection for ${sourcePath.str()}" }
+            null
+        }
     }
 
     fun buildRellResource(fileUri: URI, fileMap: MutableMap<C_SourcePath, C_SourceFile>): Resource {

@@ -47,5 +47,9 @@ class ModifierFormatter(
         xModifier.ruleX_KeywordModifier()?.ruleX_KeywordModifier0()?.ruleX_Modifier_1()?.let {
             whitespaceFormatter.formatModifier(it, doc)
         }
+
+        xModifier.ruleX_KeywordModifier()?.ruleX_KeywordModifier0()?.ruleX_Modifier_2()?.let {
+            whitespaceFormatter.formatModifier(it, doc)
+        }
     }
 }

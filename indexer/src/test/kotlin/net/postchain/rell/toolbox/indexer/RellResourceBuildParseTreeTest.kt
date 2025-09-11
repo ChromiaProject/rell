@@ -39,7 +39,7 @@ class RellResourceBuildParseTreeTest {
         assertThat(parseTreeWithErrors.syntaxErrors).extracting { it.message }.containsAll(
             "missing ';' at 'function'",
             "missing ';' at '}'",
-            "extraneous input 'va' expecting {<EOF>, 'abstract', 'override', 'entity', 'class', 'struct', '@', 'object', 'record', 'enum', 'function', 'val', 'namespace', 'import', 'operation', 'query', 'include'}",
+            "extraneous input 'va' expecting {<EOF>, 'abstract', 'mutable', 'override', 'entity', 'class', 'struct', '@', 'object', 'record', 'enum', 'function', 'val', 'namespace', 'import', 'operation', 'query', 'include'}",
             "extraneous input ';' expecting {'(', 'false', 'true', 'null', '.', 'virtual', 'struct', '+', '-', 'not', '++', '--', '\$', 'create', '[', 'if', 'when', RULE_ID, RULE_DECIMAL, RULE_BIG_INTEGER, RULE_NUMBER, RULE_BYTES, RULE_STRING}"
         )
     }

@@ -151,10 +151,13 @@ object PredefinedValueParser {
             )
         }
         enumType.valuesSet.find {
-            it.toString() == node.asText()
-        } ?: throw ConfigurationValidationException(
-            "enum value '${node.asText()}' is not in enum set ${enumType.valuesSet}"
-        )
+            it.str() == node.asText()
+        } ?: run {
+            val validationErrorMessage = enumType.valuesSet.joinToString(prefix = "[", postfix = "]") { it.str() }
+            throw ConfigurationValidationException(
+                "enum value '${node.asText()}' is not in enum set $validationErrorMessage"
+            )
+        }
         node.asText()
     }
 }

@@ -11,6 +11,7 @@ import static net.postchain.rell.toolbox.parser.RellParser.*;
 public final class AntlrToRell {
     private static final RellcTransformer TRANS_XKEYWORD_MODIFIER0_0 = RellcUtils.transformer("X_KeywordModifier0_0");
     private static final RellcTransformer TRANS_XKEYWORD_MODIFIER0_1 = RellcUtils.transformer("X_KeywordModifier0_1");
+    private static final RellcTransformer TRANS_XKEYWORD_MODIFIER0_2 = RellcUtils.transformer("X_KeywordModifier0_2");
     private static final RellcTransformer TRANS_XKEYWORD_MODIFIER = RellcUtils.transformer("X_KeywordModifier");
     private static final RellcTransformer TRANS_XNAME_NODE = RellcUtils.transformer("X_NameNode");
     private static final RellcTransformer TRANS_XNAME = RellcUtils.transformer("X_Name");
@@ -246,7 +247,9 @@ public final class AntlrToRell {
                 var keywordModifierCtx = ((RuleX_KeywordModifier0Context) node);
                 RellcTransformer transformer = keywordModifierCtx.ruleX_Modifier_0() != null
                         ? TRANS_XKEYWORD_MODIFIER0_0
-                        : TRANS_XKEYWORD_MODIFIER0_1;
+                        : keywordModifierCtx.ruleX_Modifier_1() != null
+                        ? TRANS_XKEYWORD_MODIFIER0_1
+                        : TRANS_XKEYWORD_MODIFIER0_2;
                 return transformer.transform(ctx, node, tup);
             }
             case RULE_ruleX_KeywordModifier: {
@@ -1036,7 +1039,7 @@ public final class AntlrToRell {
                 return TRANS_XEXPRESSION.transform(ctx, node, tup);
             }
             case RULE_ruleX_BaseAttributeDefinition: {
-                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkMUTABLEContext.class, 0));
+                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ModifiersContext.class, 0));
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_AttrHeaderContext.class, 0));
                 // Manual fix. generator puts assign token instead if expression ref
                 Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionRefContext.class, 0));
@@ -1141,10 +1144,11 @@ public final class AntlrToRell {
                 return TRANS_XENUM_DEF.transform(ctx, node, tup);
             }
             case RULE_ruleX_FormalParameter: {
-                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_AttrHeaderContext.class, 0));
+                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ModifiersContext.class, 0));
+                Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_AttrHeaderContext.class, 0));
                 // Manual fix. generator used RuleX_tkASSIGNContext instead of RuleX_ExpressionContext
-                Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionContext.class, 0));
-                Object tup = RellcUtils.tuple(var_0, var_1);
+                Object var_2 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionContext.class, 0));
+                Object tup = RellcUtils.tuple(var_0, var_1, var_2);
                 return TRANS_XFORMAL_PARAMETER.transform(ctx, node, tup);
             }
             case RULE_ruleX_CommaSeparated_35: {
