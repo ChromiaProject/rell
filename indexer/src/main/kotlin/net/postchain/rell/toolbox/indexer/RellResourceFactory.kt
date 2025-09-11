@@ -24,6 +24,8 @@ import org.antlr.v4.runtime.TokenStream
 import java.io.File
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.reflect.full.declaredMemberFunctions
+import kotlin.reflect.jvm.isAccessible
 
 class RellResourceFactory(
     private val workspaceUri: URI,
@@ -96,11 +98,15 @@ class RellResourceFactory(
         )
     }
 
+    private val ideModuleInfoFunction = S_RellFile::class.declaredMemberFunctions.find {
+        it.name == "ideModuleInfo"
+    }?.apply {
+        isAccessible = true
+    }
+
     fun S_RellFile.ideModuleInfoByReflection(sourcePath: C_SourcePath): IdeModuleInfo? {
         return try {
-            val method = S_RellFile::class.java.getDeclaredMethod("ideModuleInfo", C_SourcePath::class.java)
-            method.isAccessible = true
-            method.invoke(this, sourcePath) as? IdeModuleInfo
+            ideModuleInfoFunction?.call(this, sourcePath) as? IdeModuleInfo
         } catch (e: Exception) {
             logger.warn(e) { "Failed to call ideModuleInfo by reflection for ${sourcePath.str()}" }
             null
