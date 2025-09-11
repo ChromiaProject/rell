@@ -27,4 +27,15 @@ struct   rate_limit_config   {
 }
 
 
+struct user {
+        id   : integer;
+    @max_size(50)            userName:
+        text;
+
+    mutable
+          @size(1)
+          name;
+    }
+
+
 
