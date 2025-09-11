@@ -4,4 +4,4 @@ import lib;
 
 abstract function customize(x: integer): text;
 
-override function lib.customize(x: integer): text { }
+override function lib.customize(x: integer): text {}
