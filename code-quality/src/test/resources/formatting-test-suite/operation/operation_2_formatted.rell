@@ -14,7 +14,9 @@ operation tralingCommaMultiLine(
 }
 
 @compound
-operation finalize() {}
+operation finalize() {
+
+}
 
 @singular
 operation credit_account() {}

@@ -17,10 +17,6 @@ class BlockStmtFormatter : NodeFormatter<RuleX_BlockStmtContext> {
         doc.prepend(xBlockStmt.ruleX_tkLCURL()) { it.oneSpace() }
         val statements = xBlockStmt.ruleX_StatementRef()
 
-        if (statements.size == 0 ) {
-            doc.append(xBlockStmt.ruleX_tkLCURL()) { it.noSpace() }
-        }
-
         statements.forEachIndexed { index, statement ->
             doc.prepend(statement) {
                 it.setNewLines(1, 1, 2)

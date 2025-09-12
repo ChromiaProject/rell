@@ -25,4 +25,4 @@ finalize(
 
 }
 
-        @singular       operation       credit_account      (       )       {         }
+        @singular       operation       credit_account      (       )       {}
