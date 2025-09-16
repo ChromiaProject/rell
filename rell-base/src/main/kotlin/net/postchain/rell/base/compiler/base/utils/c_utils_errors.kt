@@ -11,6 +11,7 @@ import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.def.C_MntEntry
 import net.postchain.rell.base.compiler.base.expr.C_AtFromImplicitAttr
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
+import net.postchain.rell.base.model.R_AttrValidator
 import net.postchain.rell.base.model.R_Definition
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_MountName
@@ -243,5 +244,9 @@ internal object C_Errors {
             throw C_Error.stop(pos, codeMsg)
         }
         return value
+    }
+
+    fun R_AttrValidator.Error.report(ctx: C_MessageContext, pos: S_Pos) {
+        ctx.error(pos, code, msg)
     }
 }

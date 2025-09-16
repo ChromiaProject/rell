@@ -24,13 +24,18 @@ import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
 
+sealed interface C_AttrHeaderInfo {
+    val pos: S_Pos
+    val name: C_Name
+}
+
 class C_AttrHeader(
-    val pos: S_Pos,
-    val name: C_Name,
+    override val pos: S_Pos,
+    override val name: C_Name,
     val type: R_Type?,
     val isExplicitType: Boolean,
     val ideInfo: C_IdeSymbolInfo,
-) {
+): C_AttrHeaderInfo {
     val rName = name.rName
 }
 
@@ -61,7 +66,7 @@ class C_LocalAttrHeaderIdeData(
     }
 }
 
-sealed class C_AttrHeaderHandle(val pos: S_Pos, val name: C_Name) {
+sealed class C_AttrHeaderHandle(override val pos: S_Pos, override val name: C_Name): C_AttrHeaderInfo {
     val rName = name.rName
 
     abstract fun compile(ctx: C_DefinitionContext, canInferType: Boolean, ideData: C_AttrHeaderIdeData): C_AttrHeader

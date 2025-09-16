@@ -46,14 +46,18 @@ enum class C_ModifierTargetType {
     ;
 
     val description: String
+    val descriptionCapitalized: String
 
     constructor(declarationType: C_DeclarationType) {
         this.description = declarationType.msg
+        this.descriptionCapitalized = this.description.capitalizeEx()
     }
 
     constructor(description: String) {
         this.description = description
+        this.descriptionCapitalized = this.description.capitalizeEx()
     }
+
 }
 
 class C_ModifierTarget(

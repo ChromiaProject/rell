@@ -12,6 +12,7 @@ import net.postchain.rell.base.compiler.base.expr.C_ExprHint
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.modifier.C_SizeConstraint
 import net.postchain.rell.base.compiler.base.utils.*
+import net.postchain.rell.base.compiler.base.utils.C_Errors.report
 import net.postchain.rell.base.compiler.vexpr.V_ConstantValueEvalContext
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lmodel.L_TypeUtils
@@ -173,7 +174,7 @@ private class C_EntityAttributeClause(
         name: C_Name,
         expr: S_Expr?,
         type: R_Type?,
-        validator: R_AttributeValidator? = null,
+        validator: R_AttrValidator? = null,
     ): C_LateGetter<C_DefaultValue>? {
         if (expr == null) {
             return null
@@ -195,10 +196,7 @@ private class C_EntityAttributeClause(
             val rDefaultValue = R_DefaultValue(rExpr, vExpr0.info.hasDbModifications)
             val rtDefaultValue = vExpr.constantValue(V_ConstantValueEvalContext())
             if (rtDefaultValue != null) {
-                val err = validator?.check(rtDefaultValue)
-                if (err != null) {
-                    msgCtx.error(expr.startPos, err.code, err.msg)
-                }
+                validator?.check(rtDefaultValue)?.report(msgCtx, expr.startPos)
             }
             late.set(C_DefaultValue(rDefaultValue, vExpr0))
         }

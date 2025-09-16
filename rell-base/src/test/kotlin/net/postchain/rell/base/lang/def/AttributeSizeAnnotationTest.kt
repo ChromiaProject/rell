@@ -4,7 +4,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import org.junit.jupiter.api.Disabled
 import kotlin.test.Test
 
-internal class SizeAnnotationTest: BaseRellTest() {
+internal class AttributeSizeAnnotationTest: BaseRellTest() {
     @Test fun testInvalidOnNonStruct() {
         chkCompile("entity s { @size(1) l: byte_array; }", "ct_err:modifier:invalid:ann:size:non_struct")
         chkCompile("entity s { @size(1, 5) l: text; }", "ct_err:modifier:invalid:ann:size:non_struct")
@@ -82,9 +82,9 @@ internal class SizeAnnotationTest: BaseRellTest() {
 
     @Test fun testMultipleConflictingPrimitive() {
         chkCompile("struct s { @max_size(1) @size(2, 3) l: byte_array; }",
-            "ct_err:modifier:invalid:ann:conflict:size_with_max_size")
+            "ct_err:modifier:invalid:ann:attribute:conflict:size_with_max_size")
         chkCompile("struct s { @size(2) @min_size(1) l: text; }",
-            "ct_err:modifier:invalid:ann:conflict:size_with_min_size")
+            "ct_err:modifier:invalid:ann:attribute:conflict:size_with_min_size")
 
         chkCompile("struct s { @size(1) @size(2) l: byte_array; }", "ct_err:modifier:dup:ann:size")
         chkCompile("struct s { @min_size(1) @min_size(2) l: text; }", "ct_err:modifier:dup:ann:min_size")
@@ -93,7 +93,7 @@ internal class SizeAnnotationTest: BaseRellTest() {
     @Disabled
     @Test fun testMultipleConflictingJson() {
         chkCompile("struct s { @size(2, 3) @min_size(1) l: json; }",
-            "ct_err:modifier:invalid:ann:conflict:size_with_min_size")
+            "ct_err:modifier:invalid:ann:attribute:conflict:size_with_min_size")
 
         chkCompile("struct s { @max_size(1) @max_size(2) l: json; }", "ct_err:modifier:dup:ann:max_size")
     }
@@ -101,15 +101,15 @@ internal class SizeAnnotationTest: BaseRellTest() {
     @Disabled
     @Test fun testMultipleConflictingCollection() {
         chkCompile("struct s { @min_size(1) @size(2) l: list<integer>; }",
-            "ct_err:modifier:invalid:ann:conflict:size_with_min_size")
+            "ct_err:modifier:invalid:ann:attribute:conflict:size_with_min_size")
         chkCompile("struct s { @min_size(1) @size(2, 3) l: set<boolean>; }",
-            "ct_err:modifier:invalid:ann:conflict:size_with_min_size")
+            "ct_err:modifier:invalid:ann:attribute:conflict:size_with_min_size")
         chkCompile("struct s { @max_size(1) @size(2) l: map<decimal, text>; }",
-            "ct_err:modifier:invalid:ann:conflict:size_with_max_size")
+            "ct_err:modifier:invalid:ann:attribute:conflict:size_with_max_size")
         chkCompile("struct s { @size(2) @max_size(1) l: list<decimal>; }",
-            "ct_err:modifier:invalid:ann:conflict:size_with_max_size")
+            "ct_err:modifier:invalid:ann:attribute:conflict:size_with_max_size")
         chkCompile("struct s { @size(2, 3) @max_size(1) l: set<big_integer>; }",
-            "ct_err:modifier:invalid:ann:conflict:size_with_max_size")
+            "ct_err:modifier:invalid:ann:attribute:conflict:size_with_max_size")
 
         chkCompile("struct s { @size(1) @size(2) l: list<integer>; }", "ct_err:modifier:dup:ann:size")
         chkCompile("struct s { @min_size(1) @min_size(2) l: list<integer>; }", "ct_err:modifier:dup:ann:min_size")

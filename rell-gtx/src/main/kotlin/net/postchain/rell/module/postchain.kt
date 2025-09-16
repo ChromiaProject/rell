@@ -187,7 +187,9 @@ private class RellGTXOperation(
 
         val rtArgs = gtvArgs.mapIndexed { i, arg ->
             val param = params[i]
-            RellPcUtils.convertArg(gtvCtx, param, arg)
+            val rtArg = RellPcUtils.convertArg(gtvCtx, param, arg)
+            param.validate(rtArg)?.raise()
+            rtArg
         }
 
         return rtArgs

@@ -79,3 +79,49 @@ Examples:
     rell.time.format('yyyyy.MMMMM.dd hh:mm aaa').ms_to_text(ms) // returns '02001.July.04 11:08 AM'
     rell.time.format('yyyy-MM-dd\'T\'HH:mm:ss.SSS').ms_to_text(ms) // returns '2001-07-04T11:08:56.235'
     rell.time.format('yyyy-\'W\'ww-u').ms_to_text(ms) // returns '2001-W27-3'
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Language: Size constraint annotations @size, @min_size and @max_size for parameters
+
+One can now add annotations to parameters in order to specify size constraints on the values passed. Supported parameter
+types are text and byte_array. This applies to parameters of functions, queries and operations.
+
+Examples:
+
+    // query only accepts pubkeys of size 32
+    query get_info(@size(32) pubkey) { ... }
+
+    // status parameter cannot be empty
+    function print_status(@min_size(1) status: text) { ... }
+
+    // can't register a user with name > 50 characters long
+    operation register_user(@max_size(50) name) { ... }
+
+Parameter size constraint annotations are checked when the function/query/operation is called, however they are
+checked against default parameters at compile-time where possible.
+
+If an operation parameter has a size constraint annotation, the operation's corresponding struct<operation> attribute
+behaves as though it were defined with an equivalent size constraint annotation. Thus, for the above example operation
+register_user, the corresponding struct<register_user> is size-constrained:
+
+    struct<register_user>('This name is not allowed because it has more than fifty characters!') // error
+
+The annotations @min_size and @max_size can be used together on function, query and operation parameters:
+
+    function f(@min_size(1) @max_size(1) t: text) { ... }
+    ...
+    f('') // error, t too small
+    f('ab') // error, t too large
+    f('a') // ok
+
+    query q(@min_size(8) @max_size(16) data: byte_array) { ... }
+    ...
+    q(x'0123') // error, data too small
+    q(x'00112233445566778899AABBCCDDEEFF00') // error, data too large
+    q(x'01234567890AB') // ok
+
+Note that @min_size(a) @max_size(b) can be abbreviated @size(a, b). Where a and b are equal, the latter can be omitted
+for the @size annotation. The previous examples can therefore also be written:
+
+    function f(@size(1) t: text) { ... }
+    query q(@size(8, 16) data: byte_array) { ... }

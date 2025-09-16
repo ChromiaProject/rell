@@ -26,6 +26,7 @@ internal class C_FormalParameter(
     val ideInfo: C_IdeSymbolInfo,
     val docParam: DocFunctionParam,
     val comment: S_Comment?,
+    val validator: R_AttrValidator?,
     private val index: Int,
     private val defaultValue: C_ParameterDefaultValue?,
     initFrameGetter: C_LateGetter<R_CallFrame>,
@@ -39,6 +40,7 @@ internal class C_FormalParameter(
         defaultValue?.rExprGetter,
         docSymbolGetter,
         name.pos.toDocPos(),
+        validator,
     )
 
     val docDeclaration: DocDeclaration by lazy {
@@ -64,6 +66,7 @@ internal class C_FormalParameter(
             ideInfo = mirIdeInfo,
             docSourcePos = name.pos.toDocPos(),
             exprGetter = defaultValue?.rGetter,
+            validator = validator,
         )
     }
 }

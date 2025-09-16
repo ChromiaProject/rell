@@ -445,17 +445,96 @@ internal class RellApiRunTestsTest: BaseRellApiRunTestsTest() {
                 import special_op.*;
 
                 @test function test__special_operation() {
-                    assert_equals((system_data @* {}).size(), 0);  
+                    assert_equals((system_data @* {}).size(), 0);
                     rell.test.tx([
                         __add_system_id("one"),
                         __add_system_id("two")
                     ]).run();
-                    assert_equals((system_data @* {}).size(), 2);  
+                    assert_equals((system_data @* {}).size(), 2);
                 }
             """,
         )
         chkRunTests(runConfig, sourceDir, listOf(), listOf("special_op_test"),
             "special_op_test:test__special_operation:OK",
+        )
+    }
+
+    @Test fun testSizeConstrainedParameterOperation() {
+        val runConfig = runTestsDbConfig()
+        val sourceDir = C_SourceDir.mapDirOf(
+            "size_param_op.rell" to """
+                module;
+                entity a { x: text; }
+                entity b { x: byte_array; }
+                operation foo(@min_size(1) id: text) { create a(id); }
+                operation bar(@max_size(50) desc: text) { create a(desc); }
+                operation baz(@size(32) arr: byte_array) { create b(arr); }
+            """,
+            "size_param_op_test.rell" to """
+                @test module;
+                import size_param_op.*;
+
+                function foo_too_small_op_val(): rell.test.op {
+                    return foo('');
+                }
+
+                @test function test_foo_too_small() {
+                    assert_equals((a @* {}).size(), 0);
+                    assert_fails("Parameter id of operation foo: size too small", foo_too_small_op_val(*));
+                    assert_equals((a @* {}).size(), 0);
+                }
+
+                @test function test_foo_ok() {
+                    assert_equals((a @* {}).size(), 0);
+                    rell.test.tx([foo('hello')]).run();
+                    assert_equals((a @* {}).size(), 1);
+                }
+
+                function bar_too_large_op_val(): rell.test.op {
+                    return bar('this message is greater than fifty characters in length.');
+                }
+
+                @test function test_bar_too_large() {
+                    assert_equals((a @* {}).size(), 0);
+                    assert_fails("Parameter desc of operation bar: size too large", bar_too_large_op_val(*));
+                    assert_equals((a @* {}).size(), 0);
+                }
+
+                @test function test_bar_ok() {
+                    assert_equals((a @* {}).size(), 0);
+                    rell.test.tx([bar('this message is shorter.')]).run();
+                    assert_equals((a @* {}).size(), 1);
+                }
+
+                @test function test_baz_too_small() {
+                    assert_equals((b @* {}).size(), 0);
+                    rell.test.tx([rell.test.op('baz', x'CAFEC0FFEE'.to_gtv())])
+                        .run_must_fail("Parameter arr of operation baz: size too small");
+                    assert_equals((b @* {}).size(), 0);
+                }
+
+                @test function test_baz_too_large() {
+                    assert_equals((b @* {}).size(), 0);
+                    rell.test.tx([rell.test.op('baz', x'0123456789ABCDEF'.repeat(8).to_gtv())])
+                        .run_must_fail("Parameter arr of operation baz: size too large");
+                    assert_equals((b @* {}).size(), 0);
+                }
+
+                @test function test_baz_ok() {
+                    assert_equals((b @* {}).size(), 0);
+                    rell.test.tx([baz(x'0123456789ABCDEF'.repeat(4))]).run();
+                    assert_equals((b @* {}).size(), 1);
+                }
+            """,
+        )
+        chkRunTests(runConfig, sourceDir, listOf(), listOf("size_param_op_test"),
+            "size_param_op_test:test_foo_too_small:OK",
+            "size_param_op_test:test_foo_ok:OK",
+            "size_param_op_test:test_bar_too_large:OK",
+            "size_param_op_test:test_bar_ok:OK",
+            "size_param_op_test:test_baz_too_small:OK",
+            "size_param_op_test:test_baz_too_large:OK",
+            "size_param_op_test:test_baz_ok:OK",
         )
     }
 }

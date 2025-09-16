@@ -30,6 +30,7 @@ class R_FunctionParam internal constructor(
     private val exprGetter: C_LateGetter<R_Expr>? = null,
     private val docGetter: C_LateGetter<DocSymbol?> = C_LateGetter.const(null),
     override val docSourcePos: DocSourcePos? = null,
+    internal val validator: R_AttrValidator? = null,
 ): DocDefinition() {
     override val docSymbol: DocSymbol get() = docGetter.get() ?: DocSymbol.NONE
 
@@ -45,6 +46,8 @@ class R_FunctionParam internal constructor(
             Rt_Utils.evaluateInNewFrame(defCtx, null, expr, initFrameGetter)
         }
     }
+
+    fun validate(value: Rt_Value): R_AttrValidator.Error? = validator?.check(value)
 }
 
 internal class R_ParamVar(val type: R_Type, val ptr: R_VarPtr)
@@ -105,7 +108,7 @@ class R_OperationDefinition internal constructor(
         val rtFrame = ints.frame.createRtFrame(defCtx, null)
 
         checkCallArgs(this, ints.params, args)
-        processArgs(ints.paramVars, args, rtFrame)
+        processArgs(ints.paramVars, ints.params, args, rtFrame)
 
         return rtFrame
     }
@@ -169,7 +172,7 @@ internal class R_UserQueryBody(
     override fun call(defCtx: Rt_DefinitionContext, args: List<Rt_Value>): Rt_Value {
         val rtFrame = frame.createRtFrame(defCtx, null)
 
-        processArgs(paramVars, args, rtFrame)
+        processArgs(paramVars, params, args, rtFrame)
 
         val res = body.execute(rtFrame)
         check(res is R_StatementResult_Return) { "${res?.javaClass?.name}" }
@@ -304,7 +307,7 @@ class R_FunctionBase(private val defName: R_DefinitionName) {
     private fun call0(callCtx: Rt_CallContext, args: List<Rt_Value>): Rt_Value {
         val body = bodyLate.get()
         val rtSubFrame = createCallFrame(callCtx, body.frame)
-        processArgs(body.paramVars, args, rtSubFrame)
+        processArgs(body.paramVars, body.params, args, rtSubFrame)
 
         val res = body.body.execute(rtSubFrame)
 
@@ -366,11 +369,19 @@ private fun checkCallArgs(routine: R_RoutineDefinition, params: List<R_FunctionP
     }
 }
 
-private fun processArgs(params: List<R_ParamVar>, args: List<Rt_Value>, frame: Rt_CallFrame) {
+private fun processArgs(
+    paramVars: List<R_ParamVar>,
+    params: List<R_FunctionParam>,
+    args: List<Rt_Value>,
+    frame: Rt_CallFrame,
+) {
+    checkEquals(args.size, paramVars.size)
     checkEquals(args.size, params.size)
-    for (i in params.indices) {
+    for (i in paramVars.indices) {
+        val paramVar = paramVars[i]
         val param = params[i]
         val arg = args[i]
-        frame.set(param.ptr, param.type, arg, false)
+        param.validator?.check(arg)?.raise()
+        frame.set(paramVar.ptr, paramVar.type, arg, false)
     }
 }

@@ -78,7 +78,7 @@ class Rt_StructValue(private val type: R_StructType, private val attributes: Mut
     }
 
     fun set(index: Int, value: Rt_Value) {
-        validateAttribute(type.struct.attributesList[index], value)
+        type.struct.attributesList[index].validator?.check(value)?.raise()
         attributes[index] = value
     }
 
@@ -108,16 +108,9 @@ class Rt_StructValue(private val type: R_StructType, private val attributes: Mut
     companion object {
         fun createValidated(type: R_StructType, attributes: MutableList<Rt_Value>): Rt_StructValue {
             for (attr in type.struct.attributesList) {
-                validateAttribute(attr, attributes[attr.index])
+                attr.validator?.check(attributes[attr.index])?.raise()
             }
             return Rt_StructValue(type, attributes)
-        }
-
-        private fun validateAttribute(attr: R_Attribute, value: Rt_Value) {
-            val err = attr.validator?.check(value)
-            if (err != null) {
-                throw Rt_Exception.common(err.code, err.msg)
-            }
         }
 
         private val STR_RECURSION_DETECTOR = Rt_ValueRecursionDetector()
