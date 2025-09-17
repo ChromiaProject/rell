@@ -11,10 +11,7 @@ import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.lmodel.L_Struct
 import net.postchain.rell.base.lmodel.L_StructAttribute
 import net.postchain.rell.base.lmodel.L_TypeUtils
-import net.postchain.rell.base.model.R_Attribute
-import net.postchain.rell.base.model.R_FullName
-import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDeclarationProto_StructAttribute
@@ -86,6 +83,16 @@ class Ld_Struct(
                     .mapIndexed { i, lAttr -> lAttr.simpleName to finishAttr(fullName.qualifiedName, lAttr, i) }
                     .toImmMap()
                 rStruct.setAttributes(rAttributes)
+
+                val rTypeFlags = R_TypeFlags(
+                    pure = true,
+                    mutable = false,
+                    gtv = R_GtvCompatibility(fromGtv = true, toGtv = true),
+                    virtualable = true,
+                    mixedTuple = false,
+                )
+
+                rStruct.setFlags(R_StructFlags(typeFlags = rTypeFlags, cyclic = false, infinite = false))
 
                 lAttributes.associateByToImmMap { it.simpleName.str }
             }
