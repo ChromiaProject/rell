@@ -117,7 +117,11 @@ class RellResourceFactory(
         }
 
         val moduleName = IdeApi.getModuleName(compilerSrcPath, ast)
-            ?: error("Can not find the moduleName for $compilerSrcPath")
+
+        if (moduleName == null) {
+            logger.warn { "Can not find the moduleName for $compilerSrcPath" }
+            return null
+        }
 
         val rellLanguageVersion = chromiaModelProvider.getRellLanguageVersion()
         val options = C_CompilerOptions.builder()
