@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.compiler.base.lib.C_LibTypeDef
@@ -8,21 +12,15 @@ import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_PrimitiveType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.Rt_NullValue
-import net.postchain.rell.base.runtime.GtvRtConversion
-import net.postchain.rell.base.runtime.GtvRtConversion_None
-import net.postchain.rell.base.runtime.Rt_CoreValueTypes
-import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.runtime.Rt_ValueType
-import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
+import net.postchain.rell.base.runtime.*
 import org.apache.commons.lang3.time.FastDateFormat
 import java.text.ParseException
-import java.util.TimeZone
+import java.util.*
 
 object Lib_RellTimeFormat {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        namespace("rell.time", since = SINCE_NOW) {
-            type("format", rType = R_TimeFormatType, since = SINCE_NOW) {
+        namespace("rell.time", since = "0.14.14") {
+            type("format", rType = R_TimeFormatType, since = "0.14.14") {
                 comment("""
                     A time formatter type for formatting and parsing UTC dates and times. A `rell.time.format` value is
                     constructed from format pattern text. The resulting value can then be used to format a unix
@@ -67,7 +65,7 @@ object Lib_RellTimeFormat {
                     ```
                 """)
 
-                constructor(pure = true, since = SINCE_NOW) {
+                constructor(pure = true, since = "0.14.14") {
                     comment("""
                         Construct a rell.time.format value from time format pattern text.
                         @throws exception if the given format pattern text is invalid
@@ -79,7 +77,7 @@ object Lib_RellTimeFormat {
                     }
                 }
 
-                function("ms_to_text", "text", since = SINCE_NOW) {
+                function("ms_to_text", "text", since = "0.14.14") {
                     comment("""
                         Format a unix timestamp according to this time format value.
                         @return a text representation of the given unix timestamp
@@ -92,7 +90,7 @@ object Lib_RellTimeFormat {
                     }
                 }
 
-                function("text_to_ms", "integer", since = SINCE_NOW) {
+                function("text_to_ms", "integer", since = "0.14.14") {
                     comment("""
                         Parse a unix timestamp from text formatted according to this time format value.
                         @return the unix timestamp represented by the given text
@@ -106,7 +104,7 @@ object Lib_RellTimeFormat {
                     }
                 }
 
-                function("text_to_ms_or_null", "integer?", since = SINCE_NOW) {
+                function("text_to_ms_or_null", "integer?", since = "0.14.14") {
                     comment("""
                         Parse a unix timestamp from text formatted according to this time format value.
                         @return the unix timestamp represented by the given text, or `null` if the given text is not
@@ -124,13 +122,13 @@ object Lib_RellTimeFormat {
                     }
                 }
 
-                function("to_text", "text", since = SINCE_NOW) {
+                function("to_text", "text", since = "0.14.14") {
                     comment("Get the format text of this time format value.")
                     body { self -> Rt_TextValue.get(self.asRellTimeFormat().toText()) }
                 }
             }
 
-            function("ms_to_text", "text", since = SINCE_NOW) {
+            function("ms_to_text", "text", since = "0.14.14") {
                 comment("""
                     Format a unix timestamp according to the given time format text.
 
@@ -146,7 +144,7 @@ object Lib_RellTimeFormat {
                 }
             }
 
-            function("text_to_ms", "integer", since = SINCE_NOW) {
+            function("text_to_ms", "integer", since = "0.14.14") {
                 comment("""
                     Parse a unix timestamp from text formatted according to the given time format pattern text.
 
@@ -163,7 +161,7 @@ object Lib_RellTimeFormat {
                 }
             }
 
-            function("text_to_ms_or_null", "integer?", since = SINCE_NOW) {
+            function("text_to_ms_or_null", "integer?", since = "0.14.14") {
                 comment("""
                     Parse a unix timestamp from text formatted according to the given time format pattern text.
 
