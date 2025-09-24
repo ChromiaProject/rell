@@ -144,15 +144,13 @@ abstract class BaseLTest {
         }
 
         fun makeTypeFun(): C_SpecialLibMemberFunctionBody {
-            return object: C_SpecialLibMemberFunctionBody() {
-                override fun compileCall(
+            return object: C_SpecialLibMemberFunctionBody.Simple() {
+                override fun compileCallSimple(
                     ctx: C_ExprContext,
                     callCtx: C_LibFuncCaseCtx,
                     selfType: R_Type,
                     args: ImmList<V_Expr>,
-                ): V_SpecialMemberFunctionCall {
-                    return makeTypeFunCall(ctx)
-                }
+                ): V_SpecialMemberFunctionCall = makeTypeFunCall(ctx)
             }
         }
 

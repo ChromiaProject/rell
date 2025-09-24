@@ -283,22 +283,22 @@ internal object C_ArgMatcher {
         fun build(valid: Boolean): C_ArgMatcherResult {
             val finalMappings = finishMappings()
 
-            val missingParams = finalMappings.withIndex()
+            val missingParams = finalMappings
                 .filter { it.value == null }
                 .map { actualParams[it.index] }
                 .filter {
-                    // Don't report unnamed parameters, if an error has already been reported, avoid redundant errors.
+                    // Skip unnamed parameters if there was namedArgError to avoid redundant error messages
                     it.name != null || !namedArgError
                 }
             processMissingParams(missingParams)
 
-            val resMappings = finalMappings.filterNotNullAllOrNull()
+            val resMappings = finalMappings.mapNotNullToImmList { it.value }.takeIf { it.size == finalMappings.size }
             val matching = if (!valid || namedArgError || resMappings == null) null else {
                 C_ArgMatching(exprArgs.toImmList(), wildArgs.toImmList(), resMappings)
             }
 
             val paramValues = finalMappings
-                .filterNotNull()
+                .mapNotNull { it.value }
                 .mapNotNullToImmList { m ->
                     if (m.wild) null else {
                         val arg = exprArgs[m.index]
@@ -312,13 +312,15 @@ internal object C_ArgMatcher {
             return C_ArgMatcherResult(matching, paramValues)
         }
 
-        private fun finishMappings(): List<C_ArgMatchParamArg?> {
-            // Remove optional unresolved parameters.
-            var end = mappings.size
-            while (end > 0 && mappings[end - 1] == null && actualParams[end - 1].arity == M_ParamArity.ZERO_ONE) {
-                --end
-            }
-            return mappings.subList(0, end).toList()
+        private fun finishMappings(): List<IndexedValue<C_ArgMatchParamArg?>> {
+            // Filter out unbound ZERO_ONE parameters from the result
+            // (they are optional and not provided, so they shouldn't be in the final mapping)
+            return mappings.withIndex()
+                .filter { (index, mapping) ->
+                    // Keep bound parameters and unbound required parameters (for error reporting)
+                    mapping != null || actualParams[index].arity != M_ParamArity.ZERO_ONE
+                }
+                .toList()
         }
 
         private fun processMissingParams(missingParams: List<C_ArgMatchParam>) {

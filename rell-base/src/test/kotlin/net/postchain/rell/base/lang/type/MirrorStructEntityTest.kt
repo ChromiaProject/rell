@@ -426,4 +426,63 @@ class MirrorStructEntityTest: BaseRellTest() {
         val code = "function f(x: $typeCode) {}"
         chkCompile(code, expected)
     }
+
+    @Test fun testCopyMirrorStructEntity() {
+        def("entity user { name; rating: integer; }")
+
+        chkEx("{ val a = struct<user>('Alice', 100); val b = a.copy(); return a === b; }", "boolean[false]")
+        chkEx("{ val a = struct<user>('Alice', 100); val b = a.copy(); return b; }",
+            "struct<user>[name=text[Alice],rating=int[100]]")
+
+        chkEx("{ val a = struct<user>('Alice', 100); val b = a.copy(name = 'Bob'); return b; }",
+            "struct<user>[name=text[Bob],rating=int[100]]")
+        chkEx("{ val a = struct<user>('Alice', 100); val b = a.copy(rating = 200); return b; }",
+            "struct<user>[name=text[Alice],rating=int[200]]")
+        chkEx("{ val a = struct<user>('Alice', 100); val b = a.copy(name = 'Bob', rating = 200); return b; }",
+            "struct<user>[name=text[Bob],rating=int[200]]")
+    }
+
+    @Test fun testCopyMirrorStructObject() {
+        def("object state { x: integer = 123; y: text = 'abc'; }")
+
+        chkEx("{ val a = struct<state>(); val b = a.copy(); return b; }",
+            "struct<state>[x=int[123],y=text[abc]]")
+        chkEx("{ val a = struct<state>(x = 456); val b = a.copy(y = 'xyz'); return b; }",
+            "struct<state>[x=int[456],y=text[xyz]]")
+        chkEx("{ val a = struct<state>(y = 'hello'); val b = a.copy(x = 999); return b; }",
+            "struct<state>[x=int[999],y=text[hello]]")
+    }
+
+    @Test fun testCopyMirrorStructUnnamedArgs() {
+        def("entity user { name; }")
+        chkEx("{ val a = struct<user>('Alice'); val b = a.copy('Bob'); return b; }",
+            "ct_err:copy:unnamed_arg")
+    }
+
+    @Test fun testCopyMirrorStructWrongType() {
+        def("entity user { name; rating: integer; }")
+
+        chkEx("{ val a = struct<user>('Alice', 100); val b = a.copy(name = 123); return b; }",
+            """ct_err:[expr_call_argtype:[rell.struct_ext(struct<user>).copy]:0:name:text:integer]
+               [expr_call_argtype:[copy]:name:text:integer]""")
+
+        chkEx("{ val a = struct<user>('Alice', 100); val b = a.copy(rating = 'wrong'); return b; }",
+            """ct_err:[expr_call_argtype:[rell.struct_ext(struct<user>).copy]:1:rating:integer:text]
+               [expr_call_argtype:[copy]:rating:integer:text]""")
+    }
+
+    @Test fun testCopyMirrorStructUnknownArg() {
+        def("entity user { name; }")
+        chkEx("{ val a = struct<user>('Alice'); val b = a.copy(age = 25); return b; }",
+            """ct_err:[expr:call:unknown_named_arg:[rell.struct_ext(struct<user>).copy]:age]
+               [expr:call:unknown_named_arg:age]""")
+    }
+
+    @Test fun testCopyMirrorStructDefaultValues() {
+        def("entity data { x: integer = 100; y: text = 'default'; }")
+        chkEx("{ val a = struct<data>(); val b = a.copy(x = 200); return b; }",
+            "struct<data>[x=int[200],y=text[default]]")
+        chkEx("{ val a = struct<data>(y = 'custom'); val b = a.copy(); return b; }",
+            "struct<data>[x=int[100],y=text[custom]]")
+    }
 }

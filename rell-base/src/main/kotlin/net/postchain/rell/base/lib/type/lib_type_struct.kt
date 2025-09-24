@@ -7,24 +7,38 @@ package net.postchain.rell.base.lib.type
 import net.postchain.gtv.Gtv
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.expr.*
+import net.postchain.rell.base.compiler.base.fn.C_ArgMatchParam
+import net.postchain.rell.base.compiler.base.fn.C_ArgMatchParams
+import net.postchain.rell.base.compiler.base.fn.C_FunctionCallParameter
+import net.postchain.rell.base.compiler.base.fn.C_FunctionCallParameters
+import net.postchain.rell.base.compiler.base.fn.C_FullCallArguments
+import net.postchain.rell.base.compiler.base.lib.C_LibFuncCaseCtx
+import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
+import net.postchain.rell.base.compiler.base.lib.C_SpecialLibMemberFunctionBody
+import net.postchain.rell.base.compiler.base.lib.V_SpecialMemberFunctionCall
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.type.Lib_Type_Gtv.gtvToRt
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.base.model.expr.R_DestinationExpr
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.expr.R_MemberCalculator
 import net.postchain.rell.base.model.expr.R_StructMemberExpr
+import net.postchain.rell.base.mtype.M_ParamArity
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.PostchainGtvUtils
+import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.doc.DocCode
 import net.postchain.rell.base.utils.mapToImmList
+import net.postchain.rell.base.utils.toImmList
 
 object Lib_Type_Struct {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -155,6 +169,22 @@ object Lib_Type_Struct {
                     param("gtv", type = "gtv")
                     Lib_Type_Gtv.makeFromGtvBody(this, pretty = true)
                 }
+
+                function("copy", fn = C_StructCopyFunction, since = RellVersions.SINCE_NOW) {
+                    comment("""
+                        Creates a copy of this struct with optional parameter overrides.
+
+                        All parameters are optional and must be specified by name.
+                        If a parameter is not specified, the original value is used.
+
+                        Example:
+                        ```rell
+                        struct person { name: text; age: integer; }
+                        val p1 = person('Alice', 25);
+                        val p2 = p1.copy(age = 26);  // p2 has name='Alice', age=26
+                        ```
+                    """)
+                }
             }
         }
     }
@@ -228,5 +258,111 @@ object Lib_Type_Struct {
 
         val values = structType.struct.attributesList.map { v.get(it.index) }.toMutableList()
         return Rt_StructValue.createValidated(resultType, values)
+    }
+
+    private object C_StructCopyFunction: C_SpecialLibMemberFunctionBody.Complex() {
+
+        override fun callParameters(selfType: R_Type): C_FunctionCallParameters {
+            check(selfType is R_StructType) { "copy() can only be called on struct types" }
+
+            val parameters = selfType.struct.attributesList.mapToImmList { attr ->
+                C_FunctionCallParameter(
+                    name = attr.rName,
+                    type = attr.type,
+                    index = attr.index,
+                    defaultValue = null,
+                    restrictions = C_MemberRestrictions.NULL
+                )
+            }
+
+            return object: C_FunctionCallParameters(parameters) {
+                override val bindParams = C_ArgMatchParams(
+                    parameters.mapToImmList { param ->
+                        C_ArgMatchParam(param.index, param.name, M_ParamArity.ZERO_ONE, null)
+                    }
+                )
+            }
+        }
+
+        override fun compileCallComplex(
+            ctx: C_ExprContext,
+            callCtx: C_LibFuncCaseCtx,
+            selfType: R_Type,
+            args: C_FullCallArguments,
+        ): V_SpecialMemberFunctionCall {
+            check(selfType is R_StructType) {
+                "copy() can only be called on struct types"
+            }
+
+            val struct = selfType.struct
+
+            args.rawArgs.positional.firstOrNull()?.let { arg ->
+                ctx.msgCtx.error(arg.value.pos, "copy:unnamed_arg", "All arguments to copy() must be named")
+            }
+
+            // Preserve the evaluation order of overrides as provided in the call
+            val overrides = mutableListOf<Pair<Int, V_Expr>>()
+
+            for (namedArg in args.rawArgs.named) {
+                val name = namedArg.name.rName
+
+                // Find the corresponding attribute
+                val attr = struct.attributes[name]
+                if (attr == null) {
+                    ctx.msgCtx.error(
+                        namedArg.name.pos,
+                        "expr:call:unknown_named_arg:$name",
+                        "Function 'copy' has no parameter '$name'"
+                    )
+                    continue
+                }
+
+                // Compile the argument expression
+                val argValue = when (val value = namedArg.value.value) {
+                    is C_CallArgumentValue_Expr -> value.vExpr
+                    is C_CallArgumentValue_Wildcard -> error("Wildcards not allowed in 'copy'")
+                }
+
+                val expectedType = attr.type
+                val actualType = argValue.type
+                if (!expectedType.isAssignableFrom(actualType)) {
+                    ctx.msgCtx.error(
+                        namedArg.value.value.pos,
+                        "expr_call_argtype:[copy]:$name:${expectedType.strCode()}:${actualType.strCode()}",
+                        "Wrong argument type for parameter '$name': ${actualType.str()} instead of ${expectedType.str()}",
+                    )
+                    continue
+                }
+
+                overrides += attr.index to argValue
+            }
+
+            return V_StructCopyCall(ctx, selfType, struct, overrides.toImmList())
+        }
+
+        private class V_StructCopyCall(
+            exprCtx: C_ExprContext,
+            selfType: R_Type,
+            private val struct: R_Struct,
+            overrides: ImmList<Pair<Int, V_Expr>>,
+        ): V_SpecialMemberFunctionCall(exprCtx, selfType) {
+            private val rOverrides = overrides.map { (idx, vexpr) -> idx to vexpr.toRExpr() }
+
+            override fun calculator(): R_MemberCalculator = object: R_MemberCalculator(struct.type) {
+                override fun calculate(frame: Rt_CallFrame, baseValue: Rt_Value): Rt_Value {
+                    val structValue = baseValue.asStruct()
+
+                    val values = MutableList(struct.attributesList.size) { idx ->
+                        structValue.get(idx)
+                    }
+
+                    for ((idx, rexpr) in rOverrides) {
+                        values[idx] = rexpr.evaluate(frame)
+                    }
+
+                    return Rt_StructValue.createValidated(struct.type, values)
+                }
+            }
+        }
     }
 }

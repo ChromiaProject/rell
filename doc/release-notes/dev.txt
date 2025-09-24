@@ -358,3 +358,60 @@ New functions:
         Examples:
         [1: 'a', 2: 'b', 3: 'c'].put_all_copy([1: 'Z', 4: 'd', 5: 'e']) // returns [1: 'Z', 2: 'b', 3: 'c', 4: 'd', 5: 'e']
         [1: 'a', 2: 'b', 3: 'c'].put_all_copy([4: 'd', 5: 'e']) // returns [1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e']
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Library: struct.copy() function for copying structs
+
+A new function to create a copy of a struct. This function creates a new instance of the struct with the ability to
+override specific attribute values while keeping the rest of the attributes the same.
+
+Syntax:
+    struct_instance.copy(attribute_name = new_value, ...)
+
+The function returns a new struct instance with the specified attributes updated and other attributes copied from the
+original.
+
+Examples:
+
+    struct person { name: text; age: integer; city: text; }
+
+    val alice = person(name = 'Alice', age = 25, city = 'New York');
+
+    // Create a copy with all original values
+    val alice_copy = alice.copy();
+
+    // Create a copy with updated age
+    val alice_older = alice.copy(age = 26);
+
+    // Create a copy with multiple attributes updated
+    val alice_moved = alice.copy(age = 26, city = 'Boston');
+
+    // Works with nested structs
+    struct company { name: text; ceo: person; }
+    val corp = company(name = 'TechCorp', ceo = alice);
+    val new_corp = corp.copy(ceo = alice.copy(age = 30));
+
+The copy() function also works with struct<entity> and struct<operation> types:
+
+    entity user { name; rating: integer; }
+    operation new_user(name, rating: integer) {}
+
+    val user_struct = struct<user>(name = 'Bob', rating = 100);
+    val updated_user = user_struct.copy(rating = 150);
+
+    val op_struct = struct<new_user>(name = 'Alice', rating = 200);
+    val updated_op = op_struct.copy(name = 'Charlie');
+
+Notes:
+
+- The function always returns a new instance, even if no parameters are provided or if the same values are specified
+- For mutable structs, the new instance is independent of the original (changes to one don't affect the other)
+- The copy is shallow, not deep: nested structs, collections, and other reference types are not recursively copied.
+Since collections in Rell are mutable, modifications to nested collections will affect both the original and copied
+instances
+
+All parameters:
+
+- Are optional (if not specified, the original value is used)
+- Must be named (positional arguments are not allowed)
+- Must match the struct attributes

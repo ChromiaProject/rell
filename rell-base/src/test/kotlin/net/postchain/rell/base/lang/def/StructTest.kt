@@ -570,4 +570,134 @@ class StructTest: BaseRellTest() {
         chkCompile("struct x { abstract y: integer = 10; override z: integer; }",
             "ct_err:[modifier:invalid:kw:abstract][modifier:invalid:kw:override]")
     }
+
+    @Test fun testCopyNoArgs() {
+        def("struct foo { x: integer; y: text; }")
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(); return a === b; }", "boolean[false]")
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(); return b; }", "foo[x=int[123],y=text[Hello]]")
+    }
+
+    @Test fun testCopyWithArgs() {
+        def("struct foo { x: integer; y: text; }")
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(x = 456); return b; }", "foo[x=int[456],y=text[Hello]]")
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(y = 'World'); return b; }", "foo[x=int[123],y=text[World]]")
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(y = 'World', x = 456); return b; }", "foo[x=int[456],y=text[World]]")
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(x = 456, y = 'World'); return b; }", "foo[x=int[456],y=text[World]]")
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(y = 'World', x = 456); return b; }", "foo[x=int[456],y=text[World]]")
+    }
+
+    @Test fun testCopySettingOldValue() {
+        def("struct foo { x: integer; y: text; }")
+        // Setting the same value should still create a new instance
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(x = 123); return a === b; }", "boolean[false]")
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(x = 123); return b; }", "foo[x=int[123],y=text[Hello]]")
+    }
+
+    @Test fun testCopyErrors() {
+        def("struct foo { x: integer; y: text; }")
+        def("struct u { @max_size(3) l: text; }")
+
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(x = 'wrong'); return b; }",
+            """ct_err:[expr_call_argtype:[rell.struct_ext(foo).copy]:0:x:integer:text]
+               [expr_call_argtype:[copy]:x:integer:text]""")
+
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(y = 456); return b; }",
+            """ct_err:[expr_call_argtype:[rell.struct_ext(foo).copy]:1:y:text:integer]
+               [expr_call_argtype:[copy]:y:text:integer]""")
+
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(x = true, y = 3.14); return b; }",
+            """ct_err:[expr_call_argtype:[rell.struct_ext(foo).copy]:0:x:integer:boolean]
+               [expr_call_argtype:[rell.struct_ext(foo).copy]:1:y:text:decimal]
+               [expr_call_argtype:[copy]:x:integer:boolean]
+               [expr_call_argtype:[copy]:y:text:decimal]""")
+
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(x = 42, y = *); return b; }",
+            "ct_err:expr:call:partial_not_supported:[rell.struct_ext(foo).copy]")
+
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(x = 456, x = 789); return b; }",
+            "ct_err:expr:call:named_arg_dup:x")
+
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(z = 456); return b; }",
+            "ct_err:[expr:call:unknown_named_arg:[rell.struct_ext(foo).copy]:z][expr:call:unknown_named_arg:z]")
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(x = 456, z = 'World'); return b; }",
+            "ct_err:[expr:call:unknown_named_arg:[rell.struct_ext(foo).copy]:z][expr:call:unknown_named_arg:z]")
+
+        chk("u(l = 'foo').copy(l = 'foobar')", "rt_err:struct:u:attribute:l:validator:size:too_large")
+
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(456); return b; }", "ct_err:copy:unnamed_arg")
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(456, 'World'); return b; }",
+            "ct_err:copy:unnamed_arg")
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(456, y = 'World'); return b; }",
+            "ct_err:copy:unnamed_arg")
+    }
+
+    @Test fun testCopyWithDefaultValues() {
+        def("struct foo { x: integer = 100; y: text = 'default'; z: boolean; }")
+        chkEx("{ val a = foo(z = true); val b = a.copy(); return b; }",
+            "foo[x=int[100],y=text[default],z=boolean[true]]")
+        chkEx("{ val a = foo(x = 200, z = false); val b = a.copy(y = 'custom'); return b; }",
+            "foo[x=int[200],y=text[custom],z=boolean[false]]")
+    }
+
+    @Test fun testCopyMutableStruct() {
+        def("struct foo { mutable x: integer; mutable y: text; }")
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(x = 456); a.x = 789; return b; }",
+            "foo[x=int[456],y=text[Hello]]")
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(); a.x = 789; return b.x; }", "int[123]")
+    }
+
+    @Test fun testCopyWithNullableFields() {
+        def("struct foo { x: integer?; y: text?; }")
+        chkEx("{ val a = foo(123, 'Hello'); val b = a.copy(x = null); return b; }",
+            "foo[x=null,y=text[Hello]]")
+        chkEx("{ val a = foo(x = null, y = null); val b = a.copy(x = 456, y = 'World'); return b; }",
+            "foo[x=int[456],y=text[World]]")
+        chkEx("{ val a = foo(x = 123, y = null); val b = a.copy(y = 'Hello'); return b; }",
+            "foo[x=int[123],y=text[Hello]]")
+    }
+
+    @Test fun testCopyWithComplexTypes() {
+        def("struct inner { value: integer; }")
+        def("struct outer { x: inner; y: list<integer>; }")
+        chkEx("{ val a = outer(inner(123), [1,2,3]); val b = a.copy(x = inner(456)); return b; }",
+            "outer[x=inner[value=int[456]],y=list<integer>[int[1],int[2],int[3]]]")
+        chkEx("{ val a = outer(inner(123), [1,2,3]); val b = a.copy(y = [4,5]); return b; }",
+            "outer[x=inner[value=int[123]],y=list<integer>[int[4],int[5]]]")
+    }
+
+    @Test fun testCopyNestedStructs() {
+        def("struct inner { x: integer; }")
+        def("struct outer { i: inner; y: text; }")
+        chkEx("{ val a = outer(inner(123), 'Hello'); val b = a.copy(i = a.i.copy(x = 456)); return b; }",
+            "outer[i=inner[x=int[456]],y=text[Hello]]")
+    }
+
+    @Test fun testCopyWithTuples() {
+        def("struct foo { t: (integer, text); }")
+        chkEx("{ val a = foo((123, 'Hello')); val b = a.copy(t = (456, 'World')); return b; }",
+            "foo[t=(int[456],text[World])]")
+    }
+
+    @Test fun testCopyEvaluationOrder() {
+        def("function f(v: integer) { print('f:' + v); return v; }")
+        def("struct foo { x: integer; y: integer; z: integer; }")
+        chkEx("{ val a = foo(x = 1, y = 2, z = 3); val b = a.copy(y = f(20), x = f(10), z = f(30)); return b; }",
+            "foo[x=int[10],y=int[20],z=int[30]]")
+        chkOut("f:20", "f:10", "f:30")
+    }
+
+    @Test fun testCopySizeAnnotations() {
+        def("struct s1 { @size(3) b: byte_array; }")
+        def("struct s2 { @min_size(2) t: text; }")
+        def("struct s3 { @max_size(3) t: text; }")
+
+        chk("s1(x'010203').copy(b = x'010203')", "s1[b=byte_array[010203]]")
+        chk("s1(x'010203').copy(b = x'0102')", "rt_err:struct:s1:attribute:b:validator:size:too_small")
+
+        chk("s2('ab').copy(t = 'abc')", "s2[t=text[abc]]")
+        chk("s2('ab').copy(t = 'a')", "rt_err:struct:s2:attribute:t:validator:size:too_small")
+
+        chk("s3('ab').copy(t = 'abc')", "s3[t=text[abc]]")
+        chk("s3('ab').copy(t = 'abcd')", "rt_err:struct:s3:attribute:t:validator:size:too_large")
+    }
 }

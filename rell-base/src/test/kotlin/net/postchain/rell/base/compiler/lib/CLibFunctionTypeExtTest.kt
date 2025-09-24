@@ -172,8 +172,8 @@ class CLibFunctionTypeExtTest: BaseCLibTest() {
                     return C_ExprUtils.errorVExpr(ctx, name.pos)
                 }
             })
-            function("spec_encode", object: C_SpecialLibMemberFunctionBody() {
-                override fun compileCall(
+            function("spec_encode", object: C_SpecialLibMemberFunctionBody.Simple() {
+                override fun compileCallSimple(
                     ctx: C_ExprContext,
                     callCtx: C_LibFuncCaseCtx,
                     selfType: R_Type,

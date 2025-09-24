@@ -208,10 +208,10 @@ object Lib_Type_Entity {
         }
     }
 
-    internal abstract class C_SysFn_ToStruct_Common: C_SpecialLibMemberFunctionBody() {
+    internal abstract class C_SysFn_ToStruct_Common: C_SpecialLibMemberFunctionBody.Simple() {
         protected abstract fun compile0(ctx: C_ExprContext, selfType: R_Type): V_SpecialMemberFunctionCall?
 
-        final override fun compileCall(
+        final override fun compileCallSimple(
             ctx: C_ExprContext,
             callCtx: C_LibFuncCaseCtx,
             selfType: R_Type,

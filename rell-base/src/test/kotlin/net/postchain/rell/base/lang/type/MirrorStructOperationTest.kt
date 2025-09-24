@@ -153,4 +153,81 @@ class MirrorStructOperationTest: BaseRellTest() {
         tst.ideDefIdConflictError = false
         chkCompile("operation op(x: integer, x: text) {}", "ct_err:dup_param_name:x")
     }
+
+    @Test fun testCopyMirrorStructOperation() {
+        def("operation new_user(name, rating: integer) {}")
+
+        chkEx("{ val a = struct<new_user>('Alice', 100); val b = a.copy(); return a === b; }",
+            "boolean[false]")
+        chkEx("{ val a = struct<new_user>('Alice', 100); val b = a.copy(); return b; }",
+            "struct<new_user>[name=text[Alice],rating=int[100]]")
+
+        chkEx("{ val a = struct<new_user>('Alice', 100); val b = a.copy(name = 'Bob'); return b; }",
+            "struct<new_user>[name=text[Bob],rating=int[100]]")
+        chkEx("{ val a = struct<new_user>('Alice', 100); val b = a.copy(rating = 200); return b; }",
+            "struct<new_user>[name=text[Alice],rating=int[200]]")
+        chkEx("{ val a = struct<new_user>('Alice', 100); val b = a.copy(name = 'Bob', rating = 200); return b; }",
+            "struct<new_user>[name=text[Bob],rating=int[200]]")
+    }
+
+    @Test fun testCopyMutableMirrorStructOperation() {
+        def("operation new_user(name, rating: integer) {}")
+
+        chkEx("{ val a = struct<mutable new_user>('Alice', 100); val b = a.copy(); return a === b; }",
+            "boolean[false]")
+        chkEx("{ val a = struct<mutable new_user>('Alice', 100); val b = a.copy(); return b; }",
+            "struct<mutable new_user>[name=text[Alice],rating=int[100]]")
+
+        chkEx("""
+            {
+                val a = struct<mutable new_user>('Alice', 100);
+                val b = a.copy(name = 'Bob');
+                a.name = 'Charlie';
+                return b;
+            }""",
+            "struct<mutable new_user>[name=text[Bob],rating=int[100]]")
+        chkEx("""
+            {
+                val a = struct<mutable new_user>('Alice', 100);
+                val b = a.copy();
+                a.rating = 999;
+                return b.rating;
+            }""",
+            "int[100]")
+    }
+
+    @Test fun testCopyMirrorStructDefaultValues() {
+        def("operation new_data(x: integer = 100, y: text = 'default') {}")
+
+        chkEx("{ val a = struct<new_data>(); val b = a.copy(); return b; }",
+            "struct<new_data>[x=int[100],y=text[default]]")
+        chkEx("{ val a = struct<new_data>(x = 200); val b = a.copy(y = 'custom'); return b; }",
+            "struct<new_data>[x=int[200],y=text[custom]]")
+        chkEx("{ val a = struct<new_data>(y = 'hello'); val b = a.copy(x = 999); return b; }",
+            "struct<new_data>[x=int[999],y=text[hello]]")
+    }
+
+    @Test fun testCopyMirrorStructOperationErrors() {
+        def("operation new_user(name, rating: integer) {}")
+
+        // Unnamed arguments
+        chkEx("{ val a = struct<new_user>('Alice', 100); val b = a.copy('Bob'); return b; }",
+            "ct_err:copy:unnamed_arg")
+
+        // Wrong type
+        chkEx("{ val a = struct<new_user>('Alice', 100); val b = a.copy(name = 123); return b; }",
+            """ct_err:[expr_call_argtype:[rell.struct_ext(struct<new_user>).copy]:0:name:text:integer]
+               [expr_call_argtype:[copy]:name:text:integer]""")
+        chkEx("{ val a = struct<new_user>('Alice', 100); val b = a.copy(rating = 'wrong'); return b; }",
+            "ct_err:[expr_call_argtype:[rell.struct_ext(struct<new_user>).copy]:1:rating:integer:text][expr_call_argtype:[copy]:rating:integer:text]")
+
+        // Unknown argument
+        chkEx("{ val a = struct<new_user>('Alice', 100); val b = a.copy(age = 25); return b; }",
+            """ct_err:[expr:call:unknown_named_arg:[rell.struct_ext(struct<new_user>).copy]:age]
+               [expr:call:unknown_named_arg:age]""")
+
+        // Duplicate argument
+        chkEx("{ val a = struct<new_user>('Alice', 100); val b = a.copy(name = 'Bob', name = 'Charlie'); return b; }",
+            "ct_err:expr:call:named_arg_dup:name")
+    }
 }

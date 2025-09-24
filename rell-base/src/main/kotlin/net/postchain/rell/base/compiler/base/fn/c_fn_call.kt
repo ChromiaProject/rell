@@ -120,10 +120,10 @@ class C_FunctionCallInfo(
     fun functionNameCode() = functionName?.value ?: "?"
 }
 
-internal class C_FunctionCallParameters(val list: ImmList<C_FunctionCallParameter>) {
+internal open class C_FunctionCallParameters(val list: ImmList<C_FunctionCallParameter>) {
     val typeHints: C_CallTypeHints = C_FunctionCallParametersTypeHints(this.list)
 
-    val bindParams: C_ArgMatchParams = let {
+    open val bindParams: C_ArgMatchParams = let {
         val params = list.mapToImmList { C_ArgMatchParam(it.index, it.name, M_ParamArity.ONE, it.defaultValue) }
         C_ArgMatchParams(params)
     }

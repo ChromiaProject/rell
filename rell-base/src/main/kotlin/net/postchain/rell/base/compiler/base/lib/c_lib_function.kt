@@ -140,13 +140,80 @@ internal class C_SpecialLibGlobalFunction(
     }
 }
 
-abstract class C_SpecialLibMemberFunctionBody {
+sealed class C_SpecialLibMemberFunctionBody {
     internal abstract fun compileCall(
         ctx: C_ExprContext,
         callCtx: C_LibFuncCaseCtx,
         selfType: R_Type,
-        args: ImmList<V_Expr>,
-    ): V_SpecialMemberFunctionCall?
+        args: C_FullCallArguments,
+        ideInfo: C_IdeSymbolInfo,
+    ): V_MemberFunctionCall
+
+    abstract class Simple internal constructor(): C_SpecialLibMemberFunctionBody() {
+        internal abstract fun compileCallSimple(
+            ctx: C_ExprContext,
+            callCtx: C_LibFuncCaseCtx,
+            selfType: R_Type,
+            args: ImmList<V_Expr>,
+        ): V_SpecialMemberFunctionCall?
+
+        final override fun compileCall(
+            ctx: C_ExprContext,
+            callCtx: C_LibFuncCaseCtx,
+            selfType: R_Type,
+            args: C_FullCallArguments,
+            ideInfo: C_IdeSymbolInfo,
+        ): V_MemberFunctionCall {
+            val vArgs = args.compileSimpleArgs(callCtx.fullNameLazy)
+            val vCall = compileCallSimple(ctx, callCtx, selfType, vArgs)
+            vCall ?: return V_MemberFunctionCall_Error(ctx, ideInfo)
+            return V_MemberFunctionCall_SpecialLibFunction(ctx, ideInfo, vArgs, vCall)
+        }
+    }
+
+    abstract class Complex internal constructor(): C_SpecialLibMemberFunctionBody() {
+        internal abstract fun callParameters(selfType: R_Type): C_FunctionCallParameters
+
+        internal abstract fun compileCallComplex(
+            ctx: C_ExprContext,
+            callCtx: C_LibFuncCaseCtx,
+            selfType: R_Type,
+            args: C_FullCallArguments,
+        ): V_SpecialMemberFunctionCall?
+
+        final override fun compileCall(
+            ctx: C_ExprContext,
+            callCtx: C_LibFuncCaseCtx,
+            selfType: R_Type,
+            args: C_FullCallArguments,
+            ideInfo: C_IdeSymbolInfo,
+        ): V_MemberFunctionCall {
+            val callInfo = C_FunctionCallInfo(callCtx.linkPos, callCtx.fullNameLazy)
+            val callParams = callParameters(selfType)
+            val vArgs = args.compileComplexArgs(callInfo, callParams)
+            val vCall = compileCallComplex(ctx, callCtx, selfType, args)
+
+            if (vArgs == null || vCall == null) {
+                return V_MemberFunctionCall_Error(ctx, ideInfo)
+            }
+
+            return V_MemberFunctionCall_SpecialLibFunction(ctx, ideInfo, vArgs.exprs, vCall)
+        }
+    }
+
+    private class V_MemberFunctionCall_SpecialLibFunction(
+        exprCtx: C_ExprContext,
+        ideInfo: C_IdeSymbolInfo,
+        private val vExprs: ImmList<V_Expr>,
+        private val specialCall: V_SpecialMemberFunctionCall,
+    ): V_MemberFunctionCall(exprCtx, ideInfo, immMapOf()) {
+        override fun vExprs() = vExprs
+        override fun globalConstantRestriction() = specialCall.globalConstantRestriction()
+        override fun returnType() = specialCall.returnType
+        override fun canBeDbExpr() = specialCall.canBeDbExpr()
+        override fun calculator(): R_MemberCalculator = specialCall.calculator()
+        override fun dbExprWhat(base: V_Expr, safe: Boolean): C_DbAtWhatValue? = specialCall.dbExprWhat(base, safe)
+    }
 }
 
 internal abstract class V_SpecialMemberFunctionCall(
@@ -179,10 +246,7 @@ internal class C_SpecialLibMemberFunction(
         resTypeHint: C_TypeHint,
     ): V_MemberFunctionCall {
         restrictions.access(ctx.msgCtx, callCtx.linkPos)
-        val vArgs = args.compileSimpleArgs(callCtx.fullNameLazy)
-        val vCall = body.compileCall(ctx, callCtx, selfType, vArgs)
-        vCall ?: return V_MemberFunctionCall_Error(ctx, ideInfo)
-        return V_MemberFunctionCall_SpecialLibFunction(ctx, ideInfo, vArgs, vCall)
+        return body.compileCall(ctx, callCtx, selfType, args, ideInfo)
     }
 
     override fun compileCallPartial(
@@ -195,26 +259,6 @@ internal class C_SpecialLibMemberFunction(
         restrictions.access(ctx.msgCtx, caseCtx.linkPos)
         args.errPartialNotSupportedFn(caseCtx.qualifiedNameMsg())
         return null
-    }
-
-    private class V_MemberFunctionCall_SpecialLibFunction(
-        exprCtx: C_ExprContext,
-        ideInfo: C_IdeSymbolInfo,
-        private val vExprs: ImmList<V_Expr>,
-        private val specialCall: V_SpecialMemberFunctionCall,
-    ): V_MemberFunctionCall(exprCtx, ideInfo, immMapOf()) {
-        override fun vExprs() = vExprs
-        override fun globalConstantRestriction() = specialCall.globalConstantRestriction()
-        override fun returnType() = specialCall.returnType
-        override fun canBeDbExpr() = specialCall.canBeDbExpr()
-
-        override fun calculator(): R_MemberCalculator {
-            return specialCall.calculator()
-        }
-
-        override fun dbExprWhat(base: V_Expr, safe: Boolean): C_DbAtWhatValue? {
-            return specialCall.dbExprWhat(base, safe)
-        }
     }
 }
 

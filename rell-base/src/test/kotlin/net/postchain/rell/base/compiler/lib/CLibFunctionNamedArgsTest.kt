@@ -92,10 +92,11 @@ class CLibFunctionNamedArgsTest: BaseCLibTest() {
         chkNamedArgs("(123)", "OK", "text[#0:123]")
         chkNamedArgs("(123, 'A')", "OK", "text[#0:123,A]")
         chkNamedArgs("(a = 123)", "OK", "text[#0:123]")
-        chkNamedArgs("(a = 123, b = 'A')", "OK", "text[#0:123,A]")
         chkNamedArgs("(123, b = 'A')", "OK", "text[#0:123,A]")
+        chkNamedArgs("(b = 'A', 123)", "ct_err:expr:call:positional_after_named", "ct_err:expr:call:positional_after_named")
+        chkNamedArgs("(a = 123, b = 'A')", "OK", "text[#0:123,A]")
         chkNamedArgs("(b = 'A', a = 123)", "OK", "text[#0:123,A]")
-        chkNamedArgs("(b = 'A')", "ct_err:expr:call:missing_args:[FN]:[0:a]")
+        chkNamedArgs("(b = 'A')", "OK", "text[#0:A]")
     }
 
     @Test fun testNamedArgsGeneric() {
