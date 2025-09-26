@@ -19,8 +19,8 @@ data class CamelCaseClassName(
         fun fromRellDefinition(def: R_Definition): ClassName {
             return CamelCaseClassName(
                 def.appLevelName,
-                def.cDefName.qualifiedName.parts.joinToString("_").snakeToUpperCamelCase(),
-                def.cDefName.qualifiedName.parts.joinToString("_").uppercase(Locale.getDefault()),
+                def.defName.qualifiedName.replace('.', '_').snakeToUpperCamelCase(),
+                def.defName.qualifiedName.replace('.', '_').uppercase(Locale.getDefault()),
                 def.defId.module.substringBefore("[")
             )
         }
@@ -28,8 +28,8 @@ data class CamelCaseClassName(
         fun fromRellOperation(op: R_OperationDefinition): ClassName {
             return CamelCaseClassName(
                 op.appLevelName,
-                op.cDefName.qualifiedName.parts.joinToString("_").snakeToLowerCamelCase() + "Operation",
-                op.cDefName.qualifiedName.parts.joinToString("_").uppercase(Locale.getDefault()),
+                op.defName.qualifiedName.replace('.', '_').snakeToLowerCamelCase() + "Operation",
+                op.defName.qualifiedName.replace('.', '_').uppercase(Locale.getDefault()),
                 op.defId.module.substringBefore("[")
             )
         }
@@ -37,8 +37,8 @@ data class CamelCaseClassName(
         fun fromRellQuery(q: R_QueryDefinition): ClassName {
             return CamelCaseClassName(
                 q.appLevelName,
-                q.cDefName.qualifiedName.parts.joinToString("_").snakeToLowerCamelCase(),
-                q.cDefName.qualifiedName.parts.joinToString("_").uppercase(Locale.getDefault()),
+                q.defName.qualifiedName.replace('.', '_').snakeToLowerCamelCase(),
+                q.defName.qualifiedName.replace('.', '_').uppercase(Locale.getDefault()),
                 q.defId.module.substringBefore("[")
             )
         }
