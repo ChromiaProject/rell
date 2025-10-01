@@ -129,11 +129,14 @@ ruleX_KeywordModifier0:
 		ruleX_Modifier_0
 		    |
 		ruleX_Modifier_1
+		    |
+        ruleX_Modifier_2
 	)
 ;
 
 ruleX_Modifier_0: 'abstract';
-ruleX_Modifier_1: 'override';
+ruleX_Modifier_1: 'mutable';
+ruleX_Modifier_2: 'override';
 
 
 // Rule X_Annotation
@@ -402,8 +405,7 @@ ruleX_AttributeDefinition:
 
 // Rule X_BaseAttributeDefinition
 ruleX_BaseAttributeDefinition:
-	ruleX_tkMUTABLE
-	?
+	ruleX_Modifiers
 	ruleX_AttrHeader
 	(
 		'='
@@ -1538,6 +1540,7 @@ ruleX_CommaSeparated_35:
 
 // Rule X_FormalParameter
 ruleX_FormalParameter:
+	ruleX_Modifiers
 	ruleX_AttrHeader
 	(
 		'='

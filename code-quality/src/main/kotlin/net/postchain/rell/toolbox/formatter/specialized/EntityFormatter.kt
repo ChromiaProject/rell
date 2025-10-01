@@ -69,7 +69,9 @@ class KeyIndexFormatter(
         whitespaceFormatter.formatTrailingComma(trailingComma, doc)
         attributeDefs?.forEach { attributeDef ->
             doc.prepend(attributeDef) { it.oneSpace() }
-            doc.append(attributeDef.ruleX_tkMUTABLE()) { it.oneSpace() }
+            attributeDef.ruleX_Modifiers().ruleX_Modifier().forEach {
+                doc.append(it) { it.oneSpace() }
+            }
             doc.format(attributeDef.ruleX_AttrHeader())
             doc.prepend(attributeDef.ruleX_ExpressionRef()) { it.oneSpace() }
             doc.append(attributeDef) { it.noSpace() }
@@ -83,7 +85,9 @@ class BaseAttributeDefFormatter(
     override fun format(xBaseAttriDef: RuleX_BaseAttributeDefinitionContext, doc: FormattableDocument) {
         doc.append(xBaseAttriDef) { it.noSpace() }
         doc.prepend(xBaseAttriDef) { it.newLine() }
-        doc.append(xBaseAttriDef.ruleX_tkMUTABLE()) { it.oneSpace() }
+        xBaseAttriDef.ruleX_Modifiers().ruleX_Modifier().forEach {
+            doc.append(it) { it.oneSpace() }
+        }
         doc.format(xBaseAttriDef.ruleX_AttrHeader())
         val equalSign = tokenAnalyzer.tokenFor(xBaseAttriDef, "=")
         doc.surround(equalSign) { it.oneSpace() }

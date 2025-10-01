@@ -32,11 +32,11 @@ class Attribute(private val rAttribute: R_Attribute) {
     val type: R_Type get() = rAttribute.type
 
     fun isNumberType(): Boolean {
-        return supportedNumberTypes.contains(type.toString())
+        return supportedNumberTypes.contains(type.str())
     }
 
     fun isTextType(): Boolean {
-        return supportedTextTypes.contains(type.toString())
+        return supportedTextTypes.contains(type.str())
     }
 
     companion object {

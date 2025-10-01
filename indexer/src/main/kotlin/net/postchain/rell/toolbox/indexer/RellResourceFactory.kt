@@ -11,6 +11,7 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCompilationResult
 import net.postchain.rell.base.utils.ide.IdeDirApi
+import net.postchain.rell.base.utils.ide.IdeModuleInfo
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.compiler.AstSourceFile
@@ -23,6 +24,8 @@ import org.antlr.v4.runtime.TokenStream
 import java.io.File
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.reflect.full.declaredMemberFunctions
+import kotlin.reflect.jvm.isAccessible
 
 class RellResourceFactory(
     private val workspaceUri: URI,
@@ -79,7 +82,7 @@ class RellResourceFactory(
 
         return Resource(
             parseResult.parseTree,
-            ast.first.ideModuleInfo(rellCompilerSourcePath),
+            IdeApi.getModuleInfo(rellCompilerSourcePath, ast.first),
             fileUri,
             workspaceUri,
             ast.first,

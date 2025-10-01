@@ -41,7 +41,7 @@ class AttributeConfigParser {
         )
         if (!checkCompatibleTypes(attribute, generator)) {
             throw ConfigurationValidationException(
-                "is type '${attribute.type}' but generator '${attribute.type}' returns type '${generator.type}'"
+                "is type '${attribute.type.str()}' but generator '${attribute.type.str()}' returns type '${generator.type.str()}'"
             )
         }
         return AttributeConfig.DataPatternConfig(generatorType)
@@ -110,7 +110,7 @@ class AttributeConfigParser {
     ): Pair<BigInteger, BigInteger> {
         if (!attribute.isNumberType()) {
             throw ConfigurationValidationException(
-                "type is '${attribute.type}' but generator is configured as a numeric range type"
+                "type is '${attribute.type.str()}' but generator is configured as a numeric range type"
             )
         }
         val min = attributeNode.get("min").bigIntegerValue()
@@ -154,7 +154,7 @@ class AttributeConfigParser {
     private fun validateTextType(attribute: Attribute) {
         if (!attribute.isTextType()) {
             throw ConfigurationValidationException(
-                "type is '${attribute.type}' but generator is as configured as text type"
+                "type is '${attribute.type.str()}' but generator is as configured as text type"
             )
         }
     }

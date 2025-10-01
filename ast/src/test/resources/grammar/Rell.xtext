@@ -27,7 +27,8 @@ X_KeywordModifier
 
 X_KeywordModifier0
    : {X_KeywordModifier0_0} 'abstract'
-   | {X_KeywordModifier0_1} 'override'
+   | {X_KeywordModifier0_1} 'mutable'
+   | {X_KeywordModifier0_2} 'override'
    ;
 
 X_Annotation
@@ -192,11 +193,7 @@ X_AttributeDefinition
    ;
 
 X_BaseAttributeDefinition
-   : {X_BaseAttributeDefinition} (a=X_tkMUTABLE)? b=X_AttrHeader ('=' c=X_ExpressionRef)?
-   ;
-
-X_tkMUTABLE
-   : {X_Token} 'mutable'
+   : {X_BaseAttributeDefinition} a=X_Modifiers b=X_AttrHeader ('=' c=X_ExpressionRef)?
    ;
 
 X_AttrHeader
@@ -304,6 +301,10 @@ X_MirrorStructType0
 
 X_tkSTRUCT
    : {X_Token} 'struct'
+   ;
+
+X_tkMUTABLE
+   : {X_Token} 'mutable'
    ;
 
 X_tkQUESTION
@@ -773,7 +774,7 @@ X_CommaSeparated_35
    ;
 
 X_FormalParameter
-   : {X_FormalParameter} a=X_AttrHeader ('=' b=X_Expression)?
+   : {X_FormalParameter} a=X_Modifiers b=X_AttrHeader ('=' c=X_Expression)?
    ;
 
 X_FunctionBody

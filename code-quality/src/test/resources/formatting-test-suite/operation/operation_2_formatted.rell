@@ -12,3 +12,11 @@ operation tralingCommaMultiLine(
     val val1 = 1;
     val val2 = "val2";
 }
+
+@compound
+operation finalize() {
+
+}
+
+@singular
+operation credit_account() {}
