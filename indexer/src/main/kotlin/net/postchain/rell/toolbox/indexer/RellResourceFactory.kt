@@ -82,7 +82,7 @@ class RellResourceFactory(
 
         return Resource(
             parseResult.parseTree,
-            ast.first.ideModuleInfoByReflection(rellCompilerSourcePath),
+            IdeApi.getModuleInfo(rellCompilerSourcePath, ast.first),
             fileUri,
             workspaceUri,
             ast.first,
@@ -96,21 +96,6 @@ class RellResourceFactory(
             checksum,
             tokenStream
         )
-    }
-
-    private val ideModuleInfoFunction = S_RellFile::class.declaredMemberFunctions.find {
-        it.name == "ideModuleInfo"
-    }?.apply {
-        isAccessible = true
-    }
-
-    fun S_RellFile.ideModuleInfoByReflection(sourcePath: C_SourcePath): IdeModuleInfo? {
-        return try {
-            ideModuleInfoFunction?.call(this, sourcePath) as? IdeModuleInfo
-        } catch (e: Exception) {
-            logger.warn(e) { "Failed to call ideModuleInfo by reflection for ${sourcePath.str()}" }
-            null
-        }
     }
 
     fun buildRellResource(fileUri: URI, fileMap: MutableMap<C_SourcePath, C_SourceFile>): Resource {
