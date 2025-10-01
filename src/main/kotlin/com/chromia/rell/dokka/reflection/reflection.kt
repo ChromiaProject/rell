@@ -1,39 +1,22 @@
 package com.chromia.rell.dokka.reflection
 
+import net.postchain.gtv.Gtv
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
-import net.postchain.rell.base.compiler.base.utils.C_LateInit
-import net.postchain.rell.base.model.R_DefinitionName
-import net.postchain.rell.base.model.R_FunctionBase
-import net.postchain.rell.base.model.R_FunctionDefinition
-import net.postchain.rell.base.model.R_GlobalConstantBody
-import net.postchain.rell.base.model.R_GlobalConstantDefinition
-import net.postchain.rell.base.model.R_OperationDefinition
-import net.postchain.rell.base.model.R_QueryBody
-import net.postchain.rell.base.model.R_QueryDefinition
-import net.postchain.rell.base.model.R_RoutineDefinition
-import net.postchain.rell.base.model.expr.R_ConstantValueExpr
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.expr.R_ExtendableFunctionUid
 import net.postchain.rell.base.model.expr.R_FunctionExtensions
 import net.postchain.rell.base.model.expr.R_FunctionExtensionsTable
-import net.postchain.rell.base.model.expr.R_StackTraceExpr
 import net.postchain.rell.base.runtime.Rt_Value
+import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
-
-
-fun R_StackTraceExpr.getSubExprByReflection() =
-        R_StackTraceExpr::class.memberProperties.find { it.name == "subExpr" }!!.let {
-            it.isAccessible = true
-            it.get(this) as R_Expr
-        }
-
-fun R_ConstantValueExpr.getValueByReflection() =
-        R_ConstantValueExpr::class.memberProperties.find { it.name == "value" }!!.let {
-            it.isAccessible = true
-            it.get(this) as Rt_Value
-        }
+fun R_Expr.getValueByReflection() =
+    javaClass.kotlin.memberProperties.find { it.name == "value" }?.let {
+        it.isAccessible = true
+        it.get(this) as Rt_Value
+    }
 
 fun R_FunctionExtensionsTable.getFunctionExtensionsByReflection() =
         R_FunctionExtensionsTable::class.memberProperties.find { it.name == "list" }!!.let {
@@ -64,7 +47,7 @@ fun R_GlobalConstantDefinition.getTypeByReflection() =
 fun R_FunctionDefinition.getParamsByReflection() =
         R_FunctionDefinition::class.memberProperties.find { it.name == "fnBase" }!!.let {
             it.isAccessible = true
-            (it.get(this) as R_FunctionBase).getHeader().params
+            (it.get(this) as R_FunctionBase).getHeaderByReflection().params
         }
 
 fun R_RoutineDefinition.getTypeByReflection() = when (this) {
@@ -73,17 +56,25 @@ fun R_RoutineDefinition.getTypeByReflection() = when (this) {
     is R_FunctionDefinition -> getTypeByReflection()
 }
 
+fun R_FunctionBase.getHeaderByReflection() =
+    R_FunctionBase::class.memberFunctions.find { it.name == "getHeader" }!!
+                .let {
+                    it.isAccessible = true
+                    it.call(this) as R_FunctionHeader
+                }
+
+fun R_GlobalConstantDefinition.toMetaGtvByReflection() =
+    R_GlobalConstantDefinition::class.memberFunctions.find { it.name == "toMetaGtv" }!!
+                .let {
+                    it.isAccessible = true
+                    it.call(this) as Gtv
+                }
+
 private fun R_FunctionDefinition.getTypeByReflection() =
         R_FunctionDefinition::class.memberProperties.find { it.name == "fnBase" }!!
                 .let {
                     it.isAccessible = true
-                    (it.get(this) as R_FunctionBase).getHeader().type
+                    (it.get(this) as R_FunctionBase).getHeaderByReflection().type
                 }
 
-private fun R_QueryDefinition.getTypeByReflection() =
-        R_QueryDefinition::class.memberProperties.find { it.name == "bodyLate" }!!.let {
-            it.isAccessible = true
-            @Suppress("UNCHECKED_CAST")
-            (it.get(this) as C_LateInit<R_QueryBody>).get().retType
-        }
-
+private fun R_QueryDefinition.getTypeByReflection() = this.type()

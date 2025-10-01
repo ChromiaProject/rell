@@ -7,60 +7,15 @@ import com.chromia.rell.dokka.doc.toDocumentationNode
 import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.dri.toPackageName
-import com.chromia.rell.dokka.model.ExtensionFunction
-import com.chromia.rell.dokka.model.ExtensionFunctionExtra
-import com.chromia.rell.dokka.model.IsAnonymous
-import com.chromia.rell.dokka.model.IsEntity
-import com.chromia.rell.dokka.model.IsExtendable
-import com.chromia.rell.dokka.model.IsFunction
-import com.chromia.rell.dokka.model.IsIndex
-import com.chromia.rell.dokka.model.IsKey
-import com.chromia.rell.dokka.model.IsNamespace
-import com.chromia.rell.dokka.model.IsObject
-import com.chromia.rell.dokka.model.IsOperation
-import com.chromia.rell.dokka.model.IsQuery
-import com.chromia.rell.dokka.model.IsStruct
-import com.chromia.rell.dokka.model.MountNameExtra
-import com.chromia.rell.dokka.model.toExpression
-import com.chromia.rell.dokka.reflection.getParamsByReflection
-import com.chromia.rell.dokka.reflection.getSubExprByReflection
-import com.chromia.rell.dokka.reflection.getTypeByReflection
-import com.chromia.rell.dokka.reflection.getValueByReflection
-import net.postchain.rell.base.model.R_Attribute
-import net.postchain.rell.base.model.R_EntityDefinition
-import net.postchain.rell.base.model.R_EnumAttr
-import net.postchain.rell.base.model.R_EnumDefinition
-import net.postchain.rell.base.model.R_FunctionDefinition
-import net.postchain.rell.base.model.R_FunctionParam
-import net.postchain.rell.base.model.R_GlobalConstantDefinition
-import net.postchain.rell.base.model.R_KeyIndexKind
-import net.postchain.rell.base.model.R_Module
-import net.postchain.rell.base.model.R_MountedRoutineDefinition
-import net.postchain.rell.base.model.R_ObjectDefinition
-import net.postchain.rell.base.model.R_OperationDefinition
-import net.postchain.rell.base.model.R_QueryDefinition
-import net.postchain.rell.base.model.R_RoutineDefinition
-import net.postchain.rell.base.model.R_StructDefinition
-import net.postchain.rell.base.model.expr.R_ConstantValueExpr
-import net.postchain.rell.base.model.expr.R_StackTraceExpr
+import com.chromia.rell.dokka.model.*
+import com.chromia.rell.dokka.reflection.*
+import net.postchain.rell.base.model.*
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.withClass
-import org.jetbrains.dokka.model.ComplexExpression
-import org.jetbrains.dokka.model.DClass
-import org.jetbrains.dokka.model.DClasslike
-import org.jetbrains.dokka.model.DEnum
-import org.jetbrains.dokka.model.DEnumEntry
-import org.jetbrains.dokka.model.DFunction
-import org.jetbrains.dokka.model.DPackage
-import org.jetbrains.dokka.model.DParameter
-import org.jetbrains.dokka.model.DProperty
-import org.jetbrains.dokka.model.DefaultValue
-import org.jetbrains.dokka.model.IsVar
-import org.jetbrains.dokka.model.KotlinModifier
-import org.jetbrains.dokka.model.KotlinVisibility
+import org.jetbrains.dokka.model.*
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.Text
@@ -165,7 +120,7 @@ internal class RellModuleVisitor(
                 expectPresentInSet = null,
                 documentation = docSymbol.toDocumentationNode().toSourceSetDependent(),
                 extra = PropertyContainer.withAll(
-                        DefaultValue(ComplexExpression(toMetaGtv()["value"].toString()).toSourceSetDependent())
+                        DefaultValue(ComplexExpression(toMetaGtvByReflection()["value"].toString()).toSourceSetDependent())
                 )
         )
     }
@@ -271,8 +226,7 @@ internal class RellModuleVisitor(
                             else -> null
                         },
                         IsVar.takeIf { mutable },
-                        expr?.let { it as? R_StackTraceExpr }?.getSubExprByReflection()
-                                ?.let { it as? R_ConstantValueExpr }?.getValueByReflection()
+                        expr?.getValueByReflection()
                                 ?.let { DefaultValue(it.toExpression().toSourceSetDependent()) }
                 )
         )
@@ -356,12 +310,12 @@ internal class RellModuleVisitor(
                 packageName = defName.toPackageName(),
                 callable = Callable.from(
                         defName.simpleName,
-                        fnBase.getHeader().params
+                        fnBase.getHeaderByReflection().params
                 )
         )
         val targetDri = rellAnalysis.findFunctionReference(targetAppLevelName) ?: return null
         if (dri == targetDri) return null
-        val params = fnBase.getHeader().params.mapIndexed { index, param -> param.visit(dri, index) }
+        val params = fnBase.getHeaderByReflection().params.mapIndexed { index, param -> param.visit(dri, index) }
         return DFunction(
                 dri = dri,
                 name = defName.simpleName,
@@ -372,7 +326,7 @@ internal class RellModuleVisitor(
                 visibility = mapOf(),
                 receiver = null,
                 isExpectActual = false,
-                type = fnBase.getHeader().type.toBound(),
+                type = fnBase.getHeaderByReflection().type.toBound(),
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
                 sources = RellDocumentableSource.NULL.toSourceSetDependent(),
