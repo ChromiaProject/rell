@@ -44,7 +44,11 @@ fun R_GlobalConstantDefinition.getTypeByReflection() =
             (it.get(this) as C_LateGetter<R_GlobalConstantBody>).get().type
         }
 
-fun R_FunctionDefinition.getParamsByReflection() = params()
+fun R_FunctionDefinition.getParamsByReflection() =
+        R_FunctionDefinition::class.memberProperties.find { it.name == "fnBase" }!!.let {
+            it.isAccessible = true
+            (it.get(this) as R_FunctionBase).getHeaderByReflection().params
+        }
 
 fun R_RoutineDefinition.getTypeByReflection() = when (this) {
     is R_OperationDefinition -> type
