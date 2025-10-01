@@ -106,7 +106,7 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
         if (returnType is R_MapType) return hasSupportedReturnType(query, returnType.valueType)
 
         return if (returnType is R_TupleType && isMixedTuple(returnType)) {
-            rellCliEnv.error("Skipping [${query.appLevelName}] Query return type contains unsupported mixed tuple type: $returnType")
+            rellCliEnv.error("Skipping [${query.appLevelName}] Query return type contains unsupported mixed tuple type: ${returnType.str()}")
             false
         } else {
             true
