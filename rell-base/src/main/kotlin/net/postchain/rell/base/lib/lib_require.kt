@@ -4,15 +4,21 @@
 
 package net.postchain.rell.base.lib
 
+import net.postchain.rell.base.compiler.base.lib.C_LibTypeDef
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.L_ParamImplication
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
+import net.postchain.rell.base.model.R_PrimitiveType
 import net.postchain.rell.base.model.Rt_NullValue
+import net.postchain.rell.base.runtime.GtvRtConversion
+import net.postchain.rell.base.runtime.GtvRtConversion_None
 import net.postchain.rell.base.runtime.Rt_RequireError
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 
 object Lib_Require {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -117,6 +123,42 @@ object Lib_Require {
             }
             makeRequireBody(this, R_RequireCondition_Nullable)
         }
+
+
+        namespace("rell", since = SINCE_NOW) {
+            type("error_type", rType = R_RellErrorType, abstract = true, hidden = true, since = SINCE_NOW)
+
+            function("error", pure = true, since = SINCE_NOW) {
+                comment("""
+                    Unconditionally fail, raising an exception, with an optional message.
+
+                    Ends control flow, enabling one to write e.g.
+
+                    ```rell
+                    function f(x: integer?): integer {
+                        if (x == null) {
+                            rell.error('null argument');
+                        }
+                        return x * x; // compiler knows that x cannot be null, so we can write x * x
+                    }
+                    ```
+
+                    `rell.error(message)` is equivalent to `require(false, message)`, except that `rell.error()` has the
+                    additional end-of-control-flow behaviour.
+
+                    @throws exception unconditionally
+                """)
+                result(type = "rell.error_type")
+                param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
+                    comment("the message for the exception to be thrown")
+                }
+                bodyN { args ->
+                    Rt_Utils.checkRange(args.size, 0, 1)
+                    val msg = args.getOrNull(0)?.asLazyValue()?.asString()
+                    throw Rt_RequireError.exception(msg)
+                }
+            }
+        }
     }
 
     private fun makeRequireBody(m: Ld_FunctionDsl, condition: R_RequireCondition) = with(m) {
@@ -149,4 +191,9 @@ object R_RequireCondition_Collection: R_RequireCondition() {
 
 object R_RequireCondition_Map: R_RequireCondition() {
     override fun calculate(v: Rt_Value) = if (v != Rt_NullValue && v.asMap().isNotEmpty()) v else null
+}
+
+internal object R_RellErrorType: R_PrimitiveType("rell.error_type") {
+    override fun getLibTypeDef(): C_LibTypeDef = Lib_Rell.RELL_ERROR_TYPE
+    override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_None
 }

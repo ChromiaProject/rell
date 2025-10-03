@@ -12,6 +12,7 @@ import net.postchain.rell.base.compiler.base.core.C_TypeAdapter_Direct
 import net.postchain.rell.base.compiler.base.lib.C_LibType
 import net.postchain.rell.base.compiler.base.lib.C_LibTypeDef
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
+import net.postchain.rell.base.lib.R_RellErrorType
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
@@ -224,9 +225,9 @@ abstract class R_Type(
 
     companion object {
         fun commonTypeOpt(a: R_Type, b: R_Type): R_Type? {
-            if (a == R_CtErrorType) {
+            if (a == R_CtErrorType || a == R_RellErrorType) {
                 return b
-            } else if (b == R_CtErrorType) {
+            } else if (b == R_CtErrorType || b == R_RellErrorType) {
                 return a
             } else if (a.isError()) {
                 return b

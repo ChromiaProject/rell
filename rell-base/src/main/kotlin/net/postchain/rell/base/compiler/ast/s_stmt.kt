@@ -9,6 +9,7 @@ import net.postchain.rell.base.compiler.base.def.C_LocalAttrHeaderIdeData
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_Expr
+import net.postchain.rell.base.lib.R_RellErrorType
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.R_Name
@@ -261,7 +262,7 @@ class S_ExprStatement(
         val vExpr = expr.compile(ctx).vExpr()
         val rExpr = vExpr.toRExpr()
         val rStmt = if (repl) R_ReplExprStatement(rExpr) else R_ExprStatement(rExpr)
-        return C_Statement(rStmt, false, vExpr.varStatesDelta.always)
+        return C_Statement(rStmt, rExpr.type == R_RellErrorType, vExpr.varStatesDelta.always)
     }
 }
 

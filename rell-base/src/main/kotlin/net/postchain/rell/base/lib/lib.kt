@@ -54,6 +54,7 @@ object Lib_Rell {
     val LIST_TYPE = MODULE.getTypeDef("list")
     val SET_TYPE = MODULE.getTypeDef("set")
     val MAP_TYPE = MODULE.getTypeDef("map")
+    val RELL_ERROR_TYPE = MODULE.getTypeDef("rell.error_type")
     val VIRTUAL_TYPE = MODULE.getTypeDef("virtual")
     val VIRTUAL_LIST_TYPE = MODULE.getTypeDef("virtual_list")
     val VIRTUAL_SET_TYPE = MODULE.getTypeDef("virtual_set")

@@ -127,4 +127,70 @@ class LibRequireTest: BaseRellTest() {
         chkEx("{ require_not_empty(123); return 0; }", "ct_err:expr_call_badargs:[require_not_empty]:[integer]")
         chkEx("{ require_not_empty('Hello'); return 0; }", "ct_err:expr_call_badargs:[require_not_empty]:[text]")
     }
+
+    @Test fun testErrorFnSimple() {
+        chkEx("{ rell.error(); }", "req_err:null")
+        chkEx("{ rell.error('my bad'); }", "req_err:[my bad]")
+    }
+
+    @Test fun testErrorFnHiddenType() {
+        val typeName = R_RellErrorType.name
+        chkCompile("function f() { val my_var: $typeName = rell.error(); return 0; }",
+            "ct_err:unknown_name:$typeName")
+    }
+
+    @Test fun testErrorFnThrownEagerly() {
+        chkEx("{ val my_var = rell.error('not allowed'); print('hello'); print(my_var); return 0; }",
+            "req_err:[not allowed]")
+        chkOut()
+    }
+
+    @Test fun testErrorFnEndsControlFlowIf() {
+        chkCompile("function f(x: integer?) { if (x == null) rell.error(); print(x * x); }", "OK")
+        chkCompile("function f(x: integer?): integer { if (x == null) rell.error(); return x * x; }", "OK")
+        chkCompile("function f(x: integer?): integer { return if (x == null) rell.error() else x * x; }", "OK")
+    }
+
+    @Test fun testErrorFnEndsControlFlowWhenStmt() {
+        chkErrorFnWhen( """
+            when(s) {
+                OK -> return 0;
+                FINE -> return 1;
+                ACCEPTABLE -> return 2;
+                UTTER_GARBAGE -> rell.error('Time to give up and go home.');
+            }
+        """
+        )
+    }
+
+    @Test fun testErrorFnEndsControlFlowWhenExprOuterReturn() {
+        chkErrorFnWhen("""
+            return when(s) {
+                OK -> 0;
+                FINE -> 1;
+                ACCEPTABLE -> 2;
+                UTTER_GARBAGE -> rell.error('Time to give up and go home.');
+            };
+        """)
+    }
+
+    private fun chkErrorFnWhen(fnBody: String) {
+        def("""
+            enum status { OK, FINE, ACCEPTABLE, UTTER_GARBAGE }
+            function f(s: status): integer {
+                $fnBody
+            }
+        """)
+        chk("f(status.OK)", "int[0]")
+        chk("f(status.FINE)", "int[1]")
+        chk("f(status.ACCEPTABLE)", "int[2]")
+        chk("f(status.UTTER_GARBAGE)", "req_err:[Time to give up and go home.]")
+    }
+
+    @Test fun testErrFnWrongArgs() {
+        chkEx("{ rell.error(null); return 0; }", "ct_err:expr_call_badargs:[rell.error]:[null]")
+        chkEx("{ rell.error(false); return 0; }", "ct_err:expr_call_badargs:[rell.error]:[boolean]")
+        chkEx("{ rell.error(true); return 0; }", "ct_err:expr_call_badargs:[rell.error]:[boolean]")
+        chkEx("{ rell.error(123); return 0; }", "ct_err:expr_call_badargs:[rell.error]:[integer]")
+    }
 }
