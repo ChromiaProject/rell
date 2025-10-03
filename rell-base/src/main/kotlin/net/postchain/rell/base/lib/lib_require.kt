@@ -18,7 +18,6 @@ import net.postchain.rell.base.runtime.GtvRtConversion_None
 import net.postchain.rell.base.runtime.Rt_RequireError
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
-import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 
 object Lib_Require {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -125,10 +124,10 @@ object Lib_Require {
         }
 
 
-        namespace("rell", since = SINCE_NOW) {
-            type("error_type", rType = R_RellErrorType, abstract = true, hidden = true, since = SINCE_NOW)
+        namespace("rell", since = "0.14.15") {
+            type("error_type", rType = R_RellErrorType, abstract = true, hidden = true, since = "0.14.15")
 
-            function("error", pure = true, since = SINCE_NOW) {
+            function("error", pure = true, since = "0.14.15") {
                 comment("""
                     Unconditionally fail, raising an exception, with an optional message.
 
