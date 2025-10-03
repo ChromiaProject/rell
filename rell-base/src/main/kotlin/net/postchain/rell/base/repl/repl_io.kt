@@ -105,7 +105,7 @@ object ReplValueFormatter {
         val type = v.type()
         val flags = type.completeFlags()
         if (!flags.gtv.toGtv) {
-            return "Type $type cannot be converted to Gtv. Switch to a different output format."
+            return "Type ${type.str()} cannot be converted to Gtv. Switch to a different output format."
         }
 
         val gtv = type.rtToGtv(v, true)

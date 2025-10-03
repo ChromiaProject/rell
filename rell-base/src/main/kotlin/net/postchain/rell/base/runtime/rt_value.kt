@@ -124,7 +124,7 @@ abstract class Rt_Value {
         return cls.cast(this)
     }
 
-    open fun toFormatArg(): Any = toString()
+    open fun toFormatArg(): Any = str()
 
     abstract fun str(format: StrFormat = StrFormat.V1): String
     abstract fun strCode(showTupleFieldNames: Boolean = true): String
