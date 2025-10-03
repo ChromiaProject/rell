@@ -1,0 +1,26 @@
+RELEASE NOTES 0.14.15 (2025-10-03)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Library: Unconditionally failing function rell.error()
+
+A new function to unconditionally fail, raising an exception, with an optional message:
+
+    rell.error(message: text? = null)
+
+Examples:
+
+    rell.error(); // Throws an exception, with a null message.
+    rell.error('Not allowed.'); // Throws an exception with the message 'Not allowed.'.
+
+The function signals the end of control flow to the Rell compiler (as would a return statement), enabling one to write,
+for example:
+
+    function f(x: integer?): integer {
+        if (x == null) {
+            rell.error('null argument');
+        }
+        return x * x; // compiler knows that x cannot be null, so we can write x * x
+    }
+
+rell.error(message) is equivalent to require(false, message), except that rell.error() has the additional
+end-of-control-flow behaviour.
