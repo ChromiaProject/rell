@@ -8,6 +8,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.R_TypeMeta
 import net.postchain.rell.base.model.R_VirtualSetType
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.immListOf
@@ -25,7 +26,7 @@ object Lib_Type_Set {
             generic("T", subOf = "immutable")
             parent("collection<T>")
 
-            rType { t -> R_SetType(t) }
+            rTypeMeta(R_SetType.META)
 
             constructor(pure = true, since = SINCE0) {
                 comment("Construct a new empty set.")
@@ -73,6 +74,10 @@ class R_SetType(elementType: R_Type): R_CollectionType(elementType, "set") {
     override fun fromCli(s: String): Rt_Value = Rt_SetValue(this, s.split(",").map { elementType.fromCli(it) }.toMutableSet())
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Set(this)
     override fun getLibTypeDef() = Lib_Rell.SET_TYPE
+
+    companion object {
+        internal val META = R_TypeMeta.make { t -> R_SetType(t) }
+    }
 }
 
 class Rt_SetValue(private val type: R_Type, private val elements: MutableSet<Rt_Value>): Rt_Value() {

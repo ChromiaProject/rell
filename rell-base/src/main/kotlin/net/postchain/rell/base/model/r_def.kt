@@ -200,6 +200,7 @@ class R_Struct internal constructor(
             gtv = R_GtvCompatibility(fromGtv = true, toGtv = true),
             virtualable = true,
             mixedTuple = false,
+            hasTypeVariable = false,
         )
 
         private val ERROR_STRUCT_FLAGS = R_StructFlags(typeFlags = ERROR_TYPE_FLAGS, cyclic = false, infinite = false)

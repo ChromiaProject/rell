@@ -5,6 +5,7 @@
 package net.postchain.rell.base.lib.type
 
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
+import net.postchain.rell.base.model.R_VirtualMapType
 import net.postchain.rell.base.utils.doc.DocCode
 
 object Lib_Type_VirtualMap {
@@ -15,9 +16,7 @@ object Lib_Type_VirtualMap {
             generic("V")
             parent("iterable<(K,V)>")
 
-            rType { k, v0, _ ->
-                R_MapType(k, v0).virtualType
-            }
+            rTypeMeta(R_VirtualMapType.META)
 
             docCode { k, v, _ ->
                 DocCode.builder()

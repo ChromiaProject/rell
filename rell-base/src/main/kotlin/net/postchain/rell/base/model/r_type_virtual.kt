@@ -9,24 +9,33 @@ import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvVirtual
 import net.postchain.gtv.merkle.proof.GtvMerkleProofTreeFactory
 import net.postchain.gtv.merkle.proof.toGtvVirtual
+import net.postchain.rell.base.compiler.ast.S_VirtualType
 import net.postchain.rell.base.lib.type.R_ListType
 import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.lib.type.R_SetType
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.utils.immListOf
 
-sealed class R_VirtualType(private val baseInnerType: R_Type): R_Type("virtual<${baseInnerType.name}>") {
+sealed class R_VirtualType(private val baseInnerType: R_Type): R_CompositeType("virtual<${baseInnerType.name}>") {
     private val isError = baseInnerType.isError()
 
     final override fun isReference() = true
     final override fun isError() = isError
     final override fun strCode() = name
     final override fun isDirectPure() = false    // Maybe it's actually pure.
+    override fun explicitComponentTypes() = immListOf<R_Type>()
 
     final override fun toMetaGtv() = mapOf(
-            "type" to "virtual".toGtv(),
-            "value" to baseInnerType.toMetaGtv()
+        "type" to "virtual".toGtv(),
+        "value" to baseInnerType.toMetaGtv(),
     ).toGtv()
+
+    companion object {
+        internal val META = R_TypeMeta.make { t ->
+            S_VirtualType.virtualType(t)
+        }
+    }
 }
 
 sealed class Rt_VirtualValue(val gtv: Gtv): Rt_Value() {

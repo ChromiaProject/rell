@@ -15,7 +15,7 @@ import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_DefinitionMeta
-import net.postchain.rell.base.model.R_LibSimpleType
+import net.postchain.rell.base.model.R_LibUniqueType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.GtvRtConversion
 import net.postchain.rell.base.runtime.GtvRtConversion_None
@@ -211,7 +211,7 @@ private object C_SysFn_Meta_CurrentModule: C_SpecialLibGlobalFunctionBody() {
     }
 }
 
-private object R_RellMetaType: R_LibSimpleType("rell.meta", C_DefinitionName("rell", "rell.meta")) {
+private object R_RellMetaType: R_LibUniqueType("rell.meta", C_DefinitionName("rell", "rell.meta")) {
     override fun isReference() = true
     override fun isDirectPure() = true
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_None

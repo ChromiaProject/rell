@@ -308,7 +308,7 @@ private class C_LibTypeBodyBuilder(
         val attr: C_MemberAttr = C_MemberAttr_SysProperty(
             ideName,
             rResType,
-            property.fn,
+            property.prop,
             naming,
             header.restrictions,
             pure = property.pure,

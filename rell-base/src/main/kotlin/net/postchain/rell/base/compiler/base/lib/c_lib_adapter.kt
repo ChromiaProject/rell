@@ -206,7 +206,8 @@ private class C_LibNamespaceConverter {
         val ideKind = if (lMember.property.pure) IdeSymbolKind.MEM_SYS_PROPERTY_PURE else IdeSymbolKind.MEM_SYS_PROPERTY
         val ideInfo = C_IdeSymbolInfo.direct(ideKind, doc = lMember.docSymbol)
         val varId = C_LibNamespacePropertyVarId(lMember.fullName, lMember.property)
-        val prop = C_NamespaceProperty_SysFunction(rType, lMember.property.fn, varId)
+        val fn = lMember.property.prop.getFunction(rType)
+        val prop = C_NamespaceProperty_SysFunction(rType, fn, varId)
         val restrictions = C_MemberRestrictions.makeLib(lMember, C_DeclarationType.PROPERTY, null)
         return mf.property(lMember.simpleName, prop, ideInfo, restrictions)
     }

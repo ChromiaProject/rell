@@ -21,7 +21,6 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
-import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.formatEx
 import org.jooq.impl.SQLDataType
 import java.nio.ByteBuffer

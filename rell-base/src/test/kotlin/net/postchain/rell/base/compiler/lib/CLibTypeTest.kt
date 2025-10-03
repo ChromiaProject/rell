@@ -86,4 +86,26 @@ class CLibTypeTest: BaseCLibTest() {
         chkCompile("function f() = tada.X;", "ct_err:deprecated:ALIAS:[mod:tada]:data")
         chkCompile("function f() = tada.f();", "ct_err:deprecated:ALIAS:[mod:tada]:data")
     }
+
+    @Test fun testGenericProperty() {
+        tst.typeCheck = false
+        modTst.libModule {
+            imports(Lib_Rell.MODULE.lModule)
+            type("data") {
+                generic("T")
+                modTst.setRTypeFactory(this, genericCount = 1)
+                constructor {
+                    param("value", type = "T")
+                    body { value -> value }
+                }
+                property("prop", type = "T", pure = true) {
+                    value { self, _ -> self }
+                }
+            }
+        }
+
+        chk("data<integer>(123).prop", "int[123]")
+        chk("data<text>('hello').prop", "text[hello]")
+        chk("data<boolean>(true).prop", "boolean[true]")
+    }
 }

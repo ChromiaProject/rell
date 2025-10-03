@@ -35,7 +35,7 @@ object Lib_Crypto {
         Rt_ByteArrayValue.get(md.digest(ba))
     }
 
-    private val POINT_TYPE = R_TupleType.create(R_BigIntegerType, R_BigIntegerType)
+    private val POINT_TYPE = R_TupleType.make(R_BigIntegerType, R_BigIntegerType)
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         alias(target = "crypto.verify_signature", since = "0.9.0")
@@ -283,7 +283,7 @@ object Lib_Crypto {
                 }
             }
 
-            val signatureType = R_TupleType.create(R_ByteArrayType, R_ByteArrayType, R_IntegerType)
+            val signatureType = R_TupleType.make(R_ByteArrayType, R_ByteArrayType, R_IntegerType)
             val signatureTypeStr = "(byte_array,byte_array,integer)"
 
             function("eth_sign", result = signatureTypeStr, pure = true, since = "0.10.6") {

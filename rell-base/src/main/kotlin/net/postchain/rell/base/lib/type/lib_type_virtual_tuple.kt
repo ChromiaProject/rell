@@ -26,7 +26,7 @@ object Lib_Type_VirtualTuple {
     private class C_TypeValueMember_VirtualTupleAttr(type: R_Type, fieldIndex: Int, field: R_TupleField)
         : C_MemberAttr_TupleAttr(type, fieldIndex, field)
     {
-        override fun vAttr(exprCtx: C_ExprContext, pos: S_Pos): V_MemberAttr {
+        override fun vAttr(exprCtx: C_ExprContext, selfType: R_Type, pos: S_Pos): V_MemberAttr {
             return V_TypeValueMember_VirtualTupleAttr(type, fieldIndex)
         }
 

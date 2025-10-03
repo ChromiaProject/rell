@@ -18,6 +18,12 @@ class R_VirtualListType(val innerType: R_ListType): R_VirtualCollectionType(inne
     override fun hashCode0() = innerType.hashCode()
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_VirtualList(this)
     override fun typeDef() = Lib_Rell.VIRTUAL_LIST_TYPE
+
+    companion object {
+        internal val META = R_TypeMeta.make { t, _ ->
+            R_ListType(t).virtualType
+        }
+    }
 }
 
 class Rt_VirtualListValue(

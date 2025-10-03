@@ -19,7 +19,7 @@ import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocCode
 import org.jooq.impl.SQLDataType
 
-class R_EnumType(val enum: R_EnumDefinition): R_Type(enum.appLevelName, enum.cDefName) {
+class R_EnumType(val enum: R_EnumDefinition): R_SimpleType(enum.appLevelName, enum.cDefName) {
     init {
         checkEquals(enum.type, null) // during initialization
     }
@@ -49,12 +49,10 @@ class R_EnumType(val enum: R_EnumDefinition): R_Type(enum.appLevelName, enum.cDe
     }
 
     override fun isDirectPure() = true
-    override fun isCacheable() = true
 
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Enum(enum)
     override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Enum(this)
 
-    override fun strCode() = name
     override fun toMetaGtv() = enum.appLevelName.toGtv()
 
     override fun getLibType0() = C_LibType.make(

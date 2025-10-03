@@ -7,8 +7,8 @@ package net.postchain.rell.base.lmodel.dsl
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibMemberFunctionBody
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
-import net.postchain.rell.base.lmodel.L_TypeDefRTypeFactory
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.R_TypeMeta
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_Type_Composite
 import net.postchain.rell.base.runtime.Rt_Value
@@ -88,7 +88,7 @@ interface Ld_TypeDefDsl: Ld_CommonTypeDsl, Ld_CommonNamespaceDsl {
     fun rType(factory: (R_Type) -> R_Type?)
     fun rType(factory: (R_Type, R_Type) -> R_Type?)
     fun rType(factory: (R_Type, R_Type, R_Type) -> R_Type?)
-    fun rTypeFactory(factory: L_TypeDefRTypeFactory)
+    fun rTypeMeta(rTypeMeta: R_TypeMeta)
 
     fun docCode(calculator: (DocCode) -> DocCode)
     fun docCode(calculator: (DocCode, DocCode) -> DocCode)

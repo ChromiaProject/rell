@@ -5,8 +5,6 @@
 package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.testutils.BaseRellTest
-import org.junit.jupiter.api.assertDoesNotThrow
-import java.util.*
 import kotlin.test.Test
 
 class LibTextTest: BaseRellTest() {

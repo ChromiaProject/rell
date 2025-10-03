@@ -31,7 +31,7 @@ object Lib_Type_VirtualStruct {
         attr: R_Attribute,
         private val outerType: R_Type,
     ): C_MemberAttr_StructAttr(type, attr) {
-        override fun vAttr(exprCtx: C_ExprContext, pos: S_Pos): V_MemberAttr {
+        override fun vAttr(exprCtx: C_ExprContext, selfType: R_Type, pos: S_Pos): V_MemberAttr {
             return V_MemberAttr_VirtualStructAttr(type, attr, outerType)
         }
 

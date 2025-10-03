@@ -102,7 +102,7 @@ class CLibDocTest: BaseCLibTest() {
         chkValue("map<integer,text>", Rt_MapValue(R_MapType(R_IntegerType, R_TextType), mutableMapOf()),
             "[map]<[integer], [text]>")
 
-        val tupleType = R_TupleType.create(R_IntegerType, R_TextType)
+        val tupleType = R_TupleType.make(R_IntegerType, R_TextType)
         chkValue("(integer,text)", Rt_TupleValue(tupleType, listOf(Rt_IntValue.get(123), Rt_TextValue.get("abc"))),
             "([integer], [text])")
     }

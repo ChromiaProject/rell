@@ -7,6 +7,7 @@ package net.postchain.rell.base.lmodel.dsl
 import net.postchain.rell.base.compiler.base.lib.C_SysFunction
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionCtx
+import net.postchain.rell.base.compiler.base.lib.C_SysProperty
 import net.postchain.rell.base.lmodel.L_NamespaceProperty
 import net.postchain.rell.base.lmodel.L_TypeProperty
 import net.postchain.rell.base.lmodel.L_TypeUtils
@@ -18,9 +19,9 @@ import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 
 abstract class Ld_PropertyValue {
-    abstract fun finish(type: M_Type): Finish
+    internal abstract fun finish(type: M_Type): Finish
 
-    class Finish(val fn: C_SysFunction, val pure: Boolean)
+    internal class Finish(val prop: C_SysProperty, val pure: Boolean)
 
     private class Ld_PropertyValue_NamespaceProp(
         private val internalState: Ld_InternalFunctionBodyState,
@@ -32,18 +33,39 @@ abstract class Ld_PropertyValue {
                 Rt_Utils.checkEquals(args.size, 0)
                 block(ctx, rType)
             }
-            return Finish(internalBody.fn, internalBody.pure)
+            val prop = object: C_SysProperty() {
+                override fun getFunction(type: R_Type) = internalBody.fn
+            }
+            return Finish(prop, internalBody.pure)
         }
     }
 
-    private class Ld_PropertyValue_TypeProp(
-        private val fnGetter: (R_Type) -> C_SysFunctionBody,
+    private class Ld_PropertyValue_SimpleTypeProp(
+        private val pure: Boolean,
+        private val valueGetter: (Rt_Value, R_Type) -> Rt_Value,
     ): Ld_PropertyValue() {
         override fun finish(type: M_Type): Finish {
-            val rType = L_TypeUtils.getRTypeNotNull(type)
-            val body = fnGetter(rType)
+            val prop = object: C_SysProperty() {
+                override fun getFunction(type: R_Type): C_SysFunction {
+                    val body = C_SysFunctionBody.simple(pure = pure) { self ->
+                        valueGetter(self, type)
+                    }
+                    return C_SysFunction.direct(body)
+                }
+            }
+            return Finish(prop, pure)
+        }
+    }
+
+    private class Ld_PropertyValue_SpecialTypeProp(
+        private val body: C_SysFunctionBody,
+    ): Ld_PropertyValue() {
+        override fun finish(type: M_Type): Finish {
             val fn = C_SysFunction.direct(body)
-            return Finish(fn, body.pure)
+            val prop = object: C_SysProperty() {
+                override fun getFunction(type: R_Type) = fn
+            }
+            return Finish(prop, body.pure)
         }
     }
 
@@ -55,8 +77,12 @@ abstract class Ld_PropertyValue {
             return Ld_PropertyValue_NamespaceProp(internalState, block)
         }
 
-        internal fun typeProp(fnGetter: (R_Type) -> C_SysFunctionBody): Ld_PropertyValue {
-            return Ld_PropertyValue_TypeProp(fnGetter)
+        internal fun typeProp(pure: Boolean, valueGetter: (Rt_Value, R_Type) -> Rt_Value): Ld_PropertyValue {
+            return Ld_PropertyValue_SimpleTypeProp(pure, valueGetter)
+        }
+
+        internal fun typeProp(body: C_SysFunctionBody): Ld_PropertyValue {
+            return Ld_PropertyValue_SpecialTypeProp(body)
         }
     }
 }
@@ -68,7 +94,7 @@ class Ld_NamespaceProperty(
     fun finish(ctx: Ld_TypeFinishContext): L_NamespaceProperty {
         val mType = type.finish(ctx)
         val valueFin = value.finish(mType)
-        return L_NamespaceProperty(mType, valueFin.fn, valueFin.pure)
+        return L_NamespaceProperty(mType, valueFin.prop, valueFin.pure)
     }
 }
 
@@ -80,7 +106,7 @@ class Ld_TypeProperty(
     fun finish(ctx: Ld_TypeFinishContext): L_TypeProperty {
         val mType = type.finish(ctx)
         val valueFin = value.finish(mType)
-        return L_TypeProperty(simpleName, mType, valueFin.fn, valueFin.pure)
+        return L_TypeProperty(simpleName, mType, valueFin.prop, valueFin.pure)
     }
 }
 
@@ -153,9 +179,7 @@ class Ld_TypePropertyDslImpl(
 
     override fun value(getter: (Rt_Value, R_Type) -> Rt_Value): Ld_BodyResult {
         require(bodyRes == null)
-        val value = Ld_PropertyValue.typeProp { rType ->
-            C_SysFunctionBody.simple(pure = pure) { self -> getter(self, rType) }
-        }
+        val value = Ld_PropertyValue.typeProp(pure, getter)
         val res = Ld_BodyRes(value)
         bodyRes = res
         return res

@@ -4,9 +4,9 @@
 
 package net.postchain.rell.base.lib.type
 
-import net.postchain.rell.base.compiler.ast.S_VirtualType
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
+import net.postchain.rell.base.model.R_VirtualType
 import net.postchain.rell.base.utils.doc.DocCode
 
 object Lib_Type_Virtual {
@@ -20,9 +20,7 @@ object Lib_Type_Virtual {
         type("virtual", hidden = true, since = "0.9.0") {
             generic("T")
 
-            rType { t ->
-                S_VirtualType.virtualType(t)
-            }
+            rTypeMeta(R_VirtualType.META)
 
             docCode { t ->
                 DocCode.builder()

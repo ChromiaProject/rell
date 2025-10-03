@@ -19,14 +19,20 @@ import net.postchain.rell.base.utils.immListOf
 
 class R_VirtualMapType(val innerType: R_MapType): R_VirtualType(innerType) {
     private val virtualValueType: R_Type = S_VirtualType.virtualMemberType(innerType.valueType)
-    val virtualEntryType: R_TupleType = R_TupleType.create(innerType.keyType, virtualValueType)
+    val virtualEntryType: R_TupleType = R_TupleType.make(innerType.keyType, virtualValueType)
 
     override fun equals0(other: R_Type): Boolean = other is R_VirtualMapType && innerType == other.innerType
     override fun hashCode0() = innerType.hashCode()
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_VirtualMap(this)
 
+    override fun getTypeArgs() = immListOf(innerType.keyType, innerType.valueType, virtualValueType)
+
     override fun getLibType0(): C_LibType {
         return C_LibType.make(Lib_Rell.VIRTUAL_MAP_TYPE, innerType.keyType, innerType.valueType, virtualValueType)
+    }
+
+    companion object {
+        internal val META = R_TypeMeta.make { k, v0, _ -> R_MapType(k, v0).virtualType }
     }
 }
 

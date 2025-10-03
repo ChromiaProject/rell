@@ -90,6 +90,7 @@ class Ld_Struct(
                     gtv = R_GtvCompatibility(fromGtv = true, toGtv = true),
                     virtualable = true,
                     mixedTuple = false,
+                    hasTypeVariable = false,
                 )
 
                 rStruct.setFlags(R_StructFlags(typeFlags = rTypeFlags, cyclic = false, infinite = false))

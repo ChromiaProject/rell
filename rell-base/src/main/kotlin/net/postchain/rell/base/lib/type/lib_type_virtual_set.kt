@@ -5,6 +5,7 @@
 package net.postchain.rell.base.lib.type
 
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
+import net.postchain.rell.base.model.R_VirtualSetType
 import net.postchain.rell.base.utils.doc.DocCode
 
 object Lib_Type_VirtualSet {
@@ -14,9 +15,7 @@ object Lib_Type_VirtualSet {
             generic("T2")
             parent("virtual_collection<T2>")
 
-            rType { t, _ ->
-                R_SetType(t).virtualType
-            }
+            rTypeMeta(R_VirtualSetType.META)
 
             docCode { t, _ ->
                 DocCode.builder()

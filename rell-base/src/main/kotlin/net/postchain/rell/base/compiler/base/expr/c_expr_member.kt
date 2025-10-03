@@ -20,6 +20,7 @@ import net.postchain.rell.base.lib.type.R_RowidType
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
+import net.postchain.rell.base.mtype.M_TypeUtils
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.doc.DocDeclarationProto_EntityAttribute
@@ -29,7 +30,9 @@ import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapValuesNotNull
 import net.postchain.rell.base.utils.plus
+import net.postchain.rell.base.utils.toImmMap
 
 class C_MemberLink(
     val base: V_Expr,
@@ -45,7 +48,12 @@ abstract class C_TypeValueMember(optionalName: R_Name?): C_TypeMember(optionalNa
 
     abstract override fun replaceTypeParams(rep: C_TypeMemberReplacement): C_TypeValueMember
 
-    internal abstract fun value(ctx: C_ExprContext, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember
+    internal abstract fun value(
+        ctx: C_ExprContext,
+        selfType: R_Type,
+        linkPos: S_Pos,
+        linkName: C_Name?,
+    ): V_TypeValueMember
 
     internal open fun call(
         ctx: C_ExprContext,
@@ -98,8 +106,8 @@ internal class C_TypeValueMember_BasicAttr(
         return C_IdeCompletionsUtils.makeIdeCompletion(doc, location)
     }
 
-    override fun value(ctx: C_ExprContext, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember {
-        val vAttr = attr.vAttr(ctx, linkPos)
+    override fun value(ctx: C_ExprContext, selfType: R_Type, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember {
+        val vAttr = attr.vAttr(ctx, selfType, linkPos)
         val ideInfo = attr.ideName?.ideInfo ?: C_IdeSymbolInfo.UNKNOWN
         return V_TypeValueMember_BasicAttr(vAttr, linkPos, linkName, ideInfo)
     }
@@ -142,7 +150,7 @@ internal class C_TypeValueMember_Function(
         return if (fn2 === fn) this else C_TypeValueMember_Function(rName, fn2, naming)
     }
 
-    override fun value(ctx: C_ExprContext, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember {
+    override fun value(ctx: C_ExprContext, selfType: R_Type, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember {
         val codeMsg = C_NoValueExpr.errNoValue(kindMsg(), nameMsg().msg)
         ctx.msgCtx.error(linkPos, codeMsg)
         return C_ExprUtils.errorVMember(linkPos, ideInfo = fn.getDefaultIdeInfo())
@@ -223,7 +231,7 @@ abstract class C_MemberAttr(
 
     abstract fun nameMsg(): C_CodeMsg
     abstract fun restrictions(): C_MemberRestrictions
-    abstract fun vAttr(exprCtx: C_ExprContext, pos: S_Pos): V_MemberAttr
+    abstract fun vAttr(exprCtx: C_ExprContext, selfType: R_Type, pos: S_Pos): V_MemberAttr
 
     protected abstract inner class V_MemberAttr_Common(type: R_Type): V_MemberAttr(type) {
         final override fun varPathItem() = varPathItem
@@ -280,7 +288,7 @@ abstract class C_MemberAttr_StructAttr(
 class C_MemberAttr_SysProperty(
     ideName: R_IdeName,
     type: R_Type,
-    private val fn: C_SysFunction,
+    private val prop: C_SysProperty,
     private val naming: C_MemberNaming,
     private val restrictions: C_MemberRestrictions,
     private val pure: Boolean,
@@ -291,9 +299,20 @@ class C_MemberAttr_SysProperty(
     override fun nameMsg() = name.str toCodeMsg name.str
     override fun restrictions() = restrictions
 
-    override fun vAttr(exprCtx: C_ExprContext, pos: S_Pos): V_MemberAttr {
+    override fun vAttr(exprCtx: C_ExprContext, selfType: R_Type, pos: S_Pos): V_MemberAttr {
+        val mSelfType = selfType.mType
+        val typeArgs = M_TypeUtils.getTypeArgs(mSelfType)
+            .mapValuesNotNull { entry -> entry.value.getExactType()?.let { L_TypeUtils.getRType(it) } }
+            .mapKeys { it.key.name }
+            .toImmMap()
+        val resType = when {
+            typeArgs.isEmpty() -> type
+            else -> type.replaceTypeArgs(typeArgs)
+        }
+
+        val fn = prop.getFunction(resType)
         val cBody = fn.compileCall(C_SysFunctionCtx(exprCtx, pos))
-        return V_MemberAttr_SysProperty(type, cBody)
+        return V_MemberAttr_SysProperty(resType, cBody)
     }
 
     private inner class V_MemberAttr_SysProperty(

@@ -11,6 +11,7 @@ import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.lmodel.dsl.Ld_ModuleDsl
+import net.postchain.rell.base.model.R_TypeMeta
 import net.postchain.rell.base.testutils.LibModuleTester
 import kotlin.test.Test
 
@@ -42,7 +43,7 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
             namespace("ns") {
                 type("data") {
                     generic("T")
-                    rType(R_IntegerType)
+                    rTypeMeta(R_TypeMeta.make { _ -> R_IntegerType })
                 }
             }
         }

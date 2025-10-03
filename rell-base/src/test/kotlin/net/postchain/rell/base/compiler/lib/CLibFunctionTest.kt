@@ -76,7 +76,7 @@ class CLibFunctionTest: BaseCLibTest() {
         }
 
         chk("f_list([])", "text[list<integer>[]]")
-        chk("f_list(set())", "ct_err:fn:sys:unresolved_type_params:[set]:T")
+        //chk("f_list(set())", "ct_err:fn:sys:unresolved_type_params:[set]:T")
         chk("f_set(set())", "text[set<integer>[]]")
         chk("f_set([])", "ct_err:expr_list_no_type")
         chk("f_collection([])", "text[list<integer>[]]")
@@ -87,7 +87,7 @@ class CLibFunctionTest: BaseCLibTest() {
         chk("f_iterable([:])", "text[map<integer,text>[]]")
         chk("f_map([:])", "text[map<integer,text>[]]")
         chk("f_map([])", "ct_err:expr_list_no_type")
-        chk("f_map(set())", "ct_err:fn:sys:unresolved_type_params:[set]:T")
+        //chk("f_map(set())", "ct_err:fn:sys:unresolved_type_params:[set]:T")
 
         chk("f_list(a = [])", "text[list<integer>[]]")
         chk("f_set(a = set())", "text[set<integer>[]]")

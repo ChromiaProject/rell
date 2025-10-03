@@ -22,15 +22,10 @@ import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.utils.immListOf
 
-class R_NullableType(val valueType: R_Type): R_Type(calcName(valueType)) {
-    init {
-        check(valueType != R_NullType)
-        check(valueType !is R_NullableType)
-    }
-
+class R_NullableType(val valueType: R_Type): R_CompositeType(calcName(valueType)) {
     override fun equals0(other: R_Type) = other is R_NullableType && valueType == other.valueType
     override fun hashCode0() = valueType.hashCode()
-    override fun explicitComponentTypes() = immListOf(valueType)
+    override fun getTypeArgs() = immListOf(valueType)
 
     override fun isReference() = valueType.isReference()
     override fun isError() = valueType.isError()
@@ -42,6 +37,7 @@ class R_NullableType(val valueType: R_Type): R_Type(calcName(valueType)) {
     override fun fromCli(s: String): Rt_Value = if (s == "null") Rt_NullValue else valueType.fromCli(s)
     override fun strCode() = name
     override fun getLibType0() = C_LibType.make(M_Types.nullable(valueType.mType))
+    override fun getTypeMeta0() = META
 
     override fun isAssignableFrom(type: R_Type): Boolean {
         return type == this
@@ -68,8 +64,8 @@ class R_NullableType(val valueType: R_Type): R_Type(calcName(valueType)) {
     override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Nullable()
 
     override fun toMetaGtv() = mapOf(
-            "type" to "nullable".toGtv(),
-            "value" to valueType.toMetaGtv()
+        "type" to "nullable".toGtv(),
+        "value" to valueType.toMetaGtv(),
     ).toGtv()
 
     private inner class R_TypeSqlAdapter_Nullable: R_TypeSqlAdapter_Some(null) {
@@ -97,6 +93,8 @@ class R_NullableType(val valueType: R_Type): R_Type(calcName(valueType)) {
 
     companion object {
         private val SQL_COMPATIBILITY_SWITCH = C_FeatureSwitch("0.13.10")
+
+        private val META = R_TypeMeta.make { t -> R_NullableType(t) }
 
         private fun calcName(valueType: R_Type): String {
             return when (valueType) {

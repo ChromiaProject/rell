@@ -10,7 +10,9 @@ import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_ExprInfo
 import net.postchain.rell.base.lmodel.L_TypeUtils
+import net.postchain.rell.base.model.R_CompositeType
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.R_TypeMeta
 import net.postchain.rell.base.model.expr.Db_ComplexAtWhatEvaluator
 import net.postchain.rell.base.model.expr.R_BaseExpr
 import net.postchain.rell.base.model.expr.R_Expr
@@ -56,17 +58,18 @@ private class R_LazyExpr(type: R_Type, private val innerExpr: R_Expr): R_BaseExp
     }
 }
 
-private class R_LazyType(private val valueType: R_Type): R_Type("lazy<${valueType.strCode()}>") {
+private class R_LazyType(private val valueType: R_Type): R_CompositeType("lazy<${valueType.strCode()}>") {
     override fun equals0(other: R_Type) = other is R_LazyType && valueType == other.valueType
     override fun hashCode0() = valueType.hashCode()
 
-    override fun explicitComponentTypes() = immListOf(valueType)
+    override fun getTypeMeta0() = META
+    override fun getTypeArgs() = immListOf(valueType)
     override fun strCode() = name
     override fun createGtvConversion() = GtvRtConversion_None
 
     override fun toMetaGtv() = mapOf(
-            "type" to "lazy".toGtv(),
-            "value" to valueType.toMetaGtv()
+        "type" to "lazy".toGtv(),
+        "value" to valueType.toMetaGtv(),
     ).toGtv()
 
     override fun getLibType0(): C_LibType {
@@ -77,6 +80,10 @@ private class R_LazyType(private val valueType: R_Type): R_Type("lazy<${valueTyp
         b.raw(">")
         val doc = b.build()
         return C_LibType.make(this, doc)
+    }
+
+    companion object {
+        private val META = R_TypeMeta.make { t -> R_LazyType(t) }
     }
 }
 

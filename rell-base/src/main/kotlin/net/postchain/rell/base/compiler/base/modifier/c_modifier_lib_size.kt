@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.base.compiler.base.modifier
 
 import net.postchain.rell.base.compiler.base.core.C_DefinitionContext
@@ -5,10 +9,10 @@ import net.postchain.rell.base.compiler.base.def.C_AttrHeader
 import net.postchain.rell.base.compiler.base.def.C_AttrHeaderInfo
 import net.postchain.rell.base.compiler.base.modifier.C_AnnUtils.checkArgsRange
 import net.postchain.rell.base.lib.type.R_IntegerType
+import net.postchain.rell.base.model.R_AttrValidator
 import net.postchain.rell.base.model.R_AttrValidatorMetadata
 import net.postchain.rell.base.model.R_SizeAttrValidator
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.model.R_AttrValidator
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.mapToImmList
 

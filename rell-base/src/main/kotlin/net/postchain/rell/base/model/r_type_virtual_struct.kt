@@ -11,18 +11,33 @@ import net.postchain.rell.base.compiler.base.lib.C_LibType
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.Lib_Type_VirtualStruct
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.immListOf
 
 class R_VirtualStructType(val innerType: R_StructType): R_VirtualType(innerType) {
     override fun equals0(other: R_Type): Boolean = other is R_VirtualStructType && innerType == other.innerType
     override fun hashCode0() = innerType.hashCode()
     override fun isCacheable() = true
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_VirtualStruct(this)
+    override fun getTypeArgs() = immListOf(innerType)
 
     override fun getLibType0() = C_LibType.make(
         Lib_Rell.VIRTUAL_TYPE,
         innerType,
         valueMembers = lazy { Lib_Type_VirtualStruct.getValueMembers(this) },
     )
+
+    private inner class Meta: R_TypeMeta() {
+        override fun getTypeOrNull(args: ImmList<R_Type>): R_Type? {
+            checkEquals(args.size, 1)
+            val argType = args[0]
+            return when (argType) {
+                is R_StructType -> R_VirtualStructType(argType)
+                else -> null
+            }
+        }
+    }
 }
 
 class Rt_VirtualStructValue(

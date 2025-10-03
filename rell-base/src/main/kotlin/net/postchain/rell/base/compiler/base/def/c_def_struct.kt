@@ -131,6 +131,7 @@ object C_StructGraphUtils {
                 gtv = gtv,
                 virtualable = struct !in nonVirtualStructs,
                 mixedTuple = false,
+                hasTypeVariable = false,
             )
 
             val flags = R_StructFlags(

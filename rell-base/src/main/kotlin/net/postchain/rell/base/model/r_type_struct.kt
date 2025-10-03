@@ -13,26 +13,25 @@ import net.postchain.rell.base.compiler.base.def.C_StructGlobalFunction
 import net.postchain.rell.base.compiler.base.lib.C_LibType
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.Lib_Type_Struct
+import net.postchain.rell.base.lib.type.R_OperationType
 import net.postchain.rell.base.lib.type.Rt_RangeValue
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_ValueRecursionDetector
 import net.postchain.rell.base.utils.doc.DocCode
 import net.postchain.rell.base.utils.mapToImmList
 
-class R_StructType(val struct: R_Struct): R_Type(struct.name) {
+class R_StructType(val struct: R_Struct): R_SimpleType(struct.name) {
     override fun equals0(other: R_Type) = false
     override fun hashCode0() = System.identityHashCode(this)
 
     override fun isReference() = true
     override fun isDirectMutable() = struct.isDirectlyMutable()
     override fun isDirectPure() = true
-    override fun isCacheable() = true
     override fun completeFlags() = struct.flags.typeFlags
 
     override fun componentTypes() = struct.attributesList.mapToImmList { it.type }
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Struct(struct)
 
-    override fun strCode(): String = name
     override fun toMetaGtv() = struct.typeMetaGtv
 
     override fun getLibType0(): C_LibType {
@@ -45,6 +44,26 @@ class R_StructType(val struct: R_Struct): R_Type(struct.name) {
             C_LibType.make(typeDef, ms.innerType, constructorFn = constructorFn, valueMembers = valueMembers)
         } else {
             C_LibType.make(this, DocCode.link(struct.name), constructorFn = constructorFn, valueMembers = valueMembers)
+        }
+    }
+
+    companion object {
+        internal val IMMUTABLE_META = R_TypeMeta.make { t ->
+            val ms = when (t) {
+                is R_EntityType -> t.rEntity.mirrorStructs
+                is R_OperationType -> t.rOperation.mirrorStructs
+                else -> null
+            }
+            ms?.immutable?.type
+        }
+
+        internal val MUTABLE_META = R_TypeMeta.make { t ->
+            val ms = when (t) {
+                is R_EntityType -> t.rEntity.mirrorStructs
+                is R_OperationType -> t.rOperation.mirrorStructs
+                else -> null
+            }
+            ms?.mutable?.type
         }
     }
 }

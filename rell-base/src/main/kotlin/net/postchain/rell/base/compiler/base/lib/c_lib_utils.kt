@@ -11,6 +11,7 @@ import net.postchain.rell.base.lmodel.L_NamespaceProperty
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_Type_Tuple
 
@@ -41,4 +42,8 @@ data class C_LibNamespacePropertyVarId(
     private val property: L_NamespaceProperty,
 ): C_VarId() {
     override fun nameMsg() = fullName.str()
+}
+
+abstract class C_SysProperty {
+    abstract fun getFunction(type: R_Type): C_SysFunction
 }

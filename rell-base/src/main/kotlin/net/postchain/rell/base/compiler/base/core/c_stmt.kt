@@ -5,7 +5,6 @@
 package net.postchain.rell.base.compiler.base.core
 
 import net.postchain.rell.base.compiler.ast.S_Comment
-import net.postchain.rell.base.compiler.ast.S_EmptyStatement
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_PosRange
 import net.postchain.rell.base.compiler.ast.S_Statement

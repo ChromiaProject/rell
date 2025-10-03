@@ -234,7 +234,7 @@ class S_VirtualType(pos: S_Pos, val innerType: S_Type): S_Type(pos) {
                 "Type '${rInnerType.name}' cannot be virtual (allowed types are: list, set, map, struct, tuple)")
     }
 
-    companion object {
+    internal companion object {
         fun virtualType(type: R_Type): R_Type? {
             return when (type) {
                 is R_ListType -> type.virtualType

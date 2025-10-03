@@ -137,7 +137,7 @@ object Lib_Type_Entity {
             return C_IdeCompletionsUtils.makeIdeCompletion(doc, location)
         }
 
-        override fun value(ctx: C_ExprContext, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember {
+        override fun value(ctx: C_ExprContext, selfType: R_Type, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember {
             return V_TypeValueMember_EntityAttr(ctx, linkPos, linkName, attr, null)
         }
     }

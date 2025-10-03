@@ -13,10 +13,7 @@ import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lmodel.*
-import net.postchain.rell.base.model.R_CtErrorType
-import net.postchain.rell.base.model.R_EntityType
-import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.mtype.M_GenericType
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParamsResolver
@@ -56,6 +53,7 @@ sealed class C_LibType(internal val mType: M_Type) {
     internal abstract fun getConstructor(): C_GlobalFunction?
     internal abstract fun getStaticMembers(): C_LibTypeMembers<C_TypeStaticMember>
     internal abstract fun getValueMembers(): C_LibTypeMembers<C_TypeValueMember>
+    internal abstract fun getRTypeMeta(): R_TypeMeta?
 
     internal companion object {
         fun make(
@@ -121,6 +119,7 @@ private class C_LibType_MType(
     override fun getConstructor() = constructorFn
     override fun getStaticMembers() = staticMembers
     override fun getValueMembers() = valueMembersLazy
+    override fun getRTypeMeta() = null
 }
 
 private class C_LibType_TypeDef(
@@ -145,6 +144,7 @@ private class C_LibType_TypeDef(
     override fun getConstructor() = extraConstructor ?: constructorLazy
     override fun getStaticMembers() = typeDef.staticMembers
     override fun getValueMembers() = valueMembersLazy
+    override fun getRTypeMeta() = typeDef.lTypeDef.rTypeMeta
 }
 
 sealed class C_TypeDef {
@@ -256,8 +256,8 @@ class C_LibTypeDef internal constructor(
         return true
     }
 
-    private fun checkTypeArgs(ctx: C_AppContext, args: List<S_PosValue<R_Type>>): List<R_Type> {
-        val checkedArgs = args.map { arg ->
+    private fun checkTypeArgs(ctx: C_AppContext, args: List<S_PosValue<R_Type>>): ImmList<R_Type> {
+        val checkedArgs = args.mapToImmList { arg ->
             C_Types.checkNotUnit(ctx.msgCtx, arg.pos, arg.value, null) {
                 val typeName = lTypeDef.fullName.qualifiedName
                 "$typeName:component" toCodeMsg "$typeName component"
@@ -277,8 +277,8 @@ class C_LibTypeDef internal constructor(
         return checkedArgs
     }
 
-    private fun getRType(msgCtx: C_MessageContext, pos: S_Pos, args: List<R_Type>): R_Type {
-        val rType = lTypeDef.rTypeFactory?.getRType(args)
+    private fun getRType(msgCtx: C_MessageContext, pos: S_Pos, args: ImmList<R_Type>): R_Type {
+        val rType = lTypeDef.rTypeMeta?.getTypeOrNull(args)
         return if (rType != null) rType else {
             msgCtx.error(pos, "generic_type:no_rtype_factory:${mGenericType.name}",
                 "Cannot use type ${mGenericType.name}")

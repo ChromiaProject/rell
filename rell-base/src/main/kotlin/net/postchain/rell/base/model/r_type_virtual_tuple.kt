@@ -10,12 +10,16 @@ import net.postchain.rell.base.compiler.base.lib.C_LibType
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.Lib_Type_VirtualTuple
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf
 
 class R_VirtualTupleType(val innerType: R_TupleType): R_VirtualType(innerType) {
     override fun equals0(other: R_Type): Boolean = other is R_VirtualTupleType && innerType == other.innerType
     override fun hashCode0() = innerType.hashCode()
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_VirtualTuple(this)
+    override fun getTypeMeta0(): R_TypeMeta = Meta()
+    override fun getTypeArgs() = immListOf(innerType)
     override fun explicitComponentTypes() = immListOf(innerType)
 
     override fun getLibType0() = C_LibType.make(
@@ -23,6 +27,17 @@ class R_VirtualTupleType(val innerType: R_TupleType): R_VirtualType(innerType) {
         innerType,
         valueMembers = lazy { Lib_Type_VirtualTuple.getValueMembers(this) },
     )
+
+    private inner class Meta: R_TypeMeta() {
+        override fun getTypeOrNull(args: ImmList<R_Type>): R_Type? {
+            checkEquals(args.size, 1)
+            val argType = args[0]
+            return when (argType) {
+                is R_TupleType -> R_VirtualTupleType(argType)
+                else -> null
+            }
+        }
+    }
 }
 
 class Rt_VirtualTupleValue(

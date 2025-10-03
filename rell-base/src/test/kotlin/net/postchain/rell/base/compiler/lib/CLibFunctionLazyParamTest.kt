@@ -10,7 +10,7 @@ import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_ParamArity
-import net.postchain.rell.base.model.R_LibSimpleType
+import net.postchain.rell.base.model.R_LibUniqueType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.GtvRtConversion_None
 import net.postchain.rell.base.runtime.Rt_LibValueType
@@ -203,7 +203,7 @@ class CLibFunctionLazyParamTest: BaseCLibTest() {
             }
         }
 
-        private object R_TestType: R_LibSimpleType(TYPE_NAME, C_DefinitionName("rell", TYPE_NAME)) {
+        private object R_TestType: R_LibUniqueType(TYPE_NAME, C_DefinitionName("rell", TYPE_NAME)) {
             override fun createGtvConversion() = GtvRtConversion_None
             override fun getLibTypeDef() = MODULE.getTypeDef("test_type")
         }

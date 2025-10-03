@@ -14,13 +14,10 @@ import net.postchain.rell.base.mtype.M_Types
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_ValueRecursionDetector
 import net.postchain.rell.base.runtime.utils.toGtv
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.*
 import java.util.*
 
-class R_FunctionType(val params: ImmList<R_Type>, val result: R_Type): R_Type(calcName(params, result)) {
+class R_FunctionType(val params: ImmList<R_Type>, val result: R_Type): R_CompositeType(calcName(params, result)) {
     internal val callParameters by lazy { C_FunctionCallParameters.fromTypes(this.params) }
 
     private val isError = result.isError() || params.any { it.isError() }
@@ -44,9 +41,9 @@ class R_FunctionType(val params: ImmList<R_Type>, val result: R_Type): R_Type(ca
     override fun strCode(): String = name
 
     override fun toMetaGtv() = mapOf(
-            "type" to "function".toGtv(),
-            "params" to params.map { it.toMetaGtv() }.toGtv(),
-            "result" to result.toMetaGtv()
+        "type" to "function".toGtv(),
+        "params" to params.map { it.toMetaGtv() }.toGtv(),
+        "result" to result.toMetaGtv(),
     ).toGtv()
 
     override fun getLibType0(): C_LibType {
@@ -54,6 +51,23 @@ class R_FunctionType(val params: ImmList<R_Type>, val result: R_Type): R_Type(ca
         val mParams = params.map { it.mType }
         val mType = M_Types.function(mResult, mParams)
         return C_LibType.make(mType)
+    }
+
+    override fun getTypeMeta0(): R_TypeMeta = Meta()
+
+    override fun getTypeArgs(): ImmList<R_Type> {
+        return immListOf(result) + params
+    }
+
+    override fun explicitComponentTypes() = immListOf<R_Type>()
+
+    private inner class Meta: R_TypeMeta() {
+        override fun getTypeOrNull(args: ImmList<R_Type>): R_Type? {
+            checkEquals(args.size, params.size + 1)
+            val resResult = args[0]
+            val resParams = args.drop(1).toImmList()
+            return R_FunctionType(resParams, resResult)
+        }
     }
 
     companion object {

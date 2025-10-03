@@ -537,7 +537,12 @@ class S_ListLiteralExpr(pos: S_Pos, val exprs: ImmList<S_Expr>): S_Expr(pos) {
         val mElemType = typeArgs[mGenType.params[0]]?.getExactType()
         mElemType ?: return null
 
-        return L_TypeUtils.getRType(mElemType)
+        val rElemType = L_TypeUtils.getRType(mElemType)
+        if (rElemType == null || rElemType.hasTypeVariable()) {
+            return null
+        }
+
+        return rElemType
     }
 
     private fun compileElementType(vExprs: List<V_Expr>, hintElemType: R_Type?): R_Type {

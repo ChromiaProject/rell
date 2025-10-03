@@ -11,6 +11,7 @@ import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_ErrorPos
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.R_TypeMeta
 import net.postchain.rell.base.model.R_VirtualListType
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_ListComparator
@@ -29,7 +30,7 @@ object Lib_Type_List {
             generic("T")
             parent("collection<T>")
 
-            rType { t -> R_ListType(t) }
+            rTypeMeta(R_ListType.META)
 
             constructor(pure = true, since = SINCE0) {
                 comment("Construct a new empty list.")
@@ -375,6 +376,10 @@ class R_ListType(elementType: R_Type): R_CollectionType(elementType, "list") {
     override fun comparator(): Comparator<Rt_Value>? {
         val elemComparator = elementType.comparator()
         return if (elemComparator == null) null else Rt_ListComparator(elemComparator)
+    }
+
+    companion object {
+        internal val META = R_TypeMeta.make { t -> R_ListType(t) }
     }
 }
 

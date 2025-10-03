@@ -14,7 +14,7 @@ import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.DocCode
 
-class R_ObjectType(val rObject: R_ObjectDefinition): R_Type(rObject.appLevelName, rObject.cDefName) {
+class R_ObjectType(val rObject: R_ObjectDefinition): R_SimpleType(rObject.appLevelName, rObject.cDefName) {
     init {
         checkEquals(rObject.type, null) // during initialization
     }
@@ -24,9 +24,7 @@ class R_ObjectType(val rObject: R_ObjectDefinition): R_Type(rObject.appLevelName
 
     override fun isDirectVirtualable() = false
     override fun isDirectPure() = false
-    override fun isCacheable() = true
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_None
-    override fun strCode(): String = name
     override fun toMetaGtv() = rObject.appLevelName.toGtv()
 
     override fun getLibType0() = C_LibType.make(

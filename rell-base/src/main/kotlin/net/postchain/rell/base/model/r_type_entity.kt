@@ -18,7 +18,7 @@ import net.postchain.rell.base.utils.doc.DocCode
 import org.jooq.impl.SQLDataType
 import java.util.*
 
-class R_EntityType(val rEntity: R_EntityDefinition): R_Type(rEntity.appLevelName, rEntity.cDefName) {
+class R_EntityType(val rEntity: R_EntityDefinition): R_SimpleType(rEntity.appLevelName, rEntity.cDefName) {
     init {
         checkEquals(rEntity.type, null) // during initialization
     }
@@ -28,10 +28,8 @@ class R_EntityType(val rEntity: R_EntityDefinition): R_Type(rEntity.appLevelName
 
     override fun comparator() = Rt_Comparator.create { it.asObjectId() }
     override fun fromCli(s: String): Rt_Value = Rt_EntityValue(this, s.toLong())
-    override fun strCode(): String = name
 
     override fun isDirectPure() = false
-    override fun isCacheable() = true
 
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Entity(this)
     override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Entity(this)

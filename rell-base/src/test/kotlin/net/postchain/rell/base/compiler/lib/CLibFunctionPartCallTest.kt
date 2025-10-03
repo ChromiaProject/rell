@@ -205,7 +205,7 @@ class CLibFunctionPartCallTest: BaseCLibTest() {
 
     @Test fun testPartCallExactMatchResult() {
         tst.extraMod = makeModule {
-            val tupleType = R_TupleType.create(R_IntegerType, R_TextType)
+            val tupleType = R_TupleType.make(R_IntegerType, R_TextType)
             function("_foo", "(integer?,text)") {
                 body { -> Rt_TupleValue.make(tupleType, Rt_IntValue.get(1), Rt_TextValue.get("_foo_0")) }
             }

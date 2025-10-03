@@ -128,7 +128,7 @@ object Lib_Type_Object {
         override fun nameMsg(): C_CodeMsg = attr.rName.str toCodeMsg attr.rName.str
         override fun ideCompletion() = null
 
-        override fun value(ctx: C_ExprContext, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember {
+        override fun value(ctx: C_ExprContext, selfType: R_Type, linkPos: S_Pos, linkName: C_Name?): V_TypeValueMember {
             return V_TypeValueMember_ObjectAttr(ctx, linkPos, linkName, rObject, attr)
         }
     }

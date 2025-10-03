@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.base.model
 
 import net.postchain.rell.base.compiler.base.core.C_DefinitionType
@@ -6,7 +10,7 @@ import net.postchain.rell.base.lib.type.R_ByteArrayType
 import net.postchain.rell.base.lib.type.R_TextType
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_Value
-import java.util.Locale
+import java.util.*
 
 abstract class R_AttrValidator(val metadata: R_AttrValidatorMetadata) {
     abstract fun check(value: Rt_Value): Error?

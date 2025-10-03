@@ -11,6 +11,7 @@ import net.postchain.rell.base.compiler.base.lib.C_LibTypeDef
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionMetaBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
+import net.postchain.rell.base.model.R_CompositeType
 import net.postchain.rell.base.model.R_GtvCompatibility
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.GtvRtConversion
@@ -194,13 +195,13 @@ sealed class R_CollectionKind(val type: R_Type) {
 sealed class R_CollectionType(
     val elementType: R_Type,
     private val baseName: String,
-): R_Type("$baseName<${elementType.strCode()}>") {
+): R_CompositeType("$baseName<${elementType.strCode()}>") {
     private val isError = elementType.isError()
 
     final override fun isReference() = true
     final override fun isError() = isError
     final override fun isDirectMutable() = true
-    final override fun explicitComponentTypes() = immListOf(elementType)
+    final override fun getTypeArgs() = immListOf(elementType)
     final override fun strCode() = name
 
     protected abstract fun getLibTypeDef(): C_LibTypeDef
@@ -208,8 +209,8 @@ sealed class R_CollectionType(
     final override fun getLibType0() = C_LibType.make(getLibTypeDef(), elementType)
 
     final override fun toMetaGtv() = mapOf(
-            "type" to baseName.toGtv(),
-            "value" to elementType.toMetaGtv()
+        "type" to baseName.toGtv(),
+        "value" to elementType.toMetaGtv(),
     ).toGtv()
 }
 

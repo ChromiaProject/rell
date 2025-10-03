@@ -47,13 +47,13 @@ internal object L_TypeUtils {
         name: R_FullName,
         params: List<M_TypeParam>,
         parent: M_GenericTypeParent?,
-        rTypeFactory: L_TypeDefRTypeFactory?,
+        rTypeMeta: R_TypeMeta?,
         docCodeStrategy: L_TypeDefDocCodeStrategy?,
         supertypeStrategy: L_TypeDefSupertypeStrategy,
     ): M_GenericType {
         val nameStr = name.qualifiedName.str()
         val addon = C_MGenericTypeAddon_LTypeDef(
-            rTypeFactory = rTypeFactory,
+            rTypeMeta = rTypeMeta,
             docCodeStrategy = docCodeStrategy ?: makeDocCodeStrategy(nameStr),
             supertypeStrategy = supertypeStrategy,
         )
@@ -82,7 +82,7 @@ internal object L_TypeUtils {
             M_Types.NOTHING -> null
             M_Types.ANY -> null
             M_Types.NULL -> R_NullType
-            is M_Type_Param -> null
+            is M_Type_Param -> R_VariableType(mType.param.name)
             is M_Type_Nullable -> getRTypeForNullable(mType)
             is M_Type_Function -> getRTypeForFunction(mType)
             is M_Type_Tuple -> getRTypeForTuple(mType)
@@ -277,7 +277,7 @@ private class C_MGenericTypeAddon_Simple(
 }
 
 private class C_MGenericTypeAddon_LTypeDef(
-    private val rTypeFactory: L_TypeDefRTypeFactory?,
+    private val rTypeMeta: R_TypeMeta?,
     docCodeStrategy: L_TypeDefDocCodeStrategy,
     private val supertypeStrategy: L_TypeDefSupertypeStrategy,
 ): C_MGenericTypeAddon(docCodeStrategy) {
@@ -290,9 +290,9 @@ private class C_MGenericTypeAddon_LTypeDef(
     }
 
     override fun getRType(args: List<M_Type>): R_Type? {
-        rTypeFactory ?: return null
+        rTypeMeta ?: return null
         val rArgs = args.mapNotNullAllOrNull { L_TypeUtils.getRType(it) }
         rArgs ?: return null
-        return rTypeFactory.getRType(rArgs)
+        return rTypeMeta.getTypeOrNull(rArgs)
     }
 }

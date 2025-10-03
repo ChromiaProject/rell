@@ -26,7 +26,7 @@ object Lib_Type_Tuple {
         fieldIndex: Int,
         field: R_TupleField,
     ): C_MemberAttr_TupleAttr(type, fieldIndex, field) {
-        override fun vAttr(exprCtx: C_ExprContext, pos: S_Pos): V_MemberAttr {
+        override fun vAttr(exprCtx: C_ExprContext, selfType: R_Type, pos: S_Pos): V_MemberAttr {
             return V_MemberAttr_RegularTupleAttr(type, fieldIndex)
         }
 

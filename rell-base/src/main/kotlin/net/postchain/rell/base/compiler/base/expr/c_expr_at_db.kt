@@ -211,7 +211,7 @@ internal class C_AtFrom_Entities(
             field.update(resultType = field.expr.type, flags = flags, summarization = null)
         }
 
-        val itemType = R_TupleType.create(dbWhat.map { it.resultType })
+        val itemType = R_TupleType.make(dbWhat.map { it.resultType })
         val innerAtExpr = createTopColAggrInner(details, cBase, dbWhat, itemType)
 
         val innerBlkCtx2 = outerExprCtx.blkCtx.createSubContext("@2", null)

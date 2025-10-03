@@ -16,7 +16,7 @@ import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.utils.checkEquals
 
-object R_NullType: R_SimpleType("null", C_LibUtils.defName("null")) {
+object R_NullType: R_UniqueType("null", C_LibUtils.defName("null")) {
     override fun defaultValue() = Rt_NullValue
     override fun comparator() = Rt_Comparator.create { 0 }
     override fun calcCommonType(other: R_Type): R_Type = R_NullableType(other)

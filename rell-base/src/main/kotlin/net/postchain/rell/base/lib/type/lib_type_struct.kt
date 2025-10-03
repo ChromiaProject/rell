@@ -42,14 +42,7 @@ object Lib_Type_Struct {
             generic("T")
             parent("mirror_struct<T>")
 
-            rType { t ->
-                val ms = when (t) {
-                    is R_EntityType -> t.rEntity.mirrorStructs
-                    is R_OperationType -> t.rOperation.mirrorStructs
-                    else -> null
-                }
-                ms?.mutable?.type
-            }
+            rTypeMeta(R_StructType.MUTABLE_META)
 
             docCode { t ->
                 DocCode.builder()
@@ -74,14 +67,7 @@ object Lib_Type_Struct {
             generic("T")
             parent("mirror_struct<T>")
 
-            rType { t ->
-                val ms = when (t) {
-                    is R_EntityType -> t.rEntity.mirrorStructs
-                    is R_OperationType -> t.rOperation.mirrorStructs
-                    else -> null
-                }
-                ms?.immutable?.type
-            }
+            rTypeMeta(R_StructType.IMMUTABLE_META)
 
             docCode { t ->
                 DocCode.builder()
@@ -199,7 +185,7 @@ object Lib_Type_Struct {
         attr: R_Attribute,
         private val struct: R_Struct,
     ): C_MemberAttr_StructAttr(attr.type, attr) {
-        override fun vAttr(exprCtx: C_ExprContext, pos: S_Pos): V_MemberAttr {
+        override fun vAttr(exprCtx: C_ExprContext, selfType: R_Type, pos: S_Pos): V_MemberAttr {
             return V_MemberAttr_RegularStructAttr(type, attr, struct)
         }
 

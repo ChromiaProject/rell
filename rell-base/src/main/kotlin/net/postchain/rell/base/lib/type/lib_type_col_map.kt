@@ -51,7 +51,7 @@ object Lib_Type_Map {
             generic("V")
             parent("iterable<(K,V)>")
 
-            rType { k, v -> R_MapType(k, v) }
+            rTypeMeta(R_MapType.META)
 
             defCommonFunctions(this)
 
@@ -284,7 +284,7 @@ data class R_MapKeyValueTypes(val key: R_Type, val value: R_Type)
 
 class R_MapType(
     val keyValueTypes: R_MapKeyValueTypes
-): R_Type("map<${keyValueTypes.key.strCode()},${keyValueTypes.value.strCode()}>") {
+): R_CompositeType("map<${keyValueTypes.key.strCode()},${keyValueTypes.value.strCode()}>") {
     constructor(keyType: R_Type, valueType: R_Type): this(R_MapKeyValueTypes(keyType, valueType))
 
     val keyType = keyValueTypes.key
@@ -293,10 +293,10 @@ class R_MapType(
     val valueListType = R_ListType(valueType)
     val virtualType = R_VirtualMapType(this)
 
-    val entryType = R_TupleType.create(keyType, valueType)
+    val entryType = R_TupleType.make(keyType, valueType)
 
     val legacyEntryType: R_TupleType by lazy {
-        R_TupleType.createNamed("k" to keyType, "v" to valueType)
+        R_TupleType.makeNamed("k" to keyType, "v" to valueType)
     }
 
     private val isError = keyType.isError() || valueType.isError()
@@ -310,7 +310,7 @@ class R_MapType(
     override fun isDirectVirtualable() = keyType == R_TextType
 
     override fun strCode() = name
-    override fun explicitComponentTypes() = immListOf(keyType, valueType)
+    override fun getTypeArgs() = immListOf(keyType, valueType)
 
     override fun getLibType0() = C_LibType.make(Lib_Rell.MAP_TYPE, keyType, valueType)
 
@@ -325,10 +325,14 @@ class R_MapType(
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Map(this)
 
     override fun toMetaGtv() = mapOf(
-            "type" to "map".toGtv(),
-            "key" to keyType.toMetaGtv(),
-            "value" to valueType.toMetaGtv()
+        "type" to "map".toGtv(),
+        "key" to keyType.toMetaGtv(),
+        "value" to valueType.toMetaGtv(),
     ).toGtv()
+
+    companion object {
+        internal val META = R_TypeMeta.make { k, v -> R_MapType(k, v) }
+    }
 }
 
 class Rt_MapValue(val type: R_MapType, map: MutableMap<Rt_Value, Rt_Value>): Rt_Value() {

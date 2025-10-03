@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.base.model
 
 import net.postchain.gtv.Gtv
@@ -5,7 +9,6 @@ import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.model.expr.R_Expr
-import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.MsgString
 import net.postchain.rell.base.utils.doc.DocDefinition

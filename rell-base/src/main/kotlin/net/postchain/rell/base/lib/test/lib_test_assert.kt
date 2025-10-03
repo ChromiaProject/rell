@@ -9,7 +9,7 @@ import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_ParamImplication
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionMetaBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_LibSimpleType
+import net.postchain.rell.base.model.R_LibUniqueType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.Rt_FunctionValue
 import net.postchain.rell.base.model.Rt_NullValue
@@ -377,7 +377,7 @@ class Rt_AssertEqualsError private constructor(
     }
 }
 
-private object R_TestFailureType: R_LibSimpleType(FAILURE_QNAME.str(), Lib_RellTest.typeDefName(FAILURE_QNAME)) {
+private object R_TestFailureType: R_LibUniqueType(FAILURE_QNAME.str(), Lib_RellTest.typeDefName(FAILURE_QNAME)) {
     override fun isReference() = true
     override fun isDirectPure() = false
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_None

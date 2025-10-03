@@ -9,10 +9,7 @@ import net.postchain.rell.base.compiler.base.lib.C_SpecialLibMemberFunctionBody
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.compiler.base.utils.C_DocUtils
 import net.postchain.rell.base.lmodel.*
-import net.postchain.rell.base.model.R_FullName
-import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.model.R_QualifiedName
-import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.mtype.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
@@ -188,12 +185,12 @@ private class Ld_TypeDefMember_StaticSpecialFunction(
     }
 }
 
-class Ld_TypeDef(
+class Ld_TypeDef internal constructor(
     val simpleName: R_Name,
     private val flags: L_TypeDefFlags,
     private val typeParams: ImmList<Ld_TypeParam>,
     private val parent: Ld_TypeDefParent?,
-    private val rTypeFactory: L_TypeDefRTypeFactory?,
+    private val rTypeMeta: R_TypeMeta?,
     private val docCodeStrategy: L_TypeDefDocCodeStrategy?,
     private val supertypeStrategy: L_TypeDefSupertypeStrategy,
     private val members: ImmList<Ld_TypeDefMember>,
@@ -238,7 +235,7 @@ class Ld_TypeDef(
             flags = flags,
             mGenericType = mGenericType,
             parent = lParent,
-            rTypeFactory = rTypeFactory,
+            rTypeMeta = rTypeMeta,
             membersFuture = membersF,
             docSymbol = docSym,
         )
@@ -251,8 +248,8 @@ class Ld_TypeDef(
         mTypeParams: List<M_TypeParam>,
         mParent: M_GenericTypeParent?,
     ): M_GenericType {
-        if (mTypeParams.isEmpty() && rTypeFactory != null) {
-            val rType = rTypeFactory.getRType(immListOf())
+        if (mTypeParams.isEmpty() && rTypeMeta != null) {
+            val rType = rTypeMeta.getTypeOrNull(immListOf())
             if (rType != null) {
                 val name = fullName.qualifiedName.str()
                 return L_TypeUtils.makeMGenericType(rType, name, mParent, docCodeStrategy)
@@ -263,7 +260,7 @@ class Ld_TypeDef(
             fullName,
             mTypeParams,
             mParent,
-            rTypeFactory = rTypeFactory,
+            rTypeMeta = rTypeMeta,
             docCodeStrategy = docCodeStrategy,
             supertypeStrategy = supertypeStrategy,
         )
@@ -315,12 +312,12 @@ class Ld_NamespaceMember_Type(
     }
 }
 
-interface Ld_TypeDefMaker: Ld_CommonNamespaceMaker, Ld_MemberHeaderMaker {
+internal interface Ld_TypeDefMaker: Ld_CommonNamespaceMaker, Ld_MemberHeaderMaker {
     fun generic(name: String, subOf: String?, superOf: String?, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)
 
     fun parent(type: String)
 
-    fun rTypeFactory(factory: L_TypeDefRTypeFactory)
+    fun rTypeMeta(typeMeta: R_TypeMeta)
     fun docCodeStrategy(strategy: L_TypeDefDocCodeStrategy)
     fun supertypeStrategy(strategy: L_TypeDefSupertypeStrategy)
 
@@ -356,7 +353,7 @@ interface Ld_TypeDefMaker: Ld_CommonNamespaceMaker, Ld_MemberHeaderMaker {
     fun function(name: String, fn: C_SpecialLibMemberFunctionBody, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)
 }
 
-class Ld_TypeDefDslImpl(
+class Ld_TypeDefDslImpl internal constructor(
     override val typeSimpleName: String,
     private val maker: Ld_TypeDefMaker,
 ): Ld_TypeDefDsl, Ld_CommonNamespaceDsl by Ld_CommonNamespaceDslImpl(maker), Ld_MemberDsl by Ld_MemberDslImpl(maker) {
@@ -377,32 +374,23 @@ class Ld_TypeDefDslImpl(
     }
 
     override fun rType(rType: R_Type) {
-        maker.rTypeFactory { rType }
+        maker.rTypeMeta(R_TypeMeta.mkSimple(rType))
     }
 
     override fun rType(factory: (R_Type) -> R_Type?) {
-        maker.rTypeFactory { args ->
-            checkEquals(args.size, 1)
-            factory(args[0])
-        }
+        maker.rTypeMeta(R_TypeMeta.make(factory))
     }
 
     override fun rType(factory: (R_Type, R_Type) -> R_Type?) {
-        maker.rTypeFactory { args ->
-            checkEquals(args.size, 2)
-            factory(args[0], args[1])
-        }
+        maker.rTypeMeta(R_TypeMeta.make(factory))
     }
 
     override fun rType(factory: (R_Type, R_Type, R_Type) -> R_Type?) {
-        maker.rTypeFactory { args ->
-            checkEquals(args.size, 3)
-            factory(args[0], args[1], args[2])
-        }
+        maker.rTypeMeta(R_TypeMeta.make(factory))
     }
 
-    override fun rTypeFactory(factory: L_TypeDefRTypeFactory) {
-        maker.rTypeFactory(factory)
+    override fun rTypeMeta(rTypeMeta: R_TypeMeta) {
+        maker.rTypeMeta(rTypeMeta)
     }
 
     override fun docCode(calculator: (DocCode) -> DocCode) {
@@ -549,7 +537,7 @@ private class Ld_TypeDefBuilder(
     private val typeParams = mutableMapOf<R_Name, Ld_TypeParam>()
     private var selfType: String? = null
     private var parentType: Ld_TypeDefParent? = null
-    private var rTypeFactory: L_TypeDefRTypeFactory? = null
+    private var rTypeMeta: R_TypeMeta? = null
     private var docCodeStrategy: L_TypeDefDocCodeStrategy? = null
     private var supertypeStrategy: L_TypeDefSupertypeStrategy? = null
 
@@ -566,7 +554,7 @@ private class Ld_TypeDefBuilder(
     ) {
         check(selfType == null) { "Trying to add a type parameter after self type was requested" }
         check(parentType == null) { "Trying to add a type parameter after a parent type" }
-        check(rTypeFactory == null) { "Trying to add a type parameter after R_Type" }
+        check(rTypeMeta == null) { "Trying to add a type parameter after R_Type" }
         check(members.isEmpty()) { "Trying to add a type parameter after a member" }
 
         val (name0, variance) = parseTypeParamName(name)
@@ -605,10 +593,10 @@ private class Ld_TypeDefBuilder(
         parentType = ldParentType
     }
 
-    override fun rTypeFactory(factory: L_TypeDefRTypeFactory) {
-        check(rTypeFactory == null) { "R_Type already set" }
+    override fun rTypeMeta(typeMeta: R_TypeMeta) {
+        check(rTypeMeta == null) { "R_Type already set" }
         check(members.isEmpty()) { "Trying to set R_Type after a member" }
-        rTypeFactory = factory
+        rTypeMeta = typeMeta
     }
 
     override fun docCodeStrategy(strategy: L_TypeDefDocCodeStrategy) {
@@ -693,7 +681,7 @@ private class Ld_TypeDefBuilder(
 
         val memberHeader = Ld_MemberHeader.make(hdr, block)
         val ldType = Ld_Type.parse(type)
-        val value = Ld_PropertyValue.typeProp { body }
+        val value = Ld_PropertyValue.typeProp(body)
         val property = Ld_TypeProperty(rName, ldType, value)
         members.add(Ld_TypeDefMember_Property(memberHeader, property))
     }
@@ -785,7 +773,7 @@ private class Ld_TypeDefBuilder(
             flags = flags,
             typeParams = typeParams.values.toImmList(),
             parent = parentType,
-            rTypeFactory = rTypeFactory,
+            rTypeMeta = rTypeMeta,
             docCodeStrategy = docCodeStrategy,
             supertypeStrategy = supertypeStrategy ?: L_TypeDefSupertypeStrategy_None,
             members = members.toImmList(),

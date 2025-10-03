@@ -15,7 +15,7 @@ import net.postchain.rell.base.runtime.utils.Rt_TupleComparator
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.*
 
-class R_TupleType(val fields: ImmList<R_TupleField>): R_Type(calcName(fields)) {
+class R_TupleType(val fields: ImmList<R_TupleField>): R_CompositeType(calcName(fields)) {
     val virtualType = R_VirtualTupleType(this)
 
     init {
@@ -48,7 +48,8 @@ class R_TupleType(val fields: ImmList<R_TupleField>): R_Type(calcName(fields)) {
         )
     }
 
-    override fun explicitComponentTypes() = fields.mapToImmList { it.type }
+    override fun getTypeMeta0(): R_TypeMeta = Meta()
+    override fun getTypeArgs() = fields.mapToImmList { it.type }
 
     override fun isAssignableFrom(type: R_Type): Boolean {
         if (type !is R_TupleType) return false
@@ -98,9 +99,17 @@ class R_TupleType(val fields: ImmList<R_TupleField>): R_Type(calcName(fields)) {
     }
 
     override fun toMetaGtv() = mapOf(
-            "type" to "tuple".toGtv(),
-            "fields" to fields.map { it.toMetaGtv() }.toGtv()
+        "type" to "tuple".toGtv(),
+        "fields" to fields.map { it.toMetaGtv() }.toGtv(),
     ).toGtv()
+
+    private inner class Meta: R_TypeMeta() {
+        override fun getTypeOrNull(args: ImmList<R_Type>): R_Type? {
+            checkEquals(args.size, fields.size)
+            val resFields = fields.mapIndexedToImmList { i, f -> R_TupleField(f.index, f.name, args[i]) }
+            return R_TupleType(resFields)
+        }
+    }
 
     companion object {
         private fun calcName(fields: List<R_TupleField>): String {
@@ -109,16 +118,16 @@ class R_TupleType(val fields: ImmList<R_TupleField>): R_Type(calcName(fields)) {
             return "($fieldsStr$comma)"
         }
 
-        fun create(vararg fields: R_Type): R_TupleType {
-            return create(fields.toList())
+        fun make(vararg fields: R_Type): R_TupleType {
+            return make(fields.toList())
         }
 
-        fun create(fields: List<R_Type>): R_TupleType {
+        fun make(fields: List<R_Type>): R_TupleType {
             val fieldsList = fields.mapIndexedToImmList { i, type -> R_TupleField(i, null, type) }
             return R_TupleType(fieldsList)
         }
 
-        fun createNamed(vararg fields: Pair<String?, R_Type>): R_TupleType {
+        fun makeNamed(vararg fields: Pair<String?, R_Type>): R_TupleType {
             val fieldsList = fields.mapIndexedToImmList { i, (name, type) ->
                 val rIdeName = name?.let { s -> R_IdeName(R_Name.of(s), C_IdeSymbolInfo.MEM_TUPLE_ATTR) }
                 R_TupleField(i, rIdeName, type)

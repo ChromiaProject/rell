@@ -209,7 +209,7 @@ private object SampleDocLib {
             alias("link_fun_warn", "dep_fun_warn")
 
             type("sample_type") {
-                LibModuleTester.setRTypeFactory(this, ::getModule, "sample.sample_type")
+                LibModuleTester.setRTypeMeta(this, ::getModule, "sample.sample_type")
 
                 constructor {
                     generic("U", subOf = "immutable")
@@ -247,7 +247,7 @@ private object SampleDocLib {
                 generic("V")
                 parent("iterable<(K, V)>")
 
-                LibModuleTester.setRTypeFactory(this, ::getModule, "sample.sample_map", genericCount = 2)
+                LibModuleTester.setRTypeMeta(this, ::getModule, "sample.sample_map", genericCount = 2)
 
                 constructor {
                     generic("U", subOf = "immutable")

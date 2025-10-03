@@ -19,6 +19,12 @@ class R_VirtualSetType(val innerType: R_SetType): R_VirtualCollectionType(innerT
     override fun hashCode0() = innerType.hashCode()
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_VirtualSet(this)
     override fun typeDef() = Lib_Rell.VIRTUAL_SET_TYPE
+
+    companion object {
+        internal val META = R_TypeMeta.make { t, _ ->
+            R_SetType(t).virtualType
+        }
+    }
 }
 
 class Rt_VirtualSetValue(

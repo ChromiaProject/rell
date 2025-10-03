@@ -11,11 +11,7 @@ import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.def.C_MntEntry
 import net.postchain.rell.base.compiler.base.expr.C_AtFromImplicitAttr
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
-import net.postchain.rell.base.model.R_AttrValidator
-import net.postchain.rell.base.model.R_Definition
-import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.model.R_MountName
-import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.LazyString
 
 internal object C_Errors {

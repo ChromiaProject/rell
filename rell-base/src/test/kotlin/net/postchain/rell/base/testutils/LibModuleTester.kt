@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.lib.C_LibType
 import net.postchain.rell.base.lmodel.dsl.Ld_ModuleDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_TypeDefDsl
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.R_TypeMeta
 import net.postchain.rell.base.runtime.GtvRtConversion
 import net.postchain.rell.base.runtime.GtvRtConversion_None
 import net.postchain.rell.base.runtime.utils.toGtv
@@ -45,21 +46,24 @@ class LibModuleTester(
 
     fun setRTypeFactory(dsl: Ld_TypeDefDsl, typeName: String = dsl.typeSimpleName, genericCount: Int = 0) {
         val modRef = curModRef!!
-        setRTypeFactory(dsl, modRef::get, typeName, genericCount)
+        setRTypeMeta(dsl, modRef::get, typeName, genericCount)
     }
 
     companion object {
-        fun setRTypeFactory(
+        fun setRTypeMeta(
             dsl: Ld_TypeDefDsl,
             modGetter: () -> C_LibModule,
             typeName: String = dsl.typeSimpleName,
             genericCount: Int = 0,
         ) {
             val typeTag = Any()
-            dsl.rTypeFactory { args ->
-                checkEquals(args.size, genericCount)
-                R_TestType(typeName, typeTag, modGetter, args.toImmList())
+            val meta = object: R_TypeMeta() {
+                override fun getTypeOrNull(args: ImmList<R_Type>): R_Type? {
+                    checkEquals(args.size, genericCount)
+                    return R_TestType(typeName, typeTag, modGetter, args.toImmList())
+                }
             }
+            dsl.rTypeMeta(meta)
         }
     }
 
@@ -85,6 +89,9 @@ class LibModuleTester(
         override fun isReference() = true
         override fun isDirectPure() = false
         override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_None
+
+        override fun getTypeMeta0() = R_TypeMeta.mkSimple(this)
+        override fun getTypeArgs() = typeArgs
 
         override fun getLibType0(): C_LibType {
             val mod = modGetter()

@@ -8,7 +8,7 @@ import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_QualifiedName
-import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.R_TypeMeta
 import net.postchain.rell.base.mtype.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocCode
@@ -82,10 +82,6 @@ class L_TypeDefMembers(val all: ImmList<L_TypeDefMember>) {
     }
 }
 
-fun interface L_TypeDefRTypeFactory {
-    fun getRType(args: List<R_Type>): R_Type?
-}
-
 fun interface L_TypeDefDocCodeStrategy {
     fun docCode(args: List<DocCode>): DocCode
 }
@@ -130,12 +126,12 @@ class L_TypeDefParent(val typeDef: L_TypeDef, val args: ImmList<M_Type>) {
     }
 }
 
-class L_TypeDef(
+class L_TypeDef internal constructor(
     val fullName: R_FullName,
     flags: L_TypeDefFlags,
     val mGenericType: M_GenericType,
     val parent: L_TypeDefParent?,
-    val rTypeFactory: L_TypeDefRTypeFactory?,
+    internal val rTypeMeta: R_TypeMeta?,
     private val membersFuture: FcFuture<L_TypeDefMembers>,
     val docSymbol: DocSymbol,
 ): L_AbstractTypeDef() {

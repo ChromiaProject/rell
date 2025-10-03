@@ -120,7 +120,7 @@ internal class C_ValueMemberExpr(
     override fun isCallable() = member.isCallable()
 
     override fun vExprOrError(): C_ValueOrError<V_Expr> {
-        val vMember = member.value(exprCtx, memberPos, memberName)
+        val vMember = member.value(exprCtx, selfType, memberPos, memberName)
         ideInfoHand.setIdeInfo(vMember.ideInfo)
         return C_ValueOrError_Value(makeMemberExpr(vMember))
     }

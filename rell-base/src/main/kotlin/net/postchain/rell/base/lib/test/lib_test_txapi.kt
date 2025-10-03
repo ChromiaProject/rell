@@ -65,7 +65,7 @@ private const val SINCE0 = "0.10.4"
 
 private fun typeDefName(name: String) = Lib_RellTest.typeDefName(C_StringQualifiedName.of(name.split(".")))
 
-private object R_TestBlockType: R_LibSimpleType("rell.test.block", typeDefName("rell.test.block")) {
+private object R_TestBlockType: R_LibUniqueType("rell.test.block", typeDefName("rell.test.block")) {
     override fun isReference() = true
     override fun isDirectMutable() = true
     override fun isDirectPure() = false
@@ -73,7 +73,7 @@ private object R_TestBlockType: R_LibSimpleType("rell.test.block", typeDefName("
     override fun getLibTypeDef() = Lib_RellTest.BLOCK_TYPE
 }
 
-private object R_TestTxType: R_LibSimpleType("rell.test.tx", typeDefName("rell.test.tx")) {
+private object R_TestTxType: R_LibUniqueType("rell.test.tx", typeDefName("rell.test.tx")) {
     override fun isReference() = true
     override fun isDirectMutable() = true
     override fun isDirectPure() = false
@@ -81,7 +81,7 @@ private object R_TestTxType: R_LibSimpleType("rell.test.tx", typeDefName("rell.t
     override fun getLibTypeDef() = Lib_RellTest.TX_TYPE
 }
 
-object R_TestOpType: R_LibSimpleType("rell.test.op", typeDefName("rell.test.op")) {
+object R_TestOpType: R_LibUniqueType("rell.test.op", typeDefName("rell.test.op")) {
     override fun isReference() = true
     override fun isDirectPure() = false
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_None

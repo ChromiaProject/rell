@@ -17,7 +17,7 @@ import net.postchain.rell.base.runtime.Rt_Value
 private val EVENT_LIST_TYPE: R_Type = R_ListType(Lib_Test_Events.EVENT_TYPE)
 
 object Lib_Test_Events {
-    val EVENT_TUPLE_TYPE = R_TupleType.create(R_TextType, R_GtvType)
+    val EVENT_TUPLE_TYPE = R_TupleType.make(R_TextType, R_GtvType)
     val EVENT_TYPE: R_Type = EVENT_TUPLE_TYPE
 
     val NAMESPACE = Ld_NamespaceDsl.make {
