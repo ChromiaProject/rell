@@ -31,23 +31,27 @@ class PostchainTest: BaseResourcefulTest() {
         PostchainBaseUtils.initializeApp(sqlAccess(), con)
 
         chkTables(con,
-                "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
-                "blockchains(blockchain_rid:bytea,chain_iid:int8)",
-                "containers(container_iid:serial,name:text)",
-                "meta(key:text,value:text)",
-                "must_sync_until(block_height:int8,chain_iid:int8)",
-                "peerinfos(host:text,port:int4,pub_key:bytea,timestamp:timestamp)"
+            "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
+            "blockchains(blockchain_rid:bytea,chain_iid:int8)",
+            "containers(container_iid:serial,name:text)",
+            "meta(key:text,value:text)",
+            "must_sync_until(block_height:int8,chain_iid:int8)",
+            "peerinfos(host:text,port:int4,pub_key:bytea,timestamp:timestamp)",
+            "snapshot_sync_context_state(chain_iid:int8,context_id:int8,datum_id_offset:int8,max_datum_id:int8,root_hash:bytea)",
+            "snapshot_sync_state(chain_iid:int8,height:int8,root_hash:bytea)",
         )
 
         PostchainBaseUtils.initializeApp(sqlAccess(), con)
 
         chkTables(con,
-                "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
-                "blockchains(blockchain_rid:bytea,chain_iid:int8)",
-                "containers(container_iid:serial,name:text)",
-                "meta(key:text,value:text)",
-                "must_sync_until(block_height:int8,chain_iid:int8)",
-                "peerinfos(host:text,port:int4,pub_key:bytea,timestamp:timestamp)"
+            "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
+            "blockchains(blockchain_rid:bytea,chain_iid:int8)",
+            "containers(container_iid:serial,name:text)",
+            "meta(key:text,value:text)",
+            "must_sync_until(block_height:int8,chain_iid:int8)",
+            "peerinfos(host:text,port:int4,pub_key:bytea,timestamp:timestamp)",
+            "snapshot_sync_context_state(chain_iid:int8,context_id:int8,datum_id_offset:int8,max_datum_id:int8,root_hash:bytea)",
+            "snapshot_sync_state(chain_iid:int8,height:int8,root_hash:bytea)",
         )
     }
 
@@ -58,67 +62,83 @@ class PostchainTest: BaseResourcefulTest() {
         PostchainBaseUtils.initializeApp(sa, con)
 
         chkTables(con,
-                "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
-                "blockchains(blockchain_rid:bytea,chain_iid:int8)",
-                "containers(container_iid:serial,name:text)",
-                "meta(key:text,value:text)",
-                "must_sync_until(block_height:int8,chain_iid:int8)",
-                "peerinfos(host:text,port:int4,pub_key:bytea,timestamp:timestamp)"
+            "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
+            "blockchains(blockchain_rid:bytea,chain_iid:int8)",
+            "containers(container_iid:serial,name:text)",
+            "meta(key:text,value:text)",
+            "must_sync_until(block_height:int8,chain_iid:int8)",
+            "peerinfos(host:text,port:int4,pub_key:bytea,timestamp:timestamp)",
+            "snapshot_sync_context_state(chain_iid:int8,context_id:int8,datum_id_offset:int8,max_datum_id:int8,root_hash:bytea)",
+            "snapshot_sync_state(chain_iid:int8,height:int8,root_hash:bytea)",
         )
 
         val bcRid1 = RellTestUtils.strToBlockchainRid("CEED")
         sa.initializeBlockchain(BaseEContext(con, 123L, sa), bcRid1)
 
         chkTables(con,
-                "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
-                "blockchains(blockchain_rid:bytea,chain_iid:int8)",
-                "c123.blocks(block_header_data:bytea,block_height:int8,block_iid:bigserial,block_rid:bytea,block_witness:bytea,timestamp:int8)",
-                "c123.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8,merkle_hash_version:int8)",
-                "c123.sys.faulty_configuration(configuration_hash:bytea,report_height:int8)",
-                "c123.sys.transaction_signers(signer:bytea,tx_iid:int8)",
-                "c123.transactions(block_iid:int8,tx_data:bytea,tx_hash:bytea,tx_iid:bigserial,tx_number:int8,tx_rid:bytea)",
-                "containers(container_iid:serial,name:text)",
-                "meta(key:text,value:text)",
-                "must_sync_until(block_height:int8,chain_iid:int8)",
-                "peerinfos(host:text,port:int4,pub_key:bytea,timestamp:timestamp)"
+            "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
+            "blockchains(blockchain_rid:bytea,chain_iid:int8)",
+            "c123.blocks(block_header_data:bytea,block_height:int8,block_iid:bigserial,block_rid:bytea,block_witness:bytea,timestamp:int8)",
+            "c123.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8,merkle_hash_version:int8)",
+            "c123.sys.faulty_configuration(configuration_hash:bytea,report_height:int8)",
+            "c123.sys.snapshot_contexts(context_id:int8,context_name:varchar)",
+            "c123.sys.snapshot_updated_datum(context_id:int8,datum:bytea,datum_hash:bytea,datum_id:int8)",
+            "c123.sys.transaction_signers(signer:bytea,tx_iid:int8)",
+            "c123.transactions(block_iid:int8,tx_data:bytea,tx_hash:bytea,tx_iid:bigserial,tx_number:int8,tx_rid:bytea)",
+            "containers(container_iid:serial,name:text)",
+            "meta(key:text,value:text)",
+            "must_sync_until(block_height:int8,chain_iid:int8)",
+            "peerinfos(host:text,port:int4,pub_key:bytea,timestamp:timestamp)",
+            "snapshot_sync_context_state(chain_iid:int8,context_id:int8,datum_id_offset:int8,max_datum_id:int8,root_hash:bytea)",
+            "snapshot_sync_state(chain_iid:int8,height:int8,root_hash:bytea)",
         )
 
         PostchainBaseUtils.initializeApp(sa, con)
 
         chkTables(con,
-                "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
-                "blockchains(blockchain_rid:bytea,chain_iid:int8)",
-                "c123.blocks(block_header_data:bytea,block_height:int8,block_iid:bigserial,block_rid:bytea,block_witness:bytea,timestamp:int8)",
-                "c123.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8,merkle_hash_version:int8)",
-                "c123.sys.faulty_configuration(configuration_hash:bytea,report_height:int8)",
-                "c123.sys.transaction_signers(signer:bytea,tx_iid:int8)",
-                "c123.transactions(block_iid:int8,tx_data:bytea,tx_hash:bytea,tx_iid:bigserial,tx_number:int8,tx_rid:bytea)",
-                "containers(container_iid:serial,name:text)",
-                "meta(key:text,value:text)",
-                "must_sync_until(block_height:int8,chain_iid:int8)",
-                "peerinfos(host:text,port:int4,pub_key:bytea,timestamp:timestamp)"
+            "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
+            "blockchains(blockchain_rid:bytea,chain_iid:int8)",
+            "c123.blocks(block_header_data:bytea,block_height:int8,block_iid:bigserial,block_rid:bytea,block_witness:bytea,timestamp:int8)",
+            "c123.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8,merkle_hash_version:int8)",
+            "c123.sys.faulty_configuration(configuration_hash:bytea,report_height:int8)",
+            "c123.sys.snapshot_contexts(context_id:int8,context_name:varchar)",
+            "c123.sys.snapshot_updated_datum(context_id:int8,datum:bytea,datum_hash:bytea,datum_id:int8)",
+            "c123.sys.transaction_signers(signer:bytea,tx_iid:int8)",
+            "c123.transactions(block_iid:int8,tx_data:bytea,tx_hash:bytea,tx_iid:bigserial,tx_number:int8,tx_rid:bytea)",
+            "containers(container_iid:serial,name:text)",
+            "meta(key:text,value:text)",
+            "must_sync_until(block_height:int8,chain_iid:int8)",
+            "peerinfos(host:text,port:int4,pub_key:bytea,timestamp:timestamp)",
+            "snapshot_sync_context_state(chain_iid:int8,context_id:int8,datum_id_offset:int8,max_datum_id:int8,root_hash:bytea)",
+            "snapshot_sync_state(chain_iid:int8,height:int8,root_hash:bytea)",
         )
 
         val bcRid2 = RellTestUtils.strToBlockchainRid("FEED")
         sa.initializeBlockchain(BaseEContext(con, 456L, sa), bcRid2)
 
         chkTables(con,
-                "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
-                "blockchains(blockchain_rid:bytea,chain_iid:int8)",
-                "c123.blocks(block_header_data:bytea,block_height:int8,block_iid:bigserial,block_rid:bytea,block_witness:bytea,timestamp:int8)",
-                "c123.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8,merkle_hash_version:int8)",
-                "c123.sys.faulty_configuration(configuration_hash:bytea,report_height:int8)",
-                "c123.sys.transaction_signers(signer:bytea,tx_iid:int8)",
-                "c123.transactions(block_iid:int8,tx_data:bytea,tx_hash:bytea,tx_iid:bigserial,tx_number:int8,tx_rid:bytea)",
-                "c456.blocks(block_header_data:bytea,block_height:int8,block_iid:bigserial,block_rid:bytea,block_witness:bytea,timestamp:int8)",
-                "c456.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8,merkle_hash_version:int8)",
-                "c456.sys.faulty_configuration(configuration_hash:bytea,report_height:int8)",
-                "c456.sys.transaction_signers(signer:bytea,tx_iid:int8)",
-                "c456.transactions(block_iid:int8,tx_data:bytea,tx_hash:bytea,tx_iid:bigserial,tx_number:int8,tx_rid:bytea)",
-                "containers(container_iid:serial,name:text)",
-                "meta(key:text,value:text)",
-                "must_sync_until(block_height:int8,chain_iid:int8)",
-                "peerinfos(host:text,port:int4,pub_key:bytea,timestamp:timestamp)"
+            "blockchain_replicas(blockchain_rid:bytea,node:bytea)",
+            "blockchains(blockchain_rid:bytea,chain_iid:int8)",
+            "c123.blocks(block_header_data:bytea,block_height:int8,block_iid:bigserial,block_rid:bytea,block_witness:bytea,timestamp:int8)",
+            "c123.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8,merkle_hash_version:int8)",
+            "c123.sys.faulty_configuration(configuration_hash:bytea,report_height:int8)",
+            "c123.sys.snapshot_contexts(context_id:int8,context_name:varchar)",
+            "c123.sys.snapshot_updated_datum(context_id:int8,datum:bytea,datum_hash:bytea,datum_id:int8)",
+            "c123.sys.transaction_signers(signer:bytea,tx_iid:int8)",
+            "c123.transactions(block_iid:int8,tx_data:bytea,tx_hash:bytea,tx_iid:bigserial,tx_number:int8,tx_rid:bytea)",
+            "c456.blocks(block_header_data:bytea,block_height:int8,block_iid:bigserial,block_rid:bytea,block_witness:bytea,timestamp:int8)",
+            "c456.configurations(configuration_data:bytea,configuration_hash:bytea,height:int8,merkle_hash_version:int8)",
+            "c456.sys.faulty_configuration(configuration_hash:bytea,report_height:int8)",
+            "c456.sys.snapshot_contexts(context_id:int8,context_name:varchar)",
+            "c456.sys.snapshot_updated_datum(context_id:int8,datum:bytea,datum_hash:bytea,datum_id:int8)",
+            "c456.sys.transaction_signers(signer:bytea,tx_iid:int8)",
+            "c456.transactions(block_iid:int8,tx_data:bytea,tx_hash:bytea,tx_iid:bigserial,tx_number:int8,tx_rid:bytea)",
+            "containers(container_iid:serial,name:text)",
+            "meta(key:text,value:text)",
+            "must_sync_until(block_height:int8,chain_iid:int8)",
+            "peerinfos(host:text,port:int4,pub_key:bytea,timestamp:timestamp)",
+            "snapshot_sync_context_state(chain_iid:int8,context_id:int8,datum_id_offset:int8,max_datum_id:int8,root_hash:bytea)",
+            "snapshot_sync_state(chain_iid:int8,height:int8,root_hash:bytea)",
         )
     }
 
@@ -141,6 +161,8 @@ class PostchainTest: BaseResourcefulTest() {
             "meta",
             "must_sync_until",
             "peerinfos",
+            "snapshot_sync_context_state",
+            "snapshot_sync_state",
         )
 
         chkRellPostchainTables(rellTables, postchainTables, "", ignoredTables)
@@ -167,6 +189,8 @@ class PostchainTest: BaseResourcefulTest() {
         val ignoredTables = listOf(
             "c0.configurations",
             "c0.sys.faulty_configuration",
+            "c0.sys.snapshot_contexts",
+            "c0.sys.snapshot_updated_datum",
             "c0.sys.transaction_signers"
         )
 
