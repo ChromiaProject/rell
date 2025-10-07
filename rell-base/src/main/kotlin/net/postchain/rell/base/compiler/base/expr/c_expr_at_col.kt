@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.expr
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_BlockEntry_Var
 import net.postchain.rell.base.compiler.base.core.C_LocalVar
@@ -18,6 +17,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_VarPtr
 import net.postchain.rell.base.model.expr.R_ColAtParam
 import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMultimap
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.mapToImmList
@@ -86,7 +86,7 @@ internal class C_AtFrom_Iterable(
             .mapToImmList { C_AtFromImplicitAttr(base, selfType, it) }
     }
 
-    override fun ideCompletions(): Multimap<String, IdeCompletion> {
+    override fun ideCompletions(): ImmMultimap<String, IdeCompletion> {
         val selfType = item.elemType
         val members = outerExprCtx.typeMgr.getValueMembers(selfType)
         return members

@@ -5,8 +5,6 @@
 package net.postchain.rell.base.misc
 
 import net.postchain.rell.base.utils.CommonUtils
-import net.postchain.rell.base.utils.mutableMultisetOf
-import net.postchain.rell.base.utils.toImmMultiset
 import net.postchain.rell.base.utils.toImmSet
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -223,19 +221,6 @@ class KotlinTest {
         assertNotNull(a?.l)
         //assertEquals(0, a?.f(123)) // Compilation error
         //assertEquals(0, a?.l[0]) // Compilation error
-    }
-
-    @Test fun testMutableMultisetOrder() {
-        val s = mutableMultisetOf<Int>()
-        listOf(123, 789, 456, 654, 321, 123, 987, 456).forEach { s.add(it) }
-        assertEquals("[123 x 2, 789, 456 x 2, 654, 321, 987]", s.toString())
-        assertEquals("[123 x 2, 789, 456 x 2, 654, 321, 987]", s.toImmMultiset().toString())
-        s.remove(456)
-        assertEquals("[123 x 2, 789, 456, 654, 321, 987]", s.toString())
-        assertEquals("[123 x 2, 789, 456, 654, 321, 987]", s.toImmMultiset().toString())
-        s.remove(654)
-        assertEquals("[123 x 2, 789, 456, 321, 987]", s.toString())
-        assertEquals("[123 x 2, 789, 456, 321, 987]", s.toImmMultiset().toString())
     }
 
     @Test fun testOverrideVal() {

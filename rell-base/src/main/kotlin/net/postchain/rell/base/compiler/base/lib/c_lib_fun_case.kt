@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.lib
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.*
@@ -85,7 +84,7 @@ internal abstract class C_LibFuncCase<CallT: V_FunctionCall>(
 
     open fun getPartialCallTarget(caseCtx: C_LibFuncCaseCtx, selfType: R_Type): C_LibPartialCallTarget<CallT>? = null
 
-    protected open fun ideGetParameterCompletions(): Multimap<String, IdeCompletion> = immMultimapOf()
+    protected open fun ideGetParameterCompletions(): ImmMultimap<String, IdeCompletion> = immMultimapOf()
 
     companion object {
         fun <CallT: V_FunctionCall> matchCase(
@@ -494,7 +493,7 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
         return lFunction.body.getSysFunction(meta)
     }
 
-    final override fun ideGetParameterCompletions(): Multimap<String, IdeCompletion> {
+    final override fun ideGetParameterCompletions(): ImmMultimap<String, IdeCompletion> {
         val location = lFunction.fullName.str()
         return lFunction.header.params
             .filterNot { it.arity.many }

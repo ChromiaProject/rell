@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.utils.ide
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.core.C_Compiler
@@ -108,7 +107,7 @@ object IdeApi {
         filePath: C_SourcePath,
         pos: Int,
         options: C_CompilerOptions,
-    ): Multimap<String, IdeCompletion> {
+    ): ImmMultimap<String, IdeCompletion> {
         val sourceFile = sourceDir.file(filePath)
         sourceFile ?: return immMultimapOf()
 

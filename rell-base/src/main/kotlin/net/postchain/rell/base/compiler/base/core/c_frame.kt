@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.core
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.*
@@ -537,7 +536,7 @@ internal class C_OwnerBlockContext(
         return C_IdeCompletionsScope(baseScope, late.getter)
     }
 
-    private fun ideCompletionsAtMembers(): Multimap<String, IdeCompletion> {
+    private fun ideCompletionsAtMembers(): ImmMultimap<String, IdeCompletion> {
         val res = mutableMultimapOf<String, IdeCompletion>()
 
         var block = atFromBlock

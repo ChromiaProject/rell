@@ -442,20 +442,20 @@ private class S_PrivateFileContext(
     idePath: IdeFilePath,
     private val modNamespaces: Multimap<R_QualifiedName, NamespaceNameInfoRec>,
 ): S_FileContext(modCtx, symCtx, path, idePath) {
-    private val namespaces = mutableMultisetOf<R_QualifiedName>()
+    private val namespaces = mutableMapOf<R_QualifiedName, Int>()
 
     override fun addNamespaceName(
         nameHand: C_NameHandle,
         fullName: R_QualifiedName,
         docSymbolGetter: C_LateGetter<DocSymbol?>,
     ): IdeSymbolId {
-        val count = namespaces.count(fullName)
+        val count = namespaces.getOrDefault(fullName, 0)
         val fullNameStr = fullName.str()
         val defName = if (count == 0) fullNameStr else "$fullNameStr:$count"
         val defId = IdeSymbolId(IdeSymbolCategory.NAMESPACE, defName, immListOf())
         val link = IdeGlobalSymbolLink(IdeSymbolGlobalId(nameHand.pos.idePath(), defId))
         val rec = NamespaceNameInfoRec(nameHand, defId, link, docSymbolGetter)
-        namespaces.add(fullName)
+        namespaces.compute(fullName) { _, v -> (v ?: 0) + 1 }
         modNamespaces.put(fullName, rec)
         return defId
     }

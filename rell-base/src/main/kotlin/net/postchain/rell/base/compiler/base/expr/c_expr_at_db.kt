@@ -134,7 +134,7 @@ internal class C_AtFrom_Entities(
         }
     }
 
-    override fun ideCompletions(): Multimap<String, IdeCompletion> {
+    override fun ideCompletions(): ImmMultimap<String, IdeCompletion> {
         val members = items.flatMap { item ->
             val selfType = item.atEntity.rEntity.type
             outerExprCtx.typeMgr.getValueMembers(selfType)

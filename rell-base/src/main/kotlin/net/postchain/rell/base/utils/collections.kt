@@ -60,6 +60,7 @@ fun <T> Iterable<T>.startsWith(prefix: Iterable<T>): Boolean {
     return true
 }
 
+@Suppress("unused")
 fun <T> Array<out T?>.filterNotNullAllOrNull(): ImmList<T>? {
     val res: MutableList<T> = ArrayList(this.size)
     for (value in this) {
@@ -88,6 +89,7 @@ fun <T, R> Iterable<T>.mapNotNullAllOrNull(f: (T) -> R?): ImmList<R>? {
     return res.toImmList()
 }
 
+@Suppress("unused")
 fun <T, R> Iterable<T>.mapIndexedNotNullAllOrNull(f: (Int, T) -> R?): ImmList<R>? {
     val res: MutableList<R> = ArrayList()
     for (entry in this.withIndex()) {
@@ -110,6 +112,7 @@ fun <T, R> Iterable<T>.mapView(op: (T) -> R): Iterable<R> = asSequence().map(op)
 
 inline fun <T> Iterable<T>.foldSimple(op: (T, T) -> T): T = reduce(op)
 
+@Suppress("unused")
 fun <T> Iterable<T>.separated(block: (T, T) -> T): List<T> {
     val res = mutableListOf<T>()
     var prev: T? = null
@@ -174,11 +177,13 @@ fun <T> List<T>.countWhile(predicate: (T) -> Boolean): Int {
     return if (i >= 0) i else this.size
 }
 
+@Suppress("unused")
 fun <T> List<T>.countLastWhile(predicate: (T) -> Boolean): Int {
     val i = this.indexOfLast { !predicate(it) }
     return if (i >= 0) (this.size - 1 - i) else this.size
 }
 
+@Suppress("unused")
 fun <T> List<T>.dropView(n: Int): List<T> = subList(n, size)
 
 fun <T, R> Iterable<T>.partitionMap(f: (T) -> Pair<R, Boolean>): Pair<ImmList<R>, ImmList<R>> {
@@ -322,6 +327,7 @@ fun <K, V> immMapOf(vararg entries: Pair<K, V>): ImmMap<K, V> = mapOf(*entries).
 
 fun <K, V> ImmMap<K, V>?.orEmpty(): ImmMap<K, V> = this ?: immMapOf()
 
+@Suppress("unused")
 fun <K, V> immMapOfNotNullValues(vararg entries: Pair<K, V?>): ImmMap<K, V> {
     return persistentMapOf<K, V>().mutate {
         for ((k, v) in entries) {
@@ -407,14 +413,6 @@ fun <K: Any, V: Any> Map<K, Iterable<V>>.toImmMultimap(): ImmMultimap<K, V> {
     }
     return map.toImmMultimap()
 }
-
-
-fun <T: Any> mutableMultisetOf(): Multiset<T> = LinkedHashMultiset.create()
-
-
-typealias ImmMultiset<E> = ImmutableMultiset<E>
-
-fun <T: Any> Multiset<T>.toImmMultiset(): ImmMultiset<T> = ImmutableMultiset.copyOf(this)
 
 
 fun <K, V> MutableMap<K, V>.putAllAbsent(map: Map<K, V>) {

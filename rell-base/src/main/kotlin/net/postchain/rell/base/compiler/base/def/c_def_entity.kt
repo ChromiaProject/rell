@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.def
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.C_EntityAttrRef
@@ -355,7 +354,7 @@ class C_EntityContext(
         return cAttrs.associateByToImmMap { it.rAttr.rName }
     }
 
-    private fun <T: R_KeyIndex> keyIndexMap(list: List<T>): Multimap<R_Name, T> {
+    private fun <T: R_KeyIndex> keyIndexMap(list: List<T>): ImmMultimap<R_Name, T> {
         return list.flatMap { r -> r.attribs.map { attr -> attr to r } }.toImmMultimap()
     }
 

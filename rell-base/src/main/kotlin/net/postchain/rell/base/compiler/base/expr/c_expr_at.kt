@@ -94,7 +94,7 @@ internal abstract class C_AtFrom(
     abstract fun findMembers(ctx: C_ExprContext, name: C_Name): ImmList<C_AtFromMember>
     abstract fun findImplicitAttributesByName(ctx: C_ExprContext, name: C_Name): ImmList<C_AtFromImplicitAttr>
     abstract fun findImplicitAttributesByType(ctx: C_ExprContext, pos: S_Pos, type: R_Type): ImmList<C_AtFromImplicitAttr>
-    abstract fun ideCompletions(): Multimap<String, IdeCompletion>
+    abstract fun ideCompletions(): ImmMultimap<String, IdeCompletion>
 
     abstract fun compile(details: C_AtDetails): V_Expr
     abstract fun compileJoin(details: C_AtDetails, isOuter: Boolean): C_AtFromItem

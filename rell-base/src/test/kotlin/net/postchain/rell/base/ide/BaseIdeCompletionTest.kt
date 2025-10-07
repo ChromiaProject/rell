@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.ide
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
@@ -15,6 +14,7 @@ import net.postchain.rell.base.lmodel.dsl.Ld_ModuleDsl
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellTestUtils
+import net.postchain.rell.base.utils.ImmMultimap
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmMultimap
@@ -77,7 +77,7 @@ abstract class BaseIdeCompletionTest: BaseRellTest() {
         pos: Int?,
         defaultOptions: C_CompilerOptions? = null,
         err: String? = null,
-    ): Multimap<String, String> {
+    ): ImmMultimap<String, String> {
         val sourceDir = tst.createSourceDir(code)
         val path = C_SourcePath.parse("main.rell")
 

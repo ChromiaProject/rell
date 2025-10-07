@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.lib
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_CallArgument
 import net.postchain.rell.base.compiler.ast.S_CallArgumentValue_Expr
 import net.postchain.rell.base.compiler.ast.S_CallArgumentValue_Wildcard
@@ -60,7 +59,7 @@ internal sealed class C_LibMemberFunction {
 
     abstract fun replaceTypeParams(rep: C_TypeMemberReplacement): C_LibMemberFunction
 
-    open fun ideGetParameterCompletions(): Multimap<String, IdeCompletion> = immMultimapOf()
+    open fun ideGetParameterCompletions(): ImmMultimap<String, IdeCompletion> = immMultimapOf()
 
     abstract fun compileCallFull(
         ctx: C_ExprContext,
