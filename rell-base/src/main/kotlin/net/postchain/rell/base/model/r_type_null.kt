@@ -28,7 +28,6 @@ object Rt_NullValue: Rt_Value() {
     override val valueType = Rt_CoreValueTypes.NULL.type()
 
     override fun type() = R_NullType
-    override fun toFormatArg() = str()
     override fun strCode(showTupleFieldNames: Boolean) = "null"
     override fun str(format: StrFormat) = "null"
 }

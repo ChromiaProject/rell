@@ -110,7 +110,6 @@ class Rt_JsonValue private constructor(private val str: String): Rt_Value() {
 
     override fun type() = R_JsonType
     override fun asJsonString() = str
-    override fun toFormatArg() = str
     override fun str(format: StrFormat) = str
     override fun strCode(showTupleFieldNames: Boolean) = "json[$str]"
     override fun equals(other: Any?) = other === this || (other is Rt_JsonValue && str == other.str)

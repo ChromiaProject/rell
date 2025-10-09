@@ -28,16 +28,15 @@ class R_VirtualSetType(val innerType: R_SetType): R_VirtualCollectionType(innerT
 }
 
 class Rt_VirtualSetValue(
-        gtv: Gtv,
-        private val type: R_VirtualSetType,
-        private val elements: Set<Rt_Value>
+    gtv: Gtv,
+    private val type: R_VirtualSetType,
+    private val elements: Set<Rt_Value>,
 ): Rt_VirtualCollectionValue(gtv) {
     override val valueType = Rt_CoreValueTypes.VIRTUAL_SET.type()
 
     override fun type() = type
     override fun asVirtualCollection() = this
     override fun asVirtualSet() = this
-    override fun toFormatArg() = elements
     override fun strCode(showTupleFieldNames: Boolean) = Rt_SetValue.strCode(type, elements, showTupleFieldNames)
     override fun str(format: StrFormat): String = elements.joinToString(", ", "[", "]") { it.str(format) }
     override fun equals(other: Any?) = other === this || (other is Rt_VirtualSetValue && elements == other.elements)

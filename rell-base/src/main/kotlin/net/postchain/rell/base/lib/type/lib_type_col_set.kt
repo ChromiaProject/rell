@@ -91,7 +91,6 @@ class Rt_SetValue(private val type: R_Type, private val elements: MutableSet<Rt_
     override fun asIterable(): Iterable<Rt_Value> = elements
     override fun asCollection() = elements
     override fun asSet() = elements
-    override fun toFormatArg() = elements
 
     override fun equals(other: Any?) = other === this || (other is Rt_SetValue && elements == other.elements)
     override fun hashCode() = elements.hashCode()

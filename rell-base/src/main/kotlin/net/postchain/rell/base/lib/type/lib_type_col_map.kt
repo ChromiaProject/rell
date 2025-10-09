@@ -346,7 +346,6 @@ class Rt_MapValue(val type: R_MapType, map: MutableMap<Rt_Value, Rt_Value>): Rt_
     override fun asMap() = map
     override fun asMutableMap() = mutableMap
     override fun asMapValue() = this
-    override fun toFormatArg() = map
 
     override fun equals(other: Any?) = other === this || (other is Rt_MapValue && map == other.map)
     override fun hashCode() = map.hashCode()

@@ -41,15 +41,14 @@ class R_VirtualStructType(val innerType: R_StructType): R_VirtualType(innerType)
 }
 
 class Rt_VirtualStructValue(
-        gtv: Gtv,
-        private val type: R_VirtualStructType,
-        private val attributes: List<Rt_Value?>
+    gtv: Gtv,
+    private val type: R_VirtualStructType,
+    private val attributes: List<Rt_Value?>,
 ): Rt_VirtualValue(gtv) {
     override val valueType = Rt_CoreValueTypes.VIRTUAL_STRUCT.type()
 
     override fun type() = type
     override fun asVirtualStruct() = this
-    override fun toFormatArg() = str()
     override fun equals(other: Any?) = other === this || (other is Rt_VirtualStructValue && attributes == other.attributes)
     override fun hashCode() = type.hashCode() * 31 + attributes.hashCode()
 

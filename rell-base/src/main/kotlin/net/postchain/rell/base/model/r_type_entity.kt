@@ -68,7 +68,6 @@ class Rt_EntityValue(val type: R_EntityType, val rowid: Long): Rt_Value() {
 
     override fun type() = type
     override fun asObjectId() = rowid
-    override fun toFormatArg() = str()
     override fun strCode(showTupleFieldNames: Boolean) = "${type.name}[$rowid]"
     override fun str(format: StrFormat) = strCode()
     override fun equals(other: Any?) = other === this || (other is Rt_EntityValue && type == other.type && rowid == other.rowid)

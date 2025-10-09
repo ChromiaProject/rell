@@ -394,7 +394,6 @@ class Rt_ListValue(private val type: R_Type, private val elements: MutableList<R
     override fun asIterable(): Iterable<Rt_Value> = elements
     override fun asCollection() = elements
     override fun asList() = elements
-    override fun toFormatArg() = elements
 
     override fun equals(other: Any?) = other === this || (other is Rt_ListValue && elements == other.elements)
     override fun hashCode() = elements.hashCode()

@@ -315,7 +315,6 @@ class Rt_ByteArrayValue private constructor(private val value: ByteArray): Rt_Va
 
     override fun type() = R_ByteArrayType
     override fun asByteArray() = value
-    override fun toFormatArg() = str()
     override fun strCode(showTupleFieldNames: Boolean) = "byte_array[${CommonUtils.bytesToHex(value)}]"
     override fun str(format: StrFormat) = "0x" + CommonUtils.bytesToHex(value)
     override fun equals(other: Any?) = other === this || (other is Rt_ByteArrayValue && value.contentEquals(other.value))

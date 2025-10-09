@@ -87,7 +87,6 @@ class R_EnumType(val enum: R_EnumDefinition): R_SimpleType(enum.appLevelName, en
 
         override fun type() = type
         override fun asEnum() = attr
-        override fun toFormatArg() = attr.name
         override fun equals(other: Any?) = other is Rt_EnumValue && attr == other.attr
         override fun hashCode() = type.hashCode() * 31 + attr.value
 

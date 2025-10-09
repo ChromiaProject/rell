@@ -171,7 +171,6 @@ class Rt_TupleValue(val type: R_TupleType, val elements: List<Rt_Value>): Rt_Val
 
     override fun type() = type
     override fun asTuple() = elements
-    override fun toFormatArg() = str()
     override fun equals(other: Any?) = other === this || (other is Rt_TupleValue && elements == other.elements)
     override fun hashCode() = elements.hashCode()
 

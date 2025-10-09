@@ -41,15 +41,14 @@ class R_VirtualTupleType(val innerType: R_TupleType): R_VirtualType(innerType) {
 }
 
 class Rt_VirtualTupleValue(
-        gtv: Gtv,
-        private val type: R_VirtualTupleType,
-        private val elements: List<Rt_Value?>
+    gtv: Gtv,
+    private val type: R_VirtualTupleType,
+    private val elements: List<Rt_Value?>,
 ): Rt_VirtualValue(gtv) {
     override val valueType = Rt_CoreValueTypes.VIRTUAL_TUPLE.type()
 
     override fun type() = type
     override fun asVirtualTuple() = this
-    override fun toFormatArg() = str()
     override fun equals(other: Any?) = other === this || (other is Rt_VirtualTupleValue && elements == other.elements)
     override fun hashCode() = elements.hashCode()
 

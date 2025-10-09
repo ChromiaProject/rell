@@ -45,7 +45,6 @@ class Rt_VirtualMapValue(
 
     override fun type() = type
     override fun asMap() = map
-    override fun toFormatArg() = map
     override fun strCode(showTupleFieldNames: Boolean) = Rt_MapValue.strCode(type, showTupleFieldNames, map)
 
     override fun str(format: StrFormat): String {

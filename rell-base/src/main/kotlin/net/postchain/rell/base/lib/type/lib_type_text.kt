@@ -699,7 +699,6 @@ class Rt_TextValue private constructor(val value: String): Rt_Value() {
 
     override fun type() = R_TextType
     override fun asString() = value
-    override fun toFormatArg() = value
 
     override fun strCode(showTupleFieldNames: Boolean): String {
         val esc = escape(value)

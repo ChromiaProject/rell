@@ -73,7 +73,6 @@ class Rt_StructValue(private val type: R_StructType, private val attributes: Mut
 
     override fun type() = type
     override fun asStruct() = this
-    override fun toFormatArg() = str()
     override fun equals(other: Any?) = other === this || (other is Rt_StructValue && attributes == other.attributes)
     override fun hashCode() = type.hashCode() * 31 + attributes.hashCode()
 

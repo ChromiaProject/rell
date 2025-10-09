@@ -27,16 +27,15 @@ class R_VirtualListType(val innerType: R_ListType): R_VirtualCollectionType(inne
 }
 
 class Rt_VirtualListValue(
-        gtv: Gtv,
-        private val type: R_VirtualListType,
-        private val elements: List<Rt_Value?>
+    gtv: Gtv,
+    private val type: R_VirtualListType,
+    private val elements: List<Rt_Value?>,
 ): Rt_VirtualCollectionValue(gtv) {
     override val valueType = Rt_CoreValueTypes.VIRTUAL_LIST.type()
 
     override fun type() = type
     override fun asVirtualCollection() = this
     override fun asVirtualList() = this
-    override fun toFormatArg() = elements
     override fun strCode(showTupleFieldNames: Boolean) = Rt_ListValue.strCode(type, elements)
     override fun str(format: StrFormat) = elements.joinToString(", ", "[", "]") { it?.str(format) ?: "null" }
     override fun equals(other: Any?) = other === this || (other is Rt_VirtualListValue && elements == other.elements)
