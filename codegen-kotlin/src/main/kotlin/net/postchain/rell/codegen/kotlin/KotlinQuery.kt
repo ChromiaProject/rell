@@ -16,6 +16,7 @@ import net.postchain.rell.base.lib.type.R_TextType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Query
+import net.postchain.rell.codegen.util.hasUnnamedFields
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
 import java.util.Locale
 
@@ -69,7 +70,7 @@ class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
     }
 
     private fun formatTupleType(type: R_TupleType): String {
-        if (!type.name.contains(":")) return ".asArray()"
+        if (type.hasUnnamedFields()) return ".asArray()"
         return ".toObject<${buildResultType()}>()"
     }
 
@@ -78,7 +79,7 @@ class KotlinQuery(queryDef: R_QueryDefinition) : ExtensionMethodSection(
         if (returnType == null) return ""
         if (returnType is R_NullableType) return returnStructure(returnType.valueType)
         if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
-        if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
+        if (returnType !is R_TupleType || returnType.hasUnnamedFields()) return "" // Non-tuples and unnamed tuples
         val resultObject = DataClassSection(
                 CamelCaseClassName("", buildResultType(), mountName.toString().replace(".", "_").uppercase(Locale.getDefault()), className.module),
                 returnType.fields.associateBy({ it.name!!.str }, { it.type }),

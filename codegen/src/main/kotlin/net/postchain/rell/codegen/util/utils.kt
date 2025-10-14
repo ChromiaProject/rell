@@ -107,7 +107,7 @@ private fun formatMapType(type: R_MapType): String {
 }
 
 private fun formatTupleType(type: R_TupleType): String {
-    if (type.name.contains(":")) return formatNamedTuple(type)
+    if (!type.hasUnnamedFields()) return formatNamedTuple(type)
     val fieldTypes = mutableListOf<String>()
     type.fields.forEach { fieldTypes.add(rTypeToJsTypeString(it.type)) }
     return "$fieldTypes"
@@ -118,6 +118,9 @@ fun formatNamedTuple(type: R_TupleType): String {
     type.fields.forEach { fieldTypes[it.name!!.str] = rTypeToJsTypeString(it.type) }
     return fieldTypes.toString().replace("=", ":")
 }
+
+fun R_TupleType.hasUnnamedFields(): Boolean =
+    fields.any { it.name == null }
 
 object GeneratedAnnotation {
     fun createAnnotation(comment: String) = "@Generated(\"${CodeGenerator::class.qualifiedName}\", comments = \"$comment\")"
