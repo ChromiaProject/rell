@@ -6,10 +6,10 @@ import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.codegen.typescript.util.parameterTransformer
 import net.postchain.rell.codegen.util.capitalize
+import net.postchain.rell.codegen.util.hasUnnamedFields
 import net.postchain.rell.codegen.util.rTypeToJsTypeString
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import java.util.Locale
-import net.postchain.rell.codegen.util.JsTypeRawGtvString
 
 class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         CamelCaseClassName.fromRellQuery(queryDef),
@@ -35,7 +35,7 @@ class TypescriptQuery(queryDef: R_QueryDefinition) : TypescriptFunction(
         if (returnType == null) return ""
         if (returnType is R_NullableType) return returnStructure(returnType.valueType)
         if (returnType is R_CollectionType) return returnStructure(returnType.elementType)
-        if (returnType !is R_TupleType || !returnType.name.contains(":")) return "" // Non-tuples and unnamed tuples
+        if (returnType !is R_TupleType || returnType.hasUnnamedFields()) return "" // Non-tuples and unnamed tuples
         val resultObject = DataTypeSection(
                 CamelCaseClassName("", buildReturnType(false), className.className.uppercase(Locale.getDefault()), className.module),
                 returnType.fields.associateBy({ it.name!!.str }, { it.type }),
