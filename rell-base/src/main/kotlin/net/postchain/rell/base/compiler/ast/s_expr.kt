@@ -139,9 +139,10 @@ class S_SubscriptExpr(val opPos: S_Pos, val base: S_Expr, val expr: S_Expr): S_E
         val vExpr = expr.compile(ctx).vExpr()
 
         val baseType = vBase.type
-        val effectiveType = C_Types.removeNullable(baseType)
+        val exprType = vExpr.type
+        val effectiveBaseType = C_Types.removeNullable(baseType)
 
-        val kind = compileSubscriptKind(ctx, effectiveType)
+        val kind = compileSubscriptKind(ctx, effectiveBaseType, exprType)
         if (kind == null) {
             return C_ExprUtils.errorExpr(ctx, opPos)
         }
@@ -158,7 +159,7 @@ class S_SubscriptExpr(val opPos: S_Pos, val base: S_Expr, val expr: S_Expr): S_E
         return C_ValueExpr(vResExpr)
     }
 
-    private fun compileSubscriptKind(ctx: C_ExprContext, baseType: R_Type): Subscript? {
+    private fun compileSubscriptKind(ctx: C_ExprContext, baseType: R_Type, exprType: R_Type): Subscript? {
         return when (baseType) {
             R_TextType -> Subscript_Common(R_IntegerType, V_CommonSubscriptKind_Text)
             R_ByteArrayType -> Subscript_Common(R_IntegerType, V_CommonSubscriptKind_ByteArray)
@@ -174,6 +175,16 @@ class S_SubscriptExpr(val opPos: S_Pos, val base: S_Expr, val expr: S_Expr): S_E
             }
             is R_TupleType -> Subscript_Tuple(baseType)
             is R_VirtualTupleType -> Subscript_VirtualTuple(baseType)
+            is R_JsonType -> when (exprType) {
+                is R_IntegerType -> Subscript_Common(R_IntegerType, V_CommonSubscriptKind_JsonArray)
+                is R_TextType -> Subscript_Common(R_TextType, V_CommonSubscriptKind_JsonObject)
+                else -> {
+                    val typeStr = exprType.strCode()
+                    ctx.msgCtx.error(opPos, "expr_subscript_key:$typeStr",
+                        "Unsupported key type $typeStr for operator '[]' on json base")
+                    null
+                }
+            }
             else -> {
                 val typeStr = baseType.strCode()
                 ctx.msgCtx.error(opPos, "expr_subscript_base:$typeStr", "Operator '[]' undefined for type $typeStr")

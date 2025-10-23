@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.model.expr
 
+import com.fasterxml.jackson.databind.JsonNode
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
@@ -273,6 +274,44 @@ internal class R_TextSubscriptExpr(
         val res = str.substring(i, i + 1)
         return Rt_TextValue.get(res)
     }
+}
+
+internal sealed class R_JsonSubscriptExpr<SubscriptT>(
+    private val base: R_Expr,
+    private val expr: R_Expr,
+    private val errPos: R_ErrorPos,
+): R_BaseExpr(R_JsonType) {
+    abstract fun getSubscript(value: Rt_Value): SubscriptT
+    abstract fun runGetOperation(node: JsonNode, subscript: SubscriptT): JsonUtils.GetOperationResult
+
+    override fun evaluate0(frame: Rt_CallFrame): Rt_Value {
+        val baseValue = base.evaluate(frame)
+        val subscriptValue = expr.evaluate(frame)
+        val jsonNode = baseValue.asJson().node
+        val subscript = getSubscript(subscriptValue)
+        when (val result = runGetOperation(jsonNode, subscript)) {
+            is JsonUtils.Success -> return Rt_JsonValue(result.value)
+            is JsonUtils.Failure -> frame.error(errPos, result.codeMsg.code, result.codeMsg.msg)
+        }
+    }
+}
+
+internal class R_JsonArraySubscriptExpr(
+    base: R_Expr,
+    expr: R_Expr,
+    errPos: R_ErrorPos,
+): R_JsonSubscriptExpr<Int>(base, expr, errPos) {
+    override fun getSubscript(value: Rt_Value) = value.asInteger().toIntExact()
+    override fun runGetOperation(node: JsonNode, subscript: Int) = JsonUtils.arrayGet(node, subscript, "subscript")
+}
+
+internal class R_JsonObjectSubscriptExpr(
+    base: R_Expr,
+    expr: R_Expr,
+    errPos: R_ErrorPos,
+): R_JsonSubscriptExpr<String>(base, expr, errPos) {
+    override fun getSubscript(value: Rt_Value) = value.asString()
+    override fun runGetOperation(node: JsonNode, subscript: String) = JsonUtils.objectGet(node, subscript, "subscript")
 }
 
 internal class R_ByteArraySubscriptExpr(

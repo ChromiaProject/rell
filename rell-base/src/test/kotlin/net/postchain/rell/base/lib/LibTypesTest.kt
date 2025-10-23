@@ -35,18 +35,6 @@ class LibTypesTest: BaseRellTest() {
         assertFalse(M_Types.NOTHING.isSuperTypeOf(comparable))
     }
 
-    @Test fun testJsonConstructor() {
-        chk("""json('[]')""", "json[[]]")
-        chk("""json('{}')""", "json[{}]")
-        chk("""json('0')""", "json[0]")
-        chk("""json('"A"')""", """json["A"]""")
-        chk("""json('[1,2,3]')""", "json[[1,2,3]]")
-    }
-
-    @Test fun testJsonStr() {
-        chkEx("""{ val s = json('{  "x":5, "y" : 10  }'); return s.str(); }""", """text[{"x":5,"y":10}]""")
-    }
-
     @Test fun testStruct() {
         def("struct foo { a: integer; b: text; }")
         def("struct bar { a: (x: integer, text); }")

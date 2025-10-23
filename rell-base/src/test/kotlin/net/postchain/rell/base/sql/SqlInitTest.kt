@@ -661,10 +661,19 @@ class SqlInitTest: BaseSqlInitTest() {
             "rell_decimal_from_text",
             "rell_decimal_to_text",
             "rell_integer_power",
+            "rell_json_array_get",
+            "rell_json_array_get_or_null",
+            "rell_json_as_boolean_or_null",
+            "rell_json_as_integer",
+            "rell_json_as_integer_or_null",
+            "rell_json_as_text",
+            "rell_json_as_text_or_null",
+            "rell_json_object_get",
+            "rell_json_size",
             "rell_text_getchar",
             "rell_text_repeat",
             "rell_text_substr1",
-            "rell_text_substr2"
+            "rell_text_substr2",
         )
 
         chkFunctions(expectedFuns)

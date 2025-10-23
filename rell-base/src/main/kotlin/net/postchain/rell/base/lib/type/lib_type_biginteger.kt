@@ -49,9 +49,6 @@ object Lib_Type_BigInteger {
 
     private const val SINCE0 = "0.12.0"
 
-    private val BIGINT_MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE)
-    private val BIGINT_MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE)
-
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("big_integer", rType = R_BigIntegerType, since = SINCE0) {
             comment("""
@@ -362,7 +359,7 @@ object Lib_Type_BigInteger {
                 dbFunctionTemplate("big_integer.to_integer", 1, "(#0)::BIGINT")
                 body { a ->
                     val v = a.asBigInteger()
-                    if (v < BIGINT_MIN_LONG || v > BIGINT_MAX_LONG) {
+                    if (v < Rt_IntValue.MIN_VALUE_AS_BIGINT || v > Rt_IntValue.MAX_VALUE_AS_BIGINT) {
                         val s = v.toBigDecimal().round(MathContext(20, RoundingMode.DOWN))
                         throw Rt_Exception.common("big_integer.to_integer:overflow:$s", "Value out of range: $s")
                     }

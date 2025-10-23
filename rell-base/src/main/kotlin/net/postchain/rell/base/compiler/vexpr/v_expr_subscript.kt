@@ -15,9 +15,11 @@ import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.lib.type.Lib_Type_ByteArray
 import net.postchain.rell.base.lib.type.Lib_Type_Text
 import net.postchain.rell.base.lib.type.R_IntegerType
+import net.postchain.rell.base.lib.type.R_JsonType
 import net.postchain.rell.base.lib.type.R_TextType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
+import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.immListOf
 
 internal sealed class V_CommonSubscriptKind(val resType: R_Type) {
@@ -39,6 +41,40 @@ internal data object V_CommonSubscriptKind_Text: V_CommonSubscriptKind(R_TextTyp
 
     override fun compileDb(pos: S_Pos, dbBase: Db_Expr, dbKey: Db_Expr): Db_Expr {
         return Db_CallExpr(R_TextType, Lib_Type_Text.DB_SUBSCRIPT, immListOf(dbBase, dbKey))
+    }
+}
+
+internal data object V_CommonSubscriptKind_JsonArray: V_CommonSubscriptKind(R_JsonType) {
+    override fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr): R_Expr {
+        val errPos = pos.toErrorPos()
+        return R_JsonArraySubscriptExpr(rBase, rKey, errPos)
+    }
+
+    override fun canBeDbExpr() = true
+
+    override fun compileDb(pos: S_Pos, dbBase: Db_Expr, dbKey: Db_Expr): Db_Expr {
+        return Db_CallExpr(
+            R_JsonType,
+            Db_SysFunction.simple("json[integer]", SqlConstants.FN_JSON_ARRAY_GET),
+            immListOf(dbBase, dbKey),
+        )
+    }
+}
+
+internal data object V_CommonSubscriptKind_JsonObject: V_CommonSubscriptKind(R_JsonType) {
+    override fun compileR(pos: S_Pos, rBase: R_Expr, rKey: R_Expr): R_Expr {
+        val errPos = pos.toErrorPos()
+        return R_JsonObjectSubscriptExpr(rBase, rKey, errPos)
+    }
+
+    override fun canBeDbExpr() = true
+
+    override fun compileDb(pos: S_Pos, dbBase: Db_Expr, dbKey: Db_Expr): Db_Expr {
+        return Db_CallExpr(
+            R_JsonType,
+            Db_SysFunction.simple("json[text]", SqlConstants.FN_JSON_OBJECT_GET),
+            immListOf(dbBase, dbKey),
+        )
     }
 }
 

@@ -158,7 +158,7 @@ object Lib_Type_Gtv {
                 alias("fromJSON", C_MessageType.ERROR, since = "0.6.1")
                 param("json", "json", comment = "the JSON to convert")
                 body { a ->
-                    val str = a.asJsonString()
+                    val str = a.asJson().str
                     Rt_Utils.wrapErr("fn:gtv.from_json(json)") {
                         val gtv = PostchainGtvUtils.jsonToGtv(str)
                         Rt_GtvValue.get(gtv)

@@ -6,6 +6,7 @@ package net.postchain.rell.base.runtime
 
 import net.postchain.gtv.Gtv
 import net.postchain.rell.base.lib.Rt_TimeFormatValue
+import net.postchain.rell.base.lib.type.Rt_JsonValue
 import net.postchain.rell.base.lib.type.Rt_MapValue
 import net.postchain.rell.base.lib.type.Rt_RangeValue
 import net.postchain.rell.base.model.*
@@ -93,7 +94,7 @@ abstract class Rt_Value {
     open fun asRowid(): Long = throw errType(Rt_CoreValueTypes.ROWID)
     open fun asString(): String = throw errType(Rt_CoreValueTypes.TEXT)
     open fun asByteArray(): ByteArray = throw errType(Rt_CoreValueTypes.BYTE_ARRAY)
-    open fun asJsonString(): String = throw errType(Rt_CoreValueTypes.JSON)
+    open fun asJson(): Rt_JsonValue = throw errType(Rt_CoreValueTypes.JSON)
     open fun asIterable(): Iterable<Rt_Value> = throw errType(Rt_CoreValueTypes.ITERABLE)
     open fun asCollection(): MutableCollection<Rt_Value> = throw errType(Rt_CoreValueTypes.COLLECTION)
     open fun asList(): MutableList<Rt_Value> = throw errType(Rt_CoreValueTypes.LIST)

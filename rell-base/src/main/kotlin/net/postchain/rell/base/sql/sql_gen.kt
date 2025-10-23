@@ -38,7 +38,86 @@ object SqlGen {
         genFunctionSubstr1(SqlConstants.FN_TEXT_SUBSTR1, "TEXT"),
         genFunctionSubstr2(SqlConstants.FN_TEXT_SUBSTR2, "TEXT"),
         genFunctionTextGetChar(SqlConstants.FN_TEXT_GETCHAR),
+        genFunctionJsonArrayGet(SqlConstants.FN_JSON_ARRAY_GET),
+        genFunctionJsonObjectGet(SqlConstants.FN_JSON_OBJECT_GET),
+        genFunctionJsonArrayGet(SqlConstants.FN_JSON_ARRAY_GET_OR_NULL, isNullableVariant = true),
+        genFunctionJsonAsType(SqlConstants.FN_JSON_AS_INTEGER, "BIGINT", INTEGER_TEST, "not an integer"),
+        genFunctionJsonAsType(SqlConstants.FN_JSON_AS_INTEGER_OR_NULL, "BIGINT", INTEGER_TEST, null),
+        genFunctionJsonAsType(SqlConstants.FN_JSON_AS_BOOLEAN_OR_NULL, "BOOLEAN", BOOLEAN_TEST, null),
+        genFunctionJsonAsType(SqlConstants.FN_JSON_AS_TEXT, "TEXT", TEXT_TEST, "not text", ::textExtractor),
+        genFunctionJsonAsType(SqlConstants.FN_JSON_AS_TEXT_OR_NULL, "TEXT", TEXT_TEST, null, ::textExtractor),
+        genFunctionJsonSize(SqlConstants.FN_JSON_SIZE),
     ).toImmMap()
+
+    fun genFunctionJsonSize(name: String): Pair<String, String> {
+        return name to """
+            CREATE FUNCTION "$name"(value JSONB) RETURNS BIGINT AS $$
+            DECLARE type TEXT;
+            BEGIN
+                type := JSONB_TYPEOF(value);
+                IF type = 'array' THEN RETURN JSONB_ARRAY_LENGTH(value);
+                ELSIF type = 'object' THEN RETURN (SELECT COUNT(*) FROM JSONB_OBJECT_KEYS(value)) :: BIGINT;
+                ELSE RAISE EXCEPTION 'not a json array or object: %', value;
+                END IF;
+            END;
+            $$ LANGUAGE PLPGSQL IMMUTABLE;
+        """.trimIndent()
+    }
+
+    fun genFunctionJsonAsType(
+        name: String,
+        sqlType: String,
+        testCode: String,
+        errMsgOrNull: String?,
+        valueExtractor: (String) -> String = { "($it :: $sqlType)" },
+    ): Pair<String, String> {
+        val badValueStmt = if (errMsgOrNull == null) "RETURN NULL" else "RAISE EXCEPTION '$errMsgOrNull: %', value"
+        return name to """
+            CREATE FUNCTION "$name"(value JSONB) RETURNS $sqlType AS $$
+            BEGIN
+                IF NOT ($testCode) THEN $badValueStmt; END IF;
+                RETURN ${valueExtractor("value")};
+            END;
+            $$ LANGUAGE PLPGSQL IMMUTABLE;
+        """.trimIndent()
+    }
+
+    private const val INTEGER_TEST = "(value :: TEXT) ~ '^-?\\d+$'"
+    private const val BOOLEAN_TEST = "JSONB_TYPEOF(value) = 'boolean'"
+    private const val TEXT_TEST = "JSONB_TYPEOF(value) = 'string'"
+    private fun textExtractor(value: String): String = "($value #>> '{}')"
+
+    fun genFunctionJsonArrayGet(name: String, isNullableVariant: Boolean = false): Pair<String, String> {
+        val badIndexStmt = if (isNullableVariant) "RETURN NULL" else "RAISE EXCEPTION 'bad index: %', index"
+        val outOfBoundsStmt = if (isNullableVariant) "RETURN NULL" else "RAISE EXCEPTION 'out of bounds: %', index"
+        // We need to check if the index is within the bounds of PostgreSQL's INT (as opposed to BIGINT which is
+        // equivalent to Rell's integer type), because the cast to INT will raise an exception otherwise. That's fine
+        // for the throwing variant, but not what we want for the nullable variant.
+        return name to """
+                CREATE FUNCTION "$name"(value JSONB, index BIGINT) RETURNS JSONB AS $$
+                DECLARE res JSONB;
+                BEGIN
+                    IF index < 0 OR index > 2147483647 THEN $badIndexStmt; END IF;
+                    res := (value -> (index :: INT)) :: JSONB;
+                    IF res IS NULL THEN $outOfBoundsStmt; END IF;
+                    RETURN res;
+                END;
+                $$ LANGUAGE PLPGSQL IMMUTABLE;
+            """.trimIndent()
+    }
+
+    fun genFunctionJsonObjectGet(name: String): Pair<String, String> {
+        return name to """
+                CREATE FUNCTION "$name"(value JSONB, key TEXT) RETURNS JSONB AS $$
+                DECLARE res JSONB;
+                BEGIN
+                    res := (value -> key) :: JSONB;
+                    IF res IS NULL THEN RAISE EXCEPTION 'key not found: %', key; END IF;
+                    RETURN res;
+                END;
+                $$ LANGUAGE PLPGSQL IMMUTABLE;
+            """.trimIndent()
+    }
 
     private fun genFunctionIntegerPower(): Pair<String, String> {
         val name = SqlConstants.FN_INTEGER_POWER

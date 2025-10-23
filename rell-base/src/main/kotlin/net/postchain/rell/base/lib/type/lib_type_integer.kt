@@ -37,10 +37,10 @@ object Lib_Type_Integer {
                 complement of numerical operations.
             """)
 
-            constant("MIN_VALUE", Long.MIN_VALUE, since = SINCE0) {
+            constant("MIN_VALUE", Rt_IntValue.MIN_VALUE, since = SINCE0) {
                 comment("The minimum value an integer can have, `-2^63`, or `-9223372036854775808`.")
             }
-            constant("MAX_VALUE", Long.MAX_VALUE, since = SINCE0) {
+            constant("MAX_VALUE", Rt_IntValue.MAX_VALUE, since = SINCE0) {
                 comment("The maximum value an integer can have, `(2^63)-1`, or `9223372036854775807`.")
             }
 
@@ -358,6 +358,10 @@ class Rt_IntValue private constructor(val value: Long): Rt_Value() {
     override fun hashCode() = java.lang.Long.hashCode(value)
 
     companion object {
+        const val MAX_VALUE = Long.MAX_VALUE
+        const val MIN_VALUE = Long.MIN_VALUE
+        val MAX_VALUE_AS_BIGINT = BigInteger.valueOf(MAX_VALUE)
+        val MIN_VALUE_AS_BIGINT = BigInteger.valueOf(MIN_VALUE)
         private const val NVALUES = 1000
 
         private val VALUES = (-NVALUES .. NVALUES).mapToImmList { Rt_IntValue(it.toLong()) }
