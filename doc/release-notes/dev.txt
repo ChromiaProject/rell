@@ -94,3 +94,16 @@ Full example showing combined usage of the new functions and operators to naviga
 
         user_data['sessions'][0]['id'].as_text() // returns 's1'
         user_data['user']['profile']['preferences']['volume'].as_integer() // returns 5
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Library: function text.regex_replace(regex: text, replacement: text)
+
+Returns the text obtained by replacing all subsequences in this text which match the given regex, with the
+replacement text. Supports named and numbered group references in the replacement text.
+
+Examples:
+'aaaaacaaaaabaaaaacaaaaa'.regex_replace('(b|c)', 'd') // returns 'aaaaadaaaaadaaaaadaaaaa'.
+'aaaaacaaaaabaaaaacaaaaa'.regex_replace('a+', '') // returns 'cbc'.
+'johnsmith@chromaway.com'.regex_replace('[a-z]+', '0') // returns '0@0.0'.
+'John Doe'.regex_replace('(\\w+) (\\w+)', '$2, $1') returns 'Doe, John'.
+'2025-10-27'.regex_replace('(?<y>\\d{4})-(?<m>\\d{2})-(?<d>\\d{2})', '${d}/${m}/${y}') returns '27/10/2025'.

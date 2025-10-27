@@ -318,4 +318,26 @@ class LibTextTest: BaseRellTest() {
         chk("text.from_bytes(x'80', true)", "text[\\ufffd]")
         chk("text.from_bytes(x'bf', true)", "text[\\ufffd]")
     }
+
+    @Test fun testRegexReplace() {
+        chk("'aaaaabaaaaabaaaaabaaaaa'.regex_replace('b', 'c')", "text[aaaaacaaaaacaaaaacaaaaa]")
+        chk("'aaaaabaaaaabaaaaabaaaaa'.regex_replace('aba', 'c')", "text[aaaacaaacaaacaaaa]")
+        chk("'aaaaacaaaaabaaaaacaaaaa'.regex_replace('(b|c)', 'd')", "text[aaaaadaaaaadaaaaadaaaaa]")
+        chk("'aaaaabaaaaabaaaaabaaaaa'.regex_replace('aa', 'z')", "text[zzabzzabzzabzza]")
+        chk("'aaaaacaaaaabaaaaacaaaaa'.regex_replace('a+', '')", "text[cbc]")
+        chk("'johnsmith@chromaway.com'.regex_replace('[a-z]+', '0')", "text[0@0.0]")
+
+        chk("""'foo123bar'.regex_replace('(\\D+)(\\d+)(\\D+)', '$3-$2-$1')""", """text[bar-123-foo]""")
+        chk("""'John Doe'.regex_replace('(\\w+) (\\w+)', '$2, $1')""", """text[Doe, John]""")
+        chk("""'key=value'.regex_replace('(\\w+)=(\\w+)', '$2=>$1')""", """text[value=>key]""")
+        chk("""'2025-10-27'.regex_replace('(\\d{4})-(\\d{2})-(\\d{2})', '$3/$2/$1')""", """text[27/10/2025]""")
+
+        chk("""'azc'.regex_replace('a(?<b>z)c', 'zig${"$"}{b}ag')""", """text[zigzag]""")
+        chk("""'John Doe'.regex_replace('(?<first>\\w+) (?<last>\\w+)', '${"$"}{last}, ${"$"}{first}')""",
+            "text[Doe, John]")
+        chk("""'2025-10-27'.regex_replace('(?<y>\\d{4})-(?<m>\\d{2})-(?<d>\\d{2})', '${"$"}{d}/${"$"}{m}/${"$"}{y}')""",
+            "text[27/10/2025]")
+
+        chk("'abc'.regex_replace(')', 'foo')", "rt_err:fn:text.regex_replace:bad_regex")
+    }
 }

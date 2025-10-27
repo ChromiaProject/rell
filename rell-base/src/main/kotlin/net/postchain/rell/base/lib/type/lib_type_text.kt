@@ -21,6 +21,7 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
+import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 import net.postchain.rell.base.utils.formatEx
 import org.jooq.impl.SQLDataType
 import java.nio.ByteBuffer
@@ -344,7 +345,7 @@ object Lib_Type_Text {
                     @throws exception if `regex` is not a valid regular expression
                     @see 1. <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/regex/Pattern.html"><code>java.util.regex.Pattern</code> - Java SE 21 & JDK 21</a>
                 """)
-                param("regex", type = "text", comment = "The regular expression to match against.")
+                param("regex", type = "text", comment = "the regular expression to match against")
                 matcherBody { Rt_BooleanValue.get(it.matches()) }
             }
 
@@ -387,7 +388,7 @@ object Lib_Type_Text {
                     @see 1. <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/regex/Pattern.html#cg"><code>java.util.regex.Pattern</code> - Groups and capturing (Java SE 21 & JDK 21)</a>
                     @see 2. <a href="match_named_groups.html"><code>text.match_named_groups</code> - Rell Standard Library</a>
                 """)
-                param("regex", type = "text", comment = "The regular expression to match against.")
+                param("regex", type = "text", comment = "the regular expression to match against")
                 matchedMatcherOrNullBody { m ->
                     val matches = mutableListOf<Rt_Value>()
                     for (i in 0 .. m.groupCount()) {
@@ -447,7 +448,7 @@ object Lib_Type_Text {
                     @see 1. <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/regex/Pattern.html#cg"><code>java.util.regex.Pattern</code> - Groups and capturing (Java SE 21 & JDK 21)</a>
                     @see 2. <a href="match_groups.html"><code>text.match_groups</code> - Rell Standard Library</a>
                 """)
-                param("regex", type = "text", comment = "The regular expression to match against.")
+                param("regex", type = "text", comment = "the regular expression to match against")
                 matchedMatcherOrNullBody { m ->
                     val matches = mutableMapOf<Rt_Value, Rt_Value>()
                     val namedGroups = m.namedGroups().entries.sortedBy { it.value }
@@ -458,6 +459,43 @@ object Lib_Type_Text {
                         }
                     }
                     Rt_MapValue(MAP_OF_TEXT_TO_TEXT, matches)
+                }
+            }
+
+            function("regex_replace", result = "text", since = SINCE_NOW) {
+                comment("""
+                    Returns the text obtained by replacing all subsequences in this text which match the given regular
+                    expression `regex`, with the text `replacement`.
+
+                    Supports named and numbered group references in the `replacement` text.
+
+                    Examples:
+                    - `'aaaaacaaaaabaaaaacaaaaa'.regex_replace('(b|c)', 'd')` returns `'aaaaadaaaaadaaaaadaaaaa'`.
+                    - `'aaaaacaaaaabaaaaacaaaaa'.regex_replace('a+', '')` returns `'cbc'`.
+                    - `'johnsmith@chromaway.com'.regex_replace('[a-z]+', '0')` returns `'0@0.0'`.
+                    - `'John Doe'.regex_replace('(\\w+) (\\w+)', '$2, $1')` returns `'Doe, John'`.
+                    - `'2025-10-27'.regex_replace('(?<y>\\d{4})-(?<m>\\d{2})-(?<d>\\d{2})', '${"$"}{d}/${"$"}{m}/${"$"}{y}')`
+                        returns `'27/10/2025'`.
+
+                    @return text equal to this, but with regions that match `regex` replaced with `replacement`
+                    @throws exception if `regex` is not a valid regular expression
+                """)
+                param("regex", type = "text", comment = "the regular expression to search with")
+                param("replacement", type = "text", comment = "the replacement text")
+                //dbFunctionTemplate("text.regex_replace", 3, "REGEXP_REPLACE(#0, #1, #2, 'g')")
+                body { text, pattern, replacement ->
+                    val textValue = text.asString()
+                    val patternValue = pattern.asString()
+                    val replacementValue = replacement.asString()
+                    val regex = try {
+                        Pattern.compile(patternValue)
+                    } catch (_: PatternSyntaxException) {
+                        throw Rt_Exception.common(
+                            "fn:text.$fnSimpleName:bad_regex",
+                            "Invalid regular expression: $patternValue",
+                        )
+                    }
+                    Rt_TextValue.get(regex.matcher(textValue).replaceAll(replacementValue))
                 }
             }
 
