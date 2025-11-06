@@ -107,3 +107,56 @@ Examples:
 'johnsmith@chromaway.com'.regex_replace('[a-z]+', '0') // returns '0@0.0'.
 'John Doe'.regex_replace('(\\w+) (\\w+)', '$2, $1') returns 'Doe, John'.
 '2025-10-27'.regex_replace('(?<y>\\d{4})-(?<m>\\d{2})-(?<d>\\d{2})', '${d}/${m}/${y}') returns '27/10/2025'.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Library: function try_call_catch() and type try_call_result<T>
+
+A new function try_call_catch() provides safe execution of code that may fail with require() exceptions, capturing
+failure details in a structured result.
+
+(a) Global function:
+
+    try_call_catch<T>(f: () -> T): try_call_result<T>
+
+    Executes the provided function f and returns a structured result encapsulating the outcome. If the function executes
+    successfully, the result contains the return value. If the function fails with a require() exception, the result
+    captures the error message. All other exceptions are re-thrown.
+
+    Database changes made during execution are automatically rolled back if the function fails with a require()
+    exception, using database savepoints to ensure transactional integrity.
+
+
+(b) Type try_call_result<T> - properties:
+    is_error: boolean - returns true if the function failed with a require() exception, false if it succeeded.
+    value: T - returns the function's result value if successful. Throws an exception if the function failed.
+    value_or_null: T? - returns the function's result value if successful, or null if the function failed.
+    require_message_or_null: text? - returns the require() exception message if the function failed, null if succeeded.
+
+Code examples:
+
+function get_user(id: integer): text {
+    require(id > 0, "Invalid user ID");
+    return "User_" + id;
+}
+
+val result1 = try_call_catch(get_user(123, *));
+// result1.is_error == false
+// result1.value == "User_123"
+// result1.value_or_null == "User_123"
+// result1.require_message_or_null == null
+
+val result2 = try_call_catch(get_user(-1, *));
+// result2.is_error == true
+// result2.value throws exception
+// result2.value_or_null == null
+// result2.require_message_or_null == "Invalid user ID"
+
+// Conditional error handling:
+
+val result = try_call_catch(get_user(user_id, *));
+
+if (result.is_error) {
+    log("Failed: " + result.require_message_or_null!!);
+} else {
+    process_user(result.value);
+}

@@ -202,4 +202,29 @@ class LibTryCallTest: BaseRellTest() {
         chkOp("f(5);")
         chk("data @* {} (.value).size()", "int[5]")
     }
+
+    @Test fun testTryCallCatch() {
+        def("function fails(): text { require(false, 'FAIL'); return 'OK'; }")
+        def("function succeeds(): text { return 'OK'; }")
+        def("function fails_not_require(): integer { return list<integer>()[1]; }")
+
+        chk("try_call_catch(fails(*))", "try_call_result[error=FAIL]")
+        chk("try_call_catch(fails(*)).is_error", "boolean[true]")
+        chk("try_call_catch(fails(*)).value", "rt_err:try_call_result:value:novalue")
+        chk("try_call_catch(fails(*)).value_or_null", "null")
+        chk("try_call_catch(fails(*)).require_message_or_null", "text[FAIL]")
+
+        chk(
+            "try_call_catch(succeeds(*))",
+            "try_call_result[value=text[OK]]",
+        )
+
+        chk("try_call_catch(succeeds(*)).is_error", "boolean[false]")
+        chk("try_call_catch(succeeds(*)).value", "text[OK]")
+        chk("try_call_catch(succeeds(*)).value_or_null", "text[OK]")
+        chk("try_call_catch(succeeds(*)).require_message_or_null", "null")
+
+        // try_call_catch should not catch other errors than from `require`
+        chk("try_call_catch(fails_not_require(*))", "rt_err:list:index:0:1")
+    }
 }

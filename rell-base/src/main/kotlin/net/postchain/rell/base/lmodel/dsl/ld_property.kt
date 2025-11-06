@@ -81,9 +81,7 @@ abstract class Ld_PropertyValue {
             return Ld_PropertyValue_SimpleTypeProp(pure, valueGetter)
         }
 
-        internal fun typeProp(body: C_SysFunctionBody): Ld_PropertyValue {
-            return Ld_PropertyValue_SpecialTypeProp(body)
-        }
+        internal fun typeProp(body: C_SysFunctionBody): Ld_PropertyValue = Ld_PropertyValue_SpecialTypeProp(body)
     }
 }
 

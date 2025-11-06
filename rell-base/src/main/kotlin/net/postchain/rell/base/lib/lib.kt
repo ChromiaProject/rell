@@ -67,6 +67,8 @@ object Lib_Rell {
 
     val RELL_META_TYPE = MODULE.getTypeDef("rell.meta")
 
+    val TRY_CALL_RESULT_TYPE = MODULE.getTypeDef("try_call_result")
+
     // Doesn't belong here logically, but shall be here for explicit initialization.
     private val GTX_OPERATION_STRUCT = MODULE.lModule.getStruct("gtx_operation").rStruct
     val GTX_OPERATION_STRUCT_TYPE: R_StructType get() = GTX_OPERATION_STRUCT.type
