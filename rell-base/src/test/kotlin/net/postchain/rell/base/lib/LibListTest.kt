@@ -144,6 +144,182 @@ class LibListTest: BaseRellTest() {
         chk("[1, 2, 3] == set([1, 2, 3])", "ct_err:binop_operand_type:==:[list<integer>]:[set<integer>]")
     }
 
+    @Test fun testPlus() {
+        chk("list<integer>() + list<integer>()", "list<integer>[]")
+        chk("[1] + list<integer>()", "list<integer>[int[1]]")
+        chk("list<integer>() + [1]", "list<integer>[int[1]]")
+        chk("[1] + [2]", "list<integer>[int[1],int[2]]")
+
+        chk("list<integer>() + list<integer>() + list<integer>()", "list<integer>[]")
+        chk("[1] + list<integer>() + list<integer>()", "list<integer>[int[1]]")
+        chk("list<integer>() + [1] + list<integer>()", "list<integer>[int[1]]")
+        chk("list<integer>() + list<integer>() + [1]", "list<integer>[int[1]]")
+        chk("list<integer>() + [1] + [2]", "list<integer>[int[1],int[2]]")
+        chk("[1] + list<integer>() + [2]", "list<integer>[int[1],int[2]]")
+        chk("[1] + [2] + list<integer>()", "list<integer>[int[1],int[2]]")
+        chk("[1] + [2] + [3]", "list<integer>[int[1],int[2],int[3]]")
+
+        chk("[1] + [1]", "list<integer>[int[1],int[1]]")
+        chk("[1] + [1] + [1]", "list<integer>[int[1],int[1],int[1]]")
+
+        chk("[[1]] + [[2]] + [[3]]",
+            "list<list<integer>>[list<integer>[int[1]],list<integer>[int[2]],list<integer>[int[3]]]")
+
+        chk("[1] + [true]", "ct_err:binop_operand_type:+:[list<integer>]:[list<boolean>]")
+        chk("[[1]] + [[true]]", "ct_err:binop_operand_type:+:[list<list<integer>>]:[list<list<boolean>>]")
+    }
+
+    @Test fun testPlusSourcesNotModified() {
+        chkEx(""": boolean {
+            val x = [1, 2];
+            val y = [3, 4];
+            print(x + y); // don't need the output; just need the expression x + y to evaluate
+            return x == [1, 2] and y == [3, 4];
+        }""", "boolean[true]")
+    }
+
+    @Test fun testAddAllCopy() {
+        chk("list<integer>().add_all_copy(list<integer>())", "list<integer>[]")
+        chk("[1].add_all_copy(list<integer>())", "list<integer>[int[1]]")
+        chk("list<integer>().add_all_copy([1])", "list<integer>[int[1]]")
+        chk("[1].add_all_copy([2])", "list<integer>[int[1],int[2]]")
+        chk("[1].add_all_copy(set([2]))", "list<integer>[int[1],int[2]]")
+
+        chk("list<integer>().add_all_copy(list<integer>().add_all_copy(list<integer>()))", "list<integer>[]")
+        chk("[1].add_all_copy(list<integer>().add_all_copy(list<integer>()))", "list<integer>[int[1]]")
+        chk("list<integer>().add_all_copy([1].add_all_copy(list<integer>()))", "list<integer>[int[1]]")
+        chk("list<integer>().add_all_copy(list<integer>().add_all_copy([1]))", "list<integer>[int[1]]")
+        chk("list<integer>().add_all_copy([1].add_all_copy([2]))", "list<integer>[int[1],int[2]]")
+        chk("[1].add_all_copy(list<integer>().add_all_copy([2]))", "list<integer>[int[1],int[2]]")
+        chk("[1].add_all_copy([2].add_all_copy(list<integer>()))", "list<integer>[int[1],int[2]]")
+        chk("[1].add_all_copy([2].add_all_copy([3]))", "list<integer>[int[1],int[2],int[3]]")
+
+        chk("[1].add_all_copy([1])", "list<integer>[int[1],int[1]]")
+        chk("[1].add_all_copy([1].add_all_copy([1]))", "list<integer>[int[1],int[1],int[1]]")
+
+        chk("[[1]].add_all_copy([[2]].add_all_copy([[3]]))",
+            "list<list<integer>>[list<integer>[int[1]],list<integer>[int[2]],list<integer>[int[3]]]")
+
+        chk("[1].add_all_copy([true])", "ct_err:expr_call_badargs:[list<integer>.add_all_copy]:[list<boolean>]")
+        chk("[[1]].add_all_copy([[true]])",
+            "ct_err:expr_call_badargs:[list<list<integer>>.add_all_copy]:[list<list<boolean>>]")
+    }
+
+    @Test fun testAddAllCopySourcesNotModified() {
+        chkEx(""": boolean {
+            val x = [1, 2];
+            val y = [3, 4];
+            x.add_all_copy(y);
+            return x == [1, 2] and y == [3, 4];
+        }""", "boolean[true]")
+    }
+
+    @Test fun testAmpersand() {
+        chk("list<integer>() & list<integer>()", "list<integer>[]")
+        chk("[1] & list<integer>()", "list<integer>[]")
+        chk("list<integer>() & [1]", "list<integer>[]")
+        chk("[1] & [2]", "list<integer>[]")
+        chk("[1] & [1]", "list<integer>[int[1]]")
+        chk("[1, 2, 3, 2] & [2, 3]", "list<integer>[int[2],int[3],int[2]]")
+
+        chk("list<integer>() & list<integer>() & list<integer>()", "list<integer>[]")
+        chk("[1] & list<integer>() & list<integer>()", "list<integer>[]")
+        chk("list<integer>() & [1] & list<integer>()", "list<integer>[]")
+        chk("list<integer>() & list<integer>() & [1]", "list<integer>[]")
+        chk("list<integer>() & [1] & [2]", "list<integer>[]")
+        chk("[1] & list<integer>() & [2]", "list<integer>[]")
+        chk("[1] & [2] & list<integer>()", "list<integer>[]")
+        chk("[1] & [2] & [3]", "list<integer>[]")
+
+        chk("[1, 2, 3, 4] & [3, 4, 5, 6] & [1, 2, 5, 6]", "list<integer>[]")
+        chk("[1, 2, 3, 4] & ([3, 4, 5, 6] & [1, 2, 5, 6])", "list<integer>[]")
+        chk("[1, 2, 3, 4, 7] & [3, 4, 5, 6, 7] & [1, 2, 5, 6, 7]", "list<integer>[int[7]]")
+        chk("[1, 2, 3, 4, 7] & ([3, 4, 5, 6, 7] & [1, 2, 5, 6, 7])", "list<integer>[int[7]]")
+
+        chk("[1] & [true]", "ct_err:binop_operand_type:&:[list<integer>]:[list<boolean>]")
+    }
+
+    @Test fun testAmpersandSourcesNotModified() {
+        chkEx(""": boolean {
+            val x = [1, 2];
+            val y = [1, 3];
+            print(x & y); // don't need the output; just need the expression x & y to evaluate
+            return x == [1, 2] and y == [1, 3];
+        }""", "boolean[true]")
+    }
+
+    @Test fun testRemoveAllCopy() {
+        chk("list<integer>().remove_all_copy(list<integer>())", "list<integer>[]")
+        chk("[1].remove_all_copy(list<integer>())", "list<integer>[int[1]]")
+        chk("list<integer>().remove_all_copy([1])", "list<integer>[]")
+        chk("[1].remove_all_copy([2])", "list<integer>[int[1]]")
+        chk("[1, 1].remove_all_copy([1])", "list<integer>[]")
+        chk("[1].remove_all_copy(set([1]))", "list<integer>[]")
+
+        chk("list<integer>().remove_all_copy(list<integer>().remove_all_copy(list<integer>()))", "list<integer>[]")
+        chk("[1].remove_all_copy(list<integer>().remove_all_copy(list<integer>()))", "list<integer>[int[1]]")
+        chk("list<integer>().remove_all_copy([1].remove_all_copy(list<integer>()))", "list<integer>[]")
+        chk("list<integer>().remove_all_copy(list<integer>().remove_all_copy([1]))", "list<integer>[]")
+        chk("list<integer>().remove_all_copy([1].remove_all_copy([2]))", "list<integer>[]")
+        chk("[1].remove_all_copy(list<integer>().remove_all_copy([2]))", "list<integer>[int[1]]")
+        chk("[1].remove_all_copy([2].remove_all_copy(list<integer>()))", "list<integer>[int[1]]")
+        chk("[1].remove_all_copy([2].remove_all_copy([3]))", "list<integer>[int[1]]")
+
+        chk("[1, 2, 3, 4].remove_all_copy([2, 3]).remove_all_copy([1])", "list<integer>[int[4]]")
+        chk("[1, 2, 3, 4].remove_all_copy([2, 3].remove_all_copy([1]))", "list<integer>[int[1],int[4]]")
+
+        chk("[1].remove_all_copy([1])", "list<integer>[]")
+        chk("[1].remove_all_copy([1].remove_all_copy([1]))", "list<integer>[int[1]]")
+        chk("[1].remove_all_copy([1]).remove_all_copy([1])", "list<integer>[]")
+
+        chk("[1].remove_all_copy([true])",
+            "ct_err:expr_call_badargs:[list<integer>.remove_all_copy]:[list<boolean>]")
+    }
+
+    @Test fun testRemoveAllCopySourcesNotModified() {
+        chkEx(""": boolean {
+            val x = [1, 2];
+            val y = [1, 3];
+            x.remove_all_copy(y);
+            return x == [1, 2] and y == [1, 3];
+        }""", "boolean[true]")
+    }
+
+    @Test fun testSubOperator() {
+        chk("list<integer>() - list<integer>()", "list<integer>[]")
+        chk("[1] - list<integer>()", "list<integer>[int[1]]")
+        chk("list<integer>() - [1]", "list<integer>[]")
+        chk("[1].remove_all_copy([2])", "list<integer>[int[1]]")
+        chk("[1, 1] - [1]", "list<integer>[]")
+
+        chk("list<integer>() - list<integer>() - list<integer>()", "list<integer>[]")
+        chk("[1] - list<integer>() - list<integer>()", "list<integer>[int[1]]")
+        chk("list<integer>() - [1] - list<integer>()", "list<integer>[]")
+        chk("list<integer>() - list<integer>() - [1]", "list<integer>[]")
+        chk("list<integer>() - [1] - [2]", "list<integer>[]")
+        chk("[1] - list<integer>() - [2]", "list<integer>[int[1]]")
+        chk("[1] - [2] - list<integer>()", "list<integer>[int[1]]")
+        chk("[1] - [2] - [3]", "list<integer>[int[1]]")
+
+        chk("([1, 2, 3, 4] - [2, 3]) - [1]", "list<integer>[int[4]]")
+        chk("[1, 2, 3, 4] - ([2, 3] - [1])", "list<integer>[int[1],int[4]]")
+
+        chk("[1] - [1]", "list<integer>[]")
+        chk("[1] - ([1] - [1])", "list<integer>[int[1]]")
+        chk("([1] - [1]) - [1]", "list<integer>[]")
+
+        chk("[1] - [true]", "ct_err:binop_operand_type:-:[list<integer>]:[list<boolean>]")
+    }
+
+    @Test fun testSubOperatorSourcesNotModified() {
+        chkEx(""": boolean {
+            val x = [1, 2];
+            val y = [1, 3];
+            print(x - y); // don't need the output; just need the expression x - y to evaluate
+            return x == [1, 2] and y == [1, 3];
+        }""", "boolean[true]")
+    }
+
     @Test fun testContains() {
         chk("[1, 2, 3].contains(1)", "boolean[true]")
         chk("[1, 2, 3].contains(3)", "boolean[true]")
@@ -181,7 +357,7 @@ class LibListTest: BaseRellTest() {
         chk("[1, 2, 3].index_of('Hello')", "ct_err:expr_call_badargs:[list<integer>.index_of]:[text]")
     }
 
-    @Test fun testSub() {
+    @Test fun testSubMethod() {
         chk("list<integer>().sub(0)", "list<integer>[]")
         chk("list<integer>().sub(0, 0)", "list<integer>[]")
         chk("list<integer>().sub(-1)", "rt_err:fn:list.sub:args:0:-1:0")
@@ -400,5 +576,53 @@ class LibListTest: BaseRellTest() {
         chkEx("{ assert_equals([123],[123]); return 0; }", "int[0]")
         chkEx("{ assert_equals([123],set([123])); return 0; }",
             "ct_err:expr_call_badargs:[assert_equals]:[list<integer>,set<integer>]")
+    }
+
+    @Test fun testRetainAll() {
+        chkEx("{ val l = [1, 2, 3, 4]; l.retain_all([1, 2, 5, 6]); return l; }", "list<integer>[int[1],int[2]]")
+        chkEx("{ val l = [3, 1, 2, 3, 1, 4]; l.retain_all([1, 6, 1, 2, 5, 6]); return l; }",
+            "list<integer>[int[1],int[2],int[1]]")
+        chkEx("{ val l = [1, 2, 3, 4]; l.retain_all([]); return l; }", "list<integer>[]")
+
+        chkEx("{ val l = [3, 1, 2, 3, 1, 4]; l.retain_all(set([1, 2, 5, 6])); return l; }",
+            "list<integer>[int[1],int[2],int[1]]")
+        chkEx("{ val l = list<integer>(); l.retain_all(set([1, 2, 5, 6])); return l; }", "list<integer>[]")
+        chkEx("{ val l = [1, 2, 3, 4]; l.retain_all(set<integer>()); return l; }", "list<integer>[]")
+    }
+
+    @Test fun testRetainAllCopy() {
+        chk("list<integer>().retain_all_copy(list<integer>())", "list<integer>[]")
+        chk("[1].retain_all_copy(list<integer>())", "list<integer>[]")
+        chk("list<integer>().retain_all_copy([1])", "list<integer>[]")
+        chk("[1].retain_all_copy([2])", "list<integer>[]")
+        chk("[1].retain_all_copy([1])", "list<integer>[int[1]]")
+        chk("[1, 2, 2, 3, 4].retain_all_copy([2])", "list<integer>[int[2],int[2]]")
+
+        chk("list<integer>().retain_all_copy(list<integer>().retain_all_copy(list<integer>()))", "list<integer>[]")
+        chk("[1].retain_all_copy(list<integer>().retain_all_copy(list<integer>()))", "list<integer>[]")
+        chk("list<integer>().retain_all_copy([1].retain_all_copy(list<integer>()))", "list<integer>[]")
+        chk("list<integer>().retain_all_copy(list<integer>().retain_all_copy([1]))", "list<integer>[]")
+        chk("list<integer>().retain_all_copy([1].retain_all_copy([2]))", "list<integer>[]")
+        chk("[1].retain_all_copy(list<integer>().retain_all_copy([2]))", "list<integer>[]")
+        chk("[1].retain_all_copy([2].retain_all_copy(list<integer>()))", "list<integer>[]")
+        chk("[1].retain_all_copy([2].retain_all_copy([3]))", "list<integer>[]")
+
+        chk("[1, 2, 3, 4].retain_all_copy([3, 4, 5, 6]).retain_all_copy([1, 2, 5, 6])", "list<integer>[]")
+        chk("[1, 2, 3, 4].retain_all_copy([3, 4, 5, 6].retain_all_copy([1, 2, 5, 6]))", "list<integer>[]")
+        chk("[1, 2, 3, 4, 7].retain_all_copy([3, 4, 5, 6, 7]).retain_all_copy([1, 2, 5, 6, 7])",
+            "list<integer>[int[7]]")
+        chk("[1, 2, 3, 4, 7].retain_all_copy([3, 4, 5, 6, 7].retain_all_copy([1, 2, 5, 6, 7]))",
+            "list<integer>[int[7]]")
+
+        chk("[1].retain_all_copy([true])", "ct_err:expr_call_badargs:[list<integer>.retain_all_copy]:[list<boolean>]")
+    }
+
+    @Test fun testRetainAllCopySourcesNotModified() {
+        chkEx(""": boolean {
+            val x = [1, 2];
+            val y = [1, 3];
+            x.retain_all_copy(y);
+            return x == [1, 2] and y == [1, 3];
+        }""", "boolean[true]")
     }
 }

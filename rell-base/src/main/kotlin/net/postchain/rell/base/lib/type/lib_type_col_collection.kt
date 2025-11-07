@@ -17,6 +17,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.GtvRtConversion
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.lib.type.Lib_Type_Any as AnyFns
 
@@ -139,6 +140,20 @@ object Lib_Type_Collection {
                     val col1 = self.asCollection()
                     val col2 = values.asCollection()
                     Rt_BooleanValue.get(col1.removeAll(col2))
+                }
+            }
+
+            function("retain_all", "boolean", since = SINCE_NOW) {
+                comment("""
+                    Retain in this collection only those elements found in the given collection. In other words, remove
+                    from this collection all elements that are not found in the given collection.
+                    @return `true` if any elements were removed from this collection, `false` if it was not modified
+                """)
+                param("values", type = "collection<-T>", comment = "the collection of elements to retain")
+                body { self, values ->
+                    val col1 = self.asCollection()
+                    val col2 = values.asCollection()
+                    Rt_BooleanValue.get(col1.retainAll(col2))
                 }
             }
 

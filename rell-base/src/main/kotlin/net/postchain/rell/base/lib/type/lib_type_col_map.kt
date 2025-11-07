@@ -17,9 +17,11 @@ import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_TypeDefDsl
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.expr.R_BinaryOp_Merge_Map
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_Map {
@@ -192,6 +194,25 @@ object Lib_Type_Map {
                     val v = map.remove(b)
                     v ?: Rt_NullValue
                 }
+            }
+
+            function("put_all_copy", result = "map<K, V>", since = SINCE_NOW) {
+                comment("""
+                    Returns a new map with the mappings of this map combined with the mappings of the given map.
+
+                    Where a value exists for a given key in both this and the other map, the returned map has the value
+                    of the other map, as opposed to the value in this map (right-biased).
+
+                    `a.put_all_copy(b)` is equivalent to `a + b`, where `a` and `b` are both maps.
+
+                    Examples:
+                    - `[1: 'a', 2: 'b', 3: 'c'].put_all_copy([1: 'Z', 4: 'd', 5: 'e'])` returns
+                        `[1: 'Z', 2: 'b', 3: 'c', 4: 'd', 5: 'e']`
+                    - `[1: 'a', 2: 'b', 3: 'c'].put_all_copy([4: 'd', 5: 'e'])` returns
+                        `[1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e']`
+                """)
+                param("map", type = "map<-K, -V>", comment = "the other map")
+                body(R_BinaryOp_Merge_Map::evaluate)
             }
         }
     }

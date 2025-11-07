@@ -200,6 +200,83 @@ class LibMapTest: BaseRellTest() {
         chkEx("{ val m: map<text,integer>? = if (1>0) ['Bob':123] else null; return m!!['Bob']; }", "int[123]")
     }
 
+    @Test fun testPlus() {
+        chk("map<integer, text>() + map<integer, text>()", "map<integer,text>[]")
+        chk("[1: 'a'] + map<integer, text>()", "map<integer,text>[int[1]=text[a]]")
+        chk("map<integer, text>() + [1: 'a']", "map<integer,text>[int[1]=text[a]]")
+        chk("[1: 'a'] + [2: 'b']", "map<integer,text>[int[1]=text[a],int[2]=text[b]]")
+
+        chk("map<integer, text>() + map<integer, text>() + map<integer, text>()", "map<integer,text>[]")
+        chk("[1: 'a'] + map<integer, text>() + map<integer, text>()", "map<integer,text>[int[1]=text[a]]")
+        chk("map<integer, text>() + [1: 'a'] + map<integer, text>()", "map<integer,text>[int[1]=text[a]]")
+        chk("map<integer, text>() + map<integer, text>() + [1: 'a']", "map<integer,text>[int[1]=text[a]]")
+        chk("map<integer, text>() + [1: 'a'] + [2: 'b']", "map<integer,text>[int[1]=text[a],int[2]=text[b]]")
+        chk("[1: 'a'] + map<integer, text>() + [2: 'b']", "map<integer,text>[int[1]=text[a],int[2]=text[b]]")
+        chk("[1: 'a'] + [2: 'b'] + map<integer, text>()", "map<integer,text>[int[1]=text[a],int[2]=text[b]]")
+        chk("[1: 'a'] + [2: 'b'] + [3: 'c']", "map<integer,text>[int[1]=text[a],int[2]=text[b],int[3]=text[c]]")
+
+        chk("[1: 'a'] + [1: 'b']", "map<integer,text>[int[1]=text[b]]")
+        chk("[1: 'a'] + [1: 'b'] + [1: 'c']", "map<integer,text>[int[1]=text[c]]")
+        chk("[1: 'a', 2: 'b', 3: 'c'] + [1: 'Z', 4: 'd', 5: 'e']",
+            "map<integer,text>[int[1]=text[Z],int[2]=text[b],int[3]=text[c],int[4]=text[d],int[5]=text[e]]")
+        chk("[1: 'a', 2: 'b', 3: 'c'] + [1: 'Y', 2: 'Z', 4: 'd']",
+            "map<integer,text>[int[1]=text[Y],int[2]=text[Z],int[3]=text[c],int[4]=text[d]]")
+
+        chk("[1: 'a'] + [true: 2L]", "ct_err:binop_operand_type:+:[map<integer,text>]:[map<boolean,big_integer>]")
+    }
+
+    @Test fun testPlusSourcesNotModified() {
+        chkEx(""": boolean {
+            val x = [1: 'a', 2: 'b'];
+            val y = [3: 'c', 4: 'd'];
+            print(x + y); // don't need the output; just need the expression x + y to evaluate
+            return x == [1: 'a', 2: 'b'] and y == [3: 'c', 4: 'd'];
+        }""", "boolean[true]")
+    }
+
+    @Test fun testPutAllCopy() {
+        chk("map<integer, text>().put_all_copy(map<integer, text>())", "map<integer,text>[]")
+        chk("[1: 'a'].put_all_copy(map<integer, text>())", "map<integer,text>[int[1]=text[a]]")
+        chk("map<integer, text>().put_all_copy([1: 'a'])", "map<integer,text>[int[1]=text[a]]")
+        chk("[1: 'a'].put_all_copy([2: 'b'])", "map<integer,text>[int[1]=text[a],int[2]=text[b]]")
+
+        chk("map<integer, text>().put_all_copy(map<integer, text>().put_all_copy(map<integer, text>()))",
+            "map<integer,text>[]")
+        chk("[1: 'a'].put_all_copy(map<integer, text>().put_all_copy(map<integer, text>()))",
+            "map<integer,text>[int[1]=text[a]]")
+        chk("map<integer, text>().put_all_copy([1: 'a'].put_all_copy(map<integer, text>()))",
+            "map<integer,text>[int[1]=text[a]]")
+        chk("map<integer, text>().put_all_copy(map<integer, text>().put_all_copy([1: 'a']))",
+            "map<integer,text>[int[1]=text[a]]")
+        chk("map<integer, text>().put_all_copy([1: 'a'].put_all_copy([2: 'b']))",
+            "map<integer,text>[int[1]=text[a],int[2]=text[b]]")
+        chk("[1: 'a'].put_all_copy(map<integer, text>().put_all_copy([2: 'b']))",
+            "map<integer,text>[int[1]=text[a],int[2]=text[b]]")
+        chk("[1: 'a'].put_all_copy([2: 'b'].put_all_copy(map<integer, text>()))",
+            "map<integer,text>[int[1]=text[a],int[2]=text[b]]")
+        chk("[1: 'a'].put_all_copy([2: 'b'].put_all_copy([3: 'c']))",
+            "map<integer,text>[int[1]=text[a],int[2]=text[b],int[3]=text[c]]")
+
+        chk("[1: 'a'].put_all_copy([1: 'b'])", "map<integer,text>[int[1]=text[b]]")
+        chk("[1: 'a'].put_all_copy([1: 'b'].put_all_copy([1: 'c']))", "map<integer,text>[int[1]=text[c]]")
+        chk("[1: 'a', 2: 'b', 3: 'c'].put_all_copy([1: 'Z', 4: 'd', 5: 'e'])",
+            "map<integer,text>[int[1]=text[Z],int[2]=text[b],int[3]=text[c],int[4]=text[d],int[5]=text[e]]")
+        chk("[1: 'a', 2: 'b', 3: 'c'].put_all_copy([1: 'Y', 2: 'Z', 4: 'd'])",
+            "map<integer,text>[int[1]=text[Y],int[2]=text[Z],int[3]=text[c],int[4]=text[d]]")
+
+        chk("[1: 'a'].put_all_copy([true: 2L])",
+            "ct_err:expr_call_badargs:[map<integer,text>.put_all_copy]:[map<boolean,big_integer>]")
+    }
+
+    @Test fun testPutAllCopySourcesNotModified() {
+        chkEx(""": boolean {
+            val x = [1: 'a', 2: 'b'];
+            val y = [3: 'c', 4: 'd'];
+            x.put_all_copy(y);
+            return x == [1: 'a', 2: 'b'] and y == [3: 'c', 4: 'd'];
+        }""", "boolean[true]")
+    }
+
     @Test fun testGetOrNull() {
         chk("_type_of(map<text,integer>().get_or_null('a'))", "text[integer?]")
         chk("_type_of(map<text,integer?>().get_or_null('a'))", "text[integer?]")

@@ -45,6 +45,7 @@ object S_Grammar {
     private val DOUBLEQUESTION by relltok("??")
     private val ARROW by relltok("->")
     private val CARET by relltok("^")
+    private val AMPERSAND by relltok("&")
 
     private val EQ by relltok("==")
     private val NE by relltok("!=")
@@ -343,6 +344,8 @@ object S_Grammar {
 
             or ( AND mapNode { S_BinaryOp.AND } )
             or ( OR mapNode { S_BinaryOp.OR } )
+
+            or ( AMPERSAND mapNode { S_BinaryOp.AMPERSAND } )
 
             or ( IN mapNode { S_BinaryOp.IN } )
             or ( -NOT * IN mapNode { S_BinaryOp.NOT_IN } )

@@ -13,8 +13,12 @@ import net.postchain.rell.base.model.R_ErrorPos
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_TypeMeta
 import net.postchain.rell.base.model.R_VirtualListType
+import net.postchain.rell.base.model.expr.R_BinaryOp_Concat_List
+import net.postchain.rell.base.model.expr.R_BinaryOp_Intersect_List
+import net.postchain.rell.base.model.expr.R_BinaryOp_Sub_List
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_ListComparator
+import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_List {
@@ -327,6 +331,54 @@ object Lib_Type_List {
                     resList.reverse()
                     Rt_ListValue(self.type(), resList)
                 }
+            }
+
+            function("add_all_copy", "list<T>", since = SINCE_NOW) {
+                comment("""
+                    Returns a new list that is the concatenation of the elements of this list with those of the given
+                    collection.
+
+                    `a.add_all_copy(b)` is equivalent to `a + b`, where `a` and `b` are lists.
+
+                    Examples:
+                    - `[].add_all_copy([])` returns `[]`
+                    - `[1].add_all_copy([2])` returns `[1, 2]`
+                    - `[[1]].add_all_copy([[2]])` returns `[[1], [2]]`
+                """)
+                param("values", "collection<-T>", comment = "the other collection")
+                body(R_BinaryOp_Concat_List::evaluate)
+            }
+
+            function("remove_all_copy", "list<T>", since = SINCE_NOW) {
+                comment("""
+                    Returns a new list whose elements are those found in this list and not in the given collection.
+
+                    `a.remove_all_copy(b)` is equivalent to `a - b`, where `a` and `b` are lists.
+
+                    Examples:
+                    - `[1].remove_all_copy([1])` returns `[]`
+                    - `[1].remove_all_copy([2])` returns `[1]`
+                    - `[1, 2, 3, 5].remove_all_copy([2, 3, 4])` returns `[1, 5]`
+                """)
+                param("values", type = "collection<-T>", comment = "the other collection")
+                body(R_BinaryOp_Sub_List::evaluate)
+            }
+
+            function("retain_all_copy", "list<T>", since = SINCE_NOW) {
+                comment("""
+                    Return a new list whose elements are those found in both this list and the given collection, or in
+                    other words, the intersection of this list and the given collection.
+                    @return a new list whose elements are the intersection of this list and the given collection
+
+                    `a.retain_all_copy(b)` is equivalent to `a & b`, where `a` and `b` are lists.
+
+                    Examples:
+                    - `[1].retain_all_copy([1])` returns `[1]`
+                    - `[1].retain_all_copy([2])` returns `[]`
+                    - `[1, 2, 3].retain_all_copy([2, 3, 4])` returns `[2, 3]`
+                """)
+                param("values", type = "collection<-T>", comment = "the other collection")
+                body(R_BinaryOp_Intersect_List::evaluate)
             }
         }
     }

@@ -10,7 +10,11 @@ import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_TypeMeta
 import net.postchain.rell.base.model.R_VirtualSetType
+import net.postchain.rell.base.model.expr.R_BinaryOp_Intersect_Set
+import net.postchain.rell.base.model.expr.R_BinaryOp_Sub_Set
+import net.postchain.rell.base.model.expr.R_BinaryOp_Union_Set
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_Set {
@@ -52,6 +56,52 @@ object Lib_Type_Set {
                         rKind.makeRtValue(iterable)
                     }
                 }
+            }
+
+            function("add_all_copy", "set<T>", since = SINCE_NOW) {
+                comment("""
+                    Returns a new set containing the elements of this set and the elements of a given collection.
+
+                    `a.add_all_copy(b)` is equivalent to `a + b`, where `a` and `b` are sets.
+
+                    Examples:
+                    - `set([1]).add_all_copy(set([1]))` returns `set([1])`
+                    - `set([1, 2, 3]).add_all_copy(set([2, 3, 4]))` returns `set([1, 2, 3, 4])`
+                """)
+                param("values", type = "collection<-T>", comment = "the other collection")
+                body(R_BinaryOp_Union_Set::evaluate)
+            }
+
+            function("remove_all_copy", "set<T>", since = SINCE_NOW) {
+                comment("""
+                    Returns a new set containing the elements of this set, but without any elements that occur in the
+                    given collection.
+
+                    `a.remove_all_copy(b)` is equivalent to `a - b`, where `a` and `b` are sets.
+
+                    Examples:
+                    - `set([1]).remove_all_copy(set([1]))` returns `set([])`
+                    - `set([1, 2, 3]).remove_all_copy(set([2, 3, 4]))` returns `set([1])`
+                """)
+                param("values", type = "collection<-T>", comment = "the other collection")
+                body(R_BinaryOp_Sub_Set::evaluate)
+            }
+
+            function("retain_all_copy", "set<T>", since = SINCE_NOW) {
+                comment("""
+                    Returns a new set whose elements are those found in both this set and the given collection, or in
+                    other words, the intersection of this set and the given collection.
+                    @return a new set whose elements are the intersection of this set and the given collection
+
+                    `a.retain_all_copy(b)` is equivalent to `a & b`, where `a` and `b` are sets.
+
+                    Examples:
+                    - `set([1]).retain_all_copy(set([1]))` returns `set([1])`
+                    - `set([1]).retain_all_copy(set([2]))` returns `set([])`
+                    - `set([1, 2, 3]).retain_all_copy(set([2, 3, 4]))` returns `set([2, 3])`
+                """)
+                param("values", type = "collection<-T>", comment = "the other collection")
+                body(R_BinaryOp_Intersect_Set::evaluate)
             }
         }
     }

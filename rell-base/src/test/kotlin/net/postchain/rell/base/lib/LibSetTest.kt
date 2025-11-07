@@ -95,6 +95,205 @@ class LibSetTest: BaseRellTest() {
         chk("set([1, 2, 3]) == list([1, 2, 3])", "ct_err:binop_operand_type:==:[set<integer>]:[list<integer>]")
     }
 
+    @Test fun testPlus() {
+        chk("set<integer>() + set<integer>()", "set<integer>[]")
+        chk("set([1]) + set<integer>()", "set<integer>[int[1]]")
+        chk("set<integer>() + set([1])", "set<integer>[int[1]]")
+        chk("set([1]) + set([2])", "set<integer>[int[1],int[2]]")
+
+        chk("set<integer>() + set<integer>() + set<integer>()", "set<integer>[]")
+        chk("set([1]) + set<integer>() + set<integer>()", "set<integer>[int[1]]")
+        chk("set<integer>() + set([1]) + set<integer>()", "set<integer>[int[1]]")
+        chk("set<integer>() + set<integer>() + set([1])", "set<integer>[int[1]]")
+        chk("set<integer>() + set([1]) + set([2])", "set<integer>[int[1],int[2]]")
+        chk("set([1]) + set<integer>() + set([2])", "set<integer>[int[1],int[2]]")
+        chk("set([1]) + set([2]) + set<integer>()", "set<integer>[int[1],int[2]]")
+        chk("set([1]) + set([2]) + set([3])", "set<integer>[int[1],int[2],int[3]]")
+
+        chk("set([1]) + set([1])", "set<integer>[int[1]]")
+        chk("set([1]) + set([1]) + set([1])", "set<integer>[int[1]]")
+
+        chk("set([1]) + set([true])", "ct_err:binop_operand_type:+:[set<integer>]:[set<boolean>]")
+    }
+
+    @Test fun testPlusSourcesNotModified() {
+        chkEx(""": boolean {
+            val x = set([1, 2]);
+            val y = set([3, 4]);
+            print(x + y); // don't need the output; just need the expression x + y to evaluate
+            return x == set([1, 2]) and y == set([3, 4]);
+        }""", "boolean[true]")
+    }
+
+    @Test fun testAddAllCopy() {
+        chk("set<integer>().add_all_copy(set<integer>())", "set<integer>[]")
+        chk("set([1]).add_all_copy(set<integer>())", "set<integer>[int[1]]")
+
+        chk("set<integer>().add_all_copy(set([1]))", "set<integer>[int[1]]")
+        chk("set([1]).add_all_copy(set([2]))", "set<integer>[int[1],int[2]]")
+        chk("set([1]).add_all_copy([2])", "set<integer>[int[1],int[2]]")
+
+        chk("set<integer>().add_all_copy(set<integer>().add_all_copy(set<integer>()))", "set<integer>[]")
+        chk("set([1]).add_all_copy(set<integer>().add_all_copy(set<integer>()))", "set<integer>[int[1]]")
+        chk("set<integer>().add_all_copy(set([1]).add_all_copy(set<integer>()))", "set<integer>[int[1]]")
+        chk("set<integer>().add_all_copy(set<integer>().add_all_copy(set([1])))", "set<integer>[int[1]]")
+        chk("set<integer>().add_all_copy(set([1]).add_all_copy(set([2])))", "set<integer>[int[1],int[2]]")
+        chk("set([1]).add_all_copy(set<integer>().add_all_copy(set([2])))", "set<integer>[int[1],int[2]]")
+        chk("set([1]).add_all_copy(set([2]).add_all_copy(set<integer>()))", "set<integer>[int[1],int[2]]")
+        chk("set([1]).add_all_copy(set([2]).add_all_copy(set([3])))", "set<integer>[int[1],int[2],int[3]]")
+
+        chk("set([1]).add_all_copy(set([1]))", "set<integer>[int[1]]")
+        chk("set([1]).add_all_copy(set([1]).add_all_copy(set([1])))", "set<integer>[int[1]]")
+
+        chk("set([1]).add_all_copy(set([true]))", "ct_err:expr_call_badargs:[set<integer>.add_all_copy]:[set<boolean>]")
+    }
+
+    @Test fun testAddAllCopySourcesNotModified() {
+        chkEx(""": boolean {
+            val x = set([1, 2]);
+            val y = set([3, 4]);
+            x.add_all_copy(y);
+            return x == set([1, 2]) and y == set([3, 4]);
+        }""", "boolean[true]")
+    }
+
+    @Test fun testMinus() {
+        chk("set<integer>() - set<integer>()", "set<integer>[]")
+        chk("set([1]) - set<integer>()", "set<integer>[int[1]]")
+        chk("set<integer>() - set([1])", "set<integer>[]")
+        chk("set([1]) - set([2])", "set<integer>[int[1]]")
+
+        chk("set<integer>() - set<integer>() - set<integer>()", "set<integer>[]")
+        chk("set([1]) - set<integer>() - set<integer>()", "set<integer>[int[1]]")
+        chk("set<integer>() - set([1]) - set<integer>()", "set<integer>[]")
+        chk("set<integer>() - set<integer>() - set([1])", "set<integer>[]")
+        chk("set<integer>() - set([1]) - set([2])", "set<integer>[]")
+        chk("set([1]) - set<integer>() - set([2])", "set<integer>[int[1]]")
+        chk("set([1]) - set([2]) - set<integer>()", "set<integer>[int[1]]")
+        chk("set([1]) - set([2]) - set([3])", "set<integer>[int[1]]")
+
+        chk("set([1, 2, 3, 4]) - set([2, 3]) - set([1])", "set<integer>[int[4]]")
+        chk("set([1, 2, 3, 4]) - (set([2, 3]) - set([1]))", "set<integer>[int[1],int[4]]")
+
+        chk("set([1]) - set([1])", "set<integer>[]")
+        chk("set([1]) - set([1]) - set([1])", "set<integer>[]")
+
+        chk("set([1]) - set([true])", "ct_err:binop_operand_type:-:[set<integer>]:[set<boolean>]")
+    }
+
+    @Test fun testMinusSourcesNotModified() {
+        chkEx(""": boolean {
+            val x = set([1, 2]);
+            val y = set([1, 3]);
+            print(x - y); // don't need the output; just need the expression x - y to evaluate
+            return x == set([1, 2]) and y == set([1, 3]);
+        }""", "boolean[true]")
+    }
+
+    @Test fun testRemoveAllCopy() {
+        chk("set<integer>().remove_all_copy(set<integer>())", "set<integer>[]")
+        chk("set([1]).remove_all_copy(set<integer>())", "set<integer>[int[1]]")
+        chk("set<integer>().remove_all_copy(set([1]))", "set<integer>[]")
+        chk("set([1]).remove_all_copy(set([2]))", "set<integer>[int[1]]")
+
+        chk("set<integer>().remove_all_copy(set<integer>().remove_all_copy(set<integer>()))", "set<integer>[]")
+        chk("set([1]).remove_all_copy(set<integer>().remove_all_copy(set<integer>()))", "set<integer>[int[1]]")
+        chk("set<integer>().remove_all_copy(set([1]).remove_all_copy(set<integer>()))", "set<integer>[]")
+        chk("set<integer>().remove_all_copy(set<integer>().remove_all_copy(set([1])))", "set<integer>[]")
+        chk("set<integer>().remove_all_copy(set([1]).remove_all_copy(set([2])))", "set<integer>[]")
+        chk("set([1]).remove_all_copy(set<integer>().remove_all_copy(set([2])))", "set<integer>[int[1]]")
+        chk("set([1]).remove_all_copy(set([2]).remove_all_copy(set<integer>()))", "set<integer>[int[1]]")
+        chk("set([1]).remove_all_copy(set([2]).remove_all_copy(set([3])))", "set<integer>[int[1]]")
+
+        chk("set([1, 2, 3, 4]).remove_all_copy(set([2, 3])).remove_all_copy(set([1]))", "set<integer>[int[4]]")
+        chk("set([1, 2, 3, 4]).remove_all_copy(set([2, 3]).remove_all_copy(set([1])))", "set<integer>[int[1],int[4]]")
+
+        chk("set([1]).remove_all_copy(set([1]))", "set<integer>[]")
+        chk("set([1]).remove_all_copy(set([1]).remove_all_copy(set([1])))", "set<integer>[int[1]]")
+        chk("set([1]).remove_all_copy(set([1])).remove_all_copy(set([1]))", "set<integer>[]")
+
+        chk("set([1]).remove_all_copy(set([true]))",
+            "ct_err:expr_call_badargs:[set<integer>.remove_all_copy]:[set<boolean>]")
+    }
+
+    @Test fun testRemoveAllCopySourcesNotModified() {
+        chkEx(""": boolean {
+            val x = set([1, 2]);
+            val y = set([1, 3]);
+            x.remove_all_copy(y);
+            return x == set([1, 2]) and y == set([1, 3]);
+        }""", "boolean[true]")
+    }
+
+    @Test fun testAmpersand() {
+        chk("set<integer>() & set<integer>()", "set<integer>[]")
+        chk("set([1]) & set<integer>()", "set<integer>[]")
+        chk("set<integer>() & set([1])", "set<integer>[]")
+        chk("set([1]) & set([2])", "set<integer>[]")
+        chk("set([1]) & set([1])", "set<integer>[int[1]]")
+
+        chk("set<integer>() & set<integer>() & set<integer>()", "set<integer>[]")
+        chk("set([1]) & set<integer>() & set<integer>()", "set<integer>[]")
+        chk("set<integer>() & set([1]) & set<integer>()", "set<integer>[]")
+        chk("set<integer>() & set<integer>() & set([1])", "set<integer>[]")
+        chk("set<integer>() & set([1]) & set([2])", "set<integer>[]")
+        chk("set([1]) & set<integer>() & set([2])", "set<integer>[]")
+        chk("set([1]) & set([2]) & set<integer>()", "set<integer>[]")
+        chk("set([1]) & set([2]) & set([3])", "set<integer>[]")
+
+        chk("set([1, 2, 3, 4]) & set([3, 4, 5, 6]) & set([1, 2, 5, 6])", "set<integer>[]")
+        chk("set([1, 2, 3, 4]) & (set([3, 4, 5, 6]) & set([1, 2, 5, 6]))", "set<integer>[]")
+        chk("set([1, 2, 3, 4, 7]) & set([3, 4, 5, 6, 7]) & set([1, 2, 5, 6, 7])", "set<integer>[int[7]]")
+        chk("set([1, 2, 3, 4, 7]) & (set([3, 4, 5, 6, 7]) & set([1, 2, 5, 6, 7]))", "set<integer>[int[7]]")
+
+        chk("set([1]) & set([true])", "ct_err:binop_operand_type:&:[set<integer>]:[set<boolean>]")
+    }
+
+    @Test fun testAmpersandSourcesNotModified() {
+        chkEx(""": boolean {
+            val x = set([1, 2]);
+            val y = set([1, 3]);
+            print(x & y); // don't need the output; just need the expression x & y to evaluate
+            return x == set([1, 2]) and y == set([1, 3]);
+        }""", "boolean[true]")
+    }
+
+    @Test fun testRetainAllCopy() {
+        chk("set<integer>().retain_all_copy(set<integer>())", "set<integer>[]")
+        chk("set([1]).retain_all_copy(set<integer>())", "set<integer>[]")
+        chk("set<integer>().retain_all_copy(set([1]))", "set<integer>[]")
+        chk("set([1]).retain_all_copy(set([2]))", "set<integer>[]")
+        chk("set([1]).retain_all_copy(set([1]))", "set<integer>[int[1]]")
+
+        chk("set<integer>().retain_all_copy(set<integer>().retain_all_copy(set<integer>()))", "set<integer>[]")
+        chk("set([1]).retain_all_copy(set<integer>().retain_all_copy(set<integer>()))", "set<integer>[]")
+        chk("set<integer>().retain_all_copy(set([1]).retain_all_copy(set<integer>()))", "set<integer>[]")
+        chk("set<integer>().retain_all_copy(set<integer>().retain_all_copy(set([1])))", "set<integer>[]")
+        chk("set<integer>().retain_all_copy(set([1]).retain_all_copy(set([2])))", "set<integer>[]")
+        chk("set([1]).retain_all_copy(set<integer>().retain_all_copy(set([2])))", "set<integer>[]")
+        chk("set([1]).retain_all_copy(set([2]).retain_all_copy(set<integer>()))", "set<integer>[]")
+        chk("set([1]).retain_all_copy(set([2]).retain_all_copy(set([3])))", "set<integer>[]")
+
+        chk("set([1, 2, 3, 4]).retain_all_copy(set([3, 4, 5, 6])).retain_all_copy(set([1, 2, 5, 6]))", "set<integer>[]")
+        chk("set([1, 2, 3, 4]).retain_all_copy(set([3, 4, 5, 6]).retain_all_copy(set([1, 2, 5, 6])))", "set<integer>[]")
+        chk("set([1, 2, 3, 4, 7]).retain_all_copy(set([3, 4, 5, 6, 7])).retain_all_copy(set([1, 2, 5, 6, 7]))",
+            "set<integer>[int[7]]")
+        chk("set([1, 2, 3, 4, 7]).retain_all_copy(set([3, 4, 5, 6, 7]).retain_all_copy(set([1, 2, 5, 6, 7])))",
+            "set<integer>[int[7]]")
+
+        chk("set([1]).retain_all_copy(set([true]))",
+            "ct_err:expr_call_badargs:[set<integer>.retain_all_copy]:[set<boolean>]")
+    }
+
+    @Test fun testRetainAllCopySourcesNotModified() {
+        chkEx(""": boolean {
+            val x = set([1, 2]);
+            val y = set([1, 3]);
+            x.retain_all_copy(y);
+            return x == set([1, 2]) and y == set([1, 3]);
+        }""", "boolean[true]")
+    }
+
     @Test fun testContains() {
         chk("set([1, 2, 3]).contains(1)", "boolean[true]")
         chk("set([1, 2, 3]).contains(3)", "boolean[true]")
@@ -211,5 +410,17 @@ class LibSetTest: BaseRellTest() {
 
         chk("set([ 5, 4, 3, 2, 1 ]).sorted()", "[1, 2, 3, 4, 5]")
         chk("set([rec(123), rec(456)]).sorted()", "ct_err:fn:collection.sorted:not_comparable:rec")
+    }
+
+    @Test fun testRetainAll() {
+        chkEx("{ val s = set([1, 2, 3, 4]); s.retain_all(set([1, 2, 5, 6])); return s; }",
+            "set<integer>[int[1],int[2]]")
+        chkEx("{ val s = set<integer>(); s.retain_all(set([1, 2, 5, 6])); return s; }", "set<integer>[]")
+        chkEx("{ val s = set([1, 2, 3, 4]); s.retain_all(set<integer>()); return s; }", "set<integer>[]")
+
+        chkEx("{ val s = set([1, 2, 3, 4]); s.retain_all([1, 2, 5, 6]); return s; }", "set<integer>[int[1],int[2]]")
+        chkEx("{ val s = set([1, 2, 3, 4]); s.retain_all([1, 6, 1, 2, 5, 6]); return s; }",
+            "set<integer>[int[1],int[2]]")
+        chkEx("{ val s = set([1, 2, 3, 4]); s.retain_all([]); return s; }", "set<integer>[]")
     }
 }

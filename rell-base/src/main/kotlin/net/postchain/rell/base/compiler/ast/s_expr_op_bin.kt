@@ -36,6 +36,7 @@ enum class S_BinaryOp(val code: String, val op: C_BinOp) {
     IN("in", C_BinOp_In(false)),
     NOT_IN("in", C_BinOp_In(true)),
     ELVIS("?:", C_BinOp_Elvis),
+    AMPERSAND("&", C_BinOp_Ampersand)
     ;
 
     companion object {
@@ -45,8 +46,9 @@ enum class S_BinaryOp(val code: String, val op: C_BinOp) {
                 listOf(EQ, NE, LE, GE, LT, GT, EQ_REF, NE_REF),
                 listOf(IN, NOT_IN),
                 listOf(ELVIS),
+                listOf(AMPERSAND),
                 listOf(PLUS, MINUS),
-                listOf(MUL, DIV, MOD)
+                listOf(MUL, DIV, MOD),
         )
 
         private val PRECEDENCE_MAP: ImmMap<S_BinaryOp, Int> = let {
@@ -440,6 +442,9 @@ internal data object C_BinOp_Plus: C_BinOp_Common() {
             R_DecimalType -> V_BinaryOp.of(R_DecimalType, R_BinaryOp_Add_Decimal, Db_BinaryOp_Add_Decimal)
             R_TextType -> V_BinaryOp.of(R_TextType, R_BinaryOp_Concat_Text, Db_BinaryOp_Concat)
             R_ByteArrayType -> V_BinaryOp.of(R_ByteArrayType, R_BinaryOp_Concat_ByteArray, Db_BinaryOp_Concat)
+            is R_ListType -> V_BinaryOp.of(left, R_BinaryOp_Concat_List, null)
+            is R_SetType -> V_BinaryOp.of(left, R_BinaryOp_Union_Set, null)
+            is R_MapType -> V_BinaryOp.of(left, R_BinaryOp_Merge_Map, null)
             else -> null
         }
     }
@@ -506,6 +511,23 @@ internal data object C_BinOp_Plus: C_BinOp_Common() {
     }
 }
 
+internal data object C_BinOp_Minus: C_BinOp_Common() {
+    override fun compileOp(ctx: C_BinOpContext, left: R_Type, right: R_Type): V_BinaryOp? {
+        if (left != right) {
+            return null
+        }
+
+        return when (left) {
+            R_IntegerType -> V_BinaryOp.of(R_IntegerType, R_BinaryOp_Sub_Integer, Db_BinaryOp_Sub_Integer)
+            R_BigIntegerType -> V_BinaryOp.of(R_BigIntegerType, R_BinaryOp_Sub_BigInteger, Db_BinaryOp_Sub_BigInteger)
+            R_DecimalType -> V_BinaryOp.of(R_DecimalType, R_BinaryOp_Sub_Decimal, Db_BinaryOp_Sub_Decimal)
+            is R_SetType -> V_BinaryOp.of(left, R_BinaryOp_Sub_Set, null)
+            is R_ListType -> V_BinaryOp.of(left, R_BinaryOp_Sub_List, null)
+            else -> null
+        }
+    }
+}
+
 internal sealed class C_BinOp_Arith(
     private val rOpInt: R_BinaryOp,
     private val dbOpInt: Db_BinaryOp,
@@ -527,15 +549,6 @@ internal sealed class C_BinOp_Arith(
         }
     }
 }
-
-internal data object C_BinOp_Minus: C_BinOp_Arith(
-    R_BinaryOp_Sub_Integer,
-    Db_BinaryOp_Sub_Integer,
-    R_BinaryOp_Sub_BigInteger,
-    Db_BinaryOp_Sub_BigInteger,
-    R_BinaryOp_Sub_Decimal,
-    Db_BinaryOp_Sub_Decimal,
-)
 
 internal data object C_BinOp_Mul: C_BinOp_Arith(
     R_BinaryOp_Mul_Integer,
@@ -690,6 +703,20 @@ object C_BinOp_Elvis: C_BinOp() {
         }
 
         return V_ElvisExpr(ctx, left.pos, resType, left, right)
+    }
+}
+
+internal data object C_BinOp_Ampersand: C_BinOp_Common() {
+    override fun compileOp(ctx: C_BinOpContext, left: R_Type, right: R_Type): V_BinaryOp? {
+        if (left != right) {
+            return null
+        }
+
+        return when (left) {
+            is R_SetType -> V_BinaryOp.of(left, R_BinaryOp_Intersect_Set, null)
+            is R_ListType -> V_BinaryOp.of(left, R_BinaryOp_Intersect_List, null)
+            else -> null
+        }
     }
 }
 

@@ -160,3 +160,201 @@ if (result.is_error) {
 } else {
     process_user(result.value);
 }
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Library: New collections API functions and operators
+
+The operators &, + and - can now be used to combine lists, sets and maps. In each case, the argument list, set or map
+expressions are copied (shallow copies, not deep). The result is that for collections of immutable types, these
+operators preserve immutability.
+
+The exact behaviour depends on the collection type (not every collection type is supported for each operator).
+
+We also add a function for each new operator; each function being equivalent to its respective operator. For example, +
+has the equivalent function add_all_copy() (named to be consistent with the preexisting function add_all(), which is a
+mutable equivalent of add_all_copy()).
+
+Where one would previously have to write e.g.:
+
+    val c = list(a);
+    c.add_all(b);
+
+One can now write:
+
+    val c = a + b;
+
+Or:
+
+    val c = a.add_all_copy(b);
+
+The details of all new functions and operators are given below.
+
+New operators:
+
+    + operator for lists (concatenation)
+
+        Returns a new list that is the concatenation of the left-hand list with the right-hand list.
+
+        a + b is equivalent to a.add_all_copy(b), where a and b are lists.
+
+        Examples:
+        [1] + [2] // returns [1, 2]
+        [7] + [7] + [7] // returns [7, 7, 7]
+        list<integer>() + list<integer>() // returns []
+
+    - operator for lists (subtract)
+
+        Returns a new list that contains the elements of the left-hand list, but without any elements that occur in the
+        right-hand list.
+
+        a - b is equivalent to a.remove_all_copy(b), where a and b are lists.
+
+        Examples:
+        [1] - [1] // returns []
+        [1, 2, 3] - [2, 3, 4] // returns [1]
+
+    & operator for lists (intersect)
+
+        Returns a new list that contains the elements that are found in both the left-hand list and the right-hand
+        list.
+
+        a & b is equivalent to a.retain_all_copy(b), where a and b are lists.
+
+        Examples:
+        set([1]) & set([1]) // returns set([1])
+        set([1]) & set([2]) // returns set([])
+        set([1, 2, 3]) & set([2, 3, 4]) // returns set([2, 3])
+
+    + operator for sets (union)
+
+        Returns a new set that is the union of the left-hand set with the right-hand set.
+
+        a + b is equivalent to a.add_all_copy(b), where a and b are sets.
+
+        Examples:
+        set([1]) + set[1] // returns set([1])
+        set([1, 2, 3]) + set[2, 3, 4] // returns set([1, 2, 3, 4])
+
+    - operator for sets (subtract)
+
+        Returns a new set that contains the elements of the left-hand set, but without any elements that occur in the
+        right-hand set.
+
+        a - b is equivalent to a.remove_all_copy(b), where a and b are sets.
+
+        Examples:
+        set([1]) - set([1]) // returns set([])
+        set([1, 2, 3]) - set([2, 3, 4]) // returns set([1])
+
+    & operator for sets (intersect)
+
+        Returns a new set that contains the elements that are found in both the left-hand set and the right-hand set.
+
+        a & b is equivalent to a.retain_all_copy(b), where a and b are sets.
+
+        Examples:
+        set([1]) & set([1]) // returns set([1])
+        set([1]) & set([2]) // returns set([])
+        set([1, 2, 3]) & set([2, 3, 4]) // returns set([2, 3])
+
+    + operator for maps (merge)
+
+        Returns a new map with the mappings of the left-hand map combined with the mappings of the right-hand map.
+
+        Where a value exists for a given key in both the left-hand and right-hand maps, the returned map has the value
+        of the right-hand map, as opposed to the value of the left-hand map (right-biased).
+
+        a + b is equivalent to a.put_all_copy(b), where a and b are both maps.
+
+        Examples:
+        [1: 'a', 2: 'b', 3: 'c'] + [1: 'Z', 4: 'd', 5: 'e'] returns [1: 'Z', 2: 'b', 3: 'c', 4: 'd', 5: 'e']
+        [1: 'a', 2: 'b', 3: 'c'] + [4: 'd', 5: 'e'] returns [1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e']
+
+New functions:
+
+    collection<T>.retain_all(values: collection<-T>): boolean
+
+        Removes from this collection any elements not contained in the given collection.
+
+        Returns true if any elements were removed, false otherwise.
+
+        Examples:
+        val l = [1]; l.retain_all([1]); return l; // returns [1]
+        val l = [1]; l.retain_all([2]); return l; // returns []
+        val l = [1, 2, 3]; l.retain_all([2, 3, 4]); return l; // returns [2, 3]
+
+    list<T>.add_all_copy(values: collection<-T>): list<T>
+
+        Returns a new list that is the concatenation of the elements of this list with those of the given collection.
+
+        a.add_all_copy(b) is equivalent to a + b, where a and b are lists.
+
+        Examples:
+        [1].add_all_copy([2]) // returns [1, 2]
+        list<integer>().add_all_copy(list<integer>()) // returns []
+
+    list<T>.remove_all_copy(values: collection<-T>): list<T>
+
+        Returns a new list containing the elements of this list, but without any elements that occur in the given
+        collection.
+
+        a.remove_all_copy(b) is equivalent to a - b, where a and b are lists.
+
+        Examples:
+        [1].remove_all_copy([1]) // returns []
+        [1, 2, 3].remove_all_copy([2, 3, 4]) // returns [1]
+
+    list<T>.retain_all_copy(values: collection<-T>): list<T>
+
+        Returns a list containing the elements that are found in both this list and the given collection.
+
+        a.retain_all_copy(b) is equivalent to a & b, where a and b are lists.
+
+        Examples:
+        [1].retain_all_copy([1]) // returns [1]
+        [1].retain_all_copy([2]) // returns []
+        [1, 2, 3].retain_all_copy([2, 3, 4]) // returns [2, 3]
+
+    set<T>.add_all_copy(values: collection<-T>): set<T>
+
+        Returns a new set containing the elements of this set and the elements of a given collection.
+
+        a.add_all_copy(b) is equivalent to a + b, where a and b are sets.
+
+        Examples:
+        set([1]).add_all_copy(set([1])) // returns set([1])
+        set([1, 2, 3]).add_all_copy(set([2, 3, 4])) // returns set([1, 2, 3, 4])
+
+    set<T>.remove_all_copy(values: set<T>): set<T>
+
+        Returns a new set containing the elements of this set, but without any elements that occur in the given set.
+
+        a.remove_all_copy(b) is equivalent to a - b, where a and b are sets.
+
+        Examples:
+        set([1]).remove_all_copy(set([1])) // returns set([])
+        set([1, 2, 3]).remove_all_copy(set([2, 3, 4])) // returns set([1])
+
+    set<T>.retain_all_copy(values: collection<-T>): set<T>
+
+        Returns a set containing the elements that are found in both this set and the given collection.
+
+        a.retain_all_copy(b) is equivalent to a & b, where a and b are sets.
+
+        Examples:
+        set([1]).retain_all_copy(set([1])) // returns set([1])
+        set([1]).retain_all_copy(set([2])) // returns set([])
+        set([1, 2, 3]).retain_all_copy(set([2, 3, 4])) // returns set([2, 3])
+
+    map<K, V>.put_all_copy(map: map<K, V>): map<K, V>
+
+        Returns a new map with the mappings of this map combined with the mappings of the given map.
+
+        Where a value exists for a given key in both this and the other map, the returned map has the value of the other
+        map, as opposed to the value in this map (right-biased).
+
+        a.put_all_copy(b) is equivalent to a + b, where a and b are both maps.
+
+        Examples:
+        [1: 'a', 2: 'b', 3: 'c'].put_all_copy([1: 'Z', 4: 'd', 5: 'e']) // returns [1: 'Z', 2: 'b', 3: 'c', 4: 'd', 5: 'e']
+        [1: 'a', 2: 'b', 3: 'c'].put_all_copy([4: 'd', 5: 'e']) // returns [1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e']

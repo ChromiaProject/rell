@@ -380,6 +380,68 @@ internal data object R_BinaryOp_Concat_ByteArray: R_BinaryOp("+") {
     }
 }
 
+internal data object R_BinaryOp_Concat_List: R_BinaryOp("+") {
+    override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
+        val out: MutableList<Rt_Value> = mutableListOf()
+        out.addAll(left.asList())
+        out.addAll(right.asCollection())
+        return Rt_ListValue(left.type(), out)
+    }
+}
+
+internal data object R_BinaryOp_Union_Set: R_BinaryOp("+") {
+    override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
+        val out: MutableSet<Rt_Value> = mutableSetOf()
+        out.addAll(left.asSet())
+        out.addAll(right.asCollection())
+        return Rt_SetValue(left.type(), out)
+    }
+}
+
+internal data object R_BinaryOp_Sub_List: R_BinaryOp("-") {
+    override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
+        val out: MutableList<Rt_Value> = mutableListOf()
+        out.addAll(left.asList())
+        out.removeAll(right.asCollection())
+        return Rt_ListValue(left.type(), out)
+    }
+}
+
+internal data object R_BinaryOp_Sub_Set: R_BinaryOp("-") {
+    override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
+        val out: MutableSet<Rt_Value> = mutableSetOf()
+        out.addAll(left.asSet())
+        out.removeAll(right.asSet())
+        return Rt_SetValue(left.type(), out)
+    }
+}
+
+internal data object R_BinaryOp_Intersect_List: R_BinaryOp("&") {
+    override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
+        val out: MutableList<Rt_Value> = mutableListOf()
+        left.asList().filter { right.asCollection().contains(it) }.forEach { out.add(it) }
+        return Rt_ListValue(left.type(), out)
+    }
+}
+
+internal data object R_BinaryOp_Intersect_Set: R_BinaryOp("&") {
+    override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
+        val out: MutableSet<Rt_Value> = mutableSetOf()
+        left.asSet().filter { right.asCollection().contains(it) }.forEach { out.add(it) }
+        return Rt_SetValue(left.type(), out)
+    }
+}
+
+internal data object R_BinaryOp_Merge_Map: R_BinaryOp("+") {
+    override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
+        require(left is Rt_MapValue)
+        val out: MutableMap<Rt_Value, Rt_Value> = mutableMapOf()
+        out.putAll(left.asMap())
+        out.putAll(right.asMap())
+        return Rt_MapValue(left.type, out)
+    }
+}
+
 internal data object R_BinaryOp_In_Collection: R_BinaryOp("in") {
     override fun evaluate(left: Rt_Value, right: Rt_Value): Rt_Value {
         val c = right.asCollection()
