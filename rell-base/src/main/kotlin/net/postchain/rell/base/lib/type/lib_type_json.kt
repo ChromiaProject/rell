@@ -158,10 +158,27 @@ object Lib_Type_Json {
             function("as_integer", result = "integer", pure = true, since = SINCE_NOW) {
                 comment("""
                     Convert this JSON integer value to an integer.
+
+                    All JSON values that can be converted to `integer` with `as_integer()` can also be converted to
+                    `big_integer` with `as_big_integer()`, though the reverse is not true, since `big_integer` values
+                    may fall outside the `integer` range.
                     @throws exception if this JSON value is not an integer
                 """)
                 dbFunctionSimple("json.as_integer", SqlConstants.FN_JSON_AS_INTEGER)
                 asTypeBody(this, JsonUtils::canBeRellInteger) { Rt_IntValue.get(it.asLong()) }
+            }
+
+            function("as_big_integer", result = "big_integer", pure = true, since = SINCE_NOW) {
+                comment("""
+                    Convert this JSON value to a `big_integer`.
+
+                    All JSON values that can be converted to `integer` with `as_integer()` can also be converted to
+                    `big_integer` with `as_big_integer()`, though the reverse is not true, since `big_integer` values
+                    may fall outside the `integer` range.
+                    @throws exception if this JSON value cannot be converted to a `big_integer`
+                """)
+                dbFunctionSimple("json.as_big_integer", SqlConstants.FN_JSON_AS_BIG_INTEGER)
+                asTypeBody(this, JsonUtils::canBeRellBigInteger) { Rt_BigIntegerValue.get(it.bigIntegerValue()) }
             }
 
             function("as_boolean", result = "boolean", pure = true, since = SINCE_NOW) {
@@ -190,10 +207,29 @@ object Lib_Type_Json {
             function("as_integer_or_null", result = "integer?", pure = true, since = SINCE_NOW) {
                 comment("""
                     Convert this JSON integer value to an integer.
+
+                    All JSON values that can be converted to `integer` with `as_integer_or_null()` can also be converted
+                    to `big_integer` with `as_big_integer_or_null()`, though the reverse is not true, since
+                    `big_integer` values may fall outside the `integer` range.
                     @return this JSON integer as an integer, or null if this JSON value is not an integer
                 """)
                 dbFunctionSimple("json.as_integer_or_null", SqlConstants.FN_JSON_AS_INTEGER_OR_NULL)
                 asTypeBody(this, JsonUtils::canBeRellInteger, null_on_error = true) { Rt_IntValue.get(it.asLong()) }
+            }
+
+            function("as_big_integer_or_null", result = "big_integer?", pure = true, since = SINCE_NOW) {
+                comment("""
+                    Convert this JSON value to a `big_integer`.
+
+                    All JSON values that can be converted to `integer` with `as_integer_or_null()` can also be converted
+                    to `big_integer` with `as_big_integer_or_null()`, though the reverse is not true, since
+                    `big_integer` values may fall outside the `integer` range.
+                    @return this JSON value as a `big_integer`, or null if it cannot be converted to a `big_integer`
+                """)
+                dbFunctionSimple("json.as_big_integer_or_null", SqlConstants.FN_JSON_AS_BIG_INTEGER_OR_NULL)
+                asTypeBody(this, JsonUtils::canBeRellBigInteger, null_on_error = true) {
+                    Rt_BigIntegerValue.get(it.bigIntegerValue())
+                }
             }
 
             function("as_boolean_or_null", result = "boolean?", pure = true, since = SINCE_NOW) {
@@ -253,10 +289,26 @@ object Lib_Type_Json {
             function("is_integer", result = "boolean", pure = true, since = SINCE_NOW) {
                 comment("""
                     Determine whether this JSON value is an integer.
+
+                    All JSON values that return `true` with `is_integer()` also return `true` with `is_big_integer()`,
+                    though the reverse is not the case, since `big_integer` values may fall outside the `integer` range.
                     @return true if this JSON value is an integer, false otherwise
                 """)
                 dbFunctionTemplate("json.is_integer", 1, "(${SqlConstants.FN_JSON_AS_INTEGER_OR_NULL}(#0) IS NOT NULL)")
                 isTypeBody(this, JsonUtils::canBeRellInteger)
+            }
+
+            function("is_big_integer", result = "boolean", pure = true, since = SINCE_NOW) {
+                comment("""
+                    Determine whether this JSON value can be converted to `big_integer`.
+
+                    All JSON values that return `true` with `is_integer()` also return `true` with `is_big_integer()`,
+                    though the reverse is not the case, since `big_integer` values may fall outside the `integer` range.
+                    @return true if this JSON value can be converted to `big_integer`, false otherwise
+                """)
+                dbFunctionTemplate("json.is_big_integer", 1,
+                    "(${SqlConstants.FN_JSON_AS_BIG_INTEGER_OR_NULL}(#0) IS NOT NULL)")
+                isTypeBody(this, JsonUtils::canBeRellBigInteger)
             }
 
             function("is_boolean", result = "boolean", pure = true, since = SINCE_NOW) {
@@ -421,11 +473,17 @@ internal object JsonUtils {
             node.isBigInteger -> {
                 val value = node.bigIntegerValue()
                 value != null &&
-                    value.compareTo(Rt_IntValue.MAX_VALUE_AS_BIGINT) < 1 &&     // Would be out of range in Kotlin
-                    value.compareTo(Rt_IntValue.MIN_VALUE_AS_BIGINT) > -1       // or BigInteger would truncate
+                    value.compareTo(Rt_IntValue.MAX_VALUE_AS_BIGINT) <= 0 &&    // Would be out of range in Kotlin
+                    value.compareTo(Rt_IntValue.MIN_VALUE_AS_BIGINT) >= 0       // or BigInteger would truncate
             }
             else -> false
         }
+    }
+
+    internal fun canBeRellBigInteger(node: JsonNode): Boolean {
+        return node.isIntegralNumber &&
+            node.bigIntegerValue().compareTo(Lib_BigIntegerMath.MAX_VALUE) <= 0 &&
+            node.bigIntegerValue().compareTo(Lib_BigIntegerMath.MIN_VALUE) >= 0
     }
 
     internal sealed interface GetOperationResult

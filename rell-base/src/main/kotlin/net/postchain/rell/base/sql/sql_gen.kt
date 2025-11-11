@@ -41,8 +41,10 @@ object SqlGen {
         genFunctionJsonArrayGet(SqlConstants.FN_JSON_ARRAY_GET),
         genFunctionJsonObjectGet(SqlConstants.FN_JSON_OBJECT_GET),
         genFunctionJsonArrayGet(SqlConstants.FN_JSON_ARRAY_GET_OR_NULL, isNullableVariant = true),
-        genFunctionJsonAsType(SqlConstants.FN_JSON_AS_INTEGER, "BIGINT", INTEGER_TEST, "not an integer"),
-        genFunctionJsonAsType(SqlConstants.FN_JSON_AS_INTEGER_OR_NULL, "BIGINT", INTEGER_TEST, null),
+        genFunctionJsonAsType(SqlConstants.FN_JSON_AS_INTEGER, "BIGINT", INTEGRAL_TEST, "not an integer"),
+        genFunctionJsonAsType(SqlConstants.FN_JSON_AS_INTEGER_OR_NULL, "BIGINT", INTEGRAL_TEST, null),
+        genFunctionJsonAsType(SqlConstants.FN_JSON_AS_BIG_INTEGER, "NUMERIC", INTEGRAL_TEST, "not a big_integer"),
+        genFunctionJsonAsType(SqlConstants.FN_JSON_AS_BIG_INTEGER_OR_NULL, "NUMERIC", INTEGRAL_TEST, null),
         genFunctionJsonAsType(SqlConstants.FN_JSON_AS_BOOLEAN_OR_NULL, "BOOLEAN", BOOLEAN_TEST, null),
         genFunctionJsonAsType(SqlConstants.FN_JSON_AS_TEXT, "TEXT", TEXT_TEST, "not text", ::textExtractor),
         genFunctionJsonAsType(SqlConstants.FN_JSON_AS_TEXT_OR_NULL, "TEXT", TEXT_TEST, null, ::textExtractor),
@@ -82,7 +84,7 @@ object SqlGen {
         """.trimIndent()
     }
 
-    private const val INTEGER_TEST = "(value :: TEXT) ~ '^-?\\d+$'"
+    private const val INTEGRAL_TEST = "(value :: TEXT) ~ '^-?\\d+$'"
     private const val BOOLEAN_TEST = "JSONB_TYPEOF(value) = 'boolean'"
     private const val TEXT_TEST = "JSONB_TYPEOF(value) = 'string'"
     private fun textExtractor(value: String): String = "($value #>> '{}')"

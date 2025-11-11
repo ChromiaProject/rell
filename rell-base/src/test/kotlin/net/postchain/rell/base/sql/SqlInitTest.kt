@@ -663,6 +663,8 @@ class SqlInitTest: BaseSqlInitTest() {
             "rell_integer_power",
             "rell_json_array_get",
             "rell_json_array_get_or_null",
+            "rell_json_as_big_integer",
+            "rell_json_as_big_integer_or_null",
             "rell_json_as_boolean_or_null",
             "rell_json_as_integer",
             "rell_json_as_integer_or_null",

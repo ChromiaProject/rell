@@ -26,15 +26,19 @@ Nullable getter functions:
 Strict conversion functions:
 
     json.as_integer(): integer
+    json.as_big_integer(): big_integer
     json.as_text(): text
     json.as_boolean(): boolean
 
         Convert a JSON value to a Rell value. Throws an exception if the JSON value is not of the correct type; e.g.
-        calling as_text() on a JSON integer will throw an exception.
+        calling as_text() on a JSON integer will throw an exception. All JSON values that can be converted to integer
+        with as_integer() can also be converted to big_integer with as_big_integer(), though the reverse is not true,
+        since big_integer has a larger range.
 
 Nullable conversion functions:
 
     json.as_integer_or_null(): integer?
+    json.as_big_integer_or_null(): big_integer?
     json.as_text_or_null(): text?
     json.as_boolean_or_null(): boolean?
 
@@ -47,10 +51,13 @@ Functions to check the type of a JSON value:
     json.is_array(): boolean
     json.is_text(): boolean
     json.is_integer(): boolean
+    json.is_big_integer(): boolean
     json.is_boolean(): boolean
     json.is_null(): boolean
 
-        Each return true if the JSON value is of the type in the method's name, or false otherwise.
+        Each return true if the JSON value is of the type in the method's name, or false otherwise. All JSON values that
+        return true with as_integer() also return true with as_big_integer(), though the reverse is not true, since
+        big_integer has a larger range.
 
 Other functions:
 

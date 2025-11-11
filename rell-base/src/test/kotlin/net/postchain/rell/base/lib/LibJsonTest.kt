@@ -177,6 +177,39 @@ internal object LibJsonTest: BaseRellTest() {
         chk("""data @ {} ( .data[9].as_integer() )""", "int[0]")
     }
 
+    @Test fun testAsBigInteger() {
+        val bigNum = "9999999999999999999999999999999999999999999999"
+        chk("""json('null').as_big_integer()""", "rt_err:json.as_big_integer:type_error:NULL")
+        chk("""json('{"a": 1, "b": 2, "c": 3}').as_big_integer()""", "rt_err:json.as_big_integer:type_error:OBJECT")
+        chk("""json('["a", "b", "c"]').as_big_integer()""", "rt_err:json.as_big_integer:type_error:ARRAY")
+        chk("""json('7.0').as_big_integer()""", "rt_err:json.as_big_integer:type_error:NUMBER")
+        chk("""json('-7.01').as_big_integer()""", "rt_err:json.as_big_integer:type_error:NUMBER")
+        chk("""json('true').as_big_integer()""", "rt_err:json.as_big_integer:type_error:BOOLEAN")
+        chk("""json('7').as_big_integer()""", "bigint[7]")
+        chk("""json('-7').as_big_integer()""", "bigint[-7]")
+        chk("""json('0').as_big_integer()""", "bigint[0]")
+        chk("""json('$bigNum').as_big_integer()""", "bigint[$bigNum]")
+    }
+
+    @Test fun testAsBigIntegerDb() {
+        tstCtx.useSql = true
+        val bigNum = "9999999999999999999999999999999999999999999999"
+        def("entity data { data: json; }")
+        insert("c0.data", "data",
+            """1,json('[{"an": "object"}, ["an", "array"], null, "a", 7.0, -7.01, true, 7, -7, 0, $bigNum]')""")
+        chk("""data @ {} ( .data[0].as_big_integer() )""", "rt_err:sqlerr:0")
+        chk("""data @ {} ( .data[1].as_big_integer() )""", "rt_err:sqlerr:0")
+        chk("""data @ {} ( .data[2].as_big_integer() )""", "rt_err:sqlerr:0")
+        chk("""data @ {} ( .data[3].as_big_integer() )""", "rt_err:sqlerr:0")
+        chk("""data @ {} ( .data[4].as_big_integer() )""", "rt_err:sqlerr:0")
+        chk("""data @ {} ( .data[5].as_big_integer() )""", "rt_err:sqlerr:0")
+        chk("""data @ {} ( .data[6].as_big_integer() )""", "rt_err:sqlerr:0")
+        chk("""data @ {} ( .data[7].as_big_integer() )""", "bigint[7]")
+        chk("""data @ {} ( .data[8].as_big_integer() )""", "bigint[-7]")
+        chk("""data @ {} ( .data[9].as_big_integer() )""", "bigint[0]")
+        chk("""data @ {} ( .data[10].as_big_integer() )""", "bigint[$bigNum]")
+    }
+
     @Test fun testAsBoolean() {
         chk("""json('null').as_boolean()""", "rt_err:json.as_boolean:type_error:NULL")
         chk("""json('{"a": 1, "b": 2, "c": 3}').as_boolean()""", "rt_err:json.as_boolean:type_error:OBJECT")
@@ -269,6 +302,39 @@ internal object LibJsonTest: BaseRellTest() {
         chk("""data @ {} ( .data[7].as_integer_or_null() )""", "int[7]")
         chk("""data @ {} ( .data[8].as_integer_or_null() )""", "int[-7]")
         chk("""data @ {} ( .data[9].as_integer_or_null() )""", "int[0]")
+    }
+
+    @Test fun testAsBigIntegerOrNull() {
+        val bigNum = "9999999999999999999999999999999999999999999999"
+        chk("""json('null').as_big_integer_or_null()""", "null")
+        chk("""json('{"a": 1, "b": 2, "c": 3}').as_big_integer_or_null()""", "null")
+        chk("""json('["a", "b", "c"]').as_big_integer_or_null()""", "null")
+        chk("""json('7.0').as_big_integer_or_null()""", "null")
+        chk("""json('-7.01').as_big_integer_or_null()""", "null")
+        chk("""json('true').as_big_integer_or_null()""", "null")
+        chk("""json('7').as_big_integer_or_null()""", "bigint[7]")
+        chk("""json('-7').as_big_integer_or_null()""", "bigint[-7]")
+        chk("""json('0').as_big_integer_or_null()""", "bigint[0]")
+        chk("""json('$bigNum').as_big_integer_or_null()""", "bigint[$bigNum]")
+    }
+
+    @Test fun testAsBigIntegerOrNullDb() {
+        tstCtx.useSql = true
+        val bigNum = "9999999999999999999999999999999999999999999999"
+        def("entity data { data: json; }")
+        insert("c0.data", "data",
+            """1,json('[{"an": "object"}, ["an", "array"], null, "a", 7.0, -7.01, true, 7, -7, 0, $bigNum]')""")
+        chk("""data @ {} ( .data[0].as_big_integer_or_null() )""", "null")
+        chk("""data @ {} ( .data[1].as_big_integer_or_null() )""", "null")
+        chk("""data @ {} ( .data[2].as_big_integer_or_null() )""", "null")
+        chk("""data @ {} ( .data[3].as_big_integer_or_null() )""", "null")
+        chk("""data @ {} ( .data[4].as_big_integer_or_null() )""", "null")
+        chk("""data @ {} ( .data[5].as_big_integer_or_null() )""", "null")
+        chk("""data @ {} ( .data[6].as_big_integer_or_null() )""", "null")
+        chk("""data @ {} ( .data[7].as_big_integer_or_null() )""", "bigint[7]")
+        chk("""data @ {} ( .data[8].as_big_integer_or_null() )""", "bigint[-7]")
+        chk("""data @ {} ( .data[9].as_big_integer_or_null() )""", "bigint[0]")
+        chk("""data @ {} ( .data[10].as_big_integer_or_null() )""", "bigint[$bigNum]")
     }
 
     @Test fun testAsBooleanOrNull() {
@@ -365,6 +431,39 @@ internal object LibJsonTest: BaseRellTest() {
         chk("""data @ {} ( .data[9].is_integer() )""", "boolean[true]")
         chk("""data @ {} ( .data[10].is_integer() )""", "boolean[true]")
         chk("""data @ {} ( .data[11].is_integer() )""", "boolean[true]")
+    }
+
+    @Test fun testIsBigInteger() {
+        val bigNum = "9999999999999999999999999999999999999999999999"
+        chk("""json('null').is_big_integer()""", "boolean[false]")
+        chk("""json('{"a": 1, "b": 2, "c": 3}').is_big_integer()""", "boolean[false]")
+        chk("""json('["a", "b", "c"]').is_big_integer()""", "boolean[false]")
+        chk("""json('7.0').is_big_integer()""", "boolean[false]")
+        chk("""json('-7.01').is_big_integer()""", "boolean[false]")
+        chk("""json('true').is_big_integer()""", "boolean[false]")
+        chk("""json('7').is_big_integer()""", "boolean[true]")
+        chk("""json('-7').is_big_integer()""", "boolean[true]")
+        chk("""json('0').is_big_integer()""", "boolean[true]")
+        chk("""json('$bigNum').is_big_integer()""", "boolean[true]")
+    }
+
+    @Test fun testIsBigIntegerDb() {
+        tstCtx.useSql = true
+        val bigNum = "9999999999999999999999999999999999999999999999"
+        def("entity data { data: json; }")
+        insert("c0.data", "data",
+            """1,json('[{"an": "object"}, ["an", "array"], null, "a", 7.0, -7.01, true, 7, -7, 0, $bigNum]')""")
+        chk("""data @ {} ( .data[0].is_big_integer() )""", "boolean[false]")
+        chk("""data @ {} ( .data[1].is_big_integer() )""", "boolean[false]")
+        chk("""data @ {} ( .data[2].is_big_integer() )""", "boolean[false]")
+        chk("""data @ {} ( .data[3].is_big_integer() )""", "boolean[false]")
+        chk("""data @ {} ( .data[4].is_big_integer() )""", "boolean[false]")
+        chk("""data @ {} ( .data[5].is_big_integer() )""", "boolean[false]")
+        chk("""data @ {} ( .data[6].is_big_integer() )""", "boolean[false]")
+        chk("""data @ {} ( .data[7].is_big_integer() )""", "boolean[true]")
+        chk("""data @ {} ( .data[8].is_big_integer() )""", "boolean[true]")
+        chk("""data @ {} ( .data[9].is_big_integer() )""", "boolean[true]")
+        chk("""data @ {} ( .data[10].is_big_integer() )""", "boolean[true]")
     }
 
     @Test fun testIsBoolean() {

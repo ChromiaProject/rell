@@ -43,6 +43,8 @@ object SqlConstants {
     const val FN_JSON_AS_BOOLEAN_OR_NULL = "rell_json_as_boolean_or_null"
     const val FN_JSON_AS_INTEGER = "rell_json_as_integer"
     const val FN_JSON_AS_INTEGER_OR_NULL = "rell_json_as_integer_or_null"
+    const val FN_JSON_AS_BIG_INTEGER = "rell_json_as_big_integer"
+    const val FN_JSON_AS_BIG_INTEGER_OR_NULL = "rell_json_as_big_integer_or_null"
     const val FN_JSON_AS_TEXT = "rell_json_as_text"
     const val FN_JSON_AS_TEXT_OR_NULL = "rell_json_as_text_or_null"
     const val FN_JSON_SIZE = "rell_json_size"
