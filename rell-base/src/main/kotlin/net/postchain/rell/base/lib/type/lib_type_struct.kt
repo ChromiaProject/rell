@@ -170,7 +170,7 @@ object Lib_Type_Struct {
                     Lib_Type_Gtv.makeFromGtvBody(this, pretty = true)
                 }
 
-                function("copy", fn = C_StructCopyFunction, since = RellVersions.SINCE_NOW) {
+                function("copy", fn = C_StructCopyFunction, since = "0.14.16") {
                     comment("""
                         Creates a copy of this struct with optional parameter overrides.
 

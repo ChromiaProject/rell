@@ -18,7 +18,6 @@ import net.postchain.rell.base.model.expr.R_BinaryOp_Intersect_List
 import net.postchain.rell.base.model.expr.R_BinaryOp_Sub_List
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_ListComparator
-import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_List {
@@ -333,7 +332,7 @@ object Lib_Type_List {
                 }
             }
 
-            function("add_all_copy", "list<T>", since = SINCE_NOW) {
+            function("add_all_copy", "list<T>", since = "0.14.16") {
                 comment("""
                     Returns a new list that is the concatenation of the elements of this list with those of the given
                     collection.
@@ -349,7 +348,7 @@ object Lib_Type_List {
                 body(R_BinaryOp_Concat_List::evaluate)
             }
 
-            function("remove_all_copy", "list<T>", since = SINCE_NOW) {
+            function("remove_all_copy", "list<T>", since = "0.14.16") {
                 comment("""
                     Returns a new list whose elements are those found in this list and not in the given collection.
 
@@ -364,7 +363,7 @@ object Lib_Type_List {
                 body(R_BinaryOp_Sub_List::evaluate)
             }
 
-            function("retain_all_copy", "list<T>", since = SINCE_NOW) {
+            function("retain_all_copy", "list<T>", since = "0.14.16") {
                 comment("""
                     Return a new list whose elements are those found in both this list and the given collection, or in
                     other words, the intersection of this list and the given collection.

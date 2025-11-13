@@ -21,7 +21,6 @@ import net.postchain.rell.base.model.expr.R_BinaryOp_Merge_Map
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.toGtv
-import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_Map {
@@ -196,7 +195,7 @@ object Lib_Type_Map {
                 }
             }
 
-            function("put_all_copy", result = "map<K, V>", since = SINCE_NOW) {
+            function("put_all_copy", result = "map<K, V>", since = "0.14.16") {
                 comment("""
                     Returns a new map with the mappings of this map combined with the mappings of the given map.
 

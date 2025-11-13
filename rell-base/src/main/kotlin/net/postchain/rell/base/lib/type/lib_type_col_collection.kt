@@ -17,7 +17,6 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.GtvRtConversion
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.toGtv
-import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.lib.type.Lib_Type_Any as AnyFns
 
@@ -143,7 +142,7 @@ object Lib_Type_Collection {
                 }
             }
 
-            function("retain_all", "boolean", since = SINCE_NOW) {
+            function("retain_all", "boolean", since = "0.14.16") {
                 comment("""
                     Retain in this collection only those elements found in the given collection. In other words, remove
                     from this collection all elements that are not found in the given collection.

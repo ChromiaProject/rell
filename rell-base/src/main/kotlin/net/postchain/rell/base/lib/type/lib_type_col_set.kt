@@ -14,7 +14,6 @@ import net.postchain.rell.base.model.expr.R_BinaryOp_Intersect_Set
 import net.postchain.rell.base.model.expr.R_BinaryOp_Sub_Set
 import net.postchain.rell.base.model.expr.R_BinaryOp_Union_Set
 import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_Set {
@@ -58,7 +57,7 @@ object Lib_Type_Set {
                 }
             }
 
-            function("add_all_copy", "set<T>", since = SINCE_NOW) {
+            function("add_all_copy", "set<T>", since = "0.14.16") {
                 comment("""
                     Returns a new set containing the elements of this set and the elements of a given collection.
 
@@ -72,7 +71,7 @@ object Lib_Type_Set {
                 body(R_BinaryOp_Union_Set::evaluate)
             }
 
-            function("remove_all_copy", "set<T>", since = SINCE_NOW) {
+            function("remove_all_copy", "set<T>", since = "0.14.16") {
                 comment("""
                     Returns a new set containing the elements of this set, but without any elements that occur in the
                     given collection.
@@ -87,7 +86,7 @@ object Lib_Type_Set {
                 body(R_BinaryOp_Sub_Set::evaluate)
             }
 
-            function("retain_all_copy", "set<T>", since = SINCE_NOW) {
+            function("retain_all_copy", "set<T>", since = "0.14.16") {
                 comment("""
                     Returns a new set whose elements are those found in both this set and the given collection, or in
                     other words, the intersection of this set and the given collection.

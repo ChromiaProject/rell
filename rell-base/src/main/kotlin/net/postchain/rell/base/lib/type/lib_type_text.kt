@@ -21,7 +21,6 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
-import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 import net.postchain.rell.base.utils.formatEx
 import org.jooq.impl.SQLDataType
 import java.nio.ByteBuffer
@@ -462,7 +461,7 @@ object Lib_Type_Text {
                 }
             }
 
-            function("regex_replace", result = "text", since = SINCE_NOW) {
+            function("regex_replace", result = "text", since = "0.14.16") {
                 comment("""
                     Returns the text obtained by replacing all subsequences in this text which match the given regular
                     expression `regex`, with the text `replacement`.

@@ -25,7 +25,6 @@ import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
-import net.postchain.rell.base.utils.RellVersions.SINCE_NOW
 import net.postchain.rell.base.utils.toIntExact
 import org.jooq.SQLDialect
 import org.jooq.impl.DefaultDataType
@@ -81,7 +80,7 @@ object Lib_Type_Json {
                 body { json -> Rt_TextValue.get(json.asJson().str) }
             }
 
-            function("get", result = "json", pure = true, since = SINCE_NOW) {
+            function("get", result = "json", pure = true, since = "0.14.16") {
                 comment("""
                     Get the element at the specified index of this JSON array.
 
@@ -101,7 +100,7 @@ object Lib_Type_Json {
                 }
             }
 
-            function("get", result = "json", pure = true, since = SINCE_NOW) {
+            function("get", result = "json", pure = true, since = "0.14.16") {
                 comment("""
                     Get the member with the specified key in this JSON object.
 
@@ -121,7 +120,7 @@ object Lib_Type_Json {
                 }
             }
 
-            function("get_or_null", result = "json?", pure = true, since = SINCE_NOW) {
+            function("get_or_null", result = "json?", pure = true, since = "0.14.16") {
                 comment("""
                     Get the element at the specified index of this JSON array, or null if this JSON value is not an
                     array, or if the specified index is out of bounds.
@@ -138,7 +137,7 @@ object Lib_Type_Json {
                 }
             }
 
-            function("get_or_null", result = "json?", pure = true, since = SINCE_NOW) {
+            function("get_or_null", result = "json?", pure = true, since = "0.14.16") {
                 comment("""
                     Get the member with the specified key in this JSON object, or null if this JSON value is not an
                     object, or if the specified key is not found in this object.
@@ -155,7 +154,7 @@ object Lib_Type_Json {
                 }
             }
 
-            function("as_integer", result = "integer", pure = true, since = SINCE_NOW) {
+            function("as_integer", result = "integer", pure = true, since = "0.14.16") {
                 comment("""
                     Convert this JSON integer value to an integer.
 
@@ -168,7 +167,7 @@ object Lib_Type_Json {
                 asTypeBody(this, JsonUtils::canBeRellInteger) { Rt_IntValue.get(it.asLong()) }
             }
 
-            function("as_big_integer", result = "big_integer", pure = true, since = SINCE_NOW) {
+            function("as_big_integer", result = "big_integer", pure = true, since = "0.14.16") {
                 comment("""
                     Convert this JSON value to a `big_integer`.
 
@@ -181,7 +180,7 @@ object Lib_Type_Json {
                 asTypeBody(this, JsonUtils::canBeRellBigInteger) { Rt_BigIntegerValue.get(it.bigIntegerValue()) }
             }
 
-            function("as_boolean", result = "boolean", pure = true, since = SINCE_NOW) {
+            function("as_boolean", result = "boolean", pure = true, since = "0.14.16") {
                 comment("""
                     Convert this JSON boolean value to a boolean.
                     @throws exception if this JSON value is not a boolean
@@ -190,7 +189,7 @@ object Lib_Type_Json {
                 asTypeBody(this, JsonNode::isBoolean) { Rt_BooleanValue.get(it.asBoolean()) }
             }
 
-            function("as_text", result = "text", pure = true, since = SINCE_NOW) {
+            function("as_text", result = "text", pure = true, since = "0.14.16") {
                 comment("""
                     Convert this JSON text value to text.
 
@@ -204,7 +203,7 @@ object Lib_Type_Json {
                 asTypeBody(this, JsonNode::isTextual) { Rt_TextValue.get(it.asText()) }
             }
 
-            function("as_integer_or_null", result = "integer?", pure = true, since = SINCE_NOW) {
+            function("as_integer_or_null", result = "integer?", pure = true, since = "0.14.16") {
                 comment("""
                     Convert this JSON integer value to an integer.
 
@@ -217,7 +216,7 @@ object Lib_Type_Json {
                 asTypeBody(this, JsonUtils::canBeRellInteger, null_on_error = true) { Rt_IntValue.get(it.asLong()) }
             }
 
-            function("as_big_integer_or_null", result = "big_integer?", pure = true, since = SINCE_NOW) {
+            function("as_big_integer_or_null", result = "big_integer?", pure = true, since = "0.14.16") {
                 comment("""
                     Convert this JSON value to a `big_integer`.
 
@@ -232,7 +231,7 @@ object Lib_Type_Json {
                 }
             }
 
-            function("as_boolean_or_null", result = "boolean?", pure = true, since = SINCE_NOW) {
+            function("as_boolean_or_null", result = "boolean?", pure = true, since = "0.14.16") {
                 comment("""
                     Convert this JSON boolean value to a boolean.
                     @return this JSON boolean as a boolean, or null if this JSON value is not a boolean
@@ -241,7 +240,7 @@ object Lib_Type_Json {
                 asTypeBody(this, JsonNode::isBoolean, null_on_error = true) { Rt_BooleanValue.get(it.asBoolean()) }
             }
 
-            function("as_text_or_null", result = "text?", pure = true, since = SINCE_NOW) {
+            function("as_text_or_null", result = "text?", pure = true, since = "0.14.16") {
                 comment("""
                     Convert this JSON text value to text.
                     @return this JSON text as text, or null if this JSON value is not text
@@ -250,7 +249,7 @@ object Lib_Type_Json {
                 asTypeBody(this, JsonNode::isTextual, null_on_error = true) { Rt_TextValue.get(it.asText()) }
             }
 
-            function("is_object", result = "boolean", pure = true, since = SINCE_NOW) {
+            function("is_object", result = "boolean", pure = true, since = "0.14.16") {
                 comment("""
                     Determine whether this JSON value is an object.
                     @return true if this JSON value is an object, false otherwise
@@ -259,7 +258,7 @@ object Lib_Type_Json {
                 isTypeBody(this, JsonNode::isObject)
             }
 
-            function("is_array", result = "boolean", pure = true, since = SINCE_NOW) {
+            function("is_array", result = "boolean", pure = true, since = "0.14.16") {
                 comment("""
                     Determine whether this JSON value is an array.
                     @return true if this JSON value is an array, false otherwise
@@ -268,7 +267,7 @@ object Lib_Type_Json {
                 isTypeBody(this, JsonNode::isArray)
             }
 
-            function("is_text", result = "boolean", pure = true, since = SINCE_NOW) {
+            function("is_text", result = "boolean", pure = true, since = "0.14.16") {
                 comment("""
                     Determine whether this JSON value is text.
                     @return true if this JSON value is text, false otherwise
@@ -277,7 +276,7 @@ object Lib_Type_Json {
                 isTypeBody(this, JsonNode::isTextual)
             }
 
-            function("is_null", result = "boolean", pure = true, since = SINCE_NOW) {
+            function("is_null", result = "boolean", pure = true, since = "0.14.16") {
                 comment("""
                     Determine whether this JSON value is null.
                     @return true if this JSON value is null, false otherwise
@@ -286,7 +285,7 @@ object Lib_Type_Json {
                 isTypeBody(this, JsonNode::isNull)
             }
 
-            function("is_integer", result = "boolean", pure = true, since = SINCE_NOW) {
+            function("is_integer", result = "boolean", pure = true, since = "0.14.16") {
                 comment("""
                     Determine whether this JSON value is an integer.
 
@@ -298,7 +297,7 @@ object Lib_Type_Json {
                 isTypeBody(this, JsonUtils::canBeRellInteger)
             }
 
-            function("is_big_integer", result = "boolean", pure = true, since = SINCE_NOW) {
+            function("is_big_integer", result = "boolean", pure = true, since = "0.14.16") {
                 comment("""
                     Determine whether this JSON value can be converted to `big_integer`.
 
@@ -311,7 +310,7 @@ object Lib_Type_Json {
                 isTypeBody(this, JsonUtils::canBeRellBigInteger)
             }
 
-            function("is_boolean", result = "boolean", pure = true, since = SINCE_NOW) {
+            function("is_boolean", result = "boolean", pure = true, since = "0.14.16") {
                 comment("""
                     Determine whether this JSON value is a boolean.
                     @return true if this JSON value is a boolean, false otherwise
@@ -320,7 +319,7 @@ object Lib_Type_Json {
                 isTypeBody(this, JsonNode::isBoolean)
             }
 
-            function("size", result = "integer", pure = true, since = SINCE_NOW) {
+            function("size", result = "integer", pure = true, since = "0.14.16") {
                 comment("""
                     Get the size of this JSON value; i.e. the number of elements in this JSON array, or the number of
                     key-value pairs in this JSON object.
@@ -340,7 +339,7 @@ object Lib_Type_Json {
                 }
             }
 
-            function("keys", result = "set<text>", pure = true, since = SINCE_NOW) {
+            function("keys", result = "set<text>", pure = true, since = "0.14.16") {
                 comment("""
                     Get the keys of this JSON object.
                     @throws exception if this JSON value is not an object
