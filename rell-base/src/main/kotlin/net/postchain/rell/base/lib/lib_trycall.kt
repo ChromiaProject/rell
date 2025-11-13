@@ -108,7 +108,7 @@ object Lib_TryCall: KLogging() {
             }
         }
 
-        function("try_call_catch", result = "try_call_result<T>", since = RellVersions.SINCE_NOW) {
+        function("try_call_catch", result = "try_call_result<T>", since = "0.14.16") {
             comment("""
                 Safely call a function that may fail (i.e. that may throw an exception), returning a result that can be
                 inspected for errors.
@@ -166,7 +166,7 @@ object Lib_TryCall: KLogging() {
             }
         }
 
-        type("try_call_result", since = RellVersions.SINCE_NOW) {
+        type("try_call_result", since = "0.14.16") {
             generic("T")
             comment("""
                 Type representing the result of a function call that may have thrown a `require` exception.
@@ -180,7 +180,7 @@ object Lib_TryCall: KLogging() {
 
             rType { t -> R_TryCallResultType(t) }
 
-            property("is_error", type = "boolean", pure = true, since = RellVersions.SINCE_NOW) {
+            property("is_error", type = "boolean", pure = true, since = "0.14.16") {
                 comment("""
                     Check if this result represents an error.
                 """)
@@ -193,7 +193,7 @@ object Lib_TryCall: KLogging() {
                 name = "value",
                 type = "T",
                 pure = true,
-                since = RellVersions.SINCE_NOW,
+                since = "0.14.16",
                 comment = """
                     Get the value contained in this result.
 
@@ -210,7 +210,7 @@ object Lib_TryCall: KLogging() {
                 name = "value_or_null",
                 type = "T?",
                 pure = true,
-                since = RellVersions.SINCE_NOW,
+                since = "0.14.16",
                 comment = """
                     Get the value contained in this result or null if this result represents an error.
                 """,
@@ -220,7 +220,7 @@ object Lib_TryCall: KLogging() {
                 }
             }
 
-            property("require_message_or_null", type = "text?", pure = true, since = RellVersions.SINCE_NOW) {
+            property("require_message_or_null", type = "text?", pure = true, since = "0.14.16") {
                 comment("""
                     Get the error message from the `require` exception that was thrown by the function call,
                     or null if the function call did not throw an exception.
