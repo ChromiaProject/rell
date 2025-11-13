@@ -1,0 +1,424 @@
+RELEASE NOTES 0.14.16 (2025-11-13)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Library: JSON value retrieval methods and index operator
+
+Strict item getter functions:
+
+    json.get(index: integer): json
+
+        Get the element at the specified index in a JSON array, as a JSON value. Throws an exception if the target JSON
+        value is not an array, or if the index is out of bounds.
+
+    json.get(key: text): json
+
+        Get the element with the specified key in a JSON object (dictionary). Throws an exception if the target JSON
+        value is not an object (dictionary), or if the given key does not exist.
+
+Nullable getter functions:
+
+    json.get_or_null(integer): json?
+    json.get_or_null(text): json?
+
+        These are the same as the above get() functions, but return null in cases where the get() variant would throw an
+        exception.
+
+Strict conversion functions:
+
+    json.as_integer(): integer
+    json.as_big_integer(): big_integer
+    json.as_text(): text
+    json.as_boolean(): boolean
+
+        Convert a JSON value to a Rell value. Throws an exception if the JSON value is not of the correct type; e.g.
+        calling as_text() on a JSON integer will throw an exception. All JSON values that can be converted to integer
+        with as_integer() can also be converted to big_integer with as_big_integer(), though the reverse is not true,
+        since big_integer has a larger range.
+
+Nullable conversion functions:
+
+    json.as_integer_or_null(): integer?
+    json.as_big_integer_or_null(): big_integer?
+    json.as_text_or_null(): text?
+    json.as_boolean_or_null(): boolean?
+
+        These are the same as the above as_integer(), as_text() and as_boolean() conversion functions, but return null
+        in cases where the standard variant would throw an exception.
+
+Functions to check the type of a JSON value:
+
+    json.is_object(): boolean
+    json.is_array(): boolean
+    json.is_text(): boolean
+    json.is_integer(): boolean
+    json.is_big_integer(): boolean
+    json.is_boolean(): boolean
+    json.is_null(): boolean
+
+        Each return true if the JSON value is of the type in the method's name, or false otherwise. All JSON values that
+        return true with as_integer() also return true with as_big_integer(), though the reverse is not true, since
+        big_integer has a larger range.
+
+Other functions:
+
+    json.size(): integer
+
+        Get the size of a JSON value; i.e. the number of elements in a JSON array, or the number of key-value pairs in a
+        JSON object. Throws an exception if the JSON value is not an array or an object.
+
+    json.keys(): set<text>
+
+        Get the keys of a JSON object. Throws an exception if the JSON value is not an object.
+
+Index operator []
+
+    The JSON type now supports an index operator [], equivalent to the above get() methods.
+
+    Examples:
+    json('{"x": 1, "y": 2}')['x'] returns json('1')
+    json('["a", "b", "c"]')[1] returns json("b")
+
+Full example showing combined usage of the new functions and operators to navigate JSON trees:
+
+    Let the variable user_data be of type json with the following data:
+
+        {
+            "user": {
+                "id": 123,
+                "profile": {
+                    "nickname": null,
+                    "preferences": { "theme": "dark", "volume": 5 }
+                },
+                "age": 30
+            },
+            "sessions": [
+                { "id": "s1", "meta": { "started": "2025-10-10T09:00:00Z", "ip": "10.0.0.1" } },
+                { "id": "s2", "meta": { "started": "2025-10-09T18:12:00Z" } }
+            ]
+        }
+
+    Then we can write the following:
+
+        user_data['sessions'][0]['id'].as_text() // returns 's1'
+        user_data['user']['profile']['preferences']['volume'].as_integer() // returns 5
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Library: function text.regex_replace(regex: text, replacement: text)
+
+Returns the text obtained by replacing all subsequences in this text which match the given regex, with the
+replacement text. Supports named and numbered group references in the replacement text.
+
+Examples:
+'aaaaacaaaaabaaaaacaaaaa'.regex_replace('(b|c)', 'd') // returns 'aaaaadaaaaadaaaaadaaaaa'.
+'aaaaacaaaaabaaaaacaaaaa'.regex_replace('a+', '') // returns 'cbc'.
+'johnsmith@chromaway.com'.regex_replace('[a-z]+', '0') // returns '0@0.0'.
+'John Doe'.regex_replace('(\\w+) (\\w+)', '$2, $1') returns 'Doe, John'.
+'2025-10-27'.regex_replace('(?<y>\\d{4})-(?<m>\\d{2})-(?<d>\\d{2})', '${d}/${m}/${y}') returns '27/10/2025'.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Library: function try_call_catch() and type try_call_result<T>
+
+A new function try_call_catch() provides safe execution of code that may fail with require() exceptions, capturing
+failure details in a structured result.
+
+(a) Global function:
+
+    try_call_catch<T>(f: () -> T): try_call_result<T>
+
+    Executes the provided function f and returns a structured result encapsulating the outcome. If the function executes
+    successfully, the result contains the return value. If the function fails with a require() exception, the result
+    captures the error message. All other exceptions are re-thrown.
+
+    Database changes made during execution are automatically rolled back if the function fails with a require()
+    exception, using database savepoints to ensure transactional integrity.
+
+
+(b) Type try_call_result<T> - properties:
+    is_error: boolean - returns true if the function failed with a require() exception, false if it succeeded.
+    value: T - returns the function's result value if successful. Throws an exception if the function failed.
+    value_or_null: T? - returns the function's result value if successful, or null if the function failed.
+    require_message_or_null: text? - returns the require() exception message if the function failed, null if succeeded.
+
+Code examples:
+
+function get_user(id: integer): text {
+    require(id > 0, "Invalid user ID");
+    return "User_" + id;
+}
+
+val result1 = try_call_catch(get_user(123, *));
+// result1.is_error == false
+// result1.value == "User_123"
+// result1.value_or_null == "User_123"
+// result1.require_message_or_null == null
+
+val result2 = try_call_catch(get_user(-1, *));
+// result2.is_error == true
+// result2.value throws exception
+// result2.value_or_null == null
+// result2.require_message_or_null == "Invalid user ID"
+
+// Conditional error handling:
+
+val result = try_call_catch(get_user(user_id, *));
+
+if (result.is_error) {
+    log("Failed: " + result.require_message_or_null!!);
+} else {
+    process_user(result.value);
+}
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Library: New collections API functions and operators
+
+The operators &, + and - can now be used to combine lists, sets and maps. In each case, the argument list, set or map
+expressions are copied (shallow copies, not deep). The result is that for collections of immutable types, these
+operators preserve immutability.
+
+The exact behaviour depends on the collection type (not every collection type is supported for each operator).
+
+We also add a function for each new operator; each function being equivalent to its respective operator. For example, +
+has the equivalent function add_all_copy() (named to be consistent with the preexisting function add_all(), which is a
+mutable equivalent of add_all_copy()).
+
+Where one would previously have to write e.g.:
+
+    val c = list(a);
+    c.add_all(b);
+
+One can now write:
+
+    val c = a + b;
+
+Or:
+
+    val c = a.add_all_copy(b);
+
+The details of all new functions and operators are given below.
+
+New operators:
+
+    + operator for lists (concatenation)
+
+        Returns a new list that is the concatenation of the left-hand list with the right-hand list.
+
+        a + b is equivalent to a.add_all_copy(b), where a and b are lists.
+
+        Examples:
+        [1] + [2] // returns [1, 2]
+        [7] + [7] + [7] // returns [7, 7, 7]
+        list<integer>() + list<integer>() // returns []
+
+    - operator for lists (subtract)
+
+        Returns a new list that contains the elements of the left-hand list, but without any elements that occur in the
+        right-hand list.
+
+        a - b is equivalent to a.remove_all_copy(b), where a and b are lists.
+
+        Examples:
+        [1] - [1] // returns []
+        [1, 2, 3] - [2, 3, 4] // returns [1]
+
+    & operator for lists (intersect)
+
+        Returns a new list that contains the elements that are found in both the left-hand list and the right-hand
+        list.
+
+        a & b is equivalent to a.retain_all_copy(b), where a and b are lists.
+
+        Examples:
+        set([1]) & set([1]) // returns set([1])
+        set([1]) & set([2]) // returns set([])
+        set([1, 2, 3]) & set([2, 3, 4]) // returns set([2, 3])
+
+    + operator for sets (union)
+
+        Returns a new set that is the union of the left-hand set with the right-hand set.
+
+        a + b is equivalent to a.add_all_copy(b), where a and b are sets.
+
+        Examples:
+        set([1]) + set[1] // returns set([1])
+        set([1, 2, 3]) + set[2, 3, 4] // returns set([1, 2, 3, 4])
+
+    - operator for sets (subtract)
+
+        Returns a new set that contains the elements of the left-hand set, but without any elements that occur in the
+        right-hand set.
+
+        a - b is equivalent to a.remove_all_copy(b), where a and b are sets.
+
+        Examples:
+        set([1]) - set([1]) // returns set([])
+        set([1, 2, 3]) - set([2, 3, 4]) // returns set([1])
+
+    & operator for sets (intersect)
+
+        Returns a new set that contains the elements that are found in both the left-hand set and the right-hand set.
+
+        a & b is equivalent to a.retain_all_copy(b), where a and b are sets.
+
+        Examples:
+        set([1]) & set([1]) // returns set([1])
+        set([1]) & set([2]) // returns set([])
+        set([1, 2, 3]) & set([2, 3, 4]) // returns set([2, 3])
+
+    + operator for maps (merge)
+
+        Returns a new map with the mappings of the left-hand map combined with the mappings of the right-hand map.
+
+        Where a value exists for a given key in both the left-hand and right-hand maps, the returned map has the value
+        of the right-hand map, as opposed to the value of the left-hand map (right-biased).
+
+        a + b is equivalent to a.put_all_copy(b), where a and b are both maps.
+
+        Examples:
+        [1: 'a', 2: 'b', 3: 'c'] + [1: 'Z', 4: 'd', 5: 'e'] returns [1: 'Z', 2: 'b', 3: 'c', 4: 'd', 5: 'e']
+        [1: 'a', 2: 'b', 3: 'c'] + [4: 'd', 5: 'e'] returns [1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e']
+
+New functions:
+
+    collection<T>.retain_all(values: collection<-T>): boolean
+
+        Removes from this collection any elements not contained in the given collection.
+
+        Returns true if any elements were removed, false otherwise.
+
+        Examples:
+        val l = [1]; l.retain_all([1]); return l; // returns [1]
+        val l = [1]; l.retain_all([2]); return l; // returns []
+        val l = [1, 2, 3]; l.retain_all([2, 3, 4]); return l; // returns [2, 3]
+
+    list<T>.add_all_copy(values: collection<-T>): list<T>
+
+        Returns a new list that is the concatenation of the elements of this list with those of the given collection.
+
+        a.add_all_copy(b) is equivalent to a + b, where a and b are lists.
+
+        Examples:
+        [1].add_all_copy([2]) // returns [1, 2]
+        list<integer>().add_all_copy(list<integer>()) // returns []
+
+    list<T>.remove_all_copy(values: collection<-T>): list<T>
+
+        Returns a new list containing the elements of this list, but without any elements that occur in the given
+        collection.
+
+        a.remove_all_copy(b) is equivalent to a - b, where a and b are lists.
+
+        Examples:
+        [1].remove_all_copy([1]) // returns []
+        [1, 2, 3].remove_all_copy([2, 3, 4]) // returns [1]
+
+    list<T>.retain_all_copy(values: collection<-T>): list<T>
+
+        Returns a list containing the elements that are found in both this list and the given collection.
+
+        a.retain_all_copy(b) is equivalent to a & b, where a and b are lists.
+
+        Examples:
+        [1].retain_all_copy([1]) // returns [1]
+        [1].retain_all_copy([2]) // returns []
+        [1, 2, 3].retain_all_copy([2, 3, 4]) // returns [2, 3]
+
+    set<T>.add_all_copy(values: collection<-T>): set<T>
+
+        Returns a new set containing the elements of this set and the elements of a given collection.
+
+        a.add_all_copy(b) is equivalent to a + b, where a and b are sets.
+
+        Examples:
+        set([1]).add_all_copy(set([1])) // returns set([1])
+        set([1, 2, 3]).add_all_copy(set([2, 3, 4])) // returns set([1, 2, 3, 4])
+
+    set<T>.remove_all_copy(values: set<T>): set<T>
+
+        Returns a new set containing the elements of this set, but without any elements that occur in the given set.
+
+        a.remove_all_copy(b) is equivalent to a - b, where a and b are sets.
+
+        Examples:
+        set([1]).remove_all_copy(set([1])) // returns set([])
+        set([1, 2, 3]).remove_all_copy(set([2, 3, 4])) // returns set([1])
+
+    set<T>.retain_all_copy(values: collection<-T>): set<T>
+
+        Returns a set containing the elements that are found in both this set and the given collection.
+
+        a.retain_all_copy(b) is equivalent to a & b, where a and b are sets.
+
+        Examples:
+        set([1]).retain_all_copy(set([1])) // returns set([1])
+        set([1]).retain_all_copy(set([2])) // returns set([])
+        set([1, 2, 3]).retain_all_copy(set([2, 3, 4])) // returns set([2, 3])
+
+    map<K, V>.put_all_copy(map: map<K, V>): map<K, V>
+
+        Returns a new map with the mappings of this map combined with the mappings of the given map.
+
+        Where a value exists for a given key in both this and the other map, the returned map has the value of the other
+        map, as opposed to the value in this map (right-biased).
+
+        a.put_all_copy(b) is equivalent to a + b, where a and b are both maps.
+
+        Examples:
+        [1: 'a', 2: 'b', 3: 'c'].put_all_copy([1: 'Z', 4: 'd', 5: 'e']) // returns [1: 'Z', 2: 'b', 3: 'c', 4: 'd', 5: 'e']
+        [1: 'a', 2: 'b', 3: 'c'].put_all_copy([4: 'd', 5: 'e']) // returns [1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e']
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Library: struct.copy() function for copying structs
+
+A new function to create a copy of a struct. This function creates a new instance of the struct with the ability to
+override specific attribute values while keeping the rest of the attributes the same.
+
+Syntax:
+    struct_instance.copy(attribute_name = new_value, ...)
+
+The function returns a new struct instance with the specified attributes updated and other attributes copied from the
+original.
+
+Examples:
+
+    struct person { name: text; age: integer; city: text; }
+
+    val alice = person(name = 'Alice', age = 25, city = 'New York');
+
+    // Create a copy with all original values
+    val alice_copy = alice.copy();
+
+    // Create a copy with updated age
+    val alice_older = alice.copy(age = 26);
+
+    // Create a copy with multiple attributes updated
+    val alice_moved = alice.copy(age = 26, city = 'Boston');
+
+    // Works with nested structs
+    struct company { name: text; ceo: person; }
+    val corp = company(name = 'TechCorp', ceo = alice);
+    val new_corp = corp.copy(ceo = alice.copy(age = 30));
+
+The copy() function also works with struct<entity> and struct<operation> types:
+
+    entity user { name; rating: integer; }
+    operation new_user(name, rating: integer) {}
+
+    val user_struct = struct<user>(name = 'Bob', rating = 100);
+    val updated_user = user_struct.copy(rating = 150);
+
+    val op_struct = struct<new_user>(name = 'Alice', rating = 200);
+    val updated_op = op_struct.copy(name = 'Charlie');
+
+Notes:
+
+- The function always returns a new instance, even if no parameters are provided or if the same values are specified
+- For mutable structs, the new instance is independent of the original (changes to one don't affect the other)
+- The copy is shallow, not deep: nested structs, collections, and other reference types are not recursively copied.
+Since collections in Rell are mutable, modifications to nested collections will affect both the original and copied
+instances
+
+All parameters:
+
+- Are optional (if not specified, the original value is used)
+- Must be named (positional arguments are not allowed)
+- Must match the struct attributes

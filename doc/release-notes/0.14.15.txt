@@ -5,7 +5,8 @@ RELEASE NOTES 0.14.15 (2025-10-03)
 
 A new function to unconditionally fail, raising an exception, with an optional message:
 
-    rell.error(message: text? = null)
+    rell.error()
+    rell.error(message: text)
 
 Examples:
 
