@@ -1361,6 +1361,8 @@ ruleX_BinaryOperator:
 		ruleX_BinaryOperator_16
 		    |
 		ruleX_BinaryOperator_17
+		    |
+        ruleX_BinaryOperator_18
 	)
 ;
 
@@ -1379,9 +1381,10 @@ ruleX_BinaryOperator_11: '/';
 ruleX_BinaryOperator_12: '%';
 ruleX_BinaryOperator_13: 'and';
 ruleX_BinaryOperator_14: 'or';
-ruleX_BinaryOperator_15: 'in';
-ruleX_BinaryOperator_16: 'not' ruleX_tkIN;
-ruleX_BinaryOperator_17: '?:';
+ruleX_BinaryOperator_15: '&';
+ruleX_BinaryOperator_16: 'in';
+ruleX_BinaryOperator_17: 'not' ruleX_tkIN;
+ruleX_BinaryOperator_18: '?:';
 
 // Rule X_tkIN
 ruleX_tkIN:

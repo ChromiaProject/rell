@@ -13,13 +13,13 @@ class BinaryOpFormatter : NodeFormatter<RuleX_BinaryOperatorContext> {
     }
 }
 
-class BinOp16Formatter : NodeFormatter<RuleX_BinaryOperator_16Context> {
-    override fun format(xBinOp16: RuleX_BinaryOperator_16Context, doc: FormattableDocument) {
-        doc.surround(xBinOp16) {
+class BinOp17Formatter : NodeFormatter<RuleX_BinaryOperator_17Context> {
+    override fun format(xBinOp17: RuleX_BinaryOperator_17Context, doc: FormattableDocument) {
+        doc.surround(xBinOp17) {
             it.oneSpace()
             it.highPriority()
         }
-        doc.surround(xBinOp16.ruleX_tkIN()) {
+        doc.surround(xBinOp17.ruleX_tkIN()) {
             it.oneSpace()
             it.highPriority()
         }

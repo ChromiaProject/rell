@@ -145,6 +145,7 @@ public final class AntlrToRell {
     private static final RellcTransformer TRANS_XBINARY_OPERATOR_15 = RellcUtils.transformer("X_BinaryOperator_15");
     private static final RellcTransformer TRANS_XBINARY_OPERATOR_16 = RellcUtils.transformer("X_BinaryOperator_16");
     private static final RellcTransformer TRANS_XBINARY_OPERATOR_17 = RellcUtils.transformer("X_BinaryOperator_17");
+    private static final RellcTransformer TRANS_XBINARY_OPERATOR_18 = RellcUtils.transformer("X_BinaryOperator_18");
     private static final RellcTransformer TRANS_XBINARY_EXPR_OPERAND = RellcUtils.transformer("X_BinaryExprOperand");
     private static final RellcTransformer TRANS_XEXPRESSION = RellcUtils.transformer("X_Expression");
     private static final RellcTransformer TRANS_XBASE_ATTRIBUTE_DEFINITION = RellcUtils.transformer("X_BaseAttributeDefinition");
@@ -1017,14 +1018,19 @@ public final class AntlrToRell {
                 return TRANS_XBINARY_OPERATOR_15.transform(ctx, node, tup);
             }
             case RULE_ruleX_BinaryOperator_16: {
-                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkINContext.class, 0));
+                Object var_0 = RellcUtils.token(ctx, node);
                 Object tup = RellcUtils.tuple(var_0);
                 return TRANS_XBINARY_OPERATOR_16.transform(ctx, node, tup);
             }
             case RULE_ruleX_BinaryOperator_17: {
-                Object var_0 = RellcUtils.token(ctx, node);
+                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_tkINContext.class, 0));
                 Object tup = RellcUtils.tuple(var_0);
                 return TRANS_XBINARY_OPERATOR_17.transform(ctx, node, tup);
+            }
+            case RULE_ruleX_BinaryOperator_18: {
+                Object var_0 = RellcUtils.token(ctx, node);
+                Object tup = RellcUtils.tuple(var_0);
+                return TRANS_XBINARY_OPERATOR_18.transform(ctx, node, tup);
             }
             case RULE_ruleX_BinaryExprOperand: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_BinaryOperatorContext.class, 0));

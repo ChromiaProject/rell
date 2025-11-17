@@ -690,9 +690,10 @@ X_BinaryOperator
    | {X_BinaryOperator_12} '%'
    | {X_BinaryOperator_13} 'and'
    | {X_BinaryOperator_14} 'or'
-   | {X_BinaryOperator_15} 'in'
-   | {X_BinaryOperator_16} 'not' a=X_tkIN
-   | {X_BinaryOperator_17} '?:'
+   | {X_BinaryOperator_15} '&'
+   | {X_BinaryOperator_16} 'in'
+   | {X_BinaryOperator_17} 'not' a=X_tkIN
+   | {X_BinaryOperator_18} '?:'
    ;
 
 X_tkIN
