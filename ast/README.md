@@ -17,7 +17,15 @@ When updating the Rell version, you may need to synchronize grammar changes betw
 - **For minor changes:** Update the `Rell.g4` file manually.
 - **For major changes:** Auto-generate the file from the Rell project using Eclipse IDE:
     1. Open the Rell project in Eclipse IDE.
-    2. Run the "generate grammar" task.
+    2. Debug Xtext grammar to view ANTLR grammar.  Set debugGrammar to true in `.mwe2` file.
+    ```
+    parserGenerator {
+      debugGrammar = true
+    }
+    ```
+  And after build you you should find a `.g4` file in `src-gen` with the ANTLR grammar. 
+For more context read this blog post:
+https://blogs.itemis.com/en/debugging-xtext-grammars-what-to-do-when-your-language-is-ambiguous
 
 ---
 
