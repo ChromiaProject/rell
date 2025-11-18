@@ -92,12 +92,26 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
     }
 
     fun getCacheFolder(): File {
-        val userHomeFolder = File(System.getProperty("user.home"))
-        val lspCacheFolder = userHomeFolder.resolve(RELL_LSP_CACHE_FOLDER_NAME)
+        val xdgCache = System.getenv("XDG_CACHE_HOME")?.let { File(it) }
+
+        val userHome = System.getProperty("user.home")
+        val fallbackCache = File(userHome).resolve(".cache")
+
+        val defaultCache = xdgCache ?: fallbackCache
+        val lspCacheFolder = defaultCache.resolve(RELL_LSP_CACHE_FOLDER_NAME)
         if (!lspCacheFolder.exists()) {
             Files.createDirectories(lspCacheFolder.toPath())
         }
         return lspCacheFolder
+    }
+
+    fun getOldCacheFolder() = File(System.getProperty("user.home"))
+        .resolve(OLD_RELL_LSP_CACHE_FOLDER_NAME)
+
+    fun cleanOldCacheFolder() {
+        getOldCacheFolder()
+            .takeIf { it.exists() }
+            ?.deleteRecursively()
     }
 
     fun invalidateCaches(): Boolean {
@@ -111,7 +125,8 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
 
     companion object {
         private val logger = KotlinLogging.logger {}
-        private const val RELL_LSP_CACHE_FOLDER_NAME = ".chromia/rell-language-server/cache/"
+        private const val RELL_LSP_CACHE_FOLDER_NAME = "chromia/rell-language-server/"
+        private const val OLD_RELL_LSP_CACHE_FOLDER_NAME = ".chromia/rell-language-server/"
         private val CACHE_FILE_TTL = 30.days
     }
 }

@@ -24,8 +24,11 @@ import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
+import net.postchain.rell.toolbox.lsp.server.RellDiagnosticsManager
+import net.postchain.rell.toolbox.lsp.server.RellIndexingManager
 import net.postchain.rell.toolbox.lsp.server.VersionInfo
 import net.postchain.rell.toolbox.parser.AntlrRellParser
+import org.eclipse.lsp4j.WorkspaceFolder
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -186,6 +189,46 @@ class RellIndexCachingServiceTest {
         cachingService.saveWorkspaceIndexers(listOf(singleFileIndexer))
 
         assertThat(cacheFile.exists()).isFalse()
+    }
+
+    @Test
+    fun `Should delete old cache folder if found`(@TempDir tempDir: Path) {
+        val oldCacheFolder = tempDir.resolve("oldCacheFolder").toFile()
+        oldCacheFolder.mkdirs()
+        val testFile = oldCacheFolder.resolve("testFile.txt")
+        testFile.writeText("test")
+
+        val newCacheFolder = tempDir.resolve("newCacheFolder").toFile()
+        newCacheFolder.mkdirs()
+
+        every { cachingService.getCacheFolder() } returns newCacheFolder
+        every { cachingService.getOldCacheFolder() } returns oldCacheFolder
+
+        assertThat(oldCacheFolder.exists()).isTrue()
+        assertThat(newCacheFolder.exists()).isTrue()
+
+        workspaceFolderUri = Files.createDirectories(tempDir.resolve("src")).toUri()
+        val sourceFiles = listOf(
+            SourceFile("dummy.rell", "module; function dummy() {}"),
+            SourceFile("dummy2.rell", "module; function dummy2() {}")
+        )
+        dummyWorkspaceIndexer = createDummyWorkspaceIndexer(workspaceFolderUri, sourceFiles)
+
+        val diagnosticsManager = RellDiagnosticsManager()
+        val indexingManager = RellIndexingManager(
+            cachingService,
+            diagnosticsManager,
+            rellLinter,
+            formattingStyleLinter,
+            RellFormatterOptionsResolver(),
+            RellLinterOptionsResolver()
+        )
+        indexingManager.indexCachingEnabled = true
+        val workspaceFolder = WorkspaceFolder(workspaceFolderUri.toString(), "testWorkspace")
+        indexingManager.initialize(listOf(workspaceFolder))
+
+        assertThat(oldCacheFolder.exists()).isFalse()
+        assertThat(newCacheFolder.exists()).isTrue()
     }
 
     private fun createDummyWorkspaceIndexer(workspaceFolderUri: URI, sourceFiles: List<SourceFile>): WorkspaceIndexer {

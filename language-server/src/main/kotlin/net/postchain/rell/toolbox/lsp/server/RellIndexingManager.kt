@@ -39,6 +39,7 @@ class RellIndexingManager(
 
     fun initialize(workspaceFolders: List<WorkspaceFolder>) {
         this.workspaceFolders = workspaceFolders
+        indexCachingService.cleanOldCacheFolder()
         runIndexers()
         handleNestedIndexers()
     }
