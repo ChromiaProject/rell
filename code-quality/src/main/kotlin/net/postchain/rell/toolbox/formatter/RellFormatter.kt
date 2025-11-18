@@ -204,7 +204,7 @@ class RellFormatter(
             register(RuleX_IncrementOperatorContext::class.java, IncrementOpFormatter())
             register(RuleX_AssignOpContext::class.java, AssignOpFormatter())
             register(RuleX_BinaryOperatorContext::class.java, BinaryOpFormatter())
-            register(RuleX_BinaryOperator_16Context::class.java, BinOp16Formatter())
+            register(RuleX_BinaryOperator_17Context::class.java, BinOp17Formatter())
 
 
             register(
