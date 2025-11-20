@@ -26,6 +26,7 @@ rell-api-base = { module = "net.postchain.rell:rell-api-base", version.ref = "re
 
 chromia-build-tools = { module = "com.chromia.cli.tools:chromia-build-tools", version.ref = "chromia-build-tools" }
 
+
 ec4j = { module = "org.ec4j.core:ec4j-core", version.ref = "ec4j" }
 
 java-diff-utils = { module = "io.github.java-diff-utils:java-diff-utils", version.ref = "java-diff-utils" }
