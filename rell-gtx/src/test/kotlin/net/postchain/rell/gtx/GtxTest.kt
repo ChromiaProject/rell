@@ -124,6 +124,24 @@ class GtxTest: BaseGtxTest() {
         chkCallOperation("otext", listOf("{}"), "gtv_err:type:[text]:STRING:DICT:param:x")
     }
 
+    @Test fun testCheckCorrectnessRunsGuardOnly() {
+        tst.gtv = true
+        tst.wrapRtErrors = false
+        tst.checkCorrectnessOnly = true
+        def("""
+            operation oint(x: integer) {
+                val y: integer;
+                guard {
+                    y = 10;
+                    require(x < y, "x was too large");
+                }
+                require(false);
+            }
+        """)
+        chkCallOperation("oint", listOf("321"), "req_err:[x was too large]")
+        chkCallOperation("oint", listOf("8"), "OK")
+    }
+
     @Test fun testBigInteger() {
         tst.wrapRtErrors = false
         def("query qint(x: integer) = x;")

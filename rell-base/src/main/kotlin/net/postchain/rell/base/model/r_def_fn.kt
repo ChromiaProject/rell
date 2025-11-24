@@ -13,6 +13,8 @@ import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.lib.type.R_OperationType
 import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.model.expr.R_Expr
+import net.postchain.rell.base.model.stmt.R_BlockStatement
+import net.postchain.rell.base.model.stmt.R_GuardStatement
 import net.postchain.rell.base.model.stmt.R_Statement
 import net.postchain.rell.base.model.stmt.R_StatementResult_Return
 import net.postchain.rell.base.runtime.*
@@ -121,6 +123,14 @@ class R_OperationDefinition internal constructor(
         }
     }
 
+    fun executeGuard(exeCtx: Rt_ExecutionContext, args: List<Rt_Value>) {
+        val guardBody = internals.get().guardBody
+        if (guardBody != null) {
+            val rtFrame = processCallArgs(exeCtx, args)
+            guardBody.execute(rtFrame)
+        }
+    }
+
     override fun toMetaGtv(): Gtv {
         return mapOf(
                 "mount" to mountName.str().toGtv(),
@@ -133,7 +143,15 @@ class R_OperationDefinition internal constructor(
         val paramVars: ImmList<R_ParamVar>,
         val body: R_Statement,
         val frame: R_CallFrame,
-    )
+    ) {
+        val guardBody: R_Statement? by lazy {
+            when (body) {
+                is R_GuardStatement -> body
+                is R_BlockStatement -> body.getGuardStmts()
+                else -> null
+            }
+        }
+    }
 
     companion object {
         private val ERROR_INTERNALS = Internals(

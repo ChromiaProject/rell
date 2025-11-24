@@ -45,6 +45,7 @@ class RellGtxTester(
     var modules: List<String>? = listOf("")
     var configTemplate: String = getDefaultConfigTemplate()
     var strictGtvConversion: Boolean = false
+    var checkCorrectnessOnly: Boolean = false
 
     init {
         super.chainId = chainId
@@ -165,7 +166,11 @@ class RellGtxTester(
                 val transactor = module.makeTransactor(opData)
 
                 eval.wrapRt {
-                    transactor.checkCorrectness()
+                    transactor.checkCorrectness(ctx)
+                }
+
+                if (checkCorrectnessOnly) {
+                    return@withEContext true
                 }
 
                 val tx = TransactorTransaction(transactor)

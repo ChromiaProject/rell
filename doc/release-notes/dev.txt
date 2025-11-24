@@ -1,3 +1,42 @@
 UNRELEASED NOTES
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Runtime: Execute guard block during operation validation
+
+When a Postchain node receives a transaction, it validates the transaction before executing it. Nodes may not write to
+the database during the validation step, though are permitted to read from it. They may read and write to the database
+during the execution step.
+
+Rell operation guard blocks are run during operation validation, in addition to also being run in operation execution.
+Only variable declarations are allowed to occur in an operation before a guard block (variable assignment is NOT allowed
+before a guard). Thus, the following is legal:
+
+    operation foo(y: integer) {
+        val x: integer;
+        guard {
+            ...
+        }
+        ...
+    }
+
+However, the following is illegal, since x is assigned a value before the guard:
+
+    operation foo(y: integer) {
+        val x = y + 1;
+        guard {
+            ...
+        }
+        ...
+    }
+
+Since guard blocks are run both in the validation and execution steps, any log() or print() (or similar) calls that
+occur in the guard are executed twice, and will result in duplicate logged/printed lines.
+
+Guard blocks are forbidden from making database modifications (since they need to run during validation), though may
+query the database. The op_context struct is accessible within the guard block during validation, but the
+op_context.emit_event() method is not allowed (runtime error during validation).
+
+In Postchain, the validation step is known as checkCorrectness(), and the execution step is known as apply().
+The checkCorrectness() step is called from Postchain's BaseTransactionQueue.enqueue()
+(net.postchain.base.data.BaseTransactionQueue), when a transaction is sent to a node (rather than when it's executed
+i.e. the apply() step).

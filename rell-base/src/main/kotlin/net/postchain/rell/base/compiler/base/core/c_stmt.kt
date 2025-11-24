@@ -5,9 +5,11 @@
 package net.postchain.rell.base.compiler.base.core
 
 import net.postchain.rell.base.compiler.ast.S_Comment
+import net.postchain.rell.base.compiler.ast.S_GuardStatement
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_PosRange
 import net.postchain.rell.base.compiler.ast.S_Statement
+import net.postchain.rell.base.compiler.ast.S_VarStatement
 import net.postchain.rell.base.compiler.base.def.C_AttrHeader
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
@@ -93,7 +95,7 @@ internal class C_BlockCodeProto(val varStatesDelta: C_VarStatesDelta) {
 internal class C_BlockCodeBuilder(
     private val ctx: C_StmtContext,
     private val repl: Boolean,
-    hasGuardBlock: Boolean,
+    private val hasGuardBlock: Boolean,
     private val posRange: S_PosRange,
     proto: C_BlockCodeProto,
 ) {
@@ -102,7 +104,6 @@ internal class C_BlockCodeBuilder(
     private val rStmts = mutableListOf<R_Statement>()
     private var alwaysReturns = false
     private var deadCode = false
-    private var insideGuardBlock = hasGuardBlock
     private var afterGuardBlock = false
     private var varStatesDelta = proto.varStatesDelta
     private var build = false
@@ -116,7 +117,7 @@ internal class C_BlockCodeBuilder(
 
         val subExprCtx = ctx.exprCtx
             .updateVarStates(varStatesDelta)
-            .copy(insideGuardBlock = insideGuardBlock)
+            .copy(insideGuardBlock = stmt is S_GuardStatement)
         val subCtx = ctx.copy(
             exprCtx = subExprCtx,
             afterGuardBlock = afterGuardBlock,
@@ -131,8 +132,13 @@ internal class C_BlockCodeBuilder(
         rStmts.add(cStmt.rStmt)
 
         if (cStmt.guardBlock) {
-            insideGuardBlock = false
             afterGuardBlock = true
+        }
+
+        if (hasGuardBlock && !afterGuardBlock && (stmt !is S_VarStatement || stmt.expr != null)) {
+            val msgPrefix = "Illegal statement before guard"
+            val msgSuffix = "only variable declarations (without assignment) may occur before a guard statement"
+            ctx.msgCtx.error(stmt.startPos, "illegal_stmt_before_guard", "$msgPrefix: $msgSuffix.")
         }
 
         val subPosRange = if (stmt.endPos <= posRange.end) posRange.copy(start = stmt.endPos) else posRange

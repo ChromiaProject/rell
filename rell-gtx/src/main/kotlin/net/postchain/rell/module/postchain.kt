@@ -33,6 +33,7 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.gtx.PostchainBaseUtils
+import net.postchain.rell.gtx.Rt_CheckCorrectnessPostchainTxContext
 import net.postchain.rell.gtx.Rt_DefaultPostchainTxContextFactory
 import net.postchain.rell.gtx.Rt_PostchainOpContext
 import net.postchain.rell.gtx.Rt_PostchainTxContextFactory
@@ -127,51 +128,75 @@ private class RellGTXOperation(
 ): GTXOperation(opData) {
     private val gtvArgs = data.args.toImmList()
 
-    override fun checkCorrectness() {
+    override fun checkCorrectness(ctxt: EContext) {
         handleError {
+            val exeCtx = makeCheckCorrectnessExeCtx(ctxt)
             val gtvCtx = makeGtvToRtContext(GtvToRtDefaultValueEvaluator.getError(), validateOnly = true)
-            getOpArgs(gtvCtx)
+            val rtArgs = makeArgs(exeCtx, gtvCtx)
+            gtvCtx.finish(exeCtx)
+            rOperation.executeGuard(exeCtx, rtArgs)
         }
     }
 
+    override fun checkCorrectnessWhileSyncing(ctxt: EContext) = checkCorrectness(ctxt)
     override fun isCompound(): Boolean = rOperation.modifiers.isCompound
     override fun isSinglePerTransaction(): Boolean = rOperation.modifiers.isSingular
 
     override fun apply(ctx: TxEContext): Boolean {
         handleError {
-            val blockHeight = DatabaseAccess.of(ctx).getLastBlockHeight(ctx)
-            val txCtx = module.env.txContextFactory.createTxContext(ctx)
-
-            val opCtx = Rt_PostchainOpContext(
-                txCtx = txCtx,
-                lastBlockTime = ctx.timestamp,
-                transactionIid = ctx.txIID,
-                blockHeight = blockHeight,
-                opIndex = data.opIndex,
-                signers = data.signers.mapToImmList { it.toBytes() },
-                allOperations = data.operations.toImmList(),
-            )
-
-            val heightProvider = Rt_TxChainHeightProvider(ctx)
-            val exeCtx = module.createExecutionContext(ctx, opCtx, heightProvider, dbReadOnly = false)
-
+            val exeCtx = makeApplyExeCtx(ctx)
             val gtvCtx = makeGtvToRtContext(GtvToRtDefaultValueEvaluator.getNormal(exeCtx))
-            val opArgs = getOpArgs(gtvCtx)
-
-            val defCtx = Rt_DefinitionContext(exeCtx, true, rOperation.defId)
-            val rtArgs = rOperation.params().mapIndexed { i, param ->
-                val rtArg = opArgs.getOrNull(i)
-                if (rtArg != null) rtArg else {
-                    val evaluator = param.getDefaultValueEvaluator()!!
-                    evaluator(defCtx)
-                }
-            }
-
+            val rtArgs = makeArgs(exeCtx, gtvCtx)
             gtvCtx.finish(exeCtx)
             rOperation.call(exeCtx, rtArgs)
         }
-
         return true
+    }
+
+    private fun makeCheckCorrectnessExeCtx(ctx: EContext): Rt_ExecutionContext {
+        val db = DatabaseAccess.of(ctx)
+        val blockHeight = db.getLastBlockHeight(ctx)
+        val lastBlocktime = db.getLastBlockTimestamp(ctx)
+        val txIID = db.getLastTransactionNumber(ctx)
+        val opCtx = Rt_PostchainOpContext(
+            txCtx = Rt_CheckCorrectnessPostchainTxContext,
+            lastBlockTime = lastBlocktime,
+            transactionIid = txIID,
+            blockHeight = blockHeight,
+            opIndex = data.opIndex,
+            signers = data.signers.mapToImmList { it.toBytes() },
+            allOperations = data.operations.toImmList(),
+        )
+        return module.createExecutionContext(ctx, opCtx, Rt_NullChainHeightProvider, dbReadOnly = true)
+    }
+
+    private fun makeApplyExeCtx(ctx: TxEContext): Rt_ExecutionContext {
+        val blockHeight = DatabaseAccess.of(ctx).getLastBlockHeight(ctx)
+        val txCtx = module.env.txContextFactory.createTxContext(ctx)
+        val opCtx = Rt_PostchainOpContext(
+            txCtx = txCtx,
+            lastBlockTime = ctx.timestamp,
+            transactionIid = ctx.txIID,
+            blockHeight = blockHeight,
+            opIndex = data.opIndex,
+            signers = data.signers.mapToImmList { it.toBytes() },
+            allOperations = data.operations.toImmList(),
+        )
+        val heightProvider = Rt_TxChainHeightProvider(ctx)
+        return module.createExecutionContext(ctx, opCtx, heightProvider, dbReadOnly = false)
+    }
+
+    private fun makeArgs(exeCtx: Rt_ExecutionContext, gtvCtx: GtvToRtContext): List<Rt_Value> {
+        val opArgs = getOpArgs(gtvCtx)
+        val defCtx = Rt_DefinitionContext(exeCtx, true, rOperation.defId)
+        val rtArgs = rOperation.params().mapIndexed { i, param ->
+            val rtArg = opArgs.getOrNull(i)
+            if (rtArg != null) rtArg else {
+                val evaluator = param.getDefaultValueEvaluator()!!
+                evaluator(defCtx)
+            }
+        }
+        return rtArgs
     }
 
     private fun getOpArgs(gtvCtx: GtvToRtContext): List<Rt_Value> {

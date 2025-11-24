@@ -11,6 +11,7 @@ import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.toImmList
 
 internal sealed class R_StatementResult
 internal class R_StatementResult_Return(val value: Rt_Value?): R_StatementResult()
@@ -84,6 +85,11 @@ internal class R_BlockStatement(
     private val stmts: ImmList<R_Statement>,
     private val frameBlock: R_FrameBlock,
 ): R_Statement() {
+    internal fun getGuardStmts(): R_BlockStatement? {
+        val guardStmts = stmts.dropLastWhile { it !is R_GuardStatement }.toImmList()
+        return if (guardStmts.isEmpty()) null else R_BlockStatement(guardStmts, frameBlock)
+    }
+
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         val res = frame.block(frameBlock) {
             executeStatements(frame, stmts)
@@ -101,7 +107,6 @@ internal class R_BlockStatement(
             }
             return null
         }
-
     }
 }
 

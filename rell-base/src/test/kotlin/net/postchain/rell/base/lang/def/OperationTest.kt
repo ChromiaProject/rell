@@ -23,10 +23,18 @@ class OperationTest: BaseRellTest(useSql = true) {
 
     @Test fun testGuard() {
         chkOp("guard {}")
+        chkOp("val x: integer; guard{}")
+        chkOp("var y: integer; guard{}")
+        chkOp("val x: integer; guard{ x = 1; }")
+        chkOp("var y: integer; guard{ y = 1; }")
 
-        chkOp("print('Bob'); guard { print('Alice'); } print('Trudy');")
-        chkOut("Bob", "Alice", "Trudy")
+        chkOp("guard { print('Alice'); } print('Bob');")
+        chkOut("Alice", "Bob")
 
+        chkOp("val x = 1; guard{}", "ct_err:illegal_stmt_before_guard")
+        chkOp("var y = 1; guard{}", "ct_err:illegal_stmt_before_guard")
+        chkOp("val x: integer; x = 1; guard{}", "ct_err:illegal_stmt_before_guard")
+        chkOp("var y: integer; y = 1; guard{}", "ct_err:illegal_stmt_before_guard")
         chkOp("guard {} guard {}", "ct_err:stmt_guard_after_guard")
         chkOp("{ guard {} }", "ct_err:stmt_guard_nested")
         chkOp("if (2 > 1) { guard {} }", "ct_err:stmt_guard_nested")
@@ -42,9 +50,9 @@ class OperationTest: BaseRellTest(useSql = true) {
         chkOp("guard { update user @*{} ( .score += 10 ); }", "ct_err:no_db_update:guard")
         chkOp("guard { delete user @*{}; }", "ct_err:no_db_update:guard")
 
-        chkOp("create user(name = 'Bob', score = 123); guard {}", "ct_err:no_db_update:guard")
-        chkOp("update user @*{} ( .score += 10 ); guard {}", "ct_err:no_db_update:guard")
-        chkOp("delete user @*{}; guard {}", "ct_err:no_db_update:guard")
+        chkOp("create user(name = 'Bob', score = 123); guard {}", "ct_err:illegal_stmt_before_guard")
+        chkOp("update user @*{} ( .score += 10 ); guard {}", "ct_err:illegal_stmt_before_guard")
+        chkOp("delete user @*{}; guard {}", "ct_err:illegal_stmt_before_guard")
 
         chkOp("guard {} create user(name = 'Bob', score = 123);", "OK")
         chkOp("guard {} update user @*{} ( .score += 10 );", "OK")
@@ -54,10 +62,13 @@ class OperationTest: BaseRellTest(useSql = true) {
     @Test fun testGuardUpdateFunction() {
         def("entity user { name: text; mutable score: integer; }")
         def("function f() { delete user @* {}; }")
+        def("function g() {}")
 
-        chkOp("f();", "OK")
+        chkOp("f();")
+        chkOp("guard { g(); }")
         chkOp("guard { f(); }", "rt_err:no_db_update:def")
-        chkOp("f(); guard {}", "rt_err:no_db_update:def")
+        chkOp("f(); guard {}", "ct_err:illegal_stmt_before_guard")
+        chkOp("g(); guard {}", "ct_err:illegal_stmt_before_guard")
     }
 
     @Test fun testGuardInQueryFunction() {

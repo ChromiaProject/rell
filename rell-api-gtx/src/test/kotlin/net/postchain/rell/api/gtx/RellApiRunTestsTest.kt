@@ -537,4 +537,76 @@ internal class RellApiRunTestsTest: BaseRellApiRunTestsTest() {
             "size_param_op_test:test_baz_ok:OK",
         )
     }
+
+    @Test fun testCheckCorrectnessGuardOpContextEval() {
+        val runConfig = runTestsDbConfig()
+        val sourceDir = C_SourceDir.mapDirOf(
+            "app.rell" to """
+                module;
+                operation oc_block_height() { guard { op_context.block_height; } }
+                operation oc_emit_event() { guard { op_context.emit_event("foo", "bar".to_gtv()); } }
+                operation oc_exists() { guard { require(op_context.exists); } }
+                operation oc_get_all_operations() { guard { op_context.get_all_operations(); } }
+                operation oc_get_current_operation() { guard { op_context.get_current_operation(); } }
+                operation oc_get_signers() { guard { op_context.get_signers(); } }
+                operation oc_is_signer() { guard { op_context.is_signer(x''); } }
+                operation oc_last_block_time() { guard { op_context.last_block_time; } }
+                operation oc_op_index() { guard { op_context.op_index; } }
+            """,
+            "test.rell" to """
+                @test module;
+                import app.*;
+                @test function test_oc_block_height() { rell.test.tx(oc_block_height()).run(); }
+                @test function test_oc_emit_event() { rell.test.tx(oc_emit_event()).run(); }
+                @test function test_oc_exists() { rell.test.tx(oc_exists()).run(); }
+                @test function test_oc_get_all_operations() { rell.test.tx(oc_get_all_operations()).run(); }
+                @test function test_oc_get_current_operation() { rell.test.tx(oc_get_current_operation()).run(); }
+                @test function test_oc_get_signers() { rell.test.tx(oc_get_signers()).run(); }
+                @test function test_oc_is_signer() { rell.test.tx(oc_is_signer()).run(); }
+                @test function test_oc_last_block_time() { rell.test.tx(oc_last_block_time()).run(); }
+                @test function test_oc_op_index() { rell.test.tx(oc_op_index()).run(); }
+            """,
+        )
+        chkRunTests(runConfig, sourceDir, listOf(), listOf("test"),
+            "test:test_oc_block_height:OK",
+            "test:test_oc_emit_event:FAILED", // Would write to DB, not allowed in guard, so should fail.
+            "test:test_oc_exists:OK",
+            "test:test_oc_get_all_operations:OK",
+            "test:test_oc_get_current_operation:OK",
+            "test:test_oc_get_signers:OK",
+            "test:test_oc_is_signer:OK",
+            "test:test_oc_last_block_time:OK",
+            "test:test_oc_op_index:OK",
+        )
+    }
+
+    @Test fun testCheckCorrectnessGuardOpContextPrint() {
+        chkOutput("guard { print(op_context.block_height); }", "0", "0")
+        chkOutput("guard { print(op_context.exists); }", "true", "true")
+
+        val op = "gtx_operation{name=my_op,args=[]}"
+        chkOutput("guard { print(op_context.get_all_operations()); }", "[$op]", "[$op]")
+        chkOutput("guard { print(op_context.get_current_operation()); }", op, op)
+
+        chkOutput("guard { print(op_context.get_signers()); }", "[]", "[]")
+        chkOutput("guard { print(op_context.is_signer(x'')); }", "false", "false")
+        chkOutput("guard { print(op_context.last_block_time); }", "-1", "-1")
+        chkOutput("guard { print(op_context.op_index); }", "0", "0")
+    }
+
+    @Test fun testCheckCorrectnessGuardSimple() {
+        chkOutput("var x: integer; guard { x = 1; print(x); } x = 2; print(x);", "1", "1", "2")
+        chkOutput("guard { print('hello'); }", "hello", "hello")
+    }
+
+    private fun chkOutput(operationBody: String, vararg expectedOutputs: String) {
+        val printer = Rt_TestPrinter()
+        val runConfig = runTestsDbConfig().toBuilder().outPrinter(printer).build()
+        val sourceDir = C_SourceDir.mapDirOf(
+            "app.rell" to " module; operation my_op() { $operationBody } ",
+            "tst.rell" to "@test module; import app.*; @test function my_test() { rell.test.tx(my_op()).run(); } ",
+        )
+        chkRunTests(runConfig, sourceDir, listOf(), listOf("tst"), "tst:my_test:OK")
+        printer.chk(*expectedOutputs)
+    }
 }

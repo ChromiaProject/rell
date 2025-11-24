@@ -90,3 +90,7 @@ interface Rt_ChainHeightProvider {
 class Rt_ConstantChainHeightProvider(private val height: Long): Rt_ChainHeightProvider {
     override fun getChainHeight(rid: WrappedByteArray, id: Long) = height
 }
+
+object Rt_NullChainHeightProvider: Rt_ChainHeightProvider {
+    override fun getChainHeight(rid: WrappedByteArray, id: Long): Long? = null
+}

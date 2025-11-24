@@ -8,6 +8,7 @@ import net.postchain.core.TxEContext
 import net.postchain.gtv.Gtv
 import net.postchain.gtx.data.OpData
 import net.postchain.rell.base.lib.Lib_OpContext
+import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_OpContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.Bytes
@@ -30,6 +31,12 @@ object Rt_DefaultPostchainTxContextFactory: Rt_PostchainTxContextFactory() {
         override fun emitEvent(type: String, data: Gtv) {
             txCtx.emitEvent(type, data)
         }
+    }
+}
+
+object Rt_CheckCorrectnessPostchainTxContext: Rt_PostchainTxContext() {
+    override fun emitEvent(type: String, data: Gtv) {
+        throw Rt_Exception.common("check_correctness:emit_event", "Cannot emit event during checkCorrectness step.")
     }
 }
 
