@@ -205,14 +205,16 @@ object Lib_Type_Gtv {
                 comment("""
                     Convert this GTV to a JSON value.
 
-                    Inverse of `gtv.from_json(json)`.
+                    Big integers are serialized as JSON numbers. Note that when deserializing back with
+                    `gtv.from_json()`, small big integers (within standard integer range) will become regular
+                    integers, and large big integers cannot be deserialized (will cause a runtime error).
+
                     @return a JSON value equivalent to this GTV
-                    @throws exception if this GTV cannot be converted to a JSON value
                 """)
                 alias("toJSON", C_MessageType.ERROR, since = "0.6.1")
                 body { a ->
                     val gtv = a.asGtv()
-                    val json = PostchainGtvUtils.gtvToJson(gtv)
+                    val json = PostchainGtvUtils.gtvToJson(gtv, true)
                     //TODO consider making a separate function toJSONStr() to avoid unnecessary conversion str -> json -> str.
                     Rt_JsonValue.parse(json)
                 }

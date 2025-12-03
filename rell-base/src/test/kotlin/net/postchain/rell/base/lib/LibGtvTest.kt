@@ -55,6 +55,19 @@ class LibGtvTest: BaseRellTest() {
                 """text[{"x":123,"y":[4,5,6]}]""")
     }
 
+    @Test fun testToJsonSupportBigInteger() {
+        chk("123L.to_gtv().to_json()", "json[123]")
+        chk("((-456L).to_gtv().to_json())", "json[-456]")
+        chk("123456789012345678901234567890L.to_gtv().to_json()", "json[123456789012345678901234567890]")
+        chk("[123L, 456L].to_gtv().to_json()", "json[[123,456]]")
+
+        // small big_integer becomes an integer when deserialized
+        chk("gtv.from_json(123L.to_gtv().to_json())", "gtv[123]")
+
+        // large big_integer can't be deserialized
+        chk("gtv.from_json(123456789012345678901234567890L.to_gtv().to_json())", "rt_err:fn:gtv.from_json(json)")
+    }
+
     @Test fun testToFromGtvBigInteger() {
         chkToGtv("(0L).to_gtv()", gtv(BigInteger.valueOf(0)))
         chkToGtv("(123L).to_gtv()", gtv(BigInteger.valueOf(123)))

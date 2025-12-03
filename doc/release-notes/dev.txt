@@ -40,3 +40,35 @@ In Postchain, the validation step is known as checkCorrectness(), and the execut
 The checkCorrectness() step is called from Postchain's BaseTransactionQueue.enqueue()
 (net.postchain.base.data.BaseTransactionQueue), when a transaction is sent to a node (rather than when it's executed
 i.e. the apply() step).
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Library: GTV big_integer JSON serialization
+
+GtvBigInteger values are now always supported in JSON serialization and are serialized as JSON numbers
+(not strings). This means gtv.to_json() can now serialize big integers without any special flags or parameters.
+
+Examples:
+
+    123L.to_gtv().to_json() // Returns json[123]
+    123L.to_gtv().to_json() // Returns json[123]
+    123456789012345678901234567890L.to_gtv().to_json() // Returns json[123456789012345678901234567890]
+
+IMPORTANT: Backward compatibility note for deserialization:
+
+When deserializing JSON containing big integers back to GTV using gtv.from_json(), the behavior depends on
+the magnitude of the number:
+
+- Small big integers (within the range of a standard JSON number/integer) will be deserialized as GtvInteger,
+  not GtvBigInteger. This causes type information loss.
+
+- Large big integers (exceeding standard integer range) cannot be deserialized and will result in a runtime error.
+
+Examples:
+
+    // Small big_integer loses type information when round-tripped
+    val serialized = 123L.to_gtv().to_json();
+    gtv.from_json(serialized) // Returns gtv[123] (a regular integer, not big_integer)
+
+    // Large big_integer cannot be deserialized
+    val large = 123456789012345678901234567890L.to_gtv().to_json();
+    gtv.from_json(large) // Runtime error

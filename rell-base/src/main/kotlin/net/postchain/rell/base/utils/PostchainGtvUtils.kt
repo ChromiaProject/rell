@@ -26,7 +26,8 @@ object PostchainGtvUtils {
     val hashCalculator = HashCalculator()
     val merkleHashCalculator: GtvMerkleHashCalculatorBase = makeMerkleHashCalculator(2)
 
-    private val GSON: Gson = make_gtv_gson_builder().create()
+    private val GSON: Gson = make_gtv_gson()
+    private val LENIENT_GSON: Gson = makeLenientGtvGson()
     private val PRETTY_GSON: Gson = makeLenientGtvGsonBuilder().setPrettyPrinting().create()
 
     fun gtvToBytes(v: Gtv): ByteArray = GtvEncoder.encodeGtv(v)
@@ -35,7 +36,9 @@ object PostchainGtvUtils {
     fun xmlToGtv(s: String): Gtv = GtvMLParser.parseGtvML(s)
     fun gtvToXml(v: Gtv): String = GtvMLEncoder.encodeXMLGtv(v)
 
-    fun gtvToJson(v: Gtv): String = GSON.toJson(v, Gtv::class.java)
+    fun gtvToJson(v: Gtv, supportBigInteger: Boolean = false): String =
+        (if (supportBigInteger) LENIENT_GSON else GSON).toJson(v, Gtv::class.java)
+
     fun jsonToGtv(s: String): Gtv = GSON.fromJson(s, Gtv::class.java) ?: GtvNull
     fun gtvToJsonPretty(v: Gtv): String = PRETTY_GSON.toJson(v, Gtv::class.java)
 
