@@ -292,6 +292,10 @@ class LibTextTest: BaseRellTest() {
 
         chk("'%s'.format()", "text[%s]")
         chk("'%d'.format('Hello')", "text[%d]")
+
+        chk("'%d'.format(rowid(123))", "text[123]")
+        chk("'%08d'.format(rowid(123))", "text[00000123]")
+        chk("'%s'.format(rowid(123))", "text[123]")
     }
 
     @Test fun testToFromBytes() {

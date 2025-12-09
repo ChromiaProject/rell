@@ -136,6 +136,7 @@ class Rt_RowidValue private constructor(val value: Long): Rt_Value() {
 
     override fun type() = R_RowidType
     override fun asRowid() = value
+    override fun toFormatArg() = value
     override fun strCode(showTupleFieldNames: Boolean) = "rowid[$value]"
     override fun str(format: StrFormat) = "" + value
     override fun equals(other: Any?) = other is Rt_RowidValue && value == other.value
