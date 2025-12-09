@@ -10,7 +10,7 @@ import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmSet
 import java.util.*
 
-object M_Types {
+internal object M_Types {
     val ANYTHING: M_Type = M_Type_Simple.ANYTHING
     val NOTHING: M_Type = M_Type_Simple.NOTHING
     val ANY: M_Type = M_Type_Simple.ANY
@@ -30,15 +30,15 @@ abstract class M_Type {
     abstract fun strCode(): String
     fun strMsg(): String = strCode()
 
-    val oneTypeSet: M_TypeSet by lazy {
+    internal val oneTypeSet: M_TypeSet by lazy {
         M_TypeSetUtils.newOne(this)
     }
 
-    val superTypesSet: M_TypeSet by lazy {
+    internal val superTypesSet: M_TypeSet by lazy {
         M_TypeSetUtils.newSuperOf(this)
     }
 
-    val subTypesSet: M_TypeSet by lazy {
+    internal val subTypesSet: M_TypeSet by lazy {
         M_TypeSetUtils.newSubOf(this)
     }
 
@@ -96,9 +96,9 @@ abstract class M_Type {
         return res || getConversion0(type) != null
     }
 
-    open fun getParentType(): M_Type? = null
+    internal open fun getParentType(): M_Type? = null
 
-    fun isSuperTypeOf(type: M_Type): Boolean {
+    internal fun isSuperTypeOf(type: M_Type): Boolean {
         val res = matchTypeSuper(type) { type1, type2, rel ->
             M_TypeUtils.matchTypeIsSuperTypeOf(type1, type2, rel)
         }
@@ -107,7 +107,7 @@ abstract class M_Type {
 
     protected open fun getCommonSuperType0(type: M_Type): M_Type? = null
 
-    fun getCommonSuperType(type: M_Type): M_Type? {
+    internal fun getCommonSuperType(type: M_Type): M_Type? {
         return when {
             isSuperTypeOf(type) -> this
             type.isSuperTypeOf(this) -> type
@@ -117,7 +117,7 @@ abstract class M_Type {
 
     protected open fun getCommonSubType0(type: M_Type): M_Type? = null
 
-    fun getCommonSubType(type: M_Type): M_Type? {
+    internal fun getCommonSubType(type: M_Type): M_Type? {
         return when {
             isSuperTypeOf(type) -> type
             type.isSuperTypeOf(this) -> this
@@ -125,7 +125,7 @@ abstract class M_Type {
         }
     }
 
-    fun getCommonConversionType(type: M_Type): M_Type? {
+    internal fun getCommonConversionType(type: M_Type): M_Type? {
         val commonType = getCommonSuperType(type)
         val res = when {
             commonType != null -> commonType
@@ -141,7 +141,7 @@ abstract class M_Type {
         return if (conversion != null) this else null
     }
 
-    fun getConversion(sourceType: M_Type): M_Conversion? {
+    internal fun getConversion(sourceType: M_Type): M_Conversion? {
         return if (isSuperTypeOf(sourceType)) {
             M_Conversion_Direct
         } else {
@@ -151,21 +151,21 @@ abstract class M_Type {
 
     protected open fun getConversion0(sourceType: M_Type): M_Conversion? = null
 
-    abstract fun getTypeParams0(res: MutableSet<M_TypeParam>)
+    internal abstract fun getTypeParams0(res: MutableSet<M_TypeParam>)
 
-    fun getTypeParams(): ImmSet<M_TypeParam> {
+    internal fun getTypeParams(): ImmSet<M_TypeParam> {
         val set = mutableSetOf<M_TypeParam>()
         getTypeParams0(set)
         return set.toImmSet()
     }
 
-    abstract fun replaceParams(map: Map<M_TypeParam, M_TypeSet>, capture: Boolean): M_TypeRep
+    internal abstract fun replaceParams(map: Map<M_TypeParam, M_TypeSet>, capture: Boolean): M_TypeRep
 
-    fun replaceParamsIn(map: Map<M_TypeParam, M_TypeSet>): M_Type {
+    internal fun replaceParamsIn(map: Map<M_TypeParam, M_TypeSet>): M_Type {
         return replaceParamsInOut(map, M_TypeExpandMode.SUB, M_Types.NOTHING)
     }
 
-    fun replaceParamsOut(map: Map<M_TypeParam, M_TypeSet>): M_Type {
+    internal fun replaceParamsOut(map: Map<M_TypeParam, M_TypeSet>): M_Type {
         return replaceParamsInOut(map, M_TypeExpandMode.SUPER, M_Types.ANYTHING)
     }
 
@@ -174,16 +174,16 @@ abstract class M_Type {
         return if (capType === this) this else (capType.expandCaptures(mode) ?: noneType)
     }
 
-    abstract fun expandCaptures(mode: M_TypeExpandMode): M_Type?
+    internal abstract fun expandCaptures(mode: M_TypeExpandMode): M_Type?
 
-    abstract fun captureWildcards(): M_Type
-    open fun getCapturedSet(): M_TypeSet? = null
+    internal abstract fun captureWildcards(): M_Type
+    internal open fun getCapturedSet(): M_TypeSet? = null
 
-    fun matchTypeParamsIn(type: M_Type, handler: M_TypeParamMatchHandler): Boolean {
+    internal fun matchTypeParamsIn(type: M_Type, handler: M_TypeParamMatchHandler): Boolean {
         return matchTypeParams0(type, M_TypeMatchRelation.CONVERT, handler)
     }
 
-    fun matchTypeParamsOut(type: M_Type, handler: M_TypeParamMatchHandler): Boolean {
+    internal fun matchTypeParamsOut(type: M_Type, handler: M_TypeParamMatchHandler): Boolean {
         return matchTypeParams0(type, M_TypeMatchRelation.SUB, handler)
     }
 
@@ -214,5 +214,5 @@ abstract class M_Type {
     }
 
     /** @throws [M_TypeException] */
-    abstract fun validate()
+    internal abstract fun validate()
 }

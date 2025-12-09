@@ -26,7 +26,7 @@ class LibTryCallTest: BaseRellTest() {
         def("function f(x: integer) { require(x > 0); }")
         chk("try_call(f(1, *), true)", "ct_err:expr_call_badargs:[try_call]:[()->unit,boolean]")
         chk("try_call(f(1, *), 0)", "ct_err:expr_call_badargs:[try_call]:[()->unit,integer]")
-        chk("try_call(f(1, *), null)", "ct_err:fn:sys:no_res_type:[try_call]")
+        chk("try_call(f(1, *), null)", "ct_err:expr_call_badargs:[try_call]:[()->unit,null]")
     }
 
     @Test fun testTwoArgsValue() {

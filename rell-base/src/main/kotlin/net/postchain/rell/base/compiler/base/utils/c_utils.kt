@@ -451,7 +451,7 @@ object C_Parser {
         return ast
     }
 
-    fun parseRepl(code: String): S_ReplCommand {
+    internal fun parseRepl(code: String): S_ReplCommand {
         val res = parse0(REPL_PARSER_PATH, code, RellVersions.VERSION, S_Grammar.replParser)
         val ast = res.getAst()
         return ast

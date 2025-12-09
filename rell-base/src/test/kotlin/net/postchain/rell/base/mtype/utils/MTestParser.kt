@@ -11,7 +11,7 @@ import com.github.h0tk3y.betterParse.parser.parseToEnd
 import net.postchain.rell.base.mtype.*
 import net.postchain.rell.base.utils.*
 
-object MTestParser {
+internal object MTestParser {
     fun parseType(code: String, scope: MTestScope): M_Type {
         return parseTypeEx(code, scope).type
     }

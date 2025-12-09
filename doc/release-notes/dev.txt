@@ -1,7 +1,85 @@
 UNRELEASED NOTES
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-1. Runtime: Execute guard block during operation validation
+1. Language: Native functions
+
+One can define a native function in Rell this way:
+
+    @native function f(a: integer, b: text): boolean;
+
+The function can be called from Rell code, like a normal function.
+
+For each Rell module which defines native functions, there must be a Java (or Kotlin) class implementing them. Such
+classes are specified in the blockchain configuration at the path gtx.rell.native, one class per module. In XML, it
+would look like:
+
+    <dict>
+        ...
+        <entry key="gtx">
+            <dict>
+                ...
+                <entry key="rell">
+                    <dict>
+                        ...
+                        <entry key = "native">
+                            <dict>
+                                <entry key = "my_module">
+                                    <string>com.domain.pack.MyNativeModule</string>
+        ...
+    </dict>
+
+In Kotlin, the class MyNativeModule may look like:
+
+    class MyNativeModule(val env: RellNativeEnvironment) {
+        // @native function f(x: integer): integer;
+        fun f(x: Long): Long {
+            return x * x
+        }
+    }
+
+Rules for native module classes:
+1. The class must be public.
+2. It must have a public constructor either without parameters, or with a single parameter of type
+   RellNativeEnvironment.
+3. Must be a public instance (non-static) function for each native function defined in the corresponding Rell module.
+   The name of the native function must be exactly the same as the name of the Rell function.
+4. The number of parameters and parameter types must match (see a table below).
+
+The interface RellNativeEnvironment provides some information about the blockchain, which may be of use:
+
+    interface RellNativeEnvironment {
+        val config: Gtv
+        val blockchainRid: BlockchainRid
+    }
+
+Kotlin types needed to implement native modules, like RellNativeEnvironment, are defined in the Maven artifact:
+
+    net.postchain.rell:rell-api-native:<RELL_VERSION>
+
+It has to be added to dependencies of the project where native functions are to be implemented.
+
+Allowed parameter and return types:
+
+┌────────────────────┬───────────────────────┐
+│ Rell type          │ Kotlin type           │
+├────────────────────┼───────────────────────┤
+│ big_integer        │ java.math.BigInteger  │
+│ boolean            │ Boolean               │
+│ byte_array         │ ByteArray             │
+│ decimal            │ java.math.BigDecimal  │
+│ gtv                │ net.postchain.gtv.Gtv │
+│ integer            │ Long                  │
+│ rowid              │ Long                  │
+│ text               │ String                │
+│ unit (return type) │ Unit                  │
+│ T? (nullable)      │ T?                    │
+└────────────────────┴───────────────────────┘
+
+Note. Implementation of a native function has to be deterministic, i.e. always return the same result for same parameter
+values. Rell can't control this, so it's the native function developer's responsibility.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Runtime: Execute guard block during operation validation
 
 When a Postchain node receives a transaction, it validates the transaction before executing it. Nodes may not write to
 the database during the validation step, though are permitted to read from it. They may read and write to the database
@@ -42,7 +120,7 @@ The checkCorrectness() step is called from Postchain's BaseTransactionQueue.enqu
 i.e. the apply() step).
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-2. Library: GTV big_integer JSON serialization
+3. Library: GTV big_integer JSON serialization
 
 GtvBigInteger values are now always supported in JSON serialization and are serialized as JSON numbers
 (not strings). This means gtv.to_json() can now serialize big integers without any special flags or parameters.

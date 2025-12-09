@@ -238,6 +238,7 @@ class R_App internal constructor(
     val externalChainsRoot: R_ExternalChainsRoot,
     val externalChains: ImmList<R_ExternalChainRef>,
     val sqlDefs: R_AppSqlDefs,
+    internal val nativeFunctions: ImmMap<R_FullName, R_FunctionHeader>,
 ) {
     val moduleMap = this.modules.associateByToImmMap { it.name }
 

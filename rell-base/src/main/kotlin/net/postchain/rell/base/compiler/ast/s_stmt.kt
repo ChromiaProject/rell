@@ -50,7 +50,7 @@ abstract class S_Statement(val startPos: S_Pos, val endPos: S_Pos) {
     internal open fun returnsValue(): Boolean? = null
 }
 
-class S_EmptyStatement(pos: S_Pos): S_Statement(pos, pos) {
+internal class S_EmptyStatement(pos: S_Pos): S_Statement(pos, pos) {
     override fun compile(ctx: C_StmtContext, repl: Boolean) = C_Statement.EMPTY
 }
 
@@ -94,7 +94,7 @@ class S_SimpleVarDeclarator(
 
 class S_TupleVarDeclarator(
     val pos: S_Pos,
-    val subDeclarators: ImmList<S_VarDeclarator>,
+    private val subDeclarators: ImmList<S_VarDeclarator>,
 ): S_VarDeclarator() {
     override fun compile(ctx: C_StmtContext, mutable: Boolean, hasExpr: Boolean, comment: S_Comment?): C_VarDeclarator {
         val cSubDeclarators = subDeclarators.mapToImmList {
@@ -110,7 +110,7 @@ class S_TupleVarDeclarator(
     }
 }
 
-class S_VarStatement(
+class S_VarStatement internal constructor(
     startPos: S_Pos,
     endPos: S_Pos,
     val declarator: S_VarDeclarator,
@@ -143,7 +143,7 @@ class S_VarStatement(
     }
 }
 
-class S_ReturnStatement(
+internal class S_ReturnStatement(
     startPos: S_Pos,
     endPos: S_Pos,
     private val expr: S_Expr?,
@@ -204,7 +204,7 @@ class S_ReturnStatement(
     override fun returnsValue() = expr != null
 }
 
-class S_BlockStatement(
+internal class S_BlockStatement(
     private val posRange: S_PosRange,
     private val stmts: ImmList<S_Statement>,
 ): S_Statement(posRange.start, posRange.end) {
@@ -254,7 +254,7 @@ class S_BlockStatement(
     }
 }
 
-class S_ExprStatement(
+internal class S_ExprStatement(
     private val expr: S_Expr,
     endPos: S_Pos,
 ): S_Statement(expr.startPos, endPos) {
@@ -266,7 +266,7 @@ class S_ExprStatement(
     }
 }
 
-class S_AssignStatement(
+internal class S_AssignStatement internal constructor(
     private val dstExpr: S_Expr,
     private val op: S_PosValue<S_AssignOpCode>,
     private val srcExpr: S_Expr,
@@ -298,7 +298,7 @@ class S_AssignStatement(
     }
 }
 
-class S_IfStatement(
+internal class S_IfStatement(
     startPos: S_Pos,
     private val expr: S_Expr,
     private val trueStmt: S_Statement,
@@ -360,9 +360,9 @@ class S_IfStatement(
     }
 }
 
-class S_WhenStatementCase(val cond: S_WhenCondition, val stmt: S_Statement)
+internal class S_WhenStatementCase(val cond: S_WhenCondition, val stmt: S_Statement)
 
-class S_WhenStatement(
+internal class S_WhenStatement(
     startPos: S_Pos,
     endPos: S_Pos,
     private val expr: S_Expr?,
@@ -421,7 +421,7 @@ internal class C_LoopStatement(
     val modifiedVars: ImmList<C_LocalVar>,
 )
 
-class S_WhileStatement(
+internal class S_WhileStatement(
     startPos: S_Pos,
     private val expr: S_Expr,
     private val stmt: S_Statement,
@@ -467,7 +467,7 @@ class S_WhileStatement(
 
     override fun returnsValue() = stmt.returnsValue()
 
-    companion object {
+    internal companion object {
         private val MODIFIED_VAR_COMPATIBILITY_SWITCH = C_FeatureSwitch("0.14.0")
 
         internal fun compileLoop(ctx: C_StmtContext, stmt: S_Statement, expr: S_Expr): C_LoopStatement? {
@@ -514,7 +514,7 @@ class S_WhileStatement(
     }
 }
 
-class S_ForStatement(
+internal class S_ForStatement(
     startPos: S_Pos,
     private val declarator: S_VarDeclarator,
     private val expr: S_Expr,
@@ -581,7 +581,7 @@ class S_ForStatement(
     override fun returnsValue() = stmt.returnsValue()
 }
 
-class S_BreakStatement(
+internal class S_BreakStatement(
     startPos: S_Pos,
     endPos: S_Pos,
 ): S_Statement(startPos, endPos) {
@@ -594,7 +594,7 @@ class S_BreakStatement(
     }
 }
 
-class S_ContinueStatement(
+internal class S_ContinueStatement(
     startPos: S_Pos,
     endPos: S_Pos,
 ): S_Statement(startPos, endPos) {
@@ -607,7 +607,7 @@ class S_ContinueStatement(
     }
 }
 
-class S_GuardStatement(
+internal class S_GuardStatement(
     startPos: S_Pos,
     private val stmt: S_Statement,
 ): S_Statement(startPos, stmt.endPos) {

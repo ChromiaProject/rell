@@ -7,7 +7,7 @@ package net.postchain.rell.base.lmodel
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_Struct
-import net.postchain.rell.base.mtype.M_Type
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSymbol
@@ -15,7 +15,7 @@ import net.postchain.rell.base.utils.futures.FcFuture
 
 class L_StructAttribute(
     fullName: R_FullName,
-    val type: M_Type,
+    val type: R_Type,
     val mutable: Boolean,
     header: L_MemberHeader,
     docSymbol: DocSymbol,

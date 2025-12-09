@@ -148,7 +148,7 @@ class CLibFunctionTypeExtTest: BaseCLibTest() {
             staticFunction("test_decode", result = "T") {
                 param("a", type = "integer")
                 body { a ->
-                    Rt_Utils.check(a.asInteger() != 0L) { "x=${a.strCode()}" toCodeMsg "x = ${a.str()}" }
+                    Rt_Utils.check(a.asInteger() != 0L) { "x=${a.strCode()}" to "x = ${a.str()}" }
                     check(a.asInteger() >= 0)
                     a
                 }
@@ -157,7 +157,7 @@ class CLibFunctionTypeExtTest: BaseCLibTest() {
                 param("a", type = "integer")
                 body { _, a ->
                     val v = a.asInteger()
-                    Rt_Utils.check(v != 0L) { "x=${a.strCode()}" toCodeMsg "x = ${a.str()}" }
+                    Rt_Utils.check(v != 0L) { "x=${a.strCode()}" to "x = ${a.str()}" }
                     check(v >= 0)
                     Rt_TextValue.get(a.str())
                 }

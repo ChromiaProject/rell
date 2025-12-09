@@ -6,7 +6,7 @@ package net.postchain.rell.base.mtype
 
 import kotlin.test.Test
 
-class MTypeFunctionTest: BaseMTypeTest() {
+internal class MTypeFunctionTest: BaseMTypeTest() {
     @Test fun testFunctionConstruct() {
         chkConstruct("(int)->real", "(int)->real")
         chkConstruct("(num,int,real)->str", "(num,int,real)->str")

@@ -120,7 +120,7 @@ object Lib_Type_Iterable {
         Rt_Utils.checkRange(limit, 0, Int.MAX_VALUE.toLong()) {
             val code = "fn:join_to_text:incorrect_limit:$limit"
             val msg = "Limit needs to be an integer between 0 and ${Int.MAX_VALUE}"
-            code toCodeMsg msg
+            code to msg
         }
         return limit.toInt()
     }

@@ -15,7 +15,7 @@ class M_AstType_Function(val result: M_AstType, val params: ImmList<M_AstType>):
 class M_AstType_Generic(val name: String, val args: ImmList<M_AstTypeSet>): M_AstType()
 
 sealed class M_AstTypeSet
-object M_AstTypeSet_All: M_AstTypeSet()
+data object M_AstTypeSet_All: M_AstTypeSet()
 class M_AstTypeSet_One(val type: M_AstType): M_AstTypeSet()
 class M_AstTypeSet_SubOf(val type: M_AstType): M_AstTypeSet()
 class M_AstTypeSet_SuperOf(val type: M_AstType): M_AstTypeSet()

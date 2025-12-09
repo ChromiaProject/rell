@@ -24,12 +24,12 @@ import net.postchain.rell.base.utils.ide.IdeOutlineTreeBuilder
 import net.postchain.rell.base.utils.mapNotNullToImmList
 import net.postchain.rell.base.utils.toImmSet
 
-class S_ModuleHeader(
+class S_ModuleHeader internal constructor(
     private val modifiers: S_Modifiers,
     val pos: S_Pos,
     private val comment: S_Comment?,
 ) {
-    fun compile(ctx: C_ModifierContext): C_SourceModuleHeader {
+    internal fun compile(ctx: C_ModifierContext): C_SourceModuleHeader {
         val mods = C_ModifierValues(C_ModifierTargetType.MODULE, null)
         val modAbstract = mods.field(C_ModifierFields.ABSTRACT)
         val modExternal = mods.field(C_ModifierFields.EXTERNAL_MODULE)

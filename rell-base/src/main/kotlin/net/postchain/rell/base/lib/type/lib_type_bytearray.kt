@@ -12,10 +12,7 @@ import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Crypto
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_GtvCompatibility
-import net.postchain.rell.base.model.R_PrimitiveType
-import net.postchain.rell.base.model.R_TypeSqlAdapter
-import net.postchain.rell.base.model.R_TypeSqlAdapter_Primitive
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
@@ -24,9 +21,12 @@ import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.immSetOf
 import org.bouncycastle.util.Arrays
 import org.jooq.impl.SQLDataType
+import java.math.BigInteger
 import java.util.*
+import kotlin.reflect.full.createType
 
 object Lib_Type_ByteArray {
     val DB_SUBSCRIPT: Db_SysFunction = Db_SysFunction.template("byte_array.[]", 2, "GET_BYTE(#0, (#1)::INT)")
@@ -292,9 +292,16 @@ object R_ByteArrayType: R_PrimitiveType("byte_array") {
     override fun fromCli(s: String): Rt_Value = Rt_ByteArrayValue.get(CommonUtils.hexToBytes(s))
 
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_ByteArray
+    override fun createNativeConversion(): R_TypeNativeConversion = NativeConversion
     override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_ByteArray
 
     override fun getLibTypeDef() = Lib_Rell.BYTE_ARRAY_TYPE
+
+    private object NativeConversion: R_TypeNativeConversion {
+        override val nativeTypes = immSetOf(ByteArray::class.createType())
+        override fun rtToNative(value: Rt_Value) = value.asByteArray().clone()
+        override fun nativeToRt(value: Any?) = Rt_ByteArrayValue.get((value as ByteArray).clone())
+    }
 
     private object R_TypeSqlAdapter_ByteArray: R_TypeSqlAdapter_Primitive("byte_array", SQLDataType.BLOB) {
         override fun toSqlValue(value: Rt_Value) = value.asByteArray()

@@ -18,8 +18,8 @@ import net.postchain.rell.base.utils.doc.DocSymbol
 class L_MemberHeader(val since: R_LangVersion?, val docComment: DocComment?)
 
 abstract class L_AbstractMember(
-    val fullName: R_FullName,
-    val header: L_MemberHeader,
+    internal val fullName: R_FullName,
+    internal val header: L_MemberHeader,
     override val docSymbol: DocSymbol,
 ): DocDefinition() {
     val qualifiedName: R_QualifiedName = fullName.qualifiedName
@@ -33,12 +33,12 @@ sealed class L_NamespaceMember(
     header: L_MemberHeader,
     docSymbol: DocSymbol,
 ): L_AbstractMember(fullName, header, docSymbol) {
-    abstract fun strCode(): String
+    internal abstract fun strCode(): String
 
-    open fun getTypeDefOrNull(): L_TypeDef? = null
-    open fun getAbstractTypeDefOrNull(): L_AbstractTypeDef? = null
-    open fun getTypeExtensionOrNull(): L_TypeExtension? = null
-    open fun getStructOrNull(): L_Struct? = null
+    internal open fun getTypeDefOrNull(): L_TypeDef? = null
+    internal open fun getAbstractTypeDefOrNull(): L_AbstractTypeDef? = null
+    internal open fun getTypeExtensionOrNull(): L_TypeExtension? = null
+    internal open fun getStructOrNull(): L_Struct? = null
 }
 
 class L_Namespace(members: List<L_NamespaceMember>) {

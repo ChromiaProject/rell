@@ -20,7 +20,7 @@ import net.postchain.rell.base.utils.toImmList
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
-class LibModuleTester(
+internal class LibModuleTester(
     private val tst: RellCodeTester,
     vararg importedModules: C_LibModule,
     private val moduleName: String = "mod",
@@ -58,9 +58,9 @@ class LibModuleTester(
         ) {
             val typeTag = Any()
             val meta = object: R_TypeMeta() {
-                override fun getTypeOrNull(args: ImmList<R_Type>): R_Type? {
+                override fun getTypeOrNull(args: ImmList<R_Type>): R_Type {
                     checkEquals(args.size, genericCount)
-                    return R_TestType(typeName, typeTag, modGetter, args.toImmList())
+                    return R_TestType(typeName, typeTag, modGetter, args)
                 }
             }
             dsl.rTypeMeta(meta)

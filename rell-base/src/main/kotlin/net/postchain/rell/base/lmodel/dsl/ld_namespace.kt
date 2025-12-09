@@ -25,7 +25,7 @@ import net.postchain.rell.base.utils.futures.component2
 import java.math.BigDecimal
 import java.math.BigInteger
 
-abstract class Ld_NamespaceMember(
+internal abstract class Ld_NamespaceMember(
     private val docKind: DocSymbolKind,
     val simpleName: R_Name,
     private val memberHeader: Ld_MemberHeader,
@@ -58,7 +58,7 @@ interface Ld_CommonNamespaceMaker {
     fun constant(name: String, type: String, hdr: Ld_MemberHeader, block: Ld_ConstantDsl.() -> Ld_BodyResult)
 }
 
-interface Ld_NamespaceMaker: Ld_CommonNamespaceMaker, Ld_MemberHeaderMaker {
+internal interface Ld_NamespaceMaker: Ld_CommonNamespaceMaker, Ld_MemberHeaderMaker {
     fun include(namespace: Ld_Namespace)
 
     fun alias(
@@ -176,7 +176,7 @@ class Ld_CommonNamespaceDslImpl(
     }
 }
 
-class Ld_NamespaceBodyDslImpl(
+internal class Ld_NamespaceBodyDslImpl(
     private val maker: Ld_NamespaceMaker,
 ): Ld_NamespaceBodyDsl, Ld_CommonNamespaceDsl by Ld_CommonNamespaceDslImpl(maker) {
     override fun include(namespace: Ld_Namespace) {
@@ -299,11 +299,11 @@ class Ld_NamespaceBodyDslImpl(
     }
 }
 
-class Ld_NamespaceDslImpl(
+internal class Ld_NamespaceDslImpl(
     private val maker: Ld_NamespaceMaker,
 ): Ld_NamespaceDsl, Ld_NamespaceBodyDsl by Ld_NamespaceBodyDslImpl(maker), Ld_MemberDsl by Ld_MemberDslImpl(maker)
 
-class Ld_NamespaceBuilder(
+internal class Ld_NamespaceBuilder(
     baseNamespace: Ld_Namespace = Ld_Namespace.EMPTY
 ): Ld_MemberHeaderBuilder(baseNamespace.memberHeader.update(since = null)), Ld_NamespaceMaker {
     private val baseSince = baseNamespace.memberHeader.since
@@ -546,15 +546,15 @@ class Ld_NamespaceBuilder(
     }
 }
 
-class Ld_Namespace(
-    val memberHeader: Ld_MemberHeader,
-    val namespaces: ImmMap<R_Name, Ld_Namespace>,
-    val members: ImmList<Ld_NamespaceMember>,
-    val nameKinds: ImmMap<R_Name, Ld_ConflictMemberKind>,
+class Ld_Namespace internal constructor(
+    internal val memberHeader: Ld_MemberHeader,
+    internal val namespaces: ImmMap<R_Name, Ld_Namespace>,
+    internal val members: ImmList<Ld_NamespaceMember>,
+    internal val nameKinds: ImmMap<R_Name, Ld_ConflictMemberKind>,
 ) {
     class Result(val ns: L_Namespace, val memberHeader: Ld_MemberHeader)
 
-    fun process(ctx: Ld_NamespaceContext): FcFuture<Result> {
+    internal fun process(ctx: Ld_NamespaceContext): FcFuture<Result> {
         val namespaceFutures = namespaces.mapValues {
             val subCtx = ctx.nestedNamespaceContext(it.key)
             it.value.process(subCtx)
@@ -605,7 +605,7 @@ class Ld_Namespace(
         }
     }
 
-    companion object {
+    internal companion object {
         val EMPTY = Ld_Namespace(
             memberHeader = Ld_MemberHeader.NULL,
             namespaces = immMapOf(),
@@ -744,7 +744,7 @@ private class Ld_NamespaceMember_Constant(
     override fun process0(ctx: Ld_NamespaceContext, hdr: Ld_MemberHeader.Finish): FcFuture<List<L_NamespaceMember>> {
         val future = constant.process(ctx, simpleName)
         return ctx.fcExec.future().after(future).compute { lConstant ->
-            val doc = Ld_DocSymbols.constant(hdr, lConstant.type, lConstant.value)
+            val doc = Ld_DocSymbols.constant(hdr, lConstant.rType, lConstant.value)
             val member = L_NamespaceMember_Constant(hdr.fullName, hdr.lHeader, doc, lConstant)
             immListOf(member)
         }
@@ -759,7 +759,7 @@ private class Ld_NamespaceMember_Property(
     override fun process0(ctx: Ld_NamespaceContext, hdr: Ld_MemberHeader.Finish): FcFuture<List<L_NamespaceMember>> {
         return ctx.fcExec.future().after(ctx.finishCtxFuture).compute { finCtx ->
             val lProperty = property.finish(finCtx.typeCtx)
-            val doc = Ld_DocSymbols.property(hdr, lProperty.type, lProperty.pure)
+            val doc = Ld_DocSymbols.property(hdr, lProperty.rType, lProperty.pure)
             val member = L_NamespaceMember_Property(hdr.fullName, hdr.lHeader, doc, lProperty)
             immListOf(member)
         }

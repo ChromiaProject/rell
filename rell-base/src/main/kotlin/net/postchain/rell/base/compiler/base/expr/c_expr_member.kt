@@ -34,7 +34,7 @@ import net.postchain.rell.base.utils.mapValuesNotNull
 import net.postchain.rell.base.utils.plus
 import net.postchain.rell.base.utils.toImmMap
 
-class C_MemberLink(
+internal class C_MemberLink(
     val base: V_Expr,
     val selfType: R_Type,
     val linkPos: S_Pos,
@@ -42,7 +42,7 @@ class C_MemberLink(
     val safe: Boolean,
 )
 
-abstract class C_TypeValueMember(optionalName: R_Name?): C_TypeMember(optionalName) {
+internal abstract class C_TypeValueMember(optionalName: R_Name?): C_TypeMember(optionalName) {
     abstract fun nameMsg(): C_CodeMsg
     abstract fun ideCompletion(): IdeCompletion?
 
@@ -63,7 +63,7 @@ abstract class C_TypeValueMember(optionalName: R_Name?): C_TypeMember(optionalNa
         resTypeHint: C_TypeHint,
     ): V_TypeValueMember? = null
 
-    fun compile(
+    internal fun compile(
         ctx: C_ExprContext,
         link: C_MemberLink,
         ideInfoHand: C_IdeSymbolInfoHandle,
@@ -219,7 +219,7 @@ internal class C_TypeValueMember_Function(
     }
 }
 
-abstract class C_MemberAttr(
+internal abstract class C_MemberAttr(
     val ideName: R_IdeName?,
     val type: R_Type,
 ) {
@@ -238,7 +238,7 @@ abstract class C_MemberAttr(
     }
 }
 
-abstract class V_MemberAttr(val type: R_Type) {
+internal abstract class V_MemberAttr(val type: R_Type) {
     internal abstract fun calculator(): R_MemberCalculator
     internal abstract fun destination(pos: S_Pos, base: R_Expr): R_DestinationExpr
     internal abstract fun varPathItem(): C_VarPathItem?
@@ -246,7 +246,7 @@ abstract class V_MemberAttr(val type: R_Type) {
     open fun dbExpr(base: Db_Expr): Db_Expr? = null
 }
 
-abstract class C_MemberAttr_TupleAttr(
+internal abstract class C_MemberAttr_TupleAttr(
     type: R_Type,
     protected val fieldIndex: Int,
     protected val field: R_TupleField,
@@ -271,7 +271,7 @@ abstract class C_MemberAttr_TupleAttr(
     }
 }
 
-abstract class C_MemberAttr_StructAttr(
+internal abstract class C_MemberAttr_StructAttr(
     type: R_Type,
     protected val attr: R_Attribute,
 ): C_MemberAttr(attr.ideName, type) {
@@ -285,7 +285,7 @@ abstract class C_MemberAttr_StructAttr(
     ): V_MemberAttr_Common(type)
 }
 
-class C_MemberAttr_SysProperty(
+internal class C_MemberAttr_SysProperty(
     ideName: R_IdeName,
     type: R_Type,
     private val prop: C_SysProperty,
@@ -302,7 +302,7 @@ class C_MemberAttr_SysProperty(
     override fun vAttr(exprCtx: C_ExprContext, selfType: R_Type, pos: S_Pos): V_MemberAttr {
         val mSelfType = selfType.mType
         val typeArgs = M_TypeUtils.getTypeArgs(mSelfType)
-            .mapValuesNotNull { entry -> entry.value.getExactType()?.let { L_TypeUtils.getRType(it) } }
+            .mapValuesNotNull { entry -> entry.value.getExactType()?.let { L_TypeUtils.getRTypeOrNull(it) } }
             .mapKeys { it.key.name }
             .toImmMap()
         val resType = when {
@@ -386,7 +386,7 @@ internal sealed class C_EntityAttrRef(
 
             val docDec = DocDeclarationProto_EntityAttribute(
                     simpleName = ROWID_RNAME,
-                    type = L_TypeUtils.docType(R_RowidType.mType),
+                    type = R_RowidType.docType(),
                     isMutable = false,
                     keyIndexKind = R_KeyIndexKind.KEY,
                 )

@@ -155,7 +155,7 @@ internal sealed class C_ImportTarget {
     }
 }
 
-sealed class S_ImportTarget {
+internal sealed class S_ImportTarget {
     internal abstract fun compile(
         ctx: S_DefinitionContext,
         moduleName: R_ModuleName,
@@ -199,7 +199,7 @@ sealed class S_ImportTarget {
     }
 }
 
-object S_DefaultImportTarget: S_ImportTarget() {
+internal data object S_DefaultImportTarget: S_ImportTarget() {
     override fun compile(
         ctx: S_DefinitionContext,
         moduleName: R_ModuleName,
@@ -391,7 +391,7 @@ class S_ExactImportTargetItem(
     }
 }
 
-class S_ExactImportTarget(private val items: ImmList<S_ExactImportTargetItem>): S_ImportTarget() {
+internal class S_ExactImportTarget(private val items: ImmList<S_ExactImportTargetItem>): S_ImportTarget() {
     override fun compile(
         ctx: S_DefinitionContext,
         moduleName: R_ModuleName,
@@ -422,7 +422,7 @@ class S_ExactImportTarget(private val items: ImmList<S_ExactImportTargetItem>): 
     }
 }
 
-object S_WildcardImportTarget: S_ImportTarget() {
+internal data object S_WildcardImportTarget: S_ImportTarget() {
     override fun compile(
         ctx: S_DefinitionContext,
         moduleName: R_ModuleName,
@@ -449,7 +449,7 @@ object S_WildcardImportTarget: S_ImportTarget() {
     }
 }
 
-class S_ImportDefinition(
+class S_ImportDefinition internal constructor(
     base: S_DefinitionBase,
     private val alias: S_Name?,
     private val modulePath: S_ImportModulePath,

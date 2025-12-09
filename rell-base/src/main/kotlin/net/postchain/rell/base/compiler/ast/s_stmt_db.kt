@@ -26,7 +26,7 @@ import net.postchain.rell.base.utils.mapToImmList
 
 internal class C_UpdateTarget(val rTarget: R_UpdateTarget, val cFrom: C_AtFrom_Entities)
 
-sealed class S_UpdateTarget {
+internal sealed class S_UpdateTarget {
     internal abstract fun compile(
         ctx: C_ExprContext,
         stmtPos: S_Pos,
@@ -35,13 +35,13 @@ sealed class S_UpdateTarget {
     ): C_UpdateTarget?
 }
 
-class S_UpdateFromItem(
+internal class S_UpdateFromItem(
     val alias: S_Name?,
     val entityName: S_QualifiedName,
     val comment: S_Comment?,
 )
 
-class S_UpdateTarget_Simple(
+internal class S_UpdateTarget_Simple(
     private val cardinality: R_AtCardinality,
     private val from: ImmList<S_UpdateFromItem>,
     private val where: S_AtExprWhere,
@@ -107,7 +107,7 @@ class S_UpdateTarget_Simple(
     }
 }
 
-class S_UpdateTarget_Expr(private val expr: S_Expr): S_UpdateTarget() {
+internal class S_UpdateTarget_Expr(private val expr: S_Expr): S_UpdateTarget() {
     override fun compile(
             ctx: C_ExprContext,
             stmtPos: S_Pos,
@@ -197,7 +197,12 @@ class S_UpdateTarget_Expr(private val expr: S_Expr): S_UpdateTarget() {
     )
 }
 
-class S_UpdateWhat(val pos: S_Pos, val name: S_Name?, val op: S_AssignOpCode?, val expr: S_Expr) {
+internal class S_UpdateWhat internal constructor(
+    internal val pos: S_Pos,
+    internal val name: S_Name?,
+    internal val op: S_AssignOpCode?,
+    internal val expr: S_Expr,
+) {
     companion object {
         fun makeRWhat(entity: R_DbAtEntity, attr: R_Attribute, expr: Db_Expr, op: Db_BinaryOp?): R_UpdateStatementWhat {
             val resExpr = if (op == null) expr else {
@@ -210,7 +215,7 @@ class S_UpdateWhat(val pos: S_Pos, val name: S_Name?, val op: S_AssignOpCode?, v
     }
 }
 
-class S_UpdateStatement(
+internal class S_UpdateStatement(
     startPos: S_Pos,
     endPos: S_Pos,
     val target: S_UpdateTarget,
@@ -244,10 +249,10 @@ class S_UpdateStatement(
     }
 
     private fun compileWhat(
-            ctx: C_ExprContext,
-            target: R_UpdateTarget,
-            entity: R_EntityDefinition,
-            subValues: MutableList<V_Expr>
+        ctx: C_ExprContext,
+        target: R_UpdateTarget,
+        entity: R_EntityDefinition,
+        subValues: MutableList<V_Expr>,
     ): ImmList<R_UpdateStatementWhat> {
         val args = what.mapIndexed { i, w ->
             val nameHand = w.name?.compile(ctx, def = true)
@@ -277,7 +282,7 @@ class S_UpdateStatement(
     }
 }
 
-class S_DeleteStatement(
+internal class S_DeleteStatement(
     startPos: S_Pos,
     endPos: S_Pos,
     private val target: S_UpdateTarget,

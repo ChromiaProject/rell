@@ -176,13 +176,13 @@ abstract class DocDefinition {
     abstract val docSymbol: DocSymbol
     abstract val docSourcePos: DocSourcePos?
 
-    val docMembers: ImmMap<String, DocDefinition> by lazy {
+    internal val docMembers: ImmMap<String, DocDefinition> by lazy {
         getDocMembers0()
     }
 
     protected open fun getDocMembers0(): ImmMap<String, DocDefinition> = immMapOf()
 
-    fun getDocMember(name: String): DocDefinition? {
+    internal fun getDocMember(name: String): DocDefinition? {
         return docMembers[name]
     }
 }

@@ -38,10 +38,9 @@ object Ld_Parser {
 
     private fun convertTypeSet(typeSet: M_AstTypeSet, pos: Exception): Ld_TypeSet {
         return when (typeSet) {
-            M_AstTypeSet_All -> Ld_TypeSet_All
             is M_AstTypeSet_One -> Ld_TypeSet_One(convertType(typeSet.type, pos))
             is M_AstTypeSet_SubOf -> Ld_TypeSet_SubOf(convertType(typeSet.type, pos))
-            is M_AstTypeSet_SuperOf -> Ld_TypeSet_SuperOf(convertType(typeSet.type, pos))
+            else -> throw IllegalArgumentException()
         }
     }
 }

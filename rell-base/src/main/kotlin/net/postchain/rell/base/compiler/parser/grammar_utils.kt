@@ -13,9 +13,9 @@ import net.postchain.rell.base.model.expr.R_AtCardinality
 import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.plus
 
-class G_Node<out T>(val value: T, val firstToken: RellTokenMatch)
+internal class G_Node<out T>(val value: T, val firstToken: RellTokenMatch)
 
-sealed class G_BaseExprTail {
+internal sealed class G_BaseExprTail {
     abstract fun toExpr(base: S_Expr): S_Expr
 
     companion object {
@@ -41,31 +41,31 @@ sealed class G_BaseExprTail {
     }
 }
 
-class G_BaseExprTail_Member(val name: S_Name): G_BaseExprTail() {
+internal class G_BaseExprTail_Member(val name: S_Name): G_BaseExprTail() {
     override fun toExpr(base: S_Expr) = S_MemberExpr(base, name)
 }
 
-class G_BaseExprTail_SafeMember(val name: S_Name): G_BaseExprTail() {
+internal class G_BaseExprTail_SafeMember(val name: S_Name): G_BaseExprTail() {
     override fun toExpr(base: S_Expr) = S_SafeMemberExpr(base, name)
 }
 
-class G_BaseExprTail_Subscript(val pos: S_Pos, val expr: S_Expr): G_BaseExprTail() {
+internal class G_BaseExprTail_Subscript(val pos: S_Pos, val expr: S_Expr): G_BaseExprTail() {
     override fun toExpr(base: S_Expr) = S_SubscriptExpr(pos, base, expr)
 }
 
-class G_BaseExprTail_Call(val args: S_CallArguments): G_BaseExprTail() {
+internal class G_BaseExprTail_Call(val args: S_CallArguments): G_BaseExprTail() {
     override fun toExpr(base: S_Expr) = S_CallExpr(base, args)
 }
 
-class G_BaseExprTail_NotNull(val pos: S_Pos): G_BaseExprTail() {
+internal class G_BaseExprTail_NotNull(val pos: S_Pos): G_BaseExprTail() {
     override fun toExpr(base: S_Expr) = S_UnaryExpr(base.startPos, S_PosValue(pos, S_UnaryOp_NotNull), base)
 }
 
-class G_BaseExprTail_UnaryPostfixOp(val pos: S_Pos, val op: S_UnaryOp): G_BaseExprTail() {
+internal class G_BaseExprTail_UnaryPostfixOp(val pos: S_Pos, val op: S_UnaryOp): G_BaseExprTail() {
     override fun toExpr(base: S_Expr) = S_UnaryExpr(base.startPos, S_PosValue(pos, op), base)
 }
 
-class G_BaseExprTail_At(
+internal class G_BaseExprTail_At(
     val pos: S_Pos,
     val cardinality: R_AtCardinality,
     val where: S_AtExprWhere,

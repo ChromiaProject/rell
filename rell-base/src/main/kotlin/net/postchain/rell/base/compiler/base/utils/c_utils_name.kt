@@ -108,7 +108,7 @@ class C_RNamePath private constructor(val parts: ImmList<R_Name>) {
     }
 }
 
-class C_RFullNamePath private constructor(
+internal class C_RFullNamePath private constructor(
     val moduleName: R_ModuleName,
     val parts: ImmList<R_Name>,
 ) {

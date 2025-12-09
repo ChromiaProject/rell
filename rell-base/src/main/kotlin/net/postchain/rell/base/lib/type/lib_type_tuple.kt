@@ -13,7 +13,7 @@ import net.postchain.rell.base.model.expr.R_MemberCalculator_TupleAttr
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.mapIndexedToImmList
 
-object Lib_Type_Tuple {
+internal object Lib_Type_Tuple {
     fun getValueMembers(type: R_TupleType): ImmList<C_TypeValueMember> {
         return type.fields.mapIndexedToImmList { idx, field ->
             val mem = C_MemberAttr_RegularTupleAttr(field.type, idx, field)

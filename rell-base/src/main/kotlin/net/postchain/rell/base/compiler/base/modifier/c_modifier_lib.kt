@@ -11,7 +11,7 @@ import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.expr.R_AtWhatSort
 
-enum class C_AtSummarizationKind(
+internal enum class C_AtSummarizationKind(
     val annotation: String,
     since: String? = null,
 ) {
@@ -49,6 +49,8 @@ internal object C_ModifierFields {
     val OVERRIDE = C_ModifierField.flagKeyword(S_KeywordModifierKind.OVERRIDE)
     val EXTENDABLE = C_ModifierField.flagAnnotation("extendable")
     val EXTEND = C_Annotation_Extend.FIELD
+    val NATIVE = C_ModifierField.flagAnnotation("native")
+
     val COMPOUND = C_ModifierField.flagAnnotation("compound")
     val SINGULAR = C_ModifierField.flagAnnotation("singular")
 
@@ -62,7 +64,7 @@ internal object C_ModifierFields {
 
     val OMIT = C_ModifierField.flagAnnotation("omit")
     val SORT = C_ModifierField.choiceAnnotations(mapOf(C_Annotations.SORT to R_AtWhatSort.ASC, C_Annotations.SORT_DESC to R_AtWhatSort.DESC))
-    val SUMMARIZATION = C_ModifierField.choiceAnnotations(C_AtSummarizationKind.values().associateBy { it.annotation })
+    val SUMMARIZATION = C_ModifierField.choiceAnnotations(C_AtSummarizationKind.entries.associateBy { it.annotation })
 
     val DUMMY_ANNOTATION = C_Annotation_DummyAnnotation.FIELD
 }
@@ -93,7 +95,7 @@ private object C_Annotation_Extend {
     }
 }
 
-object C_Annotation_DummyAnnotation {
+internal object C_Annotation_DummyAnnotation {
     val FIELD = C_ModifierField.valueAnnotation("dummy_annotation", Evaluator, hidden = true)
 
     private object Evaluator: C_ModifierEvaluator<Unit>() {

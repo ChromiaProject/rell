@@ -137,31 +137,6 @@ class CLibFunctionTest: BaseCLibTest() {
         chkWarn("expr:smartnull:var:never:[x]", "expr:smartnull:var:never:[x]")
     }
 
-    @Test fun testInferTypeParamsFromReturnType() {
-        tst.wrapFunctionCallErrors = false
-        tst.typeCheck = false
-        tst.extraMod = makeModule {
-            function("f") {
-                generic("T")
-                result("T")
-                bodyMeta {
-                    val type = fnBodyMeta.typeArg("T")
-                    bodyContext { ctx ->
-                        ctx.globalCtx.outPrinter.print(type.strCode())
-                        Rt_UnitValue
-                    }
-                }
-            }
-        }
-
-        chkInferTypeParamsFromReturnType("integer")
-        chkInferTypeParamsFromReturnType("integer?")
-        chkInferTypeParamsFromReturnType("(integer,text)")
-        chkInferTypeParamsFromReturnType("list<integer>")
-        chkInferTypeParamsFromReturnType("map<integer,text>")
-        chkInferTypeParamsFromReturnType("map<text,list<set<(big_integer,decimal)>>>")
-    }
-
     private fun chkInferTypeParamsFromReturnType(type: String) {
         chkEx("{ val x: $type = f(); return 0; }", "int[0]")
         chkOut(type)
@@ -290,9 +265,6 @@ class CLibFunctionTest: BaseCLibTest() {
                 constructor { body { -> Rt_UnitValue } }
             }
         }
-
-        //TODO right error message on stack overflow
-        //chk("data()", "...")
     }
 
     @Test fun testVersionControlNamedArguments() {

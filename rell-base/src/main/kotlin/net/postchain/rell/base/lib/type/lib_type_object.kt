@@ -28,7 +28,7 @@ import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.mapToImmList
 
-object Lib_Type_Object {
+internal object Lib_Type_Object {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("object", abstract = true, hidden = true, since = "0.7.0") {
             comment("""
@@ -70,7 +70,7 @@ object Lib_Type_Object {
                 @see 1. <a href="https://docs.chromia.com/rell/language-features/database/overview#-operator"><code>@</code> operator - Chromia Documentation</a>
             """)
             supertypeStrategySpecial { mType ->
-                val rType = L_TypeUtils.getRType(mType)
+                val rType = L_TypeUtils.getRTypeOrNull(mType)
                 rType is R_ObjectType
             }
         }

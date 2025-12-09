@@ -17,7 +17,7 @@ import net.postchain.rell.base.utils.toImmMap
 
 typealias DocSymbolTransformer = (DocSymbol) -> DocSymbol
 
-object C_DocUtils {
+internal object C_DocUtils {
     /** Returns `null` if the value cannot be converted to the doc format (either it's too big, or the type is not
      * supported). */
     fun docValue(value: Rt_Value): DocValue? {

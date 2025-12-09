@@ -18,7 +18,7 @@ import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.*
 
-class V_FunctionCallArgs(
+internal class V_FunctionCallArgs(
     val exprs: ImmList<V_Expr>,
     val paramsToExprs: ImmList<Int>,
     val exprsToParams: ImmList<Int>,
@@ -194,15 +194,15 @@ internal class V_CommonFunctionCall_Partial(
     }
 }
 
-sealed class V_FunctionCallTarget {
+internal sealed class V_FunctionCallTarget {
     abstract fun toRTarget(): R_FunctionCallTarget
     open fun canBeDb() = false
     open fun toDbExpr(pos: S_Pos, dbBase: Db_Expr?, dbArgs: ImmList<Db_Expr>): Db_Expr = throw C_Errors.errExprDbNotAllowed(pos)
     open fun globalConstantRestriction(): V_GlobalConstantRestriction? = null
 }
 
-class V_FunctionCallTarget_RegularUserFunction(
-        private val fn: R_RoutineDefinition
+internal class V_FunctionCallTarget_RegularUserFunction(
+    private val fn: R_RoutineDefinition,
 ): V_FunctionCallTarget() {
     override fun toRTarget(): R_FunctionCallTarget = R_FunctionCallTarget_RegularUserFunction(fn)
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("fn:${fn.appLevelName}", "user function call")
@@ -219,25 +219,37 @@ internal class V_FunctionCallTarget_AbstractUserFunction(
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("fn:${baseFn.appLevelName}", "user function call")
 }
 
-class V_FunctionCallTarget_ExtendableUserFunction(
-        private val baseFn: R_FunctionDefinition,
-        private val descriptor: R_ExtendableFunctionDescriptor
+internal class V_FunctionCallTarget_ExtendableUserFunction(
+    private val baseFn: R_FunctionDefinition,
+    private val descriptor: R_ExtendableFunctionDescriptor,
 ): V_FunctionCallTarget() {
     override fun toRTarget(): R_FunctionCallTarget {
         return R_FunctionCallTarget_ExtendableUserFunction(baseFn, descriptor)
     }
 
-    override fun globalConstantRestriction() = V_GlobalConstantRestriction("fn:${baseFn.appLevelName}", "user function call")
+    override fun globalConstantRestriction() = V_GlobalConstantRestriction("fn:user:${baseFn.appLevelName}", "user function call")
 }
 
-class V_FunctionCallTarget_Operation(
-        private val op: R_OperationDefinition
+internal class V_FunctionCallTarget_NativeUserFunction(
+    private val fnName: R_FullName,
+    private val conversionsGetter: C_LateGetter<R_FunctionCallTarget_NativeUserFunction.Conversions>,
+): V_FunctionCallTarget() {
+    override fun toRTarget(): R_FunctionCallTarget {
+        val converters = conversionsGetter.get()
+        return R_FunctionCallTarget_NativeUserFunction(fnName, converters)
+    }
+
+    override fun globalConstantRestriction() = V_GlobalConstantRestriction("fn:native:$fnName", "native function call")
+}
+
+internal class V_FunctionCallTarget_Operation(
+    private val op: R_OperationDefinition,
 ): V_FunctionCallTarget() {
     override fun toRTarget(): R_FunctionCallTarget = R_FunctionCallTarget_Operation(op)
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("op:${op.appLevelName}", "operation call")
 }
 
-object V_FunctionCallTarget_FunctionValue: V_FunctionCallTarget() {
+internal data object V_FunctionCallTarget_FunctionValue: V_FunctionCallTarget() {
     override fun toRTarget(): R_FunctionCallTarget {
         return R_FunctionCallTarget_FunctionValue
     }
@@ -245,7 +257,7 @@ object V_FunctionCallTarget_FunctionValue: V_FunctionCallTarget() {
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("fn_value_call", "user function call")
 }
 
-class V_SysFunctionTargetDescriptor(
+internal class V_SysFunctionTargetDescriptor(
     val resType: R_Type,
     val rFn: R_SysFunction,
     val dbFn: Db_SysFunction?,
@@ -256,7 +268,7 @@ class V_SysFunctionTargetDescriptor(
     val pure: Boolean = pure && resType.completeFlags().pure
 }
 
-abstract class V_FunctionCallTarget_SysFunction(
+internal abstract class V_FunctionCallTarget_SysFunction(
     protected val desc: V_SysFunctionTargetDescriptor,
 ): V_FunctionCallTarget() {
     final override fun canBeDb() = desc.dbFn != null
@@ -271,7 +283,7 @@ abstract class V_FunctionCallTarget_SysFunction(
     }
 }
 
-class V_FunctionCallTarget_SysGlobalFunction(
+internal class V_FunctionCallTarget_SysGlobalFunction(
     desc: V_SysFunctionTargetDescriptor,
 ): V_FunctionCallTarget_SysFunction(desc) {
     override fun toRTarget(): R_FunctionCallTarget = R_FunctionCallTarget_SysGlobalFunction(desc.rFn, desc.fullName)
@@ -285,11 +297,11 @@ class V_FunctionCallTarget_SysGlobalFunction(
     }
 }
 
-abstract class V_FunctionCall(
+internal abstract class V_FunctionCall(
     val argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>,
 )
 
-class V_GlobalFunctionCall(
+internal class V_GlobalFunctionCall(
     private val expr: V_Expr,
     val ideInfo: C_IdeSymbolInfo? = null,
     argIdeInfos: ImmMap<R_Name, C_IdeSymbolInfo>,

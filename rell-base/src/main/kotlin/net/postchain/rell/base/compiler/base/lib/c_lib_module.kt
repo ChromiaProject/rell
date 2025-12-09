@@ -13,16 +13,16 @@ import net.postchain.rell.base.utils.associateByToImmMap
 class C_LibModule internal constructor(
     val lModule: L_Module,
     typeDefs: List<C_LibTypeDef>,
-    val namespace: C_LibNamespace,
+    internal val namespace: C_LibNamespace,
     internal val extensionTypes: ImmList<C_LibTypeExtension>,
 ) {
     private val typeDefsByName = typeDefs.associateByToImmMap { it.typeName }
 
-    fun getTypeDef(name: String): C_LibTypeDef {
+    internal fun getTypeDef(name: String): C_LibTypeDef {
         return typeDefsByName.getValue(name)
     }
 
-    companion object {
+    internal companion object {
         fun make(
             name: String,
             vararg imports: C_LibModule,

@@ -76,7 +76,7 @@ private class R_LazyType(private val valueType: R_Type): R_CompositeType("lazy<$
         val b = DocCode.builder()
         b.keyword("lazy")
         b.raw("<")
-        L_TypeUtils.docType(valueType.mType).genCode(b)
+        valueType.docType().genCode(b)
         b.raw(">")
         val doc = b.build()
         return C_LibType.make(this, doc)

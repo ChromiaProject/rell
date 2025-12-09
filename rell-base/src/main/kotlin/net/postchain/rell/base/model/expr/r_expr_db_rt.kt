@@ -203,8 +203,7 @@ data class ParameterizedSql(val sql: String, val params: ImmList<Rt_Value>) {
         // connection becomes invalid afterwards. Not allowing this to happen.
         val maxParams = 32767
         Rt_Utils.check(params.size <= maxParams) {
-            "sql:too_many_params:${params.size}" toCodeMsg
-                    "SQL query is too big (${params.size} parameters, max $maxParams)"
+            "sql:too_many_params:${params.size}" to "SQL query is too big (${params.size} parameters, max $maxParams)"
         }
         return SqlArgs(params)
     }

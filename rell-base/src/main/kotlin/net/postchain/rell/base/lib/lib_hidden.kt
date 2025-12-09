@@ -23,7 +23,7 @@ import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.checkEquals
 
-object Lib_RellHidden {
+internal object Lib_RellHidden {
     val MODULE = C_LibModule.make("rell.hidden", Lib_Rell.MODULE) {
         namespace("_test", since = "0.13.2") {
             function("crash", result = "unit", since = "0.13.2") {

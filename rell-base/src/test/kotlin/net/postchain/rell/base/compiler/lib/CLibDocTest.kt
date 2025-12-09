@@ -51,7 +51,7 @@ class CLibDocTest: BaseCLibTest() {
         val actual = RellTestUtils.processApp(rellCode) { tApp ->
             val struct = tApp.rApp.moduleMap.getValue(R_ModuleName.EMPTY).structs.getValue("__s")
             val attr = struct.struct.attributes.getValue(R_Name.of("x"))
-            val docCode = L_TypeUtils.docType(attr.type.mType).toCode()
+            val docCode = attr.type.docType().toCode()
             docCode.strCode()
         }
 
@@ -59,7 +59,6 @@ class CLibDocTest: BaseCLibTest() {
     }
 
     @Test fun testValue() {
-        chkValue("null", Rt_NullValue, "<null> = <null>")
         chkValue("unit", Rt_UnitValue, "TYPE = unit")
         chkValue("boolean", Rt_BooleanValue.FALSE, "TYPE = <false>")
         chkValue("boolean", Rt_BooleanValue.TRUE, "TYPE = <true>")
@@ -93,18 +92,6 @@ class CLibDocTest: BaseCLibTest() {
         chkValue("text", Rt_TextValue.get("foo\u001Fbar"), "TYPE = \"foo\\u001Fbar\"")
         chkValue("text", Rt_TextValue.get("Привет"), "TYPE = \"Привет\"")
         chkValue("text", Rt_TextValue.get("food".repeat(100)), "TYPE = \"${"food".repeat(25)}...")
-    }
-
-    @Test fun testValueComplex() {
-        chkValue("list<integer>", Rt_ListValue(R_ListType(R_IntegerType), mutableListOf()), "[list]<[integer]>")
-        chkValue("set<integer>", Rt_SetValue(R_SetType(R_IntegerType), mutableSetOf()), "[set]<[integer]>")
-
-        chkValue("map<integer,text>", Rt_MapValue(R_MapType(R_IntegerType, R_TextType), mutableMapOf()),
-            "[map]<[integer], [text]>")
-
-        val tupleType = R_TupleType.make(R_IntegerType, R_TextType)
-        chkValue("(integer,text)", Rt_TupleValue(tupleType, listOf(Rt_IntValue.get(123), Rt_TextValue.get("abc"))),
-            "([integer], [text])")
     }
 
     private fun chkValue(type: String, value: Rt_Value, expected: String) {

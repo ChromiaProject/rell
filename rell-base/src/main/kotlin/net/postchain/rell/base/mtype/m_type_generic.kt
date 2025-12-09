@@ -63,24 +63,23 @@ class M_GenericTypeParent(val genericType: M_GenericType, val args: ImmList<M_Ty
     }
 }
 
-abstract class M_GenericTypeAddon {
-    open fun strCode(typeName: String, args: List<M_TypeSet>): String {
+internal abstract class M_GenericTypeAddon {
+    open fun strCode(typeName: String, args: ImmList<M_TypeSet>): String {
         val argsStr = if (args.isEmpty()) "" else args.joinToString(",", "<", ">") { it.strCode() }
         return "${typeName}$argsStr"
     }
 
     open fun isSpecialSuperTypeOf(type: M_Type): Boolean = false
     open fun isPossibleSpecialCompositeSuperTypeOf(type: M_Type_Composite): Boolean = false
-    open fun getConversion(sourceType: M_Type): M_Conversion_Generic? = null
 }
 
-object M_GenericTypeAddon_None: M_GenericTypeAddon()
+internal object M_GenericTypeAddon_None: M_GenericTypeAddon()
 
 sealed class M_GenericType(
     val name: String,
     val params: ImmList<M_TypeParam>,
     val parent: M_GenericTypeParent?,
-    val addon: M_GenericTypeAddon,
+    internal val addon: M_GenericTypeAddon,
 ) {
     abstract val commonType: M_Type
 
@@ -90,23 +89,23 @@ sealed class M_GenericType(
         return if (params.isEmpty()) name else "$name${params.joinToString(",", "<", ">") { it.strCode() }}"
     }
 
-    abstract fun getType(args: List<M_TypeSet>): M_Type
+    internal abstract fun getType(args: List<M_TypeSet>): M_Type
 
-    fun getType(vararg args: M_TypeSet): M_Type {
+    internal fun getType(vararg args: M_TypeSet): M_Type {
         return getType(args.toImmList())
     }
 
-    fun getTypeSimple(args: List<M_Type>): M_Type {
+    internal fun getTypeSimple(args: List<M_Type>): M_Type {
         val mArgs = args.map { M_TypeSets.one(it) }
         return getType(mArgs)
     }
 
-    fun getTypeSimple(vararg args: M_Type): M_Type {
+    internal fun getTypeSimple(vararg args: M_Type): M_Type {
         val mArgs = args.map { M_TypeSets.one(it) }
         return getType(mArgs)
     }
 
-    companion object {
+    internal companion object {
         fun make(
             name: String,
             params: List<M_TypeParam>,
@@ -254,10 +253,6 @@ private class M_Type_Generic_Internal(
             return null
         }
         return parentList.firstOrNull { it.genericType0 == otherType.genericType0 }
-    }
-
-    override fun getConversion0(sourceType: M_Type): M_Conversion? {
-        return genericType.addon.getConversion(sourceType)
     }
 
     override fun validate() {

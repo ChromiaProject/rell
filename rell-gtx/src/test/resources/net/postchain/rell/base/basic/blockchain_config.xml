@@ -66,6 +66,22 @@
                             <entry key = "mymodule.rell">
                                 <string>classpath:/net/postchain/rell/base/module/mymodule.rell</string>
                             </entry>
+                            <entry key = "natj.rell">
+                                <string>classpath:/net/postchain/rell/base/module/natj.rell</string>
+                            </entry>
+                            <entry key = "natk.rell">
+                                <string>classpath:/net/postchain/rell/base/module/natk.rell</string>
+                            </entry>
+                        </dict>
+                    </entry>
+                    <entry key = "native">
+                        <dict>
+                            <entry key = "natj">
+                                <string>net.postchain.rell.gtx.JavaNativeModule</string>
+                            </entry>
+                            <entry key = "natk">
+                                <string>net.postchain.rell.gtx.BasicGtxModuleTest$NativeModule</string>
+                            </entry>
                         </dict>
                     </entry>
                 </dict>

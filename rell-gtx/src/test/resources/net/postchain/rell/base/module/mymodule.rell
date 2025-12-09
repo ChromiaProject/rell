@@ -44,3 +44,8 @@ query get_state() = some_state.x;
 operation set_state(x: integer) {
     update some_state(x = x);
 }
+
+import natj;
+import natk;
+query get_natj(a: integer, b: boolean?, c: text, d: text?) = natj.f(a, b, c, d);
+query get_natk(a: integer, b: boolean?, c: text, d: text?) = natk.g(a, b, c, d);

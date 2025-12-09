@@ -39,7 +39,7 @@ abstract class RellBaseTester(
     var defaultLib = true
     var testLib = false
     var hiddenLib = true
-    var extraMod: C_LibModule? = null
+    internal var extraMod: C_LibModule? = null
     var allowDbModificationsInObjectExprs = C_CompilerOptions.DEFAULT.allowDbModificationsInObjectExprs
     var allowLibNamedArgsAnyVersion = C_CompilerOptions.DEFAULT.allowLibNamedArgsAnyVersion
     var allowOlderCompatibilityVersion = true

@@ -4,6 +4,10 @@
 
 package net.postchain.rell.base.mtype
 
+import net.postchain.rell.base.compiler.base.core.C_TypeAdapter
+import net.postchain.rell.base.lmodel.L_TypeUtils
+import net.postchain.rell.base.model.R_NullableType
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.*
 
 enum class M_ParamArity(val many: Boolean) {
@@ -20,6 +24,8 @@ class M_FunctionParam(
     val exact: Boolean,
     val nullable: Boolean,
 ) {
+    val rType: R_Type get() = L_TypeUtils.getRType(type)
+
     override fun toString() = strCode()
 
     fun strCode(compact: Boolean = true): String {
@@ -36,7 +42,7 @@ class M_FunctionParam(
         return parts.joinToString(" ")
     }
 
-    fun replaceType(type: M_Type): M_FunctionParam {
+    internal fun replaceType(type: M_Type): M_FunctionParam {
         return if (type == this.type) this else M_FunctionParam(
             name = name,
             type = type,
@@ -112,20 +118,20 @@ class M_FunctionHeader(
         }
     }
 
-    fun strCode(): String {
+    internal fun strCode(): String {
         val genStr = if (typeParams.isEmpty()) "" else "<${typeParams.joinToString(",")}>"
         return "$genStr(${params.joinToString(",")}):$resultType"
     }
 
     override fun toString() = strCode()
 
-    fun validate() {
+    internal fun validate() {
         typeParams.forEach { it.validate() }
         resultType.validate()
         params.forEach { it.validate() }
     }
 
-    fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): M_FunctionHeader {
+    internal fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): M_FunctionHeader {
         val typeParams2 = typeParams.mapOrSame { it.replaceTypeParams(map) }
 
         val typeParamsMap = typeParams.indices
@@ -141,7 +147,7 @@ class M_FunctionHeader(
         }
     }
 
-    fun matchParams(nArgs: Int): M_FunctionParamsMatch? {
+    internal fun matchParams(nArgs: Int): M_FunctionParamsMatch? {
         val paramIndexes = matchArgsCount(nArgs)
         paramIndexes ?: return null
 
@@ -191,10 +197,10 @@ class M_FunctionHeader(
     }
 }
 
-class M_FunctionParamsMatch(
-    private val header: M_FunctionHeader,
-    val paramIndexes: ImmList<Int>,
-    val actualParams: ImmList<M_FunctionParam>,
+internal class M_FunctionParamsMatch(
+    internal val header: M_FunctionHeader,
+    internal val paramIndexes: ImmList<Int>,
+    internal val actualParams: ImmList<M_FunctionParam>,
 ) {
     init {
         checkEquals(paramIndexes.size, actualParams.size)
@@ -227,7 +233,7 @@ class M_FunctionParamsMatch(
 
         conversions ?: return null
 
-        return M_FunctionHeaderMatch(match.typeArgs, match.actualHeader, conversions)
+        return M_FunctionHeaderMatch(match.typeArgs, match.actualHeader)
     }
 
     private fun matchReplaceTypeParams(
@@ -282,12 +288,7 @@ class M_FunctionParamsMatch(
     )
 }
 
-class M_FunctionHeaderMatch(
-    val typeArgs: ImmMap<String, M_Type>,
-    val actualHeader: M_FunctionHeader,
-    val conversions: ImmList<M_Conversion>,
-) {
-    init {
-        checkEquals(conversions.size, actualHeader.params.size)
-    }
-}
+class M_FunctionHeaderMatch internal constructor(
+    internal val typeArgs: ImmMap<String, M_Type>,
+    internal val actualHeader: M_FunctionHeader,
+)

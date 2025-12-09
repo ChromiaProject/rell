@@ -16,50 +16,156 @@ import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.mtype.M_Type
-import net.postchain.rell.base.mtype.M_Type_Function
-import net.postchain.rell.base.mtype.M_Type_Tuple
-import net.postchain.rell.base.mtype.M_Types
-import net.postchain.rell.base.utils.ImmSet
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.immSetOf
-import net.postchain.rell.base.utils.toImmSet
+import net.postchain.rell.base.utils.*
 
-class C_TypeHint private constructor(val mTypes: ImmSet<M_Type>) {
+class C_TypeHint private constructor(val rTypes: ImmSet<R_Type>) {
     fun getFunctionType(): R_FunctionType? {
-        return mTypes
-            .mapNotNull { it as? M_Type_Function }
-            .mapNotNull { L_TypeUtils.getRType(it) as? R_FunctionType }
+        return rTypes
+            .mapNotNull { it as? R_FunctionType }
             .singleOrNull()
     }
 
     fun getTupleFieldHint(index: Int): C_TypeHint {
         check(index >= 0) { index }
-        val mResTypes = mTypes
-            .mapNotNull { it as? M_Type_Tuple }
-            .mapNotNull { it.fieldTypes.getOrNull(index) }
-            .filter { it != M_Types.NOTHING }
-        return ofTypes(mResTypes)
+        val rResTypes = rTypes
+            .mapNotNull { it as? R_TupleType }
+            .mapNotNull { it.fields.getOrNull(index)?.type }
+            .filter { it != R_NullType }
+        return ofTypes(rResTypes)
+    }
+
+    fun getSourceType(dstType: M_Type): R_Type? {
+        val rDstType = L_TypeUtils.getRType(dstType)
+        val resTypes = rTypes.mapNotNull {
+            getSourceType0(rDstType, it)
+        }
+        val resType = resTypes.singleOrNull()
+        return resType
     }
 
     companion object {
         val NONE: C_TypeHint = C_TypeHint(immSetOf())
 
-        fun ofTypes(types: List<M_Type>): C_TypeHint {
+        fun ofTypes(types: List<R_Type>): C_TypeHint {
             return if (types.isEmpty()) NONE else C_TypeHint(types.toImmSet())
-        }
-
-        fun ofType(mType: M_Type): C_TypeHint {
-            return ofTypes(immListOf(mType))
         }
 
         fun ofType(type: R_Type?): C_TypeHint {
             type ?: return NONE
-            return ofType(type.mType)
+            return ofTypes(immListOf(type))
         }
 
         fun combined(hints: List<C_TypeHint>): C_TypeHint {
-            val mTypes = hints.flatMap { it.mTypes }.toImmSet()
+            val mTypes = hints.flatMap { it.rTypes }.toImmSet()
             return C_TypeHint(mTypes)
+        }
+
+        private fun getSourceType0(rDstType: R_Type, rHintType: R_Type): R_Type? {
+            return when (rHintType) {
+                is R_NullableType -> when (rDstType) {
+                    is R_NullableType -> {
+                        val valueType = getSourceType0(rDstType.valueType, rHintType.valueType)
+                        valueType?.let { R_NullableType(valueType) }
+                    }
+                    else -> getSourceType0(rDstType, rHintType.valueType)
+                }
+                is R_GenericType -> getSourceTypeGeneric(rDstType, rHintType)
+                is R_LibGenericType -> getSourceTypeLibGeneric(rDstType, rHintType)
+                else -> null
+            }
+        }
+
+        private fun getSourceTypeGeneric(rDstType: R_Type, rHintType: R_GenericType): R_Type? {
+            if (rDstType !is R_LibGenericType) {
+                return null
+            }
+
+            var curType: R_Type? = rDstType
+            val transList = mutableListOf<R_TypeTransformer>()
+
+            while (curType != null) {
+                val parentType = curType.parentType
+                parentType ?: break
+
+                val trans = getTypeTransformer(parentType, curType)
+                trans ?: break
+                transList.add(trans)
+
+                if (parentType is R_GenericType && parentType.typeName == rHintType.typeName) {
+                    var res: R_Type = rHintType
+                    for (curTrans in transList.reversed()) {
+                        res = curTrans.transform(res) ?: return null
+                    }
+                    return res
+                }
+                curType = parentType
+            }
+
+            return null
+        }
+
+        private fun getSourceTypeLibGeneric(rDstType: R_Type, rHintType: R_BaseGenericType): R_Type? {
+            return when (rDstType) {
+                is R_LibGenericType -> when {
+                    rDstType.typeName == rHintType.typeName && rDstType.args.size == rHintType.args.size -> {
+                        val args = rDstType.args.withIndex().mapNotNullAllOrNull { (i, patArg) ->
+                            val hintArg = rHintType.args[i]
+                            matchTypeParam(patArg, hintArg)
+                        }
+                        args?.let { rHintType.typeMeta?.getTypeOrNull(args) }
+                    }
+                    else -> null
+                }
+                else -> null
+            }
+        }
+
+        private fun interface R_TypeTransformer {
+            fun transform(type: R_Type): R_Type?
+        }
+
+        private fun getTypeTransformer(srcType: R_Type, dstType: R_Type): R_TypeTransformer? {
+            return when (dstType) {
+                is R_BaseGenericType -> {
+                    if (dstType.args.none { it is R_VariableType }) {
+                        if (srcType == dstType) R_TypeTransformer { it } else null
+                    } else {
+                        val srcExtractors = srcType.typeExtractors
+                        val dstExtractors = dstType.args.mapNotNullAllOrNull { arg ->
+                            when (arg) {
+                                is R_VariableType -> srcExtractors[arg.name]
+                                else -> { _: R_Type -> arg }
+                            }
+                        }
+                        if (dstExtractors == null) null else R_TypeTransformer { type ->
+                            val transArgs = dstExtractors.mapNotNullAllOrNull { it(type) }
+                            if (transArgs == null) null else dstType.typeMeta?.getTypeOrNull(transArgs)
+                        }
+                    }
+                }
+                else -> null
+            }
+        }
+
+        private fun matchTypeParam(type1: R_Type, type2: R_Type): R_Type? {
+            return when (type1) {
+                type2 -> type1
+                is R_VariableType -> type2
+                is R_TupleType -> when (type2) {
+                    is R_TupleType -> when {
+                        type1.fields.size == type2.fields.size -> {
+                            val resFields = type1.fields.withIndex().mapNotNullAllOrNull { (i, f1) ->
+                                val f2 = type2.fields[i]
+                                matchTypeParam(f1.type, f2.type)?.let { R_TupleField(i, null, it) }
+                            }
+                            resFields?.let { R_TupleType(resFields) }
+                        }
+                        else -> null
+                    }
+                    else -> null
+                }
+                else -> null
+            }
         }
     }
 }

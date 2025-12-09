@@ -11,19 +11,18 @@ import net.postchain.rell.base.lib.Lib_Math
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_GtvCompatibility
-import net.postchain.rell.base.model.R_PrimitiveType
-import net.postchain.rell.base.model.R_TypeSqlAdapter
-import net.postchain.rell.base.model.R_TypeSqlAdapter_Primitive
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
+import net.postchain.rell.base.utils.immSetOf
 import net.postchain.rell.base.utils.mapToImmList
 import org.jooq.impl.SQLDataType
 import java.math.BigDecimal
 import java.math.BigInteger
+import kotlin.reflect.full.createType
 
 object Lib_Type_Integer {
     private const val SINCE0 = "0.6.0"
@@ -328,9 +327,16 @@ object R_IntegerType: R_PrimitiveType("integer") {
     override fun fromCli(s: String): Rt_Value = Rt_IntValue.get(s.toLong())
 
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Integer
+    override fun createNativeConversion(): R_TypeNativeConversion = NativeConversion
     override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Integer
 
     override fun getLibTypeDef() = Lib_Rell.INTEGER_TYPE
+
+    private object NativeConversion: R_TypeNativeConversion {
+        override val nativeTypes = immSetOf(Long::class.createType())
+        override fun rtToNative(value: Rt_Value) = value.asInteger()
+        override fun nativeToRt(value: Any?) = Rt_IntValue.get(value as Long)
+    }
 
     private object R_TypeSqlAdapter_Integer: R_TypeSqlAdapter_Primitive("integer", SQLDataType.BIGINT) {
         override fun toSqlValue(value: Rt_Value) = value.asInteger()

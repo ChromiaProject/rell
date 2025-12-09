@@ -23,12 +23,12 @@ import net.postchain.rell.base.utils.doc.DocModifier_Keyword
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import java.util.*
 
-class C_ModifierContext(
+internal class C_ModifierContext(
     val msgCtx: C_MessageContext,
     val symCtx: C_SymbolContext,
 )
 
-enum class C_ModifierTargetType {
+internal enum class C_ModifierTargetType {
     MODULE(C_DeclarationType.MODULE),
     NAMESPACE(C_DeclarationType.NAMESPACE),
     ENTITY(C_DeclarationType.ENTITY),
@@ -60,18 +60,18 @@ enum class C_ModifierTargetType {
 
 }
 
-class C_ModifierTarget(
-        val type: C_ModifierTargetType,
-        val name: C_Name?
+internal class C_ModifierTarget(
+    val type: C_ModifierTargetType,
+    val name: C_Name?,
 )
 
-sealed class C_AnnotationArg(val pos: S_Pos) {
+internal sealed class C_AnnotationArg(val pos: S_Pos) {
     abstract fun value(ctx: C_ModifierContext): Rt_Value?
     abstract fun name(ctx: C_ModifierContext): C_QualifiedNameHandle?
     internal abstract fun docArg(): DocAnnotationArg
 }
 
-class C_AnnotationArg_Value(pos: S_Pos, private val value: Rt_Value): C_AnnotationArg(pos) {
+internal class C_AnnotationArg_Value(pos: S_Pos, private val value: Rt_Value): C_AnnotationArg(pos) {
     override fun value(ctx: C_ModifierContext) = value
 
     override fun name(ctx: C_ModifierContext): C_QualifiedNameHandle? {
@@ -85,7 +85,7 @@ class C_AnnotationArg_Value(pos: S_Pos, private val value: Rt_Value): C_Annotati
     }
 }
 
-class C_AnnotationArg_Name(private val nameHand: C_QualifiedNameHandle): C_AnnotationArg(nameHand.pos) {
+internal class C_AnnotationArg_Name(private val nameHand: C_QualifiedNameHandle): C_AnnotationArg(nameHand.pos) {
     override fun value(ctx: C_ModifierContext): Rt_Value? {
         val nameStr = nameHand.str()
         ctx.msgCtx.error(pos, "ann:arg:name_not_value:$nameStr", "Value expected")
@@ -96,11 +96,11 @@ class C_AnnotationArg_Name(private val nameHand: C_QualifiedNameHandle): C_Annot
     override fun docArg() = DocAnnotationArg.makeName(nameHand.rName)
 }
 
-sealed class C_ModifierKey {
+internal sealed class C_ModifierKey {
     abstract fun codeMsg(): C_CodeMsg
 }
 
-class C_ModifierKey_Keyword private constructor(val kind: S_KeywordModifierKind): C_ModifierKey() {
+internal class C_ModifierKey_Keyword private constructor(val kind: S_KeywordModifierKind): C_ModifierKey() {
     override fun codeMsg() = "kw:${kind.kw}" toCodeMsg "modifier '${kind.kw}'"
 
     override fun equals(other: Any?) = this === other || (other is C_ModifierKey_Keyword && kind == other.kind)
@@ -112,7 +112,7 @@ class C_ModifierKey_Keyword private constructor(val kind: S_KeywordModifierKind)
     }
 }
 
-class C_ModifierKey_Annotation private constructor(val name: R_Name): C_ModifierKey() {
+internal class C_ModifierKey_Annotation private constructor(val name: R_Name): C_ModifierKey() {
     override fun codeMsg() = "ann:$name" toCodeMsg "annotation '@$name'"
 
     override fun equals(other: Any?) = this === other || (other is C_ModifierKey_Annotation && name == other.name)
@@ -125,7 +125,7 @@ class C_ModifierKey_Annotation private constructor(val name: R_Name): C_Modifier
     }
 }
 
-abstract class C_ModifierEvaluator<T: Any> {
+internal abstract class C_ModifierEvaluator<T: Any> {
     /** null result means error, so nullable values aren't supported */
     abstract fun evaluate(ctx: C_ModifierContext, modLink: C_ModifierLink, args: List<C_AnnotationArg>): T?
 }
@@ -141,7 +141,7 @@ private class C_ModifierEvaluator_Const<T: Any> private constructor(private val 
     }
 }
 
-class C_Modifier<T: Any>(val key: C_ModifierKey, val hidden: Boolean, val evaluator: C_ModifierEvaluator<T>)
+internal class C_Modifier<T: Any>(val key: C_ModifierKey, val hidden: Boolean, val evaluator: C_ModifierEvaluator<T>)
 
 private class C_ModifierValueEntry<T: Any>(private val mod: C_Modifier<T>, private val value: C_ModifierValue_Impl<T>) {
     fun isVisible(ctx: C_ModifierContext): Boolean {
@@ -153,9 +153,9 @@ private class C_ModifierValueEntry<T: Any>(private val mod: C_Modifier<T>, priva
     }
 }
 
-class C_ModifierValues(
-        type: C_ModifierTargetType,
-        name: C_Name?
+internal class C_ModifierValues(
+    type: C_ModifierTargetType,
+    name: C_Name?,
 ) {
     private val target = C_ModifierTarget(type, name)
     private val fields = mutableSetOf<C_ModifierField<*>>()
@@ -181,7 +181,7 @@ class C_ModifierValues(
     }
 }
 
-sealed class C_FixedModifierValues {
+internal sealed class C_FixedModifierValues {
     abstract fun compileKeyword(ctx: C_ModifierContext, kw: C_Name, kind: S_KeywordModifierKind): DocModifier?
     abstract fun compileAnnotation(ctx: C_ModifierContext, name: S_Name, args: List<C_AnnotationArg>): DocModifier?
 }
@@ -229,7 +229,7 @@ private class C_FixedModifierValues_Impl(
     }
 }
 
-class C_ModifierField<T: Any>(val mods: ImmList<C_Modifier<T>>) {
+internal class C_ModifierField<T: Any>(val mods: ImmList<C_Modifier<T>>) {
     init {
         val modKeys = this.mods.map { it.key }.toImmSet()
         checkEquals(modKeys.size, this.mods.size)
@@ -268,11 +268,11 @@ class C_ModifierField<T: Any>(val mods: ImmList<C_Modifier<T>>) {
     }
 }
 
-class C_ModifierLink(val key: C_ModifierKey, val name: C_Name, val target: C_ModifierTarget) {
+internal class C_ModifierLink(val key: C_ModifierKey, val name: C_Name, val target: C_ModifierTarget) {
     val pos = name.pos
 }
 
-sealed class C_ModifierValue<T: Any> {
+internal sealed class C_ModifierValue<T: Any> {
     abstract fun hasValue(): Boolean
     abstract fun value(): T?
     abstract fun pos(): S_Pos?

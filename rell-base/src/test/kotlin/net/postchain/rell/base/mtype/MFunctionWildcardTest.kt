@@ -6,7 +6,7 @@ package net.postchain.rell.base.mtype
 
 import kotlin.test.Test
 
-class MFunctionWildcardTest: BaseMFunctionTest() {
+internal class MFunctionWildcardTest: BaseMFunctionTest() {
     @Test fun testGlobalInput() {
         chkGlobalEx("<T>(data<T>,T):unit", "data<int>,int", "[T=int] (a:data<int>,b:int):unit")
         chkGlobalEx("<T>(data<T>,T):unit", "data<-int>,int", "n/a")

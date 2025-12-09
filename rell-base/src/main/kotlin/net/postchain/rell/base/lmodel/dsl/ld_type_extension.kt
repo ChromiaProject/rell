@@ -14,7 +14,7 @@ import net.postchain.rell.base.utils.futures.component1
 import net.postchain.rell.base.utils.futures.component2
 import net.postchain.rell.base.utils.immListOf
 
-class Ld_NamespaceMember_TypeExtension(
+internal class Ld_NamespaceMember_TypeExtension(
     simpleName: R_Name,
     memberHeader: Ld_MemberHeader,
     private val type: Ld_Type,
@@ -39,9 +39,10 @@ class Ld_NamespaceMember_TypeExtension(
         val typeParams = lTypeDef.mGenericType.params.associate { R_Name.of(it.name) to M_Types.param(it) }
         val typeCtx = ctx.typeCtx.subCtx(typeParams)
         val mSelfType = type.finish(typeCtx)
+        val rSelfType = L_TypeUtils.getRType(mSelfType)
 
         val docTypeParams = L_TypeUtils.docTypeParams(lTypeDef.mGenericType.params)
-        val docSelfType = L_TypeUtils.docType(mSelfType)
+        val docSelfType = rSelfType.docType()
         val docDec = DocDeclarationProto_TypeExtension(hdr.simpleName, docTypeParams, docSelfType).toLazyDeclaration()
         val docSymbol = hdr.docSymbol(docDec)
 

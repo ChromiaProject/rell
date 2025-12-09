@@ -268,7 +268,7 @@ class S_QueryDefinition(
         }
 
         ctx.executor.onPass(C_CompilerPass.DOCS) {
-            val docType = L_TypeUtils.docType(rBody.retType.mType)
+            val docType = rBody.retType.docType()
             val paramNames = header.params.list.mapToImmList { it.name.str }
             val docDec = DocDeclarationProto_Query(
                 docModifiers,

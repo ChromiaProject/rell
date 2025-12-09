@@ -53,7 +53,7 @@ object Lib_Test_BlockClock {
                 value { ctx ->
                     val t0 = ctx.exeCtx.testBlockClock.getLastBlockTime()
                     val t = Rt_Utils.checkNotNull(t0) {
-                        "no_last_block_time" toCodeMsg "No last block time"
+                        "no_last_block_time" to "No last block time"
                     }
                     Rt_IntValue.get(t)
                 }
@@ -219,7 +219,7 @@ class Rt_TestBlockClock(state: State = DEFAULT_STATE) {
 
     fun setBlockInterval(interval: Long) {
         Rt_Utils.check(interval > 0) {
-            "block_interval:non_positive:$interval" toCodeMsg "Block interval must be positive (was: $interval)"
+            "block_interval:non_positive:$interval" to "Block interval must be positive (was: $interval)"
         }
         blockInterval = interval
     }
@@ -231,7 +231,7 @@ class Rt_TestBlockClock(state: State = DEFAULT_STATE) {
 
     fun setNextBlockTimeDelta(delta: Long) {
         Rt_Utils.check(delta > 0) {
-            "block_time_delta:non_positive:$delta" toCodeMsg "Block time delta must be positive (was: $delta)"
+            "block_time_delta:non_positive:$delta" to "Block time delta must be positive (was: $delta)"
         }
         val last = lastBlockTime
         last ?: return
@@ -240,13 +240,13 @@ class Rt_TestBlockClock(state: State = DEFAULT_STATE) {
 
     private fun checkBlockTime(time: Long) {
         Rt_Utils.check(time >= 0) {
-            "block_time:negative:$time" toCodeMsg "Block time cannot be negative (was: $time)"
+            "block_time:negative:$time" to "Block time cannot be negative (was: $time)"
         }
 
         val last = lastBlockTime
         if (last != null) {
             Rt_Utils.check(time > last) {
-                "block_time:too_old:$last:$time" toCodeMsg
+                "block_time:too_old:$last:$time" to
                         "Block time must be newer than the last time (last: $last, next: $time)"
             }
         }

@@ -15,14 +15,14 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_Type_Tuple
 
-object C_LibUtils {
+internal object C_LibUtils {
     val DEFAULT_MODULE = R_ModuleName.EMPTY
     val DEFAULT_MODULE_STR = DEFAULT_MODULE.str()
 
     fun defName(name: String) = C_DefinitionName(DEFAULT_MODULE_STR, name)
 
     fun isImmutableType(mType: M_Type): Boolean {
-        val rType = L_TypeUtils.getRType(mType)
+        val rType = L_TypeUtils.getRTypeOrNull(mType)
         return rType != null && !rType.completeFlags().mutable
     }
 

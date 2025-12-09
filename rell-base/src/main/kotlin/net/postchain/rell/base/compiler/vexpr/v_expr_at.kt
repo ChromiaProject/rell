@@ -173,7 +173,7 @@ internal class V_AtExprBase(
     }
 }
 
-class V_TopDbAtExpr internal constructor(
+internal class V_TopDbAtExpr internal constructor(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val resultType: R_Type,
@@ -247,16 +247,16 @@ internal class V_ColAtFrom(
     }
 }
 
-class V_ColAtWhatField(val expr: V_Expr, val flags: R_AtWhatFieldFlags, val summarization: R_ColAtFieldSummarization) {
+internal class V_ColAtWhatField(val expr: V_Expr, val flags: R_AtWhatFieldFlags, val summarization: R_ColAtFieldSummarization) {
     fun toRField(): R_ColAtWhatField {
         val rExpr = expr.toRExpr()
         return R_ColAtWhatField(rExpr, flags, summarization)
     }
 }
 
-class V_ColAtWhat(
+internal class V_ColAtWhat(
     val fields: ImmList<V_ColAtWhatField>,
-    val extras: R_ColAtWhatExtras,
+    private val extras: R_ColAtWhatExtras,
 ) {
     init {
         checkEquals(extras.fieldCount, fields.size)

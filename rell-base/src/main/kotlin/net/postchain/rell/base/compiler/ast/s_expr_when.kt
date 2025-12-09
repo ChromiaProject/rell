@@ -69,7 +69,7 @@ internal class C_WhenChooser(details: C_WhenChooserDetails) {
     }
 }
 
-sealed class S_WhenCondition {
+internal sealed class S_WhenCondition {
     internal abstract fun compileBad(ctx: C_ExprContext)
 
     internal abstract fun compile(
@@ -82,7 +82,7 @@ sealed class S_WhenCondition {
     )
 }
 
-class S_WhenConditionExpr(val exprs: ImmList<S_Expr>): S_WhenCondition() {
+internal class S_WhenConditionExpr(val exprs: ImmList<S_Expr>): S_WhenCondition() {
     override fun compileBad(ctx: C_ExprContext) {
         for (expr in exprs) {
             expr.compileOpt(ctx)
@@ -164,7 +164,7 @@ class S_WhenConditionExpr(val exprs: ImmList<S_Expr>): S_WhenCondition() {
     }
 }
 
-class S_WhenCondtiionElse(val pos: S_Pos): S_WhenCondition() {
+internal class S_WhenCondtiionElse(val pos: S_Pos): S_WhenCondition() {
     override fun compileBad(ctx: C_ExprContext) {
         // Do nothing.
     }
@@ -188,9 +188,9 @@ class S_WhenCondtiionElse(val pos: S_Pos): S_WhenCondition() {
     }
 }
 
-class S_WhenExprCase(val cond: S_WhenCondition, val expr: S_Expr)
+internal class S_WhenExprCase(val cond: S_WhenCondition, val expr: S_Expr)
 
-class S_WhenExpr(
+internal class S_WhenExpr(
     pos: S_Pos,
     val expr: S_Expr?,
     val cases: ImmList<S_WhenExprCase>,

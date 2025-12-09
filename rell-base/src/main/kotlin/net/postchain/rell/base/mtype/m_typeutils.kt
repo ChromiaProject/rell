@@ -65,8 +65,7 @@ enum class M_TypeExpandMode {
 
 sealed class M_Conversion
 data object M_Conversion_Direct: M_Conversion()
-class M_Conversion_Nullable(val resultType: M_Type, val valueConversion: M_Conversion): M_Conversion()
-abstract class M_Conversion_Generic: M_Conversion()
+class M_Conversion_Nullable(val resultType: M_Type): M_Conversion()
 
 object M_TypeUtils {
     fun matchTypeIsSuperTypeOf(type1: M_Type, type2: M_Type, rel: M_TypeMatchSuperRelation): Boolean {

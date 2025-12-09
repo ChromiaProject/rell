@@ -19,7 +19,7 @@ import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 
 abstract class Ld_PropertyValue {
-    internal abstract fun finish(type: M_Type): Finish
+    internal abstract fun finish(type: R_Type): Finish
 
     internal class Finish(val prop: C_SysProperty, val pure: Boolean)
 
@@ -27,11 +27,10 @@ abstract class Ld_PropertyValue {
         private val internalState: Ld_InternalFunctionBodyState,
         private val block: (Rt_CallContext, R_Type) -> Rt_Value,
     ): Ld_PropertyValue() {
-        override fun finish(type: M_Type): Finish {
-            val rType = L_TypeUtils.getRTypeNotNull(type)
+        override fun finish(type: R_Type): Finish {
             val internalBody = internalState.bodyContextN { ctx, args ->
                 Rt_Utils.checkEquals(args.size, 0)
-                block(ctx, rType)
+                block(ctx, type)
             }
             val prop = object: C_SysProperty() {
                 override fun getFunction(type: R_Type) = internalBody.fn
@@ -44,7 +43,7 @@ abstract class Ld_PropertyValue {
         private val pure: Boolean,
         private val valueGetter: (Rt_Value, R_Type) -> Rt_Value,
     ): Ld_PropertyValue() {
-        override fun finish(type: M_Type): Finish {
+        override fun finish(type: R_Type): Finish {
             val prop = object: C_SysProperty() {
                 override fun getFunction(type: R_Type): C_SysFunction {
                     val body = C_SysFunctionBody.simple(pure = pure) { self ->
@@ -60,7 +59,7 @@ abstract class Ld_PropertyValue {
     private class Ld_PropertyValue_SpecialTypeProp(
         private val body: C_SysFunctionBody,
     ): Ld_PropertyValue() {
-        override fun finish(type: M_Type): Finish {
+        override fun finish(type: R_Type): Finish {
             val fn = C_SysFunction.direct(body)
             val prop = object: C_SysProperty() {
                 override fun getFunction(type: R_Type) = fn
@@ -90,9 +89,9 @@ class Ld_NamespaceProperty(
     private val value: Ld_PropertyValue,
 ) {
     fun finish(ctx: Ld_TypeFinishContext): L_NamespaceProperty {
-        val mType = type.finish(ctx)
-        val valueFin = value.finish(mType)
-        return L_NamespaceProperty(mType, valueFin.prop, valueFin.pure)
+        val rType = type.finishR(ctx)
+        val valueFin = value.finish(rType)
+        return L_NamespaceProperty(rType, valueFin.prop, valueFin.pure)
     }
 }
 
@@ -102,9 +101,9 @@ class Ld_TypeProperty(
     private val value: Ld_PropertyValue,
 ) {
     fun finish(ctx: Ld_TypeFinishContext): L_TypeProperty {
-        val mType = type.finish(ctx)
-        val valueFin = value.finish(mType)
-        return L_TypeProperty(simpleName, mType, valueFin.prop, valueFin.pure)
+        val rType = type.finishR(ctx)
+        val valueFin = value.finish(rType)
+        return L_TypeProperty(simpleName, rType, valueFin.prop, valueFin.pure)
     }
 }
 

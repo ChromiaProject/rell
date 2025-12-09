@@ -109,7 +109,7 @@ class C_NamespaceElement(
     }
 }
 
-class C_NamespaceEntry(
+internal class C_NamespaceEntry(
     val directMembers: ImmList<C_NamespaceMember>,
     val importMembers: ImmList<C_NamespaceMember>,
 ) {
@@ -146,11 +146,11 @@ class C_NamespaceEntry(
 }
 
 sealed class C_Namespace {
-    abstract fun getEntries(): ImmMap<R_Name, C_NamespaceEntry>
-    abstract fun getEntry(name: R_Name): C_NamespaceEntry?
-    abstract fun getDocMembers(): ImmMap<String, DocDefinition>
+    internal abstract fun getEntries(): ImmMap<R_Name, C_NamespaceEntry>
+    internal abstract fun getEntry(name: R_Name): C_NamespaceEntry?
+    internal abstract fun getDocMembers(): ImmMap<String, DocDefinition>
 
-    fun getElement(
+    internal fun getElement(
         name: R_Name,
         langVersion: R_LangVersion?,
         tags: List<C_NamespaceMemberTag> = immListOf(),
@@ -159,7 +159,7 @@ sealed class C_Namespace {
         return entry?.element(langVersion, tags)
     }
 
-    companion object {
+    internal companion object {
         val EMPTY: C_Namespace = C_BasicNamespace(immMapOf())
 
         fun makeLate(getter: LateGetter<C_Namespace>): C_Namespace {
@@ -193,7 +193,7 @@ private class C_LateNamespace(private val getter: LateGetter<C_Namespace>): C_Na
     override fun getDocMembers() = getter.get().getDocMembers()
 }
 
-class C_NamespaceBuilder {
+internal class C_NamespaceBuilder {
     private val directMembers = mutableMultimapOf<R_Name, C_NamespaceMember>()
     private val importMembers = mutableMultimapOf<R_Name, C_NamespaceMember>()
 

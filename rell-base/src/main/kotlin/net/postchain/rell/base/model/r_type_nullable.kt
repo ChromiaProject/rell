@@ -11,6 +11,7 @@ import net.postchain.rell.base.compiler.base.core.C_TypeAdapter
 import net.postchain.rell.base.compiler.base.core.C_TypeAdapter_Nullable
 import net.postchain.rell.base.compiler.base.lib.C_LibType
 import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
+import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.mtype.M_Types
 import net.postchain.rell.base.runtime.GtvRtConversion
 import net.postchain.rell.base.runtime.GtvToRtContext
@@ -20,7 +21,12 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
+import net.postchain.rell.base.utils.ImmSet
+import net.postchain.rell.base.utils.doc.DocType
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.toImmSet
+import kotlin.reflect.KType
+import kotlin.reflect.full.createType
 
 class R_NullableType(val valueType: R_Type): R_CompositeType(calcName(valueType)) {
     override fun equals0(other: R_Type) = other is R_NullableType && valueType == other.valueType
@@ -46,6 +52,8 @@ class R_NullableType(val valueType: R_Type): R_CompositeType(calcName(valueType)
                 || valueType.isAssignableFrom(type)
     }
 
+    override fun isValid() = valueType != R_UnitType
+
     override fun getTypeAdapter(sourceType: R_Type): C_TypeAdapter? {
         var adapter = super.getTypeAdapter(sourceType)
         if (adapter != null) {
@@ -62,11 +70,17 @@ class R_NullableType(val valueType: R_Type): R_CompositeType(calcName(valueType)
 
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Nullable(this)
     override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Nullable()
+    override fun createNativeConversion(): R_TypeNativeConversion? = valueType.nativeConversion?.let { NativeConversion(it) }
 
     override fun toMetaGtv() = mapOf(
         "type" to "nullable".toGtv(),
         "value" to valueType.toMetaGtv(),
     ).toGtv()
+
+    override fun docType(): DocType {
+        val docValueType = valueType.docType()
+        return DocType.nullable(docValueType)
+    }
 
     private inner class R_TypeSqlAdapter_Nullable: R_TypeSqlAdapter_Some(null) {
         override fun isSqlCompatible(compilerOptions: C_CompilerOptions): Boolean {
@@ -88,6 +102,24 @@ class R_NullableType(val valueType: R_Type): R_CompositeType(calcName(valueType)
 
         override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
             return valueType.sqlAdapter.fromSql(row, idx, true)
+        }
+    }
+
+    private class NativeConversion(private val valueAdapter: R_TypeNativeConversion): R_TypeNativeConversion {
+        override val nativeTypes = let {
+            val valueTypes = valueAdapter.nativeTypes
+            val nullableTypes = valueTypes
+                .filter { !it.isMarkedNullable }
+                .mapNotNull { it.classifier?.createType(nullable = true) }
+            (valueTypes + nullableTypes).toImmSet()
+        }
+
+        override fun rtToNative(value: Rt_Value): Any? {
+            return if (value == Rt_NullValue) null else valueAdapter.rtToNative(value)
+        }
+
+        override fun nativeToRt(value: Any?): Rt_Value {
+            return if (value == null) Rt_NullValue else valueAdapter.nativeToRt(value)
         }
     }
 

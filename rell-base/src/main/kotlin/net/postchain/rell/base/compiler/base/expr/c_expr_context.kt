@@ -107,12 +107,12 @@ class C_StmtContext private constructor(
 ) {
     internal val appCtx = blkCtx.appCtx
     internal val fnCtx = blkCtx.fnCtx
-    val defCtx = fnCtx.defCtx
-    val nsCtx = defCtx.nsCtx
-    val symCtx = defCtx.symCtx
-    val msgCtx = nsCtx.msgCtx
-    val globalCtx = defCtx.globalCtx
-    val executor = defCtx.executor
+    internal val defCtx = fnCtx.defCtx
+    internal val nsCtx = defCtx.nsCtx
+    internal val symCtx = defCtx.symCtx
+    internal val msgCtx = nsCtx.msgCtx
+    internal val globalCtx = defCtx.globalCtx
+    internal val executor = defCtx.executor
 
     internal fun copy(
         blkCtx: C_BlockContext = this.blkCtx,
@@ -135,7 +135,7 @@ class C_StmtContext private constructor(
         )
     }
 
-    fun updateVarStates(delta: C_VarStatesDelta): C_StmtContext {
+    internal fun updateVarStates(delta: C_VarStatesDelta): C_StmtContext {
         return copy(exprCtx = exprCtx.updateVarStates(delta))
     }
 

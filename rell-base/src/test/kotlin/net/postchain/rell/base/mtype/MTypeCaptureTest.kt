@@ -6,7 +6,7 @@ package net.postchain.rell.base.mtype
 
 import kotlin.test.Test
 
-class MTypeCaptureTest: BaseMTypeTest() {
+internal class MTypeCaptureTest: BaseMTypeTest() {
     @Test fun testIsSuperTypeOf() {
         chkIsSuperTypeOfSelf("CAP<-int>")
         chkIsSuperTypeOfSuper("CAP<-int>", "anything", "num", "int", "CAP<+num>", "CAP<+int>", self = false)

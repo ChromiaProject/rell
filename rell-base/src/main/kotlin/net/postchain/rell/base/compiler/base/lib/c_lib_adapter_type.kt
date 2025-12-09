@@ -13,10 +13,7 @@ import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtValue
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.lmodel.*
-import net.postchain.rell.base.model.R_FullName
-import net.postchain.rell.base.model.R_IdeName
-import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.mtype.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocSymbol
@@ -199,6 +196,8 @@ private object C_LibTypeAdapterInternal {
         mSpecificType: M_Type?,
         naming: C_MemberNaming,
     ): ImmList<C_LibFuncCase<V_GlobalFunctionCall>> {
+        val commonType = lTypeDef.mGenericType.commonType
+
         // Trying with and without validation. If there are no constructors when validation is enabled, take all
         // constructors that don't pass the validation, as they will be validated again when called anyway.
         for (validate in listOf(true, false)) {
@@ -207,7 +206,7 @@ private object C_LibTypeAdapterInternal {
                     lTypeDef.fullName,
                     con,
                     typeParams,
-                    lTypeDef.mGenericType.commonType,
+                    commonType,
                     mSpecificType,
                     naming,
                     validate = validate,
@@ -233,13 +232,13 @@ private object C_LibTypeAdapterInternal {
     ): C_LibFuncCase<V_GlobalFunctionCall>? {
         val con = mem.member
 
-        val mHeader = M_FunctionHeader(
+        val intHeader = L_InternalFunctionHeader(
             typeParams = outerTypeParams + con.header.typeParams,
             resultType = selfType,
-            params = con.header.params.mapToImmList { it.mParam },
+            params = con.header.params,
         )
 
-        var header = L_FunctionHeader(mHeader, params = con.header.params)
+        var header = L_FunctionHeader(intHeader)
 
         val outerTypeArgs = if (specificSelfType == null) immMapOf() else M_TypeUtils.getTypeArgs(specificSelfType)
 
@@ -256,7 +255,7 @@ private object C_LibTypeAdapterInternal {
 
         val outerTypeArgTypes = outerTypeArgs
             .mapKeys { R_Name.of(it.key.name) }
-            .mapValuesToImmMap { it.value.captureType() }
+            .mapValuesToImmMap { L_TypeUtils.getRType(it.value.captureType()) }
 
         val flags = L_FunctionFlags(isPure = con.pure, isStatic = false)
         val function = L_Function(typeName, header, flags, con.body)
@@ -291,7 +290,7 @@ private class C_LibTypeBodyBuilder(
 
     fun addConstant(header: C_LibTypeMemberHeader, constant: L_Constant) {
         val defName = defPath.subName(header.simpleName)
-        val rType = L_TypeUtils.getRTypeNotNull(constant.type)
+        val rType = constant.rType
         val varId = C_LibConstantVarId(typeName.append(header.simpleName), constant)
         val prop = C_NamespaceProperty_RtValue(constant.value, rType, varId)
         val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_CONSTANT, doc = header.docSymbol)
@@ -303,7 +302,7 @@ private class C_LibTypeBodyBuilder(
         val ideKind = if (property.pure) IdeSymbolKind.MEM_SYS_PROPERTY_PURE else IdeSymbolKind.MEM_SYS_PROPERTY
         val ideInfo = C_IdeSymbolInfo.direct(ideKind, doc = header.docSymbol)
         val ideName = R_IdeName(header.simpleName, ideInfo)
-        val rResType = L_TypeUtils.getRTypeNotNull(property.type)
+        val rResType = property.rType
         val naming = namingFactory(header.simpleName)
         val attr: C_MemberAttr = C_MemberAttr_SysProperty(
             ideName,

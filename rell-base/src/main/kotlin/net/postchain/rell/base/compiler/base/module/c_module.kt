@@ -81,7 +81,7 @@ internal class C_ModuleKey internal constructor(
     override fun toString() = "[${keyStr()}]"
 }
 
-sealed class C_ContainerKey {
+internal sealed class C_ContainerKey {
     abstract fun defModuleName(): C_DefinitionModuleName
     fun keyStr(): String = defModuleName().str()
     final override fun toString() = defModuleName().str()
@@ -97,7 +97,7 @@ internal class C_ModuleContainerKey private constructor(val moduleKey: C_ModuleK
     }
 }
 
-object C_ReplContainerKey: C_ContainerKey() {
+internal object C_ReplContainerKey: C_ContainerKey() {
     override fun defModuleName() = C_DefinitionModuleName("<console>")
 }
 

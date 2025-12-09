@@ -80,7 +80,7 @@ class C_StatementVarsBlock {
     fun modified() = modified.toImmSet()
 }
 
-class C_SystemDefsScope(
+internal class C_SystemDefsScope(
     val ns: C_Namespace,
     val nsProto: C_SysNsProto,
     val modules: ImmList<C_LibModule>,

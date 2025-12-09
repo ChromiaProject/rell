@@ -9,10 +9,7 @@ import net.postchain.rell.base.lib.test.Rt_TestOpValue
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.Rt_CallContext
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.utils.CommonUtils
-import net.postchain.rell.base.utils.LazyString
-import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.mapIndexedToImmList
+import net.postchain.rell.base.utils.*
 
 abstract class R_FunctionCallTarget {
     abstract fun call(callCtx: Rt_CallContext, baseValue: Rt_Value?, values: List<Rt_Value>): Rt_Value
@@ -60,6 +57,26 @@ internal class R_FunctionCallTarget_AbstractUserFunction(
     }
 
     override fun str() = baseFn.appLevelName
+}
+
+internal class R_FunctionCallTarget_NativeUserFunction(
+    private val fnName: R_FullName,
+    private val conversions: Conversions,
+): R_FunctionCallTarget() {
+    override fun str() = fnName.str()
+
+    override fun call(callCtx: Rt_CallContext, baseValue: Rt_Value?, values: List<Rt_Value>): Rt_Value {
+        checkEquals(baseValue, null)
+        val fn = callCtx.appCtx.nativeFunctions.getValue(fnName)
+        val nativeArgs = values.mapIndexedToImmList { i, value -> conversions.args[i].rtToNative(value) }
+        val nativeRes = fn.call(nativeArgs)
+        return conversions.result.nativeToRt(nativeRes)
+    }
+
+    class Conversions(
+        val args: ImmList<R_TypeNativeConversion>,
+        val result: R_TypeNativeConversion,
+    )
 }
 
 internal class R_FunctionCallTarget_Operation(

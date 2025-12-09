@@ -6,7 +6,7 @@ package net.postchain.rell.base.mtype
 
 import kotlin.test.Test
 
-class MFunctionTypeParamsTest: BaseMFunctionTest() {
+internal class MFunctionTypeParamsTest: BaseMFunctionTest() {
     @Test fun testSubType() {
         chkGlobal("<T> (T, T): T", "num,num", "num [T=num]")
         chkGlobal("<T> (T, T): T", "num,int", "num [T=num]")
@@ -45,93 +45,22 @@ class MFunctionTypeParamsTest: BaseMFunctionTest() {
     }
 
     @Test fun testConversion() {
-        chkGlobal("<T> (T, T): T", "integer,big_integer", "big_integer [T=big_integer]")
-        chkGlobal("<T> (T, T): T", "big_integer,integer", "big_integer [T=big_integer]")
-        chkGlobal("<T> (T, T): T", "integer,decimal", "decimal [T=decimal]")
-        chkGlobal("<T> (T, T): T", "decimal,integer", "decimal [T=decimal]")
-        chkGlobal("<T> (T, T): T", "big_integer,decimal", "decimal [T=decimal]")
-        chkGlobal("<T> (T, T): T", "decimal,big_integer", "decimal [T=decimal]")
-    }
+        chkGlobal("<T> (T, T): T", "integer,big_integer", "n/a")
+        chkGlobal("<T> (T, T): T", "big_integer,integer", "n/a")
+        chkGlobal("<T> (T, T): T", "integer,decimal", "n/a")
+        chkGlobal("<T> (T, T): T", "decimal,integer", "n/a")
+        chkGlobal("<T> (T, T): T", "big_integer,decimal", "n/a")
+        chkGlobal("<T> (T, T): T", "decimal,big_integer", "n/a")
 
-    @Test fun testConversionNullable() {
-        chkGlobal("<T> (T, T): T", "integer,big_integer?", "big_integer? [T=big_integer?]")
-        chkGlobal("<T> (T, T): T", "big_integer?,integer", "big_integer? [T=big_integer?]")
-        chkGlobal("<T> (T, T): T", "integer?,big_integer", "big_integer? [T=big_integer?]")
-        chkGlobal("<T> (T, T): T", "big_integer,integer?", "big_integer? [T=big_integer?]")
-        chkGlobal("<T> (T, T): T", "integer?,big_integer?", "big_integer? [T=big_integer?]")
-        chkGlobal("<T> (T, T): T", "big_integer?,integer?", "big_integer? [T=big_integer?]")
-
-        chkGlobal("<T> (T, T): T", "integer,decimal?", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T, T): T", "decimal?,integer", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T, T): T", "integer?,decimal", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T, T): T", "decimal,integer?", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T, T): T", "integer?,decimal?", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T, T): T", "decimal?,integer?", "decimal? [T=decimal?]")
-
-        chkGlobal("<T> (T, T): T", "big_integer,decimal?", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T, T): T", "decimal?,big_integer", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T, T): T", "big_integer?,decimal", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T, T): T", "decimal,big_integer?", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T, T): T", "big_integer?,decimal?", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T, T): T", "decimal?,big_integer?", "decimal? [T=decimal?]")
-    }
-
-    @Test fun testConversionComplexNullable() {
-        chkGlobal("<T> (T?, T?): T", "integer,decimal?", "decimal [T=decimal]")
-        chkGlobal("<T> (T?, T?): T", "decimal?,integer", "decimal [T=decimal]")
-        chkGlobal("<T> (T?, T?): T", "integer?,decimal", "decimal [T=decimal]")
-        chkGlobal("<T> (T?, T?): T", "decimal,integer?", "decimal [T=decimal]")
-        chkGlobal("<T> (T?, T?): T", "integer?,decimal?", "decimal [T=decimal]")
-        chkGlobal("<T> (T?, T?): T", "decimal?,integer?", "decimal [T=decimal]")
-
-        chkGlobal("<T> (T?, T): T", "integer,decimal?", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T?, T): T", "decimal?,integer", "decimal [T=decimal]")
-        chkGlobal("<T> (T?, T): T", "integer?,decimal", "decimal [T=decimal]")
-        chkGlobal("<T> (T?, T): T", "decimal,integer?", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T?, T): T", "integer?,decimal?", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T?, T): T", "decimal?,integer?", "decimal? [T=decimal?]")
-
-        chkGlobal("<T> (T, T?): T", "integer,decimal?", "decimal [T=decimal]")
-        chkGlobal("<T> (T, T?): T", "decimal?,integer", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T, T?): T", "integer?,decimal", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T, T?): T", "decimal,integer?", "decimal [T=decimal]")
-        chkGlobal("<T> (T, T?): T", "integer?,decimal?", "decimal? [T=decimal?]")
-        chkGlobal("<T> (T, T?): T", "decimal?,integer?", "decimal? [T=decimal?]")
-    }
-
-    @Test fun testConversionComplexNullableStrict() {
-        chkGlobal("<T:-any> (@nullable T?, @nullable T?): T", "integer,decimal?", "n/a")
-        chkGlobal("<T:-any> (@nullable T?, @nullable T?): T", "decimal?,integer", "n/a")
-        chkGlobal("<T:-any> (@nullable T?, @nullable T?): T", "integer?,decimal", "n/a")
-        chkGlobal("<T:-any> (@nullable T?, @nullable T?): T", "decimal,integer?", "n/a")
-        chkGlobal("<T:-any> (@nullable T?, @nullable T?): T", "integer?,decimal?", "decimal [T=decimal]")
-        chkGlobal("<T:-any> (@nullable T?, @nullable T?): T", "decimal?,integer?", "decimal [T=decimal]")
-
-        chkGlobal("<T:-any> (@nullable T?, T?): T", "integer,decimal?", "n/a")
-        chkGlobal("<T:-any> (@nullable T?, T?): T", "decimal?,integer", "decimal [T=decimal]")
-        chkGlobal("<T:-any> (@nullable T?, T?): T", "integer?,decimal", "decimal [T=decimal]")
-        chkGlobal("<T:-any> (@nullable T?, T?): T", "decimal,integer?", "n/a")
-        chkGlobal("<T:-any> (@nullable T?, T?): T", "integer?,decimal?", "decimal [T=decimal]")
-        chkGlobal("<T:-any> (@nullable T?, T?): T", "decimal?,integer?", "decimal [T=decimal]")
-
-        chkGlobal("<T:-any> (T?, @nullable T?): T", "integer,decimal?", "decimal [T=decimal]")
-        chkGlobal("<T:-any> (T?, @nullable T?): T", "decimal?,integer", "n/a")
-        chkGlobal("<T:-any> (T?, @nullable T?): T", "integer?,decimal", "n/a")
-        chkGlobal("<T:-any> (T?, @nullable T?): T", "decimal,integer?", "decimal [T=decimal]")
-        chkGlobal("<T:-any> (T?, @nullable T?): T", "integer?,decimal?", "decimal [T=decimal]")
-        chkGlobal("<T:-any> (T?, @nullable T?): T", "decimal?,integer?", "decimal [T=decimal]")
-    }
-
-    @Test fun testConversionComplexCompound() {
-        chkGlobal("<T> (T, supplier<T>): T", "integer,supplier<decimal>", "decimal [T=decimal]")
+        chkGlobal("<T> (T, supplier<T>): T", "integer,supplier<integer>", "integer [T=integer]")
+        chkGlobal("<T> (T, supplier<T>): T", "decimal,supplier<decimal>", "decimal [T=decimal]")
+        chkGlobal("<T> (T, supplier<T>): T", "integer,supplier<decimal>", "n/a")
         chkGlobal("<T> (T, supplier<T>): T", "decimal,supplier<integer>", "n/a")
-        chkGlobal("<T> (supplier<T>, T): T", "supplier<decimal>,integer", "decimal [T=decimal]")
+        chkGlobal("<T> (supplier<T>, T): T", "supplier<decimal>,integer", "n/a")
         chkGlobal("<T> (supplier<T>, T): T", "supplier<integer>,decimal", "n/a")
-    }
 
-    @Test fun testConversionBound() {
-        chkGlobal("<T:-real> (T, T): T", "real32,int32", "real32 [T=real32]")
-        chkGlobal("<T:-real> (T, T): T", "int32,real32", "real32 [T=real32]")
+        chkGlobal("<T:-real> (T, T): T", "real32,int32", "n/a")
+        chkGlobal("<T:-real> (T, T): T", "int32,real32", "n/a")
     }
 
     @Test fun testAny() {

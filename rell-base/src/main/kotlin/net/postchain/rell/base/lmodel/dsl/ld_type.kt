@@ -5,7 +5,9 @@
 package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.lmodel.L_TypeParams
+import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.mtype.*
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.mapToImmList
@@ -68,10 +70,6 @@ sealed class Ld_TypeSet {
     abstract fun finish(ctx: Ld_TypeFinishContext): M_TypeSet
 }
 
-object Ld_TypeSet_All: Ld_TypeSet() {
-    override fun finish(ctx: Ld_TypeFinishContext) = M_TypeSets.ALL
-}
-
 class Ld_TypeSet_One(val type: Ld_Type): Ld_TypeSet() {
     override fun finish(ctx: Ld_TypeFinishContext): M_TypeSet {
         val mType = type.finish(ctx)
@@ -86,15 +84,13 @@ class Ld_TypeSet_SubOf(val type: Ld_Type): Ld_TypeSet() {
     }
 }
 
-class Ld_TypeSet_SuperOf(val type: Ld_Type): Ld_TypeSet() {
-    override fun finish(ctx: Ld_TypeFinishContext): M_TypeSet {
-        val mType = type.finish(ctx)
-        return M_TypeSets.superOf(mType)
-    }
-}
-
 sealed class Ld_Type {
     abstract fun finish(ctx: Ld_TypeFinishContext): M_Type
+
+    fun finishR(ctx: Ld_TypeFinishContext): R_Type {
+        val mType = finish(ctx)
+        return L_TypeUtils.getRType(mType)
+    }
 
     companion object {
         fun parse(code: String): Ld_Type {

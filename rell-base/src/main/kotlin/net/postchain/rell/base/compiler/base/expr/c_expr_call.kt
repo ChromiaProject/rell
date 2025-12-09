@@ -26,11 +26,11 @@ object C_CallTypeHints_None: C_CallTypeHints {
     override fun getTypeHint(index: Int?, name: R_Name?) = C_TypeHint.NONE
 }
 
-sealed class C_CallArgumentValue(val pos: S_Pos)
-class C_CallArgumentValue_Expr(pos: S_Pos, val vExpr: V_Expr): C_CallArgumentValue(pos)
-class C_CallArgumentValue_Wildcard(pos: S_Pos): C_CallArgumentValue(pos)
+internal sealed class C_CallArgumentValue(val pos: S_Pos)
+internal class C_CallArgumentValue_Expr(pos: S_Pos, val vExpr: V_Expr): C_CallArgumentValue(pos)
+internal class C_CallArgumentValue_Wildcard(pos: S_Pos): C_CallArgumentValue(pos)
 
-class C_CallArgumentHandle(
+internal class C_CallArgumentHandle(
     val index: Int,
     val nameHand: C_NameHandle?,
     val value: C_CallArgumentValue,
@@ -38,7 +38,7 @@ class C_CallArgumentHandle(
     fun toCallArgument() = C_CallArgument(index, nameHand?.name, value)
 }
 
-class C_CallArgument(val index: Int, val name: C_Name?, val value: C_CallArgumentValue) {
+internal class C_CallArgument(val index: Int, val name: C_Name?, val value: C_CallArgumentValue) {
     companion object {
         fun compileAttributes(
             ctx: C_ExprContext,
@@ -114,7 +114,7 @@ class C_CallArgument(val index: Int, val name: C_Name?, val value: C_CallArgumen
     }
 }
 
-class C_CallArguments(
+internal class C_CallArguments(
     val all: ImmList<C_CallArgument>,
     val positional: ImmList<C_CallArgument>,
     val named: ImmList<C_NameValue<C_CallArgument>>,

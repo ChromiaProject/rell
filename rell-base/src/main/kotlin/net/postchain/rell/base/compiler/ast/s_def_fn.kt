@@ -62,7 +62,7 @@ class S_FormalParameter(
         val sizeConstraint = sizeHandler.getSizeConstraint()
         val validator = sizeConstraint?.compile(defCtx, attrHeader, type)
 
-        val docType = L_TypeUtils.docType(type.mType)
+        val docType = type.docType()
         val docParam = DocFunctionParam(name.str, docType, arity = M_ParamArity.ONE, exact = false, nullable = false)
 
         val docDecGetter: C_LateGetter<DocDeclarationProto>

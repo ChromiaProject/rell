@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-abstract class BaseMTypeTest {
+internal abstract class BaseMTypeTest {
     protected val scopeB: MTestScope.Builder by lazy {
         val b = MTestScope.Builder()
         initScope(b)

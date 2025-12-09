@@ -36,7 +36,10 @@ fun Map<String, Gtv>.toGtv(): Gtv = GtvFactory.gtv(this)
 
 class RellInterpreterCrashException(message: String): RuntimeException(message)
 
-class Rt_Comparator<T>(private val getter: (Rt_Value) -> T, private val comparator: Comparator<T>): Comparator<Rt_Value> {
+class Rt_Comparator<T>(
+    private val getter: (Rt_Value) -> T,
+    private val comparator: Comparator<T>,
+): Comparator<Rt_Value> {
     override fun compare(o1: Rt_Value, o2: Rt_Value): Int {
         if (o1 == Rt_NullValue) {
             return if (o2 == Rt_NullValue) 0 else -1
@@ -150,17 +153,17 @@ object Rt_Utils {
         return if (stack.isEmpty()) msg else (msg + "\n" + stack.joinToString("\n") { "\tat $it" })
     }
 
-    fun check(b: Boolean, msgProvider: () -> C_CodeMsg) {
+    fun check(b: Boolean, msgProvider: () -> Pair<String, String>) {
         if (!b) {
-            val codeMsg = msgProvider()
-            throw Rt_Exception.common(codeMsg.code, codeMsg.msg)
+            val (code, msg) = msgProvider()
+            throw Rt_Exception.common(code, msg)
         }
     }
 
-    fun <T> checkNotNull(value: T?, msgProvider: () -> C_CodeMsg): T {
+    fun <T> checkNotNull(value: T?, msgProvider: () -> Pair<String, String>): T {
         if (value == null) {
             val codeMsg = msgProvider()
-            throw Rt_Exception.common(codeMsg.code, codeMsg.msg)
+            throw Rt_Exception.common(codeMsg.first, codeMsg.second)
         }
         return value
     }
@@ -169,7 +172,7 @@ object Rt_Utils {
         check(expected == actual) {
             val code = "check_equals:$expected:$actual"
             val msg = "expected <$expected> actual <$actual>"
-            code toCodeMsg msg
+            code to msg
         }
     }
 
@@ -177,11 +180,11 @@ object Rt_Utils {
         check(actual in min .. max) {
             val code = "check_range:$min:$max:$actual"
             val msg = "expected <$min>..<$max> actual <$actual>"
-            code toCodeMsg msg
+            code to msg
         }
     }
 
-    fun <T: Comparable<T>> checkRange(actual: T, min: T, max: T, mgsProvider: () -> C_CodeMsg) {
+    fun <T: Comparable<T>> checkRange(actual: T, min: T, max: T, mgsProvider: () -> Pair<String, String>) {
         check(actual in min .. max, mgsProvider)
     }
 

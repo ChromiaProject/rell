@@ -7,24 +7,18 @@ package net.postchain.rell.base.lib.type
 import net.postchain.gtv.Gtv
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.expr.*
-import net.postchain.rell.base.compiler.base.fn.C_ArgMatchParam
-import net.postchain.rell.base.compiler.base.fn.C_ArgMatchParams
-import net.postchain.rell.base.compiler.base.fn.C_FunctionCallParameter
-import net.postchain.rell.base.compiler.base.fn.C_FunctionCallParameters
-import net.postchain.rell.base.compiler.base.fn.C_FullCallArguments
+import net.postchain.rell.base.compiler.base.fn.*
 import net.postchain.rell.base.compiler.base.lib.C_LibFuncCaseCtx
 import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibMemberFunctionBody
 import net.postchain.rell.base.compiler.base.lib.V_SpecialMemberFunctionCall
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.type.Lib_Type_Gtv.gtvToRt
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.base.model.expr.R_DestinationExpr
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.expr.R_MemberCalculator
@@ -35,16 +29,15 @@ import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.PostchainGtvUtils
-import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.doc.DocCode
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
-object Lib_Type_Struct {
+internal object Lib_Type_Struct {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("struct", abstract = true, hidden = true, since = "0.10.0") {
             supertypeStrategySpecial { mType ->
-                L_TypeUtils.getRType(mType) is R_StructType
+                L_TypeUtils.getRTypeOrNull(mType) is R_StructType
             }
         }
 
@@ -65,7 +58,7 @@ object Lib_Type_Struct {
             }
 
             supertypeStrategySpecial { mType ->
-                val rType = L_TypeUtils.getRType(mType)
+                val rType = L_TypeUtils.getRTypeOrNull(mType)
                 rType is R_StructType && rType.struct == rType.struct.mirrorStructs?.mutable
             }
 
@@ -90,7 +83,7 @@ object Lib_Type_Struct {
             }
 
             supertypeStrategySpecial { mType ->
-                val rType = L_TypeUtils.getRType(mType)
+                val rType = L_TypeUtils.getRTypeOrNull(mType)
                 rType is R_StructType && rType.struct == rType.struct.mirrorStructs?.immutable
             }
 
@@ -202,7 +195,7 @@ object Lib_Type_Struct {
         val structType = sv.type()
         val op = Rt_Utils.checkNotNull(structType.struct.mirrorStructs?.operation) {
             // Must not happen, checking for extra safety.
-            "bad_struct_type:${sv.type()}" toCodeMsg "Wrong struct type: ${sv.type()}"
+            "bad_struct_type:${sv.type()}" to "Wrong struct type: ${sv.type()}"
         }
 
         val rtArgs = structType.struct.attributesList.map { sv.get(it.index) }
@@ -248,7 +241,7 @@ object Lib_Type_Struct {
         val structType = v.type()
         val mirrorStructs = Rt_Utils.checkNotNull(structType.struct.mirrorStructs) {
             // Must not happen, checking for extra safety.
-            "$name:bad_type:${v.type()}" toCodeMsg "Wrong struct type: ${v.type()}"
+            "$name:bad_type:${v.type()}" to "Wrong struct type: ${v.type()}"
         }
 
         val resultType = mirrorStructs.getStruct(returnMutable).type

@@ -16,7 +16,7 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
 
-class C_LibNamespace private constructor(
+internal class C_LibNamespace private constructor(
     private val namePath: C_RFullNamePath,
     private val namespaces: ImmMap<R_Name, C_LibNestedNamespace>,
     private val members: ImmMap<R_Name, C_NamespaceMember>,

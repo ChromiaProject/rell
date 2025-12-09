@@ -22,7 +22,7 @@ import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.*
 
-class V_ExprInfo(
+internal class V_ExprInfo(
     val type: R_Type,
     val subExprs: ImmList<V_Expr>,
     val hasDbModifications: Boolean = false,
@@ -105,7 +105,7 @@ internal class V_ExprWrapper(
     }
 }
 
-abstract class V_Expr(
+internal abstract class V_Expr(
     protected val exprCtx: C_ExprContext,
     val pos: S_Pos,
 ) {
@@ -125,7 +125,7 @@ abstract class V_Expr(
 
     protected abstract fun exprInfo0(): V_ExprInfo
 
-    protected open fun varStatesDelta0(): C_ExprVarStatesDelta {
+    internal open fun varStatesDelta0(): C_ExprVarStatesDelta {
         return C_ExprVarStatesDelta.forExpressions(info.subExprs)
     }
 
@@ -207,7 +207,7 @@ abstract class V_Expr(
         return self.member0(ctx, selfType, memberNameHand, member, actualSafe, baseNulled, exprHint)
     }
 
-    protected open fun member0(
+    internal open fun member0(
         ctx: C_ExprContext,
         selfType: R_Type,
         memberNameHand: C_NameHandle,
@@ -221,11 +221,11 @@ abstract class V_Expr(
         return memberValue.compile(ctx, link, memberNameHand, baseNulled)
     }
 
-    open fun call(ctx: C_ExprContext, pos: S_Pos, args: S_CallArguments, resTypeHint: C_TypeHint): V_Expr {
+    internal open fun call(ctx: C_ExprContext, pos: S_Pos, args: S_CallArguments, resTypeHint: C_TypeHint): V_Expr {
         return callCommon(ctx, pos, args.list, resTypeHint, type, false)
     }
 
-    protected fun callCommon(
+    internal fun callCommon(
         ctx: C_ExprContext,
         pos: S_Pos,
         args: List<S_CallArgument>,

@@ -37,8 +37,8 @@ data class C_IdeCompletionsOptions(
     }
 }
 
-object C_IdeCompletionsUtils {
-    fun getCompilerOptions(
+internal object C_IdeCompletionsUtils {
+    internal fun getCompilerOptions(
         sourceDir: C_SourceDir,
         filePath: C_SourcePath,
         pos: Int?,
@@ -57,18 +57,18 @@ object C_IdeCompletionsUtils {
             .build()
     }
 
-    fun getIdeCompletionLocation(defName: C_DefinitionName): String {
+    internal fun getIdeCompletionLocation(defName: C_DefinitionName): String {
         val defPath = defName.parentPath()
         val defModule = defPath.module.str()
         return if (defPath.path.isEmpty()) defModule else "$defModule:${defPath.path.joinToString(".")}"
     }
 
-    fun makeIdeCompletion(defName: C_DefinitionName, doc: DocSymbol, targetDoc: DocSymbol = doc): IdeCompletion {
+    internal fun makeIdeCompletion(defName: C_DefinitionName, doc: DocSymbol, targetDoc: DocSymbol = doc): IdeCompletion {
         val location = getIdeCompletionLocation(defName)
         return makeIdeCompletion0(doc, targetDoc, location)
     }
 
-    fun makeIdeCompletion(doc: DocSymbol, location: String? = null): IdeCompletion {
+    internal fun makeIdeCompletion(doc: DocSymbol, location: String? = null): IdeCompletion {
         return makeIdeCompletion0(doc, doc, location)
     }
 
@@ -102,7 +102,7 @@ object C_IdeCompletionsUtils {
         return b.toString()
     }
 
-    fun isTargetScope(compilerOptions: C_CompilerOptions, filePath: C_SourcePath, range: S_PosRange?): Boolean {
+    internal fun isTargetScope(compilerOptions: C_CompilerOptions, filePath: C_SourcePath, range: S_PosRange?): Boolean {
         val options = compilerOptions.ideCompletions
         val ideFilePos = options?.pos
         if (ideFilePos == null && range != null) {

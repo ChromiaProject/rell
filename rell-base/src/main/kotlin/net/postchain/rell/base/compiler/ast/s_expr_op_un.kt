@@ -14,7 +14,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 
 sealed class S_UnaryOp(val code: String) {
-    abstract fun compile(ctx: C_ExprContext, startPos: S_Pos, opPos: S_Pos, expr: V_Expr): V_Expr
+    internal abstract fun compile(ctx: C_ExprContext, startPos: S_Pos, opPos: S_Pos, expr: V_Expr): V_Expr
 
     fun errTypeMismatch(ctx: C_ExprContext, pos: S_Pos, type: R_Type) {
         if (type.isNotError()) {
@@ -24,7 +24,7 @@ sealed class S_UnaryOp(val code: String) {
     }
 }
 
-object S_UnaryOp_Plus: S_UnaryOp("+") {
+internal data object S_UnaryOp_Plus: S_UnaryOp("+") {
     override fun compile(ctx: C_ExprContext, startPos: S_Pos, opPos: S_Pos, expr: V_Expr): V_Expr {
         val type = expr.type
         if (!C_BinOp_Common.isNumericType(type)) {
@@ -38,7 +38,7 @@ object S_UnaryOp_Plus: S_UnaryOp("+") {
     }
 }
 
-object S_UnaryOp_Minus: S_UnaryOp("-") {
+internal data object S_UnaryOp_Minus: S_UnaryOp("-") {
     override fun compile(ctx: C_ExprContext, startPos: S_Pos, opPos: S_Pos, expr: V_Expr): V_Expr {
         val type = expr.type
 
@@ -57,7 +57,7 @@ object S_UnaryOp_Minus: S_UnaryOp("-") {
     }
 }
 
-object S_UnaryOp_Not: S_UnaryOp("not") {
+internal data object S_UnaryOp_Not: S_UnaryOp("not") {
     override fun compile(ctx: C_ExprContext, startPos: S_Pos, opPos: S_Pos, expr: V_Expr): V_Expr {
         val type = expr.type
         if (type != R_BooleanType) {
@@ -75,7 +75,7 @@ object S_UnaryOp_Not: S_UnaryOp("not") {
     }
 }
 
-class S_UnaryOp_IncDec(val inc: Boolean, val post: Boolean): S_UnaryOp(if (inc) "++" else "--") {
+internal class S_UnaryOp_IncDec(val inc: Boolean, val post: Boolean): S_UnaryOp(if (inc) "++" else "--") {
     override fun compile(ctx: C_ExprContext, startPos: S_Pos, opPos: S_Pos, expr: V_Expr): V_Expr {
         val dst = expr.destination()
         val dstType = dst.effectiveType()
@@ -116,7 +116,7 @@ class S_UnaryOp_IncDec(val inc: Boolean, val post: Boolean): S_UnaryOp(if (inc) 
     private class C_IncDecOp(val op: String, val rOp: R_BinaryOp, val dbOp: Db_BinaryOp, val srcExpr: R_Expr)
 }
 
-object S_UnaryOp_NotNull: S_UnaryOp("!!") {
+internal data object S_UnaryOp_NotNull: S_UnaryOp("!!") {
     override fun compile(ctx: C_ExprContext, startPos: S_Pos, opPos: S_Pos, expr: V_Expr): V_Expr {
         val exprN = expr.asNullable().unwrap()
         val type = exprN.type
@@ -133,7 +133,7 @@ object S_UnaryOp_NotNull: S_UnaryOp("!!") {
     }
 }
 
-object S_UnaryOp_IsNull: S_UnaryOp("??") {
+internal data object S_UnaryOp_IsNull: S_UnaryOp("??") {
     override fun compile(ctx: C_ExprContext, startPos: S_Pos, opPos: S_Pos, expr: V_Expr): V_Expr {
         val exprN = expr.asNullable().unwrap()
         val type = exprN.type
@@ -146,7 +146,7 @@ object S_UnaryOp_IsNull: S_UnaryOp("??") {
     }
 }
 
-class S_UnaryExpr(
+internal class S_UnaryExpr(
     startPos: S_Pos,
     private val op: S_PosValue<S_UnaryOp>,
     private val expr: S_Expr,

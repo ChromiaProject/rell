@@ -7,7 +7,7 @@ package net.postchain.rell.base.mtype.utils
 import net.postchain.rell.base.mtype.*
 import net.postchain.rell.base.utils.*
 
-class MTestScope private constructor(
+internal class MTestScope private constructor(
     private val genTypes: ImmMap<String, M_GenericType>,
     val typeParams: ImmMap<String, M_TypeParam>,
     val types: ImmMap<String, MTestTypeDef>,
@@ -106,14 +106,6 @@ class MTestScope private constructor(
         }
     }
 
-    private class M_GenericTypeAddon_Convertible(val sourceTypes: ImmSet<M_Type>): M_GenericTypeAddon() {
-        override fun getConversion(sourceType: M_Type): M_Conversion_Generic? {
-            return if (sourceType in sourceTypes) M_Conversion_Test else null
-        }
-
-        private object M_Conversion_Test: M_Conversion_Generic()
-    }
-
     companion object {
         fun initDefault(b: Builder) {
             initBasic(b)
@@ -135,10 +127,10 @@ class MTestScope private constructor(
             val num = b.genericType("num")
             val int = b.genericType("int", parent = num to listOf())
             val real = b.genericType("real", parent = num to listOf())
-            val int32 = numericType(b, "int32", parent = int, listOf())
-            val int64 = numericType(b, "int64", parent = int, listOf(int32))
-            val real32 = numericType(b, "real32", parent = real, listOf(int32, int64))
-            numericType(b, "real64", parent = real, listOf(int32, int64, real32))
+            numericType(b, "int32", parent = int)
+            numericType(b, "int64", parent = int)
+            numericType(b, "real32", parent = real)
+            numericType(b, "real64", parent = real)
         }
 
         fun initCollections(b: Builder, prefix: String = "") {
@@ -162,8 +154,8 @@ class MTestScope private constructor(
             b.genericType("gtv")
 
             val integer = numericType(b, "integer")
-            val bigInteger = numericType(b, "big_integer", conversions = listOf(integer))
-            val decimal = numericType(b, "decimal", conversions = listOf(integer, bigInteger))
+            val bigInteger = numericType(b, "big_integer")
+            val decimal = numericType(b, "decimal")
 
             val comparables = listOf(boolean, text, integer, bigInteger, decimal)
             b.genericType("comparable", addon = object: M_GenericTypeAddon() {
@@ -200,11 +192,9 @@ class MTestScope private constructor(
             b: Builder,
             name: String,
             parent: M_GenericType? = null,
-            conversions: List<M_GenericType> = listOf(),
         ): M_GenericType {
-            val convTypes = conversions.map { it.getType() }.toImmSet()
             val parentPair = if (parent == null) null else (parent to listOf<String>())
-            return b.genericType(name, parent = parentPair, addon = M_GenericTypeAddon_Convertible(convTypes))
+            return b.genericType(name, parent = parentPair)
         }
     }
 }

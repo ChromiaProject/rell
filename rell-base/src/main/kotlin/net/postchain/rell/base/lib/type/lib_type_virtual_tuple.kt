@@ -14,7 +14,7 @@ import net.postchain.rell.base.model.expr.R_MemberCalculator_VirtualTupleAttr
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.mapIndexedToImmList
 
-object Lib_Type_VirtualTuple {
+internal object Lib_Type_VirtualTuple {
     fun getValueMembers(type: R_VirtualTupleType): ImmList<C_TypeValueMember> {
         return type.innerType.fields.mapIndexedToImmList { idx, field ->
             val virtualType = S_VirtualType.virtualMemberType(field.type)

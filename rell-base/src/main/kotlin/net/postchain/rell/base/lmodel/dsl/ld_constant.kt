@@ -8,32 +8,31 @@ import net.postchain.rell.base.lmodel.L_Constant
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.futures.FcFuture
 
-class Ld_Constant(
+internal class Ld_Constant(
     private val type: Ld_Type,
     private val value: Ld_ConstantValue,
 ) {
     fun finish(ctx: Ld_TypeFinishContext, simpleName: R_Name): L_Constant {
-        val mType = type.finish(ctx)
-        val rValue = value.getValue(mType)
-        return L_Constant(simpleName, mType, rValue)
+        val rType = type.finishR(ctx)
+        val rValue = value.getValue(rType)
+        return L_Constant(simpleName, rType, rValue)
     }
 
     fun process(ctx: Ld_NamespaceContext, simpleName: R_Name): FcFuture<L_Constant> {
         return ctx.fcExec.future().after(ctx.finishCtxFuture).compute { finishCtx ->
-            val mType = type.finish(finishCtx.typeCtx)
-            val rValue = value.getValue(mType)
-            L_Constant(simpleName, mType, rValue)
+            val rType = type.finishR(finishCtx.typeCtx)
+            val rValue = value.getValue(rType)
+            L_Constant(simpleName, rType, rValue)
         }
     }
 }
 
 sealed class Ld_ConstantValue {
     abstract fun strCode(): String
-    abstract fun getValue(type: M_Type): Rt_Value
+    abstract fun getValue(type: R_Type): Rt_Value
 
     companion object {
         fun make(value: Rt_Value): Ld_ConstantValue = Ld_ConstantValue_Value(value)
@@ -43,15 +42,14 @@ sealed class Ld_ConstantValue {
 
 private class Ld_ConstantValue_Value(private val value: Rt_Value): Ld_ConstantValue() {
     override fun strCode() = value.strCode()
-    override fun getValue(type: M_Type) = value
+    override fun getValue(type: R_Type) = value
 }
 
 private class Ld_ConstantValue_Getter(private val getter: (R_Type) -> Rt_Value): Ld_ConstantValue() {
     override fun strCode() = "?"
 
-    override fun getValue(type: M_Type): Rt_Value {
-        val rType = L_TypeUtils.getRTypeNotNull(type)
-        return getter(rType)
+    override fun getValue(type: R_Type): Rt_Value {
+        return getter(type)
     }
 }
 
@@ -69,7 +67,7 @@ class Ld_ConstantDslImpl(
         return res
     }
 
-    fun build(block: Ld_ConstantDsl.() -> Ld_BodyResult): Ld_MemberDef<Ld_Constant> {
+    internal fun build(block: Ld_ConstantDsl.() -> Ld_BodyResult): Ld_MemberDef<Ld_Constant> {
         val bodyTag = block(this)
         check(bodyTag === bodyRes)
 

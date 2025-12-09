@@ -36,8 +36,8 @@ internal class C_CreateAttributes(
     val implicitAttrs: ImmList<V_CreateExprAttr>
 )
 
-class C_AttrArgument(val index: Int, val name: C_Name?, val vExpr: V_Expr)
-class C_AttrMatch(val attr: R_Attribute, val vExpr: V_Expr)
+internal class C_AttrArgument(val index: Int, val name: C_Name?, val vExpr: V_Expr)
+internal class C_AttrMatch(val attr: R_Attribute, val vExpr: V_Expr)
 
 internal object C_AttributeResolver {
     fun resolveCreate(

@@ -84,7 +84,7 @@ private class Ld_TypeDefMember_Constant(
 ): Ld_TypeDefMember(DocSymbolKind.CONSTANT, simpleName, memberHeader) {
     override fun finish0(ctx: Ld_TypeFinishContext, hdr: Ld_MemberHeader.Finish): List<L_TypeDefMember> {
         val lConstant = constant.finish(ctx, simpleName)
-        val doc = Ld_DocSymbols.constant(hdr, lConstant.type, lConstant.value)
+        val doc = Ld_DocSymbols.constant(hdr, lConstant.rType, lConstant.value)
         return immListOf(L_TypeDefMember_Constant(hdr.fullName, hdr.lHeader, doc, lConstant))
     }
 }
@@ -95,7 +95,7 @@ private class Ld_TypeDefMember_Property(
 ): Ld_TypeDefMember(DocSymbolKind.PROPERTY, property.simpleName, memberHeader) {
     override fun finish0(ctx: Ld_TypeFinishContext, hdr: Ld_MemberHeader.Finish): List<L_TypeDefMember> {
         val lProperty = property.finish(ctx)
-        val doc = Ld_DocSymbols.property(hdr, lProperty.type, lProperty.pure)
+        val doc = Ld_DocSymbols.property(hdr, lProperty.rType, lProperty.pure)
         return immListOf(L_TypeDefMember_Property(hdr.fullName, hdr.lHeader, doc, lProperty))
     }
 }
@@ -185,7 +185,7 @@ private class Ld_TypeDefMember_StaticSpecialFunction(
     }
 }
 
-class Ld_TypeDef internal constructor(
+internal class Ld_TypeDef internal constructor(
     val simpleName: R_Name,
     private val flags: L_TypeDefFlags,
     private val typeParams: ImmList<Ld_TypeParam>,
@@ -298,7 +298,7 @@ class Ld_TypeDef internal constructor(
     }
 }
 
-class Ld_NamespaceMember_Type(
+internal class Ld_NamespaceMember_Type(
     simpleName: R_Name,
     memberHeader: Ld_MemberHeader,
     private val typeDef: Ld_TypeDef,

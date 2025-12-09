@@ -5,6 +5,7 @@
 package net.postchain.rell.base.lang.def
 
 import net.postchain.rell.base.testutils.BaseRellTest
+import net.postchain.rell.base.utils.checkEquals
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -485,6 +486,16 @@ class FunctionTest: BaseRellTest() {
         chkCompile("override function(x: integer) {}", "ct_err:fn:no_name")
         chkCompile("@extendable function(x: integer) {}", "ct_err:fn:no_name")
         chkCompile("@extend(f) function(x: integer) {}", "ct_err:unknown_name:f")
+    }
+
+    @Test fun testNativeFunction() {
+        chkCompile("@native function f(x: integer, y: integer): integer;", "OK")
+        chkCompile("@native function f(x: (integer, text));", "ct_err:fn:native:type:parameter:(integer,text)")
+        chkCompile("@native function f(): (integer, text);", "ct_err:fn:native:type:result:(integer,text)")
+        chkCompile("@native function f(x: (a: integer, b: text));", "ct_err:fn:native:type:parameter:(a:integer,b:text)")
+        chkCompile("@native function f(): (a: integer, b: text);", "ct_err:fn:native:type:result:(a:integer,b:text)")
+        chkCompile("@native function f(x: list<integer>);", "ct_err:fn:native:type:parameter:list<integer>")
+        chkCompile("@native function f(): list<integer>;", "ct_err:fn:native:type:result:list<integer>")
     }
 
     @Test fun testBugOddNamedArgument() {

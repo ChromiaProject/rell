@@ -7,7 +7,7 @@ package net.postchain.rell.base.mtype
 import net.postchain.rell.base.mtype.utils.MTestScope
 import kotlin.test.Test
 
-class MTypeNullableTest: BaseMTypeTest() {
+internal class MTypeNullableTest: BaseMTypeTest() {
     override fun initScope(b: MTestScope.Builder) {
         super.initScope(b)
         MTestScope.initRellPrimitives(b)

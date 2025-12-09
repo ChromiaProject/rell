@@ -8,10 +8,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvInteger
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_GtvCompatibility
-import net.postchain.rell.base.model.R_PrimitiveType
-import net.postchain.rell.base.model.R_TypeSqlAdapter
-import net.postchain.rell.base.model.R_TypeSqlAdapter_Primitive
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.sql.PreparedStatementParams
@@ -19,6 +16,8 @@ import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.immSetOf
 import org.jooq.impl.SQLDataType
+import java.math.BigInteger
+import kotlin.reflect.full.createType
 
 object Lib_Type_Boolean {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -116,9 +115,16 @@ object R_BooleanType: R_PrimitiveType("boolean") {
     }
 
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Boolean
+    override fun createNativeConversion(): R_TypeNativeConversion = NativeConversion
     override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Boolean
 
     override fun getLibTypeDef() = Lib_Rell.BOOLEAN_TYPE
+
+    private object NativeConversion: R_TypeNativeConversion {
+        override val nativeTypes = immSetOf(Boolean::class.createType())
+        override fun rtToNative(value: Rt_Value) = value.asBoolean()
+        override fun nativeToRt(value: Any?) = Rt_BooleanValue.get(value as Boolean)
+    }
 
     private object R_TypeSqlAdapter_Boolean: R_TypeSqlAdapter_Primitive("boolean", SQLDataType.BOOLEAN) {
         override fun toSqlValue(value: Rt_Value) = value.asBoolean()

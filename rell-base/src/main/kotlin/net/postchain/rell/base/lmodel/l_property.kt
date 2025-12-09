@@ -8,16 +8,17 @@ import net.postchain.rell.base.compiler.base.lib.C_SysProperty
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.mtype.M_Type
-import net.postchain.rell.base.mtype.M_TypeParam
-import net.postchain.rell.base.mtype.M_TypeSet
 import net.postchain.rell.base.utils.doc.DocSymbol
 
 class L_NamespaceProperty(
-    val type: M_Type,
-    val prop: C_SysProperty,
-    val pure: Boolean,
-)
+    internal val rType: R_Type,
+    internal val prop: C_SysProperty,
+    internal val pure: Boolean,
+) {
+    val type: M_Type get() = rType.mType
+}
 
 class L_NamespaceMember_Property(
     fullName: R_FullName,
@@ -25,7 +26,7 @@ class L_NamespaceMember_Property(
     doc: DocSymbol,
     val property: L_NamespaceProperty,
 ): L_NamespaceMember(fullName, header, doc) {
-    override fun strCode() = "property $qualifiedName: ${property.type.strCode()}"
+    override fun strCode() = "property $qualifiedName: ${property.rType.strCode()}"
 }
 
 class L_NamespaceMember_SpecialProperty(
@@ -39,16 +40,12 @@ class L_NamespaceMember_SpecialProperty(
 
 class L_TypeProperty(
     val simpleName: R_Name,
-    val type: M_Type,
-    val prop: C_SysProperty,
-    val pure: Boolean,
+    internal val rType: R_Type,
+    internal val prop: C_SysProperty,
+    internal val pure: Boolean,
 ) {
-    fun strCode() = "property $simpleName: ${type.strCode()}"
-
-    fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): L_TypeProperty {
-        val type2 = type.replaceParamsOut(map)
-        return if (type2 === type) this else L_TypeProperty(simpleName, type2, prop = prop, pure = pure)
-    }
+    val type: M_Type get() = rType.mType
+    fun strCode() = "property $simpleName: ${rType.strCode()}"
 }
 
 class L_TypeDefMember_Property(
@@ -58,9 +55,4 @@ class L_TypeDefMember_Property(
     val property: L_TypeProperty,
 ): L_TypeDefMember(fullName, header, doc) {
     override fun strCode() = property.strCode()
-
-    fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): L_TypeDefMember_Property {
-        val property2 = property.replaceTypeParams(map)
-        return if (property2 === property) this else L_TypeDefMember_Property(fullName, header, docSymbol, property2)
-    }
 }

@@ -1,0 +1,5 @@
+public abstract interface class net/postchain/rell/api/nativ/RellNativeEnvironment {
+	public abstract fun getBlockchainRid ()Lnet/postchain/common/BlockchainRid;
+	public abstract fun getConfig ()Lnet/postchain/gtv/Gtv;
+}
+

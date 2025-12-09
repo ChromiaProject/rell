@@ -14,6 +14,7 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_TupleComparator
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.doc.DocType
 
 class R_TupleType(val fields: ImmList<R_TupleField>): R_CompositeType(calcName(fields)) {
     val virtualType = R_VirtualTupleType(this)
@@ -35,6 +36,7 @@ class R_TupleType(val fields: ImmList<R_TupleField>): R_CompositeType(calcName(f
     override fun isError() = isError
     override fun isDirectMutable() = false
     override fun isDirectMixedTuple() = fields.any { it.name != null } && fields.any { it.name == null }
+    override fun isValid() = fields.all { it.type.isValid() }
 
     override fun strCode() = name
 
@@ -86,6 +88,26 @@ class R_TupleType(val fields: ImmList<R_TupleField>): R_CompositeType(calcName(f
         return R_TupleType(resFields)
     }
 
+    override fun calcParentType(): R_Type? {
+        return when {
+            fields.size == 2 -> R_GenericType("map_entry", immListOf(fields[0].type, fields[1].type))
+            else -> super.calcParentType()
+        }
+    }
+
+    override fun calcTypeExtractors(): ImmMap<String, (R_Type) -> R_Type?> {
+        return fields.flatMapIndexed { i, field ->
+                field.type.typeExtractors.map {
+                    it.key to { srcType: R_Type ->
+                        if (srcType is R_TupleType && srcType.fields.size == fields.size) {
+                            it.value(srcType.fields[i].type)
+                        } else null
+                    }
+                }
+            }
+            .toImmMap()
+    }
+
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Tuple(this)
 
     override fun comparator(): Comparator<Rt_Value>? {
@@ -102,6 +124,11 @@ class R_TupleType(val fields: ImmList<R_TupleField>): R_CompositeType(calcName(f
         "type" to "tuple".toGtv(),
         "fields" to fields.map { it.toMetaGtv() }.toGtv(),
     ).toGtv()
+
+    override fun docType(): DocType {
+        val fieldTypes = fields.mapToImmList { it.type.docType() }
+        return DocType.tuple(fieldTypes, fields.mapToImmList { it.name?.str })
+    }
 
     private inner class Meta: R_TypeMeta() {
         override fun getTypeOrNull(args: ImmList<R_Type>): R_Type? {

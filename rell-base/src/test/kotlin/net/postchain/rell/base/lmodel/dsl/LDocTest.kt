@@ -550,25 +550,23 @@ class LDocTest: BaseLTest() {
         chkTypeExpr("integer?", "[integer]?")
     }
 
-    @Test fun testTypeExprComplex() {
+    @Test fun testTypeExprCollections() {
+        chkTypeExpr("my_list<integer>", "[my_list]<[integer]>")
+        chkTypeExpr("my_map<integer,text>", "[my_map]<[integer], [text]>")
+        chkTypeExpr("my_map<integer,list<(text,boolean)>>", "[my_map]<[integer], [list]<([text], [boolean])>>")
+    }
+
+    @Test fun testTypeExprFunction() {
         chkTypeExpr("(integer,text)->boolean", "([integer], [text]) -> [boolean]")
         chkTypeExpr("(integer,text)->boolean?", "([integer], [text]) -> [boolean]?")
         chkTypeExpr("((integer,text)->boolean)?", "(([integer], [text]) -> [boolean])?")
+    }
 
+    @Test fun testTypeExprTuple() {
         chkTypeExpr("(integer,text)", "([integer], [text])")
         chkTypeExpr("(a:integer,text)", "(a: [integer], [text])")
         chkTypeExpr("(integer,b:text)", "([integer], b: [text])")
         chkTypeExpr("(a:integer,b:text)", "(a: [integer], b: [text])")
-    }
-
-    @Test fun testTypeExprGeneric() {
-        chkTypeExpr("my_list<integer>", "[my_list]<[integer]>")
-        chkTypeExpr("my_map<integer,text>", "[my_map]<[integer], [text]>")
-        chkTypeExpr("my_map<integer,list<(text,boolean)>>", "[my_map]<[integer], [list]<([text], [boolean])>>")
-
-        chkTypeExpr("my_list<-integer>", "[my_list]<-[integer]>")
-        chkTypeExpr("my_list<+integer>", "[my_list]<+[integer]>")
-        chkTypeExpr("my_list<*>", "[my_list]<*>")
     }
 
     private fun chkTypeExpr(type: String, expected: String) {

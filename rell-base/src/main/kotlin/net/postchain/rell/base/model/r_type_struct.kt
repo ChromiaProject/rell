@@ -15,9 +15,13 @@ import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.Lib_Type_Struct
 import net.postchain.rell.base.lib.type.R_OperationType
 import net.postchain.rell.base.lib.type.Rt_RangeValue
+import net.postchain.rell.base.lmodel.L_TypeDefDocCodeStrategy
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_ValueRecursionDetector
 import net.postchain.rell.base.utils.doc.DocCode
+import net.postchain.rell.base.utils.doc.DocType
+import net.postchain.rell.base.utils.doc.DocTypeSet
+import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.mapToImmList
 
 class R_StructType(val struct: R_Struct): R_SimpleType(struct.name) {
@@ -45,6 +49,23 @@ class R_StructType(val struct: R_Struct): R_SimpleType(struct.name) {
         } else {
             C_LibType.make(this, DocCode.link(struct.name), constructorFn = constructorFn, valueMembers = valueMembers)
         }
+    }
+
+    override fun docType(): DocType {
+        struct.mirrorStructs ?: return DocType.name(name)
+
+        val docArgs = immListOf(DocTypeSet.one(struct.mirrorStructs.innerType.docType()))
+        val strategy = L_TypeDefDocCodeStrategy { argDocs ->
+            val b = DocCode.builder()
+            b.keyword("struct").raw("<")
+            if (struct == struct.mirrorStructs.mutable) {
+                b.keyword("mutable").raw(" ")
+            }
+            b.append(argDocs[0]).raw(">")
+            b.build()
+        }
+
+        return DocType.generic(strategy, docArgs)
     }
 
     companion object {

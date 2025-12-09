@@ -17,12 +17,12 @@ import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.mapNotNullToImmList
 
 sealed class S_Modifier(val pos: S_Pos) {
-    abstract fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier?
-    open fun ideIsTestFile(): Boolean = false
+    internal abstract fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier?
+    internal open fun ideIsTestFile(): Boolean = false
     internal abstract fun isKeywordModifier(kind: S_KeywordModifierKind): Boolean
 }
 
-class S_KeywordModifier(private val kw: C_Name, private val kind: S_KeywordModifierKind): S_Modifier(kw.pos) {
+internal class S_KeywordModifier(private val kw: C_Name, private val kind: S_KeywordModifierKind): S_Modifier(kw.pos) {
     override fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier? {
         return modValues.compileKeyword(ctx, kw, kind)
     }
@@ -30,24 +30,24 @@ class S_KeywordModifier(private val kw: C_Name, private val kind: S_KeywordModif
     override fun isKeywordModifier(kind: S_KeywordModifierKind): Boolean = kind == this.kind
 }
 
-enum class S_KeywordModifierKind(val kw: String) {
+internal enum class S_KeywordModifierKind(val kw: String) {
     ABSTRACT(S_Keywords.ABSTRACT),
     MUTABLE(S_Keywords.MUTABLE),
     OVERRIDE(S_Keywords.OVERRIDE),
 }
 
-sealed class S_AnnotationArg {
+internal sealed class S_AnnotationArg {
     abstract fun compile(ctx: C_ModifierContext): C_AnnotationArg
 }
 
-class S_AnnotationArg_Value(val expr: S_LiteralExpr): S_AnnotationArg() {
+internal class S_AnnotationArg_Value(val expr: S_LiteralExpr): S_AnnotationArg() {
     override fun compile(ctx: C_ModifierContext): C_AnnotationArg {
         val value = expr.value()
         return C_AnnotationArg_Value(expr.startPos, value)
     }
 }
 
-class S_AnnotationArg_Name(val name: S_QualifiedName): S_AnnotationArg() {
+internal class S_AnnotationArg_Name(val name: S_QualifiedName): S_AnnotationArg() {
     override fun compile(ctx: C_ModifierContext): C_AnnotationArg {
         val nameHand = name.compile(ctx.symCtx)
         for (partHand in nameHand.parts) {
@@ -57,7 +57,7 @@ class S_AnnotationArg_Name(val name: S_QualifiedName): S_AnnotationArg() {
     }
 }
 
-class S_Annotation(val name: S_Name, val args: ImmList<S_AnnotationArg>): S_Modifier(name.pos) {
+internal class S_Annotation(val name: S_Name, val args: ImmList<S_AnnotationArg>): S_Modifier(name.pos) {
     override fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier? {
         val cArgs = args.map { it.compile(ctx) }
         return modValues.compileAnnotation(ctx, name, cArgs)

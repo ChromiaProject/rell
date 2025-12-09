@@ -27,7 +27,7 @@ import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
 
-object Lib_Type_Entity {
+internal object Lib_Type_Entity {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("entity", abstract = true, hidden = true, since = "0.6.0") {
             comment("""
@@ -39,7 +39,7 @@ object Lib_Type_Entity {
                 @see 1. <a href="https://docs.chromia.com/rell/language-features/database/overview#-operator"><code>@</code> operator - Chromia Documentation</a>
             """)
             supertypeStrategySpecial { mType ->
-                val rType = L_TypeUtils.getRType(mType)
+                val rType = L_TypeUtils.getRTypeOrNull(mType)
                 rType is R_EntityType
             }
         }

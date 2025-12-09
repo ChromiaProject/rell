@@ -21,7 +21,6 @@ enum class C_AtAttrShadowing {
     }
 }
 
-// Instantiated in Eclipse IDE, change parameters carefully.
 data class C_CompilerOptions(
     val compatibility: R_LangVersion?,
     val gtv: Boolean,

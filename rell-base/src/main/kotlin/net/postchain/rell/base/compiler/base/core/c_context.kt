@@ -302,7 +302,7 @@ internal class C_MountContext(
         checkNotReplOrTest(pos) { decType.name toCodeMsg decType.msg }
     }
 
-    private fun checkNotReplOrTest(pos: S_Pos, declSupplier: C_CodeMsgSupplier): Boolean {
+    fun checkNotReplOrTest(pos: S_Pos, declSupplier: C_CodeMsgSupplier): Boolean {
         return checkNotTest(pos, declSupplier) && checkNotRepl(pos, declSupplier)
     }
 
@@ -411,24 +411,24 @@ enum class C_DefinitionType(
 
 class C_DefinitionContext internal constructor(
     internal val mntCtx: C_MountContext,
-    val definitionType: C_DefinitionType,
-    val defId: R_DefinitionId,
-    val cDefName: C_DefinitionName,
-    val defName: R_DefinitionName,
+    internal val definitionType: C_DefinitionType,
+    internal val defId: R_DefinitionId,
+    internal val cDefName: C_DefinitionName,
+    internal val defName: R_DefinitionName,
     private val ideId: IdeSymbolId,
 ) {
-    val nsCtx = mntCtx.nsCtx
-    val modCtx = nsCtx.modCtx
+    internal val nsCtx = mntCtx.nsCtx
+    internal val modCtx = nsCtx.modCtx
     internal val appCtx = modCtx.appCtx
-    val symCtx = mntCtx.symCtx
-    val msgCtx = appCtx.msgCtx
-    val globalCtx = modCtx.globalCtx
-    val executor = modCtx.executor
+    internal val symCtx = mntCtx.symCtx
+    internal val msgCtx = appCtx.msgCtx
+    internal val globalCtx = modCtx.globalCtx
+    internal val executor = modCtx.executor
 
     private val initFrameLate = C_LateInit(C_CompilerPass.FRAMES, R_CallFrame.ERROR)
     internal val initFrameGetter = initFrameLate.getter
 
-    val initExprCtx: C_ExprContext = let {
+    internal val initExprCtx: C_ExprContext = let {
         val fnCtx = C_FunctionContext(this, "${defName.appLevelName}.<init>", null, ImmTypedKeyMap())
         val initFrameCtx = C_FrameContext.create(fnCtx)
 

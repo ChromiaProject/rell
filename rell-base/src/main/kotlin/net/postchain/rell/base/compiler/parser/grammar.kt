@@ -893,9 +893,9 @@ object S_Grammar {
         (steps, expr) -> S_ReplCommand(steps, expr)
     }
 
-    val replParser: Parser<S_ReplCommand> by replCommand
+    internal val replParser: Parser<S_ReplCommand> by replCommand
 
-    val rootParser by optional(moduleHeader) * zeroOrMore(annotatedDef) map {
+    internal val rootParser by optional(moduleHeader) * zeroOrMore(annotatedDef) map {
         (header, defs) ->
         S_RellFile(header, defs.toImmList())
     }

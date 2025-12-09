@@ -21,6 +21,8 @@ import net.postchain.rell.base.model.expr.R_BinaryOp_Merge_Map
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.utils.doc.DocType
+import net.postchain.rell.base.utils.doc.DocUtils
 import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_Map {
@@ -87,7 +89,7 @@ object Lib_Type_Map {
                                 val k = tup[0]
                                 val v = tup[1]
                                 val v0 = tmap.put(k, v)
-                                Rt_Utils.check(v0 == null) { "map:new:iterator:dupkey:${k.strCode()}" toCodeMsg
+                                Rt_Utils.check(v0 == null) { "map:new:iterator:dupkey:${k.strCode()}" to
                                         "Duplicate key: ${k.str()}" }
                             }
                             tmap
@@ -304,7 +306,7 @@ data class R_MapKeyValueTypes(val key: R_Type, val value: R_Type)
 
 class R_MapType(
     val keyValueTypes: R_MapKeyValueTypes
-): R_CompositeType("map<${keyValueTypes.key.strCode()},${keyValueTypes.value.strCode()}>") {
+): R_LibGenericType("map", immListOf(keyValueTypes.key, keyValueTypes.value)) {
     constructor(keyType: R_Type, valueType: R_Type): this(R_MapKeyValueTypes(keyType, valueType))
 
     val keyType = keyValueTypes.key
@@ -331,8 +333,15 @@ class R_MapType(
 
     override fun strCode() = name
     override fun getTypeArgs() = immListOf(keyType, valueType)
-
     override fun getLibType0() = C_LibType.make(Lib_Rell.MAP_TYPE, keyType, valueType)
+    override fun getTypeMeta0() = META
+    override fun docType() = DocUtils.docTypeGeneric("map", keyType, valueType)
+
+    override fun isAssignableFrom(type: R_Type): Boolean {
+        return type is R_MapType
+                && keyType.isAssignableArg(type.keyType)
+                && valueType.isAssignableArg(type.valueType)
+    }
 
     override fun fromCli(s: String): Rt_Value {
         val map = s.split(",").associate {

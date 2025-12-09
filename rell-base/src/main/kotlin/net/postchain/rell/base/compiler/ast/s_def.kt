@@ -69,11 +69,11 @@ class S_AnonAttrHeader(private val typeName: S_QualifiedName, private val nullab
 }
 
 sealed class S_RelClause: S_Node() {
-    abstract fun compile(ctx: C_EntityContext)
-    abstract fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder)
+    internal abstract fun compile(ctx: C_EntityContext)
+    internal abstract fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder)
 }
 
-class S_AttributeClause(
+class S_AttributeClause internal constructor(
     private val attr: S_AttributeDefinition,
     private val comment: S_Comment?,
 ): S_RelClause() {
@@ -737,7 +737,7 @@ class S_EnumDefinition(
         }
 
         fun finish(rEnum: R_EnumDefinition): ImmList<R_EnumAttr> {
-            val docType = L_TypeUtils.docType(rEnum.type.mType)
+            val docType = rEnum.type.docType()
 
             ctx.appCtx.executor.onPass(C_CompilerPass.NAMESPACES) {
                 for ((rAttrName, docDecInit) in attrDocDecInits) {
@@ -873,7 +873,7 @@ class S_GlobalConstantDefinition(
                 bodyLate.set(R_GlobalConstantBody(rType, rExpr, rtValue))
                 exprLate.set(vExpr ?: errorExpr)
 
-                val docType = L_TypeUtils.docType(rType.mType)
+                val docType = rType.docType()
                 val docValue = if (rtValue == null) null else C_DocUtils.docValue(rtValue)
                 val docDec = DocDeclarationProto_Constant(docModifiers, cName.rName, docType, docValue)
                 cDefBase.setDocDeclaration(docDec)

@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.mtype
 
-sealed class M_Type_Capture(val set: M_TypeSet_Many): M_Type() {
+internal sealed class M_Type_Capture(val set: M_TypeSet_Many): M_Type() {
     companion object {
         fun make(set: M_TypeSet_Many): M_Type = M_Type_Capture_Internal(set)
     }

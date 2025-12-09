@@ -115,7 +115,7 @@ class C_NsAsm_WildcardImportNames(executor: C_CompilerExecutor, private val path
     }
 }
 
-class C_NsAsm_ExactImportNames(
+internal class C_NsAsm_ExactImportNames(
     executor: C_CompilerExecutor,
     private val qNameHand: C_QualifiedNameHandle,
     private val alias: Alias?,

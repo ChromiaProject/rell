@@ -6,7 +6,7 @@ package net.postchain.rell.base.mtype
 
 import kotlin.test.Test
 
-class MFunctionTest: BaseMFunctionTest() {
+internal class MFunctionTest: BaseMFunctionTest() {
     @Test fun testConversion() {
         chkGlobal("(int32): unit", "int32", "unit")
         chkGlobal("(int32): unit", "int64", "n/a")
@@ -14,7 +14,7 @@ class MFunctionTest: BaseMFunctionTest() {
         chkGlobal("(int32): unit", "real64", "n/a")
         chkGlobal("(int32): unit", "real", "n/a")
 
-        chkGlobal("(int64): unit", "int32", "unit")
+        chkGlobal("(int64): unit", "int32", "n/a")
         chkGlobal("(int64): unit", "int64", "unit")
         chkGlobal("(int64): unit", "real32", "n/a")
         chkGlobal("(int64): unit", "real64", "n/a")
@@ -22,29 +22,15 @@ class MFunctionTest: BaseMFunctionTest() {
         chkGlobal("(int64): unit", "int", "n/a")
 
         chkGlobal("(real32): unit", "real32", "unit")
-        chkGlobal("(real32): unit", "int32", "unit")
-        chkGlobal("(real32): unit", "int64", "unit")
+        chkGlobal("(real32): unit", "int32", "n/a")
+        chkGlobal("(real32): unit", "int64", "n/a")
         chkGlobal("(real32): unit", "real64", "n/a")
 
-        chkGlobal("(real64): unit", "real32", "unit")
+        chkGlobal("(real64): unit", "real32", "n/a")
         chkGlobal("(real64): unit", "real64", "unit")
-        chkGlobal("(real64): unit", "int32", "unit")
-        chkGlobal("(real64): unit", "int64", "unit")
+        chkGlobal("(real64): unit", "int32", "n/a")
+        chkGlobal("(real64): unit", "int64", "n/a")
         chkGlobal("(real64): unit", "int", "n/a")
-    }
-
-    @Test fun testConversionRell() {
-        chkGlobal("(integer): unit", "integer", "unit")
-        chkGlobal("(integer): unit", "big_integer", "n/a")
-        chkGlobal("(integer): unit", "decimal", "n/a")
-
-        chkGlobal("(big_integer): unit", "integer", "unit")
-        chkGlobal("(big_integer): unit", "big_integer", "unit")
-        chkGlobal("(big_integer): unit", "decimal", "n/a")
-
-        chkGlobal("(decimal): unit", "integer", "unit")
-        chkGlobal("(decimal): unit", "big_integer", "unit")
-        chkGlobal("(decimal): unit", "decimal", "unit")
     }
 
     @Test fun testStrictNullable() {
@@ -320,8 +306,8 @@ class MFunctionTest: BaseMFunctionTest() {
 
     @Test fun testComparableTypeParam() {
         chkGlobal("<T:-comparable>(T,T):T", "integer,integer", "integer [T=integer]")
-        chkGlobal("<T:-comparable>(T,T):T", "integer,decimal", "decimal [T=decimal]")
-        chkGlobal("<T:-comparable>(T,T):T", "decimal,integer", "decimal [T=decimal]")
+        chkGlobal("<T:-comparable>(T,T):T", "integer,decimal", "comparable [T=comparable]")
+        chkGlobal("<T:-comparable>(T,T):T", "decimal,integer", "comparable [T=comparable]")
         chkGlobal("<T:-comparable>(T,T):T", "gtv,gtv", "n/a")
         chkGlobal("<T:-comparable>(T,T):T", "(integer,text),(integer,text)", "(integer,text) [T=(integer,text)]")
     }

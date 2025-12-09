@@ -24,7 +24,7 @@ import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
-class C_NamespaceContext(
+internal class C_NamespaceContext(
     val modCtx: C_ModuleContext,
     val symCtx: C_SymbolContext,
     val namespacePath: C_RNamePath,
@@ -37,21 +37,21 @@ class C_NamespaceContext(
 
     private val scope = scopeBuilder.scope()
 
-    fun resolveName(name: C_QualifiedNameHandle, tags: List<C_NamespaceMemberTag>): C_GlobalNameRes {
+    internal fun resolveName(name: C_QualifiedNameHandle, tags: List<C_NamespaceMemberTag>): C_GlobalNameRes {
         return C_GlobalNameResolver.resolve(msgCtx, scope, name, tags)
     }
 
-    fun getType(name: C_QualifiedNameHandle): C_TypeDef? {
+    internal fun getType(name: C_QualifiedNameHandle): C_TypeDef? {
         val nameRes = resolveName(name, C_NamespaceMemberTag.TYPE.list)
         return nameRes.getType()
     }
 
-    fun getTypeEx(name: C_QualifiedNameHandle): C_GlobalNameResDef<C_TypeDef>? {
+    internal fun getTypeEx(name: C_QualifiedNameHandle): C_GlobalNameResDef<C_TypeDef>? {
         val nameRes = resolveName(name, C_NamespaceMemberTag.TYPE.list)
         return nameRes.getTypeEx()
     }
 
-    fun getEntity(
+    internal fun getEntity(
         name: C_QualifiedNameHandle,
         error: Boolean = true,
         unknownInfo: Boolean = true,
@@ -60,12 +60,12 @@ class C_NamespaceContext(
         return nameRes.getEntity(error = error, unknownInfo = unknownInfo)
     }
 
-    fun getFunction(name: C_QualifiedNameHandle): C_GlobalFunction? {
+    internal fun getFunction(name: C_QualifiedNameHandle): C_GlobalFunction? {
         val nameRes = resolveName(name, C_NamespaceMemberTag.CALLABLE.list)
         return nameRes.getFunction()
     }
 
-    fun getFullName(simpleName: R_Name): R_FullName {
+    internal fun getFullName(simpleName: R_Name): R_FullName {
         val qualifiedName = namespacePath.qualifiedName(simpleName)
         return R_FullName(modCtx.moduleName, qualifiedName)
     }
@@ -79,39 +79,53 @@ class C_NamespaceContext(
         return C_IdeCompletionsScope(null, late.getter)
     }
 
-    fun ideCompletions(): C_LateGetter<Multimap<String, IdeCompletion>> {
+    internal fun ideCompletions(): C_LateGetter<Multimap<String, IdeCompletion>> {
         return scope.ideCompletionsDirect(executor, globalCtx.compilerOptions)
     }
 }
 
-class C_DefinitionModuleName(val module: String, val chain: String? = null) {
+internal class C_DefinitionModuleName(val module: String, val chain: String? = null) {
     constructor(module: R_ModuleName): this(module.str())
 
     fun str(): String = if (chain == null) module else "$module[$chain]"
     override fun toString() = str()
 }
 
-class C_DefinitionName(val module: C_DefinitionModuleName, val qualifiedName: C_StringQualifiedName) {
-    constructor(module: String, name: String): this(C_DefinitionModuleName(module), C_StringQualifiedName.of(name))
-    constructor(module: String, qualifiedName: C_StringQualifiedName): this(C_DefinitionModuleName(module), qualifiedName)
-    constructor(fullName: R_FullName): this(fullName.moduleName.str(), C_StringQualifiedName.of(fullName.qualifiedName))
+class C_DefinitionName internal constructor(
+    internal val module: C_DefinitionModuleName,
+    val qualifiedName: C_StringQualifiedName,
+) {
+    internal constructor(module: String, name: String): this(
+        C_DefinitionModuleName(module),
+        C_StringQualifiedName.of(name),
+    )
 
-    val appLevelName: String by lazy { R_DefinitionName.appLevelName(module.str(), qualifiedName.str()) }
+    internal constructor(module: String, qualifiedName: C_StringQualifiedName): this(
+        C_DefinitionModuleName(module),
+        qualifiedName,
+    )
 
-    fun toRDefName(): R_DefinitionName {
+    internal constructor(fullName: R_FullName): this(
+        fullName.moduleName.str(),
+        C_StringQualifiedName.of(fullName.qualifiedName),
+    )
+
+    internal val appLevelName: String by lazy { R_DefinitionName.appLevelName(module.str(), qualifiedName.str()) }
+
+    internal fun toRDefName(): R_DefinitionName {
         val qName = qualifiedName.str()
         return R_DefinitionName(module.str(), qName, qualifiedName.last)
     }
 
-    fun toPath() = C_DefinitionPath(module, qualifiedName.parts)
-    fun parentPath() = C_DefinitionPath(module, qualifiedName.parts.dropLast(1).toImmList())
+    internal fun toPath() = C_DefinitionPath(module, qualifiedName.parts)
+    internal fun parentPath() = C_DefinitionPath(module, qualifiedName.parts.dropLast(1).toImmList())
 
-    fun str(): String = "${module.str()}:${qualifiedName.parts.joinToString(".")}"
+    internal fun str(): String = "${module.str()}:${qualifiedName.parts.joinToString(".")}"
 
     override fun toString() = str()
 }
 
-class C_DefinitionPath(val module: C_DefinitionModuleName, val path: ImmList<String>) {
+internal class C_DefinitionPath(val module: C_DefinitionModuleName, val path: ImmList<String>) {
     constructor(module: String, path: ImmList<String>): this(C_DefinitionModuleName(module), path)
     constructor(module: R_ModuleName, path: ImmList<String>): this(C_DefinitionModuleName(module), path)
 
@@ -324,12 +338,12 @@ private class C_NameNode(
     val ideInfo = elem?.member?.ideInfo ?: C_IdeSymbolInfo.UNKNOWN
 }
 
-class C_GlobalNameResDef<T>(
+internal class C_GlobalNameResDef<T>(
     val def: T,
     val ideInfoPtr: C_UniqueDefaultIdeInfoPtr,
 )
 
-sealed class C_GlobalNameRes(
+internal sealed class C_GlobalNameRes(
     protected val msgCtx: C_MessageContext,
     private val qName: C_QualifiedName,
     private val elem: C_NamespaceElement?,

@@ -15,7 +15,7 @@ import net.postchain.rell.base.utils.associateToImmMap
 import net.postchain.rell.base.utils.mapNotNullToImmList
 import net.postchain.rell.base.utils.plus
 
-class S_ReplCommand(steps: List<S_ReplStep>, expr: S_Expr?) {
+internal class S_ReplCommand(steps: List<S_ReplStep>, expr: S_Expr?) {
     private val defs = steps.mapNotNullToImmList { it.definition() }
 
     private val stmts = let {
@@ -61,17 +61,17 @@ class S_ReplCommand(steps: List<S_ReplStep>, expr: S_Expr?) {
     }
 }
 
-sealed class S_ReplStep {
+internal sealed class S_ReplStep {
     abstract fun definition(): S_Definition?
     abstract fun statement(): S_Statement?
 }
 
-class S_DefinitionReplStep(val def: S_Definition): S_ReplStep() {
+internal class S_DefinitionReplStep(val def: S_Definition): S_ReplStep() {
     override fun definition() = def
     override fun statement() = null
 }
 
-class S_StatementReplStep(val stmt: S_Statement): S_ReplStep() {
+internal class S_StatementReplStep(val stmt: S_Statement): S_ReplStep() {
     override fun definition() = null
     override fun statement() = stmt
 }

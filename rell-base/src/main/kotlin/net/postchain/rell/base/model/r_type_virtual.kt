@@ -13,8 +13,13 @@ import net.postchain.rell.base.compiler.ast.S_VirtualType
 import net.postchain.rell.base.lib.type.R_ListType
 import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.lib.type.R_SetType
+import net.postchain.rell.base.lmodel.L_TypeDefDocCodeStrategy
+import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.rell.base.utils.doc.DocCode
+import net.postchain.rell.base.utils.doc.DocType
+import net.postchain.rell.base.utils.doc.DocTypeSet
 import net.postchain.rell.base.utils.immListOf
 
 sealed class R_VirtualType(private val baseInnerType: R_Type): R_CompositeType("virtual<${baseInnerType.name}>") {
@@ -30,6 +35,17 @@ sealed class R_VirtualType(private val baseInnerType: R_Type): R_CompositeType("
         "type" to "virtual".toGtv(),
         "value" to baseInnerType.toMetaGtv(),
     ).toGtv()
+
+    override fun docType(): DocType {
+        val docArgs = immListOf(DocTypeSet.one(baseInnerType.docType()))
+        val strategy = L_TypeDefDocCodeStrategy { argDocs ->
+            val b = DocCode.builder()
+            b.keyword("virtual").raw("<")
+            b.append(argDocs[0]).raw(">")
+            b.build()
+        }
+        return DocType.generic(strategy, docArgs)
+    }
 
     companion object {
         internal val META = R_TypeMeta.make { t ->

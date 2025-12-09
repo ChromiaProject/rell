@@ -14,30 +14,33 @@ import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.fn.*
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsUtils
+import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget
+import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget_NativeUserFunction
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget_RegularUserFunction
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.expr.R_FunctionCallTarget_NativeUserFunction
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.ide.IdeCompletion
 
-abstract class C_GlobalFunction {
+internal abstract class C_GlobalFunction {
     internal open fun getFunctionDefinition(): R_FunctionDefinition? = null
     internal open fun getAbstractDescriptor(): C_AbstractFunctionDescriptor? = null
     internal open fun getExtendableDescriptor(): C_ExtendableFunctionDescriptor? = null
     internal open fun getDefMeta(): R_DefinitionMeta? = null
     internal open fun ideGetParameterCompletions(): ImmMultimap<String, IdeCompletion> = immMultimapOf()
 
-    protected abstract fun compileCall0(
+    internal abstract fun compileCall0(
         ctx: C_ExprContext,
         name: LazyPosString,
         args: ImmList<S_CallArgument>,
         resTypeHint: C_TypeHint,
     ): V_GlobalFunctionCall
 
-    fun compileCall(
+    internal fun compileCall(
         ctx: C_ExprContext,
         name: LazyPosString,
         args: S_CallArguments,
@@ -58,7 +61,7 @@ abstract class C_GlobalFunction {
 internal class C_UserFunctionHeader(
     params: C_FormalParameters,
     docComment: DocComment?,
-    explicitType: R_Type?,
+    val explicitType: R_Type?,
     val fnBody: C_UserFunctionDeepDefinitionBody?,
 ): C_SubprogramHeader(params, docComment) {
     val deepHeader = C_DeepDefinitionHeader(C_DeclarationType.FUNCTION, explicitType, fnBody)
@@ -138,4 +141,23 @@ internal class C_FunctionCallTarget_RegularUserFunction(
     private val rFunction: R_RoutineDefinition,
 ): C_FunctionCallTarget_Regular(base, retType) {
     override fun createVTarget(): V_FunctionCallTarget = V_FunctionCallTarget_RegularUserFunction(rFunction)
+}
+
+internal class C_NativeUserGlobalFunction(
+    rFunction: R_FunctionDefinition,
+    private val fnName: R_FullName,
+    private val conversionsGetter: C_LateGetter<R_FunctionCallTarget_NativeUserFunction.Conversions>,
+): C_UserGlobalFunction(rFunction) {
+    override fun compileCallTarget(base: C_FunctionCallTargetBase, retType: R_Type?): C_FunctionCallTarget {
+        return C_FunctionCallTarget_NativeUserFunction(base, retType, fnName, conversionsGetter)
+    }
+}
+
+internal class C_FunctionCallTarget_NativeUserFunction(
+    base: C_FunctionCallTargetBase,
+    retType: R_Type?,
+    private val fnName: R_FullName,
+    private val conversionsGetter: C_LateGetter<R_FunctionCallTarget_NativeUserFunction.Conversions>,
+): C_FunctionCallTarget_Regular(base, retType) {
+    override fun createVTarget(): V_FunctionCallTarget = V_FunctionCallTarget_NativeUserFunction(fnName, conversionsGetter)
 }

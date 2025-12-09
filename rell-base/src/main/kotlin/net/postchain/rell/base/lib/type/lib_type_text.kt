@@ -22,12 +22,15 @@ import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.formatEx
+import net.postchain.rell.base.utils.immSetOf
 import org.jooq.impl.SQLDataType
+import java.math.BigInteger
 import java.nio.ByteBuffer
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
+import kotlin.reflect.full.createType
 
 object Lib_Type_Text {
     val DB_SUBSCRIPT: Db_SysFunction =
@@ -237,7 +240,7 @@ object Lib_Type_Text {
                    """)
                 }
                 bodyN { args ->
-                    Rt_Utils.check(args.isNotEmpty()) { "fn:text.format:no_args" toCodeMsg "No arguments" }
+                    Rt_Utils.check(args.isNotEmpty()) { "fn:text.format:no_args" to "No arguments" }
                     val s = args[0].asString()
                     val anys = args.drop(1).map { it.toFormatArg() }.toTypedArray()
                     val r = try {
@@ -713,9 +716,15 @@ object R_TextType: R_PrimitiveType("text") {
     override fun comparator() = Rt_Comparator.create { it.asString() }
     override fun fromCli(s: String): Rt_Value = Rt_TextValue.get(s)
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Text
+    override fun createNativeConversion(): R_TypeNativeConversion = NativeConversion
     override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Text
-
     override fun getLibTypeDef() = Lib_Rell.TEXT_TYPE
+
+    private object NativeConversion: R_TypeNativeConversion {
+        override val nativeTypes = immSetOf(String::class.createType())
+        override fun rtToNative(value: Rt_Value) = value.asString()
+        override fun nativeToRt(value: Any?) = Rt_TextValue.get(value as String)
+    }
 
     private object R_TypeSqlAdapter_Text: R_TypeSqlAdapter_Primitive("text", SQLDataType.CLOB) {
         override fun toSqlValue(value: Rt_Value) = value.asString()

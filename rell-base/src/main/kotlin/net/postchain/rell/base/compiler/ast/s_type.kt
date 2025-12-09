@@ -26,20 +26,20 @@ import net.postchain.rell.base.utils.ide.IdeSymbolKind
 sealed class S_Type(val pos: S_Pos) {
     protected abstract fun compile0(ctx: C_DefinitionContext): R_Type
 
-    fun compile(ctx: C_DefinitionContext): R_Type {
+    internal fun compile(ctx: C_DefinitionContext): R_Type {
         return ctx.msgCtx.consumeError { compile0(ctx) } ?: R_CtErrorType
     }
 
-    fun compile(ctx: C_ExprContext): R_Type {
+    internal fun compile(ctx: C_ExprContext): R_Type {
         ctx.executor.checkPass(C_CompilerPass.EXPRESSIONS)
         return compile(ctx.defCtx)
     }
 
-    fun compileOpt(ctx: C_DefinitionContext): R_Type? {
+    internal fun compileOpt(ctx: C_DefinitionContext): R_Type? {
         return ctx.msgCtx.consumeError { compile0(ctx) }
     }
 
-    open fun compileMirrorStructType(ctx: C_DefinitionContext, mutable: Boolean): R_StructType? {
+    internal open fun compileMirrorStructType(ctx: C_DefinitionContext, mutable: Boolean): R_StructType? {
         val rParamType = compileOpt(ctx)
         return if (rParamType == null) null else compileMirrorStructType0(ctx, rParamType, mutable)
     }
@@ -59,7 +59,7 @@ sealed class S_Type(val pos: S_Pos) {
     }
 }
 
-class S_NameType(private val name: S_QualifiedName): S_Type(name.pos) {
+internal class S_NameType(private val name: S_QualifiedName): S_Type(name.pos) {
     override fun compile0(ctx: C_DefinitionContext): R_Type {
         val nameHand = name.compile(ctx)
         val typeDef = ctx.nsCtx.getType(nameHand)
@@ -93,7 +93,7 @@ class S_NameType(private val name: S_QualifiedName): S_Type(name.pos) {
     }
 }
 
-class S_GenericType(private val name: S_QualifiedName, private val args: ImmList<S_Type>): S_Type(name.pos) {
+internal class S_GenericType(private val name: S_QualifiedName, private val args: ImmList<S_Type>): S_Type(name.pos) {
     override fun compile0(ctx: C_DefinitionContext): R_Type {
         val ref = compileGenericType(ctx)
         ref ?: return R_CtErrorType
@@ -101,7 +101,7 @@ class S_GenericType(private val name: S_QualifiedName, private val args: ImmList
         return ref.def
     }
 
-    fun compileGenericType(ctx: C_DefinitionContext): C_GlobalNameResDef<R_Type>? {
+    internal fun compileGenericType(ctx: C_DefinitionContext): C_GlobalNameResDef<R_Type>? {
         val rPosArgs = args.mapNotNullAllOrNull {
             val rType = it.compileOpt(ctx)
             if (rType == null) null else S_PosValue(it.pos, rType)
@@ -120,7 +120,7 @@ class S_GenericType(private val name: S_QualifiedName, private val args: ImmList
     }
 }
 
-class S_NullableType(pos: S_Pos, val valueType: S_Type): S_Type(pos) {
+internal class S_NullableType(pos: S_Pos, val valueType: S_Type): S_Type(pos) {
     override fun compile0(ctx: C_DefinitionContext): R_Type {
         val rValueType = valueType.compile(ctx)
         return when (rValueType) {
@@ -145,9 +145,9 @@ class S_NullableType(pos: S_Pos, val valueType: S_Type): S_Type(pos) {
     }
 }
 
-data class S_GenericTupleAttr<T>(val name: S_Name?, val value: T, val comment: S_Comment?)
+internal data class S_GenericTupleAttr<T>(val name: S_Name?, val value: T, val comment: S_Comment?)
 
-class S_TupleType(pos: S_Pos, private val fields: ImmList<S_GenericTupleAttr<S_Type>>): S_Type(pos) {
+internal class S_TupleType(pos: S_Pos, private val fields: ImmList<S_GenericTupleAttr<S_Type>>): S_Type(pos) {
     override fun compile0(ctx: C_DefinitionContext): R_Type {
         val names = mutableSetOf<String>()
 
@@ -188,7 +188,7 @@ class S_TupleType(pos: S_Pos, private val fields: ImmList<S_GenericTupleAttr<S_T
         ): C_IdeSymbolDef {
             val attrIdeId = tupleIdeId.appendMember(IdeSymbolCategory.ATTRIBUTE, cName.rName)
 
-            val docType = L_TypeUtils.docType(rType.mType)
+            val docType = rType.docType()
             val docSymbol = symCtx.makeDocSymbol(
                 DocSymbolKind.TUPLE_ATTR,
                 DocSymbolName.local(cName.str),
@@ -206,7 +206,7 @@ class S_TupleType(pos: S_Pos, private val fields: ImmList<S_GenericTupleAttr<S_T
     }
 }
 
-class S_VirtualType(pos: S_Pos, val innerType: S_Type): S_Type(pos) {
+internal class S_VirtualType(pos: S_Pos, val innerType: S_Type): S_Type(pos) {
     override fun compile0(ctx: C_DefinitionContext): R_Type {
         val rInnerType = innerType.compile(ctx)
 
@@ -258,13 +258,13 @@ class S_VirtualType(pos: S_Pos, val innerType: S_Type): S_Type(pos) {
     }
 }
 
-class S_MirrorStructType(pos: S_Pos, val mutable: Boolean, val paramType: S_Type): S_Type(pos) {
+internal class S_MirrorStructType(pos: S_Pos, val mutable: Boolean, val paramType: S_Type): S_Type(pos) {
     override fun compile0(ctx: C_DefinitionContext): R_Type {
         return paramType.compileMirrorStructType(ctx, mutable) ?: R_CtErrorType
     }
 }
 
-class S_FunctionType(pos: S_Pos, val params: ImmList<S_Type>, val result: S_Type): S_Type(pos) {
+internal class S_FunctionType(pos: S_Pos, val params: ImmList<S_Type>, val result: S_Type): S_Type(pos) {
     override fun compile0(ctx: C_DefinitionContext): R_Type {
         val rParams = params.mapToImmList {
             C_Types.checkNotUnit(ctx.msgCtx, it.pos, it.compile(ctx), null) { "fntype_param" toCodeMsg "parameter" }

@@ -29,7 +29,7 @@ import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeCompletionParam
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
-class C_NsEntry(val name: R_Name, val member: C_NamespaceMember) {
+internal class C_NsEntry(val name: R_Name, val member: C_NamespaceMember) {
     fun addToNamespace(nsBuilder: C_NamespaceBuilder) {
         nsBuilder.add(name, member)
     }
@@ -45,13 +45,13 @@ class C_NsEntry(val name: R_Name, val member: C_NamespaceMember) {
     }
 }
 
-class C_NamespaceMemberBase(
-    val defName: C_DefinitionName,
-    val ideInfo: C_IdeSymbolInfo,
-    val restrictions: C_MemberRestrictions,
+class C_NamespaceMemberBase internal constructor(
+    internal val defName: C_DefinitionName,
+    internal val ideInfo: C_IdeSymbolInfo,
+    internal val restrictions: C_MemberRestrictions,
 )
 
-enum class C_NamespaceMemberTag {
+internal enum class C_NamespaceMemberTag {
     NAMESPACE,
     TYPE,
     VALUE,
@@ -68,16 +68,16 @@ enum class C_NamespaceMemberTag {
 }
 
 sealed class C_NamespaceMember(base: C_NamespaceMemberBase) {
-    val defName = base.defName
-    val ideInfo = base.ideInfo
-    val restrictions = base.restrictions
+    internal val defName = base.defName
+    internal val ideInfo = base.ideInfo
+    internal val restrictions = base.restrictions
 
-    val docDefinition: DocDefinition by lazy {
+    internal val docDefinition: DocDefinition by lazy {
         getDocDefinition0()
     }
 
     /** Multiple values in case of an overloaded function. */
-    val ideCompletions: ImmList<IdeCompletion> by lazy {
+    internal val ideCompletions: ImmList<IdeCompletion> by lazy {
         getIdeCompletions0().toImmList()
     }
 
@@ -129,7 +129,7 @@ sealed class C_NamespaceMember(base: C_NamespaceMemberBase) {
     }
 }
 
-class C_NamespaceMember_Alias(
+internal class C_NamespaceMember_Alias(
     base: C_NamespaceMemberBase,
     target: C_NamespaceMember,
     docSourcePos: DocSourcePos?,
@@ -368,7 +368,7 @@ private sealed class C_NamespaceMember_Struct(
         val (mandatory, optional) = rStruct.attributesList.partition { !it.hasExpr }
         val attrs = mandatory + optional
         val params = attrs.mapToImmList {
-            val docType = L_TypeUtils.docType(it.type.mType)
+            val docType = it.type.docType()
             val typeCode = docType.toCode()
             val typeStr = C_IdeCompletionsUtils.docCodeToStr(typeCode)
             val valueStr = if (it.hasExpr) " = ..." else ""
@@ -430,7 +430,7 @@ private class C_NamespaceMember_Enum(
     override fun getDocDefinition0() = e
 }
 
-class C_FunctionExpr(
+internal class C_FunctionExpr(
     private val name: LazyPosString,
     private val fn: C_GlobalFunction,
     private val ideInfoPtr: C_UniqueDefaultIdeInfoPtr,
@@ -565,7 +565,7 @@ private class C_NamespaceMember_GlobalConstant(
     override fun getDocDefinition0() = cDef.rDef
 }
 
-class C_SysNsProto(val entries: ImmList<C_NsEntry>, val entities: ImmList<C_NsEntry>) {
+internal class C_SysNsProto(val entries: ImmList<C_NsEntry>, val entities: ImmList<C_NsEntry>) {
     fun toNamespace(): C_Namespace {
         return C_NsEntry.createNamespace(entries)
     }
@@ -575,7 +575,7 @@ class C_SysNsProto(val entries: ImmList<C_NsEntry>, val entities: ImmList<C_NsEn
     }
 }
 
-class C_LibNsMemberFactory(private val basePath: C_RFullNamePath) {
+internal class C_LibNsMemberFactory(private val basePath: C_RFullNamePath) {
     fun namespace(
         name: R_Name,
         ns: C_Namespace,
@@ -638,7 +638,7 @@ class C_LibNsMemberFactory(private val basePath: C_RFullNamePath) {
     }
 }
 
-class C_SysNsProtoBuilder {
+internal class C_SysNsProtoBuilder {
     private val entries = mutableListOf<C_NsEntry>()
     private val entities = mutableListOf<C_NsEntry>()
 
@@ -646,7 +646,7 @@ class C_SysNsProtoBuilder {
         private set(value) {
             check(!field)
             check(value)
-            field = value
+            field = true
         }
 
     fun addAll(nsProto: C_SysNsProto) {

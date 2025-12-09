@@ -19,7 +19,7 @@ import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.utils.capitalizeEx
 
-abstract class C_MemberRestrictions {
+internal abstract class C_MemberRestrictions {
     abstract fun isRestricted(compilerOptions: C_CompilerOptions): Boolean
     abstract fun access(msgCtx: C_MessageContext, pos: S_Pos)
 

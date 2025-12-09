@@ -15,16 +15,16 @@ import net.postchain.rell.base.utils.doc.DocDefinition
 import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 
-class R_Attribute(
+class R_Attribute internal constructor(
     val index: Int,
     val rName: R_Name,
     val type: R_Type,
     val mutable: Boolean,
     val keyIndexKind: R_KeyIndexKind?,
-    val ideInfo: C_IdeSymbolInfo,
-    val restrictions: C_MemberRestrictions = C_MemberRestrictions.NULL,
-    val canSetInCreate: Boolean = true,
-    val sqlMapping: String = rName.str,
+    internal val ideInfo: C_IdeSymbolInfo,
+    internal val restrictions: C_MemberRestrictions = C_MemberRestrictions.NULL,
+    internal val canSetInCreate: Boolean = true,
+    internal val sqlMapping: String = rName.str,
     internal val validator: R_AttrValidator? = null,
     override val docSourcePos: DocSourcePos? = null,
     private val exprGetter: C_LateGetter<R_DefaultValue>?,

@@ -81,7 +81,7 @@ internal sealed class C_LibMemberFunction {
 abstract class C_SpecialLibGlobalFunctionBody {
     open fun paramCount(): IntRange? = null
 
-    abstract fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: ImmList<S_Expr>): V_Expr
+    internal abstract fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: ImmList<S_Expr>): V_Expr
 }
 
 internal class C_SpecialLibGlobalFunction(

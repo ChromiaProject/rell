@@ -146,7 +146,7 @@ class S_NameExpr(val qName: S_QualifiedName): S_Expr(qName.pos) {
     }
 }
 
-class S_AttrExpr(pos: S_Pos, private val name: S_Name): S_Expr(pos) {
+internal class S_AttrExpr(pos: S_Pos, private val name: S_Name): S_Expr(pos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         return compileAttr(ctx, hint, name)
     }
@@ -184,7 +184,7 @@ class S_AttrExpr(pos: S_Pos, private val name: S_Name): S_Expr(pos) {
     }
 }
 
-class S_MemberExpr(val base: S_Expr, val name: S_Name): S_Expr(base.startPos) {
+internal class S_MemberExpr(val base: S_Expr, val name: S_Name): S_Expr(base.startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val nameHand = name.compile(ctx)
 
@@ -212,7 +212,7 @@ class S_MemberExpr(val base: S_Expr, val name: S_Name): S_Expr(base.startPos) {
     }
 }
 
-class S_SafeMemberExpr(val base: S_Expr, val name: S_Name): S_Expr(base.startPos) {
+internal class S_SafeMemberExpr(val base: S_Expr, val name: S_Name): S_Expr(base.startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val cBase = base.compile(ctx)
         val vBase = cBase.vExpr()
@@ -221,7 +221,7 @@ class S_SafeMemberExpr(val base: S_Expr, val name: S_Name): S_Expr(base.startPos
     }
 }
 
-class S_DollarExpr(pos: S_Pos): S_Expr(pos) {
+internal class S_DollarExpr(pos: S_Pos): S_Expr(pos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val ph = ctx.blkCtx.lookupAtPlaceholder()
         ph ?: throw C_Errors.errAtPlaceholderNotDefined(startPos)

@@ -10,7 +10,7 @@ import net.postchain.rell.base.utils.checkEquals
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class MTypeParamsInfererTest: BaseMTypeTest() {
+internal class MTypeParamsInfererTest: BaseMTypeTest() {
     override fun initScope(b: MTestScope.Builder) {
         MTestScope.initBasic(b)
         MTestScope.initNumeric(b)
@@ -85,83 +85,71 @@ class MTypeParamsInfererTest: BaseMTypeTest() {
         chkRes("T", listOf("T ~ int", "T ~ int32"), "T = int")
         chkRes("T", listOf("T ~ int64", "T ~ int32"), "T = int")
         chkRes("T", listOf("T ~ integer", "T ~ integer"), "T = integer")
-        chkRes("T", listOf("T ~ integer", "T ~ big_integer"), "T = big_integer")
-        chkRes("T", listOf("T ~ integer", "T ~ decimal"), "T = decimal")
+        chkRes("T", listOf("T ~ integer", "T ~ big_integer"), "n/a")
+        chkRes("T", listOf("T ~ integer", "T ~ decimal"), "n/a")
         chkRes("T", listOf("T > integer", "T > decimal"), "n/a")
         chkRes("T", listOf("T ~ big_integer", "T ~ big_integer"), "T = big_integer")
-        chkRes("T", listOf("T ~ big_integer", "T ~ decimal"), "T = decimal")
+        chkRes("T", listOf("T ~ big_integer", "T ~ decimal"), "n/a")
         chkRes("T", listOf("T > big_integer", "T > decimal"), "n/a")
 
         chkRes("T", listOf("T ~ integer", "T < integer"), "T = integer")
-        chkRes("T", listOf("T ~ integer", "T < big_integer"), "T = big_integer")
-        chkRes("T", listOf("T ~ integer", "T < decimal"), "T = decimal")
+        chkRes("T", listOf("T ~ integer", "T < big_integer"), "n/a")
+        chkRes("T", listOf("T ~ integer", "T < decimal"), "n/a")
         chkRes("T", listOf("T ~ integer", "T < integer"), "T = integer")
         chkRes("T", listOf("T ~ big_integer", "T < integer"), "n/a")
         chkRes("T", listOf("T ~ decimal", "T < integer"), "n/a")
 
         chkRes("T", listOf("T ~ integer", "T > integer"), "T = integer")
-        chkRes("T", listOf("T ~ integer", "T > big_integer"), "T = big_integer")
-        chkRes("T", listOf("T ~ integer", "T > decimal"), "T = decimal")
+        chkRes("T", listOf("T ~ integer", "T > big_integer"), "n/a")
+        chkRes("T", listOf("T ~ integer", "T > decimal"), "n/a")
         chkRes("T", listOf("T ~ integer", "T > integer"), "T = integer")
         chkRes("T", listOf("T ~ big_integer", "T > integer"), "n/a")
         chkRes("T", listOf("T ~ decimal", "T > integer"), "n/a")
 
         chkRes("T", listOf("T ~ integer", "T = integer"), "T = integer")
-        chkRes("T", listOf("T ~ integer", "T = big_integer"), "T = big_integer")
-        chkRes("T", listOf("T ~ integer", "T = decimal"), "T = decimal")
+        chkRes("T", listOf("T ~ integer", "T = big_integer"), "n/a")
+        chkRes("T", listOf("T ~ integer", "T = decimal"), "n/a")
         chkRes("T", listOf("T ~ integer", "T = integer"), "T = integer")
         chkRes("T", listOf("T ~ big_integer", "T = integer"), "n/a")
         chkRes("T", listOf("T ~ decimal", "T = integer"), "n/a")
     }
 
-    @Test fun testConvertAdvanced() {
-        chkRes("T", listOf("T ~ integer", "T ~ big_integer", "T ~ decimal"), "T = decimal")
-        chkRes("T", listOf("T > integer", "T ~ big_integer", "T ~ decimal"), "n/a")
-        chkRes("T", listOf("T ~ integer", "T > big_integer", "T ~ decimal"), "n/a")
-        chkRes("T", listOf("T ~ integer", "T ~ big_integer", "T > decimal"), "T = decimal")
-        chkRes("T", listOf("T ~ integer", "T > big_integer", "T > decimal"), "n/a")
-        chkRes("T", listOf("T > integer", "T ~ big_integer", "T > decimal"), "n/a")
-        chkRes("T", listOf("T > integer", "T > big_integer", "T ~ decimal"), "n/a")
-
-        chkRes("T", listOf("T < integer", "T ~ big_integer", "T ~ decimal"), "n/a")
-        chkRes("T", listOf("T ~ integer", "T < big_integer", "T ~ decimal"), "n/a")
-        chkRes("T", listOf("T ~ integer", "T ~ big_integer", "T < decimal"), "T = decimal")
-    }
-
     @Test fun testConvertNullable() {
-        chkRes("T", listOf("T ~ integer", "T ~ decimal"), "T = decimal")
-        chkRes("T", listOf("T ~ integer?", "T ~ decimal"), "T = decimal?")
-        chkRes("T", listOf("T ~ integer", "T ~ decimal?"), "T = decimal?")
-        chkRes("T", listOf("T ~ integer?", "T ~ decimal?"), "T = decimal?")
+        chkRes("T", listOf("T ~ integer", "T ~ integer?"), "T = integer?")
+        chkRes("T", listOf("T ~ decimal?", "T ~ decimal"), "T = decimal?")
+        chkRes("T", listOf("T ~ integer", "T ~ decimal"), "n/a")
+        chkRes("T", listOf("T ~ integer", "T ~ decimal"), "n/a")
+        chkRes("T", listOf("T ~ integer?", "T ~ decimal"), "n/a")
+        chkRes("T", listOf("T ~ integer", "T ~ decimal?"), "n/a")
     }
 
     @Test fun testConvertCommon() {
-        chkRes("T", listOf("T ~ integer?", "T ~ decimal"), "T = decimal?")
+        chkRes("T", listOf("T ~ integer?", "T ~ integer"), "T = integer?")
+        chkRes("T", listOf("T ~ decimal", "T ~ decimal?"), "T = decimal?")
+
+        chkRes("T", listOf("T ~ integer?", "T ~ decimal"), "n/a")
         chkRes("T", listOf("T > integer?", "T ~ decimal"), "n/a")
-        chkRes("T", listOf("T ~ integer?", "T > decimal"), "T = decimal?")
+        chkRes("T", listOf("T ~ integer?", "T > decimal"), "n/a")
         chkRes("T", listOf("T > integer?", "T > decimal"), "n/a")
 
         chkRes("T:-decimal", listOf("T ~ integer?"), "n/a")
         chkRes("T:-decimal", listOf("T > integer?"), "n/a")
-        chkRes("T:-decimal?", listOf("T ~ integer?"), "T = decimal?")
+        chkRes("T:-decimal?", listOf("T ~ integer?"), "n/a")
         chkRes("T:-decimal?", listOf("T > integer?"), "n/a")
-
-        chkRes("T:+decimal", listOf("T ~ integer?"), "T = decimal?")
-        chkRes("T:+decimal", listOf("T > integer?"), "n/a")
     }
 
     @Test fun testConvertBound() {
-        chkRes("T:-decimal", listOf("T ~ integer"), "T = decimal")
-        chkRes("T:-decimal", listOf("T ~ big_integer"), "T = decimal")
+        chkRes("T:-decimal", listOf("T ~ integer"), "n/a")
+        chkRes("T:-decimal", listOf("T ~ big_integer"), "n/a")
         chkRes("T:-decimal", listOf("T ~ decimal"), "T = decimal")
 
-        chkRes("T:+decimal", listOf("T ~ integer"), "T = decimal")
-        chkRes("T:+decimal", listOf("T ~ big_integer"), "T = decimal")
+        chkRes("T:+decimal", listOf("T ~ integer"), "n/a")
+        chkRes("T:+decimal", listOf("T ~ big_integer"), "n/a")
         chkRes("T:+decimal", listOf("T ~ decimal"), "T = decimal")
     }
 
     @Test fun testBoundDependent() {
-        chkRes("A,B:-A", listOf("A > int", "B > num"), "n/a") //TODO support
+        chkRes("A,B:-A", listOf("A > int", "B > num"), "n/a")
         chkRes("A,B:-A", listOf("A > int", "B > int"), "A = int, B = int")
         chkRes("A,B:-A", listOf("A > int", "B > int32"), "A = int, B = int32")
 

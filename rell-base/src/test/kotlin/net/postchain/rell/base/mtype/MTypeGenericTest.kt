@@ -9,7 +9,7 @@ import net.postchain.rell.base.mtype.utils.MTestScope
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class MTypeGenericTest: BaseMTypeTest() {
+internal class MTypeGenericTest: BaseMTypeTest() {
     override fun initScope(b: MTestScope.Builder) {
         MTestScope.initBasic(b)
         MTestScope.initNumeric(b)

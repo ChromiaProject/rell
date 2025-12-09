@@ -525,7 +525,7 @@ object Lib_Crypto {
     @Suppress("SameParameterValue")
     private fun checkByteArraySize(array: ByteArray, expSize: Int, fn: String, errCode: String, errMsg: String) {
         Rt_Utils.check(array.size == expSize) {
-            "fn:$fn:$errCode:${array.size}" toCodeMsg "Wrong size of $errMsg: ${array.size} instead of $expSize"
+            "fn:$fn:$errCode:${array.size}" to "Wrong size of $errMsg: ${array.size} instead of $expSize"
         }
     }
 
@@ -571,7 +571,7 @@ object Lib_Crypto {
     private fun pointToBytes(point: ECPoint, compressed: Boolean): ByteArray {
         val bytes = point.getEncoded(compressed)
         Rt_Utils.check(bytes.size == if (compressed) 33 else 65) {
-            "point_to_bytes:bad_pubkey:${bytes.size}" toCodeMsg "Bad public key (size: ${bytes.size})"
+            "point_to_bytes:bad_pubkey:${bytes.size}" to "Bad public key (size: ${bytes.size})"
         }
         return bytes
     }

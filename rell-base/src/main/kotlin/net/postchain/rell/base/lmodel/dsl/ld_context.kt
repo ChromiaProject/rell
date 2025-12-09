@@ -65,7 +65,7 @@ class Ld_ModuleContext(
     }
 }
 
-class Ld_NamespaceContext(
+internal class Ld_NamespaceContext(
     private val moduleCtx: Ld_ModuleContext,
     private val namePath: C_RFullNamePath,
 ) {

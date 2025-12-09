@@ -61,13 +61,9 @@ class L_TypeDefMembers(val all: ImmList<L_TypeDefMember>) {
 
     private fun replaceTypeParams0(replace: ReplaceState, member: L_TypeDefMember): L_TypeDefMember? {
         return when (member) {
-            is L_TypeDefMember_Constant -> member
-            is L_TypeDefMember_Property -> member.replaceTypeParams(replace.map)
             is L_TypeDefMember_Constructor -> null
             is L_TypeDefMember_SpecialConstructor -> null
             is L_TypeDefMember_Function -> member.replaceTypeParams(replace.map)
-            is L_TypeDefMember_ValueSpecialFunction -> member
-            is L_TypeDefMember_StaticSpecialFunction -> member
             is L_TypeDefMember_Alias -> {
                 val targetMember = replaceTypeParamsCache(replace, member.targetMember)
                 if (targetMember == null) null else L_TypeDefMember_Alias(
@@ -78,6 +74,7 @@ class L_TypeDefMembers(val all: ImmList<L_TypeDefMember>) {
                     member.deprecated,
                 )
             }
+            else -> member
         }
     }
 }
@@ -97,11 +94,11 @@ sealed class L_TypeDefMember(
     fullName: R_FullName,
     header: L_MemberHeader,
     docSymbol: DocSymbol,
-    val symName: String = fullName.last.str,
+    internal val symName: String = fullName.last.str,
 ): L_AbstractMember(fullName, header, docSymbol) {
     final override fun toString() = strCode()
 
-    abstract fun strCode(): String
+    internal abstract fun strCode(): String
 }
 
 class L_TypeDefMember_Alias(
@@ -127,7 +124,7 @@ class L_TypeDefParent(val typeDef: L_TypeDef, val args: ImmList<M_Type>) {
 }
 
 class L_TypeDef internal constructor(
-    val fullName: R_FullName,
+    internal val fullName: R_FullName,
     flags: L_TypeDefFlags,
     val mGenericType: M_GenericType,
     val parent: L_TypeDefParent?,
@@ -135,12 +132,12 @@ class L_TypeDef internal constructor(
     private val membersFuture: FcFuture<L_TypeDefMembers>,
     val docSymbol: DocSymbol,
 ): L_AbstractTypeDef() {
-    val qualifiedName: R_QualifiedName = fullName.qualifiedName
+    internal val qualifiedName: R_QualifiedName = fullName.qualifiedName
     val simpleName: R_Name = qualifiedName.last
     val abstract: Boolean = flags.abstract
     val hidden: Boolean = flags.hidden
 
-    val members: L_TypeDefMembers get() = membersFuture.getResult()
+    internal val members: L_TypeDefMembers get() = membersFuture.getResult()
 
     val allMembers: L_TypeDefMembers by lazy {
         if (parent == null) members else {

@@ -35,7 +35,7 @@ object Lib_OpContext {
 
     private val GET_SIGNERS_RETURN_TYPE: R_Type = R_ListType(R_ByteArrayType)
 
-    val NAMESPACE = Ld_NamespaceDsl.make {
+    internal val NAMESPACE = Ld_NamespaceDsl.make {
         struct("gtx_operation", since = "0.10.4") {
             attribute("name", type = "text")
             attribute("args", type = "list<gtv>")
@@ -281,7 +281,7 @@ object Lib_OpContext {
         }
     }
 
-    fun transactionRExpr(ctx: C_NamespacePropertyContext, pos: S_Pos): R_Expr {
+    internal fun transactionRExpr(ctx: C_NamespacePropertyContext, pos: S_Pos): R_Expr {
         val type = ctx.modCtx.sysDefsCommon.transactionEntity.type
         return C_ExprUtils.createSysCallRExpr(type, FnTransaction(type), immListOf(), pos, TRANSACTION_FN_LAZY)
     }

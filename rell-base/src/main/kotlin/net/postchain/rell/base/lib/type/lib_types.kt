@@ -18,7 +18,7 @@ object Lib_Types {
 
         type("comparable", abstract = true, hidden = true, since = "0.13.2") {
             supertypeStrategySpecial { mType ->
-                val rType = L_TypeUtils.getRType(mType)
+                val rType = L_TypeUtils.getRTypeOrNull(mType)
                 rType?.comparator() != null
             }
         }

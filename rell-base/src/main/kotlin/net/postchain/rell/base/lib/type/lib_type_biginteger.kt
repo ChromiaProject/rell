@@ -23,7 +23,9 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
+import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.immSetOf
 import org.jooq.DataType
 import org.jooq.impl.SQLDataType
 import java.math.BigDecimal
@@ -31,6 +33,8 @@ import java.math.BigInteger
 import java.math.MathContext
 import java.math.RoundingMode
 import java.util.*
+import kotlin.reflect.KType
+import kotlin.reflect.full.createType
 
 object Lib_Type_BigInteger {
     val FromInteger_Db = Db_SysFunction.cast("big_integer(integer)", Lib_BigIntegerMath.SQL_TYPE_STR)
@@ -317,7 +321,7 @@ object Lib_Type_BigInteger {
                 body { a ->
                     val bigInt = a.asBigInteger()
                     Rt_Utils.check(bigInt.signum() >= 0) {
-                        "fn:big_integer.to_bytes_unsigned:negative" toCodeMsg "Value is negative"
+                        "fn:big_integer.to_bytes_unsigned:negative" to "Value is negative"
                     }
                     var bytes = bigInt.toByteArray()
                     val n = (bigInt.bitLength() + 7) / 8
@@ -454,7 +458,7 @@ object Lib_BigIntegerMath {
 
     fun <T> genericPower(fnName: String, base: T, exp: Long, type: NumericType<T>): T {
         Rt_Utils.check(exp >= 0) {
-            "$fnName:exp_negative:$exp" toCodeMsg "Negative exponent: $exp"
+            "$fnName:exp_negative:$exp" to "Negative exponent: $exp"
         }
 
         val res = when {
@@ -535,6 +539,7 @@ object R_BigIntegerType: R_PrimitiveType("big_integer") {
     override fun fromCli(s: String): Rt_Value = Rt_BigIntegerValue.get(s)
 
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_BigInteger
+    override fun createNativeConversion(): R_TypeNativeConversion = NativeConversion
     override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_BigInteger
 
     override fun getTypeAdapter(sourceType: R_Type): C_TypeAdapter? {
@@ -545,6 +550,12 @@ object R_BigIntegerType: R_PrimitiveType("big_integer") {
     }
 
     override fun getLibTypeDef() = Lib_Rell.BIG_INTEGER_TYPE
+
+    private object NativeConversion: R_TypeNativeConversion {
+        override val nativeTypes = immSetOf(BigInteger::class.createType())
+        override fun rtToNative(value: Rt_Value) = value.asBigInteger()
+        override fun nativeToRt(value: Any?) = Rt_BigIntegerValue.get(value as BigInteger)
+    }
 
     private object R_TypeSqlAdapter_BigInteger: R_TypeSqlAdapter_Primitive("big_integer", Lib_BigIntegerMath.SQL_TYPE) {
         override fun toSqlValue(value: Rt_Value) = value.asBigInteger()

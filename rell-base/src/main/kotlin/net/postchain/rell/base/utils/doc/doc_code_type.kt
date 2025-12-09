@@ -5,7 +5,6 @@
 package net.postchain.rell.base.utils.doc
 
 import net.postchain.rell.base.lmodel.L_TypeDefDocCodeStrategy
-import net.postchain.rell.base.mtype.M_TypeVariance
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
 
@@ -42,14 +41,12 @@ internal sealed class DocTypeSet {
         val ALL: DocTypeSet = DocTypeSet_All
 
         fun one(type: DocType): DocTypeSet = DocTypeSet_Basic(type, "")
-        fun superOf(type: DocType): DocTypeSet = DocTypeSet_Basic(type, "+")
         fun subOf(type: DocType): DocTypeSet = DocTypeSet_Basic(type, "-")
     }
 }
 
 internal class DocTypeParam(
     val name: String,
-    val variance: M_TypeVariance,
     val bounds: DocTypeSet,
 )
 

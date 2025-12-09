@@ -120,9 +120,14 @@ private sealed class AbstractSizeEvaluator(val annStr: String): C_ModifierEvalua
     }
 }
 
-data class C_SizeData(val min: Long?, val max: Long?, val annStr: String, val targetType: C_ModifierTargetType)
+internal data class C_SizeData(
+    val min: Long?,
+    val max: Long?,
+    val annStr: String,
+    val targetType: C_ModifierTargetType,
+)
 
-class C_SizeConstraint private constructor(
+internal class C_SizeConstraint private constructor(
     val min: Long?,
     val max: Long?,
     val annStrs: ImmList<String>,
@@ -132,7 +137,7 @@ class C_SizeConstraint private constructor(
         check((min != null || max != null) && annStrs.isNotEmpty())
     }
 
-    fun compile(ctx: C_DefinitionContext, header: C_AttrHeader, type: R_Type): R_AttrValidator? {
+    internal fun compile(ctx: C_DefinitionContext, header: C_AttrHeader, type: R_Type): R_AttrValidator? {
         val sizeAdapter = R_SizeAttrValidator.getSizeAdapter(type)
         return if (sizeAdapter == null) {
             reportTypeError(ctx, header, targetType, annStrs, type)
@@ -143,7 +148,7 @@ class C_SizeConstraint private constructor(
         }
     }
 
-    companion object {
+    internal companion object {
         const val COLLECTION_SIZE_LIMIT: Long = 1_073_741_824L // 2^30
 
         private fun from(

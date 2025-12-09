@@ -19,7 +19,7 @@ import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.futures.FcFuture
 
-class Ld_StructDslImpl(
+internal class Ld_StructDslImpl(
     hdr: Ld_MemberHeader,
     private val memberBuilder: Ld_MemberHeaderBuilder = Ld_MemberHeaderBuilder(hdr),
 ): Ld_StructDsl, Ld_MemberDsl by Ld_MemberDslImpl(memberBuilder) {
@@ -55,21 +55,21 @@ class Ld_StructAttribute(
     val mutable: Boolean,
 ) {
     fun finish(ctx: Ld_TypeFinishContext, outerFullName: R_FullName): L_StructAttribute {
-        val mType = type.finish(ctx)
+        val rType = type.finishR(ctx)
         val fullName = outerFullName.append(name)
         val hdr = memberHeader.finish(ctx.modCfg, fullName, DocSymbolKind.STRUCT_ATTR, requireSince = false)
-        val doc = finishDoc(hdr, mType)
-        return L_StructAttribute(fullName, mType, mutable = mutable, header = hdr.lHeader, docSymbol = doc)
+        val doc = finishDoc(hdr, rType)
+        return L_StructAttribute(fullName, rType, mutable = mutable, header = hdr.lHeader, docSymbol = doc)
     }
 
-    private fun finishDoc(hdr: Ld_MemberHeader.Finish, mType: M_Type): DocSymbol {
-        val docType = L_TypeUtils.docType(mType)
+    private fun finishDoc(hdr: Ld_MemberHeader.Finish, rType: R_Type): DocSymbol {
+        val docType = rType.docType()
         val docDec = DocDeclarationProto_StructAttribute(hdr.simpleName, docType, mutable).toLazyDeclaration()
         return hdr.docSymbol(docDec)
     }
 }
 
-class Ld_Struct(
+internal class Ld_Struct(
     private val attributes: ImmList<Ld_StructAttribute>,
 ) {
     fun process(ctx: Ld_NamespaceContext, fullName: R_FullName): FcFuture<L_Struct> {
@@ -80,7 +80,7 @@ class Ld_Struct(
                 val lAttributes = attributes.mapToImmList { it.finish(finishCtx.typeCtx, fullName) }
 
                 val rAttributes = lAttributes
-                    .mapIndexed { i, lAttr -> lAttr.simpleName to finishAttr(fullName.qualifiedName, lAttr, i) }
+                    .mapIndexed { i, lAttr -> lAttr.simpleName to finishAttr(lAttr, i) }
                     .toImmMap()
                 rStruct.setAttributes(rAttributes)
 
@@ -102,23 +102,14 @@ class Ld_Struct(
         }
     }
 
-    private fun finishAttr(qualifiedName: R_QualifiedName, lAttr: L_StructAttribute, i: Int): R_Attribute {
-        val name = lAttr.simpleName
-        val mType = lAttr.type
-
-        val rType = L_TypeUtils.getRType(mType)
-        checkNotNull(rType) {
-            "Cannot convert type of struct attribute $qualifiedName.$name to R_Type: ${mType.strCode()}"
-        }
-
+    private fun finishAttr(lAttr: L_StructAttribute, i: Int): R_Attribute {
         val cAttr = C_SysAttribute(
-            name.str,
-            rType,
+            lAttr.simpleName.str,
+            lAttr.type,
             mutable = lAttr.mutable,
             docSymbol = lAttr.docSymbol,
             restrictions = C_MemberRestrictions.makeLib(lAttr, C_DeclarationType.ATTRIBUTE, null),
         )
-
         return cAttr.compile(i, false)
     }
 }

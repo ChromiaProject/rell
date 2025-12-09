@@ -49,12 +49,12 @@ class C_AtFromItemContext(
     }
 }
 
-abstract class C_AtFromBase {
+internal abstract class C_AtFromBase {
     abstract fun nameMsg(): C_CodeMsg
     abstract fun compile(ctx: C_ExprContext, pos: S_Pos): V_Expr
 }
 
-class C_AtFromMember(
+internal class C_AtFromMember(
     private val base: C_AtFromBase,
     private val selfType: R_Type,
     private val member: C_TypeValueMember,
@@ -139,7 +139,7 @@ sealed class C_AtFromItem(
     val aliasIdeDef: C_IdeSymbolDef,
 )
 
-sealed class C_AtFromItem_Entity(
+internal sealed class C_AtFromItem_Entity(
     pos: S_Pos,
     val atEntity: C_AtEntity,
 ): C_AtFromItem(pos, atEntity.aliasIdeDef) {
@@ -155,7 +155,7 @@ sealed class C_AtFromItem_Entity(
     ): C_AtFromItem_Entity
 }
 
-class C_AtFromItem_Entity_Simple(
+internal class C_AtFromItem_Entity_Simple(
     pos: S_Pos,
     atEntity: C_AtEntity,
 ): C_AtFromItem_Entity(pos, atEntity) {
@@ -290,7 +290,7 @@ internal class C_AtDetails(
     }
 }
 
-class C_AtSummarizationPos(val exprPos: S_Pos, val ann: C_AtSummarizationKind)
+internal class C_AtSummarizationPos(val exprPos: S_Pos, val ann: C_AtSummarizationKind)
 
 internal sealed class C_AtSummarization(
     protected val pos: C_AtSummarizationPos,
@@ -424,7 +424,7 @@ internal class C_AtSummarization_Aggregate_Map(
     override fun compileR(appCtx: C_AppContext) = R_ColAtFieldSummarization_Aggregate_Map(mapType)
 }
 
-class C_AtContextMember(private val member: C_AtFromMember, private val outerAtExpr: Boolean) {
+internal class C_AtContextMember(private val member: C_AtFromMember, private val outerAtExpr: Boolean) {
     fun isValue() = member.isValue()
     fun isCallable() = member.isCallable()
 
@@ -445,7 +445,7 @@ class C_AtContextMember(private val member: C_AtFromMember, private val outerAtE
     }
 }
 
-class C_AtFromImplicitAttr(
+internal class C_AtFromImplicitAttr(
     private val base: C_AtFromBase,
     private val selfType: R_Type,
     private val attr: C_AtTypeImplicitAttr,
@@ -469,4 +469,4 @@ class C_AtFromImplicitAttr(
     }
 }
 
-class C_AtTypeImplicitAttr(val member: C_TypeValueMember, val type: R_Type)
+internal class C_AtTypeImplicitAttr(val member: C_TypeValueMember, val type: R_Type)

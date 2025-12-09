@@ -26,7 +26,7 @@ internal object C_LibFuncCaseUtils {
     fun makeGlobalCase(
         naming: C_MemberNaming,
         lFunction: L_Function,
-        outerTypeArgs: ImmMap<R_Name, M_Type>,
+        outerTypeArgs: ImmMap<R_Name, R_Type>,
         restrictions: C_MemberRestrictions,
         ideInfo: C_IdeSymbolInfo,
     ): C_LibFuncCase<V_GlobalFunctionCall> {
@@ -58,7 +58,7 @@ internal object C_LibFuncCaseUtils {
     }
 }
 
-class C_LibFuncCaseCtx(val linkPos: S_Pos, val fullNameLazy: LazyString) {
+internal class C_LibFuncCaseCtx(val linkPos: S_Pos, val fullNameLazy: LazyString) {
     /** Beware that the returned name is a link name, not actual function definition name
      * (may differ sometimes, e.g. aliases, namespace member links, etc.). */
     fun qualifiedNameMsg() = fullNameLazy.value
@@ -152,7 +152,7 @@ internal abstract class C_LibFuncCase<CallT: V_FunctionCall>(
     }
 }
 
-abstract class C_LibFuncCaseMatch<CallT: V_FunctionCall> {
+internal abstract class C_LibFuncCaseMatch<CallT: V_FunctionCall> {
     abstract fun compileCall(ctx: C_ExprContext, caseCtx: C_LibFuncCaseCtx): CallT
 }
 
@@ -171,12 +171,12 @@ internal abstract class C_LibPartialCallTargetMatch<CallT: V_FunctionCall>(val e
 }
 
 private class C_GenericFuncCaseCtx(
-    val outerTypeArgs: ImmMap<R_Name, M_Type>,
+    val outerTypeArgs: ImmMap<R_Name, R_Type>,
     val header: C_LibFunctionHeader,
 )
 
 private class C_LibFunctionHeader(val lHeader: L_FunctionHeader) {
-    val mHeader: M_FunctionHeader = lHeader.mHeader
+    val header = lHeader.intHeader
 
     val bindParams: C_ArgMatchParams by lazy {
         val paramList = lHeader.params.mapIndexedToImmList { i, param -> C_ArgMatchParam(i, param.name, param.arity, null) }
@@ -327,13 +327,11 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
         val match = matchArgs(header.lHeader, resTypeHint, paramsMatch, vArgExprWrappers)
         match ?: return null
 
-        val rResultType = L_TypeUtils.getRType(match.actualHeader.resultType)
+        val rResultType = match.actualHeader.rResultType
         val unresolved = match.actualHeader.typeParams
-
-        val rActualType = rResultType ?: R_CtErrorType
         val fullName = getFullName(selfType)
 
-        val matchBase = C_CaseMatchBase(rActualType, fullName, caseCtx.linkPos, restrictions)
+        val matchBase = C_CaseMatchBase(rResultType, fullName, caseCtx.linkPos, restrictions)
 
         val valueAdapters = paramsMatch.argMatching.paramsToValues(match.adapters)
         val namedArg = args.rawArgs.named.firstOrNull()?.name
@@ -347,11 +345,11 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
             namedArg,
         )
 
-        if (rResultType == null || unresolved.isNotEmpty()) {
+        if (rResultType == null || !rResultType.isValid() || unresolved.isNotEmpty()) {
             return makeUnresolvedMatch(matchBase, matchParams, unresolved)
         }
 
-        val allTypeArgs = genCaseCtx.outerTypeArgs.unionNoConflicts(match.typeArgs)
+        val allTypeArgs = genCaseCtx.outerTypeArgs.unionNoConflicts(match.typeArgs).toImmMap()
         val cFn = getSysFunction(caseCtx, selfType, rResultType, allTypeArgs)
         cFn ?: return null
 
@@ -371,8 +369,8 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
         paramsMatch: L_FunctionParamsMatch,
         vArgExprs: List<V_ExprWrapper>,
     ): L_FunctionHeaderMatch? {
-        val expectedResultType = L_TypeUtils.getExpectedType(header.typeParams, header.resultType, resTypeHint)
-        val argValueTypes = vArgExprs.map { it.type.mType }
+        val expectedResultType = resTypeHint.getSourceType(header.resultType)
+        val argValueTypes = vArgExprs.map { it.type }
         val argParamTypes = paramsMatch.argMatching.valuesToParams(argValueTypes)
         return paramsMatch.matchArgs(argParamTypes, expectedResultType)
     }
@@ -398,15 +396,11 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
                 val i = it.param.index
                 simpleParams.computeIfAbsent(i) {
                     val lParam = header.lHeader.params[i]
-                    val mParam = lParam.mParam.toSimpleParam()
-                    lParam.replaceMParam(mParam)
+                    lParam.toSimpleParam()
                 }
             }
 
-        val mActualParams = actualParams.mapToImmList { it.mParam }
-
-        val mMatch = M_FunctionParamsMatch(header.mHeader, paramIndexes, mActualParams)
-        return L_FunctionParamsMatch(mMatch, actualParams, argMatching)
+        return L_FunctionParamsMatch(header.header, paramIndexes, actualParams, argMatching)
     }
 
     private fun getArgExprs(paramsMatch: L_FunctionParamsMatch): List<V_Expr>? {
@@ -450,7 +444,7 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
             return null
         }
 
-        val rResultType = L_TypeUtils.getRType(header.resultType)
+        val rResultType = L_TypeUtils.getRTypeOrNull(header.resultType)
         rResultType ?: return null
 
         val cFn = getSysFunction(caseCtx, selfType, rResultType, genCaseCtx.outerTypeArgs)
@@ -473,21 +467,19 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
         caseCtx: C_LibFuncCaseCtx,
         rSelfType: R_Type,
         rResultType: R_Type,
-        typeArgs: Map<R_Name, M_Type>,
+        typeArgs: ImmMap<R_Name, R_Type>,
     ): C_SysFunction? {
-        val rTypeArgs = typeArgs.entries
-            .mapNotNullAllOrNull {
-                val rType = L_TypeUtils.getRType(it.value)
-                if (rType == null) null else (it.key.str to rType)
+        for (rType in typeArgs.values) {
+            if (rType.isAbstract() || !rType.isValid()) {
+                return null
             }
-            ?.toImmMap()
-        rTypeArgs ?: return null
+        }
 
         val meta = L_FunctionBodyMeta(
             callPos = caseCtx.linkPos,
             rSelfType = rSelfType,
             rResultType = rResultType,
-            rTypeArgs = rTypeArgs,
+            rTypeArgs = typeArgs.mapKeysToImmMap { it.key.str },
         )
 
         return lFunction.body.getSysFunction(meta)
@@ -503,7 +495,7 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
     }
 }
 
-sealed class C_MemberNaming {
+internal sealed class C_MemberNaming {
     abstract val fullNameLazy: LazyString
 
     abstract fun replaceSelfType(selfType: M_Type?): C_MemberNaming
@@ -585,7 +577,7 @@ private class C_GlobalLibFuncCase(
     ideInfo: C_IdeSymbolInfo,
     restrictions: C_MemberRestrictions,
     private val naming: C_MemberNaming,
-    private val outerTypeArgs: ImmMap<R_Name, M_Type>,
+    private val outerTypeArgs: ImmMap<R_Name, R_Type>,
 ): C_CommonLibFuncCase<V_GlobalFunctionCall>(lFunction, ideInfo, restrictions) {
     private val cHeader = C_LibFunctionHeader(lFunction.header)
 
@@ -664,7 +656,7 @@ private class C_MemberLibFuncCase(
 
         val outerTypeArgTypes = outerTypeArgs
             .mapKeys { R_Name.of(it.key.name) }
-            .mapValuesToImmMap { it.value.captureType() }
+            .mapValuesToImmMap { L_TypeUtils.getRType(it.value.captureType()) }
 
         return C_GenericFuncCaseCtx(outerTypeArgTypes, specificHeader)
     }
@@ -704,9 +696,7 @@ private class C_LibFunctionCallTypeHints(private val header: L_FunctionHeader): 
             header.params.isNotEmpty() && header.params.last().arity.many -> header.params.last()
             else -> null
         }
-
-        val mType = param?.type
-        return if (mType == null) C_TypeHint.NONE else C_TypeHint.ofType(mType)
+        return C_TypeHint.ofType(param?.rType)
     }
 }
 
@@ -854,8 +844,8 @@ private abstract class C_LibPartialCallTarget_Common<CallT: V_FunctionCall>(
 
     final override fun codeMsg(): C_CodeMsg {
         val name = fullName.value
-        val code = "$name(${params.joinToString(",") { it.type.strCode() }}):${matchBase.resType.strCode()}"
-        val msg = "$name(${params.joinToString(", "){ it.type.strMsg() }}): ${matchBase.resType.str()}"
+        val code = "$name(${params.joinToString(",") { it.rType.strCode() }}):${matchBase.resType.strCode()}"
+        val msg = "$name(${params.joinToString(", "){ it.rType.str() }}): ${matchBase.resType.str()}"
         return code toCodeMsg msg
     }
 
@@ -872,22 +862,19 @@ private abstract class C_LibPartialCallTarget_Common<CallT: V_FunctionCall>(
         }
         resParams ?: return null
 
-        val mFnParams = fnType.params.map { it.mType }
-        val mFnType = M_Types.function(fnType.result.mType, mFnParams)
-
-        val resParamTypes = resParams.map { it.type }
-        val mSelfType = M_Types.function(matchBase.resType.mType, resParamTypes)
-        if (!mFnType.isSuperTypeOf(mSelfType)) {
+        val rSelfType = R_FunctionType(resParams.mapToImmList { it.rType }, matchBase.resType)
+        if (!fnType.isAssignableFrom(rSelfType)) {
             return null
         }
 
+        val mFnParams = fnType.params.map { it.mType }
         val matchParams = mFnParams.mapIndexedToImmList { i, type ->
             val lParam = params[i]
             val mParam = lParam.mParam.replaceType(type)
             lParam.replaceMParam(mParam)
         }
 
-        val exact = mFnType == mSelfType
+        val exact = fnType == rSelfType
         return C_LibPartialCallTargetMatch_Common(exact, matchParams)
     }
 
@@ -896,11 +883,13 @@ private abstract class C_LibPartialCallTarget_Common<CallT: V_FunctionCall>(
         private val params: ImmList<L_FunctionParam>,
     ): C_LibPartialCallTargetMatch<CallT>(exact) {
         override fun parameters(): ImmList<C_FunctionCallParameter>? {
-            return params.withIndex().mapNotNullAllOrNull { (i, param) ->
-                val rType = L_TypeUtils.getRType(param.type)
-                if (rType == null) null else C_FunctionCallParameter(
+            if (params.any { !it.rType.isValid() }) {
+                return null
+            }
+            return params.mapIndexedToImmList { i, param ->
+                C_FunctionCallParameter(
                     name = param.name,
-                    type = rType,
+                    type = param.rType,
                     index = i,
                     defaultValue = null,
                     restrictions = param.restrictions,

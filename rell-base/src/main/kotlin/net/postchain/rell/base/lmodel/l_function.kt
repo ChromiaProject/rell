@@ -43,30 +43,33 @@ class L_ParamImplication private constructor(val kind: Kind, val since: R_LangVe
     }
 }
 
-class L_FunctionParam(
+class L_FunctionParam internal constructor(
     val name: R_Name,
-    val mParam: M_FunctionParam,
-    val lazy: Boolean,
-    val implies: L_ParamImplication?,
-    val restrictions: C_MemberRestrictions,
+    internal val mParam: M_FunctionParam,
+    internal val lazy: Boolean,
+    internal val implies: L_ParamImplication?,
+    internal val restrictions: C_MemberRestrictions,
     override val docSymbol: DocSymbol,
 ): DocDefinition() {
-    val type = mParam.type
     val arity = mParam.arity
-    val nullable = mParam.nullable
+    val type: M_Type get() = mParam.type
+    internal val rType: R_Type get() = mParam.rType
+
+    internal val nullable = mParam.nullable
+    internal val exact = mParam.exact
 
     override val docSourcePos = null
 
     override fun toString() = strCode()
 
-    fun strCode(): String {
+    internal fun strCode(): String {
         var res = mParam.strCode(compact = false)
         if (lazy) res = "@lazy $res"
         if (implies != null) res = "@implies($implies) $res"
         return res
     }
 
-    fun replaceMParam(newMParam: M_FunctionParam): L_FunctionParam {
+    internal fun replaceMParam(newMParam: M_FunctionParam): L_FunctionParam {
         return if (newMParam === mParam) this else L_FunctionParam(
             name = name,
             newMParam,
@@ -77,40 +80,35 @@ class L_FunctionParam(
         )
     }
 
-    fun validate() {
-        mParam.validate()
+    internal fun toSimpleParam(): L_FunctionParam {
+        return if (arity == M_ParamArity.ONE) this else L_FunctionParam(
+            name = name,
+            mParam = mParam.toSimpleParam(),
+            lazy = lazy,
+            implies = implies,
+            restrictions = restrictions,
+            docSymbol = docSymbol,
+        )
     }
 }
 
 abstract class L_CommonFunctionHeader(
     val params: ImmList<L_FunctionParam>,
-) {
-    private val paramsMap: ImmMap<R_Name, L_FunctionParam> by lazy {
-        params.associateByToImmMap { it.name }
-    }
+)
 
-    fun getParam(name: R_Name): L_FunctionParam? {
-        return paramsMap[name]
-    }
-}
+class L_FunctionHeader internal constructor(
+    internal val intHeader: L_InternalFunctionHeader,
+): L_CommonFunctionHeader(intHeader.params) {
+    val typeParams = intHeader.typeParams
+    val resultType: M_Type by lazy { intHeader.rResultType.mType }
 
-class L_FunctionHeader(
-    val mHeader: M_FunctionHeader,
-    params: ImmList<L_FunctionParam>,
-): L_CommonFunctionHeader(params) {
-    val typeParams = mHeader.typeParams
-    val resultType = mHeader.resultType
+    internal val rResultType: R_Type get() = intHeader.rResultType
 
     init {
-        checkEquals(this.params.size, mHeader.params.size)
-        for (i in this.params.indices) {
-            check(this.params[i].mParam === mHeader.params[i]) {
-                "$mHeader ; $i ; ${this.params[i].mParam} ; ${mHeader.params[i]}"
-            }
-        }
+        checkEquals(this.params.size, intHeader.params.size)
     }
 
-    fun strCode(name: String? = null): String {
+    internal fun strCode(name: String? = null): String {
         val parts = mutableListOf<String>()
         if (typeParams.isNotEmpty()) parts.add(typeParams.joinToString(",", "<", ">") { it.strCode() })
         val s = "${name ?: ""}(${params.joinToString(", ") { it.strCode() }}): ${resultType.strCode()}"
@@ -120,58 +118,311 @@ class L_FunctionHeader(
 
     override fun toString() = strCode()
 
-    fun validate() {
-        mHeader.validate()
+    internal fun validate() {
+        intHeader.validate()
     }
 
-    fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): L_FunctionHeader {
+    internal fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): L_FunctionHeader {
         if (map.isEmpty()) {
             return this
         }
 
-        val mHeader2 = mHeader.replaceTypeParams(map)
-        checkEquals(mHeader2.params.size, params.size)
-
-        val params2 = params.mapIndexedOrSame { i, param ->
-            param.replaceMParam(mHeader2.params[i])
-        }.toImmList()
-
-        return if (mHeader2 === mHeader && params2 === params) this else L_FunctionHeader(mHeader2, params2)
+        val intHeader2 = intHeader.replaceTypeParams(map)
+        return if (intHeader2 === intHeader) this else L_FunctionHeader(intHeader2)
     }
 }
 
 internal class L_FunctionParamsMatch(
-    private val mMatch: M_FunctionParamsMatch,
+    private val header: L_InternalFunctionHeader,
+    private val paramIndexes: ImmList<Int>,
     val actualParams: ImmList<L_FunctionParam>,
     val argMatching: C_ArgMatching,
 ) {
-    fun matchArgs(argTypes: List<M_Type>, expectedResultType: M_Type?): L_FunctionHeaderMatch? {
-        val m = mMatch.matchArgs(argTypes, expectedResultType)
+    fun matchArgs(argTypes: List<R_Type>, expectedResultType: R_Type?): L_FunctionHeaderMatch? {
+        val m = matchArgs0(argTypes, expectedResultType)
         m ?: return null
 
-        val adapters = m.conversions.mapNotNullAllOrNull {
-            L_TypeUtils.getTypeAdapter(it)
+        val rTypeArgs = m.typeArgs.mapKeysToImmMap { R_Name.of(it.key) }
+
+        return L_FunctionHeaderMatch(
+            m.actualHeader,
+            adapters = m.adapters,
+            typeArgs = rTypeArgs,
+        )
+    }
+
+    private fun matchArgs0(argTypes: List<R_Type>, expectedResultType: R_Type?): HeaderMatch? {
+        checkEquals(argTypes.size, paramIndexes.size)
+
+        val match = if (header.typeParams.isEmpty()) {
+            val actualHeader = L_InternalFunctionHeader(immListOf(), header.resultType, actualParams)
+            TypeParamsMatch(immMapOf(), actualHeader)
+        } else {
+            matchTypeArgs(argTypes, expectedResultType)
+        }
+        match ?: return null
+
+        val badTypeArgs = match.typeArgs.values.filter { it.isAbstract() || !it.isValid() }
+        if (badTypeArgs.isNotEmpty()) {
+            return null
+        }
+
+        val adapters = match.actualHeader.params.indices.mapNotNullAllOrNull { i ->
+            val param = match.actualHeader.params[i]
+            val rParamType = param.rType
+            val rArgType = argTypes[i]
+
+            when {
+                param.exact && rArgType != rParamType -> null
+                param.nullable && rArgType !is R_NullableType -> null
+                else -> rParamType.getTypeAdapter(rArgType)
+            }
         }
 
         adapters ?: return null
 
-        val resParams = actualParams
-            .mapIndexedToImmList { i, lParam -> lParam.replaceMParam(m.actualHeader.params[i]) }
+        val rTypeArgs = match.typeArgs.mapValuesToImmMap { it.value }
+        return HeaderMatch(rTypeArgs, match.actualHeader, adapters)
+    }
 
-        val actualHeader = L_FunctionHeader(m.actualHeader, resParams)
+    private class HeaderMatch(
+        val typeArgs: ImmMap<String, R_Type>,
+        val actualHeader: L_InternalFunctionHeader,
+        val adapters: ImmList<C_TypeAdapter>,
+    ) {
+        init {
+            checkEquals(adapters.size, actualHeader.params.size)
+        }
+    }
 
-        return L_FunctionHeaderMatch(
-            actualHeader,
-            adapters = adapters,
-            typeArgs = m.typeArgs.mapKeysToImmMap { R_Name.of(it.key) },
-        )
+    private fun matchTypeArgs(argTypes: List<R_Type>, resultType: R_Type?): TypeParamsMatch? {
+        val map = mutableMapOf<String, R_Type>()
+
+        for (param in header.typeParams) {
+            if (param.bounds is M_TypeSet_SuperOf) {
+                map[param.name] = L_TypeUtils.getRType(param.bounds.boundType)
+            }
+        }
+
+        for ((i, param) in actualParams.withIndex()) {
+            val argType = argTypes[i]
+            if (!matchParamType(param.rType, argType, map)) {
+                return null
+            }
+        }
+
+        if (resultType != null && !resultType.hasTypeVariable()) {
+            matchResultType(header.rResultType, resultType, map)
+        }
+
+        val typeArgs = map.toImmMap()
+
+        for (param in header.typeParams) {
+            val typeArg = typeArgs[param.name]
+            if (typeArg != null) {
+                val valid = when (param.bounds) {
+                    is M_TypeSet_SubOf -> {
+                        val paramType = L_TypeUtils.getRType(param.bounds.boundType)
+                        paramType.isAssignableFrom(typeArg)
+                    }
+                    is M_TypeSet_SuperOf -> {
+                        val paramType = L_TypeUtils.getRType(param.bounds.boundType)
+                        typeArg.isAssignableFrom(paramType)
+                    }
+                    else -> true
+                }
+                if (!valid) {
+                    return null
+                }
+            }
+        }
+
+        val typeSets = header.typeParams
+            .mapNotNull { param -> typeArgs[param.name]?.let { param to M_TypeSets.one(it.mType) } }
+            .toImmMap()
+        val replacedHeader = header.replaceTypeParams(typeSets)
+
+        val fullParams = paramIndexes.mapToImmList { replacedHeader.params[it] }
+        val unresolved = header.typeParams.filterToImmList { it.name !in typeArgs }
+
+        val resParams = actualParams.indices.mapToImmList { fullParams[it] }
+        val actualHeader = L_InternalFunctionHeader(unresolved, replacedHeader.resultType, resParams)
+        return TypeParamsMatch(typeArgs, actualHeader)
+    }
+
+    private fun matchParamType(paramType: R_Type, argType: R_Type, map: MutableMap<String, R_Type>): Boolean {
+        return when {
+            paramType.isAssignableFrom(argType) -> true
+            paramType is R_BaseGenericType -> matchParamTypeGeneric(paramType, argType, map)
+            paramType is R_NullableType -> when (argType) {
+                is R_NullableType -> matchParamType(paramType.valueType, argType.valueType, map)
+                else -> matchParamType(paramType.valueType, argType, map)
+            }
+            paramType is R_FunctionType -> when (argType) {
+                is R_FunctionType -> {
+                    paramType.params.size == argType.params.size
+                            && matchTypeArg(paramType.result, argType.result, map)
+                            && paramType.params.indices.all { matchTypeArg(paramType.params[it], argType.params[it], map) }
+                }
+                else -> false
+            }
+            paramType is R_VariableType -> {
+                val old = map[paramType.name]
+                val common = when {
+                    old == null -> argType
+                    else -> getCommonType(old, argType, true)
+                }
+                common?.let {
+                    map[paramType.name] = it
+                    true
+                } ?: false
+            }
+            else -> paramType.getTypeAdapter(argType) != null
+        }
+    }
+
+    private fun matchParamTypeGeneric(
+        paramType: R_BaseGenericType,
+        argType: R_Type,
+        map: MutableMap<String, R_Type>,
+    ): Boolean {
+        var curArgType = argType
+        while (curArgType !is R_BaseGenericType || curArgType.typeName != paramType.typeName) {
+            val parentType = curArgType.parentType as? R_BaseGenericType
+            curArgType = parentType ?: return false
+        }
+
+        for ((i, dstType) in paramType.args.withIndex()) {
+            val srcType = curArgType.args[i]
+            if (!matchTypeArg(dstType, srcType, map)) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    private fun matchTypeArg(dstType: R_Type, srcType: R_Type, map: MutableMap<String, R_Type>): Boolean {
+        if (dstType.isAssignableArg(srcType)) {
+            return true
+        }
+
+        return when (dstType) {
+            is R_SubType -> matchTypeArg(dstType.valueType, srcType, map)
+            is R_VariableType -> {
+                val old = map[dstType.name]
+                val common = if (old == null) srcType else getCommonType(old, srcType, false)
+                common?.let {
+                    map[dstType.name] = it
+                    true
+                } ?: false
+            }
+            is R_GenericType -> when (dstType.typeName) {
+                "map_entry" -> srcType is R_TupleType
+                        && srcType.fields.size == 2
+                        && matchTypeArg(dstType.args[0], srcType.fields[0].type, map)
+                        && matchTypeArg(dstType.args[1], srcType.fields[1].type, map)
+                else -> false
+            }
+            else -> false
+        }
+    }
+
+    private fun matchResultType(formalType: R_Type, actualType: R_Type, map: MutableMap<String, R_Type>) {
+        when (formalType) {
+            is R_BaseGenericType -> {
+                when (actualType) {
+                    is R_BaseGenericType -> {
+                        var curType: R_Type = formalType
+                        while (curType !is R_BaseGenericType || curType.typeName != actualType.typeName) {
+                            val parentType = curType.parentType as? R_BaseGenericType
+                            curType = parentType ?: return
+                        }
+                        for ((i, dstType) in curType.args.withIndex()) {
+                            val srcType = actualType.args[i]
+                            matchTypeArg(dstType, srcType, map)
+                        }
+                    }
+                }
+            }
+            is R_VariableType -> {
+                val old = map[formalType.name]
+                val common = when {
+                    old == null -> actualType
+                    old.isAssignableFrom(actualType) -> actualType
+                    actualType.isAssignableFrom(old) -> old
+                    else -> null
+                }
+                if (common != null) {
+                    map[formalType.name] = common
+                }
+            }
+        }
+    }
+
+    private fun getCommonType(type1: R_Type, type2: R_Type, conv: Boolean): R_Type? {
+        val res = R_Type.commonTypeOpt(type1, type2)
+        return when {
+            res != null -> res
+            conv -> getCommonConvertibleType(type1, type2)
+            else -> null
+        }
+    }
+
+    private fun getCommonConvertibleType(type1: R_Type, type2: R_Type): R_Type? {
+        var res = getCommonConvertibleType0(type1, type2)
+        if (res == null) {
+            res = getCommonConvertibleType0(type2, type1)
+        }
+        return res
+    }
+
+    private fun getCommonConvertibleType0(type1: R_Type, type2: R_Type): R_Type? {
+        return when {
+            type1.isAssignableFrom(type2) -> type1
+            type1.getTypeAdapter(type2) != null -> type1
+            type1 is R_NullableType -> {
+                val commonType = when (type2) {
+                    is R_NullableType -> getCommonConvertibleType(type1.valueType, type2.valueType)
+                    else -> getCommonConvertibleType(type1.valueType, type2)
+                }
+                commonType?.let { R_NullableType(commonType) }
+            }
+            else -> null
+        }
+    }
+
+    private class TypeParamsMatch(
+        val typeArgs: ImmMap<String, R_Type>,
+        val actualHeader: L_InternalFunctionHeader,
+    )
+}
+
+internal class L_InternalFunctionHeader(
+    internal val typeParams: ImmList<M_TypeParam>,
+    internal val resultType: M_Type,
+    internal val params: ImmList<L_FunctionParam>,
+) {
+    internal val rResultType: R_Type by lazy { L_TypeUtils.getRType(resultType) }
+
+    fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): L_InternalFunctionHeader {
+        val mHeader = M_FunctionHeader(typeParams, resultType, params.mapToImmList { it.mParam })
+        val mResHeader = mHeader.replaceTypeParams(map)
+        val resParams = params.mapIndexedToImmList { i, param -> param.replaceMParam(mResHeader.params[i]) }
+        return L_InternalFunctionHeader(mResHeader.typeParams, mResHeader.resultType, resParams)
+    }
+
+    fun validate() {
+        typeParams.forEach { it.validate() }
+        resultType.validate()
+        params.forEach { it.type.validate() }
     }
 }
 
 internal class L_FunctionHeaderMatch(
-    val actualHeader: L_FunctionHeader,
+    val actualHeader: L_InternalFunctionHeader,
     val adapters: ImmList<C_TypeAdapter>,
-    val typeArgs: ImmMap<R_Name, M_Type>,
+    val typeArgs: ImmMap<R_Name, R_Type>,
 )
 
 class L_FunctionFlags(
@@ -179,17 +430,17 @@ class L_FunctionFlags(
     val isPure: Boolean,
 )
 
-class L_Function(
+class L_Function internal constructor(
     val fullName: R_FullName,
     val header: L_FunctionHeader,
     val flags: L_FunctionFlags,
-    val body: L_FunctionBody,
+    internal val body: L_FunctionBody,
 ) {
-    val docMembers: ImmMap<String, DocDefinition> by lazy {
+    internal val docMembers: ImmMap<String, DocDefinition> by lazy {
         header.params.associateByToImmMap { it.name.str }
     }
 
-    fun strCode(actualName: R_QualifiedName = fullName.qualifiedName): String {
+    internal fun strCode(actualName: R_QualifiedName = fullName.qualifiedName): String {
         val parts = listOfNotNull(
             if (flags.isStatic) "static" else null,
             if (flags.isPure) "pure" else null,
@@ -199,18 +450,13 @@ class L_Function(
         return parts.joinToString(" ")
     }
 
-    fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): L_Function {
+    internal fun replaceTypeParams(map: Map<M_TypeParam, M_TypeSet>): L_Function {
         val header2 = header.replaceTypeParams(map)
         return if (header2 === header) this else L_Function(fullName, header2, flags, body)
     }
 
-    fun validate() {
+    internal fun validate() {
         header.validate()
-    }
-
-    fun getDocMember(name: String): DocDefinition? {
-        val rName = R_Name.of(name)
-        return header.getParam(rName)
     }
 }
 

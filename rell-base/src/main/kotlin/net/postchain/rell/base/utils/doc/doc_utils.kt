@@ -4,14 +4,9 @@
 
 package net.postchain.rell.base.utils.doc
 
-import net.postchain.rell.base.model.R_App
-import net.postchain.rell.base.model.R_DefinitionName
-import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.utils.ImmMap
-import net.postchain.rell.base.utils.immMapOf
-import net.postchain.rell.base.utils.orEmpty
-import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.lmodel.L_TypeDefDocCodeStrategy
+import net.postchain.rell.base.model.*
+import net.postchain.rell.base.utils.*
 
 class DocException(val code: String, msg: String): RuntimeException(msg) {
     companion object {
@@ -19,8 +14,8 @@ class DocException(val code: String, msg: String): RuntimeException(msg) {
     }
 }
 
-object DocUtils {
-    fun getDocDefinitionByPath(def: DocDefinition, path: List<String>): DocDefinition? {
+internal object DocUtils {
+    private fun getDocDefinitionByPath(def: DocDefinition, path: List<String>): DocDefinition? {
         var curDef = def
         for (name in path) {
             val nextDef = curDef.getDocMember(name)
@@ -39,6 +34,31 @@ object DocUtils {
     fun getDocSymbolByPath(def: DocDefinition, path: List<String>): DocSymbol? {
         val resDef = getDocDefinitionByPath(def, path)
         return resDef?.docSymbol
+    }
+
+    fun docTypeGeneric(name: String, vararg args: R_Type): DocType {
+        return docTypeGeneric0(name, args.toImmList())
+    }
+
+    fun docTypeGeneric0(name: String, args: ImmList<R_Type>): DocType {
+        val docArgs = args.mapToImmList {
+            when (it) {
+                is R_SubType -> DocTypeSet.subOf(it.valueType.docType())
+                else -> DocTypeSet.one(it.docType())
+            }
+        }
+        val strategy = L_TypeDefDocCodeStrategy { argDocs ->
+            val b = DocCode.builder()
+            b.link(name)
+            b.raw("<")
+            for ((i, arg) in argDocs.withIndex()) {
+                if (i > 0) b.sep(", ")
+                b.append(arg)
+            }
+            b.raw(">")
+            b.build()
+        }
+        return DocType.generic(strategy, docArgs)
     }
 }
 

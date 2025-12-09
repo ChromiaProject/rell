@@ -19,6 +19,7 @@
     <modules>
         <module>rell-api-base</module>
         <module>rell-api-gtx</module>
+        <module>rell-api-native</module>
         <module>rell-api-shell</module>
         <module>rell-base</module>
         <module>rell-gtx</module>
@@ -146,6 +147,11 @@
             <dependency>
                 <groupId>net.postchain.rell</groupId>
                 <artifactId>rell-api-shell</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.postchain.rell</groupId>
+                <artifactId>rell-api-native</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

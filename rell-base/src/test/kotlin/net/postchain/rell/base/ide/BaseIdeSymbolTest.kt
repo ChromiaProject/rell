@@ -202,7 +202,7 @@ abstract class BaseIdeSymbolTest: BaseRellTest() {
     private class ActualEntry(val key: String, val ideInfo: IdeSymbolInfo, val symStr: String)
     private class TestEntry(val exp: ExpectedEntry, val act: ActualEntry)
 
-    companion object {
+    internal companion object {
         private val MAIN_FILE_PATH = C_SourcePath.parse(RellTestUtils.MAIN_FILE)
 
         fun getDocSymbols(code: String, extraMod: C_LibModule? = null, err: Boolean = false): Map<String, DocSymbol> {

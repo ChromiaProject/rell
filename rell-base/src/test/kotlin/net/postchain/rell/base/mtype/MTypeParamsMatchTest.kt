@@ -9,7 +9,7 @@ import net.postchain.rell.base.mtype.utils.MTestScope
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class MTypeParamsMatchTest: BaseMTypeTest() {
+internal class MTypeParamsMatchTest: BaseMTypeTest() {
     override fun initScope(b: MTestScope.Builder) {
         MTestScope.initBasic(b)
         MTestScope.initNumeric(b)
@@ -211,20 +211,6 @@ class MTypeParamsMatchTest: BaseMTypeTest() {
         chkMatchTypeParams("((_collection<+A>)->B)->text", "((_collection<int>)->real)->text", "A < int, B < real")
         chkMatchTypeParams("((_collection<+A>)->B)->text", "((_collection<-int>)->real)->text", "A = nothing, B < real")
         chkMatchTypeParams("((_collection<+A>)->B)->text", "((_collection<+int>)->real)->text", "A < int, B < real")
-    }
-
-    @Test fun testMatchTypeParamsConversion() {
-        chkMatchTypeParams("int64", "int32", "OK")
-        chkMatchTypeParams("real32", "int32", "OK")
-        chkMatchTypeParams("real32", "int64", "OK")
-        chkMatchTypeParams("real64", "int32", "OK")
-        chkMatchTypeParams("real64", "int64", "OK")
-        chkMatchTypeParams("real64", "real32", "OK")
-        chkMatchTypeParams("real64", "real64", "OK")
-
-        chkMatchTypeParams("int32", "int64", "n/a")
-        chkMatchTypeParams("int64", "real32", "n/a")
-        chkMatchTypeParams("real32", "real64", "n/a")
     }
 
     @Test fun testMatchTypeParamsCoverageCases1() {

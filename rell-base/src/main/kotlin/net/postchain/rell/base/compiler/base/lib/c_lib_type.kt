@@ -59,12 +59,13 @@ sealed class C_LibType(internal val mType: M_Type) {
         fun make(
             rType: R_Type,
             doc: DocCode,
+            name: String = rType.name,
             constructorFn: C_GlobalFunction? = null,
             staticMembers: ImmList<C_TypeStaticMember> = immListOf(),
             valueMembers: Lazy<ImmList<C_TypeValueMember>> = lazyOf(immListOf()),
         ): C_LibType {
             val docCodeStrategy = L_TypeDefDocCodeStrategy { doc }
-            val mType = L_TypeUtils.makeMType(rType, null, docCodeStrategy)
+            val mType = L_TypeUtils.makeMType(rType, name, null, docCodeStrategy)
             return make(mType, constructorFn = constructorFn, staticMembers = staticMembers, valueMembers = valueMembers)
         }
 
@@ -175,7 +176,7 @@ private class C_RTypeDef(
     }
 }
 
-class C_LibTypeItem<T>(
+internal class C_LibTypeItem<T>(
     val simpleName: R_Name,
     val docSymbol: DocSymbol,
     val restrictions: C_MemberRestrictions,

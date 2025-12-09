@@ -14,11 +14,9 @@ import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
-import net.postchain.rell.base.utils.PostchainGtvUtils
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.immMapOf
-import net.postchain.rell.base.utils.toIntExactOrNull
+import net.postchain.rell.base.utils.*
 import java.math.BigInteger
+import kotlin.reflect.full.createType
 
 object Lib_Type_Gtv {
     val LIST_OF_GTV_TYPE = R_ListType(R_GtvType)
@@ -417,8 +415,15 @@ object Lib_Type_Gtv {
 object R_GtvType: R_PrimitiveType("gtv") {
     override fun isReference() = true
     override fun isDirectPure() = true
-    override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Gtv
     override fun getLibTypeDef() = Lib_Rell.GTV_TYPE
+    override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Gtv
+    override fun createNativeConversion(): R_TypeNativeConversion = NativeConversion
+
+    private object NativeConversion: R_TypeNativeConversion {
+        override val nativeTypes = immSetOf(Gtv::class.createType())
+        override fun rtToNative(value: Rt_Value) = value.asGtv()
+        override fun nativeToRt(value: Any?) = Rt_GtvValue.get(value as Gtv)
+    }
 }
 
 class Rt_GtvValue private constructor(val value: Gtv): Rt_Value() {

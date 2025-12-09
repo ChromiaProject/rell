@@ -20,7 +20,7 @@ abstract class M_Type_Simple(private val name: String): M_Type() {
 
     final override fun validate() = Unit
 
-    companion object {
+    internal companion object {
         val ANYTHING: M_Type = M_Type_Anything
         val NOTHING: M_Type = M_Type_Nothing
         val ANY: M_Type = M_Type_Any

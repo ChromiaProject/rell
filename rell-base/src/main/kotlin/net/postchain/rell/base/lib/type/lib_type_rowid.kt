@@ -9,18 +9,18 @@ import net.postchain.gtv.GtvInteger
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_GtvCompatibility
-import net.postchain.rell.base.model.R_PrimitiveType
-import net.postchain.rell.base.model.R_TypeSqlAdapter
-import net.postchain.rell.base.model.R_TypeSqlAdapter_Primitive
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.immSetOf
 import net.postchain.rell.base.utils.mapToImmList
 import org.jooq.impl.SQLDataType
+import java.math.BigInteger
+import kotlin.reflect.full.createType
 
 object Lib_Type_Rowid {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -78,7 +78,7 @@ object Lib_Type_Rowid {
                 param("value", "integer", comment = "the row ID integer value")
                 body { value ->
                     val intValue = value.asInteger()
-                    Rt_Utils.check(intValue >= 0) { "rowid(integer):negative:$intValue" toCodeMsg "Negative value: $intValue" }
+                    Rt_Utils.check(intValue >= 0) { "rowid(integer):negative:$intValue" to "Negative value: $intValue" }
                     Rt_RowidValue.get(intValue)
                 }
             }
@@ -102,9 +102,16 @@ object R_RowidType: R_PrimitiveType("rowid") {
     override fun fromCli(s: String): Rt_Value = Rt_RowidValue.get(s.toLong())
 
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Rowid
+    override fun createNativeConversion(): R_TypeNativeConversion = NativeConversion
     override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Rowid
 
     override fun getLibTypeDef() = Lib_Rell.ROWID_TYPE
+
+    private object NativeConversion: R_TypeNativeConversion {
+        override val nativeTypes = immSetOf(Long::class.createType())
+        override fun rtToNative(value: Rt_Value) = value.asRowid()
+        override fun nativeToRt(value: Any?) = Rt_RowidValue.get(value as Long)
+    }
 
     private object R_TypeSqlAdapter_Rowid: R_TypeSqlAdapter_Primitive("rowid", SQLDataType.BIGINT) {
         override fun toSqlValue(value: Rt_Value) = value.asRowid()

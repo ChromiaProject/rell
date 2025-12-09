@@ -21,7 +21,7 @@ import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.*
 
-object C_ModuleUtils {
+internal object C_ModuleUtils {
     const val FILE_SUFFIX = ".rell"
     const val MODULE_FILE = "module$FILE_SUFFIX"
 
@@ -61,7 +61,7 @@ object C_ModuleUtils {
     fun isAllowedModuleName(name: R_ModuleName) = !name.startsWith(RELL_MODULE)
 }
 
-class C_ModuleReaderContext(val appCtx: S_AppContext) {
+internal class C_ModuleReaderContext(val appCtx: S_AppContext) {
     val msgCtx = appCtx.msgCtx
 }
 
@@ -361,7 +361,7 @@ private class C_ModuleDirTree(
     }
 }
 
-class S_AppContext(
+internal class S_AppContext(
     val msgCtx: C_MessageContext,
     val symCtxProvider: C_SymbolContextProvider,
     val importLoader: C_ImportModuleLoader,
@@ -375,7 +375,7 @@ class S_AppContext(
     }
 }
 
-sealed class S_ModuleContext(
+internal sealed class S_ModuleContext(
     val appCtx: S_AppContext,
     val moduleName: R_ModuleName,
 ) {
@@ -418,13 +418,13 @@ private class S_PrivateModuleContext(
     }
 }
 
-sealed class S_FileContext(
+internal sealed class S_FileContext(
     val modCtx: S_ModuleContext,
     val symCtx: C_SymbolContext,
     val path: C_SourcePath,
     val idePath: IdeFilePath,
 ) {
-    fun createDefinitionContext(): S_DefinitionContext {
+    internal fun createDefinitionContext(): S_DefinitionContext {
         return S_DefinitionContext.root(this)
     }
 
@@ -468,25 +468,25 @@ private class NamespaceNameInfoRec(
     val docSymbolGetter: C_LateGetter<DocSymbol?>,
 )
 
-class S_DefinitionContext private constructor(
-    val fileCtx: S_FileContext,
-    val namespacePath: C_RFullNamePath,
+internal class S_DefinitionContext private constructor(
+    internal val fileCtx: S_FileContext,
+    internal val namespacePath: C_RFullNamePath,
 ) {
-    val modCtx = fileCtx.modCtx
-    val appCtx = modCtx.appCtx
-    val msgCtx = modCtx.msgCtx
-    val symCtx = fileCtx.symCtx
+    internal val modCtx = fileCtx.modCtx
+    internal val appCtx = modCtx.appCtx
+    internal val msgCtx = modCtx.msgCtx
+    internal val symCtx = fileCtx.symCtx
 
-    val docFactory = symCtx.docSymbolFactory
+    internal val docFactory = symCtx.docSymbolFactory
 
-    val moduleName = modCtx.moduleName
+    internal val moduleName = modCtx.moduleName
 
-    fun namespace(path: C_RNamePath): S_DefinitionContext {
+    internal fun namespace(path: C_RNamePath): S_DefinitionContext {
         val subNamespacePath = namespacePath.append(path.parts)
         return S_DefinitionContext(fileCtx, subNamespacePath)
     }
 
-    companion object {
+    internal companion object {
         fun root(fileCtx: S_FileContext): S_DefinitionContext {
             val path = C_RFullNamePath.of(fileCtx.modCtx.moduleName)
             return S_DefinitionContext(fileCtx, path)
@@ -494,7 +494,7 @@ class S_DefinitionContext private constructor(
     }
 }
 
-class C_SourceModuleHeader(
+internal class C_SourceModuleHeader(
     val pos: S_Pos,
     val mount: C_RawMountAnnotationValue?,
     val abstract: S_Pos?,

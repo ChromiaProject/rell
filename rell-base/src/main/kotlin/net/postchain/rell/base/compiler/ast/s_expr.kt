@@ -21,19 +21,19 @@ import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 
 abstract class S_Expr(val startPos: S_Pos) {
-    abstract fun compile(ctx: C_ExprContext, hint: C_ExprHint = C_ExprHint.DEFAULT): C_Expr
+    internal abstract fun compile(ctx: C_ExprContext, hint: C_ExprHint = C_ExprHint.DEFAULT): C_Expr
 
-    fun compileOpt(ctx: C_ExprContext, hint: C_ExprHint = C_ExprHint.DEFAULT): C_Expr? {
+    internal fun compileOpt(ctx: C_ExprContext, hint: C_ExprHint = C_ExprHint.DEFAULT): C_Expr? {
         return ctx.msgCtx.consumeError {
             compile(ctx, hint)
         }
     }
 
-    fun compileSafe(ctx: C_ExprContext, hint: C_ExprHint = C_ExprHint.DEFAULT): C_Expr {
+    internal fun compileSafe(ctx: C_ExprContext, hint: C_ExprHint = C_ExprHint.DEFAULT): C_Expr {
         return compileOpt(ctx, hint) ?: C_ExprUtils.errorExpr(ctx, startPos)
     }
 
-    fun compileWithVarStates(
+    internal fun compileWithVarStates(
         ctx: C_ExprContext,
         delta: C_VarStatesDelta,
         hint: C_ExprHint = C_ExprHint.DEFAULT,
@@ -42,10 +42,10 @@ abstract class S_Expr(val startPos: S_Pos) {
         return compile(subCtx, hint)
     }
 
-    fun compile(ctx: C_StmtContext, hint: C_ExprHint = C_ExprHint.DEFAULT) = compile(ctx.exprCtx, hint)
-    fun compileOpt(ctx: C_StmtContext, hint: C_ExprHint = C_ExprHint.DEFAULT) = compileOpt(ctx.exprCtx, hint)
+    internal fun compile(ctx: C_StmtContext, hint: C_ExprHint = C_ExprHint.DEFAULT) = compile(ctx.exprCtx, hint)
+    internal fun compileOpt(ctx: C_StmtContext, hint: C_ExprHint = C_ExprHint.DEFAULT) = compileOpt(ctx.exprCtx, hint)
 
-    open fun compileFromItem(ctx: C_ExprContext, itemCtx: C_AtFromItemContext, alias: C_Name?): C_AtFromItem {
+    internal open fun compileFromItem(ctx: C_ExprContext, itemCtx: C_AtFromItemContext, alias: C_Name?): C_AtFromItem {
         val cExpr = compileSafe(ctx)
         return exprToFromItem(ctx, itemCtx, alias, cExpr)
     }
@@ -85,18 +85,18 @@ abstract class S_Expr(val startPos: S_Pos) {
         return C_AtFromItem_Iterable(startPos, ideDef, alias, vExpr, rItemType, rAdapter)
     }
 
-    open fun compileNestedAt(ctx: C_ExprContext, parentAtCtx: C_AtContext): C_Expr = compileSafe(ctx)
+    internal open fun compileNestedAt(ctx: C_ExprContext, parentAtCtx: C_AtContext): C_Expr = compileSafe(ctx)
 
     protected open fun compileWhenEnum(ctx: C_ExprContext, type: R_EnumType): C_Expr = compile(ctx)
 
-    fun compileWhenEnumOpt(ctx: C_ExprContext, type: R_EnumType): C_Expr? {
+    internal fun compileWhenEnumOpt(ctx: C_ExprContext, type: R_EnumType): C_Expr? {
         return ctx.msgCtx.consumeError {
             compileWhenEnum(ctx, type)
         }
     }
 
-    open fun asName(): S_QualifiedName? = null
-    open fun constantValue(): Rt_Value? = null
+    internal open fun asName(): S_QualifiedName? = null
+    internal open fun constantValue(): Rt_Value? = null
 }
 
 sealed class S_LiteralExpr(pos: S_Pos): S_Expr(pos) {
@@ -133,7 +133,11 @@ class S_NullLiteralExpr(pos: S_Pos): S_LiteralExpr(pos) {
     override fun value() = Rt_NullValue
 }
 
-class S_SubscriptExpr(val opPos: S_Pos, val base: S_Expr, val expr: S_Expr): S_Expr(base.startPos) {
+internal class S_SubscriptExpr(
+    private val opPos: S_Pos,
+    private val base: S_Expr,
+    private val expr: S_Expr,
+): S_Expr(base.startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val vBase = base.compile(ctx).vExpr()
         val vExpr = expr.compile(ctx).vExpr()
@@ -213,7 +217,7 @@ class S_SubscriptExpr(val opPos: S_Pos, val base: S_Expr, val expr: S_Expr): S_E
         return fields[index.toInt()]
     }
 
-    private inner abstract class Subscript(val keyType: R_Type) {
+    private abstract inner class Subscript(val keyType: R_Type) {
         abstract fun compile(ctx: C_ExprContext, base: V_Expr, key: V_Expr): V_Expr
     }
 
@@ -252,7 +256,7 @@ class S_SubscriptExpr(val opPos: S_Pos, val base: S_Expr, val expr: S_Expr): S_E
     }
 }
 
-class S_CreateExpr(
+internal class S_CreateExpr(
     pos: S_Pos,
     private val entityName: S_QualifiedName,
     private val args: ImmList<S_CallArgument>,
@@ -372,7 +376,7 @@ class S_CreateExpr(
     }
 }
 
-class S_ParenthesesExpr(startPos: S_Pos, val expr: S_Expr): S_Expr(startPos) {
+internal class S_ParenthesesExpr(startPos: S_Pos, val expr: S_Expr): S_Expr(startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val cExpr = expr.compile(ctx, hint)
         val vExpr = cExpr.vExpr()
@@ -382,7 +386,7 @@ class S_ParenthesesExpr(startPos: S_Pos, val expr: S_Expr): S_Expr(startPos) {
     override fun compileNestedAt(ctx: C_ExprContext, parentAtCtx: C_AtContext) = expr.compileNestedAt(ctx, parentAtCtx)
 }
 
-class S_TupleExpr(
+internal class S_TupleExpr(
     startPos: S_Pos,
     private val fields: ImmList<S_GenericTupleAttr<S_Expr>>,
 ): S_Expr(startPos) {
@@ -465,7 +469,7 @@ class S_TupleExpr(
     }
 }
 
-class S_IfExpr(
+internal class S_IfExpr(
     pos: S_Pos,
     private val cond: S_Expr,
     private val trueExpr: S_Expr,
@@ -517,7 +521,7 @@ class S_IfExpr(
     }
 }
 
-class S_ListLiteralExpr(pos: S_Pos, val exprs: ImmList<S_Expr>): S_Expr(pos) {
+internal class S_ListLiteralExpr(pos: S_Pos, val exprs: ImmList<S_Expr>): S_Expr(pos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val rHintElemType = getHintElemType(hint.typeHint)
         val elemHint = C_ExprHint(C_TypeHint.ofType(rHintElemType))
@@ -541,14 +545,10 @@ class S_ListLiteralExpr(pos: S_Pos, val exprs: ImmList<S_Expr>): S_Expr(pos) {
 
     private fun getHintElemType(typeHint: C_TypeHint): R_Type? {
         val mGenType = Lib_Rell.LIST_TYPE.mGenericType
-        val mHintType = L_TypeUtils.getExpectedType(mGenType.params, mGenType.commonType, typeHint)
-        mHintType ?: return null
+        val rHintType = typeHint.getSourceType(mGenType.commonType)
+        rHintType ?: return null
 
-        val typeArgs = M_TypeUtils.getTypeArgs(mHintType)
-        val mElemType = typeArgs[mGenType.params[0]]?.getExactType()
-        mElemType ?: return null
-
-        val rElemType = L_TypeUtils.getRType(mElemType)
+        val rElemType = (rHintType as? R_BaseGenericType)?.args?.get(0)
         if (rElemType == null || rElemType.hasTypeVariable()) {
             return null
         }
@@ -579,7 +579,7 @@ class S_ListLiteralExpr(pos: S_Pos, val exprs: ImmList<S_Expr>): S_Expr(pos) {
     }
 }
 
-class S_MapLiteralExpr(startPos: S_Pos, val entries: ImmList<Pair<S_Expr, S_Expr>>): S_Expr(startPos) {
+internal class S_MapLiteralExpr(startPos: S_Pos, val entries: ImmList<Pair<S_Expr, S_Expr>>): S_Expr(startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val rHintKeyValueTypes = getHintKeyValueType(hint.typeHint)
         val keyHint = C_ExprHint(C_TypeHint.ofType(rHintKeyValueTypes?.key))
@@ -617,17 +617,13 @@ class S_MapLiteralExpr(startPos: S_Pos, val entries: ImmList<Pair<S_Expr, S_Expr
     private fun getHintKeyValueType(typeHint: C_TypeHint): R_MapKeyValueTypes? {
         val mGenType = Lib_Rell.MAP_TYPE.mGenericType
 
-        val mHintType = L_TypeUtils.getExpectedType(mGenType.params, mGenType.commonType, typeHint)
-        mHintType ?: return null
+        val rHintType = typeHint.getSourceType(mGenType.commonType)
+        rHintType ?: return null
 
-        val typeArgs = M_TypeUtils.getTypeArgs(mHintType)
-        val mKeyType = typeArgs[mGenType.params[0]]?.getExactType()
-        val mValueType = typeArgs[mGenType.params[1]]?.getExactType()
-        mKeyType ?: return null
-        mValueType ?: return null
+        val rTypeArgs = (rHintType as? R_BaseGenericType)?.args
+        val rKeyType = rTypeArgs?.get(0)
+        val rValueType = rTypeArgs?.get(1)
 
-        val rKeyType = L_TypeUtils.getRType(mKeyType)
-        val rValueType = L_TypeUtils.getRType(mValueType)
         rKeyType ?: return null
         rValueType ?: return null
 
@@ -672,11 +668,11 @@ class S_MapLiteralExpr(startPos: S_Pos, val entries: ImmList<Pair<S_Expr, S_Expr
     }
 }
 
-sealed class S_CallArgumentValue {
+internal sealed class S_CallArgumentValue {
     abstract fun compile(ctx: C_ExprContext, typeHint: C_TypeHint): C_CallArgumentValue
 }
 
-class S_CallArgumentValue_Expr(val expr: S_Expr): S_CallArgumentValue() {
+internal class S_CallArgumentValue_Expr(val expr: S_Expr): S_CallArgumentValue() {
     override fun compile(ctx: C_ExprContext, typeHint: C_TypeHint): C_CallArgumentValue {
         val exprHint = C_ExprHint(typeHint)
         val cExpr = expr.compile(ctx, exprHint)
@@ -685,11 +681,11 @@ class S_CallArgumentValue_Expr(val expr: S_Expr): S_CallArgumentValue() {
     }
 }
 
-class S_CallArgumentValue_Wildcard(val pos: S_Pos): S_CallArgumentValue() {
+internal class S_CallArgumentValue_Wildcard(val pos: S_Pos): S_CallArgumentValue() {
     override fun compile(ctx: C_ExprContext, typeHint: C_TypeHint) = C_CallArgumentValue_Wildcard(pos)
 }
 
-class S_CallArgument(
+internal class S_CallArgument(
     val name: S_Name?,
     val value: S_CallArgumentValue,
 ) {
@@ -707,12 +703,12 @@ class S_CallArgument(
     }
 }
 
-class S_CallArguments(
+internal class S_CallArguments(
     val list: ImmList<S_CallArgument>,
     val posRange: S_PosRange,
 )
 
-class S_CallExpr(
+internal class S_CallExpr(
     private val base: S_Expr,
     private val args: S_CallArguments,
 ): S_Expr(base.startPos) {
@@ -722,7 +718,7 @@ class S_CallExpr(
     }
 }
 
-class S_GenericTypeExpr(val type: S_GenericType): S_Expr(type.pos) {
+internal class S_GenericTypeExpr(val type: S_GenericType): S_Expr(type.pos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val ref = type.compileGenericType(ctx.defCtx)
         val rType = ref?.def ?: R_CtErrorType
@@ -731,14 +727,14 @@ class S_GenericTypeExpr(val type: S_GenericType): S_Expr(type.pos) {
     }
 }
 
-class S_SpecialTypeExpr(val type: S_Type): S_Expr(type.pos) {
+internal class S_SpecialTypeExpr(val type: S_Type): S_Expr(type.pos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val rType = type.compile(ctx)
         return C_SpecificTypeExpr(type.pos, rType)
     }
 }
 
-class S_MirrorStructExpr(pos: S_Pos, val mutable: Boolean, val type: S_Type): S_Expr(pos) {
+internal class S_MirrorStructExpr(pos: S_Pos, val mutable: Boolean, val type: S_Type): S_Expr(pos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val structType = type.compileMirrorStructType(ctx.defCtx, mutable)
         structType ?: return C_ExprUtils.errorExpr(ctx, startPos)

@@ -6,10 +6,8 @@ package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.base.lmodel.L_Function
+import net.postchain.rell.base.lmodel.*
 import net.postchain.rell.base.lmodel.L_FunctionFlags
-import net.postchain.rell.base.lmodel.L_FunctionHeader
-import net.postchain.rell.base.lmodel.L_MemberHeader
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.mtype.M_FunctionHeader
@@ -123,10 +121,8 @@ class Ld_FunctionHeader(
         val mResultType = resultType.finish(subCtx)
         val (lParams, funComment) = Ld_FunctionParam.finish(subCtx, fullName, params, funMemberHeader)
 
-        val mParams = lParams.mapToImmList { it.mParam }
-        val mHeader = M_FunctionHeader(lTypeParams.list, mResultType, mParams)
-
-        val lHeader = L_FunctionHeader(mHeader, lParams)
+        val intHeader = L_InternalFunctionHeader(lTypeParams.list, mResultType, lParams)
+        val lHeader = L_FunctionHeader(intHeader)
         return Finish(lHeader, funComment)
     }
 }

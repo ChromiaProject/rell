@@ -7,6 +7,7 @@ package net.postchain.rell.base.lib.type
 import net.postchain.rell.base.compiler.base.lib.C_LibType
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
+import net.postchain.rell.base.model.R_GenericType
 import net.postchain.rell.base.model.R_OperationDefinition
 import net.postchain.rell.base.model.R_SimpleType
 import net.postchain.rell.base.model.R_Type
@@ -15,12 +16,13 @@ import net.postchain.rell.base.runtime.GtvRtConversion_None
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.DocCode
+import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_Operation {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("operation", abstract = true, hidden = true, since = "0.10.4") {
             supertypeStrategySpecial { mType ->
-                val rType = L_TypeUtils.getRType(mType)
+                val rType = L_TypeUtils.getRTypeOrNull(mType)
                 rType is R_OperationType
             }
         }
@@ -42,4 +44,5 @@ internal class R_OperationType(
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_None
     override fun toMetaGtv() = rOperation.appLevelName.toGtv()
     override fun getLibType0() = C_LibType.make(this, DocCode.link(rOperation.moduleLevelName))
+    override fun calcParentType() = R_GenericType("operation")
 }

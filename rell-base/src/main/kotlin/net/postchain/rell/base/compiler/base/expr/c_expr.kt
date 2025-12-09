@@ -18,11 +18,11 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.ImmList
 
 class C_ExprHint(val typeHint: C_TypeHint, val callable: Boolean = false) {
-    fun memberTags(): ImmList<C_NamespaceMemberTag> {
+    internal fun memberTags(): ImmList<C_NamespaceMemberTag> {
         return if (callable) C_NamespaceMemberTag.CALLABLE.list else C_NamespaceMemberTag.CALLABLE.notList
     }
 
-    companion object {
+    internal companion object {
         val DEFAULT = C_ExprHint(C_TypeHint.NONE)
         val DEFAULT_CALLABLE = C_ExprHint(C_TypeHint.NONE, callable = true)
 
@@ -31,11 +31,11 @@ class C_ExprHint(val typeHint: C_TypeHint, val callable: Boolean = false) {
 }
 
 abstract class C_Expr {
-    abstract fun startPos(): S_Pos
+    internal abstract fun startPos(): S_Pos
 
-    abstract fun vExprOrError(): C_ValueOrError<V_Expr>
+    internal abstract fun vExprOrError(): C_ValueOrError<V_Expr>
 
-    fun vExprOrNull(msgCtx: C_MessageContext): V_Expr? {
+    internal fun vExprOrNull(msgCtx: C_MessageContext): V_Expr? {
         val res = vExprOrError()
         return when (res) {
             is C_ValueOrError_Value -> res.value
@@ -46,7 +46,7 @@ abstract class C_Expr {
         }
     }
 
-    fun vExpr(): V_Expr {
+    internal fun vExpr(): V_Expr {
         val res = vExprOrError()
         return when (res) {
             is C_ValueOrError_Value -> res.value
@@ -54,22 +54,22 @@ abstract class C_Expr {
         }
     }
 
-    open fun isCallable() = false
-    open fun getDefMeta(): R_DefinitionMeta? = null
+    internal open fun isCallable() = false
+    internal open fun getDefMeta(): R_DefinitionMeta? = null
 
-    open fun member(ctx: C_ExprContext, memberNameHand: C_NameHandle, exprHint: C_ExprHint): C_Expr {
+    internal open fun member(ctx: C_ExprContext, memberNameHand: C_NameHandle, exprHint: C_ExprHint): C_Expr {
         val vExpr = vExpr()
         return vExpr.member(ctx, memberNameHand, false, exprHint)
     }
 
-    open fun call(ctx: C_ExprContext, pos: S_Pos, args: S_CallArguments, resTypeHint: C_TypeHint): C_Expr {
+    internal open fun call(ctx: C_ExprContext, pos: S_Pos, args: S_CallArguments, resTypeHint: C_TypeHint): C_Expr {
         val vExpr = vExpr() // May fail with "not a value" - that's OK.
         val vResExpr = vExpr.call(ctx, pos, args, resTypeHint)
         return C_ValueExpr(vResExpr)
     }
 }
 
-class C_ValueExpr(private val vExpr: V_Expr): C_Expr() {
+internal class C_ValueExpr(private val vExpr: V_Expr): C_Expr() {
     override fun startPos() = vExpr.pos
     override fun vExprOrError() = C_ValueOrError_Value(vExpr)
     override fun isCallable() = vExpr.type is R_FunctionType

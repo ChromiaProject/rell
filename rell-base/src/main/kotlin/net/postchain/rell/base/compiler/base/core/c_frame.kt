@@ -309,7 +309,7 @@ internal sealed class C_BlockContext(
 
 internal class C_FrameBlock(val rBlock: R_FrameBlock, val scope: C_BlockScope)
 
-sealed class C_BlockEntryResolution {
+internal sealed class C_BlockEntryResolution {
     abstract fun ideSymbolInfo(): C_IdeSymbolInfo
     abstract fun compile(ctx: C_ExprContext, pos: S_Pos): V_Expr
 }

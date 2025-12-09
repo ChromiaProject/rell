@@ -21,7 +21,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.R_ConstantValueExpr
 import net.postchain.rell.base.runtime.Rt_Value
 
-class C_NamespacePropertyContext(val exprCtx: C_ExprContext) {
+internal class C_NamespacePropertyContext(val exprCtx: C_ExprContext) {
     val defCtx = exprCtx.defCtx
     val globalCtx = defCtx.globalCtx
     val msgCtx = defCtx.msgCtx
@@ -29,7 +29,7 @@ class C_NamespacePropertyContext(val exprCtx: C_ExprContext) {
 }
 
 abstract class C_NamespaceProperty {
-    abstract fun toExpr(ctx: C_NamespacePropertyContext, name: C_QualifiedName): V_Expr
+    internal abstract fun toExpr(ctx: C_NamespacePropertyContext, name: C_QualifiedName): V_Expr
 }
 
 class C_NamespaceProperty_RtValue(

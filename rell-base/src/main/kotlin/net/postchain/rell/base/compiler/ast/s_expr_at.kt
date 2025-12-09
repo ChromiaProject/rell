@@ -25,12 +25,12 @@ import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
-sealed class S_AtExprFrom(val startPos: S_Pos) {
+internal sealed class S_AtExprFrom(val startPos: S_Pos) {
     internal abstract fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext): C_AtFrom
     internal abstract fun compileJoin(ctx: C_ExprContext, fromCtx: C_AtFromContext, alias: C_Name?): C_AtFrom
 }
 
-class S_AtExprFrom_Simple(val expr: S_Expr): S_AtExprFrom(expr.startPos) {
+internal class S_AtExprFrom_Simple(val expr: S_Expr): S_AtExprFrom(expr.startPos) {
     override fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext): C_AtFrom {
         return compileJoin(ctx, fromCtx, null)
     }
@@ -55,7 +55,7 @@ class S_AtExprFrom_Simple(val expr: S_Expr): S_AtExprFrom(expr.startPos) {
     }
 }
 
-class S_AtExprFrom_Complex(
+internal class S_AtExprFrom_Complex(
     startPos: S_Pos,
     private val items: ImmList<S_AtExprFromItem>,
 ): S_AtExprFrom(startPos) {
@@ -144,7 +144,7 @@ class S_AtExprFrom_Complex(
     }
 }
 
-class S_AtExprFromItem(
+internal class S_AtExprFromItem(
     private val modifiers: S_Modifiers,
     private val alias: S_Name?,
     private val expr: S_Expr,
@@ -182,18 +182,18 @@ class S_AtExprFromItem(
     }
 }
 
-sealed class S_AtExprWhat {
+internal sealed class S_AtExprWhat {
     internal abstract fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat
 }
 
-class S_AtExprWhat_Default: S_AtExprWhat() {
+internal class S_AtExprWhat_Default: S_AtExprWhat() {
     override fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat {
         val fields = from.makeDefaultWhatFields(ctx)
         return C_AtWhat(fields, null)
     }
 }
 
-class S_AtExprWhat_Simple(val startPos: S_Pos, val path: ImmList<S_Name>): S_AtExprWhat() {
+internal class S_AtExprWhat_Simple(val startPos: S_Pos, val path: ImmList<S_Name>): S_AtExprWhat() {
     override fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat {
         var expr = S_AttrExpr.compileAttr(ctx, C_ExprHint.DEFAULT, path[0])
 
@@ -209,7 +209,7 @@ class S_AtExprWhat_Simple(val startPos: S_Pos, val path: ImmList<S_Name>): S_AtE
     }
 }
 
-class S_AtExprWhatComplexField(
+internal class S_AtExprWhatComplexField(
     val attr: S_Name?,
     val expr: S_Expr,
     val modifiers: S_Modifiers,
@@ -217,7 +217,7 @@ class S_AtExprWhatComplexField(
     val comment: S_Comment?,
 )
 
-class S_AtExprWhat_Complex(
+internal class S_AtExprWhat_Complex(
     private val posRange: S_PosRange,
     private val fields: ImmList<S_AtExprWhatComplexField>,
 ): S_AtExprWhat() {
@@ -425,8 +425,8 @@ class S_AtExprWhat_Complex(
         mTypes ?: return null
 
         val (mKeyType, mValueType) = mTypes
-        val rKeyType = L_TypeUtils.getRType(mKeyType) ?: return null
-        val rValueType = L_TypeUtils.getRType(mValueType) ?: return null
+        val rKeyType = L_TypeUtils.getRTypeOrNull(mKeyType) ?: return null
+        val rValueType = L_TypeUtils.getRTypeOrNull(mValueType) ?: return null
 
         if (!C_LibUtils.isImmutableType(mTypes.first)) {
             C_AtSummarization.typeError(msgCtx, type, pos)
@@ -477,7 +477,7 @@ class S_AtExprWhat_Complex(
     }
 }
 
-class S_AtExprWhere(
+internal class S_AtExprWhere(
     private val exprs: ImmList<S_Expr>,
     private val posRange: S_PosRange,
 ) {
@@ -630,7 +630,7 @@ class S_AtExprWhere(
     }
 }
 
-class S_AtExpr(
+internal class S_AtExpr(
     val from: S_AtExprFrom,
     val cardinality: S_PosValue<R_AtCardinality>,
     val where: S_AtExprWhere,
@@ -750,7 +750,7 @@ class S_AtExpr(
         return vExpr
     }
 
-    companion object {
+    internal companion object {
         private val JOIN_RESTRICTIONS = C_FeatureRestrictions.make("0.13.10", "at_expr_join", "Join syntax is")
 
         val WHERE_VAR_STATES_SWITCH = C_FeatureSwitch("0.14.0", false)
@@ -793,7 +793,7 @@ class S_AtExpr(
             rEntity: R_EntityDefinition,
             comment: S_Comment?,
         ): C_IdeSymbolDef {
-            val docType = L_TypeUtils.docType(rEntity.type.mType)
+            val docType = rEntity.type.docType()
             val docSymbol = symCtx.makeDocSymbol(
                 DocSymbolKind.AT_VAR_DB,
                 DocSymbolName.local(name),
@@ -811,7 +811,7 @@ class S_AtExpr(
             comment: S_Comment?,
         ): C_IdeSymbolDef {
             val docName = explicitAlias?.str ?: C_Constants.AT_PLACEHOLDER
-            val docType = L_TypeUtils.docType(itemType.mType)
+            val docType = itemType.docType()
             val docSymbol = symCtx.makeDocSymbol(
                 DocSymbolKind.AT_VAR_COL,
                 DocSymbolName.local(docName),

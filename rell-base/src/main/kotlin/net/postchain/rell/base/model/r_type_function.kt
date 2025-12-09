@@ -7,6 +7,7 @@ package net.postchain.rell.base.model
 import net.postchain.rell.base.compiler.base.fn.C_FunctionCallParameters
 import net.postchain.rell.base.compiler.base.lib.C_LibType
 import net.postchain.rell.base.lib.type.R_UnitType
+import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.expr.R_FunctionCallTarget
 import net.postchain.rell.base.model.expr.R_PartialArgMapping
 import net.postchain.rell.base.model.expr.R_PartialCallMapping
@@ -15,6 +16,7 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_ValueRecursionDetector
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.doc.DocType
 import java.util.*
 
 class R_FunctionType(val params: ImmList<R_Type>, val result: R_Type): R_CompositeType(calcName(params, result)) {
@@ -60,6 +62,12 @@ class R_FunctionType(val params: ImmList<R_Type>, val result: R_Type): R_Composi
     }
 
     override fun explicitComponentTypes() = immListOf<R_Type>()
+
+    override fun docType(): DocType {
+        val resultType = result.docType()
+        val paramTypes = params.mapToImmList { it.docType() }
+        return DocType.function(resultType, paramTypes)
+    }
 
     private inner class Meta: R_TypeMeta() {
         override fun getTypeOrNull(args: ImmList<R_Type>): R_Type? {

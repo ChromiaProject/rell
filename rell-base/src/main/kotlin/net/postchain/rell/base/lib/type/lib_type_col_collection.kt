@@ -13,6 +13,7 @@ import net.postchain.rell.base.lmodel.dsl.Ld_FunctionMetaBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_CompositeType
 import net.postchain.rell.base.model.R_GtvCompatibility
+import net.postchain.rell.base.model.R_LibGenericType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.GtvRtConversion
 import net.postchain.rell.base.runtime.Rt_Value
@@ -209,7 +210,7 @@ sealed class R_CollectionKind(val type: R_Type) {
 sealed class R_CollectionType(
     val elementType: R_Type,
     private val baseName: String,
-): R_CompositeType("$baseName<${elementType.strCode()}>") {
+): R_LibGenericType(baseName, immListOf(elementType)) {
     private val isError = elementType.isError()
 
     final override fun isReference() = true

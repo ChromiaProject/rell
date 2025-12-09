@@ -15,7 +15,7 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
 
-class C_ScopeBuilder {
+internal class C_ScopeBuilder {
     private val scope: C_Scope
 
     constructor(): this(null, { C_Namespace.EMPTY })
@@ -31,7 +31,7 @@ class C_ScopeBuilder {
     fun scope() = scope
 }
 
-class C_Scope(
+internal class C_Scope(
     private val parent: C_Scope?,
     private val nsGetter: Getter<C_Namespace>,
 ) {

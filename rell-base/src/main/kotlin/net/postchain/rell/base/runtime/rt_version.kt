@@ -69,8 +69,11 @@ class Rt_RellVersion private constructor(
             }
 
             val codeVer = RellVersions.VERSION_STR
-            val buildVer = parseBuildVersion(ps.getValue(Rt_RellVersionProperty.RELL_VERSION))
-            check(buildVer == codeVer) { "Rell version in code = $codeVer, in build = $buildVer" }
+            val fullBuildVer = ps.getValue(Rt_RellVersionProperty.RELL_VERSION)
+            val buildVer = parseBuildVersion(fullBuildVer)
+            check(buildVer == codeVer || fullBuildVer.endsWith("-SNAPSHOT")) {
+                "Rell version in code = $codeVer, in build = $buildVer"
+            }
 
             return ps.toImmMap()
         }

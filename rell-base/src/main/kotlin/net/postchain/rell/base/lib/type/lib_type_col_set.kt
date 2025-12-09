@@ -6,6 +6,7 @@ package net.postchain.rell.base.lib.type
 
 import net.postchain.gtv.Gtv
 import net.postchain.rell.base.lib.Lib_Rell
+import net.postchain.rell.base.lib.type.R_ListType.Companion
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_TypeMeta
@@ -14,6 +15,8 @@ import net.postchain.rell.base.model.expr.R_BinaryOp_Intersect_Set
 import net.postchain.rell.base.model.expr.R_BinaryOp_Sub_Set
 import net.postchain.rell.base.model.expr.R_BinaryOp_Union_Set
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.utils.doc.DocType
+import net.postchain.rell.base.utils.doc.DocUtils
 import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_Set {
@@ -123,6 +126,9 @@ class R_SetType(elementType: R_Type): R_CollectionType(elementType, "set") {
     override fun fromCli(s: String): Rt_Value = Rt_SetValue(this, s.split(",").map { elementType.fromCli(it) }.toMutableSet())
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Set(this)
     override fun getLibTypeDef() = Lib_Rell.SET_TYPE
+    override fun getTypeMeta0() = META
+    override fun docType() = DocUtils.docTypeGeneric("set", elementType)
+    override fun isAssignableFrom(type: R_Type) = type is R_SetType && elementType.isAssignableArg(type.elementType)
 
     companion object {
         internal val META = R_TypeMeta.make { t -> R_SetType(t) }

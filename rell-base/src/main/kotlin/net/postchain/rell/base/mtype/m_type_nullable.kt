@@ -127,8 +127,7 @@ private class M_Type_Nullable_Internal(valueType: M_Type): M_Type_Nullable(value
     override fun getConversion0(sourceType: M_Type): M_Conversion? {
         return when (sourceType) {
             is M_Type_Nullable -> {
-                val valueConversion = valueType.getConversion(sourceType.valueType)
-                if (valueConversion == null) null else M_Conversion_Nullable(this, valueConversion)
+                if (valueType.getConversion(sourceType.valueType) == null) null else M_Conversion_Nullable(this)
             }
             else -> valueType.getConversion(sourceType)
         }

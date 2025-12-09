@@ -67,6 +67,8 @@ internal class C_AppContext(
     private val allConstants = C_ListBuilder(oldReplState.constants)
     private val newConstants = C_ListBuilder<C_GlobalConstantDefinition>()
 
+    private val nativeFunctions = mutableMapOf<R_FullName, R_FunctionHeader>()
+
     private val nsAsmAppLate = C_LateInit(C_CompilerPass.NAMESPACES, C_NsAsm_App.EMPTY)
     private val finishLate = C_LateInit<Finish?>(C_CompilerPass.APPLICATION, null)
 
@@ -165,6 +167,10 @@ internal class C_AppContext(
         extraMountTables.add(mntTables)
     }
 
+    fun addNativeFunction(name: R_FullName, rHeader: R_FunctionHeader) {
+        nativeFunctions[name] = rHeader
+    }
+
     private val functionExtTableLazy: C_FunctionExtensionsTable by lazy {
         extendableFunctionCompiler.compileExtensions()
     }
@@ -207,6 +213,7 @@ internal class C_AppContext(
             functionExtensions = rFnExtTable,
             externalChainsRoot = externalChainsRoot,
             externalChains = externalChains.values.mapToImmList { it.ref },
+            nativeFunctions = nativeFunctions.toImmMap(),
             sqlDefs = sqlDefs,
         )
     }

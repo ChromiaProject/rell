@@ -14,6 +14,7 @@ import net.postchain.devtools.PostchainTestNode
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GtxBuilder
+import net.postchain.rell.api.nativ.RellNativeEnvironment
 import net.postchain.rell.base.utils.PostchainGtvUtils
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
@@ -21,6 +22,7 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@Suppress("SameParameterValue")
 @Execution(ExecutionMode.SAME_THREAD)
 class BasicGtxModuleTest : ConfigFileBasedIntegrationTest() {
     private var blockchainRid: BlockchainRid? = null
@@ -101,6 +103,12 @@ class BasicGtxModuleTest : ConfigFileBasedIntegrationTest() {
         chkQuery(node, "get_state", gtv(mapOf()), gtv(33))
     }
 
+    @Test fun testNativeFunction() {
+        val node = setupNodeAndObjects()
+        chkQuery(node, "get_natj", gtv("a" to gtv(123), "b" to gtv(true), "c" to gtv("A"), "d" to gtv("B")), gtv(15129))
+        chkQuery(node, "get_natk", gtv("a" to gtv(123), "b" to gtv(true), "c" to gtv("A"), "d" to gtv("B")), gtv(15129))
+    }
+
     private fun makeTx(ownerIdx: Int, opName: String, vararg opArgs: Gtv): ByteArray {
         val owner = KeyPairHelper.pubKey(ownerIdx)
         return GtxBuilder(blockchainRid!!, listOf(owner), myCS, PostchainGtvUtils.merkleHashCalculator)
@@ -157,5 +165,13 @@ class BasicGtxModuleTest : ConfigFileBasedIntegrationTest() {
 
     @AfterTest override fun tearDown() {
         super.tearDown()
+    }
+
+    @Suppress("unused")
+    class NativeModule(val env: RellNativeEnvironment) {
+        @Suppress("UNUSED_PARAMETER")
+        fun g(a: Long, b: Boolean?, c: String, d: String?): Long {
+            return a * a
+        }
     }
 }

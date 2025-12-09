@@ -17,8 +17,9 @@ import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMemberBase
 import net.postchain.rell.base.compiler.base.utils.*
-import net.postchain.rell.base.lmodel.L_TypeUtils
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.expr.R_FunctionCallTarget_NativeUserFunction
 import net.postchain.rell.base.model.expr.R_FunctionExtension
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocComment
@@ -52,18 +53,20 @@ class S_FunctionDefinition(
         val modOverride = mods.field(C_ModifierFields.OVERRIDE)
         val modExtendable = mods.field(C_ModifierFields.EXTENDABLE)
         val modExtend = mods.field(C_ModifierFields.EXTEND)
-        val modDeprecated = mods.field(C_ModifierFields.DEPRECATED)
+        val modNative = mods.field(C_ModifierFields.NATIVE)
         val modTest = mods.field(C_ModifierFields.TEST)
+        val modDeprecated = mods.field(C_ModifierFields.DEPRECATED)
 
         val docModifiers = modifiers.compile(ctx, mods)
-        C_AnnUtils.checkModsZeroOne(ctx.msgCtx, modAbstract, modOverride, modExtendable, modExtend, modTest)
+        C_AnnUtils.checkModsZeroOne(ctx.msgCtx, modAbstract, modOverride, modExtendable, modExtend, modNative, modTest)
 
         val abstract = modAbstract.hasValue()
         val override = modOverride.hasValue()
         val extendable = modExtendable.hasValue()
         val extend = modExtend.value()
-        val deprecated = modDeprecated.value()
+        val native = modNative.hasValue()
         val test = modTest.hasValue()
+        val deprecated = modDeprecated.value()
 
         val base = C_FunctionCompilerBase(ctx, this, cQualifiedNameHand, deprecated, docModifiers, test)
 
@@ -72,6 +75,7 @@ class S_FunctionDefinition(
             override -> C_FunctionCompiler_Override(base)
             extendable -> C_FunctionCompiler_Extendable(base)
             extend != null -> C_FunctionCompiler_Extend(base, extend)
+            native -> C_FunctionCompiler_Native(base)
             else -> C_FunctionCompiler_Regular(base)
         }
 
@@ -183,7 +187,7 @@ private abstract class C_FunctionCompiler(
     ) {
         if (simpleName != null) {
             base.executor.onPass(C_CompilerPass.DOCS) {
-                val docType = L_TypeUtils.docType(header.deepHeader.returnType().mType)
+                val docType = header.deepHeader.returnType().docType()
                 val docHeader = DocFunctionHeader(immListOf(), docType, header.params.docParams)
                 val docDec = DocDeclarationProto_Function(
                     base.docModifiers,
@@ -554,4 +558,73 @@ private class C_FunctionCompiler_Extend(
         val regHeader: C_UserFunctionHeader,
         val extDescriptor: C_ExtendableFunctionDescriptor?,
     )
+}
+
+private class C_FunctionCompiler_Native(
+    base: C_FunctionCompilerBase,
+): C_FunctionCompiler(base, IdeSymbolKind.DEF_FUNCTION) {
+    override fun compile(defCtx: C_DefinitionContext, ideCompsLate: C_LateInit<ImmMultimap<String, IdeCompletion>>) {
+        if (sFn.body != null) {
+            val nameCode = nameErrCode()
+            defCtx.msgCtx.error(fnPos, "fn:native:has_body:$nameCode", "Native function cannot have a body")
+        }
+
+        defCtx.mntCtx.checkNotReplOrTest(fnPos) {
+            "fn:native:${cDefBase.appLevelName}" toCodeMsg "a native function"
+        }
+
+        val simpleName = compileSimpleName(defCtx)
+        simpleName ?: return
+
+        val fullName = defCtx.nsCtx.getFullName(simpleName.rName)
+
+        val conversionsLate = C_LateInit(C_CompilerPass.MEMBERS, R_FunctionCallTarget_NativeUserFunction.Conversions(
+            immListOf(),
+            R_TypeNativeConversion_Null,
+        ))
+
+        val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)
+        val rFnBase = R_FunctionBase(rDefBase.defName)
+        val rFn = R_FunctionDefinition(rDefBase, rFnBase, base.isTest)
+        val cFn = C_NativeUserGlobalFunction(rFn, fullName, conversionsLate.getter)
+
+        registerFunction(defCtx, simpleName, cFn)
+
+        defCtx.executor.onPass(C_CompilerPass.MEMBERS) {
+            val header = compileHeaderCommon(defCtx, cFn, ideCompsLate)
+            val converters = compileAdapters(defCtx, header)
+            conversionsLate.set(converters)
+
+            val rParams = header.params.list.mapToImmList { it.rParam }
+            val rHeader = R_FunctionHeader(header.explicitType ?: R_UnitType, rParams)
+            defCtx.appCtx.addNativeFunction(fullName, rHeader)
+        }
+    }
+
+    private fun compileAdapters(
+        defCtx: C_DefinitionContext,
+        header: C_UserFunctionHeader,
+    ): R_FunctionCallTarget_NativeUserFunction.Conversions {
+        val args = header.params.list.mapToImmList { param ->
+            compileTypeConversion(defCtx, param.type, param.name.pos, "parameter")
+        }
+        val res = compileTypeConversion(defCtx, header.explicitType ?: R_UnitType, fnPos, "result")
+        return R_FunctionCallTarget_NativeUserFunction.Conversions(args, res)
+    }
+
+    private fun compileTypeConversion(
+        defCtx: C_DefinitionContext,
+        type: R_Type,
+        pos: S_Pos,
+        kind: String,
+    ): R_TypeNativeConversion {
+        val conv = type.nativeConversion
+
+        if (conv == null) {
+            val msg = "Invalid native function $kind type: ${type.str()}"
+            defCtx.msgCtx.error(pos, "fn:native:type:$kind:${type.strCode()}", msg)
+        }
+
+        return conv ?: R_TypeNativeConversion_Null
+    }
 }

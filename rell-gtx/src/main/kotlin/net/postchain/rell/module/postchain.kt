@@ -269,6 +269,7 @@ private class RellPostchainModule(
     private val errorHandler: ErrorHandler,
     moduleArgsSource: Rt_ModuleArgsSource,
     gtvHashCalculator: PostchainGtvUtils.HashCalculator,
+    nativeProvider: Rt_NativeProvider,
 ): GTXModule {
     private val operationNames = rApp.operations.keys.map { it.str() }.toImmSet()
     private val queryNames = rApp.queries.keys.map { it.str() }.toImmSet()
@@ -286,6 +287,7 @@ private class RellPostchainModule(
         rApp,
         moduleArgsSource = moduleArgsSource,
         gtvHashCalculator = gtvHashCalculator,
+        nativeProvider = nativeProvider,
     )
 
     override fun getOperations(): Set<String> {
@@ -477,10 +479,8 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
         val gtxNode = config.asDict().getValue("gtx").asDict()
         val rellNode = gtxNode.getValue("rell").asDict()
 
-        @Suppress("UNUSED_VARIABLE") // Legacy...
-        val moduleName = rellNode["moduleName"]?.asString() ?: ""
-
         val combinedPrinter = env.combinedPrinter ?: env.logPrinter
+
         val errorHandler = ErrorHandler(combinedPrinter, env.wrapCtErrors, env.wrapRtErrors)
 
         return errorHandler.handleError({ "Module initialization failed" }) {
@@ -496,6 +496,9 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
 
             val typeCheck = env.forceTypeCheck || (rellNode["typeCheck"]?.asBoolean() ?: false)
             val dbInitLogLevel = rellNode["dbInitLogLevel"]?.asInteger()?.toInt() ?: env.dbInitLogLevel
+
+            val nativeEnv = PostchainRellNativeEnvironment(config, blockchainRID)
+            val nativeProvider = PostchainNativeUtils.getNativeProvider(nativeEnv, rellNode["native"])
 
             val moduleConfig = RellModuleConfig(
                 sqlLogging = env.sqlLog,
@@ -516,6 +519,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
                 errorHandler = errorHandler,
                 moduleArgsSource = moduleArgsSource,
                 gtvHashCalculator = getGtvHashCalculator(modApp.compilerOptions, config),
+                nativeProvider = nativeProvider,
             )
         }
     }

@@ -9,12 +9,12 @@ import net.postchain.rell.base.compiler.base.utils.C_DocUtils
 import net.postchain.rell.base.lmodel.L_FunctionFlags
 import net.postchain.rell.base.lmodel.L_FunctionHeader
 import net.postchain.rell.base.lmodel.L_TypeUtils
-import net.postchain.rell.base.mtype.M_Type
+import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.mapToImmList
 
-object Ld_DocSymbols {
+internal object Ld_DocSymbols {
     fun function(
         hdr: Ld_MemberHeader.Finish,
         header: L_FunctionHeader,
@@ -28,7 +28,7 @@ object Ld_DocSymbols {
             if (flags.isStatic) DocModifier.STATIC else null,
         )
 
-        val docHeader = L_TypeUtils.docFunctionHeader(header.mHeader)
+        val docHeader = L_TypeUtils.docFunctionHeader(header)
         val docParams = header.params.mapToImmList { it.docSymbol.declaration }
         val dec = DocDeclarationProto_Function(docModifiers, hdr.simpleName, docHeader, docParams).toLazyDeclaration()
         return hdr.docSymbol(declaration = dec, comment = comment)
@@ -39,15 +39,15 @@ object Ld_DocSymbols {
         return hdr.docSymbol(docDecProto.toLazyDeclaration())
     }
 
-    fun constant(hdr: Ld_MemberHeader.Finish, mType: M_Type, rValue: Rt_Value): DocSymbol {
-        val docType = L_TypeUtils.docType(mType)
+    fun constant(hdr: Ld_MemberHeader.Finish, rType: R_Type, rValue: Rt_Value): DocSymbol {
+        val docType = rType.docType()
         val docValue = C_DocUtils.docValue(rValue)
         val docDecProto = DocDeclarationProto_Constant(DocModifiers.NONE, hdr.simpleName, docType, docValue)
         return hdr.docSymbol(docDecProto.toLazyDeclaration())
     }
 
-    fun property(hdr: Ld_MemberHeader.Finish, mType: M_Type, pure: Boolean): DocSymbol {
-        val docType = L_TypeUtils.docType(mType)
+    fun property(hdr: Ld_MemberHeader.Finish, rType: R_Type, pure: Boolean): DocSymbol {
+        val docType = rType.docType()
         val docDec = DocDeclarationProto_Property(hdr.simpleName, docType, pure).toLazyDeclaration()
         return hdr.docSymbol(docDec)
     }

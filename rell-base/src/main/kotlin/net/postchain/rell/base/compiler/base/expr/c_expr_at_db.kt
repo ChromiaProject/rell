@@ -18,7 +18,7 @@ import net.postchain.rell.base.model.stmt.R_IterableAdapter_Direct
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
 
-class C_AtEntity(
+internal class C_AtEntity(
     val declPos: S_Pos,
     val rEntity: R_EntityDefinition,
     val alias: R_Name,

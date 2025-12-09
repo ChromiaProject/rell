@@ -1,0 +1,3 @@
+module;
+
+@native function f(a: integer, b: boolean?, c: text, d: text?): integer;

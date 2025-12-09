@@ -18,6 +18,8 @@ import net.postchain.rell.base.model.expr.R_BinaryOp_Intersect_List
 import net.postchain.rell.base.model.expr.R_BinaryOp_Sub_List
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_ListComparator
+import net.postchain.rell.base.utils.doc.DocType
+import net.postchain.rell.base.utils.doc.DocUtils
 import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_List {
@@ -423,6 +425,9 @@ class R_ListType(elementType: R_Type): R_CollectionType(elementType, "list") {
     override fun fromCli(s: String): Rt_Value = Rt_ListValue(this, s.split(",").map { elementType.fromCli(it) }.toMutableList())
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_List(this)
     override fun getLibTypeDef() = Lib_Rell.LIST_TYPE
+    override fun getTypeMeta0() = META
+    override fun docType() = DocUtils.docTypeGeneric("list", elementType)
+    override fun isAssignableFrom(type: R_Type) = type is R_ListType && elementType.isAssignableArg(type.elementType)
 
     override fun comparator(): Comparator<Rt_Value>? {
         val elemComparator = elementType.comparator()

@@ -17,7 +17,7 @@ import net.postchain.rell.base.model.stmt.R_UpdateStatementWhat
 import net.postchain.rell.base.utils.*
 import java.util.*
 
-enum class S_BinaryOp(val code: String, val op: C_BinOp) {
+enum class S_BinaryOp(internal val code: String, internal val op: C_BinOp) {
     EQ("==", C_BinOp_Eq),
     NE("!=", C_BinOp_Ne),
     LE("<=", C_BinOp_Le),
@@ -61,7 +61,7 @@ enum class S_BinaryOp(val code: String, val op: C_BinOp) {
                 }
             }
 
-            check(m.keys.containsAll(values().toSet())) {
+            check(m.keys.containsAll(entries.toSet())) {
                 "Forgot to add new operator to the precedence table?"
             }
 
@@ -72,7 +72,7 @@ enum class S_BinaryOp(val code: String, val op: C_BinOp) {
     fun precedence(): Int = PRECEDENCE_MAP.getValue(this)
 }
 
-enum class S_AssignOpCode(val op: S_AssignOp) {
+internal enum class S_AssignOpCode(val op: S_AssignOp) {
     EQ(S_AssignOp_Eq),
     PLUS(S_AssignOp_Op("+=", C_BinOp_Plus)),
     MINUS(S_AssignOp_Op("-=", C_BinOp_Minus)),
@@ -82,7 +82,7 @@ enum class S_AssignOpCode(val op: S_AssignOp) {
     ;
 }
 
-sealed class S_AssignOp {
+internal sealed class S_AssignOp {
     internal abstract fun compile(ctx: C_BinOpContext, dstExpr: V_Expr, srcExpr: V_Expr): C_Statement
 
     internal abstract fun compileDbUpdate(
@@ -102,7 +102,7 @@ sealed class S_AssignOp {
     }
 }
 
-object S_AssignOp_Eq: S_AssignOp() {
+internal data object S_AssignOp_Eq: S_AssignOp() {
     override fun compile(ctx: C_BinOpContext, dstExpr: V_Expr, srcExpr: V_Expr): C_Statement {
         val destination = dstExpr.destination()
         val dstType = destination.type()
@@ -157,7 +157,7 @@ object S_AssignOp_Eq: S_AssignOp() {
     }
 }
 
-class S_AssignOp_Op internal constructor(
+internal class S_AssignOp_Op internal constructor(
     val code: String,
     internal val op: C_BinOp_Common,
 ): S_AssignOp() {
@@ -204,7 +204,7 @@ class S_AssignOp_Op internal constructor(
     }
 }
 
-sealed class C_BinOp {
+internal sealed class C_BinOp {
     abstract fun compile(ctx: C_BinOpContext, left: V_Expr, right: V_Expr): V_Expr?
     open fun compileRight(ctx: C_ExprContext, sExpr: S_Expr): V_Expr = sExpr.compile(ctx).vExpr()
     open fun rightVarStatesDelta(left: V_Expr): C_VarStatesDelta = C_VarStatesDelta.EMPTY
@@ -230,7 +230,7 @@ sealed class C_BinOp {
     }
 }
 
-class C_BinOpContext(val exprCtx: C_ExprContext, val opPos: S_Pos) {
+internal class C_BinOpContext(val exprCtx: C_ExprContext, val opPos: S_Pos) {
     val msgCtx = exprCtx.msgCtx
 }
 
@@ -681,7 +681,7 @@ internal class C_BinOp_In(private val not: Boolean): C_BinOp() {
     }
 }
 
-object C_BinOp_Elvis: C_BinOp() {
+internal data object C_BinOp_Elvis: C_BinOp() {
     override fun compile(ctx: C_BinOpContext, left: V_Expr, right: V_Expr): V_Expr? {
         val left2 = left.asNullable().unwrap()
         return compile0(ctx.exprCtx, left2, right)
@@ -720,9 +720,9 @@ internal data object C_BinOp_Ampersand: C_BinOp_Common() {
     }
 }
 
-class S_BinaryExprTail(val op: S_PosValue<S_BinaryOp>, val expr: S_Expr)
+internal class S_BinaryExprTail(val op: S_PosValue<S_BinaryOp>, val expr: S_Expr)
 
-class S_BinaryExpr(val head: S_Expr, val tail: ImmList<S_BinaryExprTail>): S_Expr(head.startPos) {
+internal class S_BinaryExpr(val head: S_Expr, val tail: ImmList<S_BinaryExprTail>): S_Expr(head.startPos) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val queue = LinkedList(tail)
         val tree = buildTree(head, queue, 0)

@@ -119,7 +119,7 @@ private class C_EntityAttributeClause(
             }
         }
 
-        val docType = L_TypeUtils.docType(type.mType)
+        val docType = type.docType()
         val docExpr = if (vDocExpr == null) null else C_DocUtils.docExpr(vDocExpr)
 
         return DocDeclarationProto_EntityAttribute(
@@ -263,7 +263,7 @@ private class C_EntityAttributeClause(
     )
 }
 
-class C_EntityContext(
+internal class C_EntityContext(
     val defCtx: C_DefinitionContext,
     private val entityName: String,
     private val logAnnotation: Boolean,
@@ -285,7 +285,7 @@ class C_EntityContext(
         }
     }
 
-    fun addAttribute(
+    internal fun addAttribute(
         attrDef: S_AttributeDefinition,
         attrHeader: C_AttrHeaderHandle,
         primary: Boolean,
@@ -318,23 +318,23 @@ class C_EntityContext(
         }
     }
 
-    fun addKey(pos: S_Pos, attrs: ImmList<R_Name>) {
+    internal fun addKey(pos: S_Pos, attrs: ImmList<R_Name>) {
         addUniqueKeyIndex(pos, uniqueKeys, attrs, R_KeyIndexKind.KEY)
         keys.add(R_Key(attrs))
     }
 
-    fun addIndex(pos: S_Pos, attrs: ImmList<R_Name>) {
+    internal fun addIndex(pos: S_Pos, attrs: ImmList<R_Name>) {
         addUniqueKeyIndex(pos, uniqueIndices, attrs, R_KeyIndexKind.INDEX)
         indices.add(R_Index(attrs))
     }
 
-    fun createEntityBody(): R_EntityBody {
+    internal fun createEntityBody(): R_EntityBody {
         val cAttributes = compileAttributes()
         val rAttributes = cAttributes.mapValuesToImmMap { it.value.rAttr }
         return R_EntityBody(keys.toImmList(), indices.toImmList(), rAttributes)
     }
 
-    fun createStructBody(): Map<R_Name, C_CompiledAttribute> {
+    internal fun createStructBody(): Map<R_Name, C_CompiledAttribute> {
         return compileAttributes()
     }
 

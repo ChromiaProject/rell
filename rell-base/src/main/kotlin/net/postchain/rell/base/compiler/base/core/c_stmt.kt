@@ -18,10 +18,7 @@ import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.lmodel.L_TypeUtils
-import net.postchain.rell.base.model.R_CtErrorType
-import net.postchain.rell.base.model.R_LangVersion
-import net.postchain.rell.base.model.R_TupleType
-import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.stmt.*
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParamsResolver
@@ -57,7 +54,7 @@ class C_Statement internal constructor(
         )
     }
 
-    companion object {
+    internal companion object {
         val EMPTY = C_Statement(R_EmptyStatement, false)
         val ERROR = C_Statement(C_ExprUtils.ERROR_STATEMENT, false)
 
@@ -159,7 +156,7 @@ internal sealed class C_VarDeclarator(
     protected val ctx: C_StmtContext,
     protected val mutable: Boolean,
 ) {
-    abstract fun getHintType(): M_Type
+    abstract fun getHintType(): R_Type
     abstract fun compile(rExprType: R_Type?): Result
 
     class Result(val rDeclarator: R_VarDeclarator, val varStatesDelta: C_VarStatesDelta)
@@ -169,7 +166,7 @@ internal class C_WildcardVarDeclarator(
     ctx: C_StmtContext,
     mutable: Boolean,
 ): C_VarDeclarator(ctx, mutable) {
-    override fun getHintType() = M_Types.NOTHING
+    override fun getHintType() = R_NullType
 
     override fun compile(rExprType: R_Type?): Result {
         return Result(R_WildcardVarDeclarator, C_VarStatesDelta.EMPTY)
@@ -186,7 +183,7 @@ internal class C_SimpleVarDeclarator(
     private val ideInfo: C_IdeSymbolInfo,
     private val docSymbolLate: C_LateInit<DocSymbol?>,
 ): C_VarDeclarator(ctx, mutable) {
-    override fun getHintType() = explicitType?.mType ?: M_Types.NOTHING
+    override fun getHintType() = explicitType ?: R_NullType
 
     override fun compile(rExprType: R_Type?): Result {
         val rType = explicitType ?: (if (rExprType == null) attrHeader.type else null)
@@ -227,7 +224,7 @@ internal class C_SimpleVarDeclarator(
     }
 
     private fun makeDocSymbol(rType: R_Type): DocSymbol {
-        val docType = L_TypeUtils.docType(rType.mType)
+        val docType = rType.docType()
         return ctx.symCtx.makeDocSymbol(
             DocSymbolKind.VAR,
             DocSymbolName.local(name.str),
@@ -243,7 +240,7 @@ internal class C_TupleVarDeclarator(
     private val pos: S_Pos,
     private val subDeclarators: ImmList<C_VarDeclarator>,
 ): C_VarDeclarator(ctx, mutable) {
-    private val hintType = M_Types.tuple(subDeclarators.map { it.getHintType() })
+    private val hintType = R_TupleType.make(subDeclarators.mapToImmList { it.getHintType() })
 
     override fun getHintType() = hintType
 
@@ -304,7 +301,7 @@ class C_IterableAdapter(val itemType: R_Type, val rAdapter: R_IterableAdapter) {
             val mItemType = map.values.singleOrNull()
             mItemType ?: return null
 
-            val rItemType = L_TypeUtils.getRType(mItemType)
+            val rItemType = L_TypeUtils.getRTypeOrNull(mItemType)
             return rItemType
         }
 

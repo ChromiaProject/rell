@@ -158,6 +158,16 @@ data class R_FullName(
         val qName2 = qualifiedName.replaceLast(name)
         return R_FullName(moduleName, qName2)
     }
+
+    companion object {
+        fun of(s: String): R_FullName {
+            val i = s.indexOf(':')
+            require(i >= 0) { s }
+            val moduleName = R_ModuleName.of(s.substring(0, i))
+            val qName = R_QualifiedName.of(s.substring(i + 1))
+            return R_FullName(moduleName, qName)
+        }
+    }
 }
 
 class R_Name private constructor(val str: String): Comparable<R_Name> {

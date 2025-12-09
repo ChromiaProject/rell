@@ -17,7 +17,7 @@ import net.postchain.rell.base.model.expr.R_MemberCalculator_VirtualStructAttr
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.mapToImmList
 
-object Lib_Type_VirtualStruct {
+internal object Lib_Type_VirtualStruct {
     fun getValueMembers(type: R_VirtualStructType): ImmList<C_TypeValueMember> {
         return type.innerType.struct.attributesList.mapToImmList { attr ->
             val virtualType = S_VirtualType.virtualMemberType(attr.type)

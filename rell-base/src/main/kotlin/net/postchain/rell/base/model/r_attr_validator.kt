@@ -12,7 +12,7 @@ import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_Value
 import java.util.*
 
-abstract class R_AttrValidator(val metadata: R_AttrValidatorMetadata) {
+abstract class R_AttrValidator internal constructor(internal val metadata: R_AttrValidatorMetadata) {
     abstract fun check(value: Rt_Value): Error?
 
     data class Error(val code: String, val msg: String) {
@@ -22,7 +22,7 @@ abstract class R_AttrValidator(val metadata: R_AttrValidatorMetadata) {
     }
 }
 
-data class R_AttrValidatorMetadata(
+internal data class R_AttrValidatorMetadata(
     val name: R_Name, // name of the parameter/attribute being validated
     val type: R_Type, // data type of the parameter/attribute being validated
     val valueTargetType: C_ModifierTargetType, // parameter or attribute? (anything else would be an error)

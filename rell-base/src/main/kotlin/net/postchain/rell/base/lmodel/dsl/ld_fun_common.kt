@@ -8,6 +8,7 @@ import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.lmodel.*
+import net.postchain.rell.base.lmodel.L_TypeUtils.docFunctionParam
 import net.postchain.rell.base.model.R_DefinitionName
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
@@ -230,15 +231,16 @@ class Ld_FunctionParam(
             nullable = nullable,
         )
 
-        val docParam = L_TypeUtils.docFunctionParam(mParam)
+        val restrictions = C_MemberRestrictions.makeLib0(hdr.fullName, C_DeclarationType.PARAMETER, hdr.lHeader, null)
+
+        val rType = L_TypeUtils.getRType(mType)
+        val docParam = docFunctionParam(name, rType, arity, exact = exact, nullable = nullable)
 
         val doc = hdr.docSymbol(
             symbolName = DocSymbolName.local(name.str),
             declaration = DocDeclarationProto_Parameter(docParam, lazy, implies, null).toLazyDeclaration(),
             comment = comment,
         )
-
-        val restrictions = C_MemberRestrictions.makeLib0(hdr.fullName, C_DeclarationType.PARAMETER, hdr.lHeader, null)
 
         return L_FunctionParam(
             name = name,

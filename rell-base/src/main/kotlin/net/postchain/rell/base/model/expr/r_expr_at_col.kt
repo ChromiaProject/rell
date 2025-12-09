@@ -97,7 +97,7 @@ class R_ColAtFieldSummarization_Aggregate_Map(
         val k = entry[0]
         val v = entry[1]
         val v0 = map.put(k, v)
-        Rt_Utils.check(v0 == null) { "aggregate:map:dupkey:${k.strCode()}" toCodeMsg "Duplicate map key: ${k.str()}" }
+        Rt_Utils.check(v0 == null) { "aggregate:map:dupkey:${k.strCode()}" to "Duplicate map key: ${k.str()}" }
         return value1
     }
 

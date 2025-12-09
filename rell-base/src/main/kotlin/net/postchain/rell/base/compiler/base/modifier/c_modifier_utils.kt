@@ -10,7 +10,7 @@ import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.lib.type.R_TextType
 import net.postchain.rell.base.utils.capitalizeEx
 
-object C_AnnUtils {
+internal object C_AnnUtils {
     fun checkArgsNone(ctx: C_ModifierContext, name: C_Name, args: List<C_AnnotationArg>): Boolean {
         return if (args.isEmpty()) true else {
             ctx.msgCtx.error(name.pos, "ann:$name:args:${args.size}", "Annotation @$name takes no arguments")

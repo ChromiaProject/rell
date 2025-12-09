@@ -75,12 +75,12 @@ object Lib_Rell {
     val OP_CONTEXT_GET_ALL_OPERATIONS_RETURN_TYPE: R_Type = R_ListType(GTX_OPERATION_STRUCT_TYPE)
 }
 
-class C_SysLibScope(
+internal class C_SysLibScope(
     val nsProto: C_SysNsProto,
     val modules: ImmList<C_LibModule>,
 )
 
-object C_SystemLibrary {
+internal object C_SystemLibrary {
     private val CACHE = mutableMapOf<Config, C_SysLibScope>()
 
     fun getScope(config: Config): C_SysLibScope {

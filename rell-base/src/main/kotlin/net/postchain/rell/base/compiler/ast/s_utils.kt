@@ -45,7 +45,7 @@ abstract class S_Pos: Comparable<S_Pos> {
     final override fun toString() = str()
 }
 
-class S_BasicPos(
+class S_BasicPos internal constructor(
     private val path: C_SourcePath,
     private val idePath: IdeFilePath,
     private val offset: Int,
@@ -78,7 +78,7 @@ class S_BasicPos(
         return Objects.hash(offset, row, col, path, idePath)
     }
 
-    companion object {
+    internal companion object {
         fun addColumn(pos: S_Pos, delta: Int): S_Pos {
             require(delta >= 0)
             return if (delta == 0) pos else {
@@ -218,19 +218,19 @@ class S_QualifiedName(val parts: ImmList<S_Name>): S_Node() {
 
     constructor(name: S_Name): this(immListOf(name))
 
-    fun add(name: S_Name) = S_QualifiedName(parts + name)
+    internal fun add(name: S_Name) = S_QualifiedName(parts + name)
 
-    fun str() = parts.joinToString(".")
+    internal fun str() = parts.joinToString(".")
     override fun toString() = str()
 
-    fun compile(ctx: C_NameContext, def: Boolean = false): C_QualifiedNameHandle {
+    internal fun compile(ctx: C_NameContext, def: Boolean = false): C_QualifiedNameHandle {
         val cParts = parts.map { it.compile(ctx, def = def) }
         return C_QualifiedNameHandle(cParts)
     }
 
-    fun compile(ctx: C_SymbolContext) = compile(ctx.nameCtx)
-    fun compile(ctx: C_ExprContext) = compile(ctx.nameCtx)
-    fun compile(ctx: C_DefinitionContext) = compile(ctx.symCtx)
+    internal fun compile(ctx: C_SymbolContext) = compile(ctx.nameCtx)
+    internal fun compile(ctx: C_ExprContext) = compile(ctx.nameCtx)
+    internal fun compile(ctx: C_DefinitionContext) = compile(ctx.symCtx)
 }
 
 class S_Comment(

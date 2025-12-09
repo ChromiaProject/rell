@@ -14,8 +14,11 @@ import net.postchain.rell.base.lib.test.Rt_TestBlockClock
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.repl.ReplOutputChannel
 import net.postchain.rell.base.runtime.utils.Rt_Messages
+import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.*
+import kotlin.reflect.KType
+import kotlin.reflect.full.createType
 
 class Rt_GlobalContext(
     val compilerOptions: C_CompilerOptions,
@@ -280,6 +283,7 @@ class Rt_AppContext internal constructor(
     internal val blockRunner: Rt_UnitTestBlockRunner = Rt_NullUnitTestBlockRunner,
     internal val gtvHashCalculator: PostchainGtvUtils.HashCalculator = getDefaultHashCalculator(globalCtx),
     moduleArgsSource: Rt_ModuleArgsSource = Rt_ModuleArgsSource.NULL,
+    nativeProvider: Rt_NativeProvider = Rt_NullNativeProvider,
     globalConstantsState: Rt_GlobalConstants.State = Rt_GlobalConstants.State(),
 ) {
     constructor(
@@ -288,6 +292,7 @@ class Rt_AppContext internal constructor(
         app: R_App,
         gtvHashCalculator: PostchainGtvUtils.HashCalculator = getDefaultHashCalculator(globalCtx),
         moduleArgsSource: Rt_ModuleArgsSource = Rt_ModuleArgsSource.NULL,
+        nativeProvider: Rt_NativeProvider = Rt_NullNativeProvider,
     ): this (
         globalCtx,
         chainCtx,
@@ -296,12 +301,25 @@ class Rt_AppContext internal constructor(
         test = false,
         moduleArgsSource = moduleArgsSource,
         gtvHashCalculator = gtvHashCalculator,
+        nativeProvider = nativeProvider,
     )
 
     private var objsInit: SqlObjectsInit? = null
     private var objsInited = false
 
     private val globalConstants = Rt_GlobalConstants(this, moduleArgsSource, globalConstantsState)
+
+    internal val nativeFunctions: ImmMap<R_FullName, Rt_NativeFunction> = let {
+        app.nativeFunctions.entries.associateToImmMap { (name, rHeader) ->
+            val fn0 = nativeProvider.getFunction(name)
+            val fn = Rt_Utils.checkNotNull(fn0) {
+                "native_fn:not_found:[$name]" to "Native function not found: '${name.str()}'"
+            }
+            val header = fn.getHeader()
+            header?.check(name, rHeader)
+            name to fn
+        }
+    }
 
     init {
         globalConstants.initialize()
@@ -439,4 +457,58 @@ class Rt_ChainContext(
         val ZERO_BLOCKCHAIN_RID = Bytes32(ByteArray(32))
         val NULL = Rt_ChainContext(GtvNull, ZERO_BLOCKCHAIN_RID)
     }
+}
+
+interface Rt_NativeProvider {
+    fun getFunction(name: R_FullName): Rt_NativeFunction?
+}
+
+internal object Rt_NullNativeProvider: Rt_NativeProvider {
+    override fun getFunction(name: R_FullName) = null
+}
+
+class Rt_NativeFunctionHeader(
+    val resultType: KType,
+    val paramTypes: ImmList<KType>,
+) {
+    internal fun check(name: R_FullName, rHeader: R_FunctionHeader) {
+        val rCount = rHeader.params.size
+        val nCount = paramTypes.size
+        checkNative(nCount == rCount, name) {
+            "param_count:$rCount:$nCount" to "wrong parameter count: $nCount instead of $rCount"
+        }
+
+        matchNativeType(rHeader.type, resultType, name) { "result" to "wrong return type" }
+        for ((i, rParam) in rHeader.params.withIndex()) {
+            matchNativeType(rParam.type, paramTypes[i], name) {
+                "param:${rParam.name}" to "wrong type of parameter '${rParam.name}'"
+            }
+        }
+    }
+
+    private fun matchNativeType(
+        rType: R_Type,
+        nativeType: KType,
+        name: R_FullName,
+        msgGetter: () -> Pair<String, String>,
+    ) {
+        val nativeType2 = nativeType.classifier?.createType(
+            nativeType.arguments, nullable = nativeType.isMarkedNullable) ?: nativeType
+        checkNative(nativeType2 in (rType.nativeConversion?.nativeTypes ?: immSetOf()), name) {
+            val (code, msg) = msgGetter()
+            "$code:[${rType.strCode()}]:[$nativeType]" to "$msg: $nativeType, Rell type: ${rType.str()}"
+        }
+    }
+
+    private fun checkNative(b: Boolean, name: R_FullName, msgGetter: () -> Pair<String, String>) {
+        Rt_Utils.check(b) {
+            val (code, msg) = msgGetter()
+            "native_fn:[$name]:$code" to "Native function '$name': $msg"
+        }
+    }
+}
+
+interface Rt_NativeFunction {
+    fun getHeader(): Rt_NativeFunctionHeader?
+    fun call(args: ImmList<Any?>): Any?
 }

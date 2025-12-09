@@ -139,9 +139,9 @@ class R_ObjectDefinition internal constructor(
 }
 
 class R_StructFlags(
-        val typeFlags: R_TypeFlags,
-        val cyclic: Boolean,
-        val infinite: Boolean
+    val typeFlags: R_TypeFlags,
+    val cyclic: Boolean,
+    val infinite: Boolean,
 )
 
 class R_Struct internal constructor(

@@ -148,7 +148,7 @@ object Lib_Test_KeyPairs {
 
     private fun toByteArray(v: Rt_Value, n: Int): ByteArray {
         val bs = v.asByteArray()
-        Rt_Utils.check(bs.size == n) { "keypair:wrong_byte_array_size:$n:${bs.size}" toCodeMsg
+        Rt_Utils.check(bs.size == n) { "keypair:wrong_byte_array_size:$n:${bs.size}" to
                 "Wrong byte array size: ${bs.size} instead of $n" }
         return bs
     }

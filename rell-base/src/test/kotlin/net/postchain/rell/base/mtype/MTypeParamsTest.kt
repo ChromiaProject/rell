@@ -8,7 +8,7 @@ import net.postchain.rell.base.mtype.utils.MTestParser
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class MTypeParamsTest: BaseMTypeTest() {
+internal class MTypeParamsTest: BaseMTypeTest() {
     @Test fun testParamBoundsSimple() {
         scopeB.typeDef("entry<T:-int>")
 

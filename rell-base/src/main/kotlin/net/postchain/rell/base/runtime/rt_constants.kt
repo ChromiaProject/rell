@@ -45,7 +45,7 @@ class Rt_GtvModuleArgsSource(
         val argsStruct = Rt_Utils.checkNotNull(rModule?.moduleArgs) {
             // Must not happen, but we must check for null.
             val msg = "No ${C_Constants.MODULE_ARGS_STRUCT} struct defined for module '$moduleName'"
-            "expr:no_module_args_def:$moduleName" toCodeMsg msg
+            "expr:no_module_args_def:$moduleName" to msg
         }
 
         val gtv = getArgsGtv(moduleName, argsStruct)
@@ -164,7 +164,7 @@ internal class Rt_GlobalConstants(
 
             Rt_Utils.check(!initing) {
                 val id = errId()
-                "const:recursion:${id.code}" toCodeMsg "Recursive expression: ${id.msg}"
+                "const:recursion:${id.code}" to "Recursive expression: ${id.msg}"
             }
             initing = true
 

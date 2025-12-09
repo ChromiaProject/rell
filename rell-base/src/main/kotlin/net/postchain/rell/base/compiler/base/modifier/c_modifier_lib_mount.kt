@@ -13,7 +13,7 @@ import net.postchain.rell.base.utils.plus
 import net.postchain.rell.base.utils.toImmList
 import org.apache.commons.lang3.StringUtils
 
-object C_Annotation_Mount {
+internal object C_Annotation_Mount {
     val FIELD = C_ModifierField.valueAnnotation("mount", Evaluator)
 
     private object Evaluator: C_ModifierEvaluator<C_RawMountAnnotationValue>() {
@@ -39,15 +39,15 @@ object C_Annotation_Mount {
     }
 }
 
-class C_MountAnnotationTarget(modLink: C_ModifierLink, val emptyMountAllowed: Boolean) {
+internal class C_MountAnnotationTarget(modLink: C_ModifierLink, val emptyMountAllowed: Boolean) {
     val pos = modLink.pos
     val type = modLink.target.type
     val name = modLink.target.name?.rName
 }
 
-class C_RawMountAnnotationValue(
-        private val modLink: C_ModifierLink,
-        private val path: C_MountPath
+internal class C_RawMountAnnotationValue(
+    private val modLink: C_ModifierLink,
+    private val path: C_MountPath,
 ) {
     fun process(emptyMountAllowed: Boolean): C_MountAnnotationValue {
         val target = C_MountAnnotationTarget(modLink, emptyMountAllowed)
@@ -55,9 +55,9 @@ class C_RawMountAnnotationValue(
     }
 }
 
-class C_MountAnnotationValue(
-        private val target: C_MountAnnotationTarget,
-        private val path: C_MountPath
+internal class C_MountAnnotationValue(
+    private val target: C_MountAnnotationTarget,
+    private val path: C_MountPath,
 ) {
     fun calculateMountName(msgCtx: C_MessageContext, parentMountName: R_MountName): R_MountName {
         val mountName = path.apply(msgCtx, target, parentMountName)
@@ -73,16 +73,16 @@ class C_MountAnnotationValue(
     }
 }
 
-class C_MountPath private constructor(
+internal class C_MountPath private constructor(
     private val str: String,
     private val up: Int?,
     private val path: ImmList<R_Name>,
-    private val tail: Boolean
+    private val tail: Boolean,
 ) {
     fun apply(
-            msgCtx: C_MessageContext,
-            target: C_MountAnnotationTarget,
-            parentMountName: R_MountName
+        msgCtx: C_MessageContext,
+        target: C_MountAnnotationTarget,
+        parentMountName: R_MountName,
     ): R_MountName? {
         var base = immListOf<R_Name>()
         if (up != null) {

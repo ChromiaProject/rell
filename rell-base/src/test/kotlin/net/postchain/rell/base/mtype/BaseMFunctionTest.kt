@@ -10,7 +10,7 @@ import net.postchain.rell.base.utils.immMapOf
 import net.postchain.rell.base.utils.toImmMap
 import kotlin.test.assertEquals
 
-abstract class BaseMFunctionTest: BaseMTypeTest() {
+internal abstract class BaseMFunctionTest: BaseMTypeTest() {
     override fun initScope(b: MTestScope.Builder) {
         MTestScope.initBasic(b)
         MTestScope.initNumeric(b)

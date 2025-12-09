@@ -6,7 +6,7 @@ package net.postchain.rell.base.mtype
 
 import kotlin.test.Test
 
-class MFunctionLibTest: BaseMFunctionTest() {
+internal class MFunctionLibTest: BaseMFunctionTest() {
     @Test fun testTryCallUnit() {
         chkGlobal("(()->unit): boolean", "()->unit", "boolean")
         chkGlobal("(()->unit): boolean", "()->integer", "n/a")
@@ -28,10 +28,10 @@ class MFunctionLibTest: BaseMFunctionTest() {
         chkGlobal(h, "()->integer?,null", "integer? [T=integer?]")
         chkGlobal(h, "()->integer?,integer", "integer? [T=integer?]")
         chkGlobal(h, "()->integer,decimal", "n/a")
-        chkGlobal(h, "()->decimal,integer", "decimal [T=decimal]")
-        chkGlobal(h, "()->decimal,integer?", "decimal? [T=decimal?]")
-        chkGlobal(h, "()->decimal?,integer", "decimal? [T=decimal?]")
-        chkGlobal(h, "()->decimal?,integer?", "decimal? [T=decimal?]")
+        chkGlobal(h, "()->decimal,integer", "n/a")
+        chkGlobal(h, "()->decimal,integer?", "n/a")
+        chkGlobal(h, "()->decimal?,integer", "n/a")
+        chkGlobal(h, "()->decimal?,integer?", "n/a")
     }
 
     @Test fun testRequireCollection() {
@@ -89,14 +89,14 @@ class MFunctionLibTest: BaseMFunctionTest() {
         chkMember("map<integer,text>", "(K):V", "decimal", "n/a")
 
         chkMember("map<decimal,text>", "(K):V", "decimal", "text")
-        chkMember("map<decimal,text>", "(K):V", "integer", "text")
+        chkMember("map<decimal,text>", "(K):V", "integer", "n/a")
         chkMember("map<decimal,text>", "(K):V", "boolean", "n/a")
 
         chkMember("map<decimal?,text>", "(K):V", "decimal", "text")
         chkMember("map<decimal?,text>", "(K):V", "decimal?", "text")
         chkMember("map<decimal?,text>", "(K):V", "null", "text")
-        chkMember("map<decimal?,text>", "(K):V", "integer", "text")
-        chkMember("map<decimal?,text>", "(K):V", "integer?", "text")
+        chkMember("map<decimal?,text>", "(K):V", "integer", "n/a")
+        chkMember("map<decimal?,text>", "(K):V", "integer?", "n/a")
     }
 
     @Test fun testMapGetOrDefault() {
@@ -109,8 +109,8 @@ class MFunctionLibTest: BaseMFunctionTest() {
         chkMember("map<text,integer?>", "<R:+V>(K,R):R", "text,null", "integer? [R=integer?]")
 
         chkMember("map<text,integer>", "<R:+V>(K,R):R", "text,decimal", "n/a")
-        chkMember("map<text,decimal>", "<R:+V>(K,R):R", "text,integer", "decimal [R=decimal]")
-        chkMember("map<text,decimal>", "<R:+V>(K,R):R", "text,integer?", "decimal? [R=decimal?]")
+        chkMember("map<text,decimal>", "<R:+V>(K,R):R", "text,integer", "n/a")
+        chkMember("map<text,decimal>", "<R:+V>(K,R):R", "text,integer?", "n/a")
 
         chkMember("map<text,int>", "<R:+V>(K,R):R", "text,int", "int [R=int]")
         chkMember("map<text,int>", "<R:+V>(K,R):R", "text,num", "num [R=num]")

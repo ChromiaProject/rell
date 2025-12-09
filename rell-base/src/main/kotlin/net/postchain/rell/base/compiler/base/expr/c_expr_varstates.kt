@@ -10,12 +10,12 @@ import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
 
-enum class C_VarChanged {
+internal enum class C_VarChanged {
     YES,
     MAYBE,
 }
 
-enum class C_VarNulled {
+internal enum class C_VarNulled {
     YES,
     NO,
     ;
@@ -34,7 +34,7 @@ enum class C_VarNulled {
     }
 }
 
-class C_VarStateKey(
+internal class C_VarStateKey(
     val varId: C_VarId,
     val path: ImmList<C_VarPathItem> = immListOf(),
     val isFull: Boolean = true,
@@ -47,7 +47,7 @@ class C_VarStateKey(
     override fun toString() = nameMsg()
 }
 
-sealed class C_VarPathItem {
+internal sealed class C_VarPathItem {
     abstract fun str(): String
     final override fun toString() = str()
 
@@ -73,7 +73,7 @@ sealed class C_VarPathItem {
     }
 }
 
-class C_VarStates private constructor(
+internal class C_VarStates private constructor(
     delta: C_VarStatesDelta,
 ) {
     private val delta = delta as C_VarStatesDelta_Impl
@@ -102,7 +102,7 @@ class C_VarStates private constructor(
     }
 }
 
-sealed class C_VarStatesDelta {
+internal sealed class C_VarStatesDelta {
     abstract fun isEmpty(): Boolean
 
     fun and(other: C_VarStatesDelta): C_VarStatesDelta {
@@ -285,14 +285,7 @@ private class C_VarValueDelta private constructor(
     }
 }
 
-/**
- * [oldValue] is an update of the old value of the variable (`null` means no update),
- * [newValue] describes a new value assigned to the variable (`null` means no new value assignment).
- *
- * Both values can be not `null` at the same time, which means there is a branching, where either an old value is
- * updated or a new value is assigned.
- */
-class C_VarStateDelta private constructor(
+internal class C_VarStateDelta private constructor(
     private val oldValue: C_VarValueDelta?,
     private val newValue: C_VarValueDelta?,
 ) {
@@ -396,7 +389,7 @@ class C_VarStateDelta private constructor(
     }
 }
 
-class C_ExprVarStatesDelta private constructor(
+internal class C_ExprVarStatesDelta private constructor(
     val always: C_VarStatesDelta,
     val whenTrue: C_VarStatesDelta,
     val whenFalse: C_VarStatesDelta,

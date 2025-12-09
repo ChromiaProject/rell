@@ -14,22 +14,20 @@ import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
+import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.doc.DocDeclarationProto_EntityAttribute
-import net.postchain.rell.base.utils.doc.DocSymbol
-import net.postchain.rell.base.utils.doc.DocSymbolKind
-import net.postchain.rell.base.utils.doc.DocSymbolName
 import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
 
-sealed interface C_AttrHeaderInfo {
+internal sealed interface C_AttrHeaderInfo {
     val pos: S_Pos
     val name: C_Name
 }
 
-class C_AttrHeader(
+internal class C_AttrHeader(
     override val pos: S_Pos,
     override val name: C_Name,
     val type: R_Type?,
@@ -39,11 +37,11 @@ class C_AttrHeader(
     val rName = name.rName
 }
 
-abstract class C_AttrHeaderIdeData {
+internal abstract class C_AttrHeaderIdeData {
     abstract fun ideDef(ctx: C_DefinitionContext, pos: S_Pos, attrName: R_Name): C_IdeSymbolDef
 }
 
-class C_GlobalAttrHeaderIdeData(
+internal class C_GlobalAttrHeaderIdeData(
     private val ideCat: IdeSymbolCategory,
     private val ideKind: IdeSymbolKind,
     private val defIdeInfo: C_IdeSymbolInfo?,
@@ -56,7 +54,7 @@ class C_GlobalAttrHeaderIdeData(
     }
 }
 
-class C_LocalAttrHeaderIdeData(
+internal class C_LocalAttrHeaderIdeData(
     private val ideKind: IdeSymbolKind,
     private val docGetter: C_LateGetter<DocSymbol?>,
 ): C_AttrHeaderIdeData() {
@@ -66,13 +64,13 @@ class C_LocalAttrHeaderIdeData(
     }
 }
 
-sealed class C_AttrHeaderHandle(override val pos: S_Pos, override val name: C_Name): C_AttrHeaderInfo {
+internal sealed class C_AttrHeaderHandle(override val pos: S_Pos, final override val name: C_Name): C_AttrHeaderInfo {
     val rName = name.rName
 
     abstract fun compile(ctx: C_DefinitionContext, canInferType: Boolean, ideData: C_AttrHeaderIdeData): C_AttrHeader
 }
 
-class C_NamedAttrHeaderHandle(
+internal class C_NamedAttrHeaderHandle(
     private val nameHand: C_NameHandle,
     private val type: R_Type,
 ): C_AttrHeaderHandle(nameHand.pos, nameHand.name) {
@@ -83,7 +81,7 @@ class C_NamedAttrHeaderHandle(
     }
 }
 
-class C_AnonAttrHeaderHandle(
+internal class C_AnonAttrHeaderHandle(
     private val ctx: C_NamespaceContext,
     private val typeNameHand: C_QualifiedNameHandle,
     private val nullable: Boolean,
@@ -141,7 +139,7 @@ class C_AnonAttrHeaderHandle(
     }
 }
 
-class C_SysAttribute(
+internal class C_SysAttribute internal constructor(
     val name: R_Name,
     val type: R_Type,
     val mutable: Boolean,
@@ -150,10 +148,10 @@ class C_SysAttribute(
     val sqlMapping: String,
     val canSetInCreate: Boolean,
     val docSymbol: DocSymbol?,
-    val restrictions: C_MemberRestrictions,
+    internal val restrictions: C_MemberRestrictions,
 ) {
     // Name as String, not R_Name.
-    constructor(
+    internal constructor(
         name: String,
         type: R_Type,
         mutable: Boolean = false,
@@ -214,7 +212,7 @@ class C_SysAttribute(
 
             val docDec = DocDeclarationProto_EntityAttribute(
                     rName,
-                    type = L_TypeUtils.docType(type.mType),
+                    type = DocType.name(type.name),
                     isMutable = mutable,
                     keyIndexKind = if (isKey) R_KeyIndexKind.KEY else null,
                 )

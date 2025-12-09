@@ -58,7 +58,7 @@ object Lib_RellTest {
 
     val FAILURE_TYPE = MODULE.getTypeDef("rell.test.failure")
 
-    fun typeDefName(name: C_StringQualifiedName) = C_DefinitionName(MODULE_NAME_STR, name)
+    internal fun typeDefName(name: C_StringQualifiedName) = C_DefinitionName(MODULE_NAME_STR, name)
 }
 
 private const val SINCE0 = "0.10.4"
@@ -226,13 +226,13 @@ private class TxCommonFunctions(private val txGetter: (self: Rt_Value) -> Rt_Tes
 
     private fun privKeyToKeyPair(priv: ByteArray): BytesKeyPair {
         val privSize = 32
-        Rt_Utils.check(priv.size == privSize) { "tx.sign:priv_key_size:$privSize:${priv.size}" toCodeMsg
+        Rt_Utils.check(priv.size == privSize) { "tx.sign:priv_key_size:$privSize:${priv.size}" to
                 "Wrong size of private key: ${priv.size} instead of $privSize"
         }
 
         val pub = secp256k1_derivePubKey(priv)
         val pubSize = 33
-        Rt_Utils.check(pub.size == pubSize) { "tx.sign:pub_key_size:$pubSize:${pub.size}" toCodeMsg
+        Rt_Utils.check(pub.size == pubSize) { "tx.sign:pub_key_size:$pubSize:${pub.size}" to
                 "Wrong size of calculated public key: ${pub.size} instead of $pubSize"
         }
 
@@ -1068,7 +1068,7 @@ private object Lib_Type_Op {
 
         val name = R_MountName.ofOpt(nameStr)
         Rt_Utils.check(name != null && !name.isEmpty()) {
-            "rell.test.op:bad_name:$nameStr" toCodeMsg "Bad operation name: '$nameStr'"
+            "rell.test.op:bad_name:$nameStr" to "Bad operation name: '$nameStr'"
         }
         name!!
 

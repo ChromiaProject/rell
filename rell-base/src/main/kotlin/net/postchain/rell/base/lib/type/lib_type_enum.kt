@@ -36,7 +36,7 @@ object Lib_Type_Enum {
                 - `enum cardinal_direction { NORTH, EAST, SOUTH, WEST }`
             """)
             supertypeStrategySpecial { mType ->
-                L_TypeUtils.getRType(mType) is R_EnumType
+                L_TypeUtils.getRTypeOrNull(mType) is R_EnumType
             }
         }
 

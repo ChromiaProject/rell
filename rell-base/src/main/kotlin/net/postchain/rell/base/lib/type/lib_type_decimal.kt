@@ -23,12 +23,14 @@ import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
+import net.postchain.rell.base.utils.immSetOf
 import org.jooq.DataType
 import org.jooq.impl.SQLDataType
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
 import java.math.RoundingMode
+import kotlin.reflect.full.createType
 
 object Lib_Type_Decimal {
     val ToInteger = DecFns.ToInteger
@@ -595,6 +597,7 @@ object R_DecimalType: R_PrimitiveType("decimal") {
     override fun fromCli(s: String): Rt_Value = Rt_DecimalValue.get(s)
 
     override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_Decimal
+    override fun createNativeConversion(): R_TypeNativeConversion = NativeConversion
     override fun createSqlAdapter(): R_TypeSqlAdapter = R_TypeSqlAdapter_Decimal
 
     override fun getTypeAdapter(sourceType: R_Type): C_TypeAdapter? {
@@ -606,6 +609,12 @@ object R_DecimalType: R_PrimitiveType("decimal") {
     }
 
     override fun getLibTypeDef() = Lib_Rell.DECIMAL_TYPE
+
+    private object NativeConversion: R_TypeNativeConversion {
+        override val nativeTypes = immSetOf(BigDecimal::class.createType())
+        override fun rtToNative(value: Rt_Value) = value.asDecimal()
+        override fun nativeToRt(value: Any?) = Rt_DecimalValue.get(value as BigDecimal)
+    }
 
     private object R_TypeSqlAdapter_Decimal: R_TypeSqlAdapter_Primitive("decimal", Lib_DecimalMath.DECIMAL_SQL_TYPE) {
         override fun toSqlValue(value: Rt_Value) = value.asDecimal()
