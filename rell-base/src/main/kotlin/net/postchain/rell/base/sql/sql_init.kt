@@ -268,7 +268,11 @@ private class SqlEntityIniter private constructor(
         }
 
         checkAttrTypes(entity, metaCls)
-        checkOldAttrs(entity, metaCls)
+
+        val removedAttrs = metaCls.attrs.keys.filter { it !in entity.strAttributes }
+        if (removedAttrs.isNotEmpty()) {
+            processRemovedAttrs(entity, metaCls.id, removedAttrs)
+        }
 
         val newAttrs = entity.strAttributes.keys.filter { it !in metaCls.attrs }
         if (newAttrs.isNotEmpty()) {
@@ -293,17 +297,15 @@ private class SqlEntityIniter private constructor(
         }
     }
 
-    private fun checkOldAttrs(entity: R_EntityDefinition, metaEntity: MetaEntity) {
-        val oldAttrs = metaEntity.attrs.keys.filter { it !in entity.strAttributes }.sorted()
-        if (oldAttrs.isNotEmpty()) {
-            val codeList = oldAttrs.joinToString(",")
-            val msgList = oldAttrs.joinToString(", ")
-            if (initCtx.logging.metaNoCode) {
-                val entityName = msgEntityName(entity)
-                initCtx.msgs.warning("dbinit:no_code:attrs:${entity.metaName}:$codeList",
-                        "Table columns for undefined attributes of ${metaEntity.type.en} $entityName found: $msgList")
-            }
-        }
+    private fun processRemovedAttrs(entity: R_EntityDefinition, metaEntityId: Int, removedAttrs: List<String>) {
+        val attrsStr = removedAttrs.joinToString()
+        val entityName = msgEntityName(entity)
+
+        val action = SqlStepAction_DropColumns(entity, removedAttrs.toImmList())
+        initCtx.step(ORD_RECORDS, "Drop table columns for $entityName: $attrsStr", action)
+
+        val metaSql = SqlMeta.genMetaAttrsDeletes(sqlCtx, metaEntityId, removedAttrs)
+        initCtx.step(ORD_TABLES, "Delete meta attributes for $entityName: $attrsStr", SqlStepAction_ExecSql(metaSql))
     }
 
     private fun processNewAttrs(entity: R_EntityDefinition, metaEntityId: Int, newAttrs: List<String>) {
@@ -549,6 +551,17 @@ private class SqlStepAction_AddColumns_AlterTable(
         val frame = Rt_CallFrame.createInitFrame(ctx.exeCtx, entity, true)
         val sql = R_CreateExpr.buildAddColumnsSql(frame, entity, attrs, existingRecs)
         sql.execute(frame.sysSqlExec)
+    }
+}
+
+private class SqlStepAction_DropColumns(
+    private val entity: R_EntityDefinition,
+    private val attrNames: ImmList<String>,
+): SqlStepAction() {
+    override fun run(ctx: SqlStepCtx) {
+        val tableName = entity.sqlMapping.table(ctx.sqlCtx)
+        val sql = SqlGen.genDropColumnsSql(tableName, attrNames)
+        ctx.sqlExec.execute(sql)
     }
 }
 

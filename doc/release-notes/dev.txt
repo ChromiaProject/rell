@@ -1,3 +1,33 @@
 UNRELEASED NOTES
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Runtime: Automatic dropping of columns for removed entity attributes
+
+When attributes are removed from entity definitions, the corresponding database columns are now automatically
+dropped during database initialization. Previously, removing attributes would trigger a warning, but the columns
+would remain in the database.
+
+This changes the behavior from a lossless warning to automatic data removal. Removed attribute values will
+be permanently deleted from the database.
+
+Example:
+
+    entity company { name: text; }
+
+    // Initial entity definition
+    entity user {
+        name: text;
+        score: integer;
+        company;
+    }
+
+    // After removing attributes
+    entity user {
+        name: text;
+    }
+
+When the application is restarted, the database initialization will drop columns "score" and "company" from the
+database table. All existing records are preserved, with only the removed columns' values being deleted.
+
+Limitation:
+- The @log annotation still cannot be added to or removed from existing entities.

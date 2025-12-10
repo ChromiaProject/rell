@@ -368,6 +368,9 @@ object SqlGen {
         return b.toString()
     }
 
+    fun genDropColumnsSql(table: String, attrNames: List<String>): String =
+        DSL_CTX.alterTable(table).drop(*attrNames.toTypedArray()).toString()
+
     fun joinSqls(sqls: List<String>) = sqls.joinToString("\n") + "\n"
 }
 

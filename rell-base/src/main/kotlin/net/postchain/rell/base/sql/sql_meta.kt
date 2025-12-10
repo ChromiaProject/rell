@@ -245,6 +245,22 @@ object SqlMeta {
 
         return sqls.toImmList()
     }
+
+    fun genMetaAttrsDeletes(sqlCtx: Rt_SqlContext, classId: Int, attrNames: List<String>): ImmList<String> {
+        val sqls = mutableListOf<String>()
+
+        val attrTable = DSL.table(DSL.name(sqlCtx.mainChainMapping().metaAttributesTable))
+
+        for (attrName in attrNames) {
+            sqls += SqlGen.DSL_CTX.deleteFrom(attrTable)
+                .where(
+                    DSL.field("class_id").eq(classId)
+                        .and(DSL.field("name").eq(attrName))
+                ).getSQL(ParamType.INLINED) + ";"
+        }
+
+        return sqls.toImmList()
+    }
 }
 
 private class SqlTableChecker(private val tables: ImmMap<String, SqlTable>, private val table: String) {

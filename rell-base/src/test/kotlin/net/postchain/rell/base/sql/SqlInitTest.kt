@@ -232,18 +232,6 @@ class SqlInitTest: BaseSqlInitTest() {
         chkAll("0,user,class,false", "0,name,sys:text 0,score,sys:integer", "c0.user(name:text,rowid:int8,score:int8)")
     }
 
-    @Test fun testMetaAttrNoCode() {
-        chkInit("entity user { name; score: integer; }")
-        chkAll("0,user,class,false", "0,name,sys:text 0,score,sys:integer", "c0.user(name:text,rowid:int8,score:int8)")
-
-        insert("c0.user", "name,score", "100,'Bob',123")
-        chkData("c0.user(100,Bob,123)")
-
-        chkInit("entity user { name; }", "OK", "dbinit:no_code:attrs:user:score")
-        chkAll("0,user,class,false", "0,name,sys:text 0,score,sys:integer", "c0.user(name:text,rowid:int8,score:int8)")
-        chkData("c0.user(100,Bob,123)")
-    }
-
     @Test fun testMetaEntityCodeDiff() {
         chkInit("@log entity user { name; }")
         chkAll("0,user,class,true", "0,name,sys:text 0,transaction,class:0:transaction")
@@ -685,5 +673,78 @@ class SqlInitTest: BaseSqlInitTest() {
 
         chkInit("")
         chkFunctions(expectedFuns)
+    }
+
+    @Test fun testDropRemovedAttrs() {
+        chkInit("entity user { name; score: integer; level: integer; }")
+        chkAll("0,user,class,false", "0,level,sys:integer 0,name,sys:text 0,score,sys:integer",
+            "c0.user(level:int8,name:text,rowid:int8,score:int8)")
+
+        insert("c0.user", "level,name,score", "100,5,'Bob',123")
+        chkData("c0.user(100,5,Bob,123)")
+
+        chkInit("entity user { name; }")
+        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8)")
+        chkData("c0.user(100,Bob)")
+    }
+
+    @Test fun testDropRemovedAttrWithData() {
+        chkInit("entity user { name; score: integer; age: integer; }")
+        chkAll("0,user,class,false", "0,age,sys:integer 0,name,sys:text 0,score,sys:integer",
+            "c0.user(age:int8,name:text,rowid:int8,score:int8)")
+
+        insert("c0.user", "age,name,score", "100,25,'Alice',200")
+        insert("c0.user", "age,name,score", "101,30,'Bob',150")
+        insert("c0.user", "age,name,score", "102,28,'Carol',180")
+        chkData("c0.user(100,25,Alice,200)", "c0.user(101,30,Bob,150)", "c0.user(102,28,Carol,180)")
+
+        chkInit("entity user { name; age: integer; }")
+        chkAll("0,user,class,false", "0,age,sys:integer 0,name,sys:text", "c0.user(age:int8,name:text,rowid:int8)")
+        chkData("c0.user(100,25,Alice)", "c0.user(101,30,Bob)", "c0.user(102,28,Carol)")
+    }
+
+    @Test fun testDropRemovedAttrEntityType() {
+        chkInit("entity company { name; } entity user { name; company; }")
+        chkAll("0,company,class,false 1,user,class,false", "0,name,sys:text 1,company,class:0:company 1,name,sys:text")
+        chkColumns("c0.company(name:text,rowid:int8)", "c0.user(company:int8,name:text,rowid:int8)")
+
+        insert("c0.company", "name", "10,'Acme'")
+        insert("c0.user", "company,name", "100,10,'Bob'")
+        chkData("c0.company(10,Acme)", "c0.user(100,10,Bob)")
+
+        chkInit("entity company { name; } entity user { name; }")
+        chkAll("0,company,class,false 1,user,class,false", "0,name,sys:text 1,name,sys:text")
+        chkColumns("c0.company(name:text,rowid:int8)", "c0.user(name:text,rowid:int8)")
+        chkData("c0.company(10,Acme)", "c0.user(100,Bob)")
+    }
+
+    @Test fun testDropRemovedAttrMixed() {
+        chkInit("entity user { name; score: integer; }")
+        chkAll("0,user,class,false", "0,name,sys:text 0,score,sys:integer", "c0.user(name:text,rowid:int8,score:int8)")
+
+        insert("c0.user", "name,score", "100,'Bob',123")
+        chkData("c0.user(100,Bob,123)")
+
+        chkInit("entity user { name; level: integer = 1; }")
+        chkAll("0,user,class,false", "0,level,sys:integer 0,name,sys:text", "c0.user(level:int8,name:text,rowid:int8)")
+        chkData("c0.user(100,1,Bob)")
+    }
+
+    @Test fun testDropRemovedAttrReaddWithDifferentType() {
+        chkInit("entity user { name; score: integer; }")
+        chkAll("0,user,class,false", "0,name,sys:text 0,score,sys:integer", "c0.user(name:text,rowid:int8,score:int8)")
+
+        insert("c0.user", "name,score", "100,'Bob',123")
+        chkData("c0.user(100,Bob,123)")
+
+        // Drop the column
+        chkInit("entity user { name; }")
+        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8)")
+        chkData("c0.user(100,Bob)")
+
+        // Add new column with same name but different type (text instead of integer)
+        chkInit("entity user { name; score: text = 'default'; }")
+        chkAll("0,user,class,false", "0,name,sys:text 0,score,sys:text", "c0.user(name:text,rowid:int8,score:text)")
+        chkData("c0.user(100,Bob,default)")
     }
 }
