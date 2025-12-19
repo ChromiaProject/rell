@@ -10,10 +10,19 @@ import net.postchain.rell.base.lib.type.R_ByteArrayType
 import net.postchain.rell.base.lib.type.R_TextType
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_Value
+import org.jooq.Condition
+import org.jooq.Constraint
+import org.jooq.Field
+import org.jooq.impl.DSL.constraint
+import org.jooq.impl.DSL.field
+import org.jooq.impl.DSL.length
+import org.jooq.impl.DSL.name
+import org.jooq.impl.DSL.octetLength
 import java.util.*
 
 abstract class R_AttrValidator internal constructor(internal val metadata: R_AttrValidatorMetadata) {
     abstract fun check(value: Rt_Value): Error?
+    abstract fun genSqlCheckConstraint(sqlConstraintName: String, sqlTable: String, attr: R_Attribute): Constraint
 
     data class Error(val code: String, val msg: String) {
         fun raise() {
@@ -31,8 +40,8 @@ internal data class R_AttrValidatorMetadata(
 )
 
 internal class R_SizeAttrValidator(
-    private val min: Long?,
-    private val max: Long?,
+    internal val min: Long?,
+    internal val max: Long?,
     private val sizeAdapter: R_SizeAdapter,
     metadata: R_AttrValidatorMetadata,
 ): R_AttrValidator(metadata) {
@@ -51,6 +60,14 @@ internal class R_SizeAttrValidator(
             return Error(tooLargeErrCode, msg)
         }
         return null
+    }
+
+    override fun genSqlCheckConstraint(sqlConstraintName: String, sqlTable: String, attr: R_Attribute): Constraint {
+        val boundsExprs = mutableListOf<Condition>()
+        val lengthExpr = sizeAdapter.genSqlSize(field(name(attr.sqlMapping), String::class.java))
+        min?.let { boundsExprs.add(lengthExpr.ge(it.toInt())) }
+        max?.let { boundsExprs.add(lengthExpr.le(it.toInt())) }
+        return constraint(sqlConstraintName).check(boundsExprs.reduce { mn, mx -> mn.and(mx) })
     }
 
     private val defTypeStr: String by lazy { metadata.ownerDefType.name.lowercase(Locale.US) }
@@ -88,6 +105,7 @@ internal class R_SizeAttrValidator(
 
     internal interface R_SizeAdapter {
         fun getSize(value: Rt_Value): Int
+        fun genSqlSize(sqlArgExpr: Field<String>): Field<Int>
     }
 
     /*
@@ -108,10 +126,12 @@ internal class R_SizeAttrValidator(
 
     private object R_ByteArraySizeAdapter: R_SizeAdapter {
         override fun getSize(value: Rt_Value): Int = value.asByteArray().size
+        override fun genSqlSize(sqlArgExpr: Field<String>): Field<Int> = octetLength(sqlArgExpr)
     }
 
     private object R_TextSizeAdapter: R_SizeAdapter {
         override fun getSize(value: Rt_Value): Int = value.asString().length
+        override fun genSqlSize(sqlArgExpr: Field<String>): Field<Int> = length(sqlArgExpr)
     }
 
     /*

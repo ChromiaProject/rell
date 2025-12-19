@@ -9,6 +9,7 @@ import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.runtime.utils.Rt_Messages
+import net.postchain.rell.base.sql.SqlUtils.getExistingSizeConstraints
 import net.postchain.rell.base.utils.*
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
@@ -300,6 +301,7 @@ private class SqlTableChecker(private val tables: ImmMap<String, SqlTable>, priv
 }
 
 private class RecMetaEntity(val id: Int, val name: String, val type: String, val log: Boolean)
+
 private class RecMetaAttr(val classId: Int, val name: String, val type: String)
 
 enum class MetaEntityType(val code: String, val en: String) {
@@ -309,11 +311,11 @@ enum class MetaEntityType(val code: String, val en: String) {
 }
 
 class MetaEntity(
-        val id: Int,
-        val name: String,
-        val type: MetaEntityType,
-        val log: Boolean,
-        val attrs: ImmMap<String, MetaAttr>
+    val id: Int,
+    val name: String,
+    val type: MetaEntityType,
+    val log: Boolean,
+    val attrs: ImmMap<String, MetaAttr>,
 )
 
 class MetaAttr(val name: String, val type: String)

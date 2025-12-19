@@ -284,16 +284,17 @@ internal class C_SizeConstraint private constructor(
                 "${targetType.description} type ${type.str()} does not support size annotations.")
         }
 
-        fun reportNonStruct(ctx: C_DefinitionContext, header: C_AttrHeaderInfo, annStrs: ImmList<String>) {
+        fun reportInvalidDefType(ctx: C_DefinitionContext, header: C_AttrHeaderInfo, annStrs: ImmList<String>) {
             val subCode = annStrs.sortedDescending().joinToString(separator = "_")
             val subMsg = if (annStrs.size == 1) {
                 "annotation @${annStrs.first()}"
             } else {
                 "annotations @${annStrs.joinToString(", @")}"
             }
-            ctx.msgCtx.error(header.pos, "modifier:invalid:ann:$subCode:non_struct",
-                "Erroneous $subMsg on attribute ${header.name.str} of ${ctx.cDefName.str()}: Size annotations are " +
-                "valid on struct attributes only, but were found on attribute of ${ctx.cDefName.str()}.")
+            ctx.msgCtx.error(header.pos, "modifier:invalid:ann:$subCode:invalid_definition_type",
+                "Erroneous $subMsg on attribute ${header.name.str} of ${ctx.cDefName.str()}: " +
+                "Size annotations are valid on struct, entity and object attributes only, " +
+                "but were found on attribute of ${ctx.cDefName.str()}.")
         }
     }
 }

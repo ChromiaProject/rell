@@ -5,17 +5,6 @@ import org.junit.jupiter.api.Disabled
 import kotlin.test.Test
 
 internal class AttributeSizeAnnotationTest: BaseRellTest() {
-    @Test fun testInvalidOnNonStruct() {
-        chkCompile("entity s { @size(1) l: byte_array; }", "ct_err:modifier:invalid:ann:size:non_struct")
-        chkCompile("entity s { @size(1, 5) l: text; }", "ct_err:modifier:invalid:ann:size:non_struct")
-        chkCompile("entity s { @min_size(1) l: byte_array; }", "ct_err:modifier:invalid:ann:min_size:non_struct")
-        chkCompile("object s { @size(2) l: text = 'hi'; }", "ct_err:modifier:invalid:ann:size:non_struct")
-        chkCompile("object s { @size(1, 5) l: byte_array = x'AB'; }", "ct_err:modifier:invalid:ann:size:non_struct")
-        chkCompile("object s { @min_size(1) l: byte_array = x'0011'; }",
-            "ct_err:modifier:invalid:ann:min_size:non_struct")
-        chkCompile("object s { @max_size(5) l: text = ''; }", "ct_err:modifier:invalid:ann:max_size:non_struct")
-    }
-
     @Test fun testInvalidOnUnsupportedTypes() {
         chkCompile("struct s { @size(1, 5) l: boolean; }", "ct_err:modifier:invalid:ann:size:invalid_type")
         chkCompile("struct s { @size(1, 5) l: integer; }", "ct_err:modifier:invalid:ann:size:invalid_type")
@@ -749,5 +738,202 @@ internal class AttributeSizeAnnotationTest: BaseRellTest() {
         chk("u.from_bytes(u2(json('\"hippopotamus\"')).to_bytes())",
             "rt_err:struct:u:attribute:l:validator:size:too_large")
         chk("u.from_bytes(u2(json('\"ox\"')).to_bytes())", "u[l=json[\"ox\"]]")
+    }
+
+    @Test fun testEntityCreate_Text_FixedSize() {
+        tstCtx.useSql = true
+        def("entity user { @size(10) name; }")
+        chkOp("create user('this name is too long');", "rt_err:entity:user:attribute:name:validator:size:too_large")
+        chkOp("create user('too short');", "rt_err:entity:user:attribute:name:validator:size:too_small")
+        chkOp("create user('just right');", "OK")
+    }
+
+    @Test fun testEntityCreate_ByteArray_FixedSize() {
+        tstCtx.useSql = true
+        def("entity stuff { @size(3) bytes: byte_array; }")
+        chkOp("create stuff(x'CAFEC0FFEE');", "rt_err:entity:stuff:attribute:bytes:validator:size:too_large")
+        chkOp("create stuff(x'CAFE');", "rt_err:entity:stuff:attribute:bytes:validator:size:too_small")
+        chkOp("create stuff(x'C0FFEE');", "OK")
+    }
+
+    @Test fun testEntityCreate_Text_MaxSize() {
+        tstCtx.useSql = true
+        def("entity user { @max_size(10) name; }")
+        chkOp("create user('this name is too long');", "rt_err:entity:user:attribute:name:validator:size:too_large")
+        chkOp("create user('ok');", "OK")
+        chkOp("create user('length ten');", "OK")
+    }
+
+    @Test fun testEntityCreate_ByteArray_MaxSize() {
+        tstCtx.useSql = true
+        def("entity stuff { @max_size(4) bytes: byte_array; }")
+        chkOp("create stuff(x'0011223344');", "rt_err:entity:stuff:attribute:bytes:validator:size:too_large")
+        chkOp("create stuff(x'00112233');", "OK")
+        chkOp("create stuff(x'');", "OK")
+    }
+
+    @Test fun testEntityCreate_Text_MinSize() {
+        tstCtx.useSql = true
+        def("entity user { @min_size(10) name; }")
+        chkOp("create user('this name is long enough');", "OK")
+        chkOp("create user('too short');", "rt_err:entity:user:attribute:name:validator:size:too_small")
+        chkOp("create user('length ten');", "OK")
+    }
+
+    @Test fun testEntityCreate_ByteArray_MinSize() {
+        tstCtx.useSql = true
+        def("entity stuff { @min_size(2) bytes: byte_array; }")
+        chkOp("create stuff(x'0011');", "OK")
+        chkOp("create stuff(x'00');", "rt_err:entity:stuff:attribute:bytes:validator:size:too_small")
+        chkOp("create stuff(x'CAFEC0FFEE');", "OK")
+    }
+
+    @Test fun testEntityCreate_Text_MinMaxSize() {
+        tstCtx.useSql = true
+        def("entity user { @size(10, 15) name; }")
+        chkOp("create user('this name is too long');", "rt_err:entity:user:attribute:name:validator:size:too_large")
+        chkOp("create user('too short');", "rt_err:entity:user:attribute:name:validator:size:too_small")
+        chkOp("create user('this is okay');", "OK")
+    }
+
+    @Test fun testEntityCreate_ByteArray_MinMaxSize() {
+        tstCtx.useSql = true
+        def("entity stuff { @size(2, 4) bytes: byte_array; }")
+        chkOp("create stuff(x'0011223344');", "rt_err:entity:stuff:attribute:bytes:validator:size:too_large")
+        chkOp("create stuff(x'00');", "rt_err:entity:stuff:attribute:bytes:validator:size:too_small")
+        chkOp("create stuff(x'001122');", "OK")
+    }
+
+    @Test fun testEntityUpdate_TextStmt_FixedSize() {
+        tstCtx.useSql = true
+        def("entity user { mutable @size(10) name; }")
+        chkOp("create user('just right');", "OK")
+        chkOp("update user @ { .name == 'just right' } ( name = 'now it\\'s too long.' );",
+            "rt_err:entity:user:attribute:name:validator:size:too_large")
+        chkOp("update user @ { .name == 'just right' } ( name = '2small' );",
+            "rt_err:entity:user:attribute:name:validator:size:too_small")
+        chkOp("update user @ { .name == 'just right' } ( name = 'still good' );", "OK")
+    }
+
+    @Test fun testEntityUpdate_ByteArrayStmt_FixedSize() {
+        tstCtx.useSql = true
+        def("entity stuff { mutable @size(3) bytes: byte_array; }")
+        chkOp("create stuff(x'001122');", "OK")
+        chkOp("update stuff @ { .bytes == x'001122' } ( bytes = x'CAFEC0FFEE' );",
+            "rt_err:entity:stuff:attribute:bytes:validator:size:too_large")
+        chkOp("update stuff @ { .bytes == x'001122' } ( bytes = x'CAFE' );",
+            "rt_err:entity:stuff:attribute:bytes:validator:size:too_small")
+        chkOp("update stuff @ { .bytes == x'001122' } ( bytes = x'C0FFEE' );", "OK")
+    }
+
+    @Test fun testEntityUpdate_TextStmt_MaxSize() {
+        tstCtx.useSql = true
+        def("entity user { mutable @max_size(10) name; }")
+        chkOp("create user('ok');", "OK")
+        chkOp("update user @ { .name == 'ok' } ( name = 'now it\\'s too long.' );",
+            "rt_err:entity:user:attribute:name:validator:size:too_large")
+        chkOp("update user @ { .name == 'ok' } ( name = 'still good' );", "OK")
+    }
+
+    @Test fun testEntityUpdate_ByteArrayStmt_MaxSize() {
+        tstCtx.useSql = true
+        def("entity stuff { mutable @max_size(4) bytes: byte_array; }")
+        chkOp("create stuff(x'001122');", "OK")
+        chkOp("update stuff @ { .bytes == x'001122' } ( bytes = x'0011223344' );",
+            "rt_err:entity:stuff:attribute:bytes:validator:size:too_large")
+        chkOp("update stuff @ { .bytes == x'001122' } ( bytes = x'CAFE' );", "OK")
+    }
+
+    @Test fun testEntityUpdate_TextStmt_MinSize() {
+        tstCtx.useSql = true
+        def("entity user { mutable @min_size(10) name; }")
+        chkOp("create user('this name is long enough');", "OK")
+        chkOp("update user @ { .name == 'this name is long enough' } ( name = '2shortNow' );",
+            "rt_err:entity:user:attribute:name:validator:size:too_small")
+        chkOp("update user @ { .name == 'this name is long enough' } ( name = 'still long enough' );", "OK")
+    }
+
+    @Test fun testEntityUpdate_ByteArrayStmt_MinSize() {
+        tstCtx.useSql = true
+        def("entity stuff { mutable @min_size(2) bytes: byte_array; }")
+        chkOp("create stuff(x'001122');", "OK")
+        chkOp("update stuff @ { .bytes == x'001122' } ( bytes = x'00' );",
+            "rt_err:entity:stuff:attribute:bytes:validator:size:too_small")
+        chkOp("update stuff @ { .bytes == x'001122' } ( bytes = x'001122334455' );", "OK")
+    }
+
+    @Test fun testEntityUpdate_TextStmt_MinMaxSize() {
+        tstCtx.useSql = true
+        def("entity user { mutable @size(10, 15) name; }")
+        chkOp("create user('this is okay');", "OK")
+        chkOp("update user @ { .name == 'this is okay' } ( name = '2shortNow' );",
+            "rt_err:entity:user:attribute:name:validator:size:too_small")
+        chkOp("update user @ { .name == 'this is okay' } ( name = 'now it is too long for sure' );",
+            "rt_err:entity:user:attribute:name:validator:size:too_large")
+        chkOp("update user @ { .name == 'this is okay' } ( name = 'this also okay' );", "OK")
+    }
+
+    @Test fun testEntityUpdate_TextAssign_MinMaxSize() {
+        tstCtx.useSql = true
+        def("entity user { mutable @size(10, 15) name; }")
+        chkOp("create user('this is okay');", "OK")
+        chkOp("{ val u = user @ { .name == 'this is okay' }; u.name = 'this is too long again'; }",
+            "rt_err:entity:user:attribute:name:validator:size:too_large")
+        chkOp("{ val u = user @ { .name == 'this is okay' }; u.name = 'tooShort'; }",
+            "rt_err:entity:user:attribute:name:validator:size:too_small")
+    }
+
+    @Test fun testEntityUpdate_ByteArrayAssign_MinMaxSize() {
+        tstCtx.useSql = true
+        def("entity stuff { mutable @size(2, 4) bytes: byte_array; }")
+        chkOp("create stuff(x'001122');", "OK")
+        chkOp("{ val u = stuff @ { .bytes == x'001122' }; u.bytes = x'001122334455'; }",
+            "rt_err:entity:stuff:attribute:bytes:validator:size:too_large")
+        chkOp("{ val u = stuff @ { .bytes == x'001122' }; u.bytes = x'00'; }",
+            "rt_err:entity:stuff:attribute:bytes:validator:size:too_small")
+    }
+
+    @Test fun testEntityUpdate_TextPlusEq_MinMaxSize() {
+        tstCtx.useSql = true
+        def("entity user { mutable @size(10, 15) name; }")
+        chkOp("create user('this is okay');", "OK")
+        chkOp("{ val u = user @ { .name == 'this is okay' }; u.name += ' but this spoils it.'; }", "rt_err:sqlerr:0")
+    }
+
+    @Test fun testEntityUpdate_ByteArrayPlusEq_MinMaxSize() {
+        tstCtx.useSql = true
+        def("entity stuff { mutable @size(10, 15) bytes: byte_array; }")
+        chkOp("create stuff(x'00112233445566778899AABB');", "OK")
+        chkOp("{ val s = stuff @ { .bytes == x'00112233445566778899AABB' }; s.bytes += x'CCDDEEFF0011'; }",
+            "rt_err:sqlerr:0")
+    }
+
+    @Test fun testObjectUpdate_TextAssign_MinMaxSize() {
+        tstCtx.useSql = true
+        def("object user { mutable @size(10, 15) name = 'Acceptable.'; }")
+        chkOp("user.name = 'Now it\\'s unacceptable.';", "rt_err:object:user:attribute:name:validator:size:too_large")
+        chkOp("user.name = 'Also bad.';", "rt_err:object:user:attribute:name:validator:size:too_small")
+        chkOp("user.name = 'This is okay.';", "OK")
+    }
+
+    @Test fun testObjectUpdate_TextPlusEq_MinMaxSize() {
+        tstCtx.useSql = true
+        def("object user { mutable @size(10, 15) name = 'Acceptable.'; }")
+        chkOp("user.name += ' But not anymore.';", "rt_err:sqlerr:0")
+    }
+
+    @Test fun testObjectUpdate_ByteArrayAssign_MinMaxSize() {
+        tstCtx.useSql = true
+        def("object stuff { mutable @size(10, 15) bytes: byte_array = x'00112233445566778899AABB'; }")
+        chkOp("stuff.bytes = x'00112233445566778899AABBCCDDEEFF0011';",
+            "rt_err:object:stuff:attribute:bytes:validator:size:too_large")
+        chkOp("stuff.bytes = x'00';", "rt_err:object:stuff:attribute:bytes:validator:size:too_small")
+        chkOp("stuff.bytes = x'BBAA99887766554433221100';", "OK")
+    }
+
+    @Test fun testObjectUpdate_ByteArrayPlusEq_MinMaxSize() {
+        tstCtx.useSql = true
+        def("object stuff { mutable @size(10, 15) bytes: byte_array = x'00112233445566778899AABB'; }")
+        chkOp("stuff.bytes += x'CCDDEEFF0011';", "rt_err:sqlerr:0")
     }
 }

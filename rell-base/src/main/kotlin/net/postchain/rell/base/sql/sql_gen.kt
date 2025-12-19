@@ -11,7 +11,9 @@ import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.utils.toImmMap
 import org.jooq.*
 import org.jooq.impl.DSL
+import org.jooq.impl.DSL.condition
 import org.jooq.impl.DSL.constraint
+import org.jooq.impl.DSL.length
 import org.jooq.impl.SQLDataType
 
 object SqlGen {
@@ -263,7 +265,7 @@ object SqlGen {
 
         val constraints = mutableListOf<Constraint>()
         constraints.add(constraint("PK_$tableName").primaryKey(rowid))
-        constraints += genAttrConstraints(sqlCtx, tableName, attrs)
+        constraints += genAttrConstraints(sqlCtx, rEntity, attrs)
 
         var q = t.column(rowid, SQLDataType.BIGINT.nullable(false))
         q = genAttrColumns(attrs, q)
@@ -296,17 +298,26 @@ object SqlGen {
         return q
     }
 
-    private fun genAttrConstraints(sqlCtx: Rt_SqlContext, sqlTable: String, attrs: Collection<R_Attribute>): List<Constraint> {
+    private fun genAttrConstraints(
+        sqlCtx: Rt_SqlContext,
+        entity: R_EntityDefinition,
+        attrs: Collection<R_Attribute>,
+    ): List<Constraint> {
+        val sqlTable = entity.sqlMapping.table(sqlCtx)
         val constraints = mutableListOf<Constraint>()
 
         for (attr in attrs) {
             if (attr.type is R_EntityType) {
                 val refEntity = attr.type.rEntity
                 val refTable = refEntity.sqlMapping.table(sqlCtx)
-                val constraint = constraint("${sqlTable}_${attr.sqlMapping}_FK")
+                val fkConstraint = constraint("${sqlTable}_${attr.sqlMapping}_FK")
                         .foreignKey(attr.sqlMapping)
                         .references(refTable, refEntity.sqlMapping.rowidColumn())
-                constraints.add(constraint)
+                constraints.add(fkConstraint)
+            }
+            if (attr.validator != null) {
+                val sqlConstraintName = sqlConstraintName(entity.mountName.str(), attr.name)
+                constraints.add(attr.validator.genSqlCheckConstraint(sqlConstraintName, sqlTable, attr))
             }
         }
 
@@ -354,12 +365,13 @@ object SqlGen {
         return b.toString()
     }
 
-    fun genAddAttrConstraintsSql(sqlCtx: Rt_SqlContext, table: String, attrs: List<R_Attribute>): String {
-        val constraints = genAttrConstraints(sqlCtx, table, attrs)
+    fun genAddAttrConstraintsSql(sqlCtx: Rt_SqlContext, entity: R_EntityDefinition, attrs: List<R_Attribute>): String {
+        val constraints = genAttrConstraints(sqlCtx, entity, attrs)
         if (constraints.isEmpty()) {
             return ""
         }
 
+        val table = entity.sqlMapping.table(sqlCtx)
         val b = DSL_CTX.alterTable(table)
         for (c in constraints) {
             b.add(c)

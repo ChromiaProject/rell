@@ -9,10 +9,16 @@ import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.*
 import java.sql.Connection
+import java.util.regex.Pattern
 
 class SqlCol(val type: String)
 class SqlIndex(val name: String, val unique: Boolean, val cols: ImmList<String>)
 class SqlTable(val cols: ImmMap<String, SqlCol>, val indexes: ImmList<SqlIndex>)
+class SqlSizeConstraint(val constraintName: String, val attr: String, val min: Long?, val max: Long?) {
+    init {
+        require(min != null || max != null)
+    }
+}
 
 object SqlUtils {
     fun dropAll(sqlExec: SqlExecutor, sysTables: Boolean) {
@@ -42,6 +48,36 @@ object SqlUtils {
         val list = mutableListOf<String>()
         sqlExec.executeQuery(sql, {}) { rs -> list.add(rs.getString(1)!!)}
         return list.toList()
+    }
+
+    fun getExistingSizeConstraints(sqlExec: SqlExecutor, tableName: String): Map<String, Pair<Long?, Long?>> {
+        val schemaName = sqlExec.connection { it.schema }
+        val sql = """
+            SELECT con.conname, att.attname, pg_get_expr(con.conbin, con.conrelid)
+            FROM pg_constraint con
+            JOIN pg_class rel ON rel.oid = con.conrelid
+            JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
+            LEFT JOIN pg_attribute att ON att.attrelid = con.conrelid AND att.attnum = ANY (con.conkey)
+            WHERE nsp.nspname = '$schemaName' AND rel.relname = '$tableName' AND con.conname LIKE '%:size';
+        """
+        val out = mutableListOf<SqlSizeConstraint>()
+        sqlExec.executeQuery(sql, {}) { rs ->
+            val constraint = rs.getString(1)!!
+            val attr = rs.getString(2)!!
+            val (min, max) = extractSizeConstraint(rs.getString(3)!!)
+            out.add(SqlSizeConstraint(constraint, attr, min, max))
+        }
+        return out.map { it.attr to (it.min to it.max) }.toImmMap()
+    }
+
+    fun extractSizeConstraint(constraintExpr: String): Pair<Long?, Long?> {
+        val minMatcher = Pattern.compile(".+ >= (\\d+).+").matcher(constraintExpr)
+        val maxMatcher = Pattern.compile(".+ <= (\\d+).+").matcher(constraintExpr)
+        val hasMin = minMatcher.matches()
+        val hasMax = maxMatcher.matches()
+        val min = if (hasMin) minMatcher.group(1).toLong() else null
+        val max = if (hasMax) maxMatcher.group(1).toLong() else null
+        return min to max
     }
 
     fun getExistingFunctions(sqlExec: SqlExecutor): List<String> {

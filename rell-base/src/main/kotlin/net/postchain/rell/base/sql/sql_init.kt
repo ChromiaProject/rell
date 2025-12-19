@@ -6,10 +6,12 @@ package net.postchain.rell.base.sql
 
 import mu.KLogger
 import mu.KLogging
+import net.postchain.common.toHex
 import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_KeyIndex
 import net.postchain.rell.base.model.R_ObjectDefinition
+import net.postchain.rell.base.model.R_SizeAttrValidator
 import net.postchain.rell.base.model.expr.R_AttributeDefaultValueExpr
 import net.postchain.rell.base.model.expr.R_CreateExpr
 import net.postchain.rell.base.model.expr.R_CreateExprAttr
@@ -18,7 +20,10 @@ import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_ExecutionContext
 import net.postchain.rell.base.runtime.utils.Rt_Messages
 import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.sql.SqlUtils.getExistingSizeConstraints
+import net.postchain.rell.base.sql.SqlUtils.recordsExist
 import net.postchain.rell.base.utils.*
+import java.security.MessageDigest
 
 private val ORD_TABLES = SqlInitStepOrder.TABLES
 private val ORD_RECORDS = SqlInitStepOrder.RECORDS
@@ -279,6 +284,8 @@ private class SqlEntityIniter private constructor(
             processNewAttrs(entity, metaCls.id, newAttrs)
         }
 
+        checkOldConstraints(entity, metaCls)
+
         processIndexes(entity)
     }
 
@@ -308,10 +315,99 @@ private class SqlEntityIniter private constructor(
         initCtx.step(ORD_TABLES, "Delete meta attributes for $entityName: $attrsStr", SqlStepAction_ExecSql(metaSql))
     }
 
+    private fun checkOldConstraints(entity: R_EntityDefinition, metaEntity: MetaEntity) {
+        val entityName = msgEntityName(entity)
+        val constraintAttrs = getExistingSizeConstraints(exeCtx.sysSqlExec, "c0.${entity.metaName}")
+            .filterValues { it.first != null || it.second != null }
+        val recordsExist = recordsExist(exeCtx.sysSqlExec, sqlCtx, entity)
+
+        for ((attrName, constraints) in constraintAttrs) {
+            val oldMin = constraints.first
+            val oldMax = constraints.second
+            val rAttr = entity.strAttributes[attrName] ?: continue // If null then attr was deleted from entity.
+            val validator = rAttr.validator
+
+            if (validator == null) {
+                dropDbConstraint(entity, attrName)
+                continue
+            }
+
+            // validator == null implies validator is R_SizeAttrValidator, but we need the smart cast.
+            if (validator !is R_SizeAttrValidator || (validator.min == oldMin && validator.max == oldMax)) {
+                continue
+            }
+
+            if (recordsExist && ((oldMin == null && validator.min != null) ||
+                (oldMin != null && validator.min != null && oldMin < validator.min))) {
+                val defType = metaEntity.type.en
+                val entityAttrCode = "${entity.metaName}:$attrName"
+                initCtx.msgs.error("dbinit:attr:min_size_constraint_increased_records_exist:$entityAttrCode",
+                    "$defType $entityName attribute $attrName: minimum size constraint increased but " +
+                    "$entityName records already exist. Minimum size constraints can only be increased on " +
+                    "an existing $defType attribute if the $defType has no records.")
+                continue
+            }
+
+            if (recordsExist && ((oldMax == null && validator.max != null) ||
+                (oldMax != null && validator.max != null && oldMax > validator.max))) {
+                val defType = metaEntity.type.en
+                val entityAttrCode = "${entity.metaName}:$attrName"
+                initCtx.msgs.error("dbinit:attr:max_size_constraint_decreased_records_exist:$entityAttrCode",
+                    "$defType $entityName attribute $attrName: maximum size constraint decreased but " +
+                    "$entityName records already exist. Maximum size constraints can only be decreased on " +
+                    "an existing $defType attribute if the $defType has no records.")
+                continue
+            }
+
+            dropDbConstraint(entity, attrName)
+            addDbConstraint(entity, attrName, validator)
+        }
+
+        entity.strAttributes.filterValues { it.validator != null }.forEach { (attrName, rAttr) ->
+            if (constraintAttrs[attrName] == null) {
+                val validator = rAttr.validator!!
+                require(validator is R_SizeAttrValidator) // R_SizeAttrValidator is the only impl of R_AttrValidator
+                if (recordsExist) {
+                    val defType = metaEntity.type.en
+                    initCtx.msgs.error("dbinit:attr:size_constraint_added_records_exist:${entity.metaName}:$attrName",
+                        "$defType $entityName attribute $attrName: size constraints added but $entityName records " +
+                        "already exist. Size constraints can only be added to an existing $defType attribute if it " +
+                        "has no records.")
+                } else if (metaEntity.attrs.containsKey(attrName)) {
+                    // Only add the constraint here if it's a pre-existing attribute. Constraints for new  attributes
+                    // are added elsewhere.
+                    addDbConstraint(entity, attrName, validator)
+                }
+            }
+        }
+    }
+
+    private fun addDbConstraint(entity: R_EntityDefinition, attrName: String, validator: R_SizeAttrValidator) {
+        val sqlEntityName = "c0.${entity.metaName}"
+        val msgEntityName = msgEntityName(entity)
+        val constraintSql = validator.genSqlCheckConstraint(
+            sqlConstraintName(entity.mountName.str(), attrName),
+            entity.appLevelName,
+            entity.strAttributes[attrName]!!,
+        ).toString()
+        val addNewConstraintSql = "ALTER TABLE \"$sqlEntityName\" ADD $constraintSql;"
+        initCtx.step(ORD_RECORDS, "Add attribute size constraint for $msgEntityName: $attrName",
+            SqlStepAction_ExecSql(addNewConstraintSql))
+    }
+
+    private fun dropDbConstraint(entity: R_EntityDefinition, attrName: String) {
+        val sqlEntityName = "c0.${entity.metaName}"
+        val msgEntityName = msgEntityName(entity)
+        val constraintName = sqlConstraintName(entity.mountName.str(), attrName)
+        val dropOldConstraintSql = "ALTER TABLE \"$sqlEntityName\" DROP CONSTRAINT \"$constraintName\";"
+        initCtx.step(ORD_RECORDS, "Drop attribute size constraint for $msgEntityName: $attrName",
+            SqlStepAction_ExecSql(dropOldConstraintSql))
+    }
+
     private fun processNewAttrs(entity: R_EntityDefinition, metaEntityId: Int, newAttrs: List<String>) {
         val attrsStr = newAttrs.joinToString()
 
-        val recs = SqlUtils.recordsExist(exeCtx.sysSqlExec, sqlCtx, entity)
+        val recs = recordsExist(exeCtx.sysSqlExec, sqlCtx, entity)
 
         val entityName = msgEntityName(entity)
 
@@ -573,4 +669,15 @@ private fun msgEntityName(rEntity: R_EntityDefinition): String {
     } else {
         "'$app' (meta: $meta)"
     }
+}
+
+internal fun sqlConstraintName(entityMountName: String, attrName: String): String {
+    val shortName = "$entityMountName:$attrName:size"
+    if (shortName.length < 63) {
+        return shortName
+    }
+    val md = MessageDigest.getInstance("SHA-256")
+    val ba = md.digest("$entityMountName:$attrName".toByteArray(Charsets.US_ASCII))
+    val suffix = ba.toHex().take(8)
+    return "${entityMountName.take(22)}:${attrName.take(22)}:$suffix:size"
 }

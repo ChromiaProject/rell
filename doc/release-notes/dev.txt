@@ -31,3 +31,36 @@ database table. All existing records are preserved, with only the removed column
 
 Limitation:
 - The @log annotation still cannot be added to or removed from existing entities.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Language: Size annotations for entity and object attributes
+
+Size annotations for struct attributes of type text and byte_array were added to Rell in version 0.14.13, and to
+function, operation and query parameters of those types in version 0.14.14. This release adds support for the same set
+of annotations to object and entity attributes of type text and byte_array.
+
+Example:
+
+    entity user {
+        id: integer;
+        @max_size(50) userName: text;       // userName must have size <= 50
+        @size(32) publicKey: byte_array;    // publicKey must have size == 32
+        @min_size(1) status: text;          // status must have size >= 1
+    }
+
+Size annotations are compiled to PostgreSQL CHECK CONSTRAINTS and so are enforced both on create and update, and also
+on assignment to entity attributes with the = and += assignment operators:
+
+    entity user { @max_size(10) name; }
+
+    create user('A very long name'); // error, name too long
+
+    update user @* { .name = some_predicate() } ( name = 'A very long name' ); // error, name too long
+
+    val u = user @ { .name = some_predicate() };
+    u.name += 'A long name suffix.'; // error, name too long
+
+It is forbidden to change size constraints on entities unless there are no rows for that entity, i.e. if my_entity @* {}
+returns non-empty, then size constraints on my_entity cannot be modified. The exception to this is that size constraints
+can be relaxed when an entity has rows. Relaxing a size constraint means increasing a maximum size or decreasing a
+minimum size, as in these cases it cannot cause existing data to violate size constraints.

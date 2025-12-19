@@ -269,9 +269,10 @@ internal class R_UpdateStatement(
     override fun buildSql(frame: Rt_CallFrame, ctx: SqlGenContext, returning: Boolean): ParameterizedSql {
         val redWhere = target.where()?.toRedExpr(frame)
 
-        val redWhat = what.map {
-            val redExpr = it.expr.toRedExpr(frame)
-            RedDb_Utils.wrapDecimalExpr(it.expr.type, redExpr)
+        val redWhat = what.map { w ->
+            val redExpr = w.expr.toRedExpr(frame)
+            redExpr.constantValue()?.let { w.attr.validator?.check(it)?.raise() }
+            RedDb_Utils.wrapDecimalExpr(w.expr.type, redExpr)
         }
 
         val whatSql = translateWhat(ctx, redWhat)

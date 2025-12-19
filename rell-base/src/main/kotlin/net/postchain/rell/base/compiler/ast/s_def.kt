@@ -22,6 +22,7 @@ import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.*
+import java.util.EnumSet
 
 sealed class S_AttrHeader: S_Node() {
     internal abstract fun discoverVar(): R_Name
@@ -77,6 +78,14 @@ class S_AttributeClause internal constructor(
     private val attr: S_AttributeDefinition,
     private val comment: S_Comment?,
 ): S_RelClause() {
+    private companion object {
+        private val sizeConstraintValidDefTypes: Set<C_DefinitionType> = EnumSet.of(
+            C_DefinitionType.STRUCT,
+            C_DefinitionType.ENTITY,
+            C_DefinitionType.OBJECT,
+        )
+    }
+
     override fun compile(ctx: C_EntityContext) {
         val attrHeader = attr.header.compile(ctx.defCtx)
         val name = attrHeader.name
@@ -88,8 +97,8 @@ class S_AttributeClause internal constructor(
         attr.modifiers.compile(ctx.defCtx.mntCtx, mods)
 
         val sizeConstraint = sizeHandler.getSizeConstraint()
-        if (ctx.defCtx.definitionType != C_DefinitionType.STRUCT && sizeConstraint != null) {
-            C_SizeConstraint.reportNonStruct(ctx.defCtx, attrHeader, sizeConstraint.annStrs)
+        if (ctx.defCtx.definitionType !in sizeConstraintValidDefTypes && sizeConstraint != null) {
+            C_SizeConstraint.reportInvalidDefType(ctx.defCtx, attrHeader, sizeConstraint.annStrs)
         }
 
         ctx.addAttribute(attr, attrHeader, true, comment, sizeConstraint)

@@ -570,7 +570,7 @@ internal sealed class R_CreateExpr(
                 }
             }
 
-            val constraintsSql = SqlGen.genAddAttrConstraintsSql(sqlCtx, table, attrs.map { it.attr })
+            val constraintsSql = SqlGen.genAddAttrConstraintsSql(sqlCtx, rEntity, attrs.map { it.attr })
             if (constraintsSql.isNotEmpty()) {
                 b.append(constraintsSql)
                 b.append(";\n")
@@ -600,6 +600,7 @@ internal class R_RegularCreateExpr(
         val resAttrs = attrs.mapToImmList { it.attr }
         val rowidSql = buildDefaultRowidSql(frame.sqlCtx)
         val values = attrs.mapToImmList { it.evaluate(frame) }
+        validateValues(values)
         val row = InsertRow(rowidSql, values)
         return InsertData(resAttrs, immListOf(row))
     }
@@ -607,6 +608,10 @@ internal class R_RegularCreateExpr(
     override fun evaluateResult(entities: List<Rt_Value>): Rt_Value {
         checkEquals(entities.size, 1)
         return entities[0]
+    }
+
+    private fun validateValues(values: List<Rt_Value>) {
+        attrs.withIndex().forEach { (i, attr) -> attr.attr.validator?.check(values[i])?.raise() }
     }
 }
 
