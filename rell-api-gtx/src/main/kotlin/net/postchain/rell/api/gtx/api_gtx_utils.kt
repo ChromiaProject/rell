@@ -11,8 +11,9 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.base.runtime.utils.Rt_SqlManagerUtils
 import net.postchain.rell.base.sql.*
-import org.apache.http.client.utils.URLEncodedUtils
 import java.net.URI
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.sql.Connection
 import java.sql.DriverManager
 import java.util.*
@@ -23,16 +24,13 @@ public object RellApiGtxUtils {
         check(uri.scheme == "jdbc") { "Invalid scheme: '${uri.scheme}'" }
 
         val uri2 = URI(uri.schemeSpecificPart)
-        val query = uri2.query
-        val pairs = URLEncodedUtils.parse(query, Charsets.UTF_8)
+        val query = uri2.query ?: return null
 
-        for (pair in pairs) {
-            if (pair.name == "currentSchema") {
-                return pair.value
-            }
-        }
-
-        return null
+        return query.split("&")
+            .map { it.split("=", limit = 2) }
+            .firstOrNull { it.firstOrNull() == "currentSchema" }
+            ?.getOrNull(1)
+            ?.let { URLDecoder.decode(it, StandardCharsets.UTF_8) }
     }
 
     public fun prepareSchema(con: Connection, schema: String) {

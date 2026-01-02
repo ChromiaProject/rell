@@ -32,12 +32,6 @@
             <artifactId>postchain-base</artifactId>
         </dependency>
 
-        <!-- Only needed to parse a database URL in CLI tools - consider removing. -->
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>net.postchain.rell</groupId>
             <artifactId>rell-base</artifactId>
