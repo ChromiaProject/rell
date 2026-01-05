@@ -4,52 +4,51 @@
 
 package net.postchain.rell.api.gtx
 
-import net.postchain.rell.base.compiler.base.utils.C_SourceDir
+import net.postchain.rell.base.compiler.base.utils.C_SourceDir.Companion.mapDirOf
 import kotlin.test.Test
 
 internal class RellApiRunTestsDisabledTest: BaseRellApiRunTestsTest() {
-    @Test fun testDisabledFunctionSkipped() {
-        val runConfig = RellApiRunTests.Config.Builder().build()
-        val sourceDir = C_SourceDir.mapDirOf(
-            "test.rell" to """
-                @test module;
-                @disabled @test function test_skip() { assert_true(false); }
-                @test function test_run() {}
-            """.trimIndent(),
-        )
+    private val cfg = RellApiRunTests.Config.DEFAULT
 
-        chkRunTests(runConfig, sourceDir, listOf(), listOf("test"), "test:test_run:OK")
+    private fun chkRunTests(
+        moduleName: String,
+        sourceCode: String,
+        expected: String? = null,
+        isAppModule: Boolean = false,
+    ): Unit = chkRunTests(
+        cfg,
+        mapDirOf("$moduleName.rell" to sourceCode),
+        if (isAppModule) listOf(moduleName) else emptyList(),
+        if (isAppModule) emptyList() else listOf(moduleName),
+        *expected?.let { arrayOf(it) } ?: arrayOf(),
+    )
+
+    @Test fun testDisabledFunctionSkipped() {
+        chkRunTests("test", """
+            @test module;
+            @disabled @test function test_skip() { assert_true(false); }
+            @test function test_run() {}
+        """.trimIndent(), "test:test_run:OK")
     }
 
     @Test fun testDisabledLegacyFunctionSkipped() {
-        val runConfig = RellApiRunTests.Config.Builder().build()
-        val sourceDir = C_SourceDir.mapDirOf(
-            "test.rell" to """
-                @test module;
-                @disabled function test_legacy_skip() { assert_true(false); }
-                function test_legacy_run() {}
-            """.trimIndent(),
-        )
-
-        chkRunTests(runConfig, sourceDir, listOf(), listOf("test"), "test:test_legacy_run:OK")
+        chkRunTests("test", """
+            @test module;
+            @disabled function test_legacy_skip() { assert_true(false); }
+            function test_legacy_run() {}
+        """.trimIndent(), "test:test_legacy_run:OK")
     }
 
     @Test fun testDisabledModuleSkipsAllTests() {
-        val runConfig = RellApiRunTests.Config.Builder().build()
-        val sourceDir = C_SourceDir.mapDirOf(
-            "test.rell" to """
-                @test @disabled module;
-                function test_first() { assert_true(false); }
-                @test function test_second() {}
-            """.trimIndent(),
-        )
-
-        chkRunTests(runConfig, sourceDir, listOf(), listOf("test"))
+        chkRunTests("test", """
+            @test @disabled module;
+            function test_first() { assert_true(false); }
+            @test function test_second() {}
+        """.trimIndent())
     }
 
     @Test fun testDisabledModuleSkipsSubmoduleTests() {
-        val runConfig = RellApiRunTests.Config.Builder().build()
-        val sourceDir = C_SourceDir.mapDirOf(
+        val sourceDir = mapDirOf(
             "a/module.rell" to """
                 @test @disabled module;
             """.trimIndent(),
@@ -59,27 +58,34 @@ internal class RellApiRunTestsDisabledTest: BaseRellApiRunTestsTest() {
             """.trimIndent(),
         )
 
-        chkRunTests(runConfig, sourceDir, listOf(), listOf("a"))
+        chkRunTests(cfg, sourceDir, listOf(), listOf("a"))
     }
 
     @Test fun testDisabledOnNonTestFunctionFails() {
-        val runConfig = RellApiRunTests.Config.Builder().build()
-        val sourceDir = C_SourceDir.mapDirOf(
-            "test.rell" to """
-                @test module;
-                @disabled function foo() {}
-            """.trimIndent(),
-        )
-
-        chkRunTests(runConfig, sourceDir, listOf(), listOf("test"), "CTE:test.rell:fn:disabled:not_test:foo")
+        chkRunTests("test", """
+            @test module;
+            @disabled function foo() {}
+        """.trimIndent(), "CTE:test.rell:fn:disabled:not_test:foo")
     }
 
     @Test fun testDisabledOnNonTestModuleFails() {
-        val runConfig = RellApiRunTests.Config.Builder().build()
-        val sourceDir = C_SourceDir.mapDirOf(
-            "mod.rell" to "@disabled module;",
-        )
+        chkRunTests("mod", "@disabled module;", "CTE:mod.rell:module:disabled:not_test")
+    }
 
-        chkRunTests(runConfig, sourceDir, listOf(), listOf("mod"), "CTE:mod.rell:module:disabled:not_test")
+    @Test fun testDisabledAnnotationUnsupportedDefinitions() {
+        chkRunTests("test", "module; @disabled query q() = 1;",
+            "CTE:test.rell:modifier:invalid:ann:disabled", isAppModule = true)
+
+        chkRunTests("test", "module; @disabled operation op() {}",
+            "CTE:test.rell:modifier:invalid:ann:disabled", isAppModule =  true)
+
+        chkRunTests("test", "module; @disabled entity e { name; }",
+            "CTE:test.rell:modifier:invalid:ann:disabled", isAppModule = true)
+
+        chkRunTests("test", "module; @disabled object o { mutable v: integer = 0; }",
+            "CTE:test.rell:modifier:invalid:ann:disabled", isAppModule = true)
+
+        chkRunTests("test", "module; @disabled struct s { name; }",
+            "CTE:test.rell:modifier:invalid:ann:disabled", isAppModule = true)
     }
 }

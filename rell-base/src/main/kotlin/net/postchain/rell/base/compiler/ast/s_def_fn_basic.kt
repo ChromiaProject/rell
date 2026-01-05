@@ -70,7 +70,18 @@ class S_FunctionDefinition(
         val deprecated = modDeprecated.value()
         val disabled = modDisabled.hasValue()
 
-        val base = C_FunctionCompilerBase(ctx, this, cQualifiedNameHand, deprecated, docModifiers, test, disabled)
+        val inTestModule = ctx.modCtx.test && ctx.nsCtx.namespacePath.parts.isEmpty()
+        val isLegacyTest = inTestModule && simpleName?.str?.let { it == "test" || it.startsWith("test_") } == true
+
+        val base = C_FunctionCompilerBase(
+            ctx,
+            this,
+            cQualifiedNameHand,
+            deprecated,
+            docModifiers,
+            test || isLegacyTest,
+            disabled,
+        )
 
         val compiler = when {
             abstract -> C_FunctionCompiler_Abstract(base)
@@ -158,13 +169,8 @@ private abstract class C_FunctionCompiler(
         }
     }
 
-    protected fun isLegacyTest(simpleName: C_Name?): Boolean {
-        val name = simpleName?.str ?: return false
-        return name == "test" || name.startsWith("test_")
-    }
-
     protected fun checkDisabledAllowed(defCtx: C_DefinitionContext, simpleName: C_Name?) {
-        if (base.disabled && !(base.isTest || isLegacyTest(simpleName))) {
+        if (base.disabled && !base.isTest) {
             val nameCode = simpleName?.str ?: nameErrCode()
             defCtx.msgCtx.error(fnPos, "fn:disabled:not_test:$nameCode", "Annotation @disabled is allowed only on test functions")
         }
