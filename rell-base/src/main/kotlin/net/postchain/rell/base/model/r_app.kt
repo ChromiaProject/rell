@@ -155,6 +155,7 @@ class R_Module(
     val external: Boolean,
     val externalChain: String?,
     val test: Boolean,
+    val disabled: Boolean,
     val selected: Boolean,
     val entities: ImmMap<String, R_EntityDefinition>,
     val objects: ImmMap<String, R_ObjectDefinition>,
@@ -184,6 +185,7 @@ class R_Module(
         if (abstract) map["abstract"] = true.toGtv()
         if (external) map["external"] = true.toGtv()
         if (externalChain != null) map["externalChain"] = externalChain.toGtv()
+        if (disabled) map["disabled"] = true.toGtv()
 
         addGtvDefs(map, "entities", entities)
         addGtvDefs(map, "objects", objects)

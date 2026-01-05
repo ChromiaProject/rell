@@ -164,8 +164,11 @@ class UnitTestRunnerResults(
 
 object UnitTestRunner {
     fun getTestFunctions(app: R_App, matcher: UnitTestMatcher): List<R_FunctionDefinition> {
+        val modulesAnnotatedDisabled = app.modules.filter { it.disabled }.map { it.name }
+
         val modules = app.modules
             .filter { it.test && it.selected }
+            .filter { !isModuleDisabled(it, modulesAnnotatedDisabled) }
             .sortedBy { it.name }
 
         val fns = modules.flatMap { getTestFunctions(it, matcher) }
@@ -176,7 +179,12 @@ object UnitTestRunner {
         return module.functions.values
             .filter { it.isTest || it.moduleLevelName == "test" || it.moduleLevelName.startsWith("test_") }
             .filter { it.params().isEmpty() }
+            .filter { !it.disabled }
             .filter { matcher.matchFunction(it.defName) }
+    }
+
+    private fun isModuleDisabled(module: R_Module, modulesAnnotated: List<R_ModuleName>): Boolean {
+        return module.disabled || modulesAnnotated.any { module.name.startsWith(it) }
     }
 
     fun runTests(testCtx: UnitTestRunnerContext, cases: List<UnitTestCase>): Boolean {

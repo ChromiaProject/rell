@@ -25,6 +25,7 @@ class C_ModuleHeader(
     val abstract: Boolean,
     val external: Boolean,
     val test: Boolean,
+    val disabled: Boolean,
     val docPos: DocSourcePos,
     val docSymbol: DocSymbol,
 )
@@ -180,6 +181,7 @@ internal object C_ModuleCompiler {
             external = modCtx.external,
             externalChain = modCtx.extChain?.name,
             test = modCtx.test,
+            disabled = modCtx.disabled,
             selected = modCtx.selected,
             entities = defs.entities,
             objects = defs.objects,

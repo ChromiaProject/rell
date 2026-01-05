@@ -56,6 +56,7 @@ class S_FunctionDefinition(
         val modNative = mods.field(C_ModifierFields.NATIVE)
         val modTest = mods.field(C_ModifierFields.TEST)
         val modDeprecated = mods.field(C_ModifierFields.DEPRECATED)
+        val modDisabled = mods.field(C_ModifierFields.DISABLED)
 
         val docModifiers = modifiers.compile(ctx, mods)
         C_AnnUtils.checkModsZeroOne(ctx.msgCtx, modAbstract, modOverride, modExtendable, modExtend, modNative, modTest)
@@ -67,8 +68,9 @@ class S_FunctionDefinition(
         val native = modNative.hasValue()
         val test = modTest.hasValue()
         val deprecated = modDeprecated.value()
+        val disabled = modDisabled.hasValue()
 
-        val base = C_FunctionCompilerBase(ctx, this, cQualifiedNameHand, deprecated, docModifiers, test)
+        val base = C_FunctionCompilerBase(ctx, this, cQualifiedNameHand, deprecated, docModifiers, test, disabled)
 
         val compiler = when {
             abstract -> C_FunctionCompiler_Abstract(base)
@@ -102,6 +104,7 @@ private class C_FunctionCompilerBase(
     val deprecated: C_Deprecated?,
     val docModifiers: DocModifiers,
     val isTest: Boolean,
+    val disabled: Boolean,
 ) {
     val qualifiedName = qualifiedNameHand?.cName
 
@@ -152,6 +155,18 @@ private abstract class C_FunctionCompiler(
     protected fun registerFunction(defCtx: C_DefinitionContext, simpleName: C_Name?, cFn: C_UserGlobalFunction) {
         if (simpleName != null) {
             defCtx.mntCtx.nsBuilder.addFunction(nsMemBase(cDefBase), simpleName, cFn)
+        }
+    }
+
+    protected fun isLegacyTest(simpleName: C_Name?): Boolean {
+        val name = simpleName?.str ?: return false
+        return name == "test" || name.startsWith("test_")
+    }
+
+    protected fun checkDisabledAllowed(defCtx: C_DefinitionContext, simpleName: C_Name?) {
+        if (base.disabled && !(base.isTest || isLegacyTest(simpleName))) {
+            val nameCode = simpleName?.str ?: nameErrCode()
+            defCtx.msgCtx.error(fnPos, "fn:disabled:not_test:$nameCode", "Annotation @disabled is allowed only on test functions")
         }
     }
 
@@ -258,10 +273,11 @@ private class C_FunctionCompiler_Regular(
 
         val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)
         val rFnBase = R_FunctionBase(rDefBase.defName)
-        val rFn = R_FunctionDefinition(rDefBase, rFnBase, base.isTest)
+        val rFn = R_FunctionDefinition(rDefBase, rFnBase, base.isTest, base.disabled)
         val cFn = C_RegularUserGlobalFunction(rFn, null)
 
         val simpleName = compileSimpleName(defCtx)
+        checkDisabledAllowed(defCtx, simpleName)
         registerFunction(defCtx, simpleName, cFn)
 
         defCtx.executor.onPass(C_CompilerPass.MEMBERS) {
@@ -302,10 +318,11 @@ private class C_FunctionCompiler_Abstract(
 
         val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)
         val rFnBase = R_FunctionBase(rDefBase.defName)
-        val rFn = R_FunctionDefinition(rDefBase, rFnBase)
+        val rFn = R_FunctionDefinition(rDefBase, rFnBase, base.isTest, base.disabled)
         val cFn = C_AbstractUserGlobalFunction(fnPos, rFn, sFn.body != null, rFnBase)
 
         val simpleName = compileSimpleName(defCtx)
+        checkDisabledAllowed(defCtx, simpleName)
         registerFunction(defCtx, simpleName, cFn)
         defCtx.mntCtx.fileCtx.addAbstractFunction(cFn.descriptor)
 
@@ -329,6 +346,9 @@ private class C_FunctionCompiler_Override(
         if (defCtx.modCtx.repl) {
             defCtx.msgCtx.error(fnPos, "fn:override:repl", "Cannot override a function in REPL")
         }
+
+        val simpleName = base.qualifiedNameHand?.last?.name
+        checkDisabledAllowed(defCtx, simpleName)
 
         val rFnBase = R_FunctionBase(defCtx.defName)
         val descriptor = C_OverrideFunctionDescriptor(fnPos, rFnBase)
@@ -456,9 +476,10 @@ private class C_FunctionCompiler_Extendable(
     override fun compile(defCtx: C_DefinitionContext, ideCompsLate: C_LateInit<ImmMultimap<String, IdeCompletion>>) {
         val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)
         val rFnBase = R_FunctionBase(rDefBase.defName)
-        val rFn = R_FunctionDefinition(rDefBase, rFnBase)
+        val rFn = R_FunctionDefinition(rDefBase, rFnBase, base.isTest, base.disabled)
 
         val simpleName = compileSimpleName(defCtx)
+        checkDisabledAllowed(defCtx, simpleName)
         val fullName = if (simpleName != null) defCtx.nsCtx.getFullName(simpleName.rName) else null
         val moduleName = defCtx.modCtx.moduleName
 
@@ -491,10 +512,11 @@ private class C_FunctionCompiler_Extend(
 
         val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)
         val rFnBase = R_FunctionBase(rDefBase.defName)
-        val rFn = R_FunctionDefinition(rDefBase, rFnBase)
+        val rFn = R_FunctionDefinition(rDefBase, rFnBase, base.isTest, base.disabled)
         val cFn = C_RegularUserGlobalFunction(rFn, null)
 
         val simpleName = if (base.qualifiedName == null) null else compileSimpleName(defCtx)
+        checkDisabledAllowed(defCtx, simpleName)
         registerFunction(defCtx, simpleName, cFn)
 
         defCtx.executor.onPass(C_CompilerPass.MEMBERS) {
@@ -575,6 +597,7 @@ private class C_FunctionCompiler_Native(
 
         val simpleName = compileSimpleName(defCtx)
         simpleName ?: return
+        checkDisabledAllowed(defCtx, simpleName)
 
         val fullName = defCtx.nsCtx.getFullName(simpleName.rName)
 
@@ -585,7 +608,7 @@ private class C_FunctionCompiler_Native(
 
         val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)
         val rFnBase = R_FunctionBase(rDefBase.defName)
-        val rFn = R_FunctionDefinition(rDefBase, rFnBase, base.isTest)
+        val rFn = R_FunctionDefinition(rDefBase, rFnBase, base.isTest, base.disabled)
         val cFn = C_NativeUserGlobalFunction(rFn, fullName, conversionsLate.getter)
 
         registerFunction(defCtx, simpleName, cFn)

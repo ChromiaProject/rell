@@ -500,6 +500,7 @@ internal class C_SourceModuleHeader(
     val abstract: S_Pos?,
     val external: Boolean,
     val test: Boolean,
+    val disabled: Boolean,
     val comment: S_Comment?,
     val docModifiers: DocModifiers,
 )

@@ -33,6 +33,7 @@ object C_Annotations {
     const val SORT = "sort"
     const val SORT_DESC = "sort_desc"
     const val TEST = "test"
+    const val DISABLED = "disabled"
 }
 
 internal object C_ModifierFields {
@@ -43,6 +44,7 @@ internal object C_ModifierFields {
 
     val LOG = C_ModifierField.flagAnnotation("log")
     val TEST = C_ModifierField.flagAnnotation(C_Annotations.TEST)
+    val DISABLED = C_ModifierField.flagAnnotation(C_Annotations.DISABLED)
     val DEPRECATED = C_Annotation_Deprecated.FIELD
 
     val ABSTRACT = C_ModifierField.flagKeyword(S_KeywordModifierKind.ABSTRACT)

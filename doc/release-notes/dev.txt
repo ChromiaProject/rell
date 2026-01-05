@@ -64,3 +64,33 @@ It is forbidden to change size constraints on entities unless there are no rows 
 returns non-empty, then size constraints on my_entity cannot be modified. The exception to this is that size constraints
 can be relaxed when an entity has rows. Relaxing a size constraint means increasing a maximum size or decreasing a
 minimum size, as in these cases it cannot cause existing data to violate size constraints.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tests: Disabled test annotation
+
+Added @disabled annotation for test modules and test functions.
+
+When applied to a test module, all test functions in that module (and its submodules) are skipped.
+
+When applied to a test function, that function is skipped. This works both for functions marked with @test and for
+test functions whose name is "test" or starts with "test_".
+
+Using @disabled on non-test modules or non-test functions causes an error.
+
+Examples:
+
+    // Disable all tests in this test module
+    @test @disabled module;
+    function test_addition() {
+        // not executed
+    }
+
+    // Disable a single test function in an otherwise active test module
+    @test module;
+    @disabled @test function test_edge_case() {
+        // not executed
+    }
+
+    @test function test_happy_path() {
+        // executed normally
+    }

@@ -280,6 +280,8 @@ internal class C_ModuleLoader(
             val mount = header?.mount?.process(true)
             val mountName = mount?.calculateMountName(readerCtx.msgCtx, parentMountName) ?: parentMountName
 
+            val disabled = (header?.disabled ?: false) || (parentModule?.disabled ?: false)
+
             return C_LoaderModule(
                 moduleName,
                 mountName,
@@ -288,6 +290,7 @@ internal class C_ModuleLoader(
                 midFiles,
                 isDirectory = source.isDirectory(),
                 isTestDependency = loadingTestDependencies,
+                disabled = disabled,
                 docPos = source.docPos(),
                 docSymbolFactory = readerCtx.appCtx.symCtxProvider.getDocSymbolFactory(),
                 docSymbolLate = docSymbolLate,
@@ -304,6 +307,7 @@ private class C_LoaderModule(
     private val files: ImmList<C_MidModuleFile>,
     private val isDirectory: Boolean,
     private val isTestDependency: Boolean,
+    val disabled: Boolean,
     private val docPos: DocSourcePos,
     private val docSymbolFactory: C_DocSymbolFactory,
     private val docSymbolLate: C_LateInit<DocSymbol?>,
@@ -313,7 +317,7 @@ private class C_LoaderModule(
         docSymbolLate.set(docSymbol, allowEarly = true)
 
         val midHeader = if (header == null) null else {
-            C_MidModuleHeader(header.pos, header.abstract, header.external, header.test)
+            C_MidModuleHeader(header.pos, header.abstract, header.external, header.test, disabled)
         }
 
         val compiledHeader = C_ModuleHeader(
@@ -321,6 +325,7 @@ private class C_LoaderModule(
             abstract = header?.abstract != null,
             external = header?.external ?: false,
             test = header?.test ?: false,
+            disabled = disabled,
             docPos,
             docSymbol,
         )

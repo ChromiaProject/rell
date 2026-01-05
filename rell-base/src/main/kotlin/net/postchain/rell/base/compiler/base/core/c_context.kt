@@ -89,6 +89,7 @@ sealed class C_ModuleContext(
     internal abstract val external: Boolean
     internal abstract val directory: Boolean
     internal abstract val test: Boolean
+    internal abstract val disabled: Boolean
     internal abstract val selected: Boolean
     internal abstract val mountName: R_MountName
     internal abstract val repl: Boolean
@@ -154,6 +155,7 @@ internal class C_RegularModuleContext(
     override val external = descriptor.header.external
     override val directory = descriptor.directory
     override val test = descriptor.header.test
+    override val disabled = descriptor.header.disabled
     override val mountName = descriptor.header.mountName
     override val repl = false
 
@@ -192,6 +194,7 @@ internal class C_ReplModuleContext(
     override val external = false
     override val directory = false
     override val test = false
+    override val disabled = false
     override val selected = true // Doesn't really matter
     override val mountName = R_MountName.EMPTY
     override val repl = true

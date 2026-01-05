@@ -41,6 +41,7 @@ internal class C_MidModuleHeader(
     val abstract: S_Pos?,
     val external: Boolean,
     val test: Boolean,
+    val disabled: Boolean,
 )
 
 internal class C_MidModule(
@@ -56,6 +57,7 @@ internal class C_MidModule(
 ) {
     val startPos = header?.pos ?: files.firstOrNull()?.startPos
     val isTest = header?.test ?: false
+    val isDisabled = header?.disabled ?: false
 
     fun filePaths() = files.mapToImmList { it.path }
 

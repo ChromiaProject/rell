@@ -348,6 +348,7 @@ class R_FunctionDefinition internal constructor(
     base: R_DefinitionBase,
     private val fnBase: R_FunctionBase,
     val isTest: Boolean = false,
+    val disabled: Boolean = false,
 ): R_RoutineDefinition(base) {
     override fun params() = fnBase.getBody().params
 

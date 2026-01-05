@@ -35,6 +35,7 @@ class S_ModuleHeader internal constructor(
         val modExternal = mods.field(C_ModifierFields.EXTERNAL_MODULE)
         val modMount = mods.field(C_ModifierFields.MOUNT)
         val modTest = mods.field(C_ModifierFields.TEST)
+        val modDisabled = mods.field(C_ModifierFields.DISABLED)
         val docModifiers = modifiers.compile(ctx, mods)
 
         C_AnnUtils.checkModsZeroOne(ctx.msgCtx, modAbstract, modTest)
@@ -43,9 +44,15 @@ class S_ModuleHeader internal constructor(
         val mount = modMount.value()
         val abstractPos = modAbstract.pos()
         val external = modExternal.hasValue()
-        val test = modTest.hasValue()
+        val testAnnotation = modTest.hasValue()
+        val disabled = modDisabled.hasValue()
+        val test = testAnnotation || disabled
 
-        return C_SourceModuleHeader(pos, mount, abstractPos, external, test, comment, docModifiers)
+        if (disabled && !testAnnotation) {
+            ctx.msgCtx.error(pos, "module:disabled:not_test", "Annotation @disabled is allowed only on test modules")
+        }
+
+        return C_SourceModuleHeader(pos, mount, abstractPos, external, test, disabled, comment, docModifiers)
     }
 
     fun ideIsTestFile(): Boolean {
