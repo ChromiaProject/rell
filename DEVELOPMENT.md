@@ -77,11 +77,9 @@ mvn verify
 
 There is an issue with tests run from IntelliJ IDEA failing due to OOM. There are two known workarounds for this:
 
-1. Disable the JVM GC overhead limit. This is achieved by navigating to **Settings** -> **Build, Execution, Deployment**
-   -> **Compiler**. Then under the **Build Process** heading, enter `-XX:UseGCOverheadLimit` into the **Shared VM
+1. Disable the JVM GC overhead limit. This is achieved by navigating to [Settings | Build, Execution, Deployment | Compiler](jetbrains://idea/settings?name=Build%2C+Execution%2C+Deployment--Compiler). Then under the **Build Process** heading, enter `-XX:-UseGCOverheadLimit` into the **Shared VM
    options** field.
-2. Increase the maximum JVM heap size. This is achieved by navigating to **Settings** -> **Build, Execution, Deployment**
-   -> **Compiler**. Then under the **Build Process** heading, set the **Shared heap size** to a sufficiently large
+2. Increase the maximum JVM heap size. This is achieved by navigating to [Settings | Build, Execution, Deployment | Compiler](jetbrains://idea/settings?name=Build%2C+Execution%2C+Deployment--Compiler). Then under the **Build Process** heading, set the **Shared heap size** to a sufficiently large
    value - 2048 Mbytes is likely to be sufficient.
 
 ### Running Rell Shell (REPL)
@@ -213,6 +211,21 @@ The project uses various prefixes for different types of classes:
 
 ### Miscellaneous Kotlin conventions
 1. Write statements (`if`, `for`...) with braces if they require a line break.
+
+### Version Annotations for Library Declarations
+
+When adding new library functions, types, properties, or other declarations, always use `RellVersions.SINCE_NOW` for the `since` parameter:
+
+```kotlin
+function("my_new_function", result = "integer", since = RellVersions.SINCE_NOW) {
+    param("value", "text")
+    body { arg ->
+        // implementation
+    }
+}
+```
+
+**Important:** Never hardcode version numbers like `since = "0.16.0"`. The `SINCE_NOW` constant is defined as the current development version and will be replaced with the actual version during the release process.
 
 ## Git Workflow
 

@@ -30,9 +30,11 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_SqlManagerUtils
 import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.gtx.PostchainBaseUtils
+import java.sql.SQLException
 import net.postchain.rell.gtx.Rt_CheckCorrectnessPostchainTxContext
 import net.postchain.rell.gtx.Rt_DefaultPostchainTxContextFactory
 import net.postchain.rell.gtx.Rt_PostchainOpContext
@@ -66,6 +68,15 @@ private class ErrorHandler(
         } catch (e: C_Error){
             val msg = processError(msgSupplier, e)
             throw if (wrapCtErrors) UserMistake(msg) else e
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw e
+        } catch (e: SQLException) {
+            if (e.isPostgresQueryCanceled) {
+                throw e
+            }
+            val msg = processError(msgSupplier, e)
+            throw ProgrammerMistake(msg, e)
         } catch (e: Exception) {
             val msg = processError(msgSupplier, e)
             throw ProgrammerMistake(msg, e)

@@ -10,6 +10,15 @@ import net.postchain.rell.base.sql.SqlInterceptor
 import net.postchain.rell.base.sql.SqlPreparator
 import java.sql.SQLException
 
+private const val POSTGRES_SQLSTATE_QUERY_CANCELED = "57014"
+
+/**
+ * Checks if this SQLException represents a PostgreSQL query cancellation.
+ * This happens when a query times out (statement_timeout) or is explicitly cancelled.
+ */
+val SQLException.isPostgresQueryCanceled: Boolean
+    get() = sqlState == POSTGRES_SQLSTATE_QUERY_CANCELED
+
 object Rt_SqlManagerUtils {
     @Suppress("RedundantNullableReturnType")
     fun wrapSqlInterceptor(base: SqlInterceptor?, logErrors: Boolean): SqlInterceptor? {
@@ -51,6 +60,9 @@ private object ErrorWrappingSqlInterceptor: SqlInterceptor {
         return try {
             code(preparator)
         } catch (e: SQLException) {
+            if (e.isPostgresQueryCanceled) {
+                throw e
+            }
             throw Rt_Exception.common("sqlerr:${e.errorCode}", "SQL Error: ${e.message}")
         }
     }

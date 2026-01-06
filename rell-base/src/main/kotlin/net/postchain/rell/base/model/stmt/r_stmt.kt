@@ -100,6 +100,10 @@ internal class R_BlockStatement(
     companion object {
         fun executeStatements(frame: Rt_CallFrame, stmts: List<R_Statement>): R_StatementResult? {
             for (stmt in stmts) {
+                if (Thread.currentThread().isInterrupted) {
+                    throw InterruptedException()
+                }
+
                 val res = stmt.execute(frame)
                 if (res != null) {
                     return res
@@ -179,6 +183,10 @@ internal class R_WhileStatement(
 ): R_Statement() {
     override fun execute(frame: Rt_CallFrame): R_StatementResult? {
         while (true) {
+            if (Thread.currentThread().isInterrupted) {
+                throw InterruptedException()
+            }
+
             val cond = expr.evaluate(frame)
             val b = cond.asBoolean()
             if (!b) {
@@ -242,6 +250,10 @@ internal class R_ForStatement(
         var first = true
 
         for (item in list) {
+            if (Thread.currentThread().isInterrupted) {
+                throw InterruptedException()
+            }
+
             varDeclarator.initialize(frame, item, !first)
             first = false
 

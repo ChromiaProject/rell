@@ -14,10 +14,11 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.sql.SqlUtils.withSavepoint
-import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.immListOf
+import java.sql.SQLException
 
 object Lib_TryCall: KLogging() {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -251,6 +252,8 @@ object Lib_TryCall: KLogging() {
                 doCall(fn, ctx, onSuccess)
             }
         } catch (e: Exception) {
+            rethrowIfCancellation(e)
+
             if (logException) {
                 logException(e)
             }
@@ -286,6 +289,23 @@ object Lib_TryCall: KLogging() {
      * created if there is a possible write operation towards the database
      */
     private fun needsSavepoint(ctx: Rt_ExecutionContext) = ctx.sysSqlExec.hasRealConnection() && !ctx.dbReadOnly
+
+    private fun rethrowIfCancellation(e: Exception) {
+        // Rethrow InterruptedException to support thread interruption for query cancellation.
+        if (e is InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw e
+        }
+        // Rethrow SQLException with SQLState 57014 ("query_canceled") to support Postgres query cancellation.
+        if (e is SQLException && e.isPostgresQueryCanceled) {
+            throw e
+        }
+        // Check for wrapped InterruptedException or query cancellation SQLException.
+        val cause = e.cause
+        if (cause != null) {
+            rethrowIfCancellation(cause as? Exception ?: return)
+        }
+    }
 }
 
 private class R_TryCallResultType(val elementType: R_Type): R_Type("try_call_result") {

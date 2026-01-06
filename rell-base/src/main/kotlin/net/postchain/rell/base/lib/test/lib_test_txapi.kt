@@ -11,7 +11,6 @@ import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.compiler.base.core.C_DefinitionName
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.utils.C_StringQualifiedName
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.L_ParamArity
@@ -21,7 +20,9 @@ import net.postchain.rell.base.lmodel.dsl.Ld_TypeDefDsl
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
 import net.postchain.rell.base.utils.*
+import java.sql.SQLException
 import java.util.*
 
 object Lib_RellTest {
@@ -104,6 +105,14 @@ private class BlockCommonFunctions(
                     ctx.appCtx.blockRunner.runBlock(ctx, blk)
                 } catch (e: Rt_Exception) {
                     throw e
+                } catch (e: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    throw e
+                } catch (e: SQLException) {
+                    if (e.isPostgresQueryCanceled) {
+                        throw e
+                    }
+                    throw Rt_Exception.common("fn:$runFullName:fail:${e.javaClass.canonicalName}", "Block execution failed: $e")
                 } catch (e: Throwable) {
                     throw Rt_Exception.common("fn:$runFullName:fail:${e.javaClass.canonicalName}", "Block execution failed: $e")
                 }
@@ -145,6 +154,16 @@ private class BlockCommonFunctions(
     private fun runMustFail(ctx: Rt_CallContext, block: Rt_TestBlockValue, expected: String?): Rt_Value {
         try {
             ctx.appCtx.blockRunner.runBlock(ctx, block)
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw e
+        } catch (e: SQLException) {
+            if (e.isPostgresQueryCanceled) {
+                throw e
+            }
+            val actual = e.message ?: ""
+            Lib_Test_Assert.checkErrorMessage("run_must_fail", expected, actual)
+            return Lib_Test_Assert.failureValue(actual)
         } catch (e: Throwable) {
             val actual = e.message ?: ""
             Lib_Test_Assert.checkErrorMessage("run_must_fail", expected, actual)

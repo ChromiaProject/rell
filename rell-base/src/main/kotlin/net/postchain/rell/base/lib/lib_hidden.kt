@@ -20,6 +20,7 @@ import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.checkEquals
 
@@ -57,6 +58,20 @@ internal object Lib_RellHidden {
             function("fake_assert", result = "unit", since = "0.14.0") {
                 param("value", type = "boolean", implies = L_ParamImplication.TRUE)
                 body { _ -> Rt_UnitValue }
+            }
+
+            function("sleep", result = "unit", since = RellVersions.SINCE_NOW) {
+                param("ms", "integer")
+                bodyContext { ctx, ms ->
+                    val millis = ms.asInteger()
+                    val seconds = millis.toDouble() / 1000.0
+
+                    ctx.exeCtx.userSqlExec.execute("SELECT pg_sleep(?)") { params ->
+                        params.setObject(1, seconds)
+                    }
+
+                    Rt_UnitValue
+                }
             }
 
             function("get_nulled", C_SysFn_GetNulled, since = "0.14.0")

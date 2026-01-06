@@ -18,6 +18,7 @@ import net.postchain.rell.base.model.Rt_NullValue
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.ImmList
+import java.sql.SQLException
 import kotlin.math.min
 
 fun Boolean.toGtv(): Gtv = GtvFactory.gtv(this)
@@ -143,6 +144,15 @@ object Rt_Utils {
             return res
         } catch (e: Rt_Exception) {
             throw e
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw e
+        } catch (e: SQLException) {
+            if (e.isPostgresQueryCanceled) {
+                throw e
+            }
+            val errCode = errCodeFn()
+            throw Rt_Exception.common(errCode, e.message ?: "error")
         } catch (e: Throwable) {
             val errCode = errCodeFn()
             throw Rt_Exception.common(errCode, e.message ?: "error")

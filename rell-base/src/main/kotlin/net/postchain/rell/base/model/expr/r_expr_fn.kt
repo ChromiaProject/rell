@@ -11,6 +11,8 @@ import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyString
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf
+import java.sql.SQLException
+import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
 
 object R_SysFunctionUtils {
     fun call(callCtx: Rt_CallContext, fn: R_SysFunction, nameMsg: LazyString?, values: List<Rt_Value>): Rt_Value {
@@ -42,7 +44,12 @@ object R_SysFunctionUtils {
             }
         } catch (e: RellInterpreterCrashException) {
             throw e
+        } catch(e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw e
         } catch (e: Throwable) {
+            if (e is SQLException && e.isPostgresQueryCanceled) throw e
+
             if (callCtx.globalCtx.wrapFunctionCallErrors) {
                 val extra = extraMessage(name.value)
                 val info = Rt_ExceptionInfo(stack = immListOf(), extraMessage = extra)

@@ -94,3 +94,15 @@ Examples:
     @test function test_happy_path() {
         // executed normally
     }
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Runtime: Propagate query cancellation and interruptions
+
+When a PostgreSQL query is canceled (for example due to statement_timeout or Statement.cancel()), Rell now propagates
+the underlying SQLException with SQLState 57014 (query_canceled) instead of wrapping or suppressing it.
+
+Similarly, if a query thread is interrupted, interpreted execution now checks the interruption flag in loops and before
+starting SQL statements and throws InterruptedException.
+
+These exceptions are not suppressed by try_call(), allowing cooperative cancellation to work correctly even when code
+is wrapped in try_call().

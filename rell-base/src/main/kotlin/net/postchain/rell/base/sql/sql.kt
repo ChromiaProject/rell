@@ -439,6 +439,10 @@ private class ConnectionSqlExecutor(private val con: Connection): SqlExecutor() 
     }
 
     private fun <T> execute0(code: (Connection) -> T): T {
+        if (Thread.currentThread().isInterrupted) {
+            throw InterruptedException()
+        }
+
         val autoCommit = con.autoCommit
         val res = code(con)
         checkEquals(con.autoCommit, autoCommit)
