@@ -15,6 +15,7 @@ import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.expr.R_AtCardinality
 import net.postchain.rell.base.model.expr.R_AtWhatSort
 import net.postchain.rell.base.utils.*
+import kotlin.properties.PropertyDelegateProvider
 import kotlin.reflect.KProperty
 
 object S_Keywords {
@@ -24,7 +25,11 @@ object S_Keywords {
 }
 
 object S_Grammar {
-    private val rellTokens0 = mutableListOf<RellToken>()
+    private val _rellTokens = mutableListOf<RellToken>()
+    private val _parsersByName = sortedMapOf<String, Parser<*>>()
+
+    internal val parsersByName: ImmMap<String, Parser<*>>
+        get() = _parsersByName.toImmMap()
 
     private val LPAR by relltok("(")
     private val RPAR by relltok(")")
@@ -326,7 +331,7 @@ object S_Grammar {
         AnnotatedDef(kw) { S_EnumDefinition(it, name, values.items) }
     }
 
-    private val binaryOperator = (
+    private val binaryOperator by (
             ( EQ mapNode { S_BinaryOp.EQ } )
             or ( NE mapNode { S_BinaryOp.NE } )
             or ( LE mapNode { S_BinaryOp.LE } )
@@ -352,19 +357,19 @@ object S_Grammar {
             or ( ELVIS mapNode { S_BinaryOp.ELVIS } )
     )
 
-    private val incrementOperator = (
+    private val incrementOperator by (
             ( PLUSPLUS mapNode { true }  )
             or ( MINUSMINUS mapNode { false }  )
     )
 
-    private val unaryPrefixOperator = (
+    private val unaryPrefixOperator by (
             ( PLUS mapNode { S_UnaryOp_Plus } )
             or ( MINUS mapNode { S_UnaryOp_Minus }  )
             or ( NOT mapNode { S_UnaryOp_Not }  )
             or ( incrementOperator map { S_PosValue(it.pos, S_UnaryOp_IncDec(it.value, false)) } )
     )
 
-    private val unaryPostfixOperator: Parser<S_PosValue<S_UnaryOp>> = (
+    private val unaryPostfixOperator: Parser<S_PosValue<S_UnaryOp>> by (
             ( incrementOperator map { S_PosValue<S_UnaryOp>(it.pos, S_UnaryOp_IncDec(it.value, true)) } )
             or ( DOUBLEQUESTION mapNode { S_UnaryOp_IsNull } )
     )
@@ -379,7 +384,7 @@ object S_Grammar {
 
     private val decimalExpr by DECIMAL map { S_CommonLiteralExpr(it.pos, RellTokenizer.decodeDecimal(it.pos, it.text)) }
 
-    private val stringExpr = STRING map { S_StringLiteralExpr(it.pos, RellTokenizer.decodeString(it.pos, it.text)) }
+    private val stringExpr by STRING map { S_StringLiteralExpr(it.pos, RellTokenizer.decodeString(it.pos, it.text)) }
 
     private val bytesExpr by BYTES map { S_ByteArrayLiteralExpr(it.pos, RellTokenizer.decodeByteArray(it.pos, it.text)) }
 
@@ -900,7 +905,7 @@ object S_Grammar {
         S_RellFile(header, defs.toImmList())
     }
 
-    val rellTokens: ImmList<RellToken> = rellTokens0.toImmList()
+    val rellTokens: ImmList<RellToken> = _rellTokens.toImmList()
 
     private fun <T> getTupleSingleField(list: S_CommaSeparatedList<S_GenericTupleAttr<T>>): T? {
         val first = list.items.first()
@@ -946,21 +951,24 @@ object S_Grammar {
     // keywords (which depend on the configured language version), what's not supported by IDEs, because they use
     // statically generated grammars.
     // IDE support of the legacy syntax is not needed - it's needed only in the interpreter for backward compatibility.
-    private fun <T> legacyRule(innerParser: Parser<T>, reducedParser: Parser<T>? = null): Parser<T> {
-        return LegacyCombinator(innerParser, reducedParser)
+    private fun <T> legacyRule(innerParser: Parser<T>, reducedParser: Parser<T>? = null): Parser<T> =
+        LegacyCombinator(innerParser, reducedParser)
+
+    @Suppress("unused")
+    private operator fun <T> Parser<T>.provideDelegate(thisRef: S_Grammar, property: KProperty<*>): Parser<T> {
+        _parsersByName[property.name] = this
+        return this
     }
 
-    private fun relltok(s: String, until: String? = null) = RellTokenProp(s, until = until?.let { R_LangVersion.of(it) })
-
-    private class RellTokenProp(private val pattern: String, private val until: R_LangVersion?) {
-        operator fun provideDelegate(thisRef: S_Grammar, property: KProperty<*>): RellToken {
-            val ex = RellToken(property.name, pattern, until = until)
-            rellTokens0.add(ex)
-            return ex
-        }
-    }
-
+    @Suppress("unused")
     private operator fun <T> Parser<T>.getValue(thisRef: S_Grammar, property: KProperty<*>): Parser<T> = this
+
+    private fun relltok(pattern: String, until: String? = null) =
+        PropertyDelegateProvider<S_Grammar, RellToken> { thisRef, property ->
+            val ex = RellToken(property.name, pattern, until = until?.let { R_LangVersion.of(it) })
+            thisRef._rellTokens += ex
+            ex
+        }
 }
 
 private class AnnotatedDef(

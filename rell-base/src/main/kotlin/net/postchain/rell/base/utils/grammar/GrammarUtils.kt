@@ -18,40 +18,14 @@ import net.postchain.rell.base.utils.toImmMap
 import org.apache.commons.collections4.MapUtils
 import org.apache.commons.lang3.time.FastDateFormat
 import java.util.*
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.isAccessible
 
 object GrammarUtils {
-    private val PARSERS: ImmMap<String, Parser<*>> = makeParsers()
+    private val PARSERS = reduceParsers(
+        S_Grammar.parsersByName.filterNot { it.value is RellToken }
+            + S_Grammar.commaSeparatedParsers.mapIndexed { i, p -> "commaSeparated_$i" to p }
+    )
 
     fun getParsers(): ImmMap<String, Parser<*>> = PARSERS
-
-    private fun makeParsers(): ImmMap<String, Parser<*>> {
-        val parsers = mutableMapOf<String, Parser<*>>()
-
-        for (p in S_Grammar::class.memberProperties) {
-            p.isAccessible = true
-
-            val v = try {
-                p.getter.call(S_Grammar)
-            } catch (e: IllegalArgumentException) {
-                p.getter.call()
-            }
-
-            if (v is RellToken) {
-                // ignore
-            } else if (v is Parser<*>) {
-                parsers[p.name] = v
-            }
-        }
-
-        for ((i, p) in S_Grammar.commaSeparatedParsers.withIndex()) {
-            val name = "commaSeparated_$i"
-            parsers[name] = p
-        }
-
-        return reduceParsers(parsers.toImmMap())
-    }
 
     fun andParsers(p: Any): List<Any> {
         return if (p is AndCombinator<*>) {
@@ -156,7 +130,6 @@ object GrammarUtils {
                     }
                 }
 
-                // Usage of the internal constructors can be imitated but is too verbose
                 if (consumers == parser.consumers) parser else AndCombinator(consumers, parser.transform)
             }
             is OrCombinator<*> -> {
@@ -187,7 +160,7 @@ object GrammarUtils {
             }
 
             // Tokens and references are not supported - to be handled by the caller.
-            else -> throw java.lang.IllegalArgumentException(parser.javaClass.simpleName)
+            else -> throw IllegalArgumentException(parser.javaClass.simpleName)
         }
     }
 
