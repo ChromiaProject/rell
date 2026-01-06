@@ -40,6 +40,7 @@ import net.postchain.rell.gtx.Rt_DefaultPostchainTxContextFactory
 import net.postchain.rell.gtx.Rt_PostchainOpContext
 import net.postchain.rell.gtx.Rt_PostchainTxContextFactory
 import org.apache.commons.lang3.time.FastDateFormat
+import java.util.Locale
 
 private class ErrorHandler(
     val printer: Rt_Printer,
@@ -120,7 +121,7 @@ private class Rt_MultiPrinter(private val printers: Collection<Rt_Printer>): Rt_
 
 class Rt_TimestampPrinter(private val printer: Rt_Printer): Rt_Printer {
     companion object: KLogging() {
-        private val DATE_FMT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss,SSS")
+        private val DATE_FMT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss,SSS", Locale.US)
     }
 
     override fun print(str: String) {

@@ -70,10 +70,13 @@ object GrammarUtils {
         }
     }
 
-    fun timestampToString(timestamp: Long): String {
-        val tz = TimeZone.getTimeZone("UTC")
-        return FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ssZ", tz).format(timestamp)
-    }
+    private val formatter: FastDateFormat = FastDateFormat.getInstance(
+        "yyyy-MM-dd HH:mm:ssZ",
+        TimeZone.getTimeZone("UTC"),
+        Locale.US,
+    )
+
+    fun timestampToString(timestamp: Long): String = formatter.format(timestamp)
 
     private fun reduceParsers(parsers: Map<String, Parser<*>>): ImmMap<String, Parser<*>> {
         val replacements = mutableMapOf<Parser<*>, Parser<*>>()

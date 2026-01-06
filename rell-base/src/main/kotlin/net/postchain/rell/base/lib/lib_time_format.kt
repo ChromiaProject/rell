@@ -197,7 +197,7 @@ internal class Rt_TimeFormatValue(format: String): Rt_Value() {
     override fun strCode(showTupleFieldNames: Boolean): String = "rell.time.format[${formatter.pattern}]"
     override fun asRellTimeFormat(): Rt_TimeFormatValue = this
 
-    private val formatter: FastDateFormat = FastDateFormat.getInstance(validate(format), utcTimeZone)
+    private val formatter: FastDateFormat = FastDateFormat.getInstance(validate(format), utcTimeZone, Locale.US)
 
     fun textToMs(text: String): Long = formatter.parse(text).time
     fun msToText(ms: Long): String = formatter.format(ms)
@@ -205,7 +205,7 @@ internal class Rt_TimeFormatValue(format: String): Rt_Value() {
 
     companion object {
         private val utcTimeZone: TimeZone by lazy { TimeZone.getTimeZone("UTC") }
-        private val legalUnquotedAlpha = "yMwWDdEuaHhmsS"
+        private const val legalUnquotedAlpha = "yMwWDdEuaHhmsS"
         private val legalQuotedAlpha: Set<Char> = (('A'..'Z') + ('a'..'z')).toSet()
         private val legalNonAlpha: Set<Char> =
             ((' '..'@') +                       // ASCII space, punctuation, symbols and digits
