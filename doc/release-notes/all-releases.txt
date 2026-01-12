@@ -1,0 +1,131 @@
+ALL RELEASES (2026-01-10)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Releases: List of all Rell versions
+
+- 0.15.0
+  Notes: 0.15.0.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/090214a2da79a8d822321720587b66701bb4d8ab/
+- 0.14.16
+  Notes: 0.14.16.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/7a7dd538c04bfff5365cc22c1dc8d46c5fbd08b0/
+- 0.14.15
+  Notes: 0.14.15.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/c802b3b130a4dc21920dd457fa9c93ee356bca0e/
+- 0.14.14
+  Notes: 0.14.14.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/0b72196446524584a5ec4ebb139c7c9b5bf890ec/
+- 0.14.13
+  Notes: 0.14.13.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/98565082d53e16da5e5d89c445c46aaba077c67c/
+- 0.14.12
+  Notes: 0.14.12.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/14c25ee408d3e3f9ea074db30432f89c31f0dce4/
+- 0.14.9
+  Notes: 0.14.9.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/5049252ae825c6b5fc0b76f55d7ab9c3f4eb5784/
+- 0.14.8
+  Notes: 0.14.8.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/3d4404f45ffce66f2a736fdd58d6f75eab8faf0f/
+- 0.14.5
+  Notes: 0.14.5.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/5cf4031e7c7197e22b80ab5cec28cd01754e8ff3/
+- 0.14.3
+  Notes: 0.14.3.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/186a82191999483f078999e07063791060eab0ee/
+- 0.14.2
+  Notes: 0.14.2.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/dc8e20b0d768368ed31b323e8f8f1e31348ea199/
+- 0.14.0
+  Notes: 0.14.0.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/b7765b4d3814b60a460370c0e21144e79558e125/
+- 0.13.14
+  Notes: 0.13.14.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/463df3aee97eb4afd92233ead2e77a37c360f1d3/
+- 0.13.13
+  Notes: 0.13.13.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/58cdb4d5785745de790d47b110f4a84c9c989ebb/
+- 0.13.12
+  Notes: 0.13.12.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/7e06b4fbdd8a6a5d9422e37d0e1e267c5773bc26/
+- 0.13.11
+  Notes: 0.13.11.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/6ff01435d8fda2181627921134d8cefe938c1ad5/
+- 0.13.10
+  Notes: 0.13.10.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/af4696d6f3c1896cc5e738e8a5868c9da68420d5/
+- 0.13.9
+  Notes: 0.13.9.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/52c8713388f5007628b5f3d52ef9a69203af0a1c/
+- 0.13.6
+  Notes: 0.13.6.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/3347e21e5541325a438b745b4d51df90a2831e62/
+- 0.13.5
+  Notes: 0.13.5.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/d7754e8a1ef5c1a9bdc30293dd67d01a872637ab/
+- 0.13.4
+  Notes: 0.13.4.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/e37c37b953472f1cfb42095b5f11e9c0a4e0acae/
+- 0.13.3
+  Notes: 0.13.3.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/97ba150472af7349e3373ed3529d5f3b169da298/
+- 0.13.2
+  Notes: 0.13.2.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/b1b0c8906b0579a2a190a0005a94fc3fbebd2508/
+- 0.13.0
+  Notes: 0.13.0.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/f7cd0d0518c06f5eb6ea96c0486b6c2bf5d69041/
+- 0.12.0
+  Notes: 0.12.0.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/849426f322695796749b45a444eb69f329c615b2/
+- 0.11.0
+  Notes: 0.11.0.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/752b44e508b0b0054b3ca27f4acd845d2b4f5b77/
+- 0.10.10
+  Notes: 0.10.10.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/c4cf865143cdb94412f5b10b32c599f9e3c57c0d/
+- 0.10.9
+  Notes: 0.10.9.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/eceb96d7a73d941e27cd39bc684fc635acad4d0a/
+- 0.10.8
+  Notes: 0.10.8.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/23d4237b562a806bb275dc3ec37eb38e58923c4f/
+- 0.10.7
+  Notes: 0.10.7.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/a340997b18f0dee94373505934085534908ec556/
+- 0.10.6
+  Notes: 0.10.6.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/fad84ec6d8b080ded42a2e5f39b227f39092b3e3/
+- 0.10.5
+  Notes: 0.10.5.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/40c147dd0c7c557b83180599caff05aa4e087547/
+- 0.10.4
+  Notes: 0.10.4.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/6e7207c992308fcd3f0fc8d0ed8d43887b07d186/
+- 0.10.3
+  Notes: 0.10.3.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/2496301561f96002cdeae080f6924bec987d7072/
+- 0.10.2
+  Notes: 0.10.2.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/7760d3bfd9ad4ee6eb662296a5763cce9444b2d9/
+- 0.10.1
+  Notes: 0.10.1.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/2aa0c2a8f888cfaf1632bd3902ac827e5fc988ac/
+- 0.10.0
+  Notes: 0.10.0.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/1c7e4fed9502984d5958445de12be714b61b9384/
+- 0.9.1
+  Notes: 0.9.1.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/45eb61c78f3bd8171e1448ca9420990f3eb4fbe7/
+- 0.9.0
+  Notes: 0.9.0.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/eb7f48cca4f47e173675a93faeb48ce226b9ce16/
+- 0.8.0
+  Notes: 0.8.0.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/6d6bd20f7400b7eada99aa5b48afc1385b9a25e1/
+- 0.7.0
+  Notes: 0.7.0.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/23369f54e0ab35b827ea51c43c8f4a5bbbd4ad10/
+- 0.6.1
+  Notes: 0.6.1.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/46a3dee51088401df263881d8e27d17db7cd2de3/
