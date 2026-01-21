@@ -44,14 +44,12 @@ At least one language flag must be specified.
 
 ### Kotlin: `--kotlin --package <package_name>`
 
-Generate Kotlin client code.
-
 **Required Parameter:**
 - `--package <text>`: Kotlin package name for generated code
 
 **Example:**
 ```bash
---kotlin --package com.example.myapp
+rellgen ./rell-src ./target --kotlin --package com.example.myapp
 ```
 
 **Output Structure:**
@@ -81,7 +79,7 @@ Generate TypeScript client code.
 
 **Example:**
 ```bash
---typescript
+rellgen ./rell-src ./target --typescript
 ```
 
 **Output Structure:**
@@ -107,7 +105,7 @@ Generate JavaScript client code (no TypeScript types).
 
 **Example:**
 ```bash
---javascript
+rellgen ./rell-src ./target --javascript
 ```
 
 **Output Structure:**
@@ -134,7 +132,7 @@ Generate Python client code.
 
 **Example:**
 ```bash
---python
+rellgen ./rell-src ./target --python
 ```
 
 **Output Structure:**
@@ -165,13 +163,13 @@ Generate Mermaid diagram documentation.
 **Examples:**
 ```bash
 # Class diagram (default)
---mermaid
+rellgen ./rell-src ./target --mermaid
 
 # Entity-relationship diagram
---mermaid --entity-relation
+rellgen ./rell-src ./target --mermaid --entity-relation
 
 # MDX-compatible output
---mermaid --mdx
+rellgen ./rell-src ./target --mermaid --mdx
 ```
 
 **Output Structure:**
@@ -231,28 +229,6 @@ rellgen \
   ./rell-src \
   ./generated/kotlin \
   --kotlin --package com.mycompany.blockchain
-```
-
-### Multiple Languages
-
-```bash
-# Generate Kotlin, TypeScript, and documentation
-rellgen \
-  ./rell-src \
-  ./generated \
-  --kotlin --package com.mycompany.blockchain # OR
-  --typescript # OR
-  --mermaid # OR
-  --javascript
-```
-
-Output:
-```
-generated/
-├── com/mycompany/blockchain/Main.kt
-├── main.ts
-├── main.js
-└── main.md
 ```
 
 
