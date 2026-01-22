@@ -47,9 +47,9 @@ open class DataClassSection(
     private val classFields = attributes.map { formatAttribute(it.key, it.value) }
 
     private fun formatAttribute(name: String, type: R_Type) =
-        "@Name(\"$name\")${nullableAnnotation(type)} val ${name.snakeToLowerCamelCase()}: ${rTypeToString(name, type, primitiveTypes = false, aliases = false)}"
+        "@param:Name(\"$name\")${nullableAnnotation(type)} val ${name.snakeToLowerCamelCase()}: ${rTypeToString(name, type, primitiveTypes = false, aliases = false)}"
 
-    private fun nullableAnnotation(type: R_Type) = if (type is R_NullableType) " @Nullable" else ""
+    private fun nullableAnnotation(type: R_Type) = if (type is R_NullableType) " @param:Nullable" else ""
 
     override fun format() = """
         |${GeneratedAnnotation.createAnnotation(className.rellName)}

@@ -38,7 +38,7 @@ internal class SimpleKotlinStructTest {
         "json,'val a: String'",
         "list,'val a: List<String>'",
         "set,'val a: Set<String>'",
-        "multi,'\n\t@Name(\"a\") val a: String,\n\t@Name(\"i\") val i: Long'",
+        "multi,'\n\t@param:Name(\"a\") val a: String,\n\t@param:Name(\"i\") val i: Long'",
     )
     fun simpleStructures(rellType: String, kotlinType: String) {
         format(rellType, kotlinType)
@@ -61,7 +61,7 @@ internal class SimpleKotlinStructTest {
     @Test
     fun nullableAnnotation() {
         val formatted = format("nullable", "String?")
-        assertThat(formatted).contains("@Nullable")
+        assertThat(formatted).contains("@param:Nullable")
     }
 
     private fun format(rellType: String, kotlinType: String): String {

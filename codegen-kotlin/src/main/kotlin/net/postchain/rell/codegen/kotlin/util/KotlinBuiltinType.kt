@@ -29,9 +29,9 @@ object BlockEntity : Builtin {
 
     override fun format() = """
        |class Block(
-       |    @Name("block_height") val blockHeight: Long,
-       |    @Name("block_rid") val blockRid: WrappedByteArray,
-       |    @Name("timestamp") val timestamp: Long,
+       |    @param:Name("block_height") val blockHeight: Long,
+       |    @param:Name("block_rid") val blockRid: WrappedByteArray,
+       |    @param:Name("timestamp") val timestamp: Long,
        |)
     """.trimMargin()
 }
@@ -47,10 +47,10 @@ object TransactionEntity : Builtin {
 
     override fun format() = """
        |class Transaction(
-       |    @Name("tx_rid") val txRid: WrappedByteArray,
-       |    @Name("tx_hash") val txHash: WrappedByteArray,
-       |    @Name("tx_data") val txData: WrappedByteArray,
-       |    @Name("block") val block: RowId,
+       |    @param:Name("tx_rid") val txRid: WrappedByteArray,
+       |    @param:Name("tx_hash") val txHash: WrappedByteArray,
+       |    @param:Name("tx_data") val txData: WrappedByteArray,
+       |    @param:Name("block") val block: RowId,
        |)
     """.trimMargin()
 }
@@ -65,8 +65,8 @@ object GtxOperationStruct : Builtin {
 
     override fun format() = """
        |class GtxOperation(
-       |    @Name("name") val name: String,
-       |    @Name("args") val args: List<Gtv>,
+       |    @param:Name("name") val name: String,
+       |    @param:Name("args") val args: List<Gtv>,
        |)
     """.trimMargin()
 }
@@ -82,9 +82,9 @@ object GtxTransactionBodyStruct : Builtin {
 
     override fun format() = """
        |class GtxTransactionBody(
-       |    @Name("blockchain_rid") val blockchainRid: WrappedByteArray,
-       |    @Name("operations") val operations: List<GtxOperation>,
-       |    @Name("signers") val signers: List<Gtv>,
+       |    @param:Name("blockchain_rid") val blockchainRid: WrappedByteArray,
+       |    @param:Name("operations") val operations: List<GtxOperation>,
+       |    @param:Name("signers") val signers: List<Gtv>,
        |)
     """.trimMargin()
 }
@@ -99,8 +99,8 @@ object GtxTransactionStruct : Builtin {
 
     override fun format() = """
        |class GtxTransaction(
-       |    @Name("body") val body: GtxTransactionBody,
-       |    @Name("signatures") val signatures: List<Gtv>,
+       |    @param:Name("body") val body: GtxTransactionBody,
+       |    @param:Name("signatures") val signatures: List<Gtv>,
        |)
     """.trimMargin()
 }
