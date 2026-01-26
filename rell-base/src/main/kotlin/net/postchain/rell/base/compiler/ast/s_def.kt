@@ -93,6 +93,7 @@ class S_AttributeClause internal constructor(
         val mods = C_ModifierValues(C_ModifierTargetType.ATTRIBUTE, name)
         mods.field(C_ModifierFields.DUMMY_ANNOTATION)
         mods.field(C_ModifierFields.MUTABLE)
+        val modMount = mods.field(C_ModifierFields.MOUNT)
         val sizeHandler = C_SizeModifierHandler(ctx.defCtx, attrHeader, mods)
         attr.modifiers.compile(ctx.defCtx.mntCtx, mods)
 
@@ -100,8 +101,13 @@ class S_AttributeClause internal constructor(
         if (ctx.defCtx.definitionType !in sizeConstraintValidDefTypes && sizeConstraint != null) {
             C_SizeConstraint.reportInvalidDefType(ctx.defCtx, attrHeader, sizeConstraint.annStrs)
         }
+        val rawMount = modMount.value()?.process(false)
+        val sqlMapping = rawMount?.calculateMountName(ctx.defCtx.msgCtx, R_MountName.EMPTY)?.str()
+        if (sqlMapping != null) {
+            S_EntityDefinition.checkAttrMountNameLen(ctx.defCtx.msgCtx, modMount.pos() ?: attrHeader.pos, sqlMapping)
+        }
 
-        ctx.addAttribute(attr, attrHeader, true, comment, sizeConstraint)
+        ctx.addAttribute(attr, attrHeader, true, comment, sizeConstraint, sqlMapping)
     }
 
     override fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {
@@ -123,7 +129,7 @@ class S_KeyIndexClause(
         }
 
         for (attr in cAttrs) {
-            ctx.addAttribute(attr.sAttr, attr.header, false, comment)
+            ctx.addAttribute(attr.sAttr, attr.header, false, comment, sqlMapping = null)
         }
 
         val nameSet = mutableSetOf<R_Name>()
@@ -468,6 +474,10 @@ class   S_EntityDefinition(
 
         fun checkAttrNameLen(msgCtx: C_MessageContext, name: C_Name) {
             checkNameLen(msgCtx, name.pos, name.str, MAX_ATTR_NAME_LEN, "attr", "Attribute")
+        }
+
+        fun checkAttrMountNameLen(msgCtx: C_MessageContext, pos: S_Pos, name: String) {
+            checkNameLen(msgCtx, pos, name, MAX_ATTR_NAME_LEN, "attr_mount", "Attribute mount")
         }
 
         private fun checkNameLen(

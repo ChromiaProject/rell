@@ -801,7 +801,7 @@ class C_LateInit<T>(val pass: C_CompilerPass, fallback: T) {
     private fun noValue(): T = NOVALUE as T
 
     companion object {
-        private val NOVALUE: Any = Object()
+        private val NOVALUE: Any = Any()
 
         fun <T> context(executor: C_CompilerExecutor, code: () -> T): T {
             return C_LateInitContext.runInContext(executor, code)

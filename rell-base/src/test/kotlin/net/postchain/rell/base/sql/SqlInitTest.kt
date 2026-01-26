@@ -271,6 +271,20 @@ class SqlInitTest: BaseSqlInitTest() {
         chkData("c0.company(0,Stockholm)")
     }
 
+    @Test fun testRenameAttrWithMountPreservesColumn() {
+        chkInit("entity user { name: text; }")
+        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8)")
+
+        chkInit(
+            """
+                entity user {
+                    @mount('name') first_name: text;
+                }
+            """.trimIndent()
+        )
+        chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8)")
+    }
+
     @Test fun testAddObject() {
         chkInit("entity user { name; score: integer; }")
         chkAll("0,user,class,false", "0,name,sys:text 0,score,sys:integer", "c0.user(name:text,rowid:int8,score:int8)")

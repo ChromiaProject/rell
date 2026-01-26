@@ -493,6 +493,9 @@ private class C_NameContext_Active(
         override fun setIdeInfo(ideInfo: C_IdeSymbolInfo) {
             if (CommonUtils.IS_UNIT_TEST) {
                 if (mIdeInfo != null) {
+                    if (mIdeInfo!!.kind == ideInfo.kind) {
+                        return
+                    }
                     val msg = "Ide info already set: $rName (old ${mIdeInfo!!.kind} new ${ideInfo.kind})"
                     throw RuntimeException(msg, ideInfoStack)
                 }

@@ -10,6 +10,7 @@ import net.postchain.common.toHex
 import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.model.R_KeyIndex
+import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_ObjectDefinition
 import net.postchain.rell.base.model.R_SizeAttrValidator
 import net.postchain.rell.base.model.expr.R_AttributeDefaultValueExpr
@@ -274,12 +275,14 @@ private class SqlEntityIniter private constructor(
 
         checkAttrTypes(entity, metaCls)
 
-        val removedAttrs = metaCls.attrs.keys.filter { it !in entity.strAttributes }
+        val entityCols = entity.attributes.values.map { it.sqlMapping }.toSet()
+        val removedAttrs = metaCls.attrs.keys.filter { it !in entityCols }
         if (removedAttrs.isNotEmpty()) {
             processRemovedAttrs(entity, metaCls.id, removedAttrs)
         }
 
-        val newAttrs = entity.strAttributes.keys.filter { it !in metaCls.attrs }
+        val metaCols = metaCls.attrs.keys.toSet()
+        val newAttrs = entity.attributes.values.map { it.sqlMapping }.filter { it !in metaCols }
         if (newAttrs.isNotEmpty()) {
             processNewAttrs(entity, metaCls.id, newAttrs)
         }
@@ -291,7 +294,7 @@ private class SqlEntityIniter private constructor(
 
     private fun checkAttrTypes(entity: R_EntityDefinition, metaEntity: MetaEntity) {
         for (attr in entity.attributes.values) {
-            val metaAttr = metaEntity.attrs[attr.name]
+            val metaAttr = metaEntity.attrs[attr.sqlMapping]
             if (metaAttr != null) {
                 val oldType = metaAttr.type
                 val newType = attr.type.sqlAdapter.metaName(sqlCtx)
@@ -418,7 +421,10 @@ private class SqlEntityIniter private constructor(
             initCtx.step(ORD_RECORDS, "Add table columns for $entityName ($details): $attrsStr", action)
         }
 
-        val rAttrs = newAttrs.map { entity.strAttributes.getValue(it) }
+        val rAttrs = newAttrs.map { name ->
+            entity.attributes.values.firstOrNull { it.sqlMapping == name }
+                ?: error("Attribute with sql mapping '$name' not found in entity ${entity.appLevelName}")
+        }
         val metaSql = SqlMeta.genMetaAttrsInserts(sqlCtx, metaEntityId, rAttrs)
         initCtx.step(ORD_TABLES, "Add meta attributes for $entityName: $attrsStr", SqlStepAction_ExecSql(metaSql))
     }
@@ -436,7 +442,8 @@ private class SqlEntityIniter private constructor(
         val keyIndexChangesEnabled = KEY_INDEX_CHANGE_SWITCH.isActive(exeCtx.globalCtx.compilerOptions)
 
         for (name in newAttrs) {
-            val attr = entity.strAttributes.getValue(name)
+            val attr = entity.attributes.values.firstOrNull { it.sqlMapping == name }
+                ?: error("Attribute with sql mapping '$name' not found in entity ${entity.appLevelName}")
 
             if (attr.expr != null || !existingRecs) {
                 val expr = R_AttributeDefaultValueExpr(attr, null, entity.initFrameGetter)
@@ -475,7 +482,8 @@ private class SqlEntityIniter private constructor(
         tableName: String,
         entityName: String,
     ) {
-        val codeIndexIds0 = entity.keys.map { SqlIndexId(it, true) } + entity.indexes.map { SqlIndexId(it, false) }
+        val codeIndexIds0 = entity.keys.map { SqlIndexId(true, keyIndexColumns(entity, it.attribs)) } +
+                entity.indexes.map { SqlIndexId(false, keyIndexColumns(entity, it.attribs)) }
         val codeIndexIds = codeIndexIds0.toSet()
 
         val rowidCols = listOf(SqlConstants.ROWID_COLUMN)
@@ -514,21 +522,21 @@ private class SqlEntityIniter private constructor(
 
         val keyNameGen = SqlGen.keyNameGen(tableName, sqlIndexNames)
         for (rKey in entity.keys) {
-            if (SqlIndexId(rKey, true) !in sqlIndexIds) {
-                val sql = SqlGen.genCreateKeySql(tableName, rKey, keyNameGen)
+            if (SqlIndexId(true, keyIndexColumns(entity, rKey.attribs)) !in sqlIndexIds) {
+                val sql = SqlGen.genCreateKeySql(entity, tableName, rKey, keyNameGen)
                 val msg = "Create key of entity $entityName: ${rKey.attribs}"
                 initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(sql))
-                processIndexDiff(entity, rKey.strAttribs, "key", "code", "database")
+                processIndexDiff(entity, rKey.attribs.mapToImmList { attrToColumn(entity, it) }, "key", "code", "database")
             }
         }
 
         val indexNameGen = SqlGen.indexNameGen(tableName, sqlIndexNames)
         for (rIndex in entity.indexes) {
-            if (SqlIndexId(rIndex, false) !in sqlIndexIds) {
+            if (SqlIndexId(false, keyIndexColumns(entity, rIndex.attribs)) !in sqlIndexIds) {
                 val sql = SqlGen.genCreateIndexSql(entity, tableName, rIndex, indexNameGen)
                 val msg = "Create index of entity $entityName: ${rIndex.attribs}"
                 initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(sql))
-                processIndexDiff(entity, rIndex.strAttribs, "index", "code", "database")
+                processIndexDiff(entity, rIndex.attribs.mapToImmList { attrToColumn(entity, it) }, "index", "code", "database")
             }
         }
     }
@@ -548,6 +556,14 @@ private class SqlEntityIniter private constructor(
         }
     }
 
+    private fun attrToColumn(entity: R_EntityDefinition, attrName: R_Name): String {
+        return entity.attributes[attrName]?.sqlMapping ?: attrName.str
+    }
+
+    private fun keyIndexColumns(entity: R_EntityDefinition, attrs: ImmList<R_Name>): ImmList<String> {
+        return attrs.mapToImmList { attrToColumn(entity, it) }
+    }
+
     private fun compareIndexes(index1: SqlIndex, index2: SqlIndex): Int {
         var d = -index1.unique.compareTo(index2.unique)
         if (d == 0) d = CommonUtils.compareLists(index1.cols, index2.cols)
@@ -556,7 +572,6 @@ private class SqlEntityIniter private constructor(
 
     private data class SqlIndexId(val unique: Boolean, val cols: ImmList<String>) {
         constructor(sqlIndex: SqlIndex): this(sqlIndex.unique, sqlIndex.cols)
-        constructor(rKeyIndex: R_KeyIndex, unique: Boolean): this(unique, rKeyIndex.attribs.mapToImmList { it.str })
     }
 
     companion object {

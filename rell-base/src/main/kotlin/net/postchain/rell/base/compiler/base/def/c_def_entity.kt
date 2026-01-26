@@ -14,7 +14,6 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.base.utils.C_Errors.report
 import net.postchain.rell.base.compiler.vexpr.V_ConstantValueEvalContext
 import net.postchain.rell.base.compiler.vexpr.V_Expr
-import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
@@ -31,6 +30,9 @@ private class C_EntityAttributeClause(
     private val defs = mutableListOf<AttrDef>()
 
     fun addDefinition(def: AttrDef) {
+        if (defs.any { it.attrDef === def.attrDef && it.primary == def.primary }) {
+            return
+        }
         defs.add(def)
     }
 
@@ -81,6 +83,8 @@ private class C_EntityAttributeClause(
             docSymLate.set(docSym)
         }
 
+        val sqlMapping = mainDef.sqlMapping ?: mainDef.name.str
+
         val rAttr = R_Attribute(
             index,
             mainDef.name.rName,
@@ -89,6 +93,7 @@ private class C_EntityAttributeClause(
             keyIndexKind = keyIndexKind,
             ideInfo = mainHeader.ideInfo,
             docSourcePos = mainDef.name.pos.toDocPos(),
+            sqlMapping = sqlMapping,
             exprGetter = exprGetter?.transform { it.rDefaultValue },
             validator = validator,
         )
@@ -253,6 +258,7 @@ private class C_EntityAttributeClause(
         val primary: Boolean,
         val comment: S_Comment?,
         val sizeConstraint: C_SizeConstraint?,
+        val sqlMapping: String?,
     ) {
         val name = attrHeader.name
     }
@@ -291,11 +297,11 @@ internal class C_EntityContext(
         primary: Boolean,
         comment: S_Comment?,
         sizeConstraint: C_SizeConstraint? = null,
+        sqlMapping: String? = null,
     ) {
         validateAttr(attrDef, attrHeader)
-
         val clause = attrMap.computeIfAbsent(attrHeader.rName) { C_EntityAttributeClause(defCtx, null, persistent) }
-        clause.addDefinition(C_EntityAttributeClause.AttrDef(attrDef, attrHeader, primary, comment, sizeConstraint))
+        clause.addDefinition(C_EntityAttributeClause.AttrDef(attrDef, attrHeader, primary, comment, sizeConstraint, sqlMapping))
     }
 
     private fun validateAttr(attrDef: S_AttributeDefinition, attrHeader: C_AttrHeaderHandle) {
@@ -343,11 +349,19 @@ internal class C_EntityContext(
         val indexMap = keyIndexMap(indices)
 
         val cAttrs = mutableListOf<C_CompiledAttribute>()
+        val mappingPos = mutableMapOf<String, S_Pos?>()
 
         for ((name, attr) in attrMap) {
             val attrKeys = keyMap.get(name)
             val attrIndices = indexMap.get(name)
             val compiledAttr = attr.compile(cAttrs.size, attrKeys, attrIndices)
+            val mapping = compiledAttr.rAttr.sqlMapping
+            val prevPos = mappingPos.put(mapping, compiledAttr.defPos)
+            if (prevPos != null) {
+                val errPos = compiledAttr.defPos ?: prevPos
+                msgCtx.error(errPos, "entity:attr:dup_sql_mapping:$entityName:$mapping",
+                    "Entity '$entityName' has multiple attributes mapped to column '$mapping'")
+            }
             cAttrs.add(compiledAttr)
         }
 

@@ -251,6 +251,30 @@ class EntityTest: BaseRellTest() {
         chkEx("{ val u = user @ { 'Bob' }; u.rowid = 999; return 0; }", "ct_err:attr_not_mutable:user.rowid")
     }
 
+    @Test fun testAttributeMountSqlMapping() {
+        val app = tst.compileAppEx(
+            """
+                entity user {
+                    @mount('fname') first_name: text;
+                }
+            """.trimIndent()
+        )
+        val entity = app.sqlDefs.entities.first { it.simpleName == "user" }
+        val attr = entity.attributes.values.first { it.name == "first_name" }
+        assertEquals("fname", attr.sqlMapping)
+    }
+
+    @Test fun testAttributeMountDuplicateSqlMapping() {
+        chkCompile(
+            "entity user { @mount('col') first_name: text; @mount('col') last_name: text; }",
+            "ct_err:entity:attr:dup_sql_mapping:user:col"
+        )
+        chkCompile(
+            "entity user { @mount('name') first_name: text; name: text; }",
+            "ct_err:entity:attr:dup_sql_mapping:user:name"
+        )
+    }
+
     @Test fun testEntityRowidAttrAt() {
         initEntityRowidAttr()
 

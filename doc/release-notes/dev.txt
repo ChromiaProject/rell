@@ -106,3 +106,25 @@ starting SQL statements and throws InterruptedException.
 
 These exceptions are not suppressed by try_call(), allowing cooperative cancellation to work correctly even when code
 is wrapped in try_call().
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Language: @mount for entity attributes (column reuse on rename)
+
+The @mount annotation can now be applied to entity attributes. When an attribute is renamed in code, annotate it with
+@mount('<old_name>') to keep using the existing database column. Keys, indexes, metadata, and size constraints are now
+generated using the mapped column name, so database initialization no longer drops or recreates columns during such
+renames.
+
+Example:
+
+    // existing deployment
+    entity user { fname: text; age: integer; }
+
+    // rename without data loss
+    entity user {
+        @mount('fname') first_name: text;
+        age: integer;
+    }
+
+No schema changes are performed; column \"fname\" continues to store the data and is accessed as user.first_name in
+code.

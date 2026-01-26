@@ -272,7 +272,7 @@ object SqlGen {
 
         val keyNameGen = keyNameGen(tableName, listOf())
         for (rKey in rEntity.keys) {
-            val c = makeConstraint(rKey, keyNameGen)
+            val c = makeConstraint(rEntity, rKey, keyNameGen)
             constraints.add(c)
         }
 
@@ -316,7 +316,7 @@ object SqlGen {
                 constraints.add(fkConstraint)
             }
             if (attr.validator != null) {
-                val sqlConstraintName = sqlConstraintName(entity.mountName.str(), attr.name)
+                val sqlConstraintName = sqlConstraintName(entity.mountName.str(), attr.sqlMapping)
                 constraints.add(attr.validator.genSqlCheckConstraint(sqlConstraintName, sqlTable, attr))
             }
         }
@@ -328,14 +328,15 @@ object SqlGen {
         return SqlNameGen("K_${table}_%d", existingNames)
     }
 
-    fun genCreateKeySql(table: String, rKey: R_Key, nameGen: SqlNameGen): String {
-        val c = makeConstraint(rKey, nameGen)
+    fun genCreateKeySql(entity: R_EntityDefinition, table: String, rKey: R_Key, nameGen: SqlNameGen): String {
+        val c = makeConstraint(entity, rKey, nameGen)
         return DSL_CTX.alterTable(table).add(c).toString()
     }
-
-    private fun makeConstraint(rKey: R_Key, nameGen: SqlNameGen): Constraint {
+    private fun makeConstraint(entity: R_EntityDefinition, rKey: R_Key, nameGen: SqlNameGen): Constraint {
         val keyName = nameGen.nextName()
-        val attribs = rKey.attribs.map { it.str }
+        val attribs = rKey.attribs.map { attrName ->
+            entity.attributes[attrName]?.sqlMapping ?: attrName.str
+        }
         return constraint(keyName).unique(*attribs.toTypedArray())
     }
 
@@ -347,9 +348,12 @@ object SqlGen {
         val indexName = nameGen.nextName()
         return if (index.attribs.size == 1 && isJsonAttr(rEntity, index.attribs[0].str)) {
             val attrName = index.attribs[0]
-            """CREATE INDEX "$indexName" ON "$table" USING gin ("$attrName" jsonb_path_ops)"""
+            val col = rEntity.attributes[attrName]?.sqlMapping ?: attrName.str
+            """CREATE INDEX "$indexName" ON "$table" USING gin ("$col" jsonb_path_ops)"""
         } else {
-            val attribs = index.attribs.map { it.str }
+            val attribs = index.attribs.map { attrName ->
+                rEntity.attributes[attrName]?.sqlMapping ?: attrName.str
+            }
             DSL_CTX.createIndex(indexName).on(table, *attribs.toTypedArray()).toString()
         }
     }

@@ -574,7 +574,6 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
                 when (message.type) {
                     C_MessageType.WARNING -> logger.warn(str)
                     C_MessageType.ERROR -> logger.error(str)
-                    else -> logger.info(str)
                 }
             }
 

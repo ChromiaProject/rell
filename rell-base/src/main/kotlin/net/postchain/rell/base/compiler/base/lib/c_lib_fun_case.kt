@@ -345,7 +345,7 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
             namedArg,
         )
 
-        if (rResultType == null || !rResultType.isValid() || unresolved.isNotEmpty()) {
+        if (!rResultType.isValid() || unresolved.isNotEmpty()) {
             return makeUnresolvedMatch(matchBase, matchParams, unresolved)
         }
 

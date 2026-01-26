@@ -213,7 +213,7 @@ class Rt_RegularSqlContext private constructor(
 
         private fun checkMissingAttrs(chain: String, extEntity: R_EntityDefinition, metaEntity: MetaEntity) {
             val metaAttrNames = metaEntity.attrs.keys
-            val extAttrNames = extEntity.strAttributes.keys
+            val extAttrNames = extEntity.attributes.values.mapTo(HashSet()) { it.sqlMapping }
             val missingAttrs = Sets.difference(extAttrNames, metaAttrNames)
             if (!missingAttrs.isEmpty()) {
                 val entityName = extEntity.appLevelName
@@ -225,7 +225,7 @@ class Rt_RegularSqlContext private constructor(
 
         private fun checkAttrTypes(sqlCtx: Rt_SqlContext, chain: String, extEntity: R_EntityDefinition, metaEntity: MetaEntity) {
             for (extAttr in extEntity.attributes.values.sortedBy { it.name }) {
-                val attrName = extAttr.name
+                val attrName = extAttr.sqlMapping
                 val metaAttr = metaEntity.attrs.getValue(attrName)
                 val metaType = metaAttr.type
                 val extType = extAttr.type.sqlAdapter.metaName(sqlCtx)

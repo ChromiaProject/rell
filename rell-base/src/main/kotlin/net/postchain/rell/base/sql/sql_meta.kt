@@ -239,7 +239,7 @@ object SqlMeta {
                     DSL.field("type")
             ).values(
                     classId,
-                    attr.name,
+                    attr.sqlMapping,
                     attr.type.sqlAdapter.metaName(sqlCtx)
             ).getSQL(ParamType.INLINED) + ";"
         }
