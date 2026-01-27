@@ -1,7 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.3.0"
     id("org.jetbrains.dokka") version "1.9.20" // Used to create a javadoc jar
     kotlin("plugin.serialization") version "1.9.22"
     `maven-publish`
