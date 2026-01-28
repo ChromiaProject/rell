@@ -15,6 +15,7 @@ import net.postchain.rell.base.compiler.parser.RellTokens
 import net.postchain.rell.base.utils.LateInit
 import net.postchain.rell.base.utils.grammar.GrammarUtils
 import org.apache.commons.collections4.MapUtils
+import java.util.Locale
 
 // TODO: Grammar generator should be revisited as current implementation was not used for initial generation.
 // It's used by action generator for tranformer generation.
@@ -284,7 +285,7 @@ private object AntlrNontermGen {
     }
 
     private fun createTokenType(name: String): String {
-        val tail = if (name !in specialTokens) "" else name.toLowerCase().capitalize()
+        val tail = if (name !in specialTokens) "" else name.lowercase(Locale.getDefault()).capitalize()
         val type = nontermNameToAntlr("token$tail")
         if (type !in actions) {
             val token = if (name in specialTokens) name else null
