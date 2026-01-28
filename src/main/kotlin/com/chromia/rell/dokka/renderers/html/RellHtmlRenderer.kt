@@ -34,6 +34,7 @@ import org.jetbrains.dokka.pages.*
 import org.jetbrains.dokka.plugability.*
 import org.jetbrains.dokka.transformers.pages.PageTransformer
 import org.jetbrains.dokka.utilities.htmlEscape
+import java.util.Locale
 
 internal const val TEMPLATE_REPLACEMENT: String = "###"
 internal const val TOGGLEABLE_CONTENT_TYPE_ATTR = "data-togglable"
@@ -179,7 +180,7 @@ class RellHtmlRenderer(
             pageContext: ContentPage,
             childrenCallback: FlowContent.() -> Unit
     ) {
-        val additionalClasses = node.style.joinToString(" ") { it.toString().toLowerCase() }
+        val additionalClasses = node.style.joinToString(" ") { it.toString().lowercase(Locale.getDefault()) }
         return when {
             node.hasStyle(org.jetbrains.dokka.pages.ContentStyle.TabbedContent) -> div(additionalClasses) {
                 val contentTabs = createTabs(pageContext)
@@ -724,7 +725,7 @@ class RellHtmlRenderer(
 
 
     override fun FlowContent.buildHeader(level: Int, node: ContentHeader, content: FlowContent.() -> Unit) {
-        val classes = node.style.joinToString { it.toString() }.toLowerCase()
+        val classes = node.style.joinToString { it.toString() }.lowercase(Locale.getDefault())
         when (level) {
             1 -> h1(classes = classes, content)
             2 -> h2(classes = classes, content)
@@ -865,7 +866,7 @@ class RellHtmlRenderer(
             val codeLang = "lang-" + code.language.ifEmpty { "kotlin" }
             val stylesWithBlock = code.style + org.jetbrains.dokka.pages.TextStyle.Block + codeLang
             pre {
-                code(stylesWithBlock.joinToString(" ") { it.toString().toLowerCase() }) {
+                code(stylesWithBlock.joinToString(" ") { it.toString().lowercase(Locale.getDefault()) }) {
                     attributes["theme"] = "idea"
                     code.children.forEach { buildContentNode(it, pageContext) }
                 }
@@ -885,7 +886,7 @@ class RellHtmlRenderer(
     ) {
         val codeLang = "lang-" + code.language.ifEmpty { "kotlin" }
         val stylesWithBlock = code.style + codeLang
-        code(stylesWithBlock.joinToString(" ") { it.toString().toLowerCase() }) {
+        code(stylesWithBlock.joinToString(" ") { it.toString().lowercase(Locale.getDefault()) }) {
             code.children.forEach { buildContentNode(it, pageContext) }
         }
     }
@@ -936,7 +937,7 @@ class RellHtmlRenderer(
         // Prism.js parser adds Builtin token instead of Annotation
         // for some reason, so we also add it for consistency and correct coloring
         TokenStyle.Annotation -> "annotation builtin"
-        else -> this.toString().toLowerCase()
+        else -> this.toString().lowercase(Locale.getDefault())
     }
 
     override fun render(root: RootPageNode) {
