@@ -42,7 +42,7 @@ internal class KotlinCodeGeneratorTest {
                 freeArgs = documents.keys.map { "$target/$it" }
                 destination = classes.toAbsolutePath().toString()
                 classpath = System.getProperty("java.class.path")
-                    .split(System.getProperty("path.separator"))
+                    .split(File.pathSeparator)
                     .filter {
                         File(it).exists() && File(it).canRead()
                     }.joinToString(":")
@@ -50,7 +50,7 @@ internal class KotlinCodeGeneratorTest {
                 noReflect = true
                 jvmTarget = "21"
             }
-            val exitCode: ExitCode = execImpl(
+            val exitCode: ExitCode = exec(
                 PrintingMessageCollector(
                     System.out,
                     MessageRenderer.WITHOUT_PATHS, false
