@@ -3,8 +3,8 @@ package net.postchain.rell.toolbox.lsp.testrunner
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.lsp.server.RellIndexingManager
 import net.postchain.rell.toolbox.lsp.symbols.NodeInfo
+import net.postchain.rell.toolbox.lsp.symbols.OutlineNode
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
-import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
@@ -43,15 +43,16 @@ class RellTestRunner(val indexingManager: RellIndexingManager, private val symbo
         val moduleName = resource.moduleInfo?.name?.str()
         val range = Range(Position(0, 0), Position(0, 0))
         val rootNode = NodeInfo(moduleName ?: "Unknown", range, range, SymbolKind.File)
-        val testTree = symbolService.getDocumentSymbolsWithRoot(rootNode, resource)
+        val outlineTreeRoot = symbolService.getOutlineTreeRoot(rootNode, resource)
 
         val testCases = mutableListOf<RellTestCase>()
-        visitTreeNodes(testTree, fileUri, testCases)
+        visitTreeNodes(outlineTreeRoot, fileUri, testCases)
         return testCases
     }
 
-    private fun visitTreeNodes(testTreeNode: DocumentSymbol, fileUri: URI, testCases: MutableList<RellTestCase>) {
-        if (isTestCase(testTreeNode)) {
+    private fun visitTreeNodes(outlineNode: OutlineNode, fileUri: URI, testCases: MutableList<RellTestCase>) {
+        val testTreeNode = outlineNode.toDocumentSymbol()
+        if (isTestCase(outlineNode)) {
             val range = testTreeNode.range
             val name = testTreeNode.name
             val uri = fileUri.toString()
@@ -59,17 +60,20 @@ class RellTestRunner(val indexingManager: RellIndexingManager, private val symbo
             testCases.add(testCase)
         }
 
-        if (testTreeNode.children == null) {
-            return
-        }
-        for (child in testTreeNode.children) {
+        for (child in outlineNode.getChildren()) {
             visitTreeNodes(child, fileUri, testCases)
         }
     }
 
-    private fun isTestCase(testTreeNode: DocumentSymbol): Boolean {
-        return testTreeNode.kind == SymbolKind.Function &&
-            (testTreeNode.name == "test" || testTreeNode.name.startsWith("test_"))
+    private fun isTestCase(outlineNode: OutlineNode): Boolean {
+        val info = outlineNode.getInfo()
+        return info.symbolKind == SymbolKind.Function &&
+            (followsTestNamingConvention(info.text) || info.hasAnnotation("test")) &&
+            !info.hasAnnotation("disabled")
+    }
+
+    private fun followsTestNamingConvention(name: String): Boolean {
+        return name == "test" || name.startsWith("test_")
     }
 }
 

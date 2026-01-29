@@ -163,9 +163,13 @@ class RellSymbolService {
     }
 
     fun getDocumentSymbolsWithRoot(rootNodeInfo: NodeInfo, resource: Resource): DocumentSymbol {
+        return getOutlineTreeRoot(rootNodeInfo, resource).toDocumentSymbol()
+    }
+
+    fun getOutlineTreeRoot(rootNodeInfo: NodeInfo, resource: Resource): OutlineNode {
         val outlineTreeBuilder = OutlineTreeBuilder(rootNodeInfo, null)
         IdeApi.buildOutlineTree(outlineTreeBuilder, resource.ast)
-        return outlineTreeBuilder.build().toDocumentSymbol()
+        return outlineTreeBuilder.build()
     }
 
     fun getWorkspaceSymbols(query: String, indexers: List<WorkspaceIndexer>): List<WorkspaceSymbol> {

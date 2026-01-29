@@ -5,6 +5,7 @@ import net.postchain.rell.base.compiler.ast.S_Node
 import net.postchain.rell.base.utils.ide.IdeOutlineNodeType
 import net.postchain.rell.base.utils.ide.IdeOutlineTreeBuilder
 import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.toolbox.parser.RellParser
 import net.postchain.rell.toolbox.transformer.AntlrRellNodeAttachment
 import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Position
@@ -47,12 +48,34 @@ class OutlineTreeBuilder(
         val fullRegion = getFullRegion(node, name)
         val nameRegion = getNameRegion(name)
         val symbolKind = getSymbolKind(type)
-        val subInfo = NodeInfo(nameStr, nameRegion, fullRegion, symbolKind)
+        val annotations = getAnnotations(node)
+
+        val subInfo = NodeInfo(nameStr, nameRegion, fullRegion, symbolKind, annotations)
         return node(subInfo, type)
+    }
+
+    fun getAnnotations(node: S_Node): List<String>? {
+        val attachment = node.attachment as AntlrRellNodeAttachment
+        val antlrNode = attachment.node
+        return if (antlrNode is RellParser.RuleX_AnnotatedDefContext) {
+            antlrNode.ruleX_Modifiers()?.ruleX_Modifier()?.map { it?.ruleX_Annotation()?.ruleX_Name()?.text ?: "" }
+        } else {
+            null
+        }
     }
 }
 
-class NodeInfo(val text: String, val nameRegion: Range?, val fullRegion: Range?, val symbolKind: SymbolKind)
+class NodeInfo(
+    val text: String,
+    val nameRegion: Range?,
+    val fullRegion: Range?,
+    val symbolKind: SymbolKind,
+    val annotations: List<String>? = null
+) {
+    fun hasAnnotation(annotation: String): Boolean {
+        return this.annotations?.contains(annotation) ?: false
+    }
+}
 
 class OutlineNode(
     builder: OutlineTreeBuilder,
