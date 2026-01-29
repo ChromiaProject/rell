@@ -2,6 +2,8 @@ package net.postchain.rell.toolbox.lsp.testrunner
 
 import assertk.assertThat
 import assertk.assertions.containsOnly
+import assertk.assertions.extracting
+import assertk.assertions.isEmpty
 import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
 import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.Position
@@ -66,6 +68,9 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
                 function not_test() { return 1; }
                 function test() { return 1; }
                 function test_3() { return 1; }
+                @test
+                function annotated_test() { return 1; }
+                @test() function another_annotated_test() { return 1; }
                 """.trimIndent()
             )
         }
@@ -79,8 +84,36 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
                 createRellTestCase("test_2", Position(2, 0), Position(2, 30), testFile),
                 createRellTestCase("test", Position(4, 0), Position(4, 28), testFile),
                 createRellTestCase("test_3", Position(5, 0), Position(5, 30), testFile),
+                createRellTestCase("annotated_test", Position(6, 0), Position(7, 38), testFile),
+                createRellTestCase("another_annotated_test", Position(8, 0), Position(8, 54), testFile),
             )
         }
+    }
+
+
+    @Test
+    fun `Disabled annotation isn't released yet`(@TempDir dir: File) {
+        val testFilePath = "test_file.rell"
+        val testDataBuilder = testData(dir) {
+            addFile(
+                testFilePath,
+                """
+                @test module;
+                @disabled
+                function test_1() { return 1; }
+                """.trimIndent()
+            )
+        }
+        initializeWorkspace(dir)
+        val testFile = testDataBuilder.sourceFile(testFilePath)
+        val issues = diagnostics[testFile.toURI()]!!
+        /*
+         * TODO: When the @disabled annotation is released in Rell, this test case will fail.
+         * Remove this test case and add new one to verify that
+         * functions annotated with both @disabled and @test(or named with test_ prefix)
+         * are not included in the test cases.
+         */
+        assertThat(issues).extracting { it.message }.containsOnly("Annotation '@disabled' is invalid")
     }
 
     private fun createRellTestFile(file: File, name: String, rellTestCase: RellTestCase): RellTestFile {
