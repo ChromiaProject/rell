@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.lib.type
 
-import com.google.common.collect.Iterables
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvByteArray
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
@@ -328,8 +327,8 @@ class Rt_ByteArrayValue private constructor(private val value: ByteArray): Rt_Va
     override fun hashCode() = value.contentHashCode()
 
     override fun asIterable(): Iterable<Rt_Value> {
-        return Iterables.transform(value.asIterable()) {
-            val signed = it!!.toInt()
+        return value.map {
+            val signed = it.toInt()
             val unsigned = if (signed >= 0) signed else (signed + 256)
             Rt_IntValue.get(unsigned.toLong())
         }

@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.namespace
 
-import com.google.common.collect.Sets
 import net.postchain.rell.base.compiler.ast.S_ExactImportTargetItem
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
@@ -442,7 +441,7 @@ private class C_NsAsm_InternalReplAssembler(
     }
 
     private fun mergeReplNamespace(oldNs: C_NsImp_Namespace, newNs: C_NsImp_Namespace): C_NsImp_Namespace {
-        val directNames = Sets.union(oldNs.directDefs.keys, newNs.directDefs.keys)
+        val directNames = oldNs.directDefs.keys + newNs.directDefs.keys
         val directDefs = directNames.associateWithToImmList {
             val oldDef = oldNs.directDefs[it]
             val newDef = newNs.directDefs[it]
@@ -768,7 +767,7 @@ private class C_NsAsm_InternalAppAssembler(
     ): ImmMap<C_ModuleKey, C_NsAsm_Module> {
         checkEquals(impModules.keys, rawModules.keys)
         checkEquals(resModules.keys, rawModules.keys)
-        checkEquals(Sets.intersection(rawModules.keys, preModules.keys), setOf<C_ModuleKey>())
+        checkEquals(rawModules.keys.intersect(preModules.keys), setOf())
 
         val oldModules = preModules.mapValuesToImmMap { (_, v) -> v.asmModule }
         val newModules = rawModules.mapValues { (k, v) -> C_NsAsm_Module(v.rawNs, impModules.getValue(k), resModules.getValue(k)) }

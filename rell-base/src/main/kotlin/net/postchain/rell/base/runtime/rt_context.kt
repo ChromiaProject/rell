@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.runtime
 
-import com.google.common.collect.Sets
 import mu.KLogging
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.gtv.Gtv
@@ -17,6 +16,7 @@ import net.postchain.rell.base.runtime.utils.Rt_Messages
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.minus
 import kotlin.reflect.KType
 import kotlin.reflect.full.createType
 
@@ -117,18 +117,16 @@ class Rt_RegularSqlContext private constructor(
             val res = mutableMapOf<String, Rt_ExternalChain>()
             for ((name, dep) in dependencies) {
                 val ridStr = CommonUtils.bytesToHex(dep.rid)
-                val chainId = dbRidMap[ridStr]
-                if (chainId == null) {
-                    throw errInit("external_chain_no_rid:$name:$ridStr",
-                            "External chain '$name' not found in the database by RID 0x$ridStr")
-                }
+                val chainId = dbRidMap[ridStr] ?: throw errInit(
+                    "external_chain_no_rid:$name:$ridStr",
+                    "External chain '$name' not found in the database by RID 0x$ridStr"
+                )
 
                 val ridKey = WrappedByteArray(dep.rid)
-                val height = heightProvider.getChainHeight(ridKey, chainId)
-                if (height == null) {
-                    throw errInit("external_chain_no_height:$name:$ridStr:$chainId",
-                            "Unknown height of the external chain '$name' (RID: 0x$ridStr, ID: $chainId)")
-                }
+                val height = heightProvider.getChainHeight(ridKey, chainId) ?: throw errInit(
+                    "external_chain_no_height:$name:$ridStr:$chainId",
+                    "Unknown height of the external chain '$name' (RID: 0x$ridStr, ID: $chainId)"
+                )
 
                 res[name] = Rt_ExternalChain(chainId, dep.rid, height)
             }
@@ -166,10 +164,10 @@ class Rt_RegularSqlContext private constructor(
 
             return app.externalChains.mapToImmList { rChain ->
                 val name = rChain.name
-                val rtChain = externalChains[name]
-                if (rtChain == null) {
-                    throw errInit("external_chain_unknown:$name", "External chain not found: '$name'")
-                }
+                val rtChain = externalChains[name] ?: throw errInit(
+                    "external_chain_unknown:$name",
+                    "External chain not found: '$name'"
+                )
                 rtChain
             }
         }
@@ -203,7 +201,7 @@ class Rt_RegularSqlContext private constructor(
                 metaEntities: Map<String, MetaEntity>
         ) {
             val metaEntityNames = metaEntities.filter { (_, c) -> c.type == MetaEntityType.ENTITY }.keys
-            val missingEntities = Sets.difference(extEntities.keys, metaEntityNames)
+            val missingEntities = extEntities.keys - metaEntityNames
             if (!missingEntities.isEmpty()) {
                 val list = missingEntities.sorted()
                 throw errInit("external_meta_no_entity:$chain:${list.joinToString(",")}",
@@ -214,7 +212,7 @@ class Rt_RegularSqlContext private constructor(
         private fun checkMissingAttrs(chain: String, extEntity: R_EntityDefinition, metaEntity: MetaEntity) {
             val metaAttrNames = metaEntity.attrs.keys
             val extAttrNames = extEntity.attributes.values.mapTo(HashSet()) { it.sqlMapping }
-            val missingAttrs = Sets.difference(extAttrNames, metaAttrNames)
+            val missingAttrs = extAttrNames - metaAttrNames
             if (!missingAttrs.isEmpty()) {
                 val entityName = extEntity.appLevelName
                 val list = missingAttrs.sorted()

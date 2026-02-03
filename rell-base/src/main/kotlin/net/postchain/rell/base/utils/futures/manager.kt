@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.utils.futures
 
-import com.google.common.collect.Iterables
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.utils.*
@@ -52,7 +51,7 @@ private class FcBefore_Pair<A, B>(
     private val a: FcBefore<A>,
     private val b: FcBefore<B>,
 ): FcBefore<FcPair<A, B>>() {
-    override fun futures(): Iterable<FcFuture<*>> = Iterables.concat(a.futures(), b.futures())
+    override fun futures(): Iterable<FcFuture<*>> = a.futures() + b.futures()
 
     override fun result(): FcPair<A, B> {
         val aRes = a.result()
@@ -646,9 +645,7 @@ private class FcFuture_Computable<T>(
             computing = true
 
             //TODO handle failure in a better way - the future shall go into a specific state
-            val resultFuture = block()
-
-            when (resultFuture) {
+            when (val resultFuture = block()) {
                 is FcFuture_Value<T> -> {
                     completeFuture(resultFuture.value)
                 }

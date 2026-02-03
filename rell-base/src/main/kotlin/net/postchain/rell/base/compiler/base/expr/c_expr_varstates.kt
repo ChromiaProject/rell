@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.expr
 
-import com.google.common.collect.Sets
 import net.postchain.rell.base.compiler.base.core.C_VarId
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.model.*
@@ -197,7 +196,7 @@ private class C_VarStatesDelta_Impl(
         other as C_VarStatesDelta_Impl
 
         val resMap = mutableMapOf<C_VarId, C_VarStateDelta>()
-        val ids = Sets.union(map.keys, other.map.keys)
+        val ids = map.keys + other.map.keys
         for (id in ids) {
             val d1 = map[id]
             val d2 = other.map[id]
@@ -238,7 +237,7 @@ private class C_VarValueDelta private constructor(
     }
 
     fun and(v: C_VarValueDelta): C_VarValueDelta {
-        val map2 = Sets.union(map.keys, v.map.keys)
+        val map2 = (map.keys + v.map.keys)
             .mapNotNull { path ->
                 val n1 = map[path]
                 val n2 = v.map[path]
@@ -255,7 +254,7 @@ private class C_VarValueDelta private constructor(
     }
 
     fun or(v: C_VarValueDelta): C_VarValueDelta {
-        val map2 = Sets.union(map.keys, v.map.keys)
+        val map2 = (map.keys + v.map.keys)
             .mapNotNull { path ->
                 val n1 = map[path]
                 val n2 = v.map[path]

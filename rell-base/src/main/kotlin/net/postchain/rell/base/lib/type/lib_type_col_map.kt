@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.lib.type
 
-import com.google.common.collect.Iterables
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvFactory
@@ -405,7 +404,7 @@ class Rt_MapValue(val type: R_MapType, map: MutableMap<Rt_Value, Rt_Value>): Rt_
 
     fun asIterable(legacy: Boolean): Iterable<Rt_Value> {
         val entryType = if (legacy) type.legacyEntryType else type.entryType
-        return Iterables.transform(map.entries) { entry ->
+        return map.entries.map { entry ->
             Rt_TupleValue(entryType, immListOf(entry.key, entry.value))
         }
     }

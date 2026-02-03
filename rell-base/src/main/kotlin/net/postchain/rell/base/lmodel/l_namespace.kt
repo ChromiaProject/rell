@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.lmodel
 
-import com.google.common.collect.Iterables
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_LangVersion
@@ -107,8 +106,8 @@ class L_Namespace(members: List<L_NamespaceMember>) {
     }
 
     private fun allTypeExtensions0(): Iterable<L_TypeExtension> {
-        val nested = Iterables.concat(Iterables.transform(namespaces.values) { it.allTypeExtensions0() })
-        return Iterables.concat(typeExtensions, nested)
+        val nested = namespaces.values.flatMap { it.allTypeExtensions0().asIterable() }
+        return typeExtensions + nested
     }
 
     companion object {

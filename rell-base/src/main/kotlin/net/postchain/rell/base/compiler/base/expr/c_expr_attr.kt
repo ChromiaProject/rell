@@ -6,7 +6,6 @@ package net.postchain.rell.base.compiler.base.expr
 
 import com.google.common.collect.LinkedHashMultimap
 import com.google.common.collect.Multimap
-import com.google.common.collect.Sets
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.compiler.base.core.C_Name
@@ -50,7 +49,7 @@ internal object C_AttributeResolver {
         val errWatcher = ctx.msgCtx.errorWatcher()
         val matchedAttrs = matchCreateAttrs(ctx.exprCtx, defName, attributes, args)
 
-        val unmatchedArgs = Sets.difference(args.toSet(), matchedAttrs.keys)
+        val unmatchedArgs = args.toSet() - matchedAttrs.keys
         if (unmatchedArgs.isNotEmpty() && !errWatcher.hasNewErrors()) {
             // Must not happen, added for safety.
             ctx.msgCtx.error(pos, "create:unmatched_args", "Not all arguments matched to attributes")
@@ -138,7 +137,7 @@ internal object C_AttributeResolver {
         )
         val matchedAttrs = matchImplicitAttrs(ctx, entity.appLevelName, entity.attributes, args, explicitAttrs, true)
 
-        val unmatched = Sets.difference(args.toSet(), matchedAttrs.keys)
+        val unmatched = args.toSet() - matchedAttrs.keys
         if (unmatched.isNotEmpty() && !errWatcher.hasNewErrors() && !args.any { it.vExpr.type.isError() }) {
             val pos = unmatched.first().vExpr.pos
             ctx.msgCtx.error(pos, "update:unmatched_args", "Not all arguments matched to attributes")

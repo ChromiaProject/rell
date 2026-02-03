@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.model
 
-import com.google.common.collect.Iterables
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvVirtual
 import net.postchain.gtv.GtvVirtualDictionary
@@ -57,7 +56,7 @@ class Rt_VirtualMapValue(
     override fun hashCode() = map.hashCode()
 
     override fun asIterable(): Iterable<Rt_Value> {
-        return Iterables.transform(map.entries) { entry ->
+        return map.entries.map { entry ->
             Rt_TupleValue(type.virtualEntryType, immListOf(entry.key, entry.value))
         }
     }

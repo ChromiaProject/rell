@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.model.expr
 
-import com.google.common.collect.Lists
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.model.R_FrameBlock
@@ -135,7 +134,7 @@ internal class Db_AtWhatValue_RExpr(private val expr: R_Expr): Db_AtWhatValue() 
 
     override fun combiner(frame: Rt_CallFrame): Rt_AtWhatCombiner = Rt_AtWhatCombiner_RExpr(frame)
 
-    private inner class Rt_AtWhatCombiner_RExpr(private val frame: Rt_CallFrame): Rt_AtWhatCombiner(0) {
+    private inner class Rt_AtWhatCombiner_RExpr(frame: Rt_CallFrame): Rt_AtWhatCombiner(0) {
         private val result: Rt_AtWhatItem = Rt_AtWhatItem_RExpr(frame, expr)
 
         override fun combine(dbValues: List<Rt_Value>): Rt_AtWhatItem {
@@ -482,7 +481,7 @@ internal class Db_AtExprFrom(
     private val block: R_FrameBlock? = null,
 ) {
     init {
-        val fromEntities = Lists.transform(this.from) { it.atEntity }
+        val fromEntities = this.from.map { it.atEntity }
         R_DbAtEntity.checkList(fromEntities)
     }
 

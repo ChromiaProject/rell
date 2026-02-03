@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.lib
 
-import com.google.common.collect.Iterables
 import net.postchain.rell.base.compiler.base.def.C_GlobalFunction
 import net.postchain.rell.base.compiler.base.expr.C_AtTypeImplicitAttr
 import net.postchain.rell.base.compiler.base.expr.C_TypeValueMember
@@ -63,14 +62,14 @@ internal class C_LibTypeManager(modules: List<C_LibModule>) {
     private fun getStaticMembers0(type: R_Type): C_LibTypeMembers<C_TypeStaticMember> {
         val libTypeMembers = type.libType.getStaticMembers()
         val libExtMembers = allExtensionTypes.mapNotNull { it.getExtStaticMembers(type.mType) }
-        val allMembers = Iterables.concat(listOf(libTypeMembers), libExtMembers)
+        val allMembers = listOf(libTypeMembers) + libExtMembers
         return C_LibTypeMembers.combined(allMembers)
     }
 
     private fun getValueMembers0(type: R_Type): C_LibTypeMembers<C_TypeValueMember> {
         val libTypeMembers = type.libType.getValueMembers()
         val libExtMembers = allExtensionTypes.mapNotNull { it.getExtValueMembers(type.mType) }
-        val allMembers = Iterables.concat(listOf(libTypeMembers), libExtMembers)
+        val allMembers = listOf(libTypeMembers) + libExtMembers
         return C_LibTypeMembers.combined(allMembers)
     }
 
