@@ -1,5 +1,5 @@
 [versions]
-rell = "0.15.0"
+rell = "0.15.1"
 
 # NOTE: Alaways use the latest release version of postchain
 postchain = "latest.release"
