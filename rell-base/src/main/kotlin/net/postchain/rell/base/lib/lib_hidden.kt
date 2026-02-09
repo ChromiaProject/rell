@@ -60,7 +60,7 @@ internal object Lib_RellHidden {
                 body { _ -> Rt_UnitValue }
             }
 
-            function("sleep", result = "unit", since = RellVersions.SINCE_NOW) {
+            function("sleep", result = "unit", since = "0.15.1") {
                 param("ms", "integer")
                 bodyContext { ctx, ms ->
                     val millis = ms.asInteger()
