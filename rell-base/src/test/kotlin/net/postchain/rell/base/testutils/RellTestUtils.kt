@@ -172,7 +172,7 @@ object RellTestUtils {
         val rtArgs = eval.wrapRt { decoder(query.params(), args) }
 
         val res = eval.wrapRt {
-            val v = query.call(exeCtx, rtArgs!!)
+            val v = query.call(exeCtx, rtArgs)
             encoder(query.type(), v)
         }
 

@@ -278,7 +278,11 @@ private class SqlEntityIniter private constructor(
         val entityCols = entity.attributes.values.map { it.sqlMapping }.toSet()
         val removedAttrs = metaCls.attrs.keys.filter { it !in entityCols }
         if (removedAttrs.isNotEmpty()) {
-            processRemovedAttrs(entity, metaCls.id, removedAttrs)
+            if (REMOVED_ATTRS_DROP_COLUMNS_SWITCH.isActive(exeCtx.globalCtx.compilerOptions)) {
+                processRemovedAttrs(entity, metaCls.id, removedAttrs)
+            } else {
+                checkOldAttrs(entity, metaCls, removedAttrs)
+            }
         }
 
         val metaCols = metaCls.attrs.keys.toSet()
@@ -304,6 +308,17 @@ private class SqlEntityIniter private constructor(
                             "Type of attribute '${attr.name}' of entity $entityName changed: was $oldType, now $newType")
                 }
             }
+        }
+    }
+
+    private fun checkOldAttrs(entity: R_EntityDefinition, metaEntity: MetaEntity, oldAttrs: List<String>) {
+        if (initCtx.logging.metaNoCode) {
+            val oldAttrsSorted = oldAttrs.sorted()
+            val codeList = oldAttrsSorted.joinToString(",")
+            val msgList = oldAttrsSorted.joinToString(", ")
+            val entityName = msgEntityName(entity)
+            initCtx.msgs.warning("dbinit:no_code:attrs:${entity.metaName}:$codeList",
+                    "Table columns for undefined attributes of ${metaEntity.type.en} $entityName found: $msgList")
         }
     }
 
@@ -576,6 +591,7 @@ private class SqlEntityIniter private constructor(
 
     companion object {
         private val KEY_INDEX_CHANGE_SWITCH = C_FeatureSwitch("0.13.9")
+        private val REMOVED_ATTRS_DROP_COLUMNS_SWITCH = C_FeatureSwitch("0.15.1", false)
 
         fun processEntities(
             exeCtx: Rt_ExecutionContext,

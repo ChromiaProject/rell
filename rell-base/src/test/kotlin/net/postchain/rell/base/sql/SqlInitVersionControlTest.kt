@@ -92,4 +92,30 @@ class SqlInitVersionControlTest: BaseSqlInitTest() {
         chkInit("entity user { name; }", "rt_err:dbinit:index_diff:user:database:index:name")
         chkAll("0,user,class,false", "0,name,sys:text", "c0.user(name:text,rowid:int8)")
     }
+
+    @Test fun testDropRemovedAttrsCompatibility0150() {
+        compatibility = "0.15.0"
+        chkInit("entity user { name; score: integer; }")
+        chkAll("0,user,class,false", "0,name,sys:text 0,score,sys:integer", "c0.user(name:text,rowid:int8,score:int8)")
+
+        insert("c0.user", "name,score", "100,'Bob',123")
+        chkData("c0.user(100,Bob,123)")
+
+        chkInit("entity user { name; }", "OK", "dbinit:no_code:attrs:user:score")
+        chkAll("0,user,class,false", "0,name,sys:text 0,score,sys:integer", "c0.user(name:text,rowid:int8,score:int8)")
+        chkData("c0.user(100,Bob,123)")
+    }
+
+    @Test fun testDropRemovedAttrsNoCompatibility() {
+        compatibility = null
+        chkInit("entity user { name; score: integer; }")
+        chkAll("0,user,class,false", "0,name,sys:text 0,score,sys:integer", "c0.user(name:text,rowid:int8,score:int8)")
+
+        insert("c0.user", "name,score", "100,'Bob',123")
+        chkData("c0.user(100,Bob,123)")
+
+        chkInit("entity user { name; }", "OK", "dbinit:no_code:attrs:user:score")
+        chkAll("0,user,class,false", "0,name,sys:text 0,score,sys:integer", "c0.user(name:text,rowid:int8,score:int8)")
+        chkData("c0.user(100,Bob,123)")
+    }
 }

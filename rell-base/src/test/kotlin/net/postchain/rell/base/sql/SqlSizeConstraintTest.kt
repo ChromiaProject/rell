@@ -237,6 +237,7 @@ internal class SqlSizeConstraintTest: BaseSqlInitTest() {
     }
 
     @Test fun testConstraintRemovedWhenColumnRemoved() {
+        compatibility = "0.15.1"
         chkInit("entity user { @min_size(9) name; age: integer; }")
         chkInit("entity user { age: integer; }")
         assertEquals(immMapOf(), tstCtx.sqlMgr().access { getExistingSizeConstraints(it, "c0.user") })

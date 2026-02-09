@@ -468,6 +468,14 @@ class LibMapTest: BaseRellTest() {
         chk("[123:'hello'] @{} ( _type_of($) )", "text[(integer,text)]")
         chk("[123:'hello'] @{} ( $ )", "(int[123],text[hello])")
 
+        tst.compatibilityVer = R_LangVersion.of("0.10.6")
+
+        chkEx("{ for (x in [123:'hello']) return _type_of(x); return null; }", "text[(integer,text)]")
+        chkEx("{ for (x in [123:'hello']) return x; return null; }", "(int[123],text[hello])")
+
+        chk("[123:'hello'] @{} ( _type_of($) )", "text[(integer,text)]")
+        chk("[123:'hello'] @{} ( $ )", "(int[123],text[hello])")
+
         tst.compatibilityVer = R_LangVersion.of("0.10.5")
 
         chkEx("{ for (x in [123:'hello']) return _type_of(x); return null; }", "text[(integer,text)]")

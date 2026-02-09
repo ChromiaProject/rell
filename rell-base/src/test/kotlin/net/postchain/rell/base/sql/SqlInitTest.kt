@@ -690,6 +690,7 @@ class SqlInitTest: BaseSqlInitTest() {
     }
 
     @Test fun testDropRemovedAttrs() {
+        compatibility = "0.15.1"
         chkInit("entity user { name; score: integer; level: integer; }")
         chkAll("0,user,class,false", "0,level,sys:integer 0,name,sys:text 0,score,sys:integer",
             "c0.user(level:int8,name:text,rowid:int8,score:int8)")
@@ -703,6 +704,7 @@ class SqlInitTest: BaseSqlInitTest() {
     }
 
     @Test fun testDropRemovedAttrWithData() {
+        compatibility = "0.15.1"
         chkInit("entity user { name; score: integer; age: integer; }")
         chkAll("0,user,class,false", "0,age,sys:integer 0,name,sys:text 0,score,sys:integer",
             "c0.user(age:int8,name:text,rowid:int8,score:int8)")
@@ -718,6 +720,7 @@ class SqlInitTest: BaseSqlInitTest() {
     }
 
     @Test fun testDropRemovedAttrEntityType() {
+        compatibility = "0.15.1"
         chkInit("entity company { name; } entity user { name; company; }")
         chkAll("0,company,class,false 1,user,class,false", "0,name,sys:text 1,company,class:0:company 1,name,sys:text")
         chkColumns("c0.company(name:text,rowid:int8)", "c0.user(company:int8,name:text,rowid:int8)")
@@ -733,6 +736,7 @@ class SqlInitTest: BaseSqlInitTest() {
     }
 
     @Test fun testDropRemovedAttrMixed() {
+        compatibility = "0.15.1"
         chkInit("entity user { name; score: integer; }")
         chkAll("0,user,class,false", "0,name,sys:text 0,score,sys:integer", "c0.user(name:text,rowid:int8,score:int8)")
 
@@ -745,6 +749,7 @@ class SqlInitTest: BaseSqlInitTest() {
     }
 
     @Test fun testDropRemovedAttrReaddWithDifferentType() {
+        compatibility = "0.15.1"
         chkInit("entity user { name; score: integer; }")
         chkAll("0,user,class,false", "0,name,sys:text 0,score,sys:integer", "c0.user(name:text,rowid:int8,score:int8)")
 
