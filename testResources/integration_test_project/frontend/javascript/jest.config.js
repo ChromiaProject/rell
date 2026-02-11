@@ -1,8 +1,7 @@
-
-export default {
-    testEnvironment: 'jest-environment-node',
-    transform: {}, // Explicitly state no transformation
+/** @type {import('jest').Config} */
+module.exports = {
+	testEnvironment: 'node',
     testTimeout: 30 * 1000,
-    testMatch: ['**/tests/**/*.test.js'],
-    moduleFileExtensions: ['js'],
-};
+	testMatch: ['**/tests/**/*.test.js'],
+	moduleFileExtensions: ['js'],
+  };
