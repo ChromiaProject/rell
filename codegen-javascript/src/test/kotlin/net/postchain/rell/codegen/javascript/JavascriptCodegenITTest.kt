@@ -5,6 +5,10 @@ import assertk.assertThat
 import assertk.assertions.support.expected
 import assertk.assertions.support.show
 import java.io.File
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import java.time.Duration
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -19,6 +23,21 @@ import org.testcontainers.utility.MountableFile
 @Testcontainers
 
 class JavascriptCodegenITTest {
+
+    @Test
+    fun `integration test project uses latest postchain-client`() {
+        val latest = fetchLatestNpmVersion("postchain-client")
+        val packageJsonContent = readClasspathResourceText("/integration_test_project/frontend/javascript/package.json")
+        val spec = parseNpmDependencySpecFromPackageJson(packageJsonContent, "postchain-client")
+
+        if (!isUpToDateNpmSpec(spec, latest)) {
+            throw AssertionError(
+                "Please update the JavaScript integration-test client to the latest postchain-client.\n" +
+                    "Declared in package.json: $spec\n" +
+                    "Latest on npm: $latest\n\n"
+            )
+        }
+    }
 
 
     companion object {
@@ -100,5 +119,44 @@ class JavascriptCodegenITTest {
         }
 
         expected(errorMessage)
+    }
+
+    private fun readClasspathResourceText(path: String): String {
+        val url = this::class.java.getResource(path)
+            ?: throw IllegalStateException("$path not found on test classpath")
+        return File(url.toURI()).readText()
+    }
+
+    private fun parseNpmDependencySpecFromPackageJson(packageJson: String, packageName: String): String {
+        val regex = """"$packageName"\s*:\s*"([^"]+)""""
+            .toRegex(setOf(RegexOption.MULTILINE))
+        return regex.find(packageJson)?.groupValues?.get(1)
+            ?: throw AssertionError("Could not find \"$packageName\": \"...\" in package.json")
+    }
+
+    private fun isUpToDateNpmSpec(spec: String, latest: String): Boolean {
+        val normalized = spec.trim()
+        if (normalized == "latest") return true
+        val base = normalized.removePrefix("^").removePrefix("~").trim()
+        return base == latest
+    }
+
+    private fun fetchLatestNpmVersion(packageName: String): String {
+        val client = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build()
+        val request = HttpRequest.newBuilder()
+            .uri(URI.create("https://registry.npmjs.org/$packageName/latest"))
+            .timeout(Duration.ofSeconds(10))
+            .GET()
+            .build()
+        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+        if (response.statusCode() != 200) {
+            throw AssertionError("Could not fetch latest $packageName version: HTTP ${response.statusCode()}")
+        }
+        val versionRegex = """"version"\s*:\s*"([^"]+)"""".toRegex()
+        return versionRegex.find(response.body())
+            ?.groupValues?.get(1)
+            ?: throw AssertionError("Could not parse version from npm registry response for $packageName")
     }
 }

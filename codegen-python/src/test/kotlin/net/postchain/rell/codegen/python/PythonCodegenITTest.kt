@@ -3,6 +3,11 @@ package net.postchain.rell.codegen.python
 import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.support.expected
+import java.io.File
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.BindMode
@@ -11,12 +16,26 @@ import org.testcontainers.containers.Network
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.MountableFile
-import java.io.File
 import java.time.Duration
 
 @Testcontainers
 
 class PythonCodegenITTest {
+
+    @Test
+    fun `integration test project uses latest postchain-client-py`() {
+        val latest = fetchLatestPyPiVersion("postchain-client-py")
+        val reqContent = readClasspathResourceText("/integration_test_project/frontend/python/requirements.txt")
+        val pinned = parsePinnedRequirement(reqContent, "postchain-client-py")
+
+        if (pinned != latest) {
+            throw AssertionError(
+                "Please update the Python integration-test client to the latest postchain-client-py.\n" +
+                    "Pinned in requirements.txt: $pinned\n" +
+                    "Latest on PyPI: $latest\n\n"
+            )
+        }
+    }
 
 
     companion object {
@@ -96,5 +115,37 @@ class PythonCodegenITTest {
         }
 
         expected(errorMessage)
+    }
+
+    private fun readClasspathResourceText(path: String): String {
+        val url = this::class.java.getResource(path)
+            ?: throw IllegalStateException("$path not found on test classpath")
+        return File(url.toURI()).readText()
+    }
+
+    private fun parsePinnedRequirement(requirementsTxt: String, packageName: String): String {
+        val regex = """(?m)^\s*${Regex.escape(packageName)}==([0-9]+\.[0-9]+\.[0-9]+)\s*$""".toRegex()
+        return regex.find(requirementsTxt)?.groupValues?.get(1)
+            ?: throw AssertionError("Expected $packageName to be pinned as '$packageName==<version>' in requirements.txt")
+    }
+
+    private fun fetchLatestPyPiVersion(packageName: String): String {
+        val client = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build()
+        val request = HttpRequest.newBuilder()
+            .uri(URI.create("https://pypi.org/pypi/$packageName/json"))
+            .timeout(Duration.ofSeconds(10))
+            .GET()
+            .build()
+        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+        if (response.statusCode() != 200) {
+            throw AssertionError("Could not fetch latest $packageName version: HTTP ${response.statusCode()}")
+        }
+        val versionRegex = """"info"\s*:\s*\{[\s\S]*?"version"\s*:\s*"([^"]+)""""
+            .toRegex(setOf(RegexOption.MULTILINE, RegexOption.DOT_MATCHES_ALL))
+        return versionRegex.find(response.body())
+            ?.groupValues?.get(1)
+            ?: throw AssertionError("Could not parse info.version from PyPI response for $packageName")
     }
 } 

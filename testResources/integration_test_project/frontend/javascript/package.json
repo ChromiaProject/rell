@@ -1,14 +1,15 @@
 {
   "name": "frontend",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
-	"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+	"test": "jest --passWithNoTests"
   },
   "dependencies": {
-    "postchain-client": "^1.20.1"
+    "postchain-client": "^2.1.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
     "jest": "^29.0.0"
   }
 }
