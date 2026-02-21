@@ -25,8 +25,8 @@ object SqlTestUtils {
      * May be useful for tests that verify DB metadata or other non-writing operations.
      */
     @Throws(SQLException::class)
-    fun createSimpleConnection(): Connection {
-        val prop = readDbProperties()
+    fun createSimpleConnection(path: String = "/rell-db-config.properties"): Connection {
+        val prop = readDbProperties(path)
         val con = DriverManager.getConnection(getDbUrlWithSchema(prop), createJdbcProperties(prop))
         return con
     }
@@ -84,8 +84,8 @@ object SqlTestUtils {
             SqlSchemaUtils.createSchema(con, schema)
         }
 
-        val handle = object : AutoCloseable {
-            override fun close() = dropTempDbUrl(prop)
+        val handle = AutoCloseable {
+            dropTempDbUrl(prop)
         }
 
         return handle to url.toString()
@@ -114,20 +114,26 @@ object SqlTestUtils {
         url.append(value)
     }
 
-    private fun readDbProperties(): DbConnProps {
+    private fun readDbProperties(path: String = "/rell-db-config.properties"): DbConnProps {
         val props = Properties()
 
-        SqlTestUtils.javaClass.getResourceAsStream("/rell-db-config.properties").use { ins ->
+        SqlTestUtils.javaClass.getResourceAsStream(path).use { ins ->
             props.load(ins)
         }
 
         val url = System.getenv("POSTCHAIN_DB_URL") ?: props.getProperty("database.url")
         val user = System.getenv("POSTGRES_USER") ?: props.getProperty("database.username")
         val password = System.getenv("POSTGRES_PASSWORD") ?: props.getProperty("database.password")
-        return DbConnProps(url, user, password)
+        val schema = props.getProperty("database.schema")?.let { "${it}_0" }
+        return DbConnProps(url, user, password, schema)
     }
 
-    data class DbConnProps(val url: String, val user: String, val password: String, val schema: String? = null)
+    data class DbConnProps(
+        val url: String,
+        val user: String,
+        val password: String,
+        val schema: String? = null,
+    )
 
     fun resetRowid(sqlExec: SqlExecutor, chainMapping: Rt_ChainSqlMapping) {
         val table = chainMapping.rowidTable
@@ -181,7 +187,7 @@ object SqlTestUtils {
 
     fun mkins(table: String, columns: String, values: String): String {
         val quotedColumns = columns.split(",").joinToString { "\"$it\"" }
-        return "INSERT INTO \"$table\"(\"${SqlConstants.ROWID_COLUMN}\",$quotedColumns) VALUES ($values);"
+        return """INSERT INTO "$table"("${SqlConstants.ROWID_COLUMN}",$quotedColumns) VALUES ($values);"""
     }
 
     fun dumpDatabaseEntity(sqlExec: SqlExecutor, chainMapping: Rt_ChainSqlMapping, app: R_App): ImmList<String> {
@@ -204,7 +210,7 @@ object SqlTestUtils {
         sqlExec: SqlExecutor,
         chainMapping: Rt_ChainSqlMapping,
         entity: R_EntityDefinition,
-        list: MutableList<String>
+        list: MutableList<String>,
     ) {
         val table = entity.sqlMapping.table(chainMapping)
         val cols = listOf(entity.sqlMapping.rowidColumn()) + entity.attributes.values.map { it.sqlMapping }

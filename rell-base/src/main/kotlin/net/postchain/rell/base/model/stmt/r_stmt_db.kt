@@ -4,7 +4,9 @@
 
 package net.postchain.rell.base.model.stmt
 
+import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.lib.type.Rt_ListValue
+import net.postchain.rell.base.lib.type.Rt_RowidValue
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_CallFrame
@@ -150,29 +152,48 @@ internal sealed class R_BaseUpdateStatement(
     private val fromBlock: R_FrameBlock,
     private val errPos: R_ErrorPos,
 ): R_Statement() {
-    // "returning" is always false, but it may be needed in the future (when update expression returning updated
-    // entities is supported), so keeping it.
     protected abstract fun buildSql(
         frame: Rt_CallFrame,
         ctx: SqlGenContext,
-        @Suppress("SameParameterValue") returning: Boolean,
+        returning: Boolean,
+        returningAttrs: Boolean,
     ): ParameterizedSql
+
+    protected abstract fun processSnapshot(frame: Rt_CallFrame, rEntity: R_EntityDefinition, rows: List<List<Rt_Value>>)
 
     fun executeSql(frame: Rt_CallFrame, fromItems: List<RedDb_AtFromItem>) {
         frame.block(fromBlock) {
             val ctx = SqlGenContext.createTop(frame.sqlCtx, fromItems)
-            val pSql = buildSql(frame, ctx, false)
+            val pSql = buildSql(frame, ctx, false, false)
             pSql.execute(frame.userSqlExec)
         }
     }
 
     fun executeSqlCount(frame: Rt_CallFrame, fromItems: List<RedDb_AtFromItem>): Int {
-        val count: Int = frame.block(fromBlock) {
+        val snapshot = frame.exeCtx.opCtx.hasSnapshotContext()
+        val rEntity = target.entity().rEntity
+
+        val rows = frame.block(fromBlock) {
             val ctx = SqlGenContext.createTop(frame.sqlCtx, fromItems)
-            val pSql = buildSql(frame, ctx, false)
-            pSql.executeUpdate(frame.userSqlExec)
+            val returningAttrs = snapshot && this is R_UpdateStatement
+            val pSql = buildSql(frame, ctx, true, returningAttrs)
+
+            val rows = mutableListOf<List<Rt_Value>>()
+            pSql.executeQuery(frame.userSqlExec) { row ->
+                val rowid = Rt_RowidValue.get(row.getLong(1))
+                val row = if (!returningAttrs) listOf() else rEntity.attributes.values.mapIndexed { i, attr ->
+                    attr.type.sqlAdapter.fromSql(row, i + 2, false)
+                }
+                rows.add(immListOf(rowid) + row)
+            }
+            rows
         }
-        return count
+
+        if (snapshot) {
+            processSnapshot(frame, rEntity, rows)
+        }
+
+        return rows.size
     }
 
     final override fun execute(frame: Rt_CallFrame): R_StatementResult? {
@@ -189,7 +210,12 @@ internal sealed class R_BaseUpdateStatement(
         b.append(fromInfo.entities.getValue(entity.id).alias.str)
     }
 
-    protected fun appendExtraTables(builder: SqlBuilder, sqlCtx: Rt_SqlContext, fromInfo: SqlFromInfo, keyword: String) {
+    protected fun appendExtraTables(
+        builder: SqlBuilder,
+        sqlCtx: Rt_SqlContext,
+        fromInfo: SqlFromInfo,
+        keyword: String,
+    ) {
         val tables = mutableListOf<Pair<String, SqlTableAlias>>()
 
         val entity = target.entity()
@@ -199,7 +225,7 @@ internal sealed class R_BaseUpdateStatement(
         }
 
         for (extraEntity in target.extraEntities()) {
-            tables.add(Pair(extraEntity.rEntity.sqlMapping.table(sqlCtx), fromInfo.entities.getValue(extraEntity.id).alias))
+            tables.add(extraEntity.rEntity.sqlMapping.table(sqlCtx) to fromInfo.entities.getValue(extraEntity.id).alias)
             for (join in fromInfo.entities.getValue(extraEntity.id).joins) {
                 tables.add(Pair(join.alias.entity.sqlMapping.table(sqlCtx), join.alias))
             }
@@ -253,10 +279,19 @@ internal sealed class R_BaseUpdateStatement(
         }
     }
 
-    protected fun appendReturning(builder: SqlBuilder, fromInfo: SqlFromInfo) {
+    protected fun appendReturning(b: SqlBuilder, fromInfo: SqlFromInfo, appendAttrs: Boolean) {
         val entity = target.entity()
-        builder.append(" RETURNING ")
-        builder.appendColumn(fromInfo.entities.getValue(entity.id).alias, entity.rEntity.sqlMapping.rowidColumn())
+        val alias = fromInfo.entities.getValue(entity.id).alias
+
+        b.append(" RETURNING ")
+        b.appendColumn(alias, entity.rEntity.sqlMapping.rowidColumn())
+
+        if (appendAttrs) {
+            for (attr in entity.rEntity.attributes.values) {
+                b.append(", ")
+                b.appendColumn(alias, attr.sqlMapping)
+            }
+        }
     }
 }
 
@@ -266,7 +301,12 @@ internal class R_UpdateStatement(
     errPos: R_ErrorPos,
     private val what: ImmList<R_UpdateStatementWhat>,
 ): R_BaseUpdateStatement(target, fromBlock, errPos) {
-    override fun buildSql(frame: Rt_CallFrame, ctx: SqlGenContext, returning: Boolean): ParameterizedSql {
+    override fun buildSql(
+        frame: Rt_CallFrame,
+        ctx: SqlGenContext,
+        returning: Boolean,
+        returningAttrs: Boolean,
+    ): ParameterizedSql {
         val redWhere = target.where()?.toRedExpr(frame)
 
         val redWhat = what.map { w ->
@@ -279,12 +319,13 @@ internal class R_UpdateStatement(
         val whereSql = translateWhere(ctx, redWhere)
 
         val fromInfo = ctx.getFromInfo()
-        return buildSql0(ctx.sqlCtx, returning, fromInfo, whatSql, whereSql)
+        return buildSql0(ctx.sqlCtx, returning, returningAttrs, fromInfo, whatSql, whereSql)
     }
 
     private fun buildSql0(
         sqlCtx: Rt_SqlContext,
         returning: Boolean,
+        returningAttrs: Boolean,
         fromInfo: SqlFromInfo,
         whatSql: ParameterizedSql,
         whereSql: ParameterizedSql?,
@@ -301,7 +342,7 @@ internal class R_UpdateStatement(
         appendWhere(b, fromInfo, whereSql)
 
         if (returning) {
-            appendReturning(b, fromInfo)
+            appendReturning(b, fromInfo, returningAttrs)
         }
 
         return b.build()
@@ -319,6 +360,26 @@ internal class R_UpdateStatement(
 
         return b.build()
     }
+
+    override fun processSnapshot(frame: Rt_CallFrame, rEntity: R_EntityDefinition, rows: List<List<Rt_Value>>) {
+        for (row in rows) {
+            val rowid0 = row[0].asRowid()
+            val rowid = if (rowid0 != 0L) rowid0 else {
+                frame.exeCtx.opCtx.objectSnapshotId(rEntity.metaName)
+            }
+
+            val attrValues = rEntity.attributes.values
+                .mapIndexed { i, attr -> attr.name to attr.type.rtToGtv(row[i + 1], false) }
+                .toImmMap()
+
+            val data = GtvFactory.gtv(
+                GtvFactory.gtv(rEntity.metaName),
+                GtvFactory.gtv(attrValues),
+            )
+
+            frame.exeCtx.opCtx.emitDatum(rowid, data, false)
+        }
+    }
 }
 
 internal class R_DeleteStatement(
@@ -326,7 +387,12 @@ internal class R_DeleteStatement(
     fromBlock: R_FrameBlock,
     errPos: R_ErrorPos,
 ): R_BaseUpdateStatement(target, fromBlock, errPos) {
-    override fun buildSql(frame: Rt_CallFrame, ctx: SqlGenContext, returning: Boolean): ParameterizedSql {
+    override fun buildSql(
+        frame: Rt_CallFrame,
+        ctx: SqlGenContext,
+        returning: Boolean,
+        returningAttrs: Boolean,
+    ): ParameterizedSql {
         val redWhere = target.where()?.toRedExpr(frame)
         val whereSql = translateWhere(ctx, redWhere)
         val fromInfo = ctx.getFromInfo()
@@ -347,9 +413,17 @@ internal class R_DeleteStatement(
         appendWhere(b, fromInfo, whereSql)
 
         if (returning) {
-            appendReturning(b, fromInfo)
+            appendReturning(b, fromInfo, false)
         }
 
         return b.build()
+    }
+
+    override fun processSnapshot(frame: Rt_CallFrame, rEntity: R_EntityDefinition, rows: List<List<Rt_Value>>) {
+        val data = GtvFactory.gtv(listOf())
+        for (row in rows) {
+            val rowid = row[0].asRowid()
+            frame.exeCtx.opCtx.emitDatum(rowid, data, false)
+        }
     }
 }

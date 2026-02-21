@@ -10,25 +10,25 @@ import kotlin.test.Test
 
 class AtExprTest: BaseRellTest(useSql = true) {
     override fun entityDefs() = listOf(
-            "entity company { name: text; }",
-            "entity user { firstName: text; lastName: text; company; }"
+        "entity company { name: text; }",
+        "entity user { firstName: text; lastName: text; company; }",
     )
 
     override fun objInserts() = listOf(
-            Ins.company(100, "Facebook"),
-            Ins.company(200, "Apple"),
-            Ins.company(300, "Amazon"),
-            Ins.company(400, "Microsoft"),
-            Ins.company(500, "Google"),
+        Ins.company(100, "Facebook"),
+        Ins.company(200, "Apple"),
+        Ins.company(300, "Amazon"),
+        Ins.company(400, "Microsoft"),
+        Ins.company(500, "Google"),
 
-            Ins.user(10, 100, "Mark", "Zuckerberg"),
-            Ins.user(20, 200, "Steve", "Jobs"),
-            Ins.user(21, 200, "Steve", "Wozniak"),
-            Ins.user(30, 300, "Jeff", "Bezos"),
-            Ins.user(40, 400, "Bill", "Gates"),
-            Ins.user(41, 400, "Paul", "Allen"),
-            Ins.user(50, 500, "Sergey", "Brin"),
-            Ins.user(51, 500, "Larry", "Page")
+        Ins.user(10, 100, "Mark", "Zuckerberg"),
+        Ins.user(20, 200, "Steve", "Jobs"),
+        Ins.user(21, 200, "Steve", "Wozniak"),
+        Ins.user(30, 300, "Jeff", "Bezos"),
+        Ins.user(40, 400, "Bill", "Gates"),
+        Ins.user(41, 400, "Paul", "Allen"),
+        Ins.user(50, 500, "Sergey", "Brin"),
+        Ins.user(51, 500, "Larry", "Page"),
     )
 
     @Test fun testFindUserWithSameName() {
@@ -123,7 +123,8 @@ class AtExprTest: BaseRellTest(useSql = true) {
         chk("(u: user, c: company) @ { .name == 'Xerox' }", "ct_err:at_attr_name_ambig:name:[u:user:name,c:company:name]")
         chk("(user, company) @ { user.name == 'Bob', company.name == 'Xerox' }", "(user=user[0],company=company[2])")
         chk("(u1: user, u2: user) @ { .name == 'Bob' }", "ct_err:at_attr_name_ambig:name:[u1:user:name,u2:user:name]")
-        chk("(c1: company, c2: company) @ { .name == 'Bob' }", "ct_err:at_attr_name_ambig:name:[c1:company:name,c2:company:name]")
+        chk("(c1: company, c2: company) @ { .name == 'Bob' }",
+            "ct_err:at_attr_name_ambig:name:[c1:company:name,c2:company:name]")
     }
 
     @Test fun testAttributeAmbiguityType() {
@@ -152,21 +153,24 @@ class AtExprTest: BaseRellTest(useSql = true) {
         chkEx("{ $base return single @ { tgt2 }; }", "single[1]")
 
         // Ambiguity between attributes of the same entity.
-        chkEx("{ $base return double @ { tgt1 }; }", "ct_err:at_where:var_manyattrs_type:0:tgt1:target:[double:double.t1,double:double.t2]")
+        chkEx("{ $base return double @ { tgt1 }; }",
+            "ct_err:at_where:var_manyattrs_type:0:tgt1:target:[double:double.t1,double:double.t2]")
         chkEx("{ $base return double @ { .t1 == tgt1, tgt2 }; }",
             "ct_err:at_where:var_manyattrs_type:1:tgt2:target:[double:double.t1,double:double.t2]")
         chkEx("{ $base return double @ { .t1 == tgt1, .t2 == tgt2 }; }", "double[0]")
         chkEx("{ $base return double @ { .t1 == tgt3, .t2 == tgt1 }; }", "double[2]")
 
         // Ambiguity between attributes of different entities.
-        chkEx("{ $base return (s1: single, s2: single) @ { tgt1 }; }", "ct_err:at_where:var_manyattrs_type:0:tgt1:target:[s1:single.t,s2:single.t]")
+        chkEx("{ $base return (s1: single, s2: single) @ { tgt1 }; }",
+            "ct_err:at_where:var_manyattrs_type:0:tgt1:target:[s1:single.t,s2:single.t]")
         chkEx("{ $base return (s1: single, s2: single) @ { tgt1, tgt2 }; }", """ct_err:
             [at_where:var_manyattrs_type:0:tgt1:target:[s1:single.t,s2:single.t]]
             [at_where:var_manyattrs_type:1:tgt2:target:[s1:single.t,s2:single.t]]
         """)
         chkEx("{ $base return (s1: single, s2: single) @ { s1.t == tgt1, tgt2 }; }",
                 "ct_err:at_where:var_manyattrs_type:1:tgt2:target:[s1:single.t,s2:single.t]")
-        chkEx("{ $base return (s1: single, s2: single) @ { s1.t == tgt1, s2.t == tgt2 }; }", "(s1=single[0],s2=single[1])")
+        chkEx("{ $base return (s1: single, s2: single) @ { s1.t == tgt1, s2.t == tgt2 }; }",
+            "(s1=single[0],s2=single[1])")
     }
 
     @Test fun testMultipleEntitiesCrossReference() {
@@ -196,14 +200,16 @@ class AtExprTest: BaseRellTest(useSql = true) {
     }
 
     @Test fun testAllFieldKinds() {
-        def("""entity testee {
+        def("""
+            entity testee {
                 key k1: integer, k2: integer;
                 key k3: integer;
                 index i1: integer;
                 index i2: integer, i3: integer;
                 f1: integer;
                 f2: integer;
-        }""")
+            }
+        """)
         def("entity proxy { ref: testee; }")
 
         tst.inserts = listOf()
@@ -508,6 +514,6 @@ class AtExprTest: BaseRellTest(useSql = true) {
         fun company(id: Int, name: String): String = SqlTestUtils.mkins("c0.company", "name", "$id, '$name'")
 
         fun user(id: Int, companyId: Int, firstName: String, lastName: String): String =
-                SqlTestUtils.mkins("c0.user", "firstName,lastName,company", "$id, '$firstName', '$lastName', $companyId")
+            SqlTestUtils.mkins("c0.user", "firstName,lastName,company", "$id, '$firstName', '$lastName', $companyId")
     }
 }

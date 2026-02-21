@@ -8,12 +8,10 @@ import net.postchain.rell.base.lib.type.R_JsonType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.runtime.Rt_SqlContext
-import net.postchain.rell.base.utils.toImmMap
+import net.postchain.rell.base.utils.immMapOf
 import org.jooq.*
 import org.jooq.impl.DSL
-import org.jooq.impl.DSL.condition
 import org.jooq.impl.DSL.constraint
-import org.jooq.impl.DSL.length
 import org.jooq.impl.SQLDataType
 
 object SqlGen {
@@ -28,18 +26,18 @@ object SqlGen {
 
     // (!) When changing a function, change its name e.g. to fn_v2. Functions in the database are not upgraded - a function is created
     // only once, if there is no function with the same name in the database.
-    val RELL_SYS_FUNCTIONS = mapOf(
+    val RELL_SYS_FUNCTIONS = immMapOf(
         genFunctionIntegerPower(),
         genFunctionBigNumberFromText(SqlConstants.FN_BIGINTEGER_FROM_TEXT, "big_integer", "^[-+]?[0-9]+$"),
         genFunctionBigIntegerPower(),
         genFunctionBigNumberFromText(SqlConstants.FN_DECIMAL_FROM_TEXT, "decimal", "^[-+]?([0-9]+([.][0-9]+)?|[.][0-9]+)([Ee][-+]?[0-9]+)?$"),
-        genFunctionDecimalToText(SqlConstants.FN_DECIMAL_TO_TEXT),
+        genFunctionDecimalToText(),
         genFunctionSubstr1(SqlConstants.FN_BYTEA_SUBSTR1, "BYTEA"),
         genFunctionSubstr2(SqlConstants.FN_BYTEA_SUBSTR2, "BYTEA"),
-        genFunctionRepeat(SqlConstants.FN_TEXT_REPEAT, "TEXT"),
+        genFunctionRepeat(),
         genFunctionSubstr1(SqlConstants.FN_TEXT_SUBSTR1, "TEXT"),
         genFunctionSubstr2(SqlConstants.FN_TEXT_SUBSTR2, "TEXT"),
-        genFunctionTextGetChar(SqlConstants.FN_TEXT_GETCHAR),
+        genFunctionTextGetChar(),
         genFunctionJsonArrayGet(SqlConstants.FN_JSON_ARRAY_GET),
         genFunctionJsonObjectGet(SqlConstants.FN_JSON_OBJECT_GET),
         genFunctionJsonArrayGet(SqlConstants.FN_JSON_ARRAY_GET_OR_NULL, isNullableVariant = true),
@@ -51,7 +49,7 @@ object SqlGen {
         genFunctionJsonAsType(SqlConstants.FN_JSON_AS_TEXT, "TEXT", TEXT_TEST, "not text", ::textExtractor),
         genFunctionJsonAsType(SqlConstants.FN_JSON_AS_TEXT_OR_NULL, "TEXT", TEXT_TEST, null, ::textExtractor),
         genFunctionJsonSize(SqlConstants.FN_JSON_SIZE),
-    ).toImmMap()
+    )
 
     fun genFunctionJsonSize(name: String): Pair<String, String> {
         return name to """
@@ -159,9 +157,10 @@ object SqlGen {
             """.trimIndent()
     }
 
-    private fun genFunctionDecimalToText(name: String): Pair<String, String> {
+    private fun genFunctionDecimalToText(): Pair<String, String> {
         // Using regexp to remove trailing zeros.
         // Clever regexp: can handle special cases like "0.0", "0.000000", etc.
+        val name = SqlConstants.FN_DECIMAL_TO_TEXT
         return name to """
                 CREATE FUNCTION "$name"(v NUMERIC) RETURNS TEXT AS $$
                 BEGIN
@@ -171,7 +170,9 @@ object SqlGen {
             """.trimIndent()
     }
 
-    private fun genFunctionRepeat(name: String, type: String): Pair<String, String> {
+    private fun genFunctionRepeat(): Pair<String, String> {
+        val name = SqlConstants.FN_TEXT_REPEAT
+        val type = "TEXT"
         return name to """
                 CREATE FUNCTION "$name"(v $type, i INT) RETURNS $type AS $$
                 BEGIN
@@ -210,7 +211,8 @@ object SqlGen {
             """.trimIndent()
     }
 
-    private fun genFunctionTextGetChar(name: String): Pair<String, String> {
+    private fun genFunctionTextGetChar(): Pair<String, String> {
+        val name = SqlConstants.FN_TEXT_GETCHAR
         return name to """
                 CREATE FUNCTION "$name"(v TEXT, i INT) RETURNS TEXT AS $$
                 DECLARE n INT;
@@ -251,12 +253,39 @@ object SqlGen {
         """.trimIndent()
     }
 
-    fun genEntity(sqlCtx: Rt_SqlContext, rEntity: R_EntityDefinition): String {
+    fun genEntity(sqlCtx: Rt_SqlContext, rEntity: R_EntityDefinition, addFkConstraints: Boolean): String {
         val tableName = rEntity.sqlMapping.table(sqlCtx)
-        return genEntity(sqlCtx, rEntity, tableName)
+        return genEntity(sqlCtx, rEntity, tableName, addFkConstraints)
     }
 
-    private fun genEntity(sqlCtx: Rt_SqlContext, rEntity: R_EntityDefinition, tableName: String): String {
+    fun genEntityConstraintsAndIndexes(sqlCtx: Rt_SqlContext, rEntity: R_EntityDefinition): List<String> {
+        val tableName = rEntity.sqlMapping.table(sqlCtx)
+        val sqls = mutableListOf<String>()
+
+        val fkSql = genAddAttrConstraintsSql(sqlCtx, rEntity, rEntity.attributes.values.toList(), true)
+        if (fkSql.isNotEmpty()) {
+            sqls.add("$fkSql;")
+        }
+
+        val keyNameGen = keyNameGen(tableName, listOf())
+        for (rKey in rEntity.keys) {
+            sqls.add("${genCreateKeySql(rEntity, tableName, rKey, keyNameGen)};")
+        }
+
+        val indexNameGen = indexNameGen(tableName, listOf())
+        for (rIndex in rEntity.indexes) {
+            sqls.add("${genCreateIndexSql(rEntity, tableName, rIndex, indexNameGen)};")
+        }
+
+        return sqls
+    }
+
+    private fun genEntity(
+        sqlCtx: Rt_SqlContext,
+        rEntity: R_EntityDefinition,
+        tableName: String,
+        addFkConstraints: Boolean,
+    ): String {
         val mapping = rEntity.sqlMapping
         val rowid = mapping.rowidColumn()
         val attrs = rEntity.attributes.values
@@ -265,23 +294,27 @@ object SqlGen {
 
         val constraints = mutableListOf<Constraint>()
         constraints.add(constraint("PK_$tableName").primaryKey(rowid))
-        constraints += genAttrConstraints(sqlCtx, rEntity, attrs)
+        constraints += genAttrConstraints(sqlCtx, rEntity, attrs, addFkConstraints)
 
         var q = t.column(rowid, SQLDataType.BIGINT.nullable(false))
         q = genAttrColumns(attrs, q)
 
-        val keyNameGen = keyNameGen(tableName, listOf())
-        for (rKey in rEntity.keys) {
-            val c = makeConstraint(rEntity, rKey, keyNameGen)
-            constraints.add(c)
+        if (addFkConstraints) {
+            val keyNameGen = keyNameGen(tableName, listOf())
+            for (rKey in rEntity.keys) {
+                val c = makeConstraint(rEntity, rKey, keyNameGen)
+                constraints.add(c)
+            }
         }
 
         var ddl = q.constraints(*constraints.toTypedArray()).toString() + ";\n"
 
-        val indexNameGen = indexNameGen(tableName, listOf())
-        for (rIndex in rEntity.indexes) {
-            val indexSql = genCreateIndexSql(rEntity, tableName, rIndex, indexNameGen)
-            ddl += "$indexSql;\n"
+        if (addFkConstraints) {
+            val indexNameGen = indexNameGen(tableName, listOf())
+            for (rIndex in rEntity.indexes) {
+                val indexSql = genCreateIndexSql(rEntity, tableName, rIndex, indexNameGen)
+                ddl += "$indexSql;\n"
+            }
         }
 
         return ddl
@@ -302,12 +335,13 @@ object SqlGen {
         sqlCtx: Rt_SqlContext,
         entity: R_EntityDefinition,
         attrs: Collection<R_Attribute>,
+        addFkConstraints: Boolean,
     ): List<Constraint> {
         val sqlTable = entity.sqlMapping.table(sqlCtx)
         val constraints = mutableListOf<Constraint>()
 
         for (attr in attrs) {
-            if (attr.type is R_EntityType) {
+            if (attr.type is R_EntityType && addFkConstraints) {
                 val refEntity = attr.type.rEntity
                 val refTable = refEntity.sqlMapping.table(sqlCtx)
                 val fkConstraint = constraint("${sqlTable}_${attr.sqlMapping}_FK")
@@ -369,8 +403,13 @@ object SqlGen {
         return b.toString()
     }
 
-    fun genAddAttrConstraintsSql(sqlCtx: Rt_SqlContext, entity: R_EntityDefinition, attrs: List<R_Attribute>): String {
-        val constraints = genAttrConstraints(sqlCtx, entity, attrs)
+    fun genAddAttrConstraintsSql(
+        sqlCtx: Rt_SqlContext,
+        entity: R_EntityDefinition,
+        attrs: List<R_Attribute>,
+        addFkConstraints: Boolean,
+    ): String {
+        val constraints = genAttrConstraints(sqlCtx, entity, attrs, addFkConstraints)
         if (constraints.isEmpty()) {
             return ""
         }

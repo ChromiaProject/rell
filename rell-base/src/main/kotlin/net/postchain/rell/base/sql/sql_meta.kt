@@ -9,12 +9,11 @@ import net.postchain.rell.base.model.R_EntityDefinition
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.runtime.Rt_SqlContext
 import net.postchain.rell.base.runtime.utils.Rt_Messages
-import net.postchain.rell.base.sql.SqlUtils.getExistingSizeConstraints
 import net.postchain.rell.base.utils.*
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 
-private val MSG_BROKEN_META = "Broken metadata"
+private const val MSG_BROKEN_META = "Broken metadata"
 
 object SqlMeta {
     private val CREATE_TABLE_META_ENTITIES = """
@@ -76,7 +75,8 @@ object SqlMeta {
 
         for (classId in attrMap.keys.sorted()) {
             if (classId !in entityMap) {
-                msgs.error("meta:attr_no_entity:$classId", "$MSG_BROKEN_META: attributes without entity (class_id = $classId)")
+                val msg = "$MSG_BROKEN_META: attributes without entity (class_id = $classId)"
+                msgs.error("meta:attr_no_entity:$classId", msg)
             }
         }
         msgs.checkErrors()
@@ -105,11 +105,16 @@ object SqlMeta {
         return null
     }
 
-    private fun selectMetaEntities(mapping: Rt_ChainSqlMapping, sqlExec: SqlExecutor, msgs: Rt_Messages): List<RecMetaEntity> {
+    private fun selectMetaEntities(
+        mapping: Rt_ChainSqlMapping,
+        sqlExec: SqlExecutor,
+        msgs: Rt_Messages,
+    ): List<RecMetaEntity> {
         val table = mapping.metaEntitiesTable
         val res = mutableListOf<RecMetaEntity>()
 
-        sqlExec.executeQuery("""SELECT T."id", T."name", T."type", T."log" FROM "$table" T ORDER BY T."id";""", {}) { rs ->
+        val sql = """SELECT T."id", T."name", T."type", T."log" FROM "$table" T ORDER BY T."id";"""
+        sqlExec.executeQuery(sql, {}) { rs ->
             val id = rs.getInt(1)
             val name = rs.getString(2)!!
             val type = rs.getString(3)!!
@@ -123,15 +128,22 @@ object SqlMeta {
         return res
     }
 
-    private fun selectMetaAttrs(mapping: Rt_ChainSqlMapping, sqlExec: SqlExecutor, msgs: Rt_Messages): List<RecMetaAttr> {
+    private fun selectMetaAttrs(
+        mapping: Rt_ChainSqlMapping,
+        sqlExec: SqlExecutor,
+        msgs: Rt_Messages,
+    ): List<RecMetaAttr> {
         val table = mapping.metaAttributesTable
         val res = mutableListOf<RecMetaAttr>()
-        sqlExec.executeQuery("""SELECT T."class_id", T."name", T."type" FROM "$table" T ORDER BY T."class_id", T."name";""", {}) { rs ->
+
+        val sql = """SELECT T."class_id", T."name", T."type" FROM "$table" T ORDER BY T."class_id", T."name";"""
+        sqlExec.executeQuery(sql, {}) { rs ->
             val classId = rs.getInt(1)
             val name = rs.getString(2)!!
             val type = rs.getString(3)!!
             res.add(RecMetaAttr(classId, name, type))
         }
+
         checkUniqueKeys(msgs, table, res) { "${it.classId}:${it.name}" }
         return res
     }
@@ -149,10 +161,10 @@ object SqlMeta {
     }
 
     fun checkDataTables(
-            sqlCtx: Rt_SqlContext,
-            tables: Map<String, SqlTable>,
-            metaData: Map<String, MetaEntity>,
-            msgs: Rt_Messages
+        sqlCtx: Rt_SqlContext,
+        tables: Map<String, SqlTable>,
+        metaData: Map<String, MetaEntity>,
+        msgs: Rt_Messages,
     ) {
         val mapping = sqlCtx.mainChainMapping()
 
@@ -185,18 +197,6 @@ object SqlMeta {
                 "Missing meta attributes for existing columns in table $table")
     }
 
-    fun genSqlMetaData(sqlCtx: Rt_SqlContext): String {
-        val sqls = mutableListOf<String>()
-        sqls += genMetaTablesCreate(sqlCtx)
-
-        val metaEntities = sqlCtx.appDefs.topologicalEntities.filter { it.sqlMapping.autoCreateTable() }
-        for ((i, entity) in metaEntities.withIndex()) {
-            sqls += genMetaEntityInserts(sqlCtx, i, entity, MetaEntityType.ENTITY)
-        }
-
-        return SqlGen.joinSqls(sqls)
-    }
-
     fun genMetaTablesCreate(sqlCtx: Rt_SqlContext): ImmList<String> {
         val sqls = mutableListOf<String>()
         val mainChainMapping = sqlCtx.mainChainMapping()
@@ -205,21 +205,27 @@ object SqlMeta {
         return sqls.toImmList()
     }
 
-    fun genMetaEntityInserts(sqlCtx: Rt_SqlContext, classId: Int, entity: R_EntityDefinition, entityType: MetaEntityType): List<String> {
+    fun genMetaEntityInserts(
+        sqlCtx: Rt_SqlContext,
+        classId: Int,
+        entity: R_EntityDefinition,
+        entityType: MetaEntityType,
+    ): List<String> {
         val sqls = mutableListOf<String>()
 
         val entityTable = DSL.table(DSL.name(sqlCtx.mainChainMapping().metaEntitiesTable))
 
-        sqls += SqlGen.DSL_CTX.insertInto(entityTable,
-                DSL.field("id"),
-                DSL.field("name"),
-                DSL.field("type"),
-                DSL.field("log")
+        sqls += SqlGen.DSL_CTX.insertInto(
+            entityTable,
+            DSL.field("id"),
+            DSL.field("name"),
+            DSL.field("type"),
+            DSL.field("log"),
         ).values(
-                classId,
-                entity.metaName,
-                entityType.code,
-                entity.flags.log
+            classId,
+            entity.metaName,
+            entityType.code,
+            entity.flags.log,
         ).getSQL(ParamType.INLINED) + ";"
 
         sqls += genMetaAttrsInserts(sqlCtx, classId, entity.attributes.values)
@@ -233,14 +239,15 @@ object SqlMeta {
         val attrTable = DSL.table(DSL.name(sqlCtx.mainChainMapping().metaAttributesTable))
 
         for (attr in attrs) {
-            sqls += SqlGen.DSL_CTX.insertInto(attrTable,
-                    DSL.field("class_id"),
-                    DSL.field("name"),
-                    DSL.field("type")
+            sqls += SqlGen.DSL_CTX.insertInto(
+                attrTable,
+                DSL.field("class_id"),
+                DSL.field("name"),
+                DSL.field("type"),
             ).values(
-                    classId,
-                    attr.sqlMapping,
-                    attr.type.sqlAdapter.metaName(sqlCtx)
+                classId,
+                attr.sqlMapping,
+                attr.type.sqlAdapter.metaName(sqlCtx),
             ).getSQL(ParamType.INLINED) + ";"
         }
 
@@ -253,7 +260,8 @@ object SqlMeta {
         val attrTable = DSL.table(DSL.name(sqlCtx.mainChainMapping().metaAttributesTable))
 
         for (attrName in attrNames) {
-            sqls += SqlGen.DSL_CTX.deleteFrom(attrTable)
+            sqls += SqlGen.DSL_CTX
+                .deleteFrom(attrTable)
                 .where(
                     DSL.field("class_id").eq(classId)
                         .and(DSL.field("name").eq(attrName))

@@ -36,7 +36,7 @@ class R_FunctionParam internal constructor(
 ): DocDefinition() {
     override val docSymbol: DocSymbol get() = docGetter.get() ?: DocSymbol.NONE
 
-    fun toMetaGtv(): Gtv = mapOf(
+    internal fun toMetaGtv(): Gtv = mapOf(
         "name" to name.str.toGtv(),
         "type" to type.toMetaGtv(),
     ).toGtv()
@@ -76,8 +76,8 @@ class R_OperationDefinition internal constructor(
     mountName: R_MountName,
     val modifiers: R_OperationModifiers,
 ): R_MountedRoutineDefinition(base, mountName) {
-    val type: R_Type = R_OperationType(this)
-    val mirrorStructs = R_MirrorStructs(base, C_DefinitionType.OPERATION, type)
+    internal val type: R_Type = R_OperationType(this)
+    internal val mirrorStructs = R_MirrorStructs(base, C_DefinitionType.OPERATION, type)
 
     private val internals = C_LateInit(C_CompilerPass.EXPRESSIONS, ERROR_INTERNALS)
 
@@ -133,8 +133,8 @@ class R_OperationDefinition internal constructor(
 
     override fun toMetaGtv(): Gtv {
         return mapOf(
-                "mount" to mountName.str().toGtv(),
-                "parameters" to params().map { it.toMetaGtv() }.toGtv()
+            "mount" to mountName.str().toGtv(),
+            "parameters" to params().map { it.toMetaGtv() }.toGtv(),
         ).toGtv()
     }
 
@@ -260,9 +260,9 @@ class R_QueryDefinition internal constructor(
 
     override fun toMetaGtv(): Gtv {
         return mapOf(
-                "mount" to mountName.str().toGtv(),
-                "type" to type().toMetaGtv(),
-                "parameters" to params().map { it.toMetaGtv() }.toGtv()
+            "mount" to mountName.str().toGtv(),
+            "type" to type().toMetaGtv(),
+            "parameters" to params().map { it.toMetaGtv() }.toGtv(),
         ).toGtv()
     }
 }
@@ -363,8 +363,8 @@ class R_FunctionDefinition internal constructor(
     override fun toMetaGtv(): Gtv {
         val header = fnBase.getHeader()
         return mapOf(
-                "type" to header.type.toMetaGtv(),
-                "parameters" to header.params.map { it.toMetaGtv() }.toGtv()
+            "type" to header.type.toMetaGtv(),
+            "parameters" to header.params.map { it.toMetaGtv() }.toGtv(),
         ).toGtv()
     }
 }

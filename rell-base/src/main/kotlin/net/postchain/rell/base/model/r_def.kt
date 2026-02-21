@@ -38,36 +38,39 @@ class R_Key(attribs: ImmList<R_Name>): R_KeyIndex(attribs)
 class R_Index(attribs: ImmList<R_Name>): R_KeyIndex(attribs)
 
 class R_EntityFlags(
-        val isObject: Boolean,
-        val canCreate: Boolean,
-        val canUpdate: Boolean,
-        val canDelete: Boolean,
-        val gtv: Boolean,
-        val log: Boolean
+    val isObject: Boolean,
+    val canCreate: Boolean,
+    val canUpdate: Boolean,
+    val canDelete: Boolean,
+    val gtv: Boolean,
+    val log: Boolean,
 )
 
 class R_EntityBody(
-        val keys: ImmList<R_Key>,
-        val indexes: ImmList<R_Index>,
-        val attributes: ImmMap<R_Name, R_Attribute>
+    val keys: ImmList<R_Key>,
+    val indexes: ImmList<R_Index>,
+    val attributes: ImmMap<R_Name, R_Attribute>,
 )
 
-class R_ExternalEntity(val chain: R_ExternalChainRef, val metaCheck: Boolean)
+class R_ExternalEntity(
+    val chain: R_ExternalChainRef,
+    val metaCheck: Boolean,
+)
 
 class R_EntityDefinition internal constructor(
-    base: R_DefinitionBase,
+    internal val rDefBase: R_DefinitionBase,
     defType: C_DefinitionType,
     val rName: R_Name,
     val flags: R_EntityFlags,
     internal val sqlMapping: R_EntitySqlMapping,
     val external: R_ExternalEntity?,
-): R_Definition(base) {
+): R_Definition(rDefBase) {
     val mountName = sqlMapping.mountName
     val metaName = sqlMapping.metaName
 
     val type = R_EntityType(this)
 
-    val mirrorStructs = R_MirrorStructs(base, defType, type)
+    val mirrorStructs = R_MirrorStructs(rDefBase, defType, type)
 
     private val bodyLate = C_LateInit(C_CompilerPass.MEMBERS, ERROR_BODY)
 
@@ -186,9 +189,9 @@ class R_Struct internal constructor(
     override fun toString() = name
 
     private class R_StructBody(
-            val attrMap: ImmMap<R_Name, R_Attribute>,
-            val attrList: ImmList<R_Attribute>,
-            val attrMutable: Boolean
+        val attrMap: ImmMap<R_Name, R_Attribute>,
+        val attrList: ImmList<R_Attribute>,
+        val attrMutable: Boolean,
     )
 
     companion object {

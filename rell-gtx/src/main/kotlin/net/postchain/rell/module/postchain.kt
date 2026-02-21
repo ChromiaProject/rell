@@ -7,19 +7,19 @@ package net.postchain.rell.module
 import mu.KLogging
 import net.postchain.base.BaseBlockBuilderExtension
 import net.postchain.base.data.DatabaseAccess
+import net.postchain.base.snapshot.SnapshotDatum
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.ProgrammerMistake
 import net.postchain.common.exception.UserMistake
 import net.postchain.common.types.WrappedByteArray
+import net.postchain.core.BlockEContext
 import net.postchain.core.EContext
 import net.postchain.core.Transactor
 import net.postchain.core.TxEContext
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDictionary
-import net.postchain.gtx.GTXModule
-import net.postchain.gtx.GTXModuleFactory
-import net.postchain.gtx.GTXOperation
-import net.postchain.gtx.NON_STRICT_QUERY_ARGUMENT
+import net.postchain.gtv.GtvFactory
+import net.postchain.gtx.*
 import net.postchain.gtx.data.ExtOpData
 import net.postchain.gtx.special.GTXSpecialTxExtension
 import net.postchain.rell.base.compiler.base.core.C_CompilationResult
@@ -27,20 +27,19 @@ import net.postchain.rell.base.compiler.base.core.C_Compiler
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.expr.ParameterizedSql
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.utils.Rt_SnapshotSqlUtils
 import net.postchain.rell.base.runtime.utils.Rt_SqlManagerUtils
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.gtx.PostchainBaseUtils
-import java.sql.SQLException
-import net.postchain.rell.gtx.Rt_CheckCorrectnessPostchainTxContext
-import net.postchain.rell.gtx.Rt_DefaultPostchainTxContextFactory
-import net.postchain.rell.gtx.Rt_PostchainOpContext
-import net.postchain.rell.gtx.Rt_PostchainTxContextFactory
+import net.postchain.rell.gtx.*
 import org.apache.commons.lang3.time.FastDateFormat
-import java.util.Locale
+import java.sql.SQLException
+import java.util.*
+import kotlin.math.max
 
 private class ErrorHandler(
     val printer: Rt_Printer,
@@ -136,6 +135,7 @@ private class RellGTXOperation(
     private val module: RellPostchainModule,
     private val rOperation: R_OperationDefinition,
     private val errorHandler: ErrorHandler,
+    private val snapshotContext: SnapshotContext?,
     opData: ExtOpData,
 ): GTXOperation(opData) {
     private val gtvArgs = data.args.toImmList()
@@ -185,6 +185,7 @@ private class RellGTXOperation(
     private fun makeApplyExeCtx(ctx: TxEContext): Rt_ExecutionContext {
         val blockHeight = DatabaseAccess.of(ctx).getLastBlockHeight(ctx)
         val txCtx = module.env.txContextFactory.createTxContext(ctx)
+
         val opCtx = Rt_PostchainOpContext(
             txCtx = txCtx,
             lastBlockTime = ctx.timestamp,
@@ -193,7 +194,13 @@ private class RellGTXOperation(
             opIndex = data.opIndex,
             signers = data.signers.mapToImmList { it.toBytes() },
             allOperations = data.operations.toImmList(),
+            eCtx = ctx,
+            snapshotContext = snapshotContext,
+            objectSnapshotIds = module.objectSnapshotIds,
         )
+
+        module.initSnapshotMeta(ctx)
+
         val heightProvider = Rt_TxChainHeightProvider(ctx)
         return module.createExecutionContext(ctx, opCtx, heightProvider, dbReadOnly = false)
     }
@@ -255,7 +262,7 @@ private class RellGTXOperation(
         override fun getChainHeight(rid: WrappedByteArray, id: Long): Long? {
             return try {
                 ctx.getChainDependencyHeight(id)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             }
         }
@@ -282,7 +289,7 @@ private class RellPostchainModule(
     moduleArgsSource: Rt_ModuleArgsSource,
     gtvHashCalculator: PostchainGtvUtils.HashCalculator,
     nativeProvider: Rt_NativeProvider,
-): GTXModule {
+): GTXModule, SnapshotAware {
     private val operationNames = rApp.operations.keys.map { it.str() }.toImmSet()
     private val queryNames = rApp.queries.keys.map { it.str() }.toImmSet()
 
@@ -302,6 +309,15 @@ private class RellPostchainModule(
         nativeProvider = nativeProvider,
     )
 
+    private var snapshotContext: SnapshotContext? = null
+    private var snapshotInited = false
+    private var snapshotMaxRowid = 1L
+    var objectSnapshotIds: ImmMap<String, Long> = immMapOf()
+        private set
+
+    private val entityMap = rApp.sqlDefs.entities.associateByToImmMap { it.metaName }
+    private val objectMap = rApp.sqlDefs.objects.associateByToImmMap { it.rEntity.metaName }
+
     override fun getOperations(): Set<String> {
         return operationNames
     }
@@ -316,19 +332,21 @@ private class RellPostchainModule(
         }
 
         errorHandler.handleError({ "Database initialization failed" }) {
-            val heightProvider = Rt_ConstantChainHeightProvider(-1)
-            val exeCtx = createExecutionContext(ctx, Rt_NullOpContext, heightProvider, dbReadOnly = false)
-            val initLogging = SqlInitLogging.ofLevel(config.dbInitLogLevel)
-
-            // Using the null ProjExt, because Postchain must do the initialization itself.
-            SqlInit.init(exeCtx, NullSqlInitProjExt, initLogging)
+            initDb(ctx, false)
         }
+    }
+
+    private fun initDb(ctx: EContext, snapshot: Boolean) {
+        val heightProvider = Rt_ConstantChainHeightProvider(-1)
+        val exeCtx = createExecutionContext(ctx, Rt_NullOpContext, heightProvider, dbReadOnly = false)
+        val initLogging = SqlInitLogging.ofLevel(config.dbInitLogLevel)
+        SqlInit.init(exeCtx, NullSqlInitProjExt, initLogging, snapshot)
     }
 
     override fun makeTransactor(opData: ExtOpData): Transactor {
         return errorHandler.handleError({ "Operation '${opData.opName}' failed" }) {
             val rOperation = getRoutine("Operation", rApp.operations, opData.opName)
-            RellGTXOperation(this, rOperation, errorHandler, opData)
+            RellGTXOperation(this, rOperation, errorHandler, snapshotContext, opData)
         }
     }
 
@@ -447,6 +465,131 @@ private class RellPostchainModule(
 
     override fun getSpecialTxExtensions(): List<GTXSpecialTxExtension> = immListOf()
     override fun makeBlockBuilderExtensions(): List<BaseBlockBuilderExtension> = immListOf()
+
+    override fun initializeSnapshotContext(context: SnapshotContext) {
+        snapshotContext = context
+    }
+
+    fun initSnapshotMeta(ctx: BlockEContext) {
+        val snapCtx = snapshotContext
+        if (snapCtx != null && !snapshotInited) {
+            val sqlMapping = Rt_ChainSqlMapping(ctx.chainID)
+            val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(rApp, sqlMapping)
+            val sqlExec = createSqlExecutor(ctx)
+
+            objectSnapshotIds = Rt_SnapshotSqlUtils.initObjectSnapshotIds(sqlCtx, sqlExec, rApp.sqlDefs.objects)
+
+            val data = GtvFactory.gtv(listOf())
+            snapCtx.emitDatum(ctx, 0, data, false)
+
+            for (obj in rApp.sqlDefs.objects) {
+                val objRowid = objectSnapshotIds.getValue(obj.rEntity.metaName)
+                val objData = Rt_SnapshotSqlUtils.readObjectState(sqlCtx, sqlExec, obj.rEntity)
+                snapCtx.emitDatum(ctx, objRowid, objData, false)
+            }
+
+            snapshotInited = true
+        }
+    }
+
+    override fun getPermanentDatumIdMax(ctx: EContext) = null
+
+    override fun getPermanentDatums(
+        ctx: EContext,
+        datumIdFrom: Long,
+        datumHandler: (datum: SnapshotDatum?) -> Boolean,
+    ) {
+    }
+
+    override fun initializeImport(ctx: EContext) {
+        initDb(ctx, true)
+    }
+
+    override fun finalizeImport(ctx: EContext) {
+        val sqlMapping = Rt_ChainSqlMapping(ctx.chainID)
+        val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(rApp, sqlMapping)
+        val sqlExec = createSqlExecutor(ctx)
+
+        addEntityConstraints(sqlCtx, sqlExec)
+
+        val sql = ParameterizedSql.generate {
+            it.append("UPDATE ")
+            it.appendName(sqlCtx.mainChainMapping().rowidTable)
+            it.append(" SET last_value = ")
+            it.append(snapshotMaxRowid)
+            it.append(";")
+        }
+
+        sql.execute(sqlExec)
+    }
+
+    private fun addEntityConstraints(sqlCtx: Rt_SqlContext, sqlExec: SqlExecutor) {
+        val allEntities = rApp.sqlDefs.entities + rApp.sqlDefs.objects.map { it.rEntity }
+
+        for (entity in allEntities) {
+            for (sql in SqlGen.genEntityConstraintsAndIndexes(sqlCtx, entity)) {
+                sqlExec.execute(sql)
+            }
+        }
+    }
+
+    override fun constructDatum(ctx: EContext, datumList: List<SnapshotDatum>) {
+        val sqlMapping = Rt_ChainSqlMapping(ctx.chainID)
+        val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(rApp, sqlMapping)
+        val sqlExec = createSqlExecutor(ctx)
+
+        for (datum in datumList) {
+            processDatum(sqlExec, sqlCtx, datum)
+        }
+    }
+
+    private fun processDatum(sqlExec: SqlExecutor, sqlCtx: Rt_SqlContext, datum: SnapshotDatum) {
+        val rowid = datum.id
+        if (rowid == 0L) {
+            return
+        }
+
+        snapshotMaxRowid = max(snapshotMaxRowid, rowid)
+
+        val array = datum.data.asArray()
+        if (array.isEmpty()) {
+            return
+        }
+
+        val entityName = array[0].asString()
+        val values = array[1].asDict()
+
+        val rEntity = entityMap[entityName]
+        if (rEntity != null) {
+            processEntity(sqlExec, sqlCtx, rEntity, rowid, values, isObject = false)
+            return
+        }
+
+        val rObject = objectMap.getValue(entityName)
+        processEntity(sqlExec, sqlCtx, rObject.rEntity, rowid, values, isObject = true)
+    }
+
+    private fun processEntity(
+        sqlExec: SqlExecutor,
+        sqlCtx: Rt_SqlContext,
+        rEntity: R_EntityDefinition,
+        rowid: Long,
+        values: Map<String, Gtv>,
+        isObject: Boolean,
+    ) {
+        val gtvCtx = GtvToRtContext.make(false)
+        val rtValues = rEntity.attributes.values.map { attr ->
+            values[attr.name]?.let { attr.type.gtvToRt(gtvCtx, it) } ?: gtvCtx.getDefaultValue(rEntity, attr)
+        }
+
+        if (isObject) {
+            val sql = Rt_SnapshotSqlUtils.delete(sqlCtx, rEntity)
+            sql.execute(sqlExec)
+        }
+
+        val sql = Rt_SnapshotSqlUtils.insert(sqlCtx, rEntity, rowid, rtValues)
+        sql.execute(sqlExec)
+    }
 }
 
 class RellPostchainModuleEnvironment(
@@ -609,8 +752,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
     }
 
     private fun getGtxChainDependencies(data: Gtv): Map<String, ByteArray> {
-        val gtvDeps = data["dependencies"]
-        if (gtvDeps == null) return mapOf()
+        val gtvDeps = data["dependencies"] ?: return mapOf()
 
         val deps = mutableMapOf<String, ByteArray>()
 
@@ -673,15 +815,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
         }
     }
 
-    companion object: KLogging() {
-        fun compileApp(config: Gtv, env: RellPostchainModuleEnvironment): Pair<C_CompilationResult, C_SourceDir> {
-            val gtxNode = config.asDict().getValue("gtx").asDict()
-            val rellNode = gtxNode.getValue("rell").asDict()
-            val rellCfg = RellGtvConfig(env, rellNode)
-            val cRes = rellCfg.compile()
-            return cRes to rellCfg.sourceDir
-        }
-    }
+    companion object: KLogging()
 }
 
 private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
@@ -769,7 +903,7 @@ private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
 
         val ver = try {
             R_LangVersion.of(verStr)
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             throw UserMistake("Invalid $key: $verStr")
         }
 

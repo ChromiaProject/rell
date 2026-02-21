@@ -9,7 +9,6 @@ import mu.KLogging
 import net.postchain.common.toHex
 import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.model.R_EntityDefinition
-import net.postchain.rell.base.model.R_KeyIndex
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_ObjectDefinition
 import net.postchain.rell.base.model.R_SizeAttrValidator
@@ -72,21 +71,31 @@ object NullSqlInitProjExt: SqlInitProjExt() {
 class SqlInit private constructor(
     private val exeCtx: Rt_ExecutionContext,
     private val projExt: SqlInitProjExt,
-    private val logging: SqlInitLogging
+    private val logging: SqlInitLogging,
+    isSnapshot: Boolean,
 ) {
     private val sqlCtx = exeCtx.sqlCtx
 
-    private val initCtx = SqlInitCtx(logger, logging, SqlObjectsInit(exeCtx))
+    private val initCtx = SqlInitCtx(logger, logging, SqlObjectsInit(exeCtx), isSnapshot)
 
     companion object : KLogging() {
-        fun init(exeCtx: Rt_ExecutionContext, adapter: SqlInitProjExt, logging: SqlInitLogging): List<String> {
-            val obj = SqlInit(exeCtx, adapter, logging)
+        fun init(
+            exeCtx: Rt_ExecutionContext,
+            adapter: SqlInitProjExt,
+            logging: SqlInitLogging,
+            isSnapshot: Boolean = false,
+        ): List<String> {
+            val obj = SqlInit(exeCtx, adapter, logging, isSnapshot)
             return obj.init()
         }
     }
 
     private fun init(): List<String> {
         log(logging.header, "Initializing database (chain_iid = ${sqlCtx.mainChainMapping().chainId})")
+
+        if (initCtx.isSnapshot) {
+            dropEntityTables()
+        }
 
         val dbEmpty = SqlInitPlanner.plan(exeCtx, initCtx)
         initCtx.checkErrors()
@@ -98,6 +107,20 @@ class SqlInit private constructor(
         }
 
         return initCtx.msgs.warningCodes()
+    }
+
+    private fun dropEntityTables() {
+        val sqlDefs = exeCtx.appCtx.app.sqlDefs
+        val allEntities = sqlDefs.entities + sqlDefs.objects.map { it.rEntity }
+
+        for (entity in allEntities) {
+            val tableName = entity.sqlMapping.table(sqlCtx)
+            exeCtx.sysSqlExec.execute("""DROP TABLE IF EXISTS "$tableName" CASCADE;""")
+        }
+
+        val mapping = sqlCtx.mainChainMapping()
+        exeCtx.sysSqlExec.execute("""DELETE FROM "${mapping.metaEntitiesTable}";""")
+        exeCtx.sysSqlExec.execute("""DELETE FROM "${mapping.metaAttributesTable}";""")
     }
 
     private fun executePlan(dbEmpty: Boolean) {
@@ -214,12 +237,7 @@ private class SqlEntityIniter private constructor(
         }
 
         for (obj in appDefs.objects) {
-            val ins = processEntity(obj.rEntity, MetaEntityType.OBJECT)
-            if (ins) {
-                val entityName = msgEntityName(obj.rEntity)
-                initCtx.step(ORD_RECORDS, "Create record for object $entityName", SqlStepAction_InsertObject(obj))
-                initCtx.objsInit.addObject(obj)
-            }
+            processObject(obj)
         }
 
         val codeEntities = appDefs.entities
@@ -236,20 +254,28 @@ private class SqlEntityIniter private constructor(
         }
     }
 
-    private fun processEntity(entity: R_EntityDefinition, type: MetaEntityType): Boolean {
+    private fun processObject(obj: R_ObjectDefinition) {
+        val metaEntity = processEntity(obj.rEntity, MetaEntityType.OBJECT)
+        if (metaEntity == null) {
+            val entityName = msgEntityName(obj.rEntity)
+            initCtx.step(ORD_RECORDS, "Create record for object $entityName", SqlStepAction_InsertObject(obj))
+            initCtx.objsInit.addObject(obj)
+        }
+    }
+
+    private fun processEntity(entity: R_EntityDefinition, type: MetaEntityType): MetaEntity? {
         val metaEntity = metaData[entity.metaName]
-        return if (metaEntity == null) {
+        if (metaEntity == null) {
             processNewEntity(entity, type)
-            true
         } else {
             processExistingEntity(entity, type, metaEntity)
-            false
         }
+        return metaEntity
     }
 
     private fun processNewEntity(entity: R_EntityDefinition, type: MetaEntityType) {
         val sqls = mutableListOf<String>()
-        sqls += SqlGen.genEntity(sqlCtx, entity)
+        sqls += SqlGen.genEntity(sqlCtx, entity, !initCtx.isSnapshot)
 
         val id = nextMetaEntityId++
         sqls += SqlMeta.genMetaEntityInserts(sqlCtx, id, entity, type)
@@ -258,40 +284,40 @@ private class SqlEntityIniter private constructor(
         initCtx.step(ORD_TABLES, "Create table and meta for $entityName", SqlStepAction_ExecSql(sqls.toImmList()))
     }
 
-    private fun processExistingEntity(entity: R_EntityDefinition, type: MetaEntityType, metaCls: MetaEntity) {
-        if (type != metaCls.type) {
+    private fun processExistingEntity(entity: R_EntityDefinition, type: MetaEntityType, metaEnt: MetaEntity) {
+        if (type != metaEnt.type) {
             val clsName = msgEntityName(entity)
-            initCtx.msgs.error("meta:entity:diff_type:${entity.metaName}:${metaCls.type}:$type",
-                    "Cannot initialize database: $clsName was ${metaCls.type.en}, now ${type.en}")
+            initCtx.msgs.error("meta:entity:diff_type:${entity.metaName}:${metaEnt.type}:$type",
+                    "Cannot initialize database: $clsName was ${metaEnt.type.en}, now ${type.en}")
         }
 
         val newLog = entity.flags.log
-        if (newLog != metaCls.log) {
-            val oldLog = metaCls.log
+        if (newLog != metaEnt.log) {
+            val oldLog = metaEnt.log
             val clsName = msgEntityName(entity)
             initCtx.msgs.error("meta:entity:diff_log:${entity.metaName}:$oldLog:$newLog",
                     "Log annotation of $clsName was $oldLog, now $newLog")
         }
 
-        checkAttrTypes(entity, metaCls)
+        checkAttrTypes(entity, metaEnt)
 
         val entityCols = entity.attributes.values.map { it.sqlMapping }.toSet()
-        val removedAttrs = metaCls.attrs.keys.filter { it !in entityCols }
+        val removedAttrs = metaEnt.attrs.keys.filter { it !in entityCols }
         if (removedAttrs.isNotEmpty()) {
             if (REMOVED_ATTRS_DROP_COLUMNS_SWITCH.isActive(exeCtx.globalCtx.compilerOptions)) {
-                processRemovedAttrs(entity, metaCls.id, removedAttrs)
+                processRemovedAttrs(entity, metaEnt.id, removedAttrs)
             } else {
-                checkOldAttrs(entity, metaCls, removedAttrs)
+                checkOldAttrs(entity, metaEnt, removedAttrs)
             }
         }
 
-        val metaCols = metaCls.attrs.keys.toSet()
+        val metaCols = metaEnt.attrs.keys.toSet()
         val newAttrs = entity.attributes.values.map { it.sqlMapping }.filter { it !in metaCols }
         if (newAttrs.isNotEmpty()) {
-            processNewAttrs(entity, metaCls.id, newAttrs)
+            processNewAttrs(entity, metaEnt.id, newAttrs)
         }
 
-        checkOldConstraints(entity, metaCls)
+        checkOldConstraints(entity, metaEnt)
 
         processIndexes(entity)
     }
@@ -431,7 +457,7 @@ private class SqlEntityIniter private constructor(
 
         val exprAttrs = makeCreateExprAttrs(entity, newAttrs, recs)
         if (exprAttrs.size == newAttrs.size) {
-            val action = SqlStepAction_AddColumns_AlterTable(entity, exprAttrs, recs)
+            val action = SqlStepAction_AddColumns_AlterTable(entity, exprAttrs, recs, initCtx.isSnapshot)
             val details = if (recs) "records exist" else "no records"
             initCtx.step(ORD_RECORDS, "Add table columns for $entityName ($details): $attrsStr", action)
         }
@@ -551,7 +577,9 @@ private class SqlEntityIniter private constructor(
                 val sql = SqlGen.genCreateIndexSql(entity, tableName, rIndex, indexNameGen)
                 val msg = "Create index of entity $entityName: ${rIndex.attribs}"
                 initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(sql))
-                processIndexDiff(entity, rIndex.attribs.mapToImmList { attrToColumn(entity, it) }, "index", "code", "database")
+
+                val cols = rIndex.attribs.mapToImmList { attrToColumn(entity, it) }
+                processIndexDiff(entity, cols, "index", "code", "database")
             }
         }
     }
@@ -610,7 +638,12 @@ private enum class SqlInitStepOrder {
     RECORDS,
 }
 
-private class SqlInitCtx(logger: KLogger, val logging: SqlInitLogging, val objsInit: SqlObjectsInit) {
+private class SqlInitCtx(
+    logger: KLogger,
+    val logging: SqlInitLogging,
+    val objsInit: SqlObjectsInit,
+    val isSnapshot: Boolean,
+) {
     val msgs = Rt_Messages(logger)
 
     private val steps = mutableListOf<SqlInitStep>()
@@ -673,10 +706,11 @@ private class SqlStepAction_AddColumns_AlterTable(
     private val entity: R_EntityDefinition,
     private val attrs: ImmList<R_CreateExprAttr>,
     private val existingRecs: Boolean,
+    private val isSnapshot: Boolean,
 ): SqlStepAction() {
     override fun run(ctx: SqlStepCtx) {
         val frame = Rt_CallFrame.createInitFrame(ctx.exeCtx, entity, true)
-        val sql = R_CreateExpr.buildAddColumnsSql(frame, entity, attrs, existingRecs)
+        val sql = R_CreateExpr.buildAddColumnsSql(frame, entity, attrs, existingRecs, isSnapshot)
         sql.execute(frame.sysSqlExec)
     }
 }

@@ -1,0 +1,45 @@
+entity data {
+    key k: integer;
+    mutable x: integer = -1;
+    mutable y: text = 'n/a';
+}
+
+entity company {
+    key name;
+}
+
+entity user {
+    key name;
+    company;
+}
+
+object state {
+    mutable a: integer = 111;
+    mutable b: text = 'foo';
+}
+
+operation new_data(k: integer, x: integer, y: text) {
+    create data(k, x, y);
+}
+
+operation update_data(k: integer, x: integer?, y: text?) {
+    update data @ { .k == k } ( .x = x ?: .x, .y = y ?: .y );
+}
+
+operation delete_data(k: integer) {
+    delete data @ { .k == k };
+}
+
+operation update_state(a: integer?, b: text?) {
+    if (a != null) state.a = a;
+    if (b != null) state.b = b;
+}
+
+operation add_company(name) {
+    create company(name);
+}
+
+operation add_user(name, company_name: name) {
+    val c = company @ { .name == company_name };
+    create user(name, c);
+}

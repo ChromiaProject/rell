@@ -5,6 +5,8 @@
 package net.postchain.rell.base.model.expr
 
 import com.fasterxml.jackson.databind.JsonNode
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
@@ -117,8 +119,6 @@ internal class R_ConstantValueExpr(type: R_Type, private val value: Rt_Value): R
         fun makeNull() = R_ConstantValueExpr(Rt_NullValue)
         fun makeBool(v: Boolean) = R_ConstantValueExpr(Rt_BooleanValue.get(v))
         fun makeInt(v: Long) = R_ConstantValueExpr(Rt_IntValue.get(v))
-        fun makeText(v: String) = R_ConstantValueExpr(Rt_TextValue.get(v))
-        fun makeBytes(v: ByteArray) = R_ConstantValueExpr(Rt_ByteArrayValue.get(v))
     }
 }
 
@@ -465,6 +465,7 @@ internal sealed class R_CreateExpr(
             val rtSql = buildSql(sqlCtx, rEntity, page)
             val rtSel = SqlSelect(rtSql, immListOf(rEntity.type))
             val rows = rtSel.execute(frame.userSqlExec)
+            processSnapshot(frame, page, rows)
             allRows.addAll(rows)
         }
 
@@ -483,6 +484,28 @@ internal sealed class R_CreateExpr(
         val recordsPerPage = max(globalCtx.sqlUpdatePortionSize / values.attrs.size, 1)
         val pages = ListUtils.partition(values.rows, recordsPerPage)
         return pages.mapToImmList { InsertData(values.attrs, it.toImmList()) }
+    }
+
+    private fun processSnapshot(frame: Rt_CallFrame, data: InsertData, rows: List<List<Rt_Value>>) {
+        val opCtx = frame.exeCtx.opCtx
+        if (!opCtx.hasSnapshotContext()) {
+            return
+        }
+
+        for ((i, dataRow) in data.rows.withIndex()) {
+            val rowid = rows[i][0].asObjectId()
+            val datum = makeDatum(data, dataRow)
+            opCtx.emitDatum(rowid, datum, false)
+        }
+    }
+
+    private fun makeDatum(data: InsertData, dataRow: InsertRow): Gtv {
+        val attrs = data.attrs.mapIndexed { i, attr ->
+                val v = dataRow.values[i]
+                attr.name to attr.type.rtToGtv(v, false)
+            }
+            .toImmMap()
+        return gtv(gtv(rEntity.sqlMapping.metaName), gtv(attrs))
     }
 
     companion object {
@@ -537,6 +560,7 @@ internal sealed class R_CreateExpr(
             rEntity: R_EntityDefinition,
             attrs: List<R_CreateExprAttr>,
             existingRecs: Boolean,
+            isSnapshot: Boolean,
         ): ParameterizedSql {
             val sqlCtx = frame.defCtx.sqlCtx
             val table = rEntity.sqlMapping.table(sqlCtx)
@@ -570,7 +594,7 @@ internal sealed class R_CreateExpr(
                 }
             }
 
-            val constraintsSql = SqlGen.genAddAttrConstraintsSql(sqlCtx, rEntity, attrs.map { it.attr })
+            val constraintsSql = SqlGen.genAddAttrConstraintsSql(sqlCtx, rEntity, attrs.map { it.attr }, !isSnapshot)
             if (constraintsSql.isNotEmpty()) {
                 b.append(constraintsSql)
                 b.append(";\n")

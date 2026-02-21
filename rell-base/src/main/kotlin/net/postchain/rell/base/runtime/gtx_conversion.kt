@@ -63,17 +63,28 @@ private class GtvToRtState(
         }
     }
 
-    private fun checkRowids(sqlExec: SqlExecutor, sqlCtx: Rt_SqlContext, rEntity: R_EntityDefinition, rowids: Collection<Long>) {
+    private fun checkRowids(
+        sqlExec: SqlExecutor,
+        sqlCtx: Rt_SqlContext,
+        rEntity: R_EntityDefinition,
+        rowids: Collection<Long>,
+    ) {
         val existingIds = selectExistingIds(sqlExec, sqlCtx, rEntity, rowids)
         val missingIds = rowids.toSet() - existingIds
         if (missingIds.isNotEmpty()) {
             val s = missingIds.toList().sorted()
             val name = rEntity.appLevelName
-            throw Rt_GtvError.exception("obj_missing:[$name]:${missingIds.joinToString(",")}", "Missing objects of entity '$name': $s")
+            val msg = "Missing objects of entity '$name': $s"
+            throw Rt_GtvError.exception("obj_missing:[$name]:${missingIds.joinToString(",")}", msg)
         }
     }
 
-    private fun selectExistingIds(sqlExec: SqlExecutor, sqlCtx: Rt_SqlContext, rEntity: R_EntityDefinition, rowids: Collection<Long>): Set<Long> {
+    private fun selectExistingIds(
+        sqlExec: SqlExecutor,
+        sqlCtx: Rt_SqlContext,
+        rEntity: R_EntityDefinition,
+        rowids: Collection<Long>,
+    ): Set<Long> {
         val buf = StringBuilder()
         buf.append("\"").append(rEntity.sqlMapping.rowidColumn()).append("\" IN (")
         rowids.joinTo(buf, ",")
@@ -121,6 +132,25 @@ class GtvToRtContext private constructor(
     fun trackRecord(entity: R_EntityDefinition, rowid: Long) = state.trackRecord(entity, rowid)
     fun finish(exeCtx: Rt_ExecutionContext) = state.finish(exeCtx)
 
+    fun getDefaultValue(entity: R_EntityDefinition, attr: R_Attribute): Rt_Value {
+        return getDefaultValue(entity.rDefBase, attr, entity.rName.str, "entity")
+    }
+
+    internal fun getDefaultValue(defBase: R_DefinitionBase?, attr: R_Attribute, name: String, kind: String): Rt_Value {
+        val expr = attr.expr
+        if (defaultValueEvaluator != null && defBase != null && expr != null) {
+            return rtValue {
+                defaultValueEvaluator.evaluate(defBase, expr)
+            }
+        }
+
+        val typeName = name
+        throw GtvRtUtils.errGtv(this,
+            "${kind}_noattr:$typeName:${attr.name}",
+            "Missing $kind attribute value: '$typeName.${attr.name}'",
+        )
+    }
+
     companion object {
         private val BIG_INTEGER_SWITCH = C_FeatureSwitch("0.11.0")
 
@@ -150,7 +180,7 @@ abstract class GtvRtConversion {
 }
 
 object GtvRtConversion_None: GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(false, false)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = false, toGtv = false)
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = throw UnsupportedOperationException()
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv) = throw UnsupportedOperationException()
 }
@@ -188,7 +218,7 @@ object GtvRtUtils {
                 }
                 try {
                     return v.longValueExact()
-                } catch (e: ArithmeticException) {
+                } catch (_: ArithmeticException) {
                     throw errGtvType(ctx, rellType, "out_of_range:$v", "value out of range: $v")
                 }
             }

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  ~ Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+  -->
+
+<dict>
+    <entry key="blockstrategy">
+        <dict>
+            <entry key="name">
+                <string>net.postchain.devtools.OnDemandBlockBuildingStrategy</string>
+            </entry>
+        </dict>
+    </entry>
+    <entry key="configurationfactory">
+        <string>net.postchain.gtx.GTXBlockchainConfigurationFactory</string>
+    </entry>
+    <entry key="signers">
+        <array>
+            <bytea>03a301697bdfcd704313ba48e51d567543f2a182031efd6915ddc07bbcc4e16070</bytea>
+        </array>
+    </entry>
+    <entry key="features">
+        <dict>
+            <entry key="merkle_hash_version"><int>2</int></entry>
+            <entry key="snapshot_enabled"><int>1</int></entry>
+        </dict>
+    </entry>
+    <entry key="snapshot">
+        <dict>
+            <entry key="interval"><int>1</int></entry>
+            <entry key="snapshots_to_keep"><int>10</int></entry>
+        </dict>
+    </entry>
+    <entry key="gtx">
+        <dict>
+            <entry key="modules">
+                <array>
+                    <string>net.postchain.rell.module.RellPostchainModuleFactory</string>
+                </array>
+            </entry>
+            <entry key="rell">
+                <dict>
+                    <entry key = "modules">
+                        <array>
+                            <string/>
+                        </array>
+                    </entry>
+                    <entry key = "compilerVersion">
+                        <string>0.16.0</string>
+                    </entry>
+                    <entry key = "version">
+                        <string>0.16.0</string>
+                    </entry>
+                    <entry key = "files">
+                        <dict>
+                            <entry key = "snapshot.rell">
+                                <string>classpath:/net/postchain/rell/base/module/snapshot.rell</string>
+                            </entry>
+                        </dict>
+                    </entry>
+                </dict>
+            </entry>
+        </dict>
+    </entry>
+</dict>

@@ -244,19 +244,7 @@ class GtvRtConversion_Struct(private val struct: R_Struct): GtvRtConversion() {
             val attrCtx = ctx.updateSymbol(GtvToRtSymbol_Attr(struct.name, attr))
             return attr.type.gtvToRt(attrCtx, gtvAttr)
         }
-
-        val expr = attr.expr
-        if (ctx.defaultValueEvaluator != null && rDefBase != null && expr != null) {
-            return ctx.rtValue {
-                ctx.defaultValueEvaluator.evaluate(rDefBase, expr)
-            }
-        }
-
-        val typeName = struct.name
-        throw GtvRtUtils.errGtv(ctx,
-            "struct_noattr:$typeName:${attr.name}",
-            "Missing struct attribute value: '$typeName.${attr.name}'",
-        )
+        return ctx.getDefaultValue(rDefBase, attr, struct.name, "struct")
     }
 
     private inner class ArrayConv {

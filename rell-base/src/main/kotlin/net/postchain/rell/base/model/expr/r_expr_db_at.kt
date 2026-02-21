@@ -193,9 +193,9 @@ internal class Db_AtWhatValue_Complex(
     }
 
     private inner class Rt_AtWhatCombiner_Complex(
-            private val frame: Rt_CallFrame,
-            private val subCombiners: ImmList<Rt_AtWhatCombiner>,
-            dbValueCount: Int
+        private val frame: Rt_CallFrame,
+        private val subCombiners: ImmList<Rt_AtWhatCombiner>,
+        dbValueCount: Int,
     ): Rt_AtWhatCombiner(dbValueCount) {
         private var rValues: List<Rt_AtWhatItem>? = null
 

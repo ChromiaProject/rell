@@ -268,6 +268,7 @@ class RedDbExprTest: BaseRellTest(useSql = true) {
         insert("c0.user", "name,id,value1,value2", "1,'Bob',0,100,200")
     }
 
+    @Suppress("SameParameterValue")
     private fun chkExpr(params: String, expr: String, tester: (QueryTester) -> Unit) {
         chkArgs(params, "= user @* {} ( $expr );", tester)
     }

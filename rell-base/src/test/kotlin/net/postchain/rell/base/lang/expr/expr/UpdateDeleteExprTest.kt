@@ -10,12 +10,12 @@ import kotlin.test.Test
 
 class UpdateDeleteExprTest: BaseRellTest(useSql = true) {
     override fun entityDefs() = listOf(
-            "entity user { name: text; mutable score: integer; }"
+        "entity user { name: text; mutable score: integer; }",
     )
 
     override fun objInserts() = listOf(
-            insUser(101, "Bob", 333),
-            insUser(102, "Alice", 555)
+        insUser(101, "Bob", 333),
+        insUser(102, "Alice", 555),
     )
 
     @Test fun testUpdateObject() {
@@ -253,5 +253,5 @@ class UpdateDeleteExprTest: BaseRellTest(useSql = true) {
     }
 
     private fun insUser(id: Int, name: String, score: Int): String =
-            SqlTestUtils.mkins("c0.user", "name,score", "$id,'$name',$score")
+        SqlTestUtils.mkins("c0.user", "name,score", "$id,'$name',$score")
 }

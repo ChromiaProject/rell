@@ -14,6 +14,7 @@ import java.util.regex.Pattern
 class SqlCol(val type: String)
 class SqlIndex(val name: String, val unique: Boolean, val cols: ImmList<String>)
 class SqlTable(val cols: ImmMap<String, SqlCol>, val indexes: ImmList<SqlIndex>)
+
 class SqlSizeConstraint(val constraintName: String, val attr: String, val min: Long?, val max: Long?) {
     init {
         require(min != null || max != null)
@@ -26,7 +27,7 @@ object SqlUtils {
         dropFunctions(sqlExec)
     }
 
-    private fun dropTables(sqlExec: SqlExecutor, sysTables: Boolean) {
+    fun dropTables(sqlExec: SqlExecutor, sysTables: Boolean) {
         val tables = getExistingTables(sqlExec)
         val delTables = tables
             .filter { sysTables || it !in SqlConstants.SYSTEM_APP_TABLES }
@@ -44,7 +45,8 @@ object SqlUtils {
     }
 
     fun getExistingTables(sqlExec: SqlExecutor): List<String> {
-        val sql = "SELECT table_name FROM information_schema.tables WHERE table_catalog = CURRENT_DATABASE() AND table_schema = CURRENT_SCHEMA();"
+        val where = "table_catalog = CURRENT_DATABASE() AND table_schema = CURRENT_SCHEMA()"
+        val sql = "SELECT table_name FROM information_schema.tables WHERE $where;"
         val list = mutableListOf<String>()
         sqlExec.executeQuery(sql, {}) { rs -> list.add(rs.getString(1)!!)}
         return list.toList()
@@ -81,7 +83,8 @@ object SqlUtils {
     }
 
     fun getExistingFunctions(sqlExec: SqlExecutor): List<String> {
-        val sql = "SELECT routine_name FROM information_schema.routines WHERE routine_catalog = CURRENT_DATABASE() AND routine_schema = CURRENT_SCHEMA();"
+        val where = "routine_catalog = CURRENT_DATABASE() AND routine_schema = CURRENT_SCHEMA()"
+        val sql = "SELECT routine_name FROM information_schema.routines WHERE $where;"
         val list = mutableListOf<String>()
         sqlExec.executeQuery(sql, {}) { rs -> list.add(rs.getString(1)!!)}
         return list.toList()
@@ -162,18 +165,6 @@ object SqlUtils {
         var res = false
         sqlExec.executeQuery(sql, {}) { res = true }
         return res
-    }
-
-    fun printConnectionInfo(sqlExec: SqlExecutor) {
-        var database: String? = null
-        var schema: String? = null
-        sqlExec.executeQuery("SELECT CURRENT_DATABASE(), CURRENT_SCHEMA();", {}) { rs ->
-            checkEquals(database, null)
-            checkEquals(schema, null)
-            database = rs.getString(1)
-            schema = rs.getString(2)
-        }
-        println("Database: [$database], schema: [$schema]")
     }
 
     fun initDatabase(

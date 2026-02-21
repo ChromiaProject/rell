@@ -16,7 +16,6 @@ import net.postchain.rell.base.runtime.utils.Rt_Messages
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.base.utils.minus
 import kotlin.reflect.KType
 import kotlin.reflect.full.createType
 
@@ -56,9 +55,9 @@ class Rt_NullSqlContext private constructor(app: R_App): Rt_SqlContext(app) {
 }
 
 class Rt_RegularSqlContext private constructor(
-        app: R_App,
-        private val mainChainMapping: Rt_ChainSqlMapping,
-        private val linkedExternalChains: ImmList<Rt_ExternalChain>
+    app: R_App,
+    private val mainChainMapping: Rt_ChainSqlMapping,
+    private val linkedExternalChains: ImmList<Rt_ExternalChain>,
 ): Rt_SqlContext(app) {
     private val externalChainsRoot = app.externalChainsRoot
 
@@ -81,11 +80,11 @@ class Rt_RegularSqlContext private constructor(
         }
 
         fun create(
-                app: R_App,
-                mainChainMapping: Rt_ChainSqlMapping,
-                chainDependencies: Map<String, Rt_ChainDependency>,
-                sqlExec: SqlExecutor,
-                heightProvider: Rt_ChainHeightProvider
+            app: R_App,
+            mainChainMapping: Rt_ChainSqlMapping,
+            chainDependencies: Map<String, Rt_ChainDependency>,
+            sqlExec: SqlExecutor,
+            heightProvider: Rt_ChainHeightProvider,
         ): Rt_SqlContext {
             require(app.valid)
             val externalChains = getExternalChains(sqlExec, chainDependencies, heightProvider)
@@ -96,9 +95,9 @@ class Rt_RegularSqlContext private constructor(
         }
 
         private fun getExternalChains(
-                sqlExec: SqlExecutor,
-                dependencies: Map<String, Rt_ChainDependency>,
-                heightProvider: Rt_ChainHeightProvider
+            sqlExec: SqlExecutor,
+            dependencies: Map<String, Rt_ChainDependency>,
+            heightProvider: Rt_ChainHeightProvider,
         ): Map<String, Rt_ExternalChain> {
             if (dependencies.isEmpty()) return mapOf()
 
@@ -146,8 +145,8 @@ class Rt_RegularSqlContext private constructor(
         }
 
         private fun calcLinkedExternalChains(
-                app: R_App,
-                externalChains: Map<String, Rt_ExternalChain>
+            app: R_App,
+            externalChains: Map<String, Rt_ExternalChain>,
         ): ImmList<Rt_ExternalChain> {
             val chainIds = mutableSetOf<Long>()
             val chainRids = mutableSetOf<String>()
@@ -172,7 +171,11 @@ class Rt_RegularSqlContext private constructor(
             }
         }
 
-        private fun checkExternalMetaInfo(sqlCtx: Rt_SqlContext, chains: Map<String, Rt_ExternalChain>, sqlExec: SqlExecutor) {
+        private fun checkExternalMetaInfo(
+            sqlCtx: Rt_SqlContext,
+            chains: Map<String, Rt_ExternalChain>,
+            sqlExec: SqlExecutor,
+        ) {
             val chainMetaEntities = chains.mapValues { (name, chain) -> loadExternalMetaData(name, chain, sqlExec) }
             val chainExternalEntities = getChainExternalEntities(sqlCtx.appDefs.entities)
 
@@ -196,9 +199,9 @@ class Rt_RegularSqlContext private constructor(
         }
 
         private fun checkMissingEntities(
-                chain: String,
-                extEntities: Map<String, R_EntityDefinition>,
-                metaEntities: Map<String, MetaEntity>
+            chain: String,
+            extEntities: Map<String, R_EntityDefinition>,
+            metaEntities: Map<String, MetaEntity>,
         ) {
             val metaEntityNames = metaEntities.filter { (_, c) -> c.type == MetaEntityType.ENTITY }.keys
             val missingEntities = extEntities.keys - metaEntityNames
@@ -221,7 +224,12 @@ class Rt_RegularSqlContext private constructor(
             }
         }
 
-        private fun checkAttrTypes(sqlCtx: Rt_SqlContext, chain: String, extEntity: R_EntityDefinition, metaEntity: MetaEntity) {
+        private fun checkAttrTypes(
+            sqlCtx: Rt_SqlContext,
+            chain: String,
+            extEntity: R_EntityDefinition,
+            metaEntity: MetaEntity,
+        ) {
             for (extAttr in extEntity.attributes.values.sortedBy { it.name }) {
                 val attrName = extAttr.sqlMapping
                 val metaAttr = metaEntity.attrs.getValue(attrName)
@@ -236,7 +244,9 @@ class Rt_RegularSqlContext private constructor(
             }
         }
 
-        private fun getChainExternalEntities(entities: List<R_EntityDefinition>): Map<String, Map<String, R_EntityDefinition>> {
+        private fun getChainExternalEntities(
+            entities: List<R_EntityDefinition>,
+        ): Map<String, Map<String, R_EntityDefinition>> {
             val res = mutableMapOf<String, MutableMap<String, R_EntityDefinition>>()
             for (entity in entities) {
                 if (entity.external != null && entity.external.metaCheck) {
@@ -248,7 +258,11 @@ class Rt_RegularSqlContext private constructor(
             return res
         }
 
-        private fun loadExternalMetaData(name: String, chain: Rt_ExternalChain, sqlExec: SqlExecutor): Map<String, MetaEntity> {
+        private fun loadExternalMetaData(
+            name: String,
+            chain: Rt_ExternalChain,
+            sqlExec: SqlExecutor,
+        ): Map<String, MetaEntity> {
             val res: ImmMap<String, MetaEntity>
 
             val msgs = Rt_Messages(logger)
@@ -260,8 +274,9 @@ class Rt_RegularSqlContext private constructor(
                     is Rt_CommonError -> e.err.code
                     else -> e.err.javaClass.simpleName
                 }
-                throw errInit("external_meta_error:${chain.chainId}:$name:$code",
-                        "Failed to load metadata for external chain '$name' (chain_iid = ${chain.chainId}): ${e.message}")
+                val chainIdMsg = "chain_iid = ${chain.chainId}"
+                val msg = "Failed to load metadata for external chain '$name' ($chainIdMsg): ${e.message}"
+                throw errInit("external_meta_error:${chain.chainId}:$name:$code", msg)
             }
 
             return res
@@ -303,7 +318,6 @@ class Rt_AppContext internal constructor(
     )
 
     private var objsInit: SqlObjectsInit? = null
-    private var objsInited = false
 
     private val globalConstants = Rt_GlobalConstants(this, moduleArgsSource, globalConstantsState)
 
@@ -325,8 +339,6 @@ class Rt_AppContext internal constructor(
 
     internal fun objectsInitialization(objsInit: SqlObjectsInit, code: () -> Unit) {
         check(this.objsInit == null)
-        check(!objsInited)
-        objsInited = true
         this.objsInit = objsInit
         try {
             code()
@@ -428,6 +440,10 @@ abstract class Rt_OpContext {
     abstract fun allOperations(): List<Rt_Value>
     abstract fun currentOperation(): Rt_Value
     abstract fun emitEvent(type: String, data: Gtv)
+
+    open fun hasSnapshotContext(): Boolean = false
+    open fun objectSnapshotId(metaName: String): Long = 0L
+    open fun emitDatum(datumId: Long, datum: Gtv, isPermanent: Boolean) {}
 }
 
 object Rt_NullOpContext: Rt_OpContext() {

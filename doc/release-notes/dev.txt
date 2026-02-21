@@ -8,3 +8,12 @@ entity attributes.
 
 With mixed-version nodes, schema migration could proceed differently on different nodes for the same app code.
 Schema migration now follows backward-compatibility mode to keep behavior consistent in mixed-version networks.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Runtime: Snapshots support
+
+Rell now supports the Postchain snapshots API, which allows to save and restore a blockchain state without replaying
+all transactions from scratch.
+
+For more details, see:
+https://gitlab.com/chromaway/core/postchain/-/blob/dev/doc/snapshots/snapshot-modules.md

@@ -209,9 +209,9 @@ class R_Module(
 }
 
 class R_AppSqlDefs(
-        val entities: ImmList<R_EntityDefinition>,
-        val objects: ImmList<R_ObjectDefinition>,
-        val topologicalEntities: ImmList<R_EntityDefinition>
+    val entities: ImmList<R_EntityDefinition>,
+    val objects: ImmList<R_ObjectDefinition>,
+    val topologicalEntities: ImmList<R_EntityDefinition>,
 ) {
     init {
         checkEquals(this.topologicalEntities.size, this.entities.size)

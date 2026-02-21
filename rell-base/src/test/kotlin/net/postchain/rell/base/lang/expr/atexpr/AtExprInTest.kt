@@ -15,24 +15,24 @@ class AtExprInTest: BaseRellTest(useSql = true) {
         def("entity work { company: text; city; job: text; }")
 
         insert("c0.city", "name,country",
-                "300,'London','UK'",
-                "301,'Paris','France'",
-                "302,'Berlin','Germany'",
-                "303,'Madrid','Spain'"
+            "300,'London','UK'",
+            "301,'Paris','France'",
+            "302,'Berlin','Germany'",
+            "303,'Madrid','Spain'",
         )
 
         insert("c0.user", "name,city,job",
-                "100,'Bob',300,'coder'",            // London
-                "101,'Alice',301,'lawyer'",         // Paris
-                "102,'Trudy',302,'tester'",         // Berlin
-                "103,'John',302,'admin'"            // Berlin
+            "100,'Bob',300,'coder'",            // London
+            "101,'Alice',301,'lawyer'",         // Paris
+            "102,'Trudy',302,'tester'",         // Berlin
+            "103,'John',302,'admin'",           // Berlin
         )
 
         insert("c0.work", "company,city,job",
-                "200,'Adidas',301,'coder'",         // Paris
-                "201,'Reebok',300,'tester'",        // London
-                "202,'Puma',301,'lawyer'",          // Paris
-                "203,'Nike',302,'admin'"            // Berlin
+            "200,'Adidas',301,'coder'",         // Paris
+            "201,'Reebok',300,'tester'",        // London
+            "202,'Puma',301,'lawyer'",          // Paris
+            "203,'Nike',302,'admin'",           // Berlin
         )
     }
 

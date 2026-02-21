@@ -11,9 +11,9 @@ import kotlin.test.Test
 
 class UpdateDeletePathTest: BaseRellTest(useSql = true) {
     override fun entityDefs() = listOf(
-            "entity country { name: text; }",
-            "entity city { name: text; country; }",
-            "entity person { name: text; homeCity: city; workCity: city; mutable score: integer; }"
+        "entity country { name: text; }",
+        "entity city { name: text; country; }",
+        "entity person { name: text; homeCity: city; workCity: city; mutable score: integer; }",
     )
 
     @Test fun testSimplePathUpdate() {
@@ -174,12 +174,12 @@ class UpdateDeletePathTest: BaseRellTest(useSql = true) {
 
     private fun chkDataCommon(vararg expectedArray: String) {
         val implicitlyExpected = arrayOf(
-                "country(1,USA)",
-                "country(2,England)",
-                "country(3,Germany)",
-                "city(4,New York,1)",
-                "city(5,London,2)",
-                "city(6,Berlin,3)"
+            "country(1,USA)",
+            "country(2,England)",
+            "country(3,Germany)",
+            "city(4,New York,1)",
+            "city(5,London,2)",
+            "city(6,Berlin,3)",
         )
         val expected = (implicitlyExpected + expectedArray).toList()
         chkData(*expected.toTypedArray())

@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.model.expr
 
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.Rt_SqlContext
@@ -185,12 +184,6 @@ data class ParameterizedSql(val sql: String, val params: ImmList<Rt_Value>) {
     fun execute(sqlExec: SqlExecutor) {
         val args = calcArgs()
         sqlExec.execute(sql, args::bind)
-    }
-
-    fun executeUpdate(sqlExec: SqlExecutor): Int {
-        val args = calcArgs()
-        val res = sqlExec.executeUpdate(sql, args::bind)
-        return res
     }
 
     fun executeQuery(sqlExec: SqlExecutor, consumer: (ResultSetRow) -> Unit) {

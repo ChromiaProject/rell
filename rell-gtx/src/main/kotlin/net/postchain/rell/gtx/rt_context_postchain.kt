@@ -4,8 +4,10 @@
 
 package net.postchain.rell.gtx
 
+import net.postchain.core.BlockEContext
 import net.postchain.core.TxEContext
 import net.postchain.gtv.Gtv
+import net.postchain.gtx.SnapshotContext
 import net.postchain.gtx.data.OpData
 import net.postchain.rell.base.lib.Lib_OpContext
 import net.postchain.rell.base.runtime.Rt_Exception
@@ -13,6 +15,8 @@ import net.postchain.rell.base.runtime.Rt_OpContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.Bytes
 import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.ImmMap
+import net.postchain.rell.base.utils.immMapOf
 
 abstract class Rt_PostchainTxContext {
     abstract fun emitEvent(type: String, data: Gtv)
@@ -47,7 +51,10 @@ class Rt_PostchainOpContext(
     private val blockHeight: Long,
     private val opIndex: Int,
     private val signers: ImmList<Bytes>,
-    private val allOperations: ImmList<OpData>
+    private val allOperations: ImmList<OpData>,
+    private val eCtx: BlockEContext? = null,
+    private val snapshotContext: SnapshotContext? = null,
+    private val objectSnapshotIds: ImmMap<String, Long> = immMapOf(),
 ): Rt_OpContext() {
     override fun exists() = true
     override fun lastBlockTime() = lastBlockTime
@@ -72,5 +79,15 @@ class Rt_PostchainOpContext(
 
     override fun emitEvent(type: String, data: Gtv) {
         txCtx.emitEvent(type, data)
+    }
+
+    override fun hasSnapshotContext() = eCtx != null && snapshotContext != null
+
+    override fun objectSnapshotId(metaName: String): Long = objectSnapshotIds.getValue(metaName)
+
+    override fun emitDatum(datumId: Long, datum: Gtv, isPermanent: Boolean) {
+        if (eCtx != null) {
+            snapshotContext?.emitDatum(eCtx, datumId, datum, isPermanent)
+        }
     }
 }

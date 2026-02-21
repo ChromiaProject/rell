@@ -146,7 +146,11 @@ internal class R_EntitySqlMapping_Transaction(
 ): R_EntitySqlMapping_TxBlk(SqlConstants.TRANSACTIONS_TABLE, "transaction", "tx_iid", chain) {
     override fun table(chainMapping: Rt_ChainSqlMapping) = chainMapping.transactionsTable
 
-    override fun extraWhereExpr0(entity: R_EntityDefinition, entityExpr: Db_EntityExpr, chain: R_ExternalChainRef?): Db_Expr? {
+    override fun extraWhereExpr0(
+        entity: R_EntityDefinition,
+        entityExpr: Db_EntityExpr,
+        chain: R_ExternalChainRef?,
+    ): Db_Expr? {
         // Extra WHERE with block height check is needed only for external block/transaction entities.
         return if (chain == null) null else makeTransactionBlockHeightExpr(entity, entityExpr, chain)
     }
@@ -171,7 +175,11 @@ internal class R_EntitySqlMapping_Block(
 ): R_EntitySqlMapping_TxBlk(SqlConstants.BLOCKS_TABLE, "block", "block_iid", chain) {
     override fun table(chainMapping: Rt_ChainSqlMapping) = chainMapping.blocksTable
 
-    override fun extraWhereExpr0(entity: R_EntityDefinition, entityExpr: Db_EntityExpr, chain: R_ExternalChainRef?): Db_Expr? {
+    override fun extraWhereExpr0(
+        entity: R_EntityDefinition,
+        entityExpr: Db_EntityExpr,
+        chain: R_ExternalChainRef?,
+    ): Db_Expr? {
         // Extra WHERE with block height check is needed only for external block/transaction entities.
         return if (chain == null) null else makeBlockHeightExpr(entity, entityExpr, chain)
     }

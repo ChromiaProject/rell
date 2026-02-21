@@ -80,7 +80,7 @@
                                 <string>net.postchain.rell.gtx.JavaNativeModule</string>
                             </entry>
                             <entry key = "natk">
-                                <string>net.postchain.rell.gtx.BasicGtxModuleTest$NativeModule</string>
+                                <string>net.postchain.rell.gtx.it.GtxIntegrationTest$NativeModule</string>
                             </entry>
                         </dict>
                     </entry>

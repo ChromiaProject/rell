@@ -61,43 +61,44 @@ class UpdateDeleteTest: BaseRellTest(useSql = true) {
         def("entity person { name: text; home: city; mutable work: city; base: integer; mutable score: integer; }")
 
         chkOp("""
-                val boston = create city('Boston');
-                val seattle = create city('Seattle');
-                val dallas = create city('Dallas');
-                create person(name = 'Mike', home = boston, work = seattle, base = 100, score = 300);
-                create person(name = 'Bob', home = seattle, work = dallas, base = 200, score = 500);
+            val boston = create city('Boston');
+            val seattle = create city('Seattle');
+            val dallas = create city('Dallas');
+            create person(name = 'Mike', home = boston, work = seattle, base = 100, score = 300);
+            create person(name = 'Bob', home = seattle, work = dallas, base = 200, score = 500);
         """)
 
         chkData(
-                "city(1,Boston)",
-                "city(2,Seattle)",
-                "city(3,Dallas)",
-                "person(4,Mike,1,2,100,300)",
-                "person(5,Bob,2,3,200,500)"
+            "city(1,Boston)",
+            "city(2,Seattle)",
+            "city(3,Dallas)",
+            "person(4,Mike,1,2,100,300)",
+            "person(5,Bob,2,3,200,500)",
         )
 
         chkOp("update person @ { .name == 'Mike' } ( name = 'Bob' );", "ct_err:attr_not_mutable:person.name")
-        chkOp("update person @ { .name == 'Bob' } ( home = city @ { .name == 'Boston' } );", "ct_err:attr_not_mutable:person.home")
+        chkOp("update person @ { .name == 'Bob' } ( home = city @ { .name == 'Boston' } );",
+            "ct_err:attr_not_mutable:person.home")
         chkOp("update person @ { .name == 'Mike' } ( base = 999 );", "ct_err:attr_not_mutable:person.base")
         chkOp("val name = 'Bob'; update person @ { .name == 'Mike' } ( name );", "ct_err:attr_not_mutable:person.name")
 
         chkData(
-                "city(1,Boston)",
-                "city(2,Seattle)",
-                "city(3,Dallas)",
-                "person(4,Mike,1,2,100,300)",
-                "person(5,Bob,2,3,200,500)"
+            "city(1,Boston)",
+            "city(2,Seattle)",
+            "city(3,Dallas)",
+            "person(4,Mike,1,2,100,300)",
+            "person(5,Bob,2,3,200,500)",
         )
 
         chkOp("update person @ { .name == 'Bob' } ( city @ { .name == 'Dallas' } );")
         chkOp("update person @ { .name == 'Mike' } ( 777 );")
 
         chkData(
-                "city(1,Boston)",
-                "city(2,Seattle)",
-                "city(3,Dallas)",
-                "person(4,Mike,1,2,100,777)",
-                "person(5,Bob,2,3,200,500)"
+            "city(1,Boston)",
+            "city(2,Seattle)",
+            "city(3,Dallas)",
+            "person(4,Mike,1,2,100,777)",
+            "person(5,Bob,2,3,200,500)",
         )
     }
 
@@ -115,10 +116,7 @@ class UpdateDeleteTest: BaseRellTest(useSql = true) {
         createCities()
 
         chkOp("delete city @ { .name == 'San Francisco' };")
-        chkData(
-                "city(1,New York)",
-                "city(3,Los Angeles)"
-        )
+        chkData("city(1,New York)", "city(3,Los Angeles)")
 
         chkOp("delete city @* {};")
         chkData()
@@ -311,10 +309,10 @@ class UpdateDeleteTest: BaseRellTest(useSql = true) {
         """)
 
         chkOut(
-                "[(name=James,score=100), (name=Mike,score=250)]",
-                "[(name=James,score=200), (name=Mike,score=250)]",
-                "[(name=James,score=200), (name=Mike,score=450)]",
-                "[(name=James,score=100), (name=Mike,score=225)]"
+            "[(name=James,score=100), (name=Mike,score=250)]",
+            "[(name=James,score=200), (name=Mike,score=250)]",
+            "[(name=James,score=200), (name=Mike,score=450)]",
+            "[(name=James,score=100), (name=Mike,score=225)]",
         )
     }
 
@@ -563,8 +561,10 @@ class UpdateDeleteTest: BaseRellTest(useSql = true) {
         resetChkOp("val p = ${person("James")}; p.city = ${city("San Francisco")};")
         chkDataCommon(james(100, 2), mike(250, 1))
 
-        resetChkOp("val p = ${person("James")}; p.city += ${city("San Francisco")};", "ct_err:binop_operand_type:+=:[city]:[city]")
-        resetChkOp("val p = ${person("James")}; p.city *= ${city("San Francisco")};", "ct_err:binop_operand_type:*=:[city]:[city]")
+        resetChkOp("val p = ${person("James")}; p.city += ${city("San Francisco")};",
+            "ct_err:binop_operand_type:+=:[city]:[city]")
+        resetChkOp("val p = ${person("James")}; p.city *= ${city("San Francisco")};",
+            "ct_err:binop_operand_type:*=:[city]:[city]")
         chkDataCommon(james(100, 3), mike(250, 1))
 
         resetChkOp("val p = ${person("Mike")}; p.city = ${city("Los Angeles")};")
@@ -783,7 +783,7 @@ class UpdateDeleteTest: BaseRellTest(useSql = true) {
         def("entity user { name; mutable value: integer; }")
         insert("c0.user", "name,value", "1,'Bob',123")
 
-        val sql = """UPDATE "c0.user" A00 SET "value" = ?"""
+        val sql = """UPDATE "c0.user" A00 SET "value" = ? RETURNING A00."rowid""""
         chkOpSql("update user @? {} ( .value = 500 );", sql)
         chkOpSql("update user @  {} ( .value = 501 );", sql)
         chkOpSql("update user @+ {} ( .value = 502 );", sql)
@@ -795,7 +795,7 @@ class UpdateDeleteTest: BaseRellTest(useSql = true) {
         insert("c0.user", "name,value", "1,'Bob',123")
         insert("c0.user", "name,value", "2,'Alice',456")
 
-        val sql = """DELETE FROM "c0.user" A00 WHERE A00."name" = ?"""
+        val sql = """DELETE FROM "c0.user" A00 WHERE A00."name" = ? RETURNING A00."rowid""""
         chkOpSql("delete user @? { 'Trudy' };", sql)
         chkOpSql("delete user @  { 'Bob'   };", sql)
         chkOpSql("delete user @+ { 'Alice' };", sql)
@@ -844,9 +844,9 @@ class UpdateDeleteTest: BaseRellTest(useSql = true) {
 
     private fun chkDataCommon(vararg expectedArray: String) {
         val cities = arrayOf(
-                "city(1,New York)",
-                "city(2,San Francisco)",
-                "city(3,Los Angeles)"
+            "city(1,New York)",
+            "city(2,San Francisco)",
+            "city(3,Los Angeles)",
         )
         chkData(*(cities + expectedArray))
     }
