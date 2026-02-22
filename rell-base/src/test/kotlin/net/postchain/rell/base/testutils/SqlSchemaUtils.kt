@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger
 internal object SqlSchemaUtils {
     private val schemaCounter = AtomicInteger(0)
     private const val TESTSCHEMA_PREFIX = "rell"
+    private val pid = ProcessHandle.current().pid()
 
     private fun extractTestClassName(): String? {
         val stackTrace = Thread.currentThread().stackTrace
@@ -22,6 +23,8 @@ internal object SqlSchemaUtils {
         val id = schemaCounter.incrementAndGet()
         val name = buildString {
             append(TESTSCHEMA_PREFIX)
+            append('_')
+            append(pid)
             if (testClassName != null) {
                 append('_')
                 append(testClassName.lowercase())
@@ -37,9 +40,10 @@ internal object SqlSchemaUtils {
 
     @Throws(SQLException::class)
     fun getAllTestSchemaNames(con: Connection): List<String> {
+        val prefix = "${TESTSCHEMA_PREFIX}_${pid}_"
         val schemas = mutableListOf<String>()
         con.createStatement().use { st ->
-            st.executeQuery("SELECT nspname FROM pg_namespace WHERE nspname LIKE '${TESTSCHEMA_PREFIX}%'").use { rs ->
+            st.executeQuery("SELECT nspname FROM pg_namespace WHERE nspname LIKE '${prefix}%'").use { rs ->
                 while (rs.next()) {
                     schemas += rs.getString(1)
                 }
@@ -51,28 +55,53 @@ internal object SqlSchemaUtils {
     private var testSchemasEnvironmentReady = false
     private val testSchemaPreparationLock = Any()
 
+    /** Advisory lock key used to coordinate VACUUM FULL across parallel test processes. */
+    private const val VACUUM_LOCK_KEY = 0x52454C4CL // "RELL"
+
     /**
-     * Prepares the environment for temporary test schemas by removing all test schemas and performing a DB vacuum.
+     * Prepares the environment for temporary test schemas.
      *
-     * It drops all schemas whose names start with the test schema prefix,
-     * then executes `VACUUM FULL` to reclaim disk space and optimize the database.
-     * This helps prevent disk space issues.
+     * Tries to acquire a PostgreSQL advisory lock (non-blocking):
+     * - If acquired: drops **all** leftover test schemas (from any PID) and runs `VACUUM FULL`
+     *   to reclaim disk space — important for tight storage limits (e.g., in-memory Docker volumes).
+     * - If not acquired: another process is already vacuuming, so only drops schemas for the current PID.
      *
-     * [`VACUUM` in PostgreSQL Docs](https://www.postgresql.org/docs/current/sql-vacuum.html)
-     *
-     * The operation is performed only once per all tests run, guarded by a lock.
+     * The operation is performed only once per test run, guarded by a JVM-level lock.
      */
     @Throws(SQLException::class)
     fun prepareTestSchemaEnvironment(con: Connection) = synchronized(testSchemaPreparationLock) {
         if (!testSchemasEnvironmentReady) {
-            val schemas = getAllTestSchemaNames(con)
-            con.createStatement().use { st ->
-                for (nsp in schemas) {
-                    st.execute("DROP SCHEMA IF EXISTS \"$nsp\" CASCADE;")
+            val gotLock = con.createStatement().use { st ->
+                st.executeQuery("SELECT pg_try_advisory_lock($VACUUM_LOCK_KEY)").use { rs ->
+                    rs.next() && rs.getBoolean(1)
                 }
-
-                st.execute("VACUUM FULL;")
             }
+
+            con.createStatement().use { st ->
+                if (gotLock) {
+                    // Got the lock, drop all test schemas (any PID) and vacuum.
+                    val allSchemas = mutableListOf<String>()
+                    st.executeQuery(
+                        "SELECT nspname FROM pg_namespace WHERE nspname LIKE '${TESTSCHEMA_PREFIX}_%'"
+                    ).use { rs ->
+                        while (rs.next()) {
+                            allSchemas += rs.getString(1)
+                        }
+                    }
+                    for (nsp in allSchemas) {
+                        st.execute("DROP SCHEMA IF EXISTS \"$nsp\" CASCADE;")
+                    }
+                    st.execute("VACUUM FULL;")
+                    st.execute("SELECT pg_advisory_unlock($VACUUM_LOCK_KEY)")
+                } else {
+                    // Another process is vacuuming — only drop schemas for our PID.
+                    val schemas = getAllTestSchemaNames(con)
+                    for (nsp in schemas) {
+                        st.execute("DROP SCHEMA IF EXISTS \"$nsp\" CASCADE;")
+                    }
+                }
+            }
+
             CheckDbCleannessListener.enabled.set(true)
             testSchemasEnvironmentReady = true
         }
