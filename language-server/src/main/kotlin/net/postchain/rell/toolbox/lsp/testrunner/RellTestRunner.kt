@@ -13,7 +13,7 @@ import java.net.URI
 class RellTestRunner(val indexingManager: RellIndexingManager, private val symbolService: RellSymbolService) {
 
     fun getTestFiles(workspaceUri: URI): List<RellTestFile> {
-        return indexingManager.getIndexerForOrNull(workspaceUri)?.let { indexer ->
+        return indexingManager.getIndexerForFolderOrNull(workspaceUri)?.let { indexer ->
             indexer.fileUriResourceMap
                 .filter { it.value.isTest() }
                 .map { (uri, resource) ->
