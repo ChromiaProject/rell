@@ -269,7 +269,6 @@ class RellGtxTester(
                     else -> tpl
                 }
             }
-            else -> throw IllegalArgumentException("type ${tpl.type} not supported by rell")
         }
     }
 

@@ -261,6 +261,77 @@ function("my_new_function", result = "integer", since = RellVersions.SINCE_NOW) 
 4. Submit a merge request (MR) on GitLab
 5. Address any feedback from code reviewers
 
+## Release Process
+
+This section describes how to publish a new Rell release `A.B.C`.
+
+### 1. Finalize Release Notes
+
+Before branching, prepare the release notes:
+
+1. Review and finalize `doc/release-notes/dev.txt`. Make sure all user-facing changes are documented and the content follows the formatting guidelines described in the [Release Notes](#release-notes) section below.
+2. Rename `dev.txt` to `doc/release-notes/A.B.C.txt`.
+3. In the renamed file, replace the `UNRELEASED NOTES` header with:
+   ```
+   RELEASE NOTES A.B.C (YYYY-MM-DD)
+   ```
+   Use today's actual release date.
+4. Double-check the file follows all review checklist items (see [Review Checklist](#review-checklist) below).
+5. Create a new blank `doc/release-notes/dev.txt` with just the header line:
+   ```
+   UNRELEASED NOTES
+   ```
+
+### 2. Create the Release Branch and Bump Version
+
+Create a branch named `version-A.B.C` from `dev`:
+
+```shell
+git checkout -b version-A.B.C
+```
+
+Update the version in two places:
+
+- **`build.gradle.kts`** — change `version = "..."` to the release version (without `-SNAPSHOT`):
+  ```kotlin
+  version = "A.B.C"
+  ```
+
+- **`rell-base/src/main/kotlin/net/postchain/rell/base/utils/RellVersions.kt`** — change `VERSION_STR` to the release version:
+  ```kotlin
+  const val VERSION_STR = "A.B.C"
+  ```
+
+- **Standard library source files** — replace all uses of `RellVersions.SINCE_NOW` with the literal version string `"A.B.C"` in `since` annotations throughout the standard library code. Replace each `(since =) RellVersions.SINCE_NOW` with `(since =) "A.B.C"`. This ensures that library declarations record the exact version in which they were introduced.
+
+Commit and push the branch. Pushing the `version-A.B.C` branch triggers the GitLab CI pipeline, which publishes the release automatically.
+
+### 3. Announce the Release
+
+After the CI pipeline completes successfully, report the new version on **Zulip**.
+
+### 4. Post-Release Cleanup on `dev`
+
+Switch back to the `dev` branch and perform these follow-up steps:
+
+1. **Update `doc/release-notes/all-releases.txt`** — add an entry for the new release at the top of the list:
+   ```
+   - A.B.C
+     Notes: A.B.C.txt
+     GitLab: https://gitlab.com/chromaway/rell/-/tree/<commit-sha>/
+   ```
+   Use the commit SHA of the tagged release commit.
+
+2. **If this was a major release** (A or B changed), update `VERSION_STR` in `dev` to the next development snapshot:
+   ```kotlin
+   // In RellVersions.kt on dev branch:
+   const val VERSION_STR = "0.(B+1).0-SNAPSHOT"
+   ```
+   Also update `build.gradle.kts` accordingly:
+   ```kotlin
+   version = "0.(B+1).0-SNAPSHOT"
+   ```
+
 ## Documentations
 
 It's recommended to read:
