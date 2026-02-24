@@ -3,6 +3,8 @@ package net.postchain.rell.toolbox.lsp.server
 import assertk.assertThat
 import assertk.assertions.containsOnly
 import assertk.assertions.extracting
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
 import net.postchain.rell.toolbox.lsp.TestClient
 import net.postchain.rell.toolbox.lsp.TestClientServerLauncher
 import net.postchain.rell.toolbox.lsp.TestServerModule
@@ -20,6 +22,7 @@ class RellLanguageServerTestRunner {
     private lateinit var testClient: TestClient
     private lateinit var srcDir: File
     private lateinit var testFile: File
+    private lateinit var notATestFile: File
     private val serverModule = TestServerModule()
 
     @TempDir
@@ -35,6 +38,15 @@ class RellLanguageServerTestRunner {
                 function test_1() { return 1; }
                 function not_test() { return 1; }
                 function test_2() { return 1; }
+                """.trimIndent()
+            )
+        }
+
+        notATestFile = File(srcDir, "main.rell").apply {
+            writeText(
+                """
+                module; 
+                operation foo() {}
                 """.trimIndent()
             )
         }
@@ -65,5 +77,20 @@ class RellLanguageServerTestRunner {
         clientServerLauncher.initializeServer(srcDir.toURI())
         val testCases = server.getTestCases(testFile.toURI().toString()).join()
         assertThat(testCases).extracting { it.name }.containsOnly("test_1", "test_2")
+    }
+
+    @Test
+    fun `getTestFile return all test modules and test functions in file`() {
+        clientServerLauncher.initializeServer(srcDir.toURI())
+        val testFile = server.getTestFile(testFile.toURI().toString()).join()
+        assertThat(testFile!!.moduleName).isEqualTo("test_file")
+        assertThat(testFile.testCases).extracting { it.name }.containsOnly("test_1", "test_2")
+    }
+
+    @Test
+    fun `getTestFile returns null for non test file`() {
+        clientServerLauncher.initializeServer(srcDir.toURI())
+        val testFile = server.getTestFile(notATestFile.toURI().toString()).join()
+        assertThat(testFile).isNull()
     }
 }

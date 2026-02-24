@@ -217,4 +217,12 @@ class RellLanguageServer(
             testRunner.getTestCases(fileUri)
         }
     }
+
+    @JsonRequest(useSegment = false, value = "rell/getTestFile")
+    fun getTestFile(fileUri: String): CompletableFuture<RellTestFile?> {
+        val parsedUri = parseFileUri(fileUri) ?: return CompletableFuture.completedFuture(null)
+        return requestManager.runRead {
+            testRunner.getTestFile(parsedUri)
+        }
+    }
 }
