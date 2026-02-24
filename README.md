@@ -11,18 +11,12 @@ Release notes (detailed changelog): https://gitlab.com/chromaway/rell/-/tree/dev
 Requirements:
 - Java 21
 
-| Command                     | What it does                                                                                |
-|-----------------------------|---------------------------------------------------------------------------------------------|
-| `./gradlew assemble`        | Compile and package all JARs                                                                |
-| `./gradlew build`           | Same as above, plus run all tests (requires PostgreSQL)                                     |
-| `./gradlew clean`           | Clean the build outputs                                                                     |
-| `./gradlew installRellDist` | Install Rell runtime to `rell-tools/build/install/rell-dist/` (used by `work/*.sh` scripts) |
-
-Build without running tests:
-
-```shell
-./gradlew assemble
-```
+| Command                     | Description                                                   |
+|-----------------------------|---------------------------------------------------------------|
+| `./gradlew assemble`        | Compile and package all JARs                                  |
+| `./gradlew build`           | Same as above, plus run all tests (requires PostgreSQL)       |
+| `./gradlew clean`           | Clean the build outputs                                       |
+| `./gradlew installRellDist` | Install Rell runtime to `rell-tools/build/install/rell-dist/` |
 
 ### Run the Rell shell (REPL):
 
@@ -33,7 +27,7 @@ Build without running tests:
 Example session:
 
 ```text
-Rell 0.15.0-SNAPSHOT
+Rell 0.16.0-SNAPSHOT
 Type '\q' to quit or '\?' for help.
 >>> 2+2
 4
