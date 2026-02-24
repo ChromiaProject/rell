@@ -2,9 +2,9 @@
 set -e
 
 # Verify that the script is being run from the repository root
-if [ ! -f "pom.xml" ] || [ ! -f "README.md" ]; then
+if [ ! -f "build.gradle.kts" ] || [ ! -f "README.md" ]; then
     echo "Error: This script must be run from the repository root directory"
-    echo "The repository root contains pom.xml and README.md files"
+    echo "The repository root contains build.gradle.kts and README.md files"
     exit 1
 fi
 
@@ -13,13 +13,16 @@ CHR_REPO_DIR="./chromia-cli-local"
 CHR_EXECUTABLE="$CHR_REPO_DIR/chromia-cli/target/chromia-cli-dev-dist/bin/chr"
 GIT_BRANCH="dev"
 
-# Parse arguments for --rebuild
+# Parse arguments for --rebuild and --skip-publish
 REBUILD=false
+SKIP_PUBLISH=false
 ARGS=()
 
 for arg in "$@"; do
     if [ "$arg" == "--rebuild" ]; then
         REBUILD=true
+    elif [ "$arg" == "--skip-publish" ]; then
+        SKIP_PUBLISH=true
     else
         ARGS+=("$arg")
     fi
@@ -39,9 +42,9 @@ setup_repository() {
 }
 
 update_rell_version() {
-    # Get Rell version from the root pom.xml
+    # Get Rell version from Gradle
     REPO_ROOT=$(pwd)
-    RELL_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+    RELL_VERSION=$(./gradlew -q properties | grep "^version:" | awk '{print $2}')
     echo "Local Rell version: $RELL_VERSION"
 
     # Update chromia-cli with the correct Rell version
@@ -50,18 +53,57 @@ update_rell_version() {
     cd "$REPO_ROOT"
 }
 
+build_chromia_cli() {
+    echo "Building chromia-cli distribution..."
+    REPO_ROOT=$(pwd)
+    cd "$CHR_REPO_DIR"
+    mvn -DskipTests -DskipITs install
+    cd "$REPO_ROOT"
+}
+
+sync_local_rell_jars() {
+    local dist_lib="$CHR_REPO_DIR/chromia-cli/target/chromia-cli-dev-dist/lib"
+    local local_repo="$HOME/.m2/repository/net/postchain/rell"
+    local synced=0
+
+    if [ ! -d "$dist_lib" ]; then
+        echo "Error: chromia-cli dist lib directory not found at $dist_lib" >&2
+        exit 1
+    fi
+
+    if [ ! -d "$local_repo" ]; then
+        echo "Error: local Rell Maven repo not found at $local_repo" >&2
+        exit 1
+    fi
+
+    for jar in "$local_repo"/*/"$RELL_VERSION"/*-"$RELL_VERSION".jar; do
+        [ -e "$jar" ] || continue
+        jar_name=$(basename "$jar")
+        if [ -f "$dist_lib/$jar_name" ]; then
+            cp -f "$jar" "$dist_lib/$jar_name"
+            synced=$((synced + 1))
+        fi
+    done
+
+    if [ "$synced" -eq 0 ]; then
+        echo "Warning: no local Rell jars synced for version $RELL_VERSION" >&2
+    else
+        echo "Synced $synced local Rell jars into chromia-cli distribution"
+    fi
+}
+
 if ! command -v git &> /dev/null; then
     echo "Error: git is not installed. Please install git and try again."
     exit 1
 fi
 
-if ! command -v mvn &> /dev/null; then
-    echo "Error: Maven is not installed. Please install Maven and try again."
+if ! command -v java &> /dev/null; then
+    echo "Error: Java is not installed. Please install Java and try again."
     exit 1
 fi
 
-if ! command -v java &> /dev/null; then
-    echo "Error: Java is not installed. Please install Java and try again."
+if ! command -v mvn &> /dev/null; then
+    echo "Error: Maven is not installed. Please install Maven and try again."
     exit 1
 fi
 
@@ -79,9 +121,19 @@ fi
 echo "Updating Rell version..."
 update_rell_version
 
-# Run always to ensure the build is fresh
-echo "Building with mvn package -DskipTests..."
-mvn package -DskipTests -Plocal-chromia-cli
+if [ "$SKIP_PUBLISH" != true ]; then
+    # Run always to ensure the build is fresh
+    echo "Publishing Rell artifacts to local Maven with Gradle..."
+    ./gradlew publishToMavenLocal
+else
+    echo "Skipping publishToMavenLocal (requested)"
+fi
 
-# Execute the chr command with all arguments passed to this script (excluding --rebuild)
+if [ ! -x "$CHR_EXECUTABLE" ]; then
+    build_chromia_cli
+fi
+
+sync_local_rell_jars
+
+# Execute chr with arguments passed to this script (excluding --rebuild)
 "$CHR_EXECUTABLE" "${ARGS[@]}"

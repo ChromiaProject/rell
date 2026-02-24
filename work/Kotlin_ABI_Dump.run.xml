@@ -1,38 +1,23 @@
 <!--
   ~ Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
   -->
-
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Kotlin_ABI_Dump" type="MavenRunConfiguration" factoryName="Maven">
-    <MavenSettings>
-      <option name="myGeneralSettings" />
-      <option name="myRunnerSettings" />
-      <option name="myRunnerParameters">
-        <MavenRunnerParameters>
-          <option name="cmdOptions" />
-          <option name="profiles">
-            <set />
-          </option>
-          <option name="goals">
-            <list>
-              <option value="compile" />
-              <option value="-DskipTests" />
-              <option value="kotlin-bcv:dump" />
-            </list>
-          </option>
-          <option name="multimoduleDir" />
-          <option name="pomFileName" />
-          <option name="profilesMap">
-            <map />
-          </option>
-          <option name="projectsCmdOptionValues">
-            <list />
-          </option>
-          <option name="resolveToWorkspace" value="false" />
-          <option name="workingDirPath" value="$PROJECT_DIR$" />
-        </MavenRunnerParameters>
+  <configuration default="false" name="Kotlin_ABI_Dump" type="GradleRunConfiguration" factoryName="Gradle">
+    <ExternalSystemSettings>
+      <option name="executionName" />
+      <option name="externalProjectPath" value="$PROJECT_DIR$" />
+      <option name="externalSystemIdString" value="GRADLE" />
+      <option name="scriptParameters" value="" />
+      <option name="taskDescriptions">
+        <list />
       </option>
-    </MavenSettings>
+      <option name="taskNames">
+        <list>
+          <option value="apiDump" />
+        </list>
+      </option>
+      <option name="vmOptions" />
+    </ExternalSystemSettings>
     <method v="2" />
   </configuration>
 </component>

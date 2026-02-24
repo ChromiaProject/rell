@@ -10,12 +10,20 @@ Release notes (detailed changelog): https://gitlab.com/chromaway/rell/-/tree/dev
 
 Requirements:
 - Java 21
-- Maven
 
-Build (without unit tests, as they require database setup):
+| Command                     | What it does                                                                                |
+|-----------------------------|---------------------------------------------------------------------------------------------|
+| `./gradlew assemble`        | Compile and package all JARs                                                                |
+| `./gradlew build`           | Same as above, plus run all tests (requires PostgreSQL)                                     |
+| `./gradlew clean`           | Clean the build outputs                                                                     |
+| `./gradlew installRellDist` | Install Rell runtime to `rell-tools/build/install/rell-dist/` (used by `work/*.sh` scripts) |
+
+> **Coming from Maven?** See the [Gradle Quick Reference](DEVELOPMENT.md#gradle-quick-reference-for-maven-developers) in `DEVELOPMENT.md`.
+
+Build without running tests:
 
 ```shell
-mvn clean install -DskipTests -Pdistro
+./gradlew assemble
 ```
 
 ### Run the Rell shell (REPL):

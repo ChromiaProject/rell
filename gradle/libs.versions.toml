@@ -1,0 +1,59 @@
+# Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+
+[versions]
+kotlin = "2.3.0"
+postchain = "3.47.7"
+
+junit = "6.0.2"
+testcontainers = "1.21.4"
+
+kotlinx-collections-immutable = "0.4.0"
+better-parse = "0.4.4"
+jline = "3.28.0"
+picocli = "3.9.6"
+
+# Plugins
+binary-compatibility-validator = "0.18.1"
+dependency-check = "12.1.9"
+gradle-git-properties = "2.5.7"
+
+[libraries]
+postchain-bom = { module = "net.postchain:postchain", version.ref = "postchain" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+
+kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm", version.ref = "kotlinx-collections-immutable" }
+
+# versions from postchain-bom
+postchain-gtv = { module = "net.postchain:postchain-gtv" }
+postchain-spi = { module = "net.postchain:postchain-spi" }
+postchain-base = { module = "net.postchain:postchain-base" }
+postchain-devtools = { module = "net.postchain:postchain-devtools" }
+commons-lang3 = { module = "org.apache.commons:commons-lang3" }
+commons-collections4 = { module = "org.apache.commons:commons-collections4" }
+guava = { module = "com.google.guava:guava" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
+jooq = { module = "org.jooq:jooq" }
+postgresql = { module = "org.postgresql:postgresql" }
+bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on" }
+kotlin-logging = { module = "io.github.microutils:kotlin-logging-jvm" }
+log4j-slf4j2-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl" }
+
+better-parse = { module = "com.github.h0tk3y.betterParse:better-parse-jvm", version.ref = "better-parse" }
+
+jline = { module = "org.jline:jline", version.ref = "jline" }
+picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
+
+# versions from junit-bom
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+
+# versions from testcontainers-bom
+testcontainers = { module = "org.testcontainers:testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator" }
+dependency-check = { id = "org.owasp.dependencycheck", version.ref = "dependency-check" }
+git-properties = { id = "com.gorylenko.gradle-git-properties", version.ref = "gradle-git-properties" }

@@ -55,50 +55,21 @@ internal object SqlSchemaUtils {
     private var testSchemasEnvironmentReady = false
     private val testSchemaPreparationLock = Any()
 
-    /** Advisory lock key used to coordinate VACUUM FULL across parallel test processes. */
-    private const val VACUUM_LOCK_KEY = 0x52454C4CL // "RELL"
-
     /**
      * Prepares the environment for temporary test schemas.
      *
-     * Tries to acquire a PostgreSQL advisory lock (non-blocking):
-     * - If acquired: drops **all** leftover test schemas (from any PID) and runs `VACUUM FULL`
-     *   to reclaim disk space — important for tight storage limits (e.g., in-memory Docker volumes).
-     * - If not acquired: another process is already vacuuming, so only drops schemas for the current PID.
+     * Drops leftover test schemas for the current PID only — safe for parallel test execution
+     * across multiple subproject JVMs (each has its own PID and schema namespace).
      *
      * The operation is performed only once per test run, guarded by a JVM-level lock.
      */
     @Throws(SQLException::class)
     fun prepareTestSchemaEnvironment(con: Connection) = synchronized(testSchemaPreparationLock) {
         if (!testSchemasEnvironmentReady) {
-            val gotLock = con.createStatement().use { st ->
-                st.executeQuery("SELECT pg_try_advisory_lock($VACUUM_LOCK_KEY)").use { rs ->
-                    rs.next() && rs.getBoolean(1)
-                }
-            }
-
+            val schemas = getAllTestSchemaNames(con)
             con.createStatement().use { st ->
-                if (gotLock) {
-                    // Got the lock, drop all test schemas (any PID) and vacuum.
-                    val allSchemas = mutableListOf<String>()
-                    st.executeQuery(
-                        "SELECT nspname FROM pg_namespace WHERE nspname LIKE '${TESTSCHEMA_PREFIX}_%'"
-                    ).use { rs ->
-                        while (rs.next()) {
-                            allSchemas += rs.getString(1)
-                        }
-                    }
-                    for (nsp in allSchemas) {
-                        st.execute("DROP SCHEMA IF EXISTS \"$nsp\" CASCADE;")
-                    }
-                    st.execute("VACUUM FULL;")
-                    st.execute("SELECT pg_advisory_unlock($VACUUM_LOCK_KEY)")
-                } else {
-                    // Another process is vacuuming — only drop schemas for our PID.
-                    val schemas = getAllTestSchemaNames(con)
-                    for (nsp in schemas) {
-                        st.execute("DROP SCHEMA IF EXISTS \"$nsp\" CASCADE;")
-                    }
+                for (nsp in schemas) {
+                    st.execute("DROP SCHEMA IF EXISTS \"$nsp\" CASCADE;")
                 }
             }
 

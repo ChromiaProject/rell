@@ -12,6 +12,8 @@
 /.test
 /chromia-cli-local/
 /libdoc/
+.gradle/
+.kotlin/
+**/build/
 
-WARP.md
 CLAUDE.md

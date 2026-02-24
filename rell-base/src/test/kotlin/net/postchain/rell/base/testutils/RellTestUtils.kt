@@ -189,8 +189,7 @@ object RellTestUtils {
             decoder: (List<R_FunctionParam>, List<T>) -> List<Rt_Value>
     ): String {
         val mName = R_MountName.of(name)
-        val op = appCtx.app.operations[mName]
-        if (op == null) throw IllegalStateException("Operation not found: '$name'")
+        val op = checkNotNull(appCtx.app.operations[mName]) { "Operation not found: '$name'" }
 
         val (rtErr, rtArgs) = catchRtErr0 { decoder(op.params(), args) }
         if (rtErr != null) {

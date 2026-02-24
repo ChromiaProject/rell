@@ -37,7 +37,7 @@ class Rt_RellVersion private constructor(
                 "git.branch" to Rt_RellVersionProperty.RELL_BRANCH,
                 "git.build.version" to Rt_RellVersionProperty.RELL_VERSION,
                 "git.commit.id.abbrev" to Rt_RellVersionProperty.RELL_COMMIT_ID,
-                "git.commit.id.full" to Rt_RellVersionProperty.RELL_COMMIT_ID_FULL,
+                "git.commit.id" to Rt_RellVersionProperty.RELL_COMMIT_ID_FULL,
                 "git.commit.message.short" to Rt_RellVersionProperty.RELL_COMMIT_MESSAGE,
                 "git.commit.message.full" to Rt_RellVersionProperty.RELL_COMMIT_MESSAGE_FULL,
                 "git.commit.time" to Rt_RellVersionProperty.RELL_COMMIT_TIME,
@@ -101,7 +101,7 @@ class Rt_RellVersion private constructor(
                 val props = Properties()
                 props.load(StringReader(text))
                 return props.stringPropertyNames().sorted().map { it to props.getProperty(it) }.toMap().toImmMap()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 return null
             }
         }

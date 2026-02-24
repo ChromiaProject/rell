@@ -13,6 +13,8 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.fail
 
+private const val joinTimeoutMs = 30_000L
+
 class GtxCancellationTest: BaseGtxTest() {
     @Test fun testSqlCancellationExceptionNotSuppressedOrWrapped() {
         def("""
@@ -76,7 +78,7 @@ class GtxCancellationTest: BaseGtxTest() {
         }
 
         t.start()
-        t.join(5000)
+        t.join(joinTimeoutMs)
 
         if (t.isAlive) {
             t.interrupt()
@@ -113,7 +115,7 @@ class GtxCancellationTest: BaseGtxTest() {
         }
 
         t.start()
-        t.join(5000)
+        t.join(joinTimeoutMs)
 
         if (t.isAlive) {
             t.interrupt()

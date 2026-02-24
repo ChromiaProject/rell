@@ -6,7 +6,7 @@ set -euo pipefail
 
 # Determine project root (this script lives in work/)
 SCRIPT_DIR=$(cd -- "$(dirname -- "$0")" && pwd)
-ROOT_DIR=$(cd -- "$SCRIPT_DIR/.." && pwd)
+ROOT_DIR=$(cd -- "$SCRIPT_DIR/.."; pwd)
 cd "$ROOT_DIR"
 
 # Locales to test: language:COUNTRY pairs
@@ -19,8 +19,8 @@ LOCALES=(
 
 for lc in "${LOCALES[@]}"; do
   IFS=":" read -r LANG COUNTRY <<< "$lc"
-  echo "==== Running Gradle check for locale ${LANG}_${COUNTRY} ===="
-  ./gradlew -Duser.language="$LANG" -Duser.country="$COUNTRY" check
+  echo "==== Running ./gradlew check for locale ${LANG}_${COUNTRY} ===="
+  ./gradlew check -Puser.language="$LANG" -Puser.country="$COUNTRY"
   echo
 done
 

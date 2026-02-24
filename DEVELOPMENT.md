@@ -20,9 +20,8 @@ Rell's two key features are blockchain integration and SQL-like capabilities:
 
 1. **[IntelliJ IDEA](https://www.jetbrains.com/idea/)** - The recommended IDE
 2. **JDK 21** - The project requires Java Development Kit 21 (can be managed by IDEA)
-3. **[Maven](https://maven.apache.org/download.cgi)** - For building and dependency management
-4. **[Docker](https://docs.docker.com/get-started/get-docker/)** - For running PostgreSQL in an isolated container
-5. **[PostgreSQL](https://www.postgresql.org/download/)** (`psql`) - For setting up PostgreSQL for tests
+3. **[PostgreSQL](https://www.postgresql.org/download/)** (`psql`) - For setting up PostgreSQL for tests
+4. **[Docker](https://docs.docker.com/get-started/get-docker/)** - Only for running PostgreSQL in an isolated container
 
 ## Project Structure
 
@@ -45,10 +44,10 @@ Other directories:
 
 ### Building the Project
 
-To make a build of project distribution without running tests (faster, PSQL is not needed):
+To build of project distribution without running tests:
 
 ```shell
-mvn install -DskipTests -Pdistro
+./gradlew assemble
 ```
 
 ### Running Tests
@@ -64,30 +63,19 @@ The highly recommended and simple way to provide a Postgres instance for running
 **Run tests** (requires local PostgreSQL to be running):
 
 ```shell
-mvn verify
+./gradlew check
 ```
 
 **In IntelliJ IDEA**
-1. Ensure that your IntelliJ IDEA does not use JPS (IDEA's built-in build system) instead of Maven
 
-   https://www.jetbrains.com/help/idea/delegate-build-and-run-actions-to-maven.html#build_through_maven
-2. Use the run configuration `All_tests`.
-
-###### Troubleshooting IntelliJ IDEA test failures
-
-There is an issue with tests run from IntelliJ IDEA failing due to OOM. There are two known workarounds for this:
-
-1. Disable the JVM GC overhead limit. This is achieved by navigating to [Settings | Build, Execution, Deployment | Compiler](jetbrains://idea/settings?name=Build%2C+Execution%2C+Deployment--Compiler). Then under the **Build Process** heading, enter `-XX:-UseGCOverheadLimit` into the **Shared VM
-   options** field.
-2. Increase the maximum JVM heap size. This is achieved by navigating to [Settings | Build, Execution, Deployment | Compiler](jetbrains://idea/settings?name=Build%2C+Execution%2C+Deployment--Compiler). Then under the **Build Process** heading, set the **Shared heap size** to a sufficiently large
-   value - 2048 Mbytes is likely to be sufficient.
+Use the run configuration `All_tests` (Gradle `check`).
 
 ### Running Rell Shell (REPL)
 
 To start the interactive Rell shell:
 
 ```shell
-work/rell.sh
+./work/rell.sh
 ```
 
 Example usage:
@@ -135,6 +123,28 @@ chr query -brid <BRID> <QUERY_NAME> <ARGS_AS_GTV_DICT_STR>
 chr tx -brid <BRID> <OP_NAME> ARG_AS_GTV_STR*
 ```
 
+### Checking Tests With Different Locales
+
+The `work/check-with-locales.sh` script runs the test suite under several non-default locales to verify that the implementation is locale-independent. This matters because Rell must be deterministic.
+
+Some Java/Kotlin functions are locale-sensitive by default. For example, on a machine configured for Turkish (`tr_TR`), `"i".toUpperCase()` produces `"İ"` (dotted capital I) rather than `'I'`, and `String.format` uses locale-specific decimal and grouping separators. Despite minimal probability, these differences can cause divergence of nodes in a blockchain network.
+
+```shell
+./work/check-with-locales.sh
+```
+
+The script tests the following locales:
+
+| Locale  | Description          |
+|---------|----------------------|
+| tr_TR   | Turkish (Turkey)     |
+| hi_IN   | Hindi (India)        |
+| ar_SA   | Arabic (Saudi Arabia)|
+| ja_JP   | Japanese (Japan)     |
+
+Turkish is the most common source of case-conversion bugs in Java code. The remaining locales cover
+different numeric, date, and script conventions.
+
 ### Using local-chr.sh
 
 The `local-chr.sh` script in the `work` directory is a wrapper for the Chromia CLI (`chr`) that simplifies development workflow by using your local Rell build instead of the officially published release of Rell.
@@ -172,22 +182,38 @@ This script will generate documentation in the `libdoc` directory, which you can
 
 ## Binary Compatibility Checker
 
-In case if your build fails with an error like this:
+In case your build fails on the `apiCheck` task with an error like this:
 
 ```
-org.apache.maven.lifecycle.LifecycleExecutionException: Failed to execute goal com.chromaway:kotlin-bcv-maven-plugin:0.1.0:check (check) on project rell-api-base: API check failed:
-...
+> Task :rell-api-base:apiCheck FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':rell-api-base:apiCheck'.
+> API check failed for project rell-api-base.
 ```
 
-Please run the following command to dump the API:
+Run configuration `Kotlin_ABI_Dump` in IntelliJ IDEA or the following command to dump the API:
 
 ```shell
-mvn compile kotlin-bcv:dump -DskipTests
+./gradlew apiDump
 ```
 
-Or just run configuration `Kotlin_ABI_Dump` in IntelliJ IDEA that does the same.
-
 Afterward, review the *.api files that were changed by this dump and ensure the changes are intended.
+
+## Test Coverage (JaCoCo)
+
+The project uses [JaCoCo](https://www.jacoco.org/) for code coverage reporting. Coverage reports are generated automatically when tests run.
+
+Running tests for any module automatically generates a JaCoCo report. Reports are located at `{module}/build/reports/jacoco/test/html/index.html`.
+
+**To generate a single coverage report across all modules:**
+
+```shell
+./gradlew testCodeCoverageReport # tCCR
+```
+The aggregate report is located at `coverage-report-aggregate/build/reports/jacoco/testCodeCoverageReport/html/index.html`.
 
 ## Coding Conventions
 

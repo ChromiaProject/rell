@@ -1,0 +1,110 @@
+/*
+ * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+ */
+
+import org.gradle.api.publish.maven.MavenPublication
+
+plugins {
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.git.properties)
+    jacoco
+}
+
+// Configuration for sharing test code with other modules (similar to Maven's test-jar)
+val testJar by tasks.registering(Jar::class) {
+    archiveClassifier = "tests"
+    from(sourceSets.test.get().output)
+}
+
+configurations.create("testArtifacts") {
+    extendsFrom(configurations.testRuntimeClasspath.get())
+}
+
+artifacts {
+    add("testArtifacts", testJar)
+}
+
+dependencies {
+    api(libs.postchain.gtv)
+
+    api(kotlin("stdlib"))
+    api(kotlin("reflect"))
+
+    implementation(libs.kotlin.logging)
+    implementation(libs.commons.lang3)
+    implementation(libs.commons.collections4)
+    implementation(libs.guava)
+    api(libs.better.parse)
+    implementation(libs.jackson.databind)
+    implementation(libs.jooq)
+    implementation(libs.postgresql)
+    implementation(libs.bouncycastle)
+    api(libs.kotlinx.collections.immutable)
+
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.platform.launcher)
+    testImplementation(kotlin("test-junit5"))
+    testImplementation(libs.log4j.slf4j2.impl)
+}
+
+gitProperties {
+    gitPropertiesName = "rell-base-maven.properties"
+    keys = listOf(
+        "git.branch",
+        "git.commit.id",
+        "git.commit.id.abbrev",
+        "git.commit.id.describe",
+        "git.commit.message.short",
+        "git.commit.message.full",
+        "git.commit.time",
+        "git.dirty",
+        "git.build.version",
+    )
+    customProperty("project.groupId", project.group.toString())
+    customProperty("project.artifactId", project.name)
+    customProperty("project.version", project.version.toString())
+    customProperty("kotlin.version", libs.versions.kotlin.get())
+    customProperty("postchain.version", libs.versions.postchain.get())
+}
+
+sourceSets.main {
+    // Include Java files in the Kotlin source directory (etherjar classes)
+    java {
+        srcDir("src/main/kotlin")
+    }
+}
+
+val generateDependencyList by tasks.registering {
+    group = "build"
+    description = "Generates dependency list file"
+
+    val outputDir = layout.buildDirectory.dir("generated/resources/dependencies")
+    val outputFile = outputDir.map { it.file("rell-base-dependencies.txt") }
+    val artifacts = configurations.runtimeClasspath.flatMap { config ->
+        config.incoming.artifacts.resolvedArtifacts.map { results ->
+            results.map { "${it.id.componentIdentifier}" }.sorted()
+        }
+    }
+
+    inputs.property("artifacts", artifacts)
+    outputs.dir(outputDir)
+
+    doLast {
+        outputDir.get().asFile.mkdirs()
+        outputFile.get().asFile.writeText(artifacts.get().joinToString("\n"))
+    }
+}
+
+sourceSets.main {
+    resources {
+        srcDir(generateDependencyList.map { it.outputs.files.singleFile })
+    }
+}
+
+tasks.processResources {
+    dependsOn(generateDependencyList)
+}
+
+publishing.publications.named<MavenPublication>("mavenJava") {
+    artifact(testJar)
+}

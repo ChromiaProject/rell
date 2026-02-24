@@ -10,7 +10,6 @@ shift
 
 D=`dirname "${BASH_SOURCE[0]}"`
 
-JAR_FILE=`echo "$D"/lib/rell-tools-*.*.*.jar`
-CP="$JAR_FILE:$D/extra/*"
+CP="$D/lib/*:$D/extra/*"
 
 exec ${RELL_JAVA:-java} -cp "$CP" "$MAIN_CLASS" "$@"
