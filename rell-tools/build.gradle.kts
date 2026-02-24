@@ -34,6 +34,15 @@ dependencies {
     testImplementation(project(":rell-api-base", "testArtifacts"))
 }
 
+// The gradle-git-properties plugin does not declare customProperty values as task inputs,
+// so Gradle's build cache can serve stale outputs missing those properties. We collect them
+// in a map and register them both as custom properties and as explicit task inputs.
+val gitCustomProperties = mapOf(
+    "project.groupId" to project.group.toString(),
+    "project.artifactId" to project.name,
+    "project.version" to project.version.toString(),
+)
+
 gitProperties {
     gitPropertiesName = "rell-tools-maven.properties"
     keys = listOf(
@@ -47,9 +56,11 @@ gitProperties {
         "git.dirty",
         "git.build.version",
     )
-    customProperty("project.groupId", project.group.toString())
-    customProperty("project.artifactId", project.name)
-    customProperty("project.version", project.version.toString())
+    for ((k, v) in gitCustomProperties) customProperty(k, v)
+}
+
+tasks.named("generateGitProperties") {
+    for ((k, v) in gitCustomProperties) inputs.property("customProperty.$k", v)
 }
 
 val generateDependencyList by tasks.registering {

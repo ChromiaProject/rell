@@ -47,6 +47,17 @@ dependencies {
     testImplementation(libs.log4j.slf4j2.impl)
 }
 
+// The gradle-git-properties plugin does not declare customProperty values as task inputs,
+// so Gradle's build cache can serve stale outputs missing those properties. We collect them
+// in a map and register them both as custom properties and as explicit task inputs.
+val gitCustomProperties = mapOf(
+    "project.groupId" to project.group.toString(),
+    "project.artifactId" to project.name,
+    "project.version" to project.version.toString(),
+    "kotlin.version" to libs.versions.kotlin.get(),
+    "postchain.version" to libs.versions.postchain.get(),
+)
+
 gitProperties {
     gitPropertiesName = "rell-base-maven.properties"
     keys = listOf(
@@ -60,11 +71,11 @@ gitProperties {
         "git.dirty",
         "git.build.version",
     )
-    customProperty("project.groupId", project.group.toString())
-    customProperty("project.artifactId", project.name)
-    customProperty("project.version", project.version.toString())
-    customProperty("kotlin.version", libs.versions.kotlin.get())
-    customProperty("postchain.version", libs.versions.postchain.get())
+    for ((k, v) in gitCustomProperties) customProperty(k, v)
+}
+
+tasks.named("generateGitProperties") {
+    for ((k, v) in gitCustomProperties) inputs.property("customProperty.$k", v)
 }
 
 sourceSets.main {
