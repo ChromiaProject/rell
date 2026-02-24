@@ -304,6 +304,8 @@ Update the version in two places:
 
 - **Standard library source files** — replace all uses of `RellVersions.SINCE_NOW` with the literal version string `"A.B.C"` in `since` annotations throughout the standard library code. Replace each `(since =) RellVersions.SINCE_NOW` with `(since =) "A.B.C"`. This ensures that library declarations record the exact version in which they were introduced.
 
+- **Test configuration XML files** — update any hardcoded Rell version strings in test resource XML files (e.g. `version` and `compilerVersion` entries in `snapshot_config.xml`) to `"A.B.C"`.
+
 Commit and push the branch. Pushing the `version-A.B.C` branch triggers the GitLab CI pipeline, which publishes the release automatically.
 
 ### 3. Announce the Release
