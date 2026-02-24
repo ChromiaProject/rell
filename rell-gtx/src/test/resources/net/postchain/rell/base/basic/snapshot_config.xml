@@ -46,10 +46,10 @@
                         </array>
                     </entry>
                     <entry key = "compilerVersion">
-                        <string>0.16.0</string>
+                        <string>0.15.2</string>
                     </entry>
                     <entry key = "version">
-                        <string>0.16.0</string>
+                        <string>0.15.2</string>
                     </entry>
                     <entry key = "files">
                         <dict>
