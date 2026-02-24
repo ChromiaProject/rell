@@ -18,8 +18,6 @@ Requirements:
 | `./gradlew clean`           | Clean the build outputs                                                                     |
 | `./gradlew installRellDist` | Install Rell runtime to `rell-tools/build/install/rell-dist/` (used by `work/*.sh` scripts) |
 
-> **Coming from Maven?** See the [Gradle Quick Reference](DEVELOPMENT.md#gradle-quick-reference-for-maven-developers) in `DEVELOPMENT.md`.
-
 Build without running tests:
 
 ```shell

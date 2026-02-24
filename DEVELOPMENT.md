@@ -432,7 +432,7 @@ For significant bug fixes, explain the impact:
 
 #### Review Checklist
 
-Before publishing release notes, verify:
+Before publishing new release's notes, verify:
 
 - [ ] Header format is correct with proper date
 - [ ] Categories are appropriate and consistently formatted
