@@ -30,6 +30,13 @@ artifacts {
     add("testArtifacts", testJar)
 }
 
+tasks.processTestResources {
+    val rellVersion = project.version.toString().removeSuffix("-SNAPSHOT")
+    filesMatching("**/snapshot_config.xml") {
+        expand("rellVersion" to rellVersion)
+    }
+}
+
 dependencies {
     api(projects.rellBase)
     api(projects.rellApiNative)
