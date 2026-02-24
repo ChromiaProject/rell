@@ -36,6 +36,8 @@ dependencyCheck {
     analyzers.assemblyEnabled = false
 }
 
+val withLocales by extra(providers.gradleProperty("withLocales").isPresent)
+
 subprojects {
     group = rootProject.group
     version = rootProject.version
@@ -86,11 +88,6 @@ subprojects {
             maxParallelForks = 1
             forkEvery = 0
 
-            // Forward locale overrides to test JVM when passed as Gradle project properties,
-            // e.g. ./gradlew check -Puser.language=tr -Puser.country=TR
-            providers.gradleProperty("user.language").orNull?.let { systemProperty("user.language", it) }
-            providers.gradleProperty("user.country").orNull?.let { systemProperty("user.country", it) }
-
             if (generateTestCases) {
                 systemProperty("test.snippets.recorder.enabled", "true")
                 systemProperty(
@@ -108,6 +105,34 @@ subprojects {
             }
 
             finalizedBy(tasks.named("jacocoTestReport"))
+        }
+
+        // When -PwithLocales is passed, register additional Test tasks per locale
+        // and wire them into `check`. They inherit all Test configuration from
+        // tasks.withType<Test> above, so only locale-specific jvmArgs are added here.
+        if (withLocales) {
+            data class TestLocale(val language: String, val country: String, val name: String)
+
+            val testLocales = listOf(
+                TestLocale("tr", "TR", "Turkish"),
+                TestLocale("ar", "SA", "Arabic"),
+                TestLocale("ja", "JP", "Japanese"),
+            )
+
+            val mainTest = tasks.named<Test>("test")
+            var previousTask: TaskProvider<Test> = mainTest
+            for (locale in testLocales) {
+                val localeTestTask = tasks.register<Test>("test${locale.name}") {
+                    description = "Runs tests with locale ${locale.language}_${locale.country}"
+                    group = "verification"
+                    testClassesDirs = mainTest.get().testClassesDirs
+                    classpath = mainTest.get().classpath
+                    jvmArgs("-Duser.language=${locale.language}", "-Duser.country=${locale.country}")
+                    mustRunAfter(previousTask)
+                }
+                tasks.named("check") { dependsOn(localeTestTask) }
+                previousTask = localeTestTask
+            }
         }
 
         tasks.withType<JacocoReport> {

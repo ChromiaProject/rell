@@ -125,44 +125,39 @@ chr tx -brid <BRID> <OP_NAME> ARG_AS_GTV_STR*
 
 ### Checking Tests With Different Locales
 
-The `work/check-with-locales.sh` script runs the test suite under several non-default locales to verify that the implementation is locale-independent. This matters because Rell must be deterministic.
+Passing `-PwithLocales` to `check` runs the test suite under several non-default locales to verify that the implementation is locale-independent. This matters because Rell must be deterministic.
 
 Some Java/Kotlin functions are locale-sensitive by default. For example, on a machine configured for Turkish (`tr_TR`), `"i".toUpperCase()` produces `"İ"` (dotted capital I) rather than `'I'`, and `String.format` uses locale-specific decimal and grouping separators. Despite minimal probability, these differences can cause divergence of nodes in a blockchain network.
 
 ```shell
-./work/check-with-locales.sh
+./gradlew check -PwithLocales
 ```
 
-The script tests the following locales:
+The following locales are tested:
 
 | Locale  | Description          |
 |---------|----------------------|
 | tr_TR   | Turkish (Turkey)     |
-| hi_IN   | Hindi (India)        |
 | ar_SA   | Arabic (Saudi Arabia)|
 | ja_JP   | Japanese (Japan)     |
 
 Turkish is the most common source of case-conversion bugs in Java code. The remaining locales cover
 different numeric, date, and script conventions.
 
-### Using local-chr.sh
+### Scripts Requiring Maven
 
-The `local-chr.sh` script in the `work` directory is a wrapper for the Chromia CLI (`chr`) that simplifies development workflow by using your local Rell build instead of the officially published release of Rell.
+The following scripts require [Maven](https://maven.apache.org/) to be installed, as they interact with the Chromia CLI which uses a Maven-based build.
 
-To use it:
+#### local-chr.sh
+
+The `local-chr.sh` script is a wrapper for the Chromia CLI (`chr`) that uses your local Rell build instead of the officially published release. It automatically patches CLI's POM to your local Rell version, making it ideal for testing language changes or new features before they're deployed.
 
 ```shell
 ./work/local-chr.sh [arguments]
-```
 
-This script allows you to test your local Rell changes directly with the Chromia CLI. Examples:
-
-```shell
 # Print the software versions, for example
 ./work/local-chr.sh --version
 ```
-
-The script automatically patches CLI's POM to your local Rell version, making it ideal for testing language changes or new features before they're deployed.
 
 If you need to clone the local Chromia CLI repository and patch it again, then add the `--rebuild` flag:
 
@@ -170,15 +165,13 @@ If you need to clone the local Chromia CLI repository and patch it again, then a
 ./work/local-chr.sh --rebuild --version
 ```
 
-### Generating Documentation Preview
+#### build-local-docs.sh
 
-The project includes a script for generating Rell documentation locally. This is useful for previewing changes to the Rell system libraries documentation:
+Generates Rell documentation locally. This is useful for previewing changes to the Rell system libraries documentation. Output goes to the `libdoc` directory.
 
 ```shell
 ./work/build-local-docs.sh
 ```
-
-This script will generate documentation in the `libdoc` directory, which you can then browse locally to see how the documentation will look.
 
 ## Binary Compatibility Checker
 

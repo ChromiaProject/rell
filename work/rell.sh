@@ -5,15 +5,10 @@
 
 SCRIPT_DIR="$(dirname "$0")"
 RELL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-DIST_DIR="$RELL_DIR/rell-tools/build/install/rell-dist/postchain-node"
 
-if [ ! -d "$DIST_DIR" ]; then
-    echo "Running install task..."
-    cd "$RELL_DIR"
-    ./gradlew installRellDist || {
-        echo "ERROR: Failed to build Rell distribution"
-        exit 1
-    }
+ARGS=()
+if [ $# -gt 0 ]; then
+    ARGS+=(--args="$*")
 fi
 
-exec "$DIST_DIR/rell.sh" "$@"
+exec "$RELL_DIR/gradlew" -q --console=plain :rell-tools:runRepl "${ARGS[@]}"

@@ -138,6 +138,15 @@ val installRellDist by tasks.registering(Copy::class) {
     with(rellDistCopySpec)
 }
 
+tasks.register<JavaExec>("runRepl") {
+    group = "application"
+    description = "Starts the Rell REPL (interactive shell)"
+    dependsOn(tasks.classes)
+    mainClass = "net.postchain.rell.tools.RellCLIKt"
+    classpath = sourceSets.main.get().runtimeClasspath
+    standardInput = System.`in`
+}
+
 publishing.publications.named<MavenPublication>("mavenJava") {
     if (publishDist) {
         artifact(rellDistTar)
