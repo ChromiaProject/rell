@@ -17,7 +17,7 @@ plugins {
 }
 
 group = "net.postchain.rell"
-version = "0.16.0-SNAPSHOT"
+version = "0.15.2"
 
 // Opt-in flag to generate Rell test cases (replacement for Maven profile generate-test-cases)
 val generateTestCases by extra(providers.gradleProperty("generateTestCases").isPresent)
