@@ -306,11 +306,20 @@ Update the version in two places:
 
 Commit and push the branch. Pushing the `version-A.B.C` branch triggers the GitLab CI pipeline, which publishes the release automatically.
 
-### 3. Announce the Release
+### 3. Create the Release Tag
+
+After the CI pipeline completes successfully, create and push a Git tag on the release commit (the last commit on the `version-A.B.C` branch):
+
+```shell
+git tag A.B.C <commit-sha>
+git push origin A.B.C
+```
+
+### 4. Announce the Release
 
 After the CI pipeline completes successfully, report the new version on **Zulip**.
 
-### 4. Post-Release Cleanup on `dev`
+### 5. Post-Release Cleanup on `dev`
 
 Switch back to the `dev` branch and perform these follow-up steps:
 
@@ -320,7 +329,7 @@ Switch back to the `dev` branch and perform these follow-up steps:
      Notes: A.B.C.txt
      GitLab: https://gitlab.com/chromaway/rell/-/tree/<commit-sha>/
    ```
-   Use the commit SHA of the tagged release commit.
+   Use the commit SHA of the release commit (the tagged commit).
 
 2. **Add the release notes file to `dev`** — copy `doc/release-notes/A.B.C.txt` (as finalized on the release branch) into the `dev` branch so that the full release notes history is available on `dev`.
 
