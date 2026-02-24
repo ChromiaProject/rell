@@ -4,10 +4,13 @@ import assertk.assertThat
 import assertk.assertions.containsOnly
 import assertk.assertions.extracting
 import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
 import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
 import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -56,6 +59,41 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
     }
 
     @Test
+    fun `Returns test files for active workspace only`(@TempDir dir: File) {
+        val firstWorkspacePath = dir.resolve("workspace_one")
+        val secondWorkspacePath = dir.resolve("workspace_two")
+
+        val testFilePath = "directory/first_test_file.rell"
+        val firstWsBuilder = testData(firstWorkspacePath) {
+            addFile(
+                testFilePath,
+                "@test module; function test_1() { return 1; }"
+            )
+        }
+        val secondWsBuilder = testData(secondWorkspacePath) {
+            addFile(
+                testFilePath,
+                "@test module; function test_1() { return 1; }"
+            )
+        }
+
+        initializeWorkspace(dir)
+
+        val testRunner = RellTestRunner(indexingManager, symbolService)
+        val firstWsTestFiles = testRunner.getTestFiles(firstWsBuilder.sourceFolderUri)
+        val expectedTestFile = firstWsBuilder.sourceFile(testFilePath)
+
+        assertThat(indexingManager.indexers.keys).containsOnly(firstWsBuilder.sourceFolderUri, secondWsBuilder.sourceFolderUri)
+        assertThat(firstWsTestFiles).containsOnly(
+            createRellTestFile(
+                expectedTestFile,
+                "directory.first_test_file",
+                createRellTestCase("test_1", Position(0, 14), Position(0, 44), expectedTestFile)
+            )
+        )
+    }
+
+    @Test
     fun `Returns all test functions in file`(@TempDir dir: File) {
         val testFilePath = "test_file.rell"
         val testDataBuilder = testData(dir) {
@@ -88,6 +126,147 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
                 createRellTestCase("another_annotated_test", Position(8, 0), Position(8, 54), testFile),
             )
         }
+    }
+
+    @Disabled("Uncomment when bumping to rell version with test disable annotation")
+    @Test
+    fun `Functions with @disabled annotation are excluded from test cases`(@TempDir dir: File) {
+        val testFilePath = "test_file.rell"
+        val testDataBuilder = testData(dir) {
+            addFile(
+                testFilePath,
+                """
+                @test module;
+                function test_included() { return 1; }
+                @disabled
+                function test_disabled() { return 1; }
+                """.trimIndent()
+            )
+        }
+
+        initializeWorkspace(dir)
+        val testRunner = RellTestRunner(indexingManager, symbolService)
+        val testFile = testDataBuilder.sourceFile(testFilePath)
+        testRunner.getTestCases(testFile.toURI()).let { testCases ->
+            assertThat(testCases).containsOnly(
+                createRellTestCase("test_included", Position(1, 0), Position(1, 37), testFile)
+            )
+        }
+    }
+
+    @Disabled("Uncomment when bumping to rell version with test disable annotation")
+    @Test
+    fun `Functions with @test and @disabled annotations are excluded from test cases`(@TempDir dir: File) {
+        val testFilePath = "test_file.rell"
+        val testDataBuilder = testData(dir) {
+            addFile(
+                testFilePath,
+                """
+                @test module;
+                @test
+                function valid_test() { return 1; }
+                @test
+                @disabled
+                function annotated_disabled() { return 1; }
+                """.trimIndent()
+            )
+        }
+
+        initializeWorkspace(dir)
+        val testRunner = RellTestRunner(indexingManager, symbolService)
+        val testFile = testDataBuilder.sourceFile(testFilePath)
+        testRunner.getTestCases(testFile.toURI()).let { testCases ->
+            assertThat(testCases).containsOnly(
+                createRellTestCase("valid_test", Position(1, 0), Position(2, 34), testFile)
+            )
+        }
+    }
+
+    @Test
+    fun `Returns empty test cases for non-test module file`(@TempDir dir: File) {
+        val testFilePath = "regular_module.rell"
+        val testDataBuilder = testData(dir) {
+            addFile(
+                testFilePath,
+                "module; function test_1() { return 1; } function test_2() { return 1; }"
+            )
+        }
+
+        initializeWorkspace(dir)
+        val testRunner = RellTestRunner(indexingManager, symbolService)
+        val testFile = testDataBuilder.sourceFile(testFilePath)
+        assertThat(testRunner.getTestCases(testFile.toURI())).isEmpty()
+    }
+
+    @Test
+    fun `Returns empty test cases for unknown file URI`(@TempDir dir: File) {
+        val testDataBuilder = testData(dir) {
+            addFile("module.rell", "module;")
+        }
+
+        initializeWorkspace(dir)
+        val testRunner = RellTestRunner(indexingManager, symbolService)
+        val unknownUri = File(testDataBuilder.sourceFolder, "nonexistent.rell").toURI()
+        assertThat(testRunner.getTestCases(unknownUri)).isEmpty()
+    }
+
+    @Test
+    fun `Returns RellTestFile for test module file`(@TempDir dir: File) {
+        val testFilePath = "test_module.rell"
+        val testDataBuilder = testData(dir) {
+            addFile(testFilePath, "@test module; function test_1() { return 1; }")
+        }
+
+        initializeWorkspace(dir)
+        val testRunner = RellTestRunner(indexingManager, symbolService)
+        val testFile = testDataBuilder.sourceFile(testFilePath)
+
+        assertThat(testRunner.getTestFile(testFile.toURI())).isEqualTo(
+            createRellTestFile(
+                testFile,
+                "test_module",
+                createRellTestCase("test_1", Position(0, 14), Position(0, 44), testFile)
+            )
+        )
+    }
+
+    @Test
+    fun `Returns null for non-test module file`(@TempDir dir: File) {
+        val testFilePath = "regular_module.rell"
+        val testDataBuilder = testData(dir) {
+            addFile(testFilePath, "module; function test_1() { return 1; }")
+        }
+
+        initializeWorkspace(dir)
+        val testRunner = RellTestRunner(indexingManager, symbolService)
+        val testFile = testDataBuilder.sourceFile(testFilePath)
+
+        assertThat(testRunner.getTestFile(testFile.toURI())).isNull()
+    }
+
+    @Test
+    fun `Returns null for unknown file URI`(@TempDir dir: File) {
+        val testDataBuilder = testData(dir) {
+            addFile("module.rell", "module;")
+        }
+
+        initializeWorkspace(dir)
+        val testRunner = RellTestRunner(indexingManager, symbolService)
+        val unknownUri = File(testDataBuilder.sourceFolder, "nonexistent.rell").toURI()
+
+        assertThat(testRunner.getTestFile(unknownUri)).isNull()
+    }
+
+    @Test
+    fun `Returns empty list when workspace has no test files`(@TempDir dir: File) {
+        val testDataBuilder = testData(dir) {
+            addFile("module_a.rell", "module; function test_1() { return 1; }")
+            addFile("module_b.rell", "module; function test_2() { return 1; }")
+        }
+
+        initializeWorkspace(dir)
+        val testRunner = RellTestRunner(indexingManager, symbolService)
+        assertThat(testRunner.getTestFiles(testDataBuilder.sourceFolderUri)).isEmpty()
     }
 
 

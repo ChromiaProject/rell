@@ -13,7 +13,7 @@ import java.net.URI
 class RellTestRunner(val indexingManager: RellIndexingManager, private val symbolService: RellSymbolService) {
 
     fun getTestFiles(workspaceUri: URI): List<RellTestFile> {
-        return indexingManager.getAllIndexers().flatMap { indexer ->
+        return indexingManager.getIndexerForOrNull(workspaceUri)?.let { indexer ->
             indexer.fileUriResourceMap
                 .filter { it.value.isTest() }
                 .map { (uri, resource) ->
@@ -24,7 +24,18 @@ class RellTestRunner(val indexingManager: RellIndexingManager, private val symbo
                         getTestCases(resource)
                     )
                 }
-        }
+        } ?: emptyList()
+    }
+
+    fun getTestFile(fileUri: URI): RellTestFile? {
+        val resource = indexingManager.getResource(fileUri) ?: return null
+        if (!resource.isTest()) return null
+        return RellTestFile(
+            fileUri,
+            resource.moduleInfo?.name?.str(),
+            true,
+            getTestCases(resource)
+        )
     }
 
     fun getTestCases(fileUri: URI): List<RellTestCase> {
@@ -32,7 +43,8 @@ class RellTestRunner(val indexingManager: RellIndexingManager, private val symbo
         return getTestCases(resource)
     }
 
-    fun getTestCases(resource: Resource): List<RellTestCase> {
+
+    private fun getTestCases(resource: Resource): List<RellTestCase> {
         if (!resource.isTest()) {
             return listOf()
         }
