@@ -1,0 +1,7 @@
+<component name="CopyrightManager">
+  <copyright>
+    <option name="allowReplaceRegexp" value="Copyright \(C\) \d{4}(?:-\d{4})? ChromaWay AB" />
+    <option name="notice" value="Copyright (C) &#36;today.year ChromaWay AB. See LICENSE for license information." />
+    <option name="myName" value="rell" />
+  </copyright>
+</component>

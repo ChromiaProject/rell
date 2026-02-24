@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+#
+
 set -euo pipefail
 
 # Script to generate Rell documentation for preview using Gradle-published artifacts

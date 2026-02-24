@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 CREATE USER "postchain";
 ALTER USER "postchain" WITH PASSWORD 'postchain';
 

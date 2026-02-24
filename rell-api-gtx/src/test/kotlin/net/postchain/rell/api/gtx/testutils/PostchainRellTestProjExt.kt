@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
 package net.postchain.rell.api.gtx.testutils

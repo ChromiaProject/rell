@@ -1,4 +1,6 @@
 .idea/*
+!/.idea/copyright/
+!/.idea/scopes/
 *.iml
 .DS_Store
 /.run

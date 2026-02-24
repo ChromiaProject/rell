@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 // npm -g install web3
 // npm link web3
 // node ecrecover_testcase_gen.js

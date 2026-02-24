@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+#
+
 set -e
 
 # Verify that the script is being run from the repository root

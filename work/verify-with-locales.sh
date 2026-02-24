@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+#
+
 # Runs `./gradlew check` under several locales to catch locale-specific issues.
 # Usage: start from the project root or anywhere; the script cd's to project root.
 
