@@ -322,7 +322,11 @@ Switch back to the `dev` branch and perform these follow-up steps:
    ```
    Use the commit SHA of the tagged release commit.
 
-2. **If this was a major release** (A or B changed), update `VERSION_STR` in `dev` to the next development snapshot:
+2. **Add the release notes file to `dev`** — copy `doc/release-notes/A.B.C.txt` (as finalized on the release branch) into the `dev` branch so that the full release notes history is available on `dev`.
+
+3. **Add the released version to `SUPPORTED_VERSIONS` on `dev`** — in `RellVersions.kt`, add `"A.B.C"` to the `SUPPORTED_VERSIONS` list. This is needed because the release branch removes the current dev version from the list, but `dev` must know about all released versions.
+
+4. **If this was a major release** (A or B changed), update `VERSION_STR` in `dev` to the next development snapshot:
    ```kotlin
    // In RellVersions.kt on dev branch:
    const val VERSION_STR = "0.(B+1).0-SNAPSHOT"
