@@ -128,7 +128,6 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
         }
     }
 
-    @Disabled("Uncomment when bumping to rell version with test disable annotation")
     @Test
     fun `Functions with @disabled annotation are excluded from test cases`(@TempDir dir: File) {
         val testFilePath = "test_file.rell"
@@ -154,7 +153,6 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
         }
     }
 
-    @Disabled("Uncomment when bumping to rell version with test disable annotation")
     @Test
     fun `Functions with @test and @disabled annotations are excluded from test cases`(@TempDir dir: File) {
         val testFilePath = "test_file.rell"
@@ -269,31 +267,6 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
         assertThat(testRunner.getTestFiles(testDataBuilder.sourceFolderUri)).isEmpty()
     }
 
-
-    @Test
-    fun `Disabled annotation isn't released yet`(@TempDir dir: File) {
-        val testFilePath = "test_file.rell"
-        val testDataBuilder = testData(dir) {
-            addFile(
-                testFilePath,
-                """
-                @test module;
-                @disabled
-                function test_1() { return 1; }
-                """.trimIndent()
-            )
-        }
-        initializeWorkspace(dir)
-        val testFile = testDataBuilder.sourceFile(testFilePath)
-        val issues = diagnostics[testFile.toURI()]!!
-        /*
-         * TODO: When the @disabled annotation is released in Rell, this test case will fail.
-         * Remove this test case and add new one to verify that
-         * functions annotated with both @disabled and @test(or named with test_ prefix)
-         * are not included in the test cases.
-         */
-        assertThat(issues).extracting { it.message }.containsOnly("Annotation '@disabled' is invalid")
-    }
 
     private fun createRellTestFile(file: File, name: String, rellTestCase: RellTestCase): RellTestFile {
         return RellTestFile(file.toURI(), name, true, listOf(rellTestCase))

@@ -10,6 +10,8 @@ dependencies {
     antlr(libs.antlr)
     api(libs.antlr.runtime)
     implementation(libs.rell.base)
+    implementation(libs.guava)
+    implementation(libs.commons.collections4)
     implementation(project(":common"))
 
     rellTestCasesConfiguration(
