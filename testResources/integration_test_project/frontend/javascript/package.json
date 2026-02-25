@@ -5,7 +5,7 @@
 	"test": "jest --passWithNoTests"
   },
   "dependencies": {
-    "postchain-client": "^2.1.1"
+    "postchain-client": "^2.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
