@@ -6,6 +6,13 @@
 
 This repository defines the rell dokka plugin for generating docs from rell sources
 
+## Documentation
+
+- [Introduction](./docs/Introduction.md)
+- [Architecture](./docs/Architecture.md)
+- [Functionality](./docs/Functional.md)
+- [Setup & Development](./docs/Setup.md)
+
 ### Usage
 
 This project has a CLI that can be used to generate a site.
