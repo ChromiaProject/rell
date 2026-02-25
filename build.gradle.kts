@@ -31,7 +31,6 @@ val dokkaVersion: String by project
 val rellVersion: String by project
 val jacksonVersion = "2.15.3"
 dependencies {
-    implementation(platform("net.postchain.rell:rell:$rellVersion"))
     implementation(platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion"))
     implementation("org.jetbrains.dokka:dokka-core:$dokkaVersion")
     implementation("org.jetbrains.dokka:dokka-base:$dokkaVersion")

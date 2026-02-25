@@ -51,7 +51,7 @@ fun R_FunctionDefinition.getParamsByReflection() =
         }
 
 fun R_RoutineDefinition.getTypeByReflection() = when (this) {
-    is R_OperationDefinition -> type
+    is R_OperationDefinition -> getTypeByReflection()
     is R_QueryDefinition -> getTypeByReflection()
     is R_FunctionDefinition -> getTypeByReflection()
 }
@@ -76,5 +76,12 @@ private fun R_FunctionDefinition.getTypeByReflection() =
                     it.isAccessible = true
                     (it.get(this) as R_FunctionBase).getHeaderByReflection().type
                 }
+
+private fun R_OperationDefinition.getTypeByReflection() =
+    R_OperationDefinition::class.memberProperties.find { it.name == "type"}!!
+        .let {
+            it.isAccessible = true
+            (it.get(this) as R_Type)
+        }
 
 private fun R_QueryDefinition.getTypeByReflection() = this.type()
