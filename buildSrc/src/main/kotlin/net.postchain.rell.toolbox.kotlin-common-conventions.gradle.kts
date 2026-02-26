@@ -68,6 +68,14 @@ publishing {
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
+            versionMapping {
+                usage("java-api") {
+                    fromResolutionOf("runtimeClasspath")
+                }
+                usage("java-runtime") {
+                    fromResolutionResult()
+                }
+            }
         }
     }
 }
@@ -76,8 +84,8 @@ dependencies {
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
-    // Use the Kotlin JDK 8 standard library.
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    // Use the Kotlin JDK standard library.
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation(catalog.findLibrary("oshai").get())
     implementation(catalog.findLibrary("slf4j").get())
 
