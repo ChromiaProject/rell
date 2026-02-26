@@ -56,14 +56,13 @@ dependencies {
         // Define dependency versions as constraints
         implementation("org.apache.commons:commons-text:1.9")
 
-        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     }
 
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
     // Use the Kotlin JDK 8 standard library.
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
 
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
