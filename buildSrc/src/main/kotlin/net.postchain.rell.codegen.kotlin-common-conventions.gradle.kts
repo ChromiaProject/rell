@@ -39,6 +39,14 @@ publishing {
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
+            versionMapping {
+                usage("java-api") {
+                    fromResolutionOf("runtimeClasspath")
+                }
+                usage("java-runtime") {
+                    fromResolutionResult()
+                }
+            }
         }
     }
 }
@@ -48,17 +56,13 @@ dependencies {
         // Define dependency versions as constraints
         implementation("org.apache.commons:commons-text:1.9")
 
-        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     }
 
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
     // Use the Kotlin JDK 8 standard library.
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-
-    // Align versions of all Kotlin components
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
 
     testImplementation("com.willowtreeapps.assertk:assertk:0.25")
 
