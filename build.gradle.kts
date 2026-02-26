@@ -152,6 +152,15 @@ publishing {
             from(components["java"])
             artifact(javadocJar)
 
+            versionMapping {
+                usage("java-api") {
+                    fromResolutionOf("runtimeClasspath")
+                }
+                usage("java-runtime") {
+                    fromResolutionResult()
+                }
+            }
+
             pom {
                 name.set("Rell dokka plugin")
                 description.set("Generates documentation for a rell project")
