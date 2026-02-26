@@ -9,6 +9,8 @@ plugins {
     jacoco
 }
 
+description = "Rell integration with Postchain GTX: transaction handling, database init, and operation execution"
+
 // Include Java files in kotlin source directories (for mixed Java/Kotlin compilation)
 sourceSets.test {
     java {

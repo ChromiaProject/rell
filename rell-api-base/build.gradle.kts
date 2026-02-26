@@ -9,6 +9,8 @@ plugins {
     jacoco
 }
 
+description = "Rell compilation API and GTV configuration generation"
+
 kotlin {
     explicitApi()
     compilerOptions.optIn.add("net.postchain.rell.api.base.InternalRellApi")

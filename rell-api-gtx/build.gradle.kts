@@ -10,6 +10,8 @@ plugins {
     jacoco
 }
 
+description = "Rell GTX testing API: test runners and SQL test infrastructure"
+
 kotlin {
     explicitApi()
     compilerOptions.optIn.add("net.postchain.rell.api.base.InternalRellApi")

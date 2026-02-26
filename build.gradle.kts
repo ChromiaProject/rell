@@ -18,6 +18,7 @@ plugins {
 
 group = "net.postchain.rell"
 version = "0.16.0-SNAPSHOT"
+description = "Rell programming language"
 
 // Opt-in flag to generate Rell test cases (replacement for Maven profile generate-test-cases)
 val generateTestCases by extra(providers.gradleProperty("generateTestCases").isPresent)
@@ -41,7 +42,6 @@ val withLocales by extra(providers.gradleProperty("withLocales").isPresent)
 subprojects {
     group = rootProject.group
     version = rootProject.version
-
     plugins.withId("org.jetbrains.kotlin.jvm") {
         apply(plugin = "jacoco")
         apply(plugin = "maven-publish")
@@ -188,6 +188,32 @@ subprojects {
                     }
                     usage("java-runtime") {
                         fromResolutionResult()
+                    }
+                }
+                pom {
+                    description = project.description
+                    url = "https://rell.chromia.com"
+                    inceptionYear = "2018"
+                    licenses {
+                        license {
+                            name = "GNU General Public License v3.0 with additional linking exceptions"
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = "iaroslav.postovalov"
+                            name = "Iaroslav Postovalov"
+                            email = "iaroslav.postovalov@chromaway.com"
+                            organization = "ChromaWay"
+                            organizationUrl = "https://chromaway.com"
+                            roles = listOf("maintainer")
+                            timezone = "Europe/Berlin"
+                        }
+                    }
+                    scm {
+                        connection = "scm:git:git://gitlab.com/chromaway/rell.git"
+                        developerConnection = "scm:git:ssh://gitlab.com:chromaway/rell.git"
+                        url = "https://gitlab.com/chromaway/rell"
                     }
                 }
             }

@@ -7,6 +7,8 @@ plugins {
     jacoco
 }
 
+description = "Rell interactive REPL and shell"
+
 kotlin {
     explicitApi()
     compilerOptions.optIn.add("net.postchain.rell.api.base.InternalRellApi")

@@ -11,6 +11,8 @@ plugins {
     application
 }
 
+description = "Rell CLI tools: REPL launcher, test runner, and configuration generator"
+
 kotlin {
     compilerOptions.optIn.add("net.postchain.rell.api.base.InternalRellApi")
 }

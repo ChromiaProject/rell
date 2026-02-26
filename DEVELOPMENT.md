@@ -246,14 +246,6 @@ function("my_new_function", result = "integer", since = RellVersions.SINCE_NOW) 
 
 **Important:** Never hardcode version numbers like `since = "0.16.0"`. The `SINCE_NOW` constant is defined as the current development version and will be replaced with the actual version during the release process.
 
-## Git Workflow
-
-1. Create a branch for your changes
-2. Make your changes, following the project's coding conventions
-3. Write or update tests as necessary
-4. Submit a merge request (MR) on GitLab
-5. Address any feedback from code reviewers
-
 ## Release Process
 
 This section describes how to publish a new Rell release `A.B.C`.
@@ -381,8 +373,6 @@ UNRELEASED NOTES (for dev.txt)
 ```
 
 ### Section Organization and Categories
-
-#### Section Separator Format
 
 Each section is separated by a line of @ symbols:
 

@@ -10,6 +10,8 @@ plugins {
     jacoco
 }
 
+description = "Rell core: compiler, runtime, type system, and standard library"
+
 // Configuration for sharing test code with other modules (similar to Maven's test-jar)
 val testJar by tasks.registering(Jar::class) {
     archiveClassifier = "tests"

@@ -7,6 +7,8 @@ plugins {
     jacoco
 }
 
+description = "Rell native environment interface for blockchain context"
+
 kotlin {
     explicitApi()
 }
