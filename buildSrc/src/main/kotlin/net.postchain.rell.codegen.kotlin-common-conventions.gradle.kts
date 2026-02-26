@@ -64,9 +64,6 @@ dependencies {
     // Use the Kotlin JDK 8 standard library.
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
 
-    // Align versions of all Kotlin components
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-
     testImplementation("com.willowtreeapps.assertk:assertk:0.25")
 
     implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
