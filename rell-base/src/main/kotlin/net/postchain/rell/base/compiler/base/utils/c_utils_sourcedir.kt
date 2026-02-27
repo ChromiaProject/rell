@@ -8,7 +8,6 @@ import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeFilePath
-import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.util.*
 
@@ -64,7 +63,7 @@ class C_SourcePath private constructor(val parts: ImmList<String>): Comparable<C
         }
 
         fun parseOpt(path: String): C_SourcePath? {
-            val parts = StringUtils.splitPreserveAllTokens(path, "/\\").toImmList()
+            val parts = path.split('/', '\\').toImmList()
             if (parts.isEmpty()) {
                 return null
             }

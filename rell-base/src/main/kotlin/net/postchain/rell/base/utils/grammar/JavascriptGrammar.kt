@@ -10,7 +10,6 @@ import com.github.h0tk3y.betterParse.parser.Parser
 import net.postchain.rell.base.compiler.parser.RellToken
 import net.postchain.rell.base.compiler.parser.RellTokens
 import net.postchain.rell.base.utils.RellVersions
-import org.apache.commons.collections4.MapUtils
 
 fun main() {
     val timestamp = System.currentTimeMillis()
@@ -43,7 +42,7 @@ fun main() {
     println("    },")
 
     val nameToParser = GrammarUtils.getParsers()
-    val parserToName = MapUtils.invertMap(nameToParser)
+    val parserToName = nameToParser.entries.associate { (k, v) -> v to k }
 
     println("    \"syntax\": {")
 

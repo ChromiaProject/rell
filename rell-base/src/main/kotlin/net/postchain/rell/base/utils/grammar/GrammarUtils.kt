@@ -11,7 +11,9 @@ import net.postchain.rell.base.compiler.parser.LegacyCombinator
 import net.postchain.rell.base.compiler.parser.S_Grammar
 import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.toImmMap
-import org.apache.commons.lang3.time.FastDateFormat
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 object GrammarUtils {
@@ -57,11 +59,8 @@ object GrammarUtils {
         p
     }
 
-    private val formatter: FastDateFormat = FastDateFormat.getInstance(
-        "yyyy-MM-dd HH:mm:ssZ",
-        TimeZone.getTimeZone("UTC"),
-        Locale.US,
-    )
+    private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssZ", Locale.US)
+        .withZone(ZoneOffset.UTC)
 
-    fun timestampToString(timestamp: Long): String = formatter.format(timestamp)
+    fun timestampToString(timestamp: Long): String = formatter.format(Instant.ofEpochMilli(timestamp))
 }

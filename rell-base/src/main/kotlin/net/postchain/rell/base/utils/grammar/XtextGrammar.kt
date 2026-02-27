@@ -9,7 +9,6 @@ import com.github.h0tk3y.betterParse.grammar.ParserReference
 import net.postchain.rell.base.compiler.parser.RellToken
 import net.postchain.rell.base.compiler.parser.RellTokens
 import net.postchain.rell.base.utils.*
-import org.apache.commons.collections4.MapUtils
 
 fun main() {
     XtextGenUtils.printHeader()
@@ -238,7 +237,7 @@ private object XtextNontermGen {
 
 private object GramExprGen {
     private val parsers = TOP_PARSERS
-    private val nonterms = MapUtils.invertMap(parsers).toMap()
+    private val nonterms = parsers.entries.associate { (k, v) -> v to k }
 
     fun createGramExpr(parser: Any): GramExpr {
         return createGramExpr0(parser)

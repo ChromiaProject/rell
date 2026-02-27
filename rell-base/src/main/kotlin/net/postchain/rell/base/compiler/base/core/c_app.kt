@@ -14,7 +14,8 @@ import net.postchain.rell.base.compiler.base.namespace.C_NsAsm_ReplAssembler
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
-import org.apache.commons.collections4.SetUtils
+import java.util.Collections
+import java.util.IdentityHashMap
 import java.util.concurrent.atomic.AtomicLong
 
 private object C_InternalAppUtils {
@@ -381,7 +382,7 @@ private class C_AppDefsTableBuilder<T, K>(
     private val executor: C_CompilerExecutor,
     private val keyGetter: (T) -> K,
 ) {
-    private val keys: MutableSet<K> = SetUtils.newIdentityHashSet()
+    private val keys: MutableSet<K> = Collections.newSetFromMap(IdentityHashMap())
     private val defs = mutableListOf<T>()
     private var build = false
 

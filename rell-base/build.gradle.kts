@@ -33,8 +33,6 @@ dependencies {
     api(kotlin("reflect"))
 
     implementation(libs.kotlin.logging)
-    implementation(libs.commons.lang3)
-    implementation(libs.commons.collections4)
     implementation(libs.guava)
     api(libs.better.parse)
     implementation(libs.jackson.databind)

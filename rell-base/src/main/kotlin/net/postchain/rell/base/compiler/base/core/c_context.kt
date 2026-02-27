@@ -27,7 +27,6 @@ import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import org.apache.commons.lang3.mutable.MutableLong
 
 abstract class C_VarId {
     abstract fun nameMsg(): String
@@ -112,15 +111,14 @@ sealed class C_ModuleContext(
     private val fnUidGen = C_UidGen { id, _ -> R_FnUid(id, containerUid) }
     private val constUidGen = C_UidGen { id, name -> C_GlobalConstantUid(id, name, containerUid) }
 
-    private val namelessFunctionIds = mutableMapOf<C_RNamePath, MutableLong>()
+    private val namelessFunctionIds = mutableMapOf<C_RNamePath, Long>()
 
     internal fun nextFnUid(name: String) = fnUidGen.next(name)
     internal fun nextConstVarUid(name: String): C_VarId = constUidGen.next(name)
 
     internal fun nextNamelessFunctionId(namespace: C_RNamePath): Long {
-        val idCtr = namelessFunctionIds.computeIfAbsent(namespace) { MutableLong(0) }
-        val res = idCtr.toLong()
-        idCtr.increment()
+        val res = namelessFunctionIds[namespace] ?: 0L
+        namelessFunctionIds[namespace] = res + 1
         return res
     }
 

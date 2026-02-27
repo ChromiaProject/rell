@@ -17,8 +17,6 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.utils.immListOf
-import org.apache.commons.collections4.MultiValuedMap
-import org.apache.commons.collections4.multimap.HashSetValuedHashMap
 import java.math.BigInteger
 
 const val GTV_QUERY_PRETTY = true
@@ -50,15 +48,15 @@ private class GtvToRtState(
     val bigIntegerSupport: Boolean,
     val defaultValueEvaluator: GtvToRtDefaultValueEvaluator?,
 ) {
-    private val entityRowids: MultiValuedMap<R_EntityDefinition, Long> = HashSetValuedHashMap()
+    private val entityRowids = mutableMapOf<R_EntityDefinition, MutableSet<Long>>()
 
     fun trackRecord(entity: R_EntityDefinition, rowid: Long) {
-        entityRowids.put(entity, rowid)
+        entityRowids.getOrPut(entity) { mutableSetOf() }.add(rowid)
     }
 
     fun finish(exeCtx: Rt_ExecutionContext) {
-        for (rEntities in entityRowids.keySet()) {
-            val rowids = entityRowids.get(rEntities)
+        for (rEntities in entityRowids.keys) {
+            val rowids = entityRowids.getValue(rEntities)
             checkRowids(exeCtx.sysSqlExec, exeCtx.sqlCtx, rEntities, rowids)
         }
     }

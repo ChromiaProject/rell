@@ -29,8 +29,6 @@ postchain-gtv = { module = "net.postchain:postchain-gtv" }
 postchain-spi = { module = "net.postchain:postchain-spi" }
 postchain-base = { module = "net.postchain:postchain-base" }
 postchain-devtools = { module = "net.postchain:postchain-devtools" }
-commons-lang3 = { module = "org.apache.commons:commons-lang3" }
-commons-collections4 = { module = "org.apache.commons:commons-collections4" }
 guava = { module = "com.google.guava:guava" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 jooq = { module = "org.jooq:jooq" }

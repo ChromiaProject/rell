@@ -11,7 +11,6 @@ import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.plus
 import net.postchain.rell.base.utils.toImmList
-import org.apache.commons.lang3.StringUtils
 
 internal object C_Annotation_Mount {
     val FIELD = C_ModifierField.valueAnnotation("mount", Evaluator)
@@ -119,8 +118,8 @@ internal class C_MountPath private constructor(
 
     companion object {
         fun parse(s: String): C_MountPath? {
-            var parts = StringUtils.splitPreserveAllTokens(s, '.').toList()
-            if (parts.isEmpty()) return C_MountPath(s, null, immListOf(), false)
+            if (s.isEmpty()) return C_MountPath(s, null, immListOf(), false)
+            var parts = s.split('.').toList()
 
             var up: Int? = null
             if (parts[0] == "") {

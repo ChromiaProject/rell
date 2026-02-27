@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.utils
 
-import org.apache.commons.lang3.StringUtils
 
 typealias Getter<T> = () -> T
 
@@ -94,7 +93,7 @@ class VersionNumber(val items: ImmList<Int>): Comparable<VersionNumber> {
     companion object {
         fun of(s: String): VersionNumber {
             require(s.matches(Regex("(0|[1-9][0-9]*)([.](0|[1-9][0-9]*))*"))) { "Invalid version format: '$s'" }
-            val parts = StringUtils.splitPreserveAllTokens(s, ".")
+            val parts = s.split(".")
             val items = parts.mapToImmList { it.toInt() }
             return VersionNumber(items)
         }

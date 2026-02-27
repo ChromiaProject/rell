@@ -9,7 +9,6 @@ import net.postchain.rell.base.compiler.base.utils.C_Parser
 import net.postchain.rell.base.repl.ReplInputChannel
 import net.postchain.rell.base.repl.ReplInputChannelFactory
 import net.postchain.rell.base.repl.ReplOutputChannelFactory
-import org.apache.commons.lang3.StringUtils
 import org.jline.reader.*
 import org.jline.terminal.TerminalBuilder
 import java.io.File
@@ -76,7 +75,7 @@ private class RellJLineParser: Parser {
     }
 
     private fun eofPos(line: String): S_Pos? {
-        if (StringUtils.isBlank(line)) {
+        if (line.isBlank()) {
             return null
         }
 

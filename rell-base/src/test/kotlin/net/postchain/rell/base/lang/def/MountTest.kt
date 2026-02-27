@@ -8,7 +8,6 @@ import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestUtils
-import org.apache.commons.lang3.StringUtils
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -404,7 +403,7 @@ class MountTest: BaseRellTest(useSql = true) {
     private class ConflictTestData(val fooFile: String, val barFile: String, val testFn: (String, String, String) -> Unit) {
         val fooModule = fileToModule(fooFile)
         val barModule = fileToModule(barFile)
-        private fun fileToModule(file: String) = if (file == "main.rell") "" else StringUtils.substringBefore(file, "/") + ":"
+        private fun fileToModule(file: String) = if (file == "main.rell") "" else file.substringBefore("/") + ":"
     }
 
     @Test fun testConflictAppLevel2() {

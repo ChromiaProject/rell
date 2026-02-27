@@ -36,8 +36,10 @@ import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.gtx.*
-import org.apache.commons.lang3.time.FastDateFormat
 import java.sql.SQLException
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.math.max
 
@@ -120,12 +122,13 @@ private class Rt_MultiPrinter(private val printers: Collection<Rt_Printer>): Rt_
 
 class Rt_TimestampPrinter(private val printer: Rt_Printer): Rt_Printer {
     companion object: KLogging() {
-        private val DATE_FMT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss,SSS", Locale.US)
+        private val DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss,SSS", Locale.US)
+            .withZone(ZoneId.systemDefault())
     }
 
     override fun print(str: String) {
         val time = System.currentTimeMillis()
-        val timeStr = DATE_FMT.format(time)
+        val timeStr = DATE_FMT.format(Instant.ofEpochMilli(time))
         val str2 = "$timeStr $str"
         printer.print(str2)
     }

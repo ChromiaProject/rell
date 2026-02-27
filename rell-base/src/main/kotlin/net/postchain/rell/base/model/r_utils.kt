@@ -6,7 +6,6 @@ package net.postchain.rell.base.model
 
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.utils.*
-import org.apache.commons.lang3.StringUtils
 import java.util.*
 
 class R_DefinitionId(val module: String, val definition: String) {
@@ -202,7 +201,7 @@ class R_Name private constructor(val str: String): Comparable<R_Name> {
         }
 
         fun listOfOpt(s: String): List<R_Name>? {
-            val parts = StringUtils.splitPreserveAllTokens(s, '.')
+            val parts = s.split('.')
             val names = parts.map { ofOpt(it) }
             val names2 = names.filterNotNull()
             if (names2.size != names.size) return null

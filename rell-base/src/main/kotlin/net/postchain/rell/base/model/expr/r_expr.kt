@@ -16,7 +16,6 @@ import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.SqlGen
 import net.postchain.rell.base.utils.*
-import org.apache.commons.collections4.ListUtils
 import java.math.BigDecimal
 import kotlin.math.max
 
@@ -482,7 +481,7 @@ internal sealed class R_CreateExpr(
         }
 
         val recordsPerPage = max(globalCtx.sqlUpdatePortionSize / values.attrs.size, 1)
-        val pages = ListUtils.partition(values.rows, recordsPerPage)
+        val pages = values.rows.chunked(recordsPerPage)
         return pages.mapToImmList { InsertData(values.attrs, it.toImmList()) }
     }
 

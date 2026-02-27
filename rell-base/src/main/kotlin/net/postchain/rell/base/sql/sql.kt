@@ -11,11 +11,8 @@ import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immSetOf
 import net.postchain.rell.base.utils.plus
 import org.apache.commons.lang3.mutable.MutableBoolean
-import org.apache.commons.lang3.mutable.MutableInt
-import org.apache.commons.lang3.mutable.MutableObject
 import org.intellij.lang.annotations.Language
 import org.jooq.tools.jdbc.MockConnection
-import java.io.Closeable
 import java.sql.Connection
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -113,7 +110,7 @@ abstract class AbstractSqlManager: SqlManager {
         check(busy.compareAndSet(false, true)) { "SqlManager is busy" }
         try {
             val res = execute0(tx) { sqlExec ->
-                SingleUseSqlExecutor(sqlExec, MutableBoolean(true)).use(code)
+                SingleUseSqlExecutor(sqlExec).use(code)
             }
             return res
         } finally {
@@ -123,8 +120,8 @@ abstract class AbstractSqlManager: SqlManager {
 
     private class SingleUseSqlExecutor(
         private val sqlExec: SqlExecutor,
-        private val valid: MutableBoolean,
-    ): SqlExecutor(), Closeable {
+        private val valid: MutableBoolean = MutableBoolean(true),
+    ): SqlExecutor(), AutoCloseable {
         override fun <T> connection(code: (Connection) -> T): T {
             check(valid.get())
             return sqlExec.connection(code)
@@ -489,13 +486,13 @@ class InterceptingSqlExecutor(
     override fun hasRealConnection() = sqlExec.hasRealConnection()
 
     override fun <T> connection(code: (Connection) -> T): T {
-        val ref = MutableObject<One<T>?>()
+        var ref: One<T>? = null
         invoke(null, null) {
             val res = sqlExec.connection(code)
-            ref.value = One(res)
+            ref = One(res)
             null
         }
-        return ref.get()!!.value
+        return ref!!.value
     }
 
     override fun execute(sql: String) {
@@ -520,12 +517,12 @@ class InterceptingSqlExecutor(
 
     override fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit) {
         invoke(sql, preparator) { preparator2 ->
-            val rowCount = MutableInt()
+            var rowCount = 0
             sqlExec.executeQuery(sql, preparator2!!) { row ->
-                rowCount.increment()
+                rowCount++
                 consumer(row)
             }
-            rowCount.get().toInt()
+            rowCount
         }
     }
 

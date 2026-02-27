@@ -15,7 +15,6 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.SqlInitProjExt
 import net.postchain.rell.base.sql.SqlManager
 import net.postchain.rell.base.sql.SqlUtils
-import org.apache.commons.lang3.StringUtils
 import java.time.Duration
 import java.util.regex.Pattern
 import kotlin.math.max
@@ -532,7 +531,7 @@ class UnitTestMatcher private constructor(private val patterns: ImmList<Pattern>
             val b = StringBuilder()
 
             while (true) {
-                val i = StringUtils.indexOfAny(pat, "*?")
+                val i = pat.indexOfAny(charArrayOf('*', '?'))
                 if (i >= 0) {
                     if (i > 0) b.append(Pattern.quote(pat.substring(0, i)))
                     b.append(".")
