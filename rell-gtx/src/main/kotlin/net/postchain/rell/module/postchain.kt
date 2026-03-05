@@ -202,8 +202,6 @@ private class RellGTXOperation(
             objectSnapshotIds = module.objectSnapshotIds,
         )
 
-        module.initSnapshotMeta(ctx)
-
         val heightProvider = Rt_TxChainHeightProvider(ctx)
         return module.createExecutionContext(ctx, opCtx, heightProvider, dbReadOnly = false)
     }
@@ -313,7 +311,6 @@ private class RellPostchainModule(
     )
 
     private var snapshotContext: SnapshotContext? = null
-    private var snapshotInited = false
     private var snapshotMaxRowid = 1L
     var objectSnapshotIds: ImmMap<String, Long> = immMapOf()
         private set
@@ -473,26 +470,23 @@ private class RellPostchainModule(
         snapshotContext = context
     }
 
-    fun initSnapshotMeta(ctx: BlockEContext) {
-        val snapCtx = snapshotContext
-        if (snapCtx != null && !snapshotInited) {
-            val sqlMapping = Rt_ChainSqlMapping(ctx.chainID)
-            val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(rApp, sqlMapping)
-            val sqlExec = createSqlExecutor(ctx)
+    override fun getInitialDatums(ctx: EContext): List<SnapshotDatum> {
+        val sqlMapping = Rt_ChainSqlMapping(ctx.chainID)
+        val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(rApp, sqlMapping)
+        val sqlExec = createSqlExecutor(ctx)
 
-            objectSnapshotIds = Rt_SnapshotSqlUtils.initObjectSnapshotIds(sqlCtx, sqlExec, rApp.sqlDefs.objects)
+        objectSnapshotIds = Rt_SnapshotSqlUtils.initObjectSnapshotIds(sqlCtx, sqlExec, rApp.sqlDefs.objects)
 
-            val data = GtvFactory.gtv(listOf())
-            snapCtx.emitDatum(ctx, 0, data, false)
+        val datums = mutableListOf<SnapshotDatum>()
+        datums.add(SnapshotDatum(0, GtvFactory.gtv(listOf()), false))
 
-            for (obj in rApp.sqlDefs.objects) {
-                val objRowid = objectSnapshotIds.getValue(obj.rEntity.metaName)
-                val objData = Rt_SnapshotSqlUtils.readObjectState(sqlCtx, sqlExec, obj.rEntity)
-                snapCtx.emitDatum(ctx, objRowid, objData, false)
-            }
-
-            snapshotInited = true
+        for (obj in rApp.sqlDefs.objects) {
+            val objRowid = objectSnapshotIds.getValue(obj.rEntity.metaName)
+            val objData = Rt_SnapshotSqlUtils.readObjectState(sqlCtx, sqlExec, obj.rEntity)
+            datums.add(SnapshotDatum(objRowid, objData, false))
         }
+
+        return datums
     }
 
     override fun getPermanentDatumIdMax(ctx: EContext) = null
