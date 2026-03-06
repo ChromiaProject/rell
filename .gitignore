@@ -19,3 +19,6 @@
 **/build/
 
 CLAUDE.md
+.mcp.json
+.claude/
+.junie/
