@@ -331,6 +331,13 @@ private class RellPostchainModule(
             return
         }
 
+        // Skip DB initialization if a snapshot sync is in progress.
+        // During snapshot sync, initializeImport() has already dropped and recreated tables without constraints.
+        // Re-running initializeDB would recreate them with constraints, breaking the sync.
+        if (DatabaseAccess.of(ctx).getSnapshotSyncState(ctx) != null) {
+            return
+        }
+
         errorHandler.handleError({ "Database initialization failed" }) {
             initDb(ctx, false)
         }
