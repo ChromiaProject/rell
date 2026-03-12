@@ -10,6 +10,8 @@ import net.postchain.rell.base.compiler.base.namespace.C_SysNsProto
 import net.postchain.rell.base.lib.test.Lib_RellTest
 import net.postchain.rell.base.lib.type.Lib_Types
 import net.postchain.rell.base.lib.type.R_ListType
+import net.postchain.rell.base.model.R_EnumDefinition
+import net.postchain.rell.base.model.R_EnumType
 import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.ImmList
@@ -68,6 +70,9 @@ object Lib_Rell {
     val RELL_META_TYPE = MODULE.getTypeDef("rell.meta")
 
     val TRY_CALL_RESULT_TYPE = MODULE.getTypeDef("try_call_result")
+
+    private val GTV_TYPE_ENUM: R_EnumDefinition = MODULE.lModule.getEnum("gtv_type").rEnum
+    val GTV_TYPE_ENUM_TYPE: R_EnumType get() = GTV_TYPE_ENUM.type
 
     // Doesn't belong here logically, but shall be here for explicit initialization.
     private val GTX_OPERATION_STRUCT = MODULE.lModule.getStruct("gtx_operation").rStruct

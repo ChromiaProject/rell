@@ -6,3 +6,16 @@ UNRELEASED NOTES
 Fixed a bug where snapshot metadata initialization (datum id 0 and object state datums) could be lost if a transaction
 was rolled back. The snapshotInited flag was set during transaction execution, but if the transaction was rolled back,
 the flag remained set and the initial datums were never re-emitted.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Library: gtv_type enum and gtv.type property
+
+Added a new enum `gtv_type` with values representing the possible types of a GTV value:
+
+    NULL, BYTEARRAY, STRING, INTEGER, DICT, ARRAY, BIGINTEGER
+
+Added a new property `gtv.type` that returns the `gtv_type` of a GTV value:
+
+    (123).to_gtv().type // INTEGER
+    'hello'.to_gtv().type // STRING
+    [1, 2, 3].to_gtv().type // ARRAY

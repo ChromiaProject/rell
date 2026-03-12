@@ -325,6 +325,33 @@ internal object C_Utils {
         )
     }
 
+    fun createSysEnum(name: String, values: List<String>): R_EnumDefinition {
+        val moduleName = RELL_MODULE_NAME
+        val moduleKey = R_ModuleKey(moduleName, null)
+        val qName = C_StringQualifiedName.of(name)
+
+        val cDefBase = createDefBase(
+            C_DefinitionType.ENUM,
+            IdeSymbolKind.DEF_ENUM,
+            moduleKey,
+            qName,
+            mountName = null,
+            C_DocSymbolFactory.NONE,
+            commentProvider = C_SymbolContext.CommentProvider.NULL,
+        )
+
+        val docGetter = cDefBase.docGetter(C_LateGetter.const(DocDeclarationProto.NONE))
+        val defBase = cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, null, docGetter)
+
+        val attrs = values.mapIndexed { index, valueName ->
+            val rName = R_Name.of(valueName)
+            val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.MEM_ENUM_VALUE)
+            R_EnumAttr(rName, index, ideInfo, null)
+        }.toImmList()
+
+        return R_EnumDefinition(defBase, attrs)
+    }
+
     private val RELL_MODULE_NAME = R_ModuleName.of("rell")
 
     fun createSysQuery(

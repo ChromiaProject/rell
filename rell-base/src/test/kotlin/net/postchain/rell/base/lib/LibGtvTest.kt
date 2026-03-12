@@ -557,6 +557,49 @@ class LibGtvTest: BaseRellTest() {
         chk("gtv.legacy_hash([[123]], 2)", "byte_array[036f58e462a180cd60f30030cdce670cce4a403284757a4db00f53661134ce65]")
     }
 
+    @Test fun testGtvTypeEnum() {
+        chk("gtv_type.NULL", "rell:gtv_type[NULL]")
+        chk("gtv_type.BYTEARRAY", "rell:gtv_type[BYTEARRAY]")
+        chk("gtv_type.STRING", "rell:gtv_type[STRING]")
+        chk("gtv_type.INTEGER", "rell:gtv_type[INTEGER]")
+        chk("gtv_type.DICT", "rell:gtv_type[DICT]")
+        chk("gtv_type.ARRAY", "rell:gtv_type[ARRAY]")
+        chk("gtv_type.BIGINTEGER", "rell:gtv_type[BIGINTEGER]")
+    }
+
+    @Test fun testGtvTypeEnumProperties() {
+        chk("gtv_type.NULL.name", "text[NULL]")
+        chk("gtv_type.NULL.value", "int[0]")
+        chk("gtv_type.BYTEARRAY.value", "int[1]")
+        chk("gtv_type.STRING.value", "int[2]")
+        chk("gtv_type.INTEGER.value", "int[3]")
+        chk("gtv_type.DICT.value", "int[4]")
+        chk("gtv_type.ARRAY.value", "int[5]")
+        chk("gtv_type.BIGINTEGER.value", "int[6]")
+    }
+
+    @Test fun testGtvTypeEnumValues() {
+        chk("gtv_type.values()", "list<rell:gtv_type>[rell:gtv_type[NULL],rell:gtv_type[BYTEARRAY]," +
+                "rell:gtv_type[STRING],rell:gtv_type[INTEGER],rell:gtv_type[DICT],rell:gtv_type[ARRAY]," +
+                "rell:gtv_type[BIGINTEGER]]")
+    }
+
+    @Test fun testGtvTypeProperty() {
+        chk("(123).to_gtv().type", "rell:gtv_type[INTEGER]")
+        chk("'hello'.to_gtv().type", "rell:gtv_type[STRING]")
+        chk("x'1234'.to_gtv().type", "rell:gtv_type[BYTEARRAY]")
+        chk("[1, 2, 3].to_gtv().type", "rell:gtv_type[ARRAY]")
+        chk("['a': (1).to_gtv()].to_gtv().type", "rell:gtv_type[DICT]")
+        chk("123L.to_gtv().type", "rell:gtv_type[BIGINTEGER]")
+        chk("null.to_gtv().type", "rell:gtv_type[NULL]")
+    }
+
+    @Test fun testGtvTypePropertyComparison() {
+        chk("(123).to_gtv().type == gtv_type.INTEGER", "boolean[true]")
+        chk("(123).to_gtv().type == gtv_type.STRING", "boolean[false]")
+        chk("'hello'.to_gtv().type == gtv_type.STRING", "boolean[true]")
+    }
+
     private fun chkFromGtv(gtv: String, expr: String, expected: String) = chkFromGtv(tst, gtv, expr, expected)
 
     private fun chkFromGtv(gtv: Gtv, expr: String, expected: String) {

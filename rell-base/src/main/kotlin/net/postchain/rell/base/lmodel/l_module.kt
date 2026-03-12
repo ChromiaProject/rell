@@ -50,6 +50,13 @@ class L_Module(
         return checkNotNull(struct) { "Struct not found: $qualifiedName" }
     }
 
+    fun getEnum(qualifiedName: String): L_Enum {
+        val qName = R_QualifiedName.of(qualifiedName)
+        val def = namespace.getDefOrNull(qName)
+        val enum = def?.getEnumOrNull()
+        return checkNotNull(enum) { "Enum not found: $qualifiedName" }
+    }
+
     fun getAbstractTypeDefOrNull(qualifiedName: R_QualifiedName): L_AbstractTypeDef? {
         val def = namespace.getDefOrNull(qualifiedName)
         return def?.getAbstractTypeDefOrNull()

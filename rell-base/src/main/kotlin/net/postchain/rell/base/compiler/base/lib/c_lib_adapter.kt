@@ -144,6 +144,11 @@ private class C_LibNamespaceConverter {
                 val restrictions = C_MemberRestrictions.makeLib(lMember, C_DeclarationType.STRUCT, null)
                 memberFactory.struct(lMember.simpleName, lMember.struct.rStruct, ideInfo, restrictions)
             }
+            is L_NamespaceMember_Enum -> {
+                val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_ENUM, doc = lMember.docSymbol)
+                val restrictions = C_MemberRestrictions.makeLib(lMember, C_DeclarationType.ENUM, null)
+                memberFactory.enum(lMember.simpleName, lMember.enum.rEnum, ideInfo, restrictions)
+            }
             is L_NamespaceMember_Constant -> {
                 convertMemberConstant(memberFactory, lMember)
             }

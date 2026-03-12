@@ -394,6 +394,25 @@ private class C_NamespaceMember_SysStruct(
     struct: R_Struct,
 ): C_NamespaceMember_Struct(base, struct)
 
+private class C_NamespaceMember_SysEnum(
+    base: C_NamespaceMemberBase,
+    private val e: R_EnumDefinition,
+): C_NamespaceMember(base) {
+    private val typeDef: C_TypeDef = C_TypeDef.makeRType(e.type)
+
+    override fun declarationType() = C_DeclarationType.ENUM
+
+    override fun hasTag(tag: C_NamespaceMemberTag): Boolean {
+        return tag == C_NamespaceMemberTag.TYPE || tag == C_NamespaceMemberTag.VALUE
+    }
+
+    override fun getTypeOpt() = typeDef
+
+    override fun toExpr(ctx: C_ExprContext, qName: C_QualifiedName, ideInfoPtr: C_UniqueDefaultIdeInfoPtr): C_Expr {
+        return typeDef.compileExpr(ctx.msgCtx, qName.pos)
+    }
+}
+
 private class C_NamespaceMember_UserStruct(
     base: C_NamespaceMemberBase,
     private val struct: C_Struct,
@@ -605,6 +624,16 @@ internal class C_LibNsMemberFactory(private val basePath: C_RFullNamePath) {
     ): C_NamespaceMember {
         val base = makeBase(name, ideInfo, restrictions)
         return C_NamespaceMember_SysStruct(base, struct)
+    }
+
+    fun enum(
+        name: R_Name,
+        enumDef: R_EnumDefinition,
+        ideInfo: C_IdeSymbolInfo,
+        restrictions: C_MemberRestrictions,
+    ): C_NamespaceMember {
+        val base = makeBase(name, ideInfo, restrictions)
+        return C_NamespaceMember_SysEnum(base, enumDef)
     }
 
     fun function(

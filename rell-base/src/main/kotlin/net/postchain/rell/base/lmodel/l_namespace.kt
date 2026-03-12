@@ -38,6 +38,7 @@ sealed class L_NamespaceMember(
     internal open fun getAbstractTypeDefOrNull(): L_AbstractTypeDef? = null
     internal open fun getTypeExtensionOrNull(): L_TypeExtension? = null
     internal open fun getStructOrNull(): L_Struct? = null
+    internal open fun getEnumOrNull(): L_Enum? = null
 }
 
 class L_Namespace(members: List<L_NamespaceMember>) {
@@ -145,4 +146,5 @@ class L_NamespaceMember_Alias(
     override fun getAbstractTypeDefOrNull(): L_AbstractTypeDef? = finalTargetMember.getAbstractTypeDefOrNull()
     override fun getTypeExtensionOrNull(): L_TypeExtension? = finalTargetMember.getTypeExtensionOrNull()
     override fun getStructOrNull(): L_Struct? = finalTargetMember.getStructOrNull()
+    override fun getEnumOrNull(): L_Enum? = finalTargetMember.getEnumOrNull()
 }

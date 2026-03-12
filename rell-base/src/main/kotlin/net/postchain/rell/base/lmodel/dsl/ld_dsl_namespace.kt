@@ -113,6 +113,13 @@ interface Ld_NamespaceBodyDsl: Ld_CommonNamespaceDsl {
         block: Ld_StructDsl.() -> Unit,
     )
 
+    fun enum(
+        name: String,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_EnumDsl.() -> Unit,
+    )
+
     fun property(
         name: String,
         type: String,
@@ -177,6 +184,11 @@ interface Ld_StructDsl: Ld_MemberDsl {
         comment: String? = null,
         block: Ld_MemberDsl.() -> Unit = {},
     )
+}
+
+@RellLibDsl
+interface Ld_EnumDsl: Ld_MemberDsl {
+    fun value(name: String)
 }
 
 @RellLibDsl

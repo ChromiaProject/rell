@@ -84,6 +84,8 @@ internal interface Ld_NamespaceMaker: Ld_CommonNamespaceMaker, Ld_MemberHeaderMa
 
     fun struct(name: String, hdr: Ld_MemberHeader, block: Ld_StructDsl.() -> Unit)
 
+    fun enum(name: String, hdr: Ld_MemberHeader, block: Ld_EnumDsl.() -> Unit)
+
     fun property(
         name: String,
         type: String,
@@ -250,6 +252,16 @@ internal class Ld_NamespaceBodyDslImpl(
     ) {
         val hdr = Ld_MemberHeader.make(since, comment)
         maker.struct(name, hdr, block)
+    }
+
+    override fun enum(
+        name: String,
+        since: String?,
+        comment: String?,
+        block: Ld_EnumDsl.() -> Unit,
+    ) {
+        val hdr = Ld_MemberHeader.make(since, comment)
+        maker.enum(name, hdr, block)
     }
 
     override fun property(
@@ -424,6 +436,17 @@ internal class Ld_NamespaceBuilder(
 
         val def = builder.build()
         val member = Ld_NamespaceMember_Struct(simpleName, def.header, def.def)
+        addMember(member)
+    }
+
+    override fun enum(name: String, hdr: Ld_MemberHeader, block: Ld_EnumDsl.() -> Unit) {
+        val simpleName = getSimpleName(name)
+
+        val builder = Ld_EnumDslImpl(hdr)
+        block(builder)
+
+        val def = builder.build()
+        val member = Ld_NamespaceMember_Enum(simpleName, def.header, def.def)
         addMember(member)
     }
 
@@ -731,6 +754,22 @@ private class Ld_NamespaceMember_Struct(
         return ctx.fcExec.future().after(structFuture).compute { lStruct ->
             val doc = hdr.docSymbol(DocDeclarationProto_Struct(DocModifiers.NONE, hdr.simpleName).toLazyDeclaration())
             val member = L_NamespaceMember_Struct(fullName, hdr.lHeader, doc, lStruct)
+            immListOf(member)
+        }
+    }
+}
+
+private class Ld_NamespaceMember_Enum(
+    simpleName: R_Name,
+    memberHeader: Ld_MemberHeader,
+    private val enum: Ld_Enum,
+): Ld_NamespaceMember(DocSymbolKind.ENUM, simpleName, memberHeader) {
+    override fun process0(ctx: Ld_NamespaceContext, hdr: Ld_MemberHeader.Finish): FcFuture<List<L_NamespaceMember>> {
+        val fullName = hdr.fullName
+        return ctx.fcExec.future().compute {
+            val lEnum = enum.process(fullName)
+            val doc = hdr.docSymbol(DocDeclarationProto_Enum(DocModifiers.NONE, hdr.simpleName).toLazyDeclaration())
+            val member = L_NamespaceMember_Enum(fullName, hdr.lHeader, doc, lEnum)
             immListOf(member)
         }
     }

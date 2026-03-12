@@ -15,14 +15,32 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.RellVersions
 import java.math.BigInteger
 import kotlin.reflect.full.createType
 
 object Lib_Type_Gtv {
     val LIST_OF_GTV_TYPE = R_ListType(R_GtvType)
 
+    private val GTV_TYPE_VALUES = listOf("NULL", "BYTEARRAY", "STRING", "INTEGER", "DICT", "ARRAY", "BIGINTEGER")
+
     val NAMESPACE = Ld_NamespaceDsl.make {
         alias("GTXValue", "gtv", C_MessageType.ERROR, since = "0.6.1")
+
+        enum("gtv_type", since = RellVersions.SINCE_NOW) {
+            comment("""
+                Represents the type of a GTV value.
+
+                Use `gtv.type` to get the type of a GTV value.
+            """)
+            value("NULL")
+            value("BYTEARRAY")
+            value("STRING")
+            value("INTEGER")
+            value("DICT")
+            value("ARRAY")
+            value("BIGINTEGER")
+        }
 
         type("gtv", rType = R_GtvType, since = "0.9.0") {
             comment("""
@@ -215,6 +233,26 @@ object Lib_Type_Gtv {
                     val json = PostchainGtvUtils.gtvToJson(gtv, true)
                     //TODO consider making a separate function toJSONStr() to avoid unnecessary conversion str -> json -> str.
                     Rt_JsonValue.parse(json)
+                }
+            }
+
+            property("type", type = "gtv_type", pure = true, since = RellVersions.SINCE_NOW) {
+                comment("""
+                    Returns the type of this GTV value.
+
+                    Examples:
+
+                    ```rell
+                    (123).to_gtv().type // gtv_type.INTEGER
+                    'hello'.to_gtv().type // gtv_type.STRING
+                    [1, 2, 3].to_gtv().type // gtv_type.ARRAY
+                    ```
+                """)
+                value { a ->
+                    val gtv = a.asGtv()
+                    val ordinal = gtv.type.ordinal
+                    Lib_Rell.GTV_TYPE_ENUM_TYPE.getValueOrNull(ordinal)
+                        ?: throw Rt_Exception.common("gtv:type:unknown", "Unknown GTV type: ${gtv.type}")
                 }
             }
         }
