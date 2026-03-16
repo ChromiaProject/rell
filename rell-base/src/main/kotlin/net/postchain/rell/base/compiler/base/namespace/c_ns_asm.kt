@@ -634,7 +634,7 @@ private class C_NsAsm_InternalModuleAssembler(
     nsKey: C_NsAsm_NamespaceKey,
     stamp: R_AppUid,
 ): C_NsAsm_InternalBasicAssembler(nsLinker, nsKey, stamp), C_NsAsm_ModuleAssembler {
-    private val modDefsLate = C_LateInit(C_CompilerPass.NAMESPACES, C_ModuleDefs.EMPTY)
+    private val modDefsLate = executor.lateInit(C_CompilerPass.NAMESPACES, C_ModuleDefs.EMPTY)
 
     private val components = mutableListOf<C_NsAsm_InternalComponentAssembler>()
 

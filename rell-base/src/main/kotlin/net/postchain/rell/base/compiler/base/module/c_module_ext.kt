@@ -237,7 +237,7 @@ internal class C_ExtModuleCompiler(
         val extChain = extModule.chain?.toExtChain(appCtx)
         val moduleKey = C_ModuleKey(midModule.moduleName, extChain)
 
-        val internalsLate = C_LateInit(C_CompilerPass.MODULES, C_ModuleInternals.empty(moduleKey))
+        val internalsLate = appCtx.executor.lateInit(C_CompilerPass.MODULES, C_ModuleInternals.empty(moduleKey))
         val importsGetter = internalsLate.getter.transform { it.importsDescriptor }
         val descriptor = C_ModuleDescriptor(moduleKey, midModule.compiledHeader, midModule.isDirectory, importsGetter)
 

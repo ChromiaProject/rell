@@ -373,7 +373,7 @@ internal class C_MountContext(
     ): C_UserDefinitionBase {
         val qualifiedName = C_StringQualifiedName.of(simpleName.str)
         val base = defBaseCommon(defType, ideKind, qualifiedName, mountName, extChain, commentProvider)
-        return base.userBase(simpleName.pos)
+        return base.userBase(simpleName.pos, appCtx.executor)
     }
 
     fun defBase(
@@ -426,7 +426,7 @@ class C_DefinitionContext internal constructor(
     internal val globalCtx = modCtx.globalCtx
     internal val executor = modCtx.executor
 
-    private val initFrameLate = C_LateInit(C_CompilerPass.FRAMES, R_CallFrame.ERROR)
+    private val initFrameLate = executor.lateInit(C_CompilerPass.FRAMES, R_CallFrame.ERROR)
     internal val initFrameGetter = initFrameLate.getter
 
     internal val initExprCtx: C_ExprContext = let {

@@ -9,7 +9,9 @@ import net.postchain.rell.base.compiler.base.core.C_CompilerPass
 import net.postchain.rell.base.compiler.base.core.C_TypeHint
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.fn.*
+import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
+import net.postchain.rell.base.compiler.base.utils.lateInit
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget_Operation
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.lib.test.R_TestOpType
@@ -28,8 +30,11 @@ internal class C_OperationHeader(
     }
 }
 
-internal class C_OperationGlobalFunction(val rOp: R_OperationDefinition): C_GlobalFunction() {
-    private val headerLate = C_LateInit(C_CompilerPass.MEMBERS, C_OperationHeader.ERROR)
+internal class C_OperationGlobalFunction(
+    executor: C_CompilerExecutor,
+    val rOp: R_OperationDefinition,
+): C_GlobalFunction() {
+    private val headerLate = executor.lateInit(C_CompilerPass.MEMBERS, C_OperationHeader.ERROR)
 
     override fun getDefMeta(): R_DefinitionMeta {
         return R_DefinitionMeta("operation", rOp.defName, mountName = rOp.mountName)

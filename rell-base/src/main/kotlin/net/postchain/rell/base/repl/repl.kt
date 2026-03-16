@@ -6,7 +6,7 @@ package net.postchain.rell.base.repl
 
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
-import net.postchain.rell.base.compiler.base.utils.C_LateInit
+import net.postchain.rell.base.compiler.base.utils.lateInit
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.stmt.R_BlockStatement
@@ -62,7 +62,7 @@ internal class C_ReplCommandContext(
         check(mntCtx.nsCtx === frameCtx.fnCtx.nsCtx)
     }
 
-    private val commandLate = C_LateInit(C_CompilerPass.EXPRESSIONS, ReplCode.ERROR)
+    private val commandLate = defCtx.lateInit(C_CompilerPass.EXPRESSIONS, ReplCode.ERROR)
     val commandGetter = commandLate.getter
 
     fun setCommand(code: ReplCode) = commandLate.set(code)

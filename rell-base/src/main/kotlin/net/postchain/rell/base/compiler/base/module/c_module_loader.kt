@@ -8,6 +8,7 @@ import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
+import net.postchain.rell.base.compiler.base.utils.lateInit
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_MountName
@@ -37,7 +38,7 @@ sealed class C_ImportModuleLoader {
 internal class C_ModuleLoader(
     msgCtx: C_MessageContext,
     symCtxProvider: C_SymbolContextProvider,
-    executor: C_CompilerExecutor,
+    private val executor: C_CompilerExecutor,
     sourceDir: C_SourceDir,
     private val preModuleHeaders: ImmMap<R_ModuleName, C_ModuleHeader>,
 ) {
@@ -237,7 +238,7 @@ internal class C_ModuleLoader(
         val moduleName: R_ModuleName,
         source: C_ModuleSource,
     ) {
-        private val docSymbolLate: C_LateInit<DocSymbol?> = C_LateInit(C_CompilerPass.MODULES, null)
+        private val docSymbolLate: C_LateInit<DocSymbol?> = executor.lateInit(C_CompilerPass.MODULES, null)
 
         val idePath = source.idePath()
         val docSymbolGetter = docSymbolLate.getter

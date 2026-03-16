@@ -5,11 +5,13 @@
 package net.postchain.rell.base.model
 
 import net.postchain.gtv.Gtv
+import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.base.core.C_CompilerPass
 import net.postchain.rell.base.compiler.base.core.C_DefinitionType
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
+import net.postchain.rell.base.compiler.base.utils.lateInit
 import net.postchain.rell.base.lib.type.R_OperationType
 import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.model.expr.R_Expr
@@ -72,6 +74,7 @@ sealed class R_MountedRoutineDefinition(
 ): R_RoutineDefinition(base)
 
 class R_OperationDefinition internal constructor(
+    executor: C_CompilerExecutor,
     base: R_DefinitionBase,
     mountName: R_MountName,
     val modifiers: R_OperationModifiers,
@@ -79,7 +82,7 @@ class R_OperationDefinition internal constructor(
     internal val type: R_Type = R_OperationType(this)
     internal val mirrorStructs = R_MirrorStructs(base, C_DefinitionType.OPERATION, type)
 
-    private val internals = C_LateInit(C_CompilerPass.EXPRESSIONS, ERROR_INTERNALS)
+    private val internals = executor.lateInit(C_CompilerPass.EXPRESSIONS, ERROR_INTERNALS)
 
     internal fun setInternals(
         params: ImmList<R_FunctionParam>,
@@ -222,10 +225,11 @@ internal class R_SysQueryBody(
 }
 
 class R_QueryDefinition internal constructor(
+    executor: C_CompilerExecutor,
     base: R_DefinitionBase,
     mountName: R_MountName,
 ): R_MountedRoutineDefinition(base, mountName) {
-    private val bodyLate = C_LateInit(C_CompilerPass.EXPRESSIONS, R_UserQueryBody.ERROR)
+    private val bodyLate = executor.lateInit(C_CompilerPass.EXPRESSIONS, R_UserQueryBody.ERROR)
 
     internal fun setBody(body: R_QueryBody) {
         bodyLate.set(body)
@@ -295,9 +299,9 @@ internal class R_FunctionBody(
     }
 }
 
-class R_FunctionBase(private val defName: R_DefinitionName) {
-    private val headerLate = C_LateInit(C_CompilerPass.EXPRESSIONS, R_FunctionHeader.ERROR)
-    private val bodyLate = C_LateInit(C_CompilerPass.EXPRESSIONS, R_FunctionBody.ERROR)
+class R_FunctionBase(executor: C_CompilerExecutor, private val defName: R_DefinitionName) {
+    private val headerLate = executor.lateInit(C_CompilerPass.EXPRESSIONS, R_FunctionHeader.ERROR)
+    private val bodyLate = executor.lateInit(C_CompilerPass.EXPRESSIONS, R_FunctionBody.ERROR)
 
     internal fun setHeader(header: R_FunctionHeader) {
         headerLate.set(header)

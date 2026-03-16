@@ -316,7 +316,7 @@ internal class S_CreateExpr(
         ctx: C_ExprContext,
         entity: R_EntityDefinition
     ) {
-        val completionsLate = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+        val completionsLate = ctx.lateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
         ctx.executor.onPass(C_CompilerPass.COMPLETIONS) {
             val completions = entity.attributes.entries.toImmMultimap { (rName, rAttr) ->
                 val location = entity.defName.strictAppLevelName

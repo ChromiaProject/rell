@@ -15,6 +15,8 @@ import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.C_AttrUtils
 import net.postchain.rell.base.compiler.base.def.C_SysAttribute
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
+import net.postchain.rell.base.compiler.base.expr.C_StmtContext
+import net.postchain.rell.base.compiler.base.module.S_DefinitionContext
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.compiler.base.module.C_ModuleKey
 import net.postchain.rell.base.compiler.parser.RellTokenizer
@@ -292,7 +294,7 @@ internal object C_Utils {
         sqlMapping: R_EntitySqlMapping,
         externalEntity: R_ExternalEntity?,
     ): R_EntityDefinition {
-        val rEntity = R_EntityDefinition(defBase, defType, name, flags, sqlMapping, externalEntity)
+        val rEntity = R_EntityDefinition(appCtx.executor, defBase, defType, name, flags, sqlMapping, externalEntity)
         appCtx.defsAdder.addStruct(rEntity.mirrorStructs.immutable)
         appCtx.defsAdder.addStruct(rEntity.mirrorStructs.mutable)
         return rEntity
@@ -379,7 +381,7 @@ internal object C_Utils {
         val docGetter = cDefBase.docGetter(C_LateGetter.const(DocDeclarationProto.NONE))
         val defBase = cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, null, docGetter)
 
-        val query = R_QueryDefinition(defBase, mountName)
+        val query = R_QueryDefinition(executor, defBase, mountName)
 
         executor.onPass(C_CompilerPass.EXPRESSIONS) {
             val body = R_SysQueryBody(type, params, fn)
@@ -685,57 +687,6 @@ object C_GraphUtils {
     }
 }
 
-private class C_LateInitContext(executor: C_CompilerExecutor) {
-    private var internals: Internals? = Internals(executor)
-
-    fun onDestroy(code: () -> Unit) {
-        val ints = internals
-        check(ints != null)
-        ints.uninits.add(code)
-    }
-
-    fun checkPass(minPass: C_CompilerPass?, maxPass: C_CompilerPass?) {
-        val ints = internals
-        if (ints != null) {
-            ints.executor.checkPass(minPass, maxPass)
-        } else {
-            C_CompilerExecutor.checkPass(C_CompilerPass.LAST, minPass, maxPass)
-        }
-    }
-
-    private fun destroy() {
-        val ints = internals
-        check(ints != null)
-        internals = null
-
-        for (code in ints.uninits) {
-            code()
-        }
-        ints.uninits.clear()
-    }
-
-    private class Internals(val executor: C_CompilerExecutor) {
-        val uninits = mutableListOf<() -> Unit>()
-    }
-
-    companion object {
-        private val LOCAL_CTX = ThreadLocalContext<C_LateInitContext>()
-
-        fun inContext() = LOCAL_CTX.getOpt() != null
-        fun getContext() = LOCAL_CTX.get()
-
-        fun <T> runInContext(executor: C_CompilerExecutor, code: () -> T): T {
-            val ctx = C_LateInitContext(executor)
-            try {
-                val res = LOCAL_CTX.set(ctx, code)
-                return res
-            } finally {
-                ctx.destroy()
-            }
-        }
-    }
-}
-
 sealed class C_LateGetter<out T> {
     abstract fun get(): T
 
@@ -789,17 +740,15 @@ private class C_TransformingLateGetter<T, R>(
     override fun get(): R = lazyValue
 }
 
-class C_LateInit<T>(val pass: C_CompilerPass, fallback: T) {
-    private val ctx = C_LateInitContext.getContext()
-
+class C_LateInit<T>(private val executor: C_CompilerExecutor, val pass: C_CompilerPass, fallback: T) {
     private var value: T = noValue()
 
     @Suppress("CanBePrimaryConstructorProperty")
     private var fallback: T = fallback
 
     init {
-        ctx.checkPass(null, pass.prev())
-        ctx.onDestroy {
+        executor.checkPass(null, pass.prev())
+        executor.onClose {
             if (value === NOVALUE) value = this.fallback
             this.fallback = noValue()
         }
@@ -809,14 +758,14 @@ class C_LateInit<T>(val pass: C_CompilerPass, fallback: T) {
 
     fun set(value: T, allowEarly: Boolean = false) {
         val minPass = if (allowEarly) null else pass
-        ctx.checkPass(minPass, pass)
+        executor.checkPass(minPass, pass)
         check(this.value === NOVALUE) { "value already set" }
         this.value = value
         fallback = noValue()
     }
 
     fun get(): T {
-        ctx.checkPass(pass.next(), null)
+        executor.checkPass(pass.next(), null)
         if (value === NOVALUE) {
             check(fallback !== NOVALUE)
             value = fallback
@@ -829,21 +778,35 @@ class C_LateInit<T>(val pass: C_CompilerPass, fallback: T) {
 
     companion object {
         private val NOVALUE: Any = Any()
-
-        fun <T> context(executor: C_CompilerExecutor, code: () -> T): T {
-            return C_LateInitContext.runInContext(executor, code)
-        }
-
-        private fun checkPass(minPass: C_CompilerPass?, maxPass: C_CompilerPass?) {
-            val ctx = C_LateInitContext.getContext()
-            ctx.checkPass(minPass, maxPass)
-        }
-
-        fun checkPass(pass: C_CompilerPass) {
-            checkPass(pass, pass)
-        }
     }
 }
+
+fun <T> C_CompilerExecutor.lateInit(pass: C_CompilerPass, fallback: T): C_LateInit<T> =
+    C_LateInit(this, pass, fallback)
+
+internal fun <T> C_MountContext.lateInit(pass: C_CompilerPass, fallback: T): C_LateInit<T> =
+    executor.lateInit(pass, fallback)
+
+internal fun <T> C_DefinitionContext.lateInit(pass: C_CompilerPass, fallback: T): C_LateInit<T> =
+    executor.lateInit(pass, fallback)
+
+internal fun <T> C_ExprContext.lateInit(pass: C_CompilerPass, fallback: T): C_LateInit<T> =
+    executor.lateInit(pass, fallback)
+
+internal fun <T> C_FunctionContext.lateInit(pass: C_CompilerPass, fallback: T): C_LateInit<T> =
+    executor.lateInit(pass, fallback)
+
+internal fun <T> C_BlockContext.lateInit(pass: C_CompilerPass, fallback: T): C_LateInit<T> =
+    executor.lateInit(pass, fallback)
+
+internal fun <T> C_FrameContext.lateInit(pass: C_CompilerPass, fallback: T): C_LateInit<T> =
+    executor.lateInit(pass, fallback)
+
+internal fun <T> C_StmtContext.lateInit(pass: C_CompilerPass, fallback: T): C_LateInit<T> =
+    executor.lateInit(pass, fallback)
+
+internal fun <T> S_DefinitionContext.lateInit(pass: C_CompilerPass, fallback: T): C_LateInit<T> =
+    executor.lateInit(pass, fallback)
 
 class C_ListBuilder<T>(proto: List<T> = immListOf()) {
     private val list = proto.toMutableList()

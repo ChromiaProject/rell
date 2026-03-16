@@ -11,7 +11,6 @@ import net.postchain.rell.base.compiler.base.fn.C_FunctionCallTarget
 import net.postchain.rell.base.compiler.base.fn.C_FunctionCallTargetBase
 import net.postchain.rell.base.compiler.base.fn.C_FunctionCallTarget_Regular
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
-import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget_ExtendableUserFunction
 import net.postchain.rell.base.lib.type.R_BooleanType
@@ -62,7 +61,8 @@ internal class C_ExtendableUserGlobalFunction(
     moduleName: R_ModuleName,
     fullName: R_FullName?,
     private val typePos: S_Pos,
-): C_UserGlobalFunction(rFunction) {
+): C_UserGlobalFunction(appCtx.executor, rFunction) {
+    private val executor = appCtx.executor
     private val msgCtx = appCtx.msgCtx
 
     private val descriptor = C_ExtendableFunctionDescriptor(extFnUid, moduleName, fullName, headerGetter)
@@ -84,7 +84,7 @@ internal class C_ExtendableUserGlobalFunction(
     }
 
     private fun compileCombiner(): R_ExtendableFunctionCombiner {
-        C_LateInit.checkPass(C_CompilerPass.EXPRESSIONS)
+        executor.checkPass(C_CompilerPass.EXPRESSIONS)
         val header = headerGetter.get()
         val resType = header.deepHeader.returnType()
         return when (resType) {

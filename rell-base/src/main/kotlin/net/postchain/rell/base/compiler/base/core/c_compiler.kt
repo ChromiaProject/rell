@@ -198,11 +198,7 @@ object C_Compiler {
         val msgCtx = C_MessageContext.create(globalCtx)
         val controller = C_CompilerController(msgCtx)
 
-        val res = C_LateInit.context(controller.executor) {
-            compile0(sourceDir, msgCtx, controller, moduleSelection, extraLibMod)
-        }
-
-        return res
+        return compile0(sourceDir, msgCtx, controller, moduleSelection, extraLibMod)
     }
 
     private fun compile0(
@@ -216,7 +212,7 @@ object C_Compiler {
         val symCtxProvider = symCtxManager.provider
 
         val midModules = msgCtx.consumeError {
-            val midModules = loadMidModules(msgCtx, controller.executor, sourceDir, moduleSelection, symCtxProvider)
+            val midModules = loadMidModules(msgCtx, controller, sourceDir, moduleSelection, symCtxProvider)
             checkMainModules(msgCtx, moduleSelection, midModules)
             midModules
         }.orEmpty()
@@ -230,7 +226,7 @@ object C_Compiler {
         val appCtx = C_AppContext(
             msgCtx,
             symCtxProvider,
-            controller.executor,
+            controller,
             false,
             C_ReplAppState.EMPTY,
             moduleHeaders,
@@ -387,6 +383,7 @@ abstract class C_CompilerExecutor {
     fun checkPass(pass: C_CompilerPass) = checkPass(pass, pass)
 
     abstract fun onPass(pass: C_CompilerPass, code: () -> Unit)
+    abstract fun onClose(code: () -> Unit)
 
     companion object {
         fun checkPass(currentPass: C_CompilerPass, minPass: C_CompilerPass?, maxPass: C_CompilerPass?) {
@@ -400,10 +397,9 @@ abstract class C_CompilerExecutor {
     }
 }
 
-class C_CompilerController(private val msgCtx: C_MessageContext) {
-    val executor: C_CompilerExecutor = ExecutorImpl()
-
-    private val passes = C_CompilerPass.entries.associateWithToImmMap { ArrayDeque<C_PassTask>() }
+class C_CompilerController(private val msgCtx: C_MessageContext): C_CompilerExecutor() {
+    private val passes = C_CompilerPass.entries.associateWith { ArrayDeque<() -> Unit>() }
+    private val closeCallbacks = mutableListOf<() -> Unit>()
     private var currentPass = C_CompilerPass.entries[0]
 
     private var runCalled = false
@@ -415,44 +411,41 @@ class C_CompilerController(private val msgCtx: C_MessageContext) {
         for (pass in C_CompilerPass.entries) {
             currentPass = pass
             val queue = passes.getValue(pass)
+
             while (!queue.isEmpty()) {
                 val task = queue.removeFirst()
-                task.execute()
+                task()
             }
         }
+
+        for (code in closeCallbacks) {
+            code()
+        }
+
+        closeCallbacks.clear()
     }
 
-    private fun onPass0(pass: C_CompilerPass, code: () -> Unit) {
+    override fun checkPass(minPass: C_CompilerPass?, maxPass: C_CompilerPass?) {
+        checkPass(currentPass, minPass, maxPass)
+    }
+
+    override fun onPass(pass: C_CompilerPass, code: () -> Unit) {
         check(currentPass < pass) { "currentPass: $currentPass targetPass: $pass" }
 
         val nextPass = currentPass.next()
 
         if (pass == currentPass || pass == nextPass) {
-            val task = C_PassTask(code)
-            passes.getValue(pass).add(task)
+            passes.getValue(pass).add { msgCtx.consumeError(code) }
         } else {
             // Extra code is needed to maintain execution order:
             // - entity 0 adds code to pass A, that code adds code to pass B
             // - entity 1 adds code to pass B directly
             // -> on pass B entity 0 must be executed before entity 1
-            val task = C_PassTask { executor.onPass(pass, code) }
-            passes.getValue(nextPass).add(task)
+            passes.getValue(nextPass).add { msgCtx.consumeError { onPass(pass, code) } }
         }
     }
 
-    private inner class C_PassTask(private val code: () -> Unit) {
-        fun execute() {
-            msgCtx.consumeError(code)
-        }
-    }
-
-    private inner class ExecutorImpl: C_CompilerExecutor() {
-        override fun checkPass(minPass: C_CompilerPass?, maxPass: C_CompilerPass?) {
-            checkPass(currentPass, minPass, maxPass)
-        }
-
-        override fun onPass(pass: C_CompilerPass, code: () -> Unit) {
-            onPass0(pass, code)
-        }
+    override fun onClose(code: () -> Unit) {
+        closeCallbacks += code
     }
 }

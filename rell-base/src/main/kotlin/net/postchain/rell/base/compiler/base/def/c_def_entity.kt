@@ -59,7 +59,7 @@ private class C_EntityAttributeClause(
         val mutable = mainDef.attrDef.getMutableModifier()
         val ideKind = C_AttrUtils.getIdeSymbolKind(persistent, mutable != null, keyIndexKind)
 
-        val docSymLate = C_LateInit<DocSymbol?>(C_CompilerPass.DOCS, null)
+        val docSymLate = defCtx.lateInit<DocSymbol?>(C_CompilerPass.DOCS, null)
         val ideData = C_GlobalAttrHeaderIdeData(IdeSymbolCategory.ATTRIBUTE, ideKind, null, docSymLate.getter)
 
         val mainHeader = mainDef.attrHeader.compile(defCtx, false, ideData)
@@ -187,7 +187,7 @@ private class C_EntityAttributeClause(
         val exprType = type ?: R_CtErrorType
         val errValue = R_DefaultValue(C_ExprUtils.errorRExpr(exprType), false)
         val errDocExpr = C_ExprUtils.errorVExpr(defCtx.initExprCtx, expr.startPos, exprType)
-        val late = C_LateInit(C_CompilerPass.EXPRESSIONS, C_DefaultValue(errValue, errDocExpr))
+        val late = defCtx.lateInit(C_CompilerPass.EXPRESSIONS, C_DefaultValue(errValue, errDocExpr))
 
         defCtx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
             val exprCtx = defCtx.initExprCtx

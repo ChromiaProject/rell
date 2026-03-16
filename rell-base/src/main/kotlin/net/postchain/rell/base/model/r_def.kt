@@ -5,12 +5,13 @@
 package net.postchain.rell.base.model
 
 import net.postchain.gtv.Gtv
+import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.base.core.C_CompilerPass
 import net.postchain.rell.base.compiler.base.core.C_DefinitionType
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
-import net.postchain.rell.base.compiler.base.utils.C_LateInit
+import net.postchain.rell.base.compiler.base.utils.lateInit
 import net.postchain.rell.base.lib.type.R_OperationType
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.runtime.Rt_CallFrame
@@ -58,6 +59,7 @@ class R_ExternalEntity(
 )
 
 class R_EntityDefinition internal constructor(
+    executor: C_CompilerExecutor,
     internal val rDefBase: R_DefinitionBase,
     defType: C_DefinitionType,
     val rName: R_Name,
@@ -72,7 +74,7 @@ class R_EntityDefinition internal constructor(
 
     val mirrorStructs = R_MirrorStructs(rDefBase, defType, type)
 
-    private val bodyLate = C_LateInit(C_CompilerPass.MEMBERS, ERROR_BODY)
+    private val bodyLate = executor.lateInit(C_CompilerPass.MEMBERS, ERROR_BODY)
 
     val keys: ImmList<R_Key> get() = bodyLate.get().keys
     val indexes: ImmList<R_Index> get() = bodyLate.get().indexes

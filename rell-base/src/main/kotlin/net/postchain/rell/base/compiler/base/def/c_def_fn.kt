@@ -16,6 +16,8 @@ import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsUtils
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
+import net.postchain.rell.base.compiler.base.utils.lateInit
+import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget_NativeUserFunction
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget_RegularUserFunction
@@ -46,7 +48,7 @@ internal abstract class C_GlobalFunction {
         args: S_CallArguments,
         resTypeHint: C_TypeHint,
     ): V_GlobalFunctionCall {
-        val completionsLate = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+        val completionsLate = ctx.lateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
 
         ctx.executor.onPass(C_CompilerPass.COMPLETIONS) {
             val completions = ideGetParameterCompletions()
@@ -77,9 +79,10 @@ internal class C_UserFunctionHeader(
 }
 
 internal abstract class C_UserGlobalFunction(
+    executor: C_CompilerExecutor,
     val rFunction: R_FunctionDefinition,
 ): C_GlobalFunction() {
-    private val headerLate = C_LateInit(C_CompilerPass.MEMBERS, C_UserFunctionHeader.ERROR)
+    private val headerLate = executor.lateInit(C_CompilerPass.MEMBERS, C_UserFunctionHeader.ERROR)
 
     protected val headerGetter = headerLate.getter
 
@@ -125,9 +128,10 @@ internal class C_UserFunctionDeepDefinitionBody(
 }
 
 internal class C_RegularUserGlobalFunction(
+    executor: C_CompilerExecutor,
     rFunction: R_FunctionDefinition,
     private val abstractDescriptor: C_AbstractFunctionDescriptor?,
-): C_UserGlobalFunction(rFunction) {
+): C_UserGlobalFunction(executor, rFunction) {
     override fun getAbstractDescriptor() = abstractDescriptor
 
     override fun compileCallTarget(base: C_FunctionCallTargetBase, retType: R_Type?): C_FunctionCallTarget {
@@ -144,10 +148,11 @@ internal class C_FunctionCallTarget_RegularUserFunction(
 }
 
 internal class C_NativeUserGlobalFunction(
+    executor: C_CompilerExecutor,
     rFunction: R_FunctionDefinition,
     private val fnName: R_FullName,
     private val conversionsGetter: C_LateGetter<R_FunctionCallTarget_NativeUserFunction.Conversions>,
-): C_UserGlobalFunction(rFunction) {
+): C_UserGlobalFunction(executor, rFunction) {
     override fun compileCallTarget(base: C_FunctionCallTargetBase, retType: R_Type?): C_FunctionCallTarget {
         return C_FunctionCallTarget_NativeUserFunction(base, retType, fnName, conversionsGetter)
     }

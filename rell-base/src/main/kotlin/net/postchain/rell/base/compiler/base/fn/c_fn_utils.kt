@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.def.*
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.lib.C_MemberRestrictions
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
+import net.postchain.rell.base.compiler.base.utils.lateInit
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.lib.type.R_UnitType
@@ -81,7 +82,7 @@ internal object C_FunctionUtils {
         comment: S_Comment?,
         gtv: Boolean,
     ): C_RawSubprogramHeader {
-        val docCommentsLate = C_LateInit(C_CompilerPass.APPDEFS, DocFunctionParamComments.NULL)
+        val docCommentsLate = defCtx.lateInit(C_CompilerPass.APPDEFS, DocFunctionParamComments.NULL)
         val cParams = C_FormalParameters.compile(defCtx, params, gtv, docCommentsLate.getter)
 
         val paramNames = cParams.list.map { it.name.rName }

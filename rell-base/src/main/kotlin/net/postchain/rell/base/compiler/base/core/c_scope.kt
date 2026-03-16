@@ -11,6 +11,7 @@ import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMember
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMemberTag
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
+import net.postchain.rell.base.compiler.base.utils.lateInit
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
@@ -95,7 +96,7 @@ internal class C_Scope(
         executor: C_CompilerExecutor,
         compilerOptions: C_CompilerOptions,
     ): C_LateGetter<Multimap<String, IdeCompletion>> {
-        val late = C_LateInit(C_CompilerPass.APPLICATION, immMultimapOf<String, IdeCompletion>())
+        val late = executor.lateInit(C_CompilerPass.APPLICATION, immMultimapOf<String, IdeCompletion>())
         executor.onPass(C_CompilerPass.APPLICATION) {
             val res = mutableMultimapOf<String, IdeCompletion>()
             var scope: C_Scope? = this

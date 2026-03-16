@@ -14,6 +14,8 @@ import net.postchain.rell.base.compiler.base.module.*
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
+import net.postchain.rell.base.compiler.base.utils.lateInit
+import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget_AbstractUserFunction
 import net.postchain.rell.base.model.R_FunctionBase
@@ -23,14 +25,15 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.*
 
 internal class C_AbstractUserGlobalFunction(
+    executor: C_CompilerExecutor,
     fnPos: S_Pos,
     rFunction: R_FunctionDefinition,
     hasDefaultBody: Boolean,
     private val rFnBase: R_FunctionBase,
-): C_UserGlobalFunction(rFunction) {
-    val descriptor = C_AbstractFunctionDescriptor(fnPos, rFunction, hasDefaultBody, headerGetter)
+): C_UserGlobalFunction(executor, rFunction) {
+    val descriptor = C_AbstractFunctionDescriptor(executor, fnPos, rFunction, hasDefaultBody, headerGetter)
 
-    private val rOverrideLate = C_LateInit(C_CompilerPass.EXPRESSIONS, R_FunctionBase(rFunction.defName))
+    private val rOverrideLate = executor.lateInit(C_CompilerPass.EXPRESSIONS, R_FunctionBase(executor, rFunction.defName))
 
     override fun getAbstractDescriptor() = descriptor
 
@@ -56,12 +59,13 @@ private class C_FunctionCallTarget_AbstractUserFunction(
 }
 
 internal class C_AbstractFunctionDescriptor(
+    executor: C_CompilerExecutor,
     private val fnPos: S_Pos,
     private val rFunction: R_FunctionDefinition,
     val hasDefaultBody: Boolean,
     private val headerGetter: C_LateGetter<C_UserFunctionHeader>,
 ) {
-    private val overrideFnBaseLate = C_LateInit<R_FunctionBase?>(C_CompilerPass.ABSTRACT, null)
+    private val overrideFnBaseLate = executor.lateInit<R_FunctionBase?>(C_CompilerPass.ABSTRACT, null)
 
     fun functionPos() = fnPos
     fun functionName() = rFunction.appLevelName
@@ -77,8 +81,12 @@ internal class C_AbstractFunctionDescriptor(
     }
 }
 
-internal class C_OverrideFunctionDescriptor(val fnPos: S_Pos, private val rFnBase: R_FunctionBase) {
-    private val abstractLate = C_LateInit<C_AbstractFunctionDescriptor?>(C_CompilerPass.MEMBERS, null)
+internal class C_OverrideFunctionDescriptor(
+    executor: C_CompilerExecutor,
+    val fnPos: S_Pos,
+    private val rFnBase: R_FunctionBase,
+) {
+    private val abstractLate = executor.lateInit<C_AbstractFunctionDescriptor?>(C_CompilerPass.MEMBERS, null)
     private var bind = false
 
     fun abstract() = abstractLate.get()

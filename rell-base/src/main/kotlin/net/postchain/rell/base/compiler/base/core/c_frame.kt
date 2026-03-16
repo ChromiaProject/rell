@@ -56,6 +56,7 @@ internal class C_FrameContext private constructor(
 ) {
     val msgCtx = fnCtx.msgCtx
     val appCtx = fnCtx.appCtx
+    val executor = fnCtx.executor
 
     val ideCompCtx = C_IdeCompletionsContext(fnCtx.defCtx.mntCtx.fileCtx.path, fnCtx.globalCtx.compilerOptions)
 
@@ -235,7 +236,7 @@ internal class C_BlockScopeBuilder(
             val parentScope = ideParentCompletionsScopeProvider.ideCompletionsScope()
             val list = ideCompletionsList.toImmList()
 
-            val late = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+            val late = fnCtx.lateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
             fnCtx.executor.onPass(C_CompilerPass.COMPLETIONS) {
                 late.set(C_BlockEntry.ideCompletions(list))
             }
@@ -268,6 +269,7 @@ internal sealed class C_BlockContext(
     val appCtx = frameCtx.appCtx
     val fnCtx = frameCtx.fnCtx
     val defCtx = fnCtx.defCtx
+    val executor = defCtx.executor
     val nsCtx = defCtx.nsCtx
 
     abstract fun isTopLevelBlock(): Boolean
@@ -521,9 +523,9 @@ internal class C_OwnerBlockContext(
     override fun ideCompletionsScope(): C_IdeCompletionsScope {
         val baseScope = scopeBuilder.ideCompletionsScope()
 
-        val late = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+        val late = lateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
 
-        frameCtx.appCtx.executor.onPass(C_CompilerPass.COMPLETIONS) {
+        executor.onPass(C_CompilerPass.COMPLETIONS) {
             val entries = atPlaceholders.map { C_Constants.AT_PLACEHOLDER to it }
             val entryMap = C_BlockEntry.ideCompletions(entries)
             val memberMap = ideCompletionsAtMembers()

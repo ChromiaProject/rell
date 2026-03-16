@@ -56,7 +56,7 @@ internal class C_AppContext(
 
     val extendableFunctionCompiler = C_ExtendableFunctionCompiler(oldReplState.functionExtensions)
 
-    private val appDefsLate = C_LateInit(C_CompilerPass.APPDEFS, C_AppDefs.EMPTY)
+    private val appDefsLate = executor.lateInit(C_CompilerPass.APPDEFS, C_AppDefs.EMPTY)
 
     private val nsAssembler = C_NsAsm_AppAssembler.create(executor, msgCtx, appUid, oldReplState.modules)
     private val modulesBuilder = C_ListBuilder<C_AppModule>()
@@ -70,8 +70,8 @@ internal class C_AppContext(
 
     private val nativeFunctions = mutableMapOf<R_FullName, R_FunctionHeader>()
 
-    private val nsAsmAppLate = C_LateInit(C_CompilerPass.NAMESPACES, C_NsAsm_App.EMPTY)
-    private val finishLate = C_LateInit<Finish?>(C_CompilerPass.APPLICATION, null)
+    private val nsAsmAppLate = executor.lateInit(C_CompilerPass.NAMESPACES, C_NsAsm_App.EMPTY)
+    private val finishLate = executor.lateInit<Finish?>(C_CompilerPass.APPLICATION, null)
 
     private var finished = false
 

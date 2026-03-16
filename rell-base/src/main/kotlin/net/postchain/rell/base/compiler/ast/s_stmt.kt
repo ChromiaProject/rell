@@ -74,7 +74,7 @@ class S_SimpleVarDeclarator(
 
     override fun compile(ctx: C_StmtContext, mutable: Boolean, hasExpr: Boolean, comment: S_Comment?): C_VarDeclarator {
         val ideKind = if (mutable) IdeSymbolKind.LOC_VAR else IdeSymbolKind.LOC_VAL
-        val docLateInit = C_LateInit<DocSymbol?>(C_CompilerPass.DOCS, null)
+        val docLateInit = ctx.lateInit<DocSymbol?>(C_CompilerPass.DOCS, null)
         val ideData = C_LocalAttrHeaderIdeData(ideKind, docLateInit.getter)
 
         val cAttrHeader = attrHeader.compile(ctx.defCtx, hasExpr, ideData)

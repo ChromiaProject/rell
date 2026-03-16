@@ -143,27 +143,23 @@ internal object C_ReplCompiler {
         val symCtxProvider = C_SymbolContextManager(msgCtx, globalCtx.compilerOptions).provider
         val controller = C_CompilerController(msgCtx)
 
-        val res = C_LateInit.context(controller.executor) {
-            val extCommand = msgCtx.consumeError {
-                val ast = C_Parser.parseRepl(code)
-                ast.compile(
-                    msgCtx,
-                    symCtxProvider,
-                    controller.executor,
-                    sourceDir,
-                    currentModuleName,
-                    oldDefsState.appState,
-                )
-            }
-
-            if (extCommand == null) {
-                C_ReplResult(null, msgCtx.messages())
-            } else {
-                compileExt(msgCtx, symCtxProvider, controller, extCommand, oldDefsState, oldCodeState)
-            }
+        val extCommand = msgCtx.consumeError {
+            val ast = C_Parser.parseRepl(code)
+            ast.compile(
+                msgCtx,
+                symCtxProvider,
+                controller,
+                sourceDir,
+                currentModuleName,
+                oldDefsState.appState,
+            )
         }
 
-        return res
+        return if (extCommand == null) {
+            C_ReplResult(null, msgCtx.messages())
+        } else {
+            compileExt(msgCtx, symCtxProvider, controller, extCommand, oldDefsState, oldCodeState)
+        }
     }
 
     private fun compileExt(
@@ -174,7 +170,7 @@ internal object C_ReplCompiler {
         oldDefsState: C_ReplDefsState,
         oldCodeState: ReplCodeState,
     ): C_ReplResult {
-        val executor = controller.executor
+        val executor = controller
 
         val appCtx = C_AppContext(
             msgCtx,

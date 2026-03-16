@@ -474,6 +474,7 @@ internal class S_DefinitionContext private constructor(
 ) {
     internal val modCtx = fileCtx.modCtx
     internal val appCtx = modCtx.appCtx
+    internal val executor = appCtx.executor
     internal val msgCtx = modCtx.msgCtx
     internal val symCtx = fileCtx.symCtx
 

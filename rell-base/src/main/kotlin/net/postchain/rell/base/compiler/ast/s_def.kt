@@ -622,7 +622,7 @@ class S_StructDefinition(
 
         val rStructDef = R_StructDefinition(defBase, rStruct)
 
-        val attrsLate = C_LateInit<List<C_CompiledAttribute>>(C_CompilerPass.MEMBERS, immListOf())
+        val attrsLate = ctx.lateInit<List<C_CompiledAttribute>>(C_CompilerPass.MEMBERS, immListOf())
         val cStruct = C_Struct(cName, cDefBase.ideRefInfo, rStructDef, attrsLate.getter)
 
         ctx.appCtx.defsAdder.addStruct(rStruct)
@@ -731,7 +731,7 @@ class S_EnumDefinition(
             val attrNameHand = attr.name.compile(ctx.symCtx)
             val attrName = attrNameHand.name
 
-            val attrDocDecInit = C_LateInit(C_CompilerPass.NAMESPACES, DocDeclarationProto.NONE)
+            val attrDocDecInit = ctx.lateInit(C_CompilerPass.NAMESPACES, DocDeclarationProto.NONE)
             attrDocDecInits.add(attrName.rName to attrDocDecInit)
 
             val attrIdeDef = cDefBase.memberIdeDef(
@@ -758,7 +758,7 @@ class S_EnumDefinition(
         fun finish(rEnum: R_EnumDefinition): ImmList<R_EnumAttr> {
             val docType = rEnum.type.docType()
 
-            ctx.appCtx.executor.onPass(C_CompilerPass.NAMESPACES) {
+            ctx.executor.onPass(C_CompilerPass.NAMESPACES) {
                 for ((rAttrName, docDecInit) in attrDocDecInits) {
                     docDecInit.set(DocDeclarationProto_EnumValue(rAttrName, docType))
                 }
@@ -783,7 +783,7 @@ class S_NamespaceDefinition(
             val nameHand = name.compile(ctx.symCtx, def = true)
 
             val fullName = nsPath.qualifiedName(nameHand.rName)
-            val docSymLate = C_LateInit<DocSymbol?>(C_CompilerPass.NAMESPACES, null)
+            val docSymLate = ctx.lateInit<DocSymbol?>(C_CompilerPass.NAMESPACES, null)
 
             val ideId = ctx.fileCtx.addNamespaceName(nameHand, fullName, docSymLate.getter)
             val ideLink = IdeGlobalSymbolLink(IdeSymbolGlobalId(name.pos.idePath(), ideId))
@@ -861,9 +861,9 @@ class S_GlobalConstantDefinition(
         val defCtx = cDefBase.defCtx(ctx)
         val errorExpr = C_ExprUtils.errorVExpr(defCtx.initExprCtx, expr.startPos)
 
-        val headerLate = C_LateInit(C_CompilerPass.MEMBERS, C_GlobalConstantHeader.ERROR)
-        val bodyLate = C_LateInit(C_CompilerPass.EXPRESSIONS, R_GlobalConstantBody.ERROR)
-        val exprLate = C_LateInit(C_CompilerPass.EXPRESSIONS, errorExpr)
+        val headerLate = ctx.lateInit(C_CompilerPass.MEMBERS, C_GlobalConstantHeader.ERROR)
+        val bodyLate = ctx.lateInit(C_CompilerPass.EXPRESSIONS, R_GlobalConstantBody.ERROR)
+        val exprLate = ctx.lateInit(C_CompilerPass.EXPRESSIONS, errorExpr)
 
         val cDef = ctx.appCtx.addConstant(ctx.modCtx.rModuleKey, cDefBase.defName) { constId ->
             val defBase = cDefBase.rBase(defCtx.initFrameGetter)

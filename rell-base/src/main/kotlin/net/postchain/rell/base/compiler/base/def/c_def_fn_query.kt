@@ -15,7 +15,9 @@ import net.postchain.rell.base.compiler.base.fn.C_FunctionCallTargetBase
 import net.postchain.rell.base.compiler.base.fn.C_FunctionUtils
 import net.postchain.rell.base.compiler.base.fn.C_SubprogramHeader
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
+import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
+import net.postchain.rell.base.compiler.base.utils.lateInit
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.ImmList
@@ -35,8 +37,11 @@ internal class C_QueryHeader(
     }
 }
 
-internal class C_QueryGlobalFunction(val rQuery: R_QueryDefinition): C_GlobalFunction() {
-    private val headerLate = C_LateInit(C_CompilerPass.MEMBERS, C_QueryHeader.ERROR)
+internal class C_QueryGlobalFunction(
+    executor: C_CompilerExecutor,
+    val rQuery: R_QueryDefinition,
+): C_GlobalFunction() {
+    private val headerLate = executor.lateInit(C_CompilerPass.MEMBERS, C_QueryHeader.ERROR)
 
     override fun getDefMeta(): R_DefinitionMeta {
         return R_DefinitionMeta("query", rQuery.defName, mountName = rQuery.mountName)

@@ -17,7 +17,6 @@ import net.postchain.rell.base.compiler.base.modifier.C_ModifierTargetType
 import net.postchain.rell.base.compiler.base.modifier.C_ModifierValues
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.utils.*
-import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocComment
@@ -58,7 +57,7 @@ class S_OperationDefinition(
             C_ReservedMountNames.OPERATIONS,
         )
 
-        val docCommentLate = C_LateInit(C_CompilerPass.MEMBERS, null as DocComment?)
+        val docCommentLate = ctx.lateInit(C_CompilerPass.MEMBERS, null as DocComment?)
 
         val cDefBase = ctx.defBase(
             nameHand,
@@ -71,17 +70,17 @@ class S_OperationDefinition(
         val defBase = cDefBase.rBase(defCtx.initFrameGetter)
 
         val rOpMods = R_OperationModifiers.getInstance(modCompound.hasValue(), modSingular.hasValue())
-        val rOperation = R_OperationDefinition(defBase, mountName, rOpMods)
+        val rOperation = R_OperationDefinition(ctx.executor, defBase, mountName, rOpMods)
         ctx.appCtx.defsAdder.addStruct(rOperation.mirrorStructs.immutable)
         ctx.appCtx.defsAdder.addStruct(rOperation.mirrorStructs.mutable)
 
-        val cOperation = C_OperationGlobalFunction(rOperation)
+        val cOperation = C_OperationGlobalFunction(ctx.executor, rOperation)
 
         ctx.appCtx.defsAdder.addOperation(rOperation)
         ctx.nsBuilder.addOperation(cDefBase.nsMemBase(modDeprecated), cName, cOperation)
         ctx.mntBuilder.addOperation(cName, rOperation)
 
-        val ideCompsLate = C_LateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
+        val ideCompsLate = ctx.lateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
 
         ctx.executor.onPass(C_CompilerPass.MEMBERS) {
             val header = compileHeader(defCtx, cName, cOperation, rOperation.mirrorStructs)
@@ -204,7 +203,7 @@ class S_QueryDefinition(
         val mountName = ctx.mountName(modMount, cName)
         checkSysMountNameConflict(ctx, name.pos, C_DeclarationType.QUERY, mountName, C_ReservedMountNames.QUERIES)
 
-        val docCommentLate = C_LateInit(C_CompilerPass.MEMBERS, null as DocComment?)
+        val docCommentLate = ctx.lateInit(C_CompilerPass.MEMBERS, null as DocComment?)
 
         val cDefBase = ctx.defBase(
             nameHand,
@@ -216,14 +215,14 @@ class S_QueryDefinition(
         val defCtx = cDefBase.defCtx(ctx)
         val rDefBase = cDefBase.rBase(defCtx.initFrameGetter)
 
-        val rQuery = R_QueryDefinition(rDefBase, mountName)
-        val cQuery = C_QueryGlobalFunction(rQuery)
+        val rQuery = R_QueryDefinition(ctx.executor, rDefBase, mountName)
+        val cQuery = C_QueryGlobalFunction(ctx.executor, rQuery)
 
         ctx.appCtx.defsAdder.addQuery(rQuery)
         ctx.nsBuilder.addQuery(cDefBase.nsMemBase(modDeprecated), cName, cQuery)
         ctx.mntBuilder.addQuery(cName, rQuery)
 
-        val ideCompsLate = C_LateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
+        val ideCompsLate = ctx.lateInit(C_CompilerPass.VALIDATION, immMultimapOf<String, IdeCompletion>())
 
         ctx.executor.onPass(C_CompilerPass.MEMBERS) {
             val header = compileHeader(defCtx, cName, cQuery, ideCompsLate)

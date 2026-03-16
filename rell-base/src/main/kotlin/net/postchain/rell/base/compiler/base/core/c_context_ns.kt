@@ -71,7 +71,7 @@ internal class C_NamespaceContext(
     }
 
     override fun ideCompletionsScope(): C_IdeCompletionsScope {
-        val late = C_LateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
+        val late = appCtx.executor.lateInit(C_CompilerPass.COMPLETIONS, immMultimapOf<String, IdeCompletion>())
         executor.onPass(C_CompilerPass.COMPLETIONS) {
             val completions = scope.ideCompletions(globalCtx.compilerOptions)
             late.set(completions)
@@ -225,9 +225,9 @@ internal class C_CommonDefinitionBase(
         return ideDef(pos, ideKind, ideId, docGetter)
     }
 
-    internal fun userBase(pos: S_Pos): C_UserDefinitionBase {
+    internal fun userBase(pos: S_Pos, executor: C_CompilerExecutor): C_UserDefinitionBase {
         val docPos = pos.toDocPos()
-        val docDecLate = C_LateInit(C_CompilerPass.DOCS, DocDeclarationProto.NONE)
+        val docDecLate = executor.lateInit(C_CompilerPass.DOCS, DocDeclarationProto.NONE)
         val docSymGetter = docGetter(docDecLate.getter)
         val ideDef = ideDef(pos, docSymGetter)
         return C_UserDefinitionBase(this, ideDef, docPos, docSymGetter, docDecLate)

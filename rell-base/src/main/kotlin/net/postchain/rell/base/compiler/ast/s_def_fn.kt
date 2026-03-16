@@ -41,7 +41,7 @@ class S_FormalParameter(
         index: Int,
         docCommentsGetter: C_LateGetter<DocFunctionParamComments>,
     ): C_FormalParameter {
-        val docSymLate = C_LateInit<DocSymbol?>(C_CompilerPass.EXPRESSIONS, null)
+        val docSymLate = defCtx.lateInit<DocSymbol?>(C_CompilerPass.EXPRESSIONS, null)
 
         val ideData = C_GlobalAttrHeaderIdeData(
             IdeSymbolCategory.PARAMETER,
@@ -81,12 +81,12 @@ class S_FormalParameter(
             docDecGetter = C_LateGetter.const(docDec)
         } else {
             val rErrorExpr = C_ExprUtils.errorRExpr(type)
-            val rExprLate = C_LateInit(C_CompilerPass.EXPRESSIONS, rErrorExpr)
-            val rValueLate = C_LateInit(C_CompilerPass.EXPRESSIONS, R_DefaultValue(rErrorExpr, false))
+            val rExprLate = defCtx.lateInit(C_CompilerPass.EXPRESSIONS, rErrorExpr)
+            val rValueLate = defCtx.lateInit(C_CompilerPass.EXPRESSIONS, R_DefaultValue(rErrorExpr, false))
 
             //TODO don't create fallback doc every time
             val fallbackDoc = makeDocDeclaration(docParam, C_ExprUtils.errorVExpr(defCtx.initExprCtx, expr.startPos))
-            val docDecLate = C_LateInit(C_CompilerPass.EXPRESSIONS, fallbackDoc)
+            val docDecLate = defCtx.lateInit(C_CompilerPass.EXPRESSIONS, fallbackDoc)
             docDecGetter = docDecLate.getter
 
             defCtx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
