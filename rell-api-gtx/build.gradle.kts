@@ -52,9 +52,9 @@ val rellTestCasesArchive by tasks.registering(Zip::class) {
     onlyIf { generateTestCases }
     dependsOn(
         tasks.test,
-        project(":rell-base").tasks.named("test"),
-        project(":rell-gtx").tasks.named("test"),
-        project(":rell-api-base").tasks.named("test")
+        project(":rell-base").tasks.test,
+        project(":rell-gtx").tasks.test,
+        project(":rell-api-base").tasks.test,
     )
     from(layout.buildDirectory.dir("rell-test-cases"))
     from(project(":rell-base").layout.buildDirectory.dir("rell-test-cases"))

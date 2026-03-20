@@ -3,42 +3,39 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCach
 val sentryEnabled = System.getenv("SENTRY_AUTH_TOKEN") != null
 
 plugins {
-    id("net.postchain.rell.toolbox.kotlin-common-conventions")
-    id("com.gradleup.shadow") version "8.3.2"
+    alias(libs.plugins.kotlin.jvm)
     application
-    id("jacoco-report-aggregation")
-    id("io.sentry.jvm.gradle") version "4.13.0"
+    alias(libs.plugins.shadow)
+    alias(libs.plugins.sentry)
 }
 
 sentry {
-    // Generates a JVM (Java, Kotlin, etc.) source bundle and uploads your source code to Sentry.
-    // This enables source context, allowing you to see your source
-    // code as part of your stack traces in Sentry.
     includeSourceContext = sentryEnabled
     org = "chromaway-ab-za"
     projectName = "rell-toolbox"
     authToken = System.getenv("SENTRY_AUTH_TOKEN")
-    tasks.processResources {
-        filesMatching("sentry.properties") {
-            expand(
-                mapOf(
-                    "version" to project.version.toString()
-                )
-            )
-        }
+}
+
+tasks.processResources {
+    val projectVersion = project.version.toString()
+    inputs.property("projectVersion", projectVersion)
+    filesMatching("sentry.properties") {
+        expand("version" to projectVersion)
     }
 }
 
 dependencies {
+    implementation(libs.oshai)
+    implementation(libs.slf4j)
     implementation(libs.sentry.log4j2)
     implementation(libs.bundles.lsp4j)
     implementation(libs.bundles.logging)
     implementation(libs.bundles.koin)
-    implementation(project(":ast"))
-    implementation(project(":common"))
-    implementation(project(":indexer"))
-    implementation(project(":code-quality"))
-    implementation(libs.bundles.rell)
+    implementation(projects.rellToolbox.ast)
+    implementation(projects.rellToolbox.common)
+    implementation(projects.rellToolbox.indexer)
+    implementation(projects.rellToolbox.codeQuality)
+    implementation(projects.rellBase)
 
     implementation(libs.fury.core)
 
@@ -53,13 +50,9 @@ dependencies {
         exclude(group = "org.eclipse.jgit")
     }
 
-    testImplementation(libs.bundles.testcontainers)
-    testImplementation(libs.bundles.testing)
-    testImplementation(libs.rell.api.base)
-}
-
-tasks.check {
-    dependsOn(tasks.named<JacocoReport>("testCodeCoverageReport"))
+    testImplementation(libs.testcontainers)
+    testImplementation(libs.bundles.toolbox.testing)
+    testImplementation(projects.rellApiBase)
 }
 
 tasks.sourcesJar {
@@ -77,17 +70,8 @@ tasks.jar {
     manifest.attributes["Implementation-Vendor"] = "Chromaway AB"
 }
 
-tasks.shadowJar{
+tasks.shadowJar {
     manifest.attributes["Multi-Release"] = true
     transform(Log4j2PluginsCacheFileTransformer::class.java)
     mergeServiceFiles()
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("rell-language-server") {
-            artifactId = "rell-language-server"
-            shadow.component(this)
-        }
-    }
 }

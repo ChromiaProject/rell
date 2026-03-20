@@ -8,7 +8,7 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.authentication.http.HttpHeaderAuthentication
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
 plugins {
     alias(libs.plugins.kotlin.jvm) apply false
@@ -24,7 +24,14 @@ description = "Rell programming language"
 val generateTestCases by extra(providers.gradleProperty("generateTestCases").isPresent)
 
 apiValidation {
-    ignoredProjects += listOf("rell-base", "rell-gtx", "rell-tools")
+    ignoredProjects += listOf(
+        "rell-base", "rell-gtx", "rell-tools",
+        // Imported projects — no API stability guarantees yet
+        "rell-toolbox", "common", "ast", "indexer", "code-quality", "language-server", "seeder",
+        "rell-codegen", "codegen", "codegen-kotlin", "codegen-typescript", "codegen-javascript",
+        "codegen-python", "codegen-mermaid", "rellgen",
+        "rell-dokka-plugin",
+    )
 }
 
 dependencyCheck {
@@ -49,7 +56,7 @@ subprojects {
         dependencies {
             "implementation"(platform(rootProject.libs.postchain.bom))
             "testImplementation"(platform(rootProject.libs.junit.bom))
-            "testImplementation"(platform(rootProject.libs.testcontainers.bom))
+            "testRuntimeOnly"(rootProject.libs.junit.platform.launcher)
         }
 
         extensions.configure<JavaPluginExtension> {
@@ -57,13 +64,13 @@ subprojects {
             withSourcesJar()
         }
 
+        extensions.configure<KotlinJvmProjectExtension> {
+            compilerOptions.jvmTarget = JvmTarget.JVM_21
+        }
+
         tasks.withType<JavaCompile> {
             options.release = 21
             options.encoding = "UTF-8"
-        }
-
-        tasks.withType<KotlinCompile> {
-            compilerOptions.jvmTarget = JvmTarget.JVM_21
         }
 
         tasks.withType<Test> {
@@ -72,10 +79,17 @@ subprojects {
             include("**/*Test.*", "**/*Tests.*", "**/*TestCase.*", "**/*IT.*")
             systemProperty("java.awt.headless", "true")
 
-            // Memory settings for test JVM - matches Maven Surefire configuration
+            // Forward Docker config to test JVM for Testcontainers in DinD CI
+            listOf("DOCKER_HOST", "DOCKER_TLS_CERTDIR", "TESTCONTAINERS_HOST_OVERRIDE", "TESTCONTAINERS_RYUK_DISABLED").forEach { key ->
+                providers.environmentVariable(key).orNull?.let { environment(key, it) }
+            }
+            providers.environmentVariable("DOCKER_HOST").orNull?.let { dockerHost ->
+                systemProperty("docker.host", dockerHost)
+            }
+
+            // Arguments for test JVM
             jvmArgs("-Xmx2g", "-XX:+HeapDumpOnOutOfMemoryError")
 
-            // JUnit parallel test execution
             systemProperty("junit.jupiter.execution.parallel.enabled", "true")
             systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
 
@@ -107,9 +121,7 @@ subprojects {
             finalizedBy(tasks.named("jacocoTestReport"))
         }
 
-        // When -PwithLocales is passed, register additional Test tasks per locale
-        // and wire them into `check`. They inherit all Test configuration from
-        // tasks.withType<Test> above, so only locale-specific jvmArgs are added here.
+        // When -PwithLocales is passed, register similar Test tasks per locale and wire them into `check`.
         if (withLocales) {
             data class TestLocale(val language: String, val country: String, val name: String)
 
@@ -120,17 +132,22 @@ subprojects {
             )
 
             val mainTest = tasks.named<Test>("test")
-            var previousTask: TaskProvider<Test> = mainTest
+            var previousTask = mainTest
+
             for (locale in testLocales) {
                 val localeTestTask = tasks.register<Test>("test${locale.name}") {
                     description = "Runs tests with locale ${locale.language}_${locale.country}"
-                    group = "verification"
+                    group = LifecycleBasePlugin.VERIFICATION_GROUP
                     testClassesDirs = mainTest.get().testClassesDirs
                     classpath = mainTest.get().classpath
                     jvmArgs("-Duser.language=${locale.language}", "-Duser.country=${locale.country}")
                     mustRunAfter(previousTask)
                 }
-                tasks.named("check") { dependsOn(localeTestTask) }
+
+                tasks.named("check") {
+                    dependsOn(localeTestTask)
+                }
+
                 previousTask = localeTestTask
             }
         }

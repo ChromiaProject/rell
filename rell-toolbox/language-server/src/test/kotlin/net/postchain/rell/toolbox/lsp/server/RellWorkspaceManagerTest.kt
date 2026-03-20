@@ -2,7 +2,7 @@ package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
 import assertk.assertions.contains
-import assertk.assertions.containsAll
+import assertk.assertions.containsAtLeast
 import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.doesNotContain
@@ -417,7 +417,7 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
         val renamedFileUri = newNameFile.toURI()
         workspaceManager.didChangeFiles(listOf(newFileUri, renamedFileUri), listOf(deleteFileUri, beforeRenameFileUri))
 
-        assertThat(indexer.fileUriResourceMap.keys).containsAll(newFileUri, renamedFileUri)
+        assertThat(indexer.fileUriResourceMap.keys).containsAtLeast(newFileUri, renamedFileUri)
         assertThat(indexer.fileUriResourceMap.keys).doesNotContain(deleteFileUri)
         assertThat(indexer.fileUriResourceMap.keys).doesNotContain(beforeRenameFileUri)
     }
@@ -671,11 +671,11 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
               a_property: text;
               another_entity;
             }
-            
+
             entity another_entity {
               another_property: text;
             }
-            
+
             function q() = my_entity @* { .another_entity.another_property == "test" };
         """.trimIndent()
         val testDataBuilder = testData(workspace) {
@@ -699,11 +699,11 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
               a_property: text;
               another_entity: another_entity;
             }
-            
+
             entity another_entity {
               another_property: text;
             }
-            
+
             function q() = my_entity @* { .another_entity.another_property == "test" };
         """.trimIndent()
         val testDataBuilder = testData(workspace) {
@@ -727,11 +727,11 @@ class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
               a_property: text;
               ref_property: another_entity;
             }
-            
+
             entity another_entity {
               another_property: text;
             }
-            
+
             function q() = my_entity @* { .ref_property.another_property == "test" };
         """.trimIndent()
         val testDataBuilder = testData(workspace) {

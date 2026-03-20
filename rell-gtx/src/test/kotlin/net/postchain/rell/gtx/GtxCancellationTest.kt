@@ -5,6 +5,7 @@
 package net.postchain.rell.gtx
 
 import net.postchain.rell.gtx.testutils.BaseGtxTest
+import org.junit.jupiter.api.parallel.Isolated
 import java.sql.SQLException
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.Test
@@ -15,6 +16,7 @@ import kotlin.test.fail
 
 private const val joinTimeoutMs = 30_000L
 
+@Isolated
 class GtxCancellationTest: BaseGtxTest() {
     @Test fun testSqlCancellationExceptionNotSuppressedOrWrapped() {
         def("""

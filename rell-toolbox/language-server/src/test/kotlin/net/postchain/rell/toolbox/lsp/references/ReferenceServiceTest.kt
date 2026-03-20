@@ -1,7 +1,7 @@
 package net.postchain.rell.toolbox.lsp.references
 
 import assertk.assertThat
-import assertk.assertions.containsAll
+import assertk.assertions.containsAtLeast
 import assertk.assertions.hasSize
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
@@ -71,7 +71,7 @@ class ReferenceServiceTest {
 
     private fun assertGlobalReferences(result: List<Location>) {
         assertThat(result).hasSize(3)
-        assertThat(result).containsAll(
+        assertThat(result).containsAtLeast(
             Location(
                 workspaceFile.resolve("src/submodule/another_importing.rell").toURI().toString(),
                 Range(Position(2, 17), Position(2, 32))
@@ -113,7 +113,7 @@ class ReferenceServiceTest {
 
     private fun assertLocalReferences(result: List<Location>) {
         assertThat(result).hasSize(1)
-        assertThat(result).containsAll(
+        assertThat(result).containsAtLeast(
             Location(
                 workspaceFile.resolve("src/main.rell").toURI().toString(),
                 Range(Position(6, 17), Position(6, 23))
@@ -131,7 +131,7 @@ class ReferenceServiceTest {
         val result = referenceService.getReferenceLocations(mainFileUri, document, indexer, position)
 
         assertThat(result).hasSize(2)
-        assertThat(result).containsAll(
+        assertThat(result).containsAtLeast(
             Location(
                 workspaceFile.resolve("src/submodule/module.rell").toURI().toString(),
                 Range(Position(0, 1), Position(0, 1))
@@ -193,7 +193,7 @@ class ReferenceServiceTest {
 
     private fun assertParameterReferences(result: List<Location>) {
         assertThat(result).hasSize(2)
-        assertThat(result).containsAll(
+        assertThat(result).containsAtLeast(
             Location(
                 workspaceFile.resolve("src/main.rell").toURI().toString(),
                 Range(Position(3, 17), Position(3, 23))
@@ -221,16 +221,16 @@ fun setupReferenceTestProject(dir: File): TestDataBuilder {
         addMainFile(
             """
             module;
-            
+
             function better_addition(paramA: integer, paramB: integer): integer {
                 val localA = paramA;
                 val localB = paramB;
-            
+
                 val localC = localA + paramA;
-            
+
                 return localC;
             }
-            
+
             function local_reference() {
                 val result = better_addition(4, 6);
             }
@@ -240,7 +240,7 @@ fun setupReferenceTestProject(dir: File): TestDataBuilder {
             "submodule/module.rell",
             """
             module;
-            
+
             import ^.main.*;
             """.trimIndent()
         )

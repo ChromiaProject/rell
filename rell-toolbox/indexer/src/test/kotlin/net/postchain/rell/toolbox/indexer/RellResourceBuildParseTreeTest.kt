@@ -1,7 +1,7 @@
 package net.postchain.rell.toolbox.indexer
 
 import assertk.assertThat
-import assertk.assertions.containsAll
+import assertk.assertions.containsAtLeast
 import assertk.assertions.containsExactly
 import assertk.assertions.extracting
 import assertk.assertions.isEqualTo
@@ -36,7 +36,7 @@ class RellResourceBuildParseTreeTest {
     @Suppress("MaxLineLength")
     fun `ParseTree finds multiple errors in single rell file`() {
         val parseTreeWithErrors = rellDesc.buildParseTree(getFileContent("multiple_syntax_error.rell"))
-        assertThat(parseTreeWithErrors.syntaxErrors).extracting { it.message }.containsAll(
+        assertThat(parseTreeWithErrors.syntaxErrors).extracting { it.message }.containsAtLeast(
             "missing ';' at 'function'",
             "missing ';' at '}'",
             "extraneous input 'va' expecting {<EOF>, 'abstract', 'mutable', 'override', 'entity', 'class', 'struct', '@', 'object', 'record', 'enum', 'function', 'val', 'namespace', 'import', 'operation', 'query', 'include'}",

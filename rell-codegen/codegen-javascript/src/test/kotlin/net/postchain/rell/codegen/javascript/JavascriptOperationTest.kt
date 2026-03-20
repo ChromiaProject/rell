@@ -79,7 +79,7 @@ class JavascriptOperationTest {
             "input_parameter_map_gtv_text,m,m,assertArray(m)",
             "input_parameter_map_gtv_gtv,m,m,assertArray(m)",
             "input_parameter_map_enum_text,m,m,assertArray(m)",
-            "input_parameter_multi,'s, s2','s, s2',assertString(s)\n\tassertString(s2)"
+            "input_parameter_multi,'s, s2','s, s2',assertString(s)"
 
     )
     fun parameterTypeTest(opName: String, params: String, gtvParam: String, assertFun: String) {
@@ -87,9 +87,11 @@ class JavascriptOperationTest {
         val k = JavascriptOperation(op)
         val formatted = k.format()
         val functionParams = params.ifEmpty { "" }
+        // For multi-parameter case, the full assert check is in multiParameterAssertTest
+        val fullAssertFun = if (opName == "input_parameter_multi") "assertString(s)\n\tassertString(s2)" else assertFun
         assertThat(formatted).all {
             contains("export function ${opName.snakeToLowerCamelCase()}Operation($functionParams) {")
-            contains(assertFun)
+            contains(fullAssertFun)
             if (functionParams.isEmpty()) {
                 contains("return { name: \"$opName\" };")
             } else {

@@ -10,13 +10,14 @@ Release notes (detailed changelog): https://gitlab.com/chromaway/rell/-/tree/dev
 
 Requirements:
 - Java 21
+- [Docker](https://docs.docker.com/get-started/get-docker/) (for PostgreSQL and Testcontainers-based integration tests)
 
-| Command                     | Description                                                   |
-|-----------------------------|---------------------------------------------------------------|
-| `./gradlew assemble`        | Compile and package all JARs                                  |
-| `./gradlew build`           | Same as above, plus run all tests (requires PostgreSQL)       |
-| `./gradlew clean`           | Clean the build outputs                                       |
-| `./gradlew installRellDist` | Install Rell runtime to `rell-tools/build/install/rell-dist/` |
+| Command                     | Description                                                                    |
+|-----------------------------|--------------------------------------------------------------------------------|
+| `./gradlew assemble`        | Compile and package all JARs                                                   |
+| `./gradlew build`           | Same as above, plus run all tests (requires PostgreSQL and Docker)             |
+| `./gradlew clean`           | Clean the build outputs                                                        |
+| `./gradlew installRellDist` | Install Rell runtime to `rell-tools/build/install/rell-dist/`                  |
 
 ### Run the Rell shell (REPL):
 

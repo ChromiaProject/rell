@@ -131,7 +131,6 @@ val rellDistZip by tasks.registering(Zip::class) {
     with(rellDistCopySpec)
 }
 
-// Task to install/unpack the Rell distribution for local development use
 val installRellDist by tasks.registering(Copy::class) {
     group = "distribution"
     description = "Installs Rell distribution for local development (used by work/*.sh scripts)"

@@ -136,7 +136,7 @@ class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogge
                 assertThat(documentablesInPackage.size).isEqualTo(
                         expectedDefs.size
                                 - 3 /* Blacklisted types */
-                                - 10 /* TODO: Not implemented yet */
+                                - 11 /* TODO: Not implemented yet */
                 )
             }
         }

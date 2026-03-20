@@ -1,17 +1,19 @@
 plugins {
-    id("net.postchain.rell.codegen.kotlin-library-conventions")
+    alias(libs.plugins.kotlin.jvm)
 }
 
 dependencies {
-    implementation(project(":codegen"))
-    implementation(libs.rell)
-    implementation(libs.postchain.gtv)
-    implementation(libs.postchain.common)
-    implementation(libs.postchain.client)
-    testImplementation("org.jetbrains.kotlin:kotlin-compiler-embeddable")
-    testImplementation(project(":codegen", "testConfiguration"))
+    implementation(projects.rellCodegen.codegen)
+    implementation(projects.rellApiBase)
+    implementation(libs.postchainClient)
+    testImplementation(kotlin("test-junit5"))
+    testImplementation(kotlin("compiler-embeddable"))
+    testImplementation(libs.assertk)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(project(":rell-codegen:codegen", "testConfiguration"))
+    testImplementation(libs.log4j.slf4j2.impl)
 }
 
 sourceSets.getByName("test") {
-    resources.srcDir("${rootProject.rootDir}/testResources")
+    resources.srcDir("${projectDir.parentFile}/testResources")
 }

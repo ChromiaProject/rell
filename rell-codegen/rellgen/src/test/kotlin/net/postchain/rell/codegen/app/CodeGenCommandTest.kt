@@ -1,7 +1,7 @@
 package net.postchain.rell.codegen.app
 
 import assertk.assertThat
-import assertk.assertions.containsAll
+import assertk.assertions.containsAtLeast
 import assertk.assertions.hasSize
 import com.github.ajalt.clikt.core.parse
 import org.junit.jupiter.api.Test
@@ -25,7 +25,7 @@ internal class CodeGenCommandTest {
         assertThat(dir.toFile().listFiles()!!).hasSize(1)
         CodeGenCommand().parse(listOf(dir.pathString, "${dir.pathString}/target", "--module", "test", "--kotlin", "--package", "com.example"))
         assertThat(dir.toFile().listFiles()!!).hasSize(2)
-        assertThat(File(dir.toFile(), "target/test").list()!!).containsAll(
+        assertThat(File(dir.toFile(), "target/test").list()!!).containsAtLeast(
             "test.kt",
         )
     }

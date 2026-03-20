@@ -15,6 +15,9 @@ dependencies {
     jacocoAggregation(projects.rellApiShell)
     jacocoAggregation(projects.rellGtx)
     jacocoAggregation(projects.rellTools)
+    jacocoAggregation(projects.rellToolbox.languageServer)
+    jacocoAggregation(projects.rellCodegen.rellgen)
+    jacocoAggregation(projects.rellDokkaPlugin)
 }
 
 reporting.reports.create<JacocoCoverageReport>("testCodeCoverageReport") {

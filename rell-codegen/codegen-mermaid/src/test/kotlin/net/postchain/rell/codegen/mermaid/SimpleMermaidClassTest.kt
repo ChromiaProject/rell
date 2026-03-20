@@ -3,7 +3,7 @@ package net.postchain.rell.codegen.mermaid
 import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
-import assertk.assertions.containsAll
+import assertk.assertions.containsAtLeast
 import net.postchain.rell.codegen.MermaidClass
 import net.postchain.rell.codegen.SingleFileRellApp
 import org.junit.jupiter.api.BeforeAll
@@ -28,7 +28,7 @@ internal class SimpleMermaidClassTest {
         val entity = assertNotNull(testModule.entities["test_entity"])
         val k = MermaidClass(entity)
         val formatted = k.format()
-        assertThat(formatted.split("\n")).containsAll(
+        assertThat(formatted.split("\n")).containsAtLeast(
                 "\t",
                 "\tclass test_entity {",
                 "\t\tname: text",

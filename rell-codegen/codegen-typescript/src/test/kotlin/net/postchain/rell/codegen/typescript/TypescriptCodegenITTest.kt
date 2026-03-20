@@ -3,26 +3,25 @@ package net.postchain.rell.codegen.typescript
 import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.support.expected
-import assertk.assertions.support.show
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
+import org.testcontainers.containers.BindMode
+import org.testcontainers.containers.GenericContainer
+import org.testcontainers.containers.Network
+import org.testcontainers.containers.wait.strategy.Wait
+import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.utility.MountableFile
 import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
-import net.postchain.rell.codegen.SingleFileRellApp
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import org.testcontainers.containers.BindMode
-import org.testcontainers.containers.GenericContainer
-import org.testcontainers.containers.Network
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy
-import org.testcontainers.containers.wait.strategy.Wait
-import org.testcontainers.junit.jupiter.Testcontainers
-import org.testcontainers.utility.MountableFile
 
 @Testcontainers
-
+@Execution(ExecutionMode.SAME_THREAD)
 class TypescriptCodegenITTest {
 
     @Test

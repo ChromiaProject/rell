@@ -2,7 +2,7 @@ package net.postchain.rell.toolbox.lsp.tokens
 
 import assertk.assertThat
 import assertk.assertions.contains
-import assertk.assertions.containsAll
+import assertk.assertions.containsAtLeast
 import assertk.assertions.containsExactly
 import assertk.assertions.extracting
 import assertk.assertions.isEqualTo
@@ -38,7 +38,7 @@ class RellSemanticTokensManagerTest {
                 function main() {
                     return "main";
                 }
-                
+
                 function foo() {
                     return "foo";
                 }
@@ -63,7 +63,7 @@ class RellSemanticTokensManagerTest {
                 it.tokenType.tokenId,
                 it.tokenType.modifiersAsList
             )
-        }.containsAll(
+        }.containsAtLeast(
             mainFunctionSemanticToken,
             fooFunctionSemanticToken
         )
@@ -125,8 +125,8 @@ class RellSemanticTokensManagerTest {
                 """
                 module;
                 import x: xyz;
-                
-                val global: text =  ""; 
+
+                val global: text =  "";
                 function fun() {
                     var local_var = abs(11);
                     val local_val = "";
@@ -164,11 +164,11 @@ class RellSemanticTokensManagerTest {
                 module;
                 operation op() {}
                 query q() = "";
-                
+
                 @deprecated function f() = 123;
                 abstract function abst();
                 @extendable function f() = [1];
-                @extend(lib.f) function h() = [2]; 
+                @extend(lib.f) function h() = [2];
                 function fun() {}
                 """.trimIndent()
             )
@@ -202,7 +202,7 @@ class RellSemanticTokensManagerTest {
                 function main() {
                     return "main";
                 }
-                
+
                 function foo() {
                     return "foo";
                 }

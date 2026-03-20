@@ -1,7 +1,7 @@
 package net.postchain.rell.toolbox.indexer
 
 import assertk.assertThat
-import assertk.assertions.containsAll
+import assertk.assertions.containsAtLeast
 import assertk.assertions.extracting
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
@@ -108,7 +108,7 @@ class RellResourceBuildModuleInfoTest {
         val errorMessages = filterMessages(rellCompileResult!!.messages, fileUri)
 
         assertThat(errorMessages.size).isEqualTo(3)
-        assertThat(errorMessages).extracting(C_Message::code).containsAll(
+        assertThat(errorMessages).extracting(C_Message::code).containsAtLeast(
             "name_conflict:user:a:FUNCTION:src/semantic_error.rell(11:10)",
             "unknown_name:b",
             "name_conflict:user:a:FUNCTION:src/semantic_error.rell(7:10)"

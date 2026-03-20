@@ -284,7 +284,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         val fileEventCreate = FileEvent(renamedFileUri.toString(), FileChangeType.Created)
         val didChangeParamsRename = DidChangeWatchedFilesParams(listOf(fileEventDelete, fileEventCreate))
         server.workspaceService.didChangeWatchedFiles(didChangeParamsRename)
-        await().until { testClient.diagnostics.isNotEmpty() }
+        await().until { indexer.fileUriResourceMap.keys.contains(renamedFileUri) }
 
         assertThat(resourcesBeforeDeletion.keys).containsOnly(oldFileUri)
         assertThat(indexer.fileUriResourceMap.keys).containsOnly(renamedFileUri)

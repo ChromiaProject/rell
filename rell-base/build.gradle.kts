@@ -32,7 +32,7 @@ dependencies {
     api(kotlin("stdlib"))
     api(kotlin("reflect"))
 
-    implementation(libs.kotlin.logging)
+    implementation(libs.kotlinLogging)
     implementation(libs.guava)
     api(libs.better.parse)
     implementation(libs.jackson.databind)

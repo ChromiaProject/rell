@@ -27,5 +27,4 @@ dependencies {
     testImplementation(project(":rell-api-base", "testArtifacts"))
 
     testImplementation(libs.testcontainers)
-    testImplementation(libs.testcontainers.postgresql)
 }

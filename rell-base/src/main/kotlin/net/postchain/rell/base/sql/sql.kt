@@ -383,6 +383,10 @@ class ConnectionSqlManager(private val con: SqlManagerConnection): AbstractSqlMa
 
 private class ConnectionSqlExecutor(private val con: Connection): SqlExecutor() {
     override fun <T> connection(code: (Connection) -> T): T {
+        if (Thread.currentThread().isInterrupted) {
+            throw InterruptedException()
+        }
+
         val autoCommit = con.autoCommit
         val res = code(con)
         checkEquals(con.autoCommit, autoCommit)

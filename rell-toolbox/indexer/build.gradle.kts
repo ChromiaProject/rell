@@ -1,12 +1,13 @@
 plugins {
-    id("java")
-    id("net.postchain.rell.toolbox.kotlin-common-conventions")
+    alias(libs.plugins.kotlin.jvm)
 }
 
 dependencies {
-    implementation(project(":ast"))
-    implementation(project(":common"))
-    implementation(libs.rell.base)
+    implementation(libs.oshai)
+    implementation(libs.slf4j)
+    implementation(projects.rellToolbox.ast)
+    implementation(projects.rellToolbox.common)
+    implementation(projects.rellBase)
 
     implementation(libs.chromia.build.tools) {
         exclude(group = "com.chromia.rell.dokka")
@@ -19,6 +20,8 @@ dependencies {
         exclude(group = "org.eclipse.jgit")
     }
 
-    testImplementation(libs.bundles.testing)
-    testImplementation(libs.bundles.testcontainers)
+    testImplementation(kotlin("test-junit5"))
+    testImplementation(libs.bundles.toolbox.testing)
+    testImplementation(libs.testcontainers)
+    testImplementation(libs.log4j.slf4j2.impl)
 }

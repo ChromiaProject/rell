@@ -1,1 +1,3 @@
-group = "net.postchain.rell"
+subprojects {
+    group = "net.postchain.rell"
+}

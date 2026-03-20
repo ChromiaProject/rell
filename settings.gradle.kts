@@ -17,8 +17,14 @@ dependencyResolutionManagement {
         maven("https://gitlab.com/api/v4/projects/32294340/packages/maven") {
             name = "postchain"
         }
-        maven("https://maven.emrld.io") {
-            name = "etherjar"
+        maven("https://gitlab.com/api/v4/projects/64941451/packages/maven") {
+            name = "chromia-cli-tools"
+        }
+        maven("https://gitlab.com/api/v4/projects/46288950/packages/maven") {
+            name = "chromia-misc"
+        }
+        maven("https://gitlab.com/api/v4/projects/32802097/packages/maven") {
+            name = "rell"
         }
     }
 }
@@ -31,3 +37,20 @@ include("rell-api-shell")
 include("rell-gtx")
 include("rell-tools")
 include("coverage-report-aggregate")
+
+include("rell-toolbox:common")
+include("rell-toolbox:ast")
+include("rell-toolbox:indexer")
+include("rell-toolbox:code-quality")
+include("rell-toolbox:language-server")
+include("rell-toolbox:seeder")
+
+include("rell-codegen:codegen")
+include("rell-codegen:codegen-kotlin")
+include("rell-codegen:codegen-typescript")
+include("rell-codegen:codegen-javascript")
+include("rell-codegen:codegen-python")
+include("rell-codegen:codegen-mermaid")
+include("rell-codegen:rellgen")
+
+include("rell-dokka-plugin")

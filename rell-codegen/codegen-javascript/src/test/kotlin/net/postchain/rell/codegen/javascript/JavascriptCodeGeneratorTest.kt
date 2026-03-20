@@ -3,7 +3,7 @@ package net.postchain.rell.codegen.javascript
 import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.contains
-import assertk.assertions.containsAll
+import assertk.assertions.containsAtLeast
 import assertk.assertions.hasSize
 import assertk.assertions.support.expected
 import assertk.assertions.support.show
@@ -176,7 +176,7 @@ internal class JavascriptCodeGeneratorTest {
         val sections = generator.createSections(rellApp.app)
 
         assertThat(sections).hasSize(2)
-        assertThat(rellCliEnv.errorCache).containsAll(
+        assertThat(rellCliEnv.errorCache).containsAtLeast(
                 "Skipping [mixed_tuple_queries:return_type_unnamed_and_named_tuple] Query return type contains unsupported mixed tuple type: (integer,foo:integer)",
                 "Skipping [mixed_tuple_queries:return_type_nullable_unnamed_and_named_tuple] Query return type contains unsupported mixed tuple type: (integer,foo:integer)",
                 "Skipping [mixed_tuple_queries:return_type_list_unnamed_and_named_tuple] Query return type contains unsupported mixed tuple type: (integer,foo:integer)",

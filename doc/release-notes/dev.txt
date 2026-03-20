@@ -19,3 +19,22 @@ Added a new property `gtv.type` that returns the `gtv_type` of a GTV value:
     (123).to_gtv().type // INTEGER
     'hello'.to_gtv().type // STRING
     [1, 2, 3].to_gtv().type // ARRAY
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tools: Monorepo consolidation
+
+The following projects have been merged into the main Rell repository:
+
+- rell-toolbox (LSP server, formatter, linter, indexer, seeder)
+- rell-codegen (client stub generation for Kotlin, TypeScript, JavaScript, Python, Mermaid)
+- rell-dokka-plugin (Dokka plugin for Rell system library documentation)
+
+All modules are now built, tested, and published as part of the Rell Gradle build. Artifacts are
+available from the main Rell Maven registry under their original coordinates:
+
+- net.postchain.rell.toolbox (common, ast, indexer, code-quality, language-server, seeder)
+- net.postchain.rell (codegen, codegen-kotlin, codegen-typescript, codegen-javascript, codegen-python, codegen-mermaid, rellgen)
+- com.chromia.rell.dokka (rell-dokka-plugin)
+
+The separate GitLab Maven registries for these projects will not be updated in the future;
+use the Rell registry instead.

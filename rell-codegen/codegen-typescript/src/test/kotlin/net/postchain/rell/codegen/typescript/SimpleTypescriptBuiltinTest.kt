@@ -1,6 +1,7 @@
 package net.postchain.rell.codegen.typescript
 
 import assertk.assertThat
+import assertk.assertions.isEqualTo
 import net.postchain.rell.codegen.typescript.util.BlockEntity
 import net.postchain.rell.codegen.typescript.util.TransactionEntity
 import net.postchain.rell.codegen.typescript.util.TypescriptBuiltinType
@@ -10,12 +11,12 @@ internal class SimpleTypescriptBuiltinTest {
     @Test
     fun builtInTransactionTest() {
         val entity = TypescriptBuiltinType.Transaction.createBuiltin()
-        assertThat { entity == TransactionEntity }
+        assertThat(entity).isEqualTo(TransactionEntity)
     }
 
     @Test
     fun builtInBlockTest() {
         val entity = TypescriptBuiltinType.Block.createBuiltin()
-        assertThat { entity == BlockEntity }
+        assertThat(entity).isEqualTo(BlockEntity)
     }
 }

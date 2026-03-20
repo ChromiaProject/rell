@@ -3,7 +3,7 @@ package net.postchain.rell.toolbox.lsp.completion
 import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
-import assertk.assertions.containsAll
+import assertk.assertions.containsAtLeast
 import assertk.assertions.containsNone
 import assertk.assertions.doesNotContain
 import assertk.assertions.extracting
@@ -122,7 +122,7 @@ class RellCompletionServiceTest {
             addFile(
                 testFile1,
                 """
-               @test module; 
+               @test module;
                val PI = 3.14;
                val MAGIC_NUMBER = 1;
                 """.trimIndent()
@@ -180,7 +180,7 @@ class RellCompletionServiceTest {
 
         assertThat(completions).extracting {
             it.label to it.labelDetails.description
-        }.containsAll(*expectedLibraryFunctions)
+        }.containsAtLeast(*expectedLibraryFunctions)
     }
 
     data class CompletionItemData(
@@ -226,7 +226,7 @@ class RellCompletionServiceTest {
                 it.insertText,
                 it.insertTextFormat
             )
-        }.containsAll(*expected)
+        }.containsAtLeast(*expected)
     }
 
     @Test
@@ -257,7 +257,7 @@ class RellCompletionServiceTest {
         )
         assertThat(completions).extracting {
             Pair(it.label, it.labelDetails.description)
-        }.containsAll(*expectedDeclaredFunctions)
+        }.containsAtLeast(*expectedDeclaredFunctions)
         assertThat(completions).extracting { it.label }.doesNotContain("r")
     }
 
@@ -286,7 +286,7 @@ class RellCompletionServiceTest {
             indexer,
             mainFileUri.toDocument()
         )
-        assertThat(completions1).extracting { it.label to it.labelDetails.description }.containsAll(*localVarsAndParams)
+        assertThat(completions1).extracting { it.label to it.labelDetails.description }.containsAtLeast(*localVarsAndParams)
 
         val outsideQueryBody = BEGINNING_OF_FILE_OFFSET
         val completions2 = completionService.getCompletions(
@@ -315,7 +315,7 @@ class RellCompletionServiceTest {
             indexer,
             mainFileUri.toDocument()
         )
-        assertThat(completions1).extracting { it.label to it.labelDetails.description }.containsAll(*entityMembers)
+        assertThat(completions1).extracting { it.label to it.labelDetails.description }.containsAtLeast(*entityMembers)
 
         val outsideCreateStatement = BEGINNING_OF_FILE_OFFSET
         val completions2 = completionService.getCompletions(
@@ -342,7 +342,7 @@ class RellCompletionServiceTest {
             indexer,
             mainFileUri.toDocument()
         )
-        assertThat(completions1).extracting { it.label to it.labelDetails.description }.containsAll(*entityMembers)
+        assertThat(completions1).extracting { it.label to it.labelDetails.description }.containsAtLeast(*entityMembers)
 
         val outsideCreateStatement = BEGINNING_OF_FILE_OFFSET
         val completions2 = completionService.getCompletions(
@@ -369,7 +369,7 @@ class RellCompletionServiceTest {
             mainFileUri.toDocument()
         )
         assertThat(completions1).extracting { it.insertText }.all {
-            containsAll(*membersWithDotPrefix)
+            containsAtLeast(*membersWithDotPrefix)
             containsNone(*membersWithoutDotPrefix)
         }
 
@@ -380,7 +380,7 @@ class RellCompletionServiceTest {
             mainFileUri.toDocument()
         )
         assertThat(completions2).extracting { it.insertText }.all {
-            containsAll(*membersWithoutDotPrefix)
+            containsAtLeast(*membersWithoutDotPrefix)
             containsNone(*membersWithDotPrefix)
         }
     }
@@ -402,7 +402,7 @@ class RellCompletionServiceTest {
         )
         assertThat(
             completions1
-        ).extracting { it.label to it.labelDetails.description }.containsAll(*insideNamespaceQueries)
+        ).extracting { it.label to it.labelDetails.description }.containsAtLeast(*insideNamespaceQueries)
 
         val outsideCreateStatement = 277
         val completions2 = completionService.getCompletions(
@@ -422,7 +422,7 @@ class RellCompletionServiceTest {
         val completions = completionService.getCompletions(mainFileUri, offset, indexer, mainFileUri.toDocument())
 
         val expectedKeywords = RellKeywords.asList().toTypedArray()
-        assertThat(completions).extracting { it.label }.containsAll(*expectedKeywords)
+        assertThat(completions).extracting { it.label }.containsAtLeast(*expectedKeywords)
     }
 
     @Test
@@ -448,7 +448,7 @@ class RellCompletionServiceTest {
         )
 
         assertThat(completions).extracting { it.label to it.kind.name }.all {
-            containsAll(*expectedCompletions)
+            containsAtLeast(*expectedCompletions)
         }
     }
 
@@ -506,7 +506,7 @@ class RellCompletionServiceTest {
         )
 
         assertThat(completions).extracting { it.label }.all {
-            containsAll(*validCompletions)
+            containsAtLeast(*validCompletions)
             containsNone(*invalidCompletionsInsideModule)
         }
     }
@@ -528,7 +528,7 @@ class RellCompletionServiceTest {
         )
 
         assertThat(completions).extracting { it.label }.all {
-            containsAll(*symbolsInTestFile1)
+            containsAtLeast(*symbolsInTestFile1)
         }
     }
 
@@ -555,7 +555,7 @@ class RellCompletionServiceTest {
         )
 
         assertThat(completions).extracting { it.label }.all {
-            containsAll(*completionsInsideTestFile)
+            containsAtLeast(*completionsInsideTestFile)
         }
     }
 
@@ -582,7 +582,7 @@ class RellCompletionServiceTest {
         val completions = completionService.getCompletions(rellFile, offset, indexer, document)
 
         assertThat(completions).extracting { it.label to it.kind.name }.all {
-            containsAll(*expectedCompletions)
+            containsAtLeast(*expectedCompletions)
         }
     }
 
@@ -599,7 +599,7 @@ class RellCompletionServiceTest {
             addMainFile(
                 """
                 module;
-                
+
                 """.trimIndent()
             )
         }
@@ -614,7 +614,7 @@ class RellCompletionServiceTest {
             "import module_a.{T};"
         )
 
-        assertThat(completions).extracting { it.label }.containsAll(*expectedModuleImports)
+        assertThat(completions).extracting { it.label }.containsAtLeast(*expectedModuleImports)
     }
 
     @Test
@@ -631,7 +631,7 @@ class RellCompletionServiceTest {
                 """
                 module;
                 namespace ns1 {
-                    
+
                 }
                 """.trimIndent()
             )
@@ -639,7 +639,7 @@ class RellCompletionServiceTest {
 
         val indexer = initIndexerForTestData(testDataBuilder)
         val mainFileUri = testDataBuilder.mainFileUri
-        val offset = 28 // Position inside namespace
+        val offset = 24 // Position inside namespace
         val completions = completionService.getCompletions(mainFileUri, offset, indexer, mainFileUri.toDocument())
 
         val expectedModuleImports = arrayOf(
@@ -647,7 +647,7 @@ class RellCompletionServiceTest {
             "import module_a.{T};"
         )
 
-        assertThat(completions).extracting { it.label }.containsAll(*expectedModuleImports)
+        assertThat(completions).extracting { it.label }.containsAtLeast(*expectedModuleImports)
     }
 
     @Test
@@ -665,7 +665,7 @@ class RellCompletionServiceTest {
                 module;
                 namespace ns1 {
                     namespace ns2 {
-                        
+
                     }
                 }
                 """.trimIndent()
@@ -682,7 +682,7 @@ class RellCompletionServiceTest {
             "import module_a.{T};"
         )
 
-        assertThat(completions).extracting { it.label }.containsAll(*expectedModuleImports)
+        assertThat(completions).extracting { it.label }.containsAtLeast(*expectedModuleImports)
     }
 
     @Test
@@ -699,14 +699,14 @@ class RellCompletionServiceTest {
                 """
                 module;
                 function test() {
-                    
+
                 }
                 """.trimIndent()
             )
         }
 
         val mainFileUri = testDataBuilder.mainFileUri
-        val offset = 30 // Position inside function
+        val offset = 26 // Position inside function
         val completions = completionService.getCompletions(mainFileUri, offset, indexer, mainFileUri.toDocument())
 
         val invalidModuleImports = arrayOf(
@@ -764,7 +764,7 @@ class RellCompletionServiceTest {
             "import module_b.{T};"
         )
 
-        assertThat(completions).extracting { it.label }.containsAll(*expectedModuleImports)
+        assertThat(completions).extracting { it.label }.containsAtLeast(*expectedModuleImports)
     }
 
     private fun initIndexerForTestData(testDataBuilder: TestDataBuilder): WorkspaceIndexer {

@@ -1,6 +1,9 @@
 package net.postchain.rell.toolbox.indexer
 
+import assertk.all
 import assertk.assertThat
+import assertk.assertions.containsAtLeast
+import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import assertk.assertions.isTrue
 import io.mockk.every
@@ -64,8 +67,10 @@ class WorkspaceIndexerAffectedFilesTest {
         val importFileDepth1Uri = testDataBuilder.sourceFile(importFileDepth1).toURI()
         val syntaxErrorFileUri = testDataBuilder.sourceFile(syntaxErrorFile).toURI()
         val files = workspaceIndexer.findAffectedFiles(importFileDepth1Uri)
-        assertThat(files.size).isEqualTo(4)
-        assertThat(files.containsAll(listOf(importFileDepth1Uri, syntaxErrorFileUri))).isTrue()
+        assertThat(files).all {
+            hasSize(4)
+            containsAtLeast(importFileDepth1Uri, syntaxErrorFileUri)
+        }
     }
 
     @Test
@@ -75,7 +80,7 @@ class WorkspaceIndexerAffectedFilesTest {
         workspaceIndexer.initialFileIndexBuild()
         val syntaxErrorFileUri = testDataBuilder.sourceFile(syntaxErrorFile).toURI()
         val files = workspaceIndexer.findAffectedFiles(syntaxErrorFileUri)
-        assertThat(files.size).isEqualTo(1)
+        assertThat(files).hasSize(1)
         assertThat(files.first()).isEqualTo(syntaxErrorFileUri)
     }
 }

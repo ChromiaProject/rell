@@ -1,6 +1,7 @@
 package net.postchain.rell.codegen.kotlin
 
 import assertk.assertThat
+import assertk.assertions.isEqualTo
 import net.postchain.rell.codegen.kotlin.util.BlockEntity
 import net.postchain.rell.codegen.kotlin.util.KotlinBuiltinType
 import net.postchain.rell.codegen.kotlin.util.TransactionEntity
@@ -10,12 +11,12 @@ internal class SimpleKotlinBuiltinTest {
     @Test
     fun builtInTransactionTest() {
         val entity = KotlinBuiltinType.Transaction.createBuiltin()
-        assertThat { entity == TransactionEntity }
+        assertThat(entity).isEqualTo(TransactionEntity)
     }
 
     @Test
     fun builtInBlockTest() {
         val entity = KotlinBuiltinType.Block.createBuiltin()
-        assertThat { entity == BlockEntity }
+        assertThat(entity).isEqualTo(BlockEntity)
     }
 }

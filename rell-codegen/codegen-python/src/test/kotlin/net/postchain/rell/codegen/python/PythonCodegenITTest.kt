@@ -14,12 +14,14 @@ import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.Network
 import org.testcontainers.containers.wait.strategy.Wait
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.MountableFile
 import java.time.Duration
 
 @Testcontainers
-
+@Execution(ExecutionMode.SAME_THREAD)
 class PythonCodegenITTest {
 
     @Test

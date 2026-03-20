@@ -17,11 +17,13 @@ import org.testcontainers.containers.Container
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.Network
 import org.testcontainers.containers.wait.strategy.Wait
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.MountableFile
 
 @Testcontainers
-
+@Execution(ExecutionMode.SAME_THREAD)
 class JavascriptCodegenITTest {
 
     @Test

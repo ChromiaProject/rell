@@ -18,6 +18,30 @@
 .kotlin/
 **/build/
 
+# Editor / IDE
+.vscode/
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# OS
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Python (rell-codegen)
+venv/
+
+# Misc
+*.log
+bin/
+
 CLAUDE.md
 .mcp.json
 .claude/

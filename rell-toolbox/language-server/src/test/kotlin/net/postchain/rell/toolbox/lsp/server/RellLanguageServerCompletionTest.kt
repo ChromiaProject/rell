@@ -1,8 +1,7 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
-import assertk.assertions.contains
-import assertk.assertions.containsAll
+import assertk.assertions.containsAtLeast
 import assertk.assertions.extracting
 import assertk.assertions.isEqualTo
 import net.postchain.rell.toolbox.lsp.TestClient
@@ -94,7 +93,7 @@ class RellLanguageServerCompletionTest {
             "keccak256"
         )
 
-        assertThat(completions.left).extracting { it.label }.containsAll(*expectedCompletions)
+        assertThat(completions.left).extracting { it.label }.containsAtLeast(*expectedCompletions)
     }
 
     @Test

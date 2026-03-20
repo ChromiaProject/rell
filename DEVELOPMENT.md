@@ -20,20 +20,36 @@ Rell's two key features are blockchain integration and SQL-like capabilities:
 
 1. **[IntelliJ IDEA](https://www.jetbrains.com/idea/)** - The recommended IDE
 2. **JDK 21** - The project requires Java Development Kit 21 (can be managed by IDEA)
-3. **[PostgreSQL](https://www.postgresql.org/download/)** (`psql`) - For setting up PostgreSQL for tests
-4. **[Docker](https://docs.docker.com/get-started/get-docker/)** - Only for running PostgreSQL in an isolated container
+3. **[PostgreSQL](https://www.postgresql.org/download/)** (`psql`) - For setting up PostgreSQL for core module tests
+4. **[Docker](https://docs.docker.com/get-started/get-docker/)** - For running PostgreSQL in an isolated container and for Testcontainers-based integration tests
 
 ## Project Structure
 
 The Rell project is organized into several modules:
 
+- **rell-base**: Core language implementation (compiler, runtime, standard library)
 - **rell-api-base**: Base API definitions
 - **rell-api-gtx**: Generic Transaction Protocol (GTX) API implementation
+- **rell-api-native**: Native API
 - **rell-api-shell**: Shell/REPL implementation
-- **rell-base**: Core language implementation
 - **rell-gtx**: GTX integration
 - **rell-tools**: Developer tools
 - **coverage-report-aggregate**: Test coverage reporting
+
+`rell-toolbox/` &mdash; LSP server and code analysis tools:
+- **common**: Shared utilities and Rell project model
+- **ast**: ANTLR-based parser and AST
+- **indexer**: Workspace file indexing
+- **code-quality**: Formatter and linter
+- **language-server**: LSP server (published as shadow JAR)
+- **seeder**: Test data generation
+
+`rell-codegen/` &mdash; generates client stubs from Rell contracts:
+- **codegen**: Core code generation framework
+- **codegen-kotlin**, **codegen-typescript**, **codegen-javascript**, **codegen-python**, **codegen-mermaid**: Language-specific generators
+- **rellgen**: CLI application
+
+- **rell-dokka-plugin**: Dokka plugin for Rell system library documentation
 
 Other directories:
 - **doc**: Documentation, including language guide and release notes
@@ -277,17 +293,17 @@ git checkout -b version-A.B.C
 
 Update the version in two places:
 
-- **`build.gradle.kts`** — change `version = "..."` to the release version (without `-SNAPSHOT`):
+- **`build.gradle.kts`** &mdash; change `version = "..."` to the release version (without `-SNAPSHOT`):
   ```kotlin
   version = "A.B.C"
   ```
 
-- **`rell-base/src/main/kotlin/net/postchain/rell/base/utils/RellVersions.kt`** — change `VERSION_STR` to the release version:
+- **`rell-base/src/main/kotlin/net/postchain/rell/base/utils/RellVersions.kt`** &mdash; change `VERSION_STR` to the release version:
   ```kotlin
   const val VERSION_STR = "A.B.C"
   ```
 
-- **Standard library source files** — replace all uses of `RellVersions.SINCE_NOW` with the literal version string `"A.B.C"` in `since` annotations throughout the standard library code. Replace each `(since =) RellVersions.SINCE_NOW` with `(since =) "A.B.C"`. This ensures that library declarations record the exact version in which they were introduced.
+- **Standard library source files** &mdash; replace all uses of `RellVersions.SINCE_NOW` with the literal version string `"A.B.C"` in `since` annotations throughout the standard library code. Replace each `(since =) RellVersions.SINCE_NOW` with `(since =) "A.B.C"`. This ensures that library declarations record the exact version in which they were introduced.
 
 Commit and push the branch. Pushing the `version-A.B.C` branch triggers the GitLab CI pipeline, which publishes the release automatically.
 
@@ -308,7 +324,7 @@ After the CI pipeline completes successfully, report the new version on **Zulip*
 
 Switch back to the `dev` branch and perform these follow-up steps:
 
-1. **Update `doc/release-notes/all-releases.txt`** — add an entry for the new release at the top of the list:
+1. **Update `doc/release-notes/all-releases.txt`** &mdash; add an entry for the new release at the top of the list:
    ```
    - A.B.C
      Notes: A.B.C.txt
@@ -316,9 +332,9 @@ Switch back to the `dev` branch and perform these follow-up steps:
    ```
    Use the commit SHA of the release commit (the tagged commit).
 
-2. **Add the release notes file to `dev`** — copy `doc/release-notes/A.B.C.txt` (as finalized on the release branch) into the `dev` branch so that the full release notes history is available on `dev`.
+2. **Add the release notes file to `dev`** &mdash; copy `doc/release-notes/A.B.C.txt` (as finalized on the release branch) into the `dev` branch so that the full release notes history is available on `dev`.
 
-3. **Add the released version to `SUPPORTED_VERSIONS` on `dev`** — in `RellVersions.kt`, add `"A.B.C"` to the `SUPPORTED_VERSIONS` list. This is needed because the release branch removes the current dev version from the list, but `dev` must know about all released versions.
+3. **Add the released version to `SUPPORTED_VERSIONS` on `dev`** &mdash; in `RellVersions.kt`, add `"A.B.C"` to the `SUPPORTED_VERSIONS` list. This is needed because the release branch removes the current dev version from the list, but `dev` must know about all released versions.
 
 4. **If this was a major release** (A or B changed), update `VERSION_STR` in `dev` to the next development snapshot:
    ```kotlin

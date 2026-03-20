@@ -1,9 +1,12 @@
 plugins {
-    id("net.postchain.rell.codegen.kotlin-library-conventions")
+    alias(libs.plugins.kotlin.jvm)
 }
 
 dependencies {
-    implementation(libs.rell)
+    implementation(projects.rellApiBase)
+    testImplementation(kotlin("test-junit5"))
+    testImplementation(libs.assertk)
+    testImplementation(libs.junit.jupiter)
 }
 
 val testConfiguration by configurations.creating
