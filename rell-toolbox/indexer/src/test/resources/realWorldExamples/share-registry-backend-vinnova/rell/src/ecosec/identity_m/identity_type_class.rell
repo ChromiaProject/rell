@@ -1,0 +1,17 @@
+
+//****************************************
+// identity_type - class
+//
+// Table naming the different possible type of identity numbers (Personal number, Passport, Organisation number, ...)
+
+entity id_type {
+    key id: id_type_enum;
+    mutable name: text;
+}
+
+enum id_type_enum {
+	NO_ID,
+	SWE_ID,
+	SWE_CORP,
+	PASSPORT
+}

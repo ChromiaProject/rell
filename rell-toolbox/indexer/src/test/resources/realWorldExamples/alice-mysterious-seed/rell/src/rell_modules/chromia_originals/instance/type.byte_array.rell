@@ -1,0 +1,99 @@
+entity instance_property_value_byte_array {
+	instance_property;
+	mutable value: byte_array;
+}
+
+function set_property_byte_array(instance, path: text, value: byte_array) {
+	_set_property_byte_array(_instance_property_of_path(instance, path), value);
+}
+
+function _set_property_byte_array(instance_property, value: byte_array?) {
+	require_instance_property_not_readonly(instance_property);
+	
+	if (empty(value)) {
+		require_instance_property_optional(instance_property);
+		delete instance_property_value_byte_array @? { instance_property };
+		return;
+	}
+	
+	val property_value = instance_property_value_byte_array @? { instance_property };
+	
+	if (property_value??) {
+		property_value.value = value;
+	} else {
+		create instance_property_value_byte_array(
+			instance_property,
+			value = value
+		);
+	}
+}
+
+function get_property_byte_array(instance, path: text): byte_array? {
+	return _get_property_byte_array(_instance_property_of_path(instance, path));
+}
+
+function _get_property_byte_array(instance_property): byte_array? {
+	require(
+		instance_property_type(instance_property) == property_type.byte_array
+	);
+	
+	return instance_property_value_byte_array @? {
+		instance_property
+	}.value;
+}
+
+function _unset_instance_property_byte_array(instance_property) {
+	delete instance_property_value_byte_array @? {
+		instance_property
+	};
+}
+
+function find_one_byte_array(structure, property_name: text, value: byte_array): instance? {
+	val instances = instance_property_value_byte_array @* {
+		.instance_property.instance.structure == structure,
+		.instance_property.structure_property.name == property_name,
+		.value == value
+	} ( .instance_property.instance ) limit 1;
+	
+	return if (instances.size() > 0) instances[0] else null;
+}
+
+function find_all_byte_array(structure, property_name: text, value: byte_array): list<instance> {
+	return instance_property_value_byte_array @* {
+		.instance_property.instance.structure == structure,
+		.instance_property.structure_property.name == property_name,
+		.value == value
+	} ( .instance_property.instance );
+}
+
+function _initialize_byte_array_property(instance_property, init_value: gtv?) {
+	val prop = instance_property.structure_property;
+	val init_value_byte_array = if (init_value??) byte_array.from_gtv(init_value) else null;
+	
+	val default_value = 
+		if (instance_property.structure_property.value.size() != 0) 
+			byte_array.from_gtv(gtv.from_bytes(instance_property.structure_property.value)) 
+		else 
+			null;
+
+	require(
+		default_value != null or init_value_byte_array != null or prop.optional == true,
+		"Non-optional property '" + prop.name + "' is not initialized"
+	); 
+	
+	require(
+		prop.mutation != mutation_type.readonly
+			or
+		((default_value == null or init_value_byte_array == null) and prop.mutation == mutation_type.readonly),
+		"Readonly property '" + prop.name + "' can be initialized only once"
+	);
+	
+	val v = init_value_byte_array ?: default_value;
+	
+	if (v??) {
+		create instance_property_value_byte_array(
+			instance_property,
+			v
+		);
+	}
+}

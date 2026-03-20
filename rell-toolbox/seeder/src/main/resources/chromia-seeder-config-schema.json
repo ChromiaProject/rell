@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gitlab.com/chromaway/core-tools/rell-toolbox/-/raw/dev/seeder/src/main/resources/chromia-seeder-config-schema.json",
+  "title": "Chromia Seeder Configuration Schema",
+  "type": "object",
+  "properties": {
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^.*\\.yml$",
+        "format": "uri-reference"
+      }
+    },
+    "default_entity_handler": {
+      "type": "string",
+      "enum": ["generate", "error"]
+    }
+  },
+  "required": ["modules"],
+  "additionalProperties": false
+}

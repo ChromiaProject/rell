@@ -1,0 +1,29 @@
+module;
+
+import wallet.account;
+
+entity master_account {
+  key master: account.account, controlled: account.account;
+
+  chain_id: integer;
+}
+
+operation add_master(master_account_id: byte_array, controlled_account_id: byte_array, chain_id: integer) {
+    val master_account = account.account@{.id == master_account_id, .chain_id == chain_id};
+    val controlled_account = account.account@{.id == controlled_account_id, .chain_id == chain_id};
+    account.tkl_require_auth(controlled_account);
+
+    create_master_account_if_not_exists(master_account, controlled_account, chain_id);
+}
+
+function create_master_account_if_not_exists(master: account.account, controlled: account.account, chain_id: integer): master_account {
+  val master_account_exists = master_account@?{.master == master, .controlled == controlled, chain_id};
+  if(master_account_exists == null) {
+    return create master_account(.master = master, .controlled = controlled, chain_id);
+  }
+  return master_account_exists!!;
+}
+
+query get_master_account(account_id: text, chain_id: integer) {
+    return master_account@*{.controlled.id == byte_array(account_id), .chain_id == chain_id}(master = .master.id, controlled = .controlled.id, chain_id = .chain_id);
+}

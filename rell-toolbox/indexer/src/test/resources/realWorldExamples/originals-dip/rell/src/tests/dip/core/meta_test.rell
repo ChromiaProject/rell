@@ -1,0 +1,139 @@
+@test module;
+import ^^^.dip.*;
+
+function test_readonly() {
+	Interface_( "ITest", ["id": Type(ByteArray())] ).run();
+	
+	Instance_(
+		["ITest"],
+		["id": ByteArray(x'affe')]
+	).run();
+	
+	val instance = get_last_instance();
+	
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	
+	set_type_attribute_meta_(instance, attr, x'dead'.to_gtv()).run_must_fail();
+}
+
+function test_mutable() {
+	Interface_( "ITest", ["id": Type(ByteArray(), [Mutable()])] ).run();
+	
+	Instance_(
+		["ITest"],
+		["id": ByteArray(x'affe')]
+	).run();
+	
+	val instance = get_last_instance();
+	
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	
+	set_type_attribute_meta_(instance, attr, x'dead'.to_gtv()).run();
+}
+
+function test_optional() {
+	Interface_( "ITest", ["id": Type(ByteArray()),"name": Type(Text(), [Optional(), Mutable()]) ]).run();
+	
+	Instance_(
+		["ITest"],
+		[:]
+	).run_must_fail();
+	
+	Instance_(
+		["ITest"],
+		["id": ByteArray(x'affe')]
+	).run();
+	
+	Instance_(
+		["ITest"],
+		["id": ByteArray(x'affe'), "name": Text("Bono")]
+	).run();
+}
+
+function test_min_max() {
+	Interface_( "ITest", ["id": Type(Integer(), [Min(10), Max(20)])] ).run();
+	
+	Instance_(
+		["ITest"],
+		["id": Integer(1)]
+	).run_must_fail();
+	
+	Instance_(
+		["ITest"],
+		["id": Integer(9)]
+	).run_must_fail();
+	
+	Instance_(
+		["ITest"],
+		["id": Integer(10)]
+	).run();
+	
+	Instance_(
+		["ITest"],
+		["id": Integer(25)]
+	).run_must_fail();
+	
+	Instance_(
+		["ITest"],
+		["id": Integer(21)]
+	).run_must_fail();
+	
+	Instance_(
+		["ITest"],
+		["id": Integer(20)]
+	).run();
+}
+
+function test_interface_implemented() {
+	Interface_( "Sword", [:] ).run();
+	Interface_( "Shield", [:] ).run();
+	
+	Interface_( "Character",[
+		"shield_hand": Type(Instance(), [ImplementsInferface("Shield")]),
+		"sword_hand": Type(Instance(), [ImplementsInferface("Sword")])
+	] ).run();
+	
+	Instance_(["Sword"], [:]).run();
+	val sword_instance = get_last_instance();
+	
+	Instance_(["Shield"], [:]).run();
+	val shield_instance = get_last_instance();
+	
+	Instance_(["Character"], [
+		"shield_hand": Instance(shield_instance),
+		"sword_hand": Instance(sword_instance)
+	]).run();
+	val character_instance = get_last_instance();
+	
+	Instance_(["Character"], [
+		"shield_hand": Instance(sword_instance),
+		"sword_hand": Instance(shield_instance)
+	]).run_must_fail();
+	
+	Instance_(["Character"], [
+		"shield_hand": Instance(character_instance),
+		"sword_hand": Instance(character_instance)
+	]).run_must_fail();
+}
+
+function test_default_value() {
+	Interface_( "ITest", ["id": Type(Integer(42))]).run();
+	
+	Instance_(
+		["ITest"],
+		[:]
+	).run();
+	
+	var instance = get_last_instance();
+	val attr = get_attribute_by_dclass_name("ITest", "id");
+	
+	assert_equals(get_integer_attribute(instance, attr), 42);
+	
+	Instance_(
+		["ITest"],
+		["id": Integer(84)]
+	).run();
+	instance = get_last_instance();
+	assert_equals(get_integer_attribute(instance, attr), 84);
+}
+

@@ -1,0 +1,63 @@
+entity user { 
+  key name;
+  key pubkey;
+  mutable coins: integer = 10;
+  mutable battle_field: text = '';
+  mutable show_modal: integer = 0;
+  mutable ready: integer = 0;
+}
+
+entity combat_user {
+  key user;
+  index combat;
+  mutable last_turn: timestamp;
+}
+
+entity combat {
+  mutable winner: text = '';
+  mutable last_update: timestamp;
+  mutable game_mode: integer = 0;
+}
+
+entity char {
+  index combat, x: integer, y: integer;
+  mutable owner: user;
+  mutable char_type: integer = 0;
+  mutable dead: boolean = false;
+  mutable move_distance: integer;
+  mutable health: integer;
+  mutable damage: integer;
+  mutable max_health: integer;
+  mutable attac_range: integer;
+}
+
+entity user_wants_to_play {
+  key user;
+  mutable number_of_players: integer;
+}
+
+entity users_confirm {
+  key user1: user;
+  key user2: user;
+}
+
+entity users_confirm_four {
+  index user1: user;
+  key user2: user;
+}
+
+entity users_for_game_mode {
+  index user1: user;
+  key user2: user;
+}
+
+entity notification {
+  key user;
+  mutable notification_types;
+  mutable time: timestamp;
+}
+
+entity viewers {
+  key user;
+  index combat_user;
+}

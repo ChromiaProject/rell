@@ -1,0 +1,9 @@
+
+operation add_achievement(name, display_name: name, description: text, image: text) {
+	original.add_achievement(name, display_name, description, image);
+}
+
+operation log_achievement_event(instance_id: byte_array, achievement_name: name) {
+	val instance = instance.find_by_id(instance_id)!!;
+	original.log_achievement_event(instance, achievement_name);
+}

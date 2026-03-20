@@ -1,0 +1,9 @@
+module;
+
+
+
+function a() {
+    val a = 2
+    create anEntity(name);
+}
+

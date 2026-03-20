@@ -1,0 +1,401 @@
+import ^.interface.*;
+import ^.instance.*;
+import ^.component_definition.*;
+import ^.component_definition.{
+	property_type
+};
+
+entity structure_interface {
+	index structure;
+	key structure, interface;
+	direct: boolean;
+}
+
+entity structure {
+	key name;
+	description: text;
+	id_property_name: name = "";
+	owner_property_name: name = "";
+	is_entity: boolean = false;
+}
+
+entity static_property {
+	index structure;
+	key name, structure;
+	name;
+	type: property_type;
+	readonly: boolean;
+	optional: boolean;
+}
+
+entity static_property_meta_tag {
+	index static_property;
+	key static_property, name;
+	value: text;
+}
+
+entity structure_property {
+	index structure;
+	key name, structure;
+	name;
+	type: property_type;
+	optional: boolean;
+	mutation: mutation_type;
+	value: byte_array;
+	// add extra for type specific configuration?
+}
+
+entity structure_property_meta_tag {
+	index structure_property;
+	key structure_property, name;
+	value: text;
+}
+
+struct init {
+	properties: map<text, gtv>;
+}
+
+struct structure_ {
+	name;
+	implements = implements(list<interface>());
+	properties: map<text, prop> = map<text, prop>();
+	description = description("");
+	init = init(map<text, gtv>());
+}
+
+function def_(structure_): structure {
+	val direct_interfaces = set<interface>();
+	val indirect_interfaces = set<interface>();
+	
+	val implemented_interfaces = set<interface>();
+	for (interface in structure_.implements.interfaces) {
+		if (not implemented_interfaces.contains(interface)) {
+			implemented_interfaces.add(interface);
+			direct_interfaces.add(interface);
+		}
+	}
+	
+	for (interface in structure_.implements.interfaces) {
+		for (intf in interface_extended_interfaces(interface)) {
+			if (not implemented_interfaces.contains(intf)) {
+				implemented_interfaces.add(intf);
+				indirect_interfaces.add(intf);
+			}				
+		}
+	}	
+	
+	val props = map<name, prop>();
+	
+	for (interface in implemented_interfaces) {
+		for (property in interface_property @* { interface }) {
+			val prop = prop.from_bytes(property.encoded_prop);
+			
+			require(
+				not props.contains(property.name) 
+					or 
+				props[property.name].prop_type_struct.type == prop.prop_type_struct.type,
+				"Cannot implement two properties of same name but different type"
+			);
+			
+			props[property.name] = prop;		
+		}
+	}
+	
+	
+	for ((name, prop) in structure_.properties) {
+		// TODO: check if property of the same name but different 
+		// type is defined in one of the implemented interfaces
+		// TODO: check if strucutre's property definition is trying to override
+		// property defined in interface, e.g. interface has instance max count set to 100
+		// but sturucte's property of index type is defined without max count 
+
+		props[name] = prop;
+	}
+	
+
+	val id_property_name = _get_id_property(props);	
+	// TODO: make sure structure doesn't have more than 1 property of index type 
+	
+	val owner_property_name = _get_owner_property(props);
+	
+	val structure = create structure(
+		name = structure_.name,
+		description = structure_.description.value,
+		id_property_name = id_property_name ?: "",
+		owner_property_name = owner_property_name ?: "",
+		is_entity = id_property_name??
+	);
+	
+	for (interface in direct_interfaces) {
+		create structure_interface (
+			structure,
+			interface,
+			direct = true
+		);
+	}
+	
+	for (interface in indirect_interfaces) {
+		create structure_interface (
+			structure,
+			interface,
+			direct = false
+		);
+	}
+	
+	
+	for ((name, prop) in props) {
+		val value = 
+			if (name in structure_.init.properties) 
+				structure_.init.properties[name] 
+			else 
+				null;
+		
+		
+		if (prop.static.value == true) {
+			handle_static_property(structure, name, prop, value);
+		} else {
+			handle_property(structure, name, prop, value);
+		}
+	}
+	
+	return structure;
+}
+
+function Structure(name): structure {
+	return require(
+		structure @? { .name == name },
+		"Structure '" + name + "' not found"	
+	);
+}
+
+function structure_base_interfaces(structure): list<interface> {
+	return structure_interface @* {
+		structure,
+		.direct == true
+	} ( .interface );
+}
+
+function structure_implemented_interfaces(structure): list<interface> {
+	return structure_interface @* {
+		structure
+	} ( .interface );
+}
+
+function structures_implementing_interface(interface): list<structure> {
+	return structure_interface @* {
+		interface
+	} ( .structure );
+}
+
+function handle_static_property(structure, name, prop, value: gtv?) {
+	when (prop.prop_type_struct.type) {
+		property_type.integer ->
+			create_static_property_integer(structure, name, prop, value);
+		property_type.text -> 
+			create_static_property_text(structure, name, prop, value);
+		property_type.byte_array ->
+			create_static_property_byte_array(structure, name, prop, value);
+		property_type.structure ->
+			_create_static_property_structure(structure, name, prop, value);
+		property_type.boolean ->
+			create_static_structure_property_boolean(structure, name, prop, value);
+		property_type._enum ->
+			_create_static_property_enum(structure, name, prop, value);
+		property_type.account ->
+			_create_static_property_account(structure, name, prop, value);
+	}
+}
+
+function handle_property(structure, name, prop, init_value: gtv?) {
+	require(
+		init_value == null, 
+		"Instance properties can be initialized only during structure instantiation"
+	);
+	
+	when (prop.prop_type_struct.type) {
+		property_type.integer -> 
+			_create_structure_property_integer(structure, name, prop);
+		property_type.text -> 
+			_create_structure_property_text(structure, name, prop);
+		property_type.indx -> 
+			_create_structure_property_index(structure, name, prop);
+		property_type.byte_array -> 
+			_create_structure_property_byte_array(structure, name, prop);
+		property_type.interface -> 
+			_create_structure_property_interface(structure, name, prop);
+		property_type.structure -> 
+			_create_structure_property_structure(structure, name, prop);
+		property_type.account -> 
+			_create_structure_property_account(structure, name, prop);
+		property_type.boolean -> 
+			_create_structure_property_boolean(structure, name, prop);
+		property_type.id ->
+			_create_structure_property_id(structure, name, prop);
+		property_type._enum -> 
+			_create_property_enum(structure, name, prop);
+		property_type._set ->
+			_create_property_set(structure, name, prop);
+	}
+}
+
+function set_static_property(structure, name, value: gtv) {
+	val property = static_property @ { .name == name, structure };
+	
+	require(property.readonly == false, "Cannot set read-only static property '" + name + "'");
+	
+	when(property.type) {
+		property_type.integer -> 
+			_set_static_property_integer(property, integer.from_gtv(value));
+		property_type.text -> 
+			_set_static_property_text(property, text.from_gtv(value));
+		property_type.boolean -> 
+			_set_static_property_boolean(property, boolean.from_gtv(value));
+		property_type.byte_array ->
+			_set_static_property_byte_array(property, byte_array.from_gtv(value));
+		property_type._enum ->
+			//TODO: handle strings also, e.g. "red" for Color enum
+			_set_static_property_enum(property, enum_value.from_gtv(value)); 
+		property_type.account ->
+			//TODO: handle account id and rowid
+			_set_static_property_account(property, ft3.account.from_gtv(value));
+	}
+}
+
+function _static_property(structure, name): static_property {
+	return static_property @ { structure, name };
+}
+
+function get_static_property(structure, property_name: name): gtv? {
+	return _get_static_property(_static_property(structure, property_name));
+}
+
+function _get_static_property(static_property): gtv? {
+	when (static_property.type) {
+		property_type.text ->
+			return _get_static_property_text(static_property)?.to_gtv();
+		property_type.boolean ->
+			return _get_static_property_boolean(static_property)?.to_gtv();
+		property_type.byte_array ->
+			return _get_static_property_byte_array(static_property)?.to_gtv();
+		property_type.integer ->
+			return _get_static_property_integer(static_property)?.to_gtv();
+		property_type._enum ->
+			return _get_static_property_enum(static_property)?.to_gtv();
+		property_type.account ->
+			return _get_static_property_account(static_property)?.to_gtv();
+		property_type.interface,
+		property_type.structure ->
+			return _get_static_property_instance(static_property)?.to_gtv();			
+		else -> {
+			// TODO: shouldn't happen. fix this!!! define static_property_type enum which doesn't have id and index types
+			val type = static_property.type;
+			throw("Cannot have a static property of type '" + type.name + "'");
+			return null;
+		}
+	}
+}
+
+function get_static_property_serialized(structure, property_name: name): gtv? {
+	val property = _static_property(structure, property_name);
+	
+	return _get_static_property_serialized(property);
+}
+
+function _get_static_property_serialized(static_property): gtv? {
+	when (static_property.type) {
+		property_type.integer ->
+			return _get_static_property_integer(static_property)?.to_gtv();
+		property_type.text ->
+			return _get_static_property_text(static_property)?.to_gtv();
+		property_type.boolean ->
+			return _get_static_property_boolean(static_property)?.to_gtv();
+		property_type.byte_array ->
+			return _get_static_property_byte_array(static_property)?.to_gtv();
+		property_type._enum ->
+			return _get_static_property_enum_serialized(static_property);			
+		property_type.account ->
+			return _get_static_property_account_serialized(static_property);
+		property_type.interface,
+		property_type.structure ->
+			return _get_static_property_instance_serialized(static_property);
+		else -> {
+			// TODO: shouldn't happen. fix this!!! define static_property_type enum which doesn't have id and index types
+			val type = static_property.type;
+			throw("Cannot have a static property of type '" + static_property.name + "'");
+			return null;
+		}
+	}
+}
+
+function unset_property_s(structure, name) {
+	val property = static_property @ { .name == name, structure };
+	
+	require(property.optional == true, "Cannot un-set non-optional property '" + name + "'");
+	
+		when(property.type) {
+		property_type.integer -> unset_property_s_integer(property);
+		property_type.text -> unset_property_s_text(property);
+		property_type.boolean -> unset_property_s_bool(property);
+	}
+}
+
+function _create_structure_property_meta_tag(structure_property, tag): structure_property_meta_tag {
+	return create structure_property_meta_tag(
+		structure_property,
+		name = tag.name,
+		value = tag.value.value
+	);
+}
+
+function _create_structure_property_meta_tags(structure_property, tags: list<tag>) {
+	for (tag in tags) {
+		_create_structure_property_meta_tag(structure_property, tag);
+	}
+}
+
+function _create_static_property_meta_tag(
+	static_property, tag
+): static_property_meta_tag {
+	return create static_property_meta_tag(
+		static_property,
+		name = tag.name,
+		value = tag.value.value
+	);
+}
+
+function _create_static_property_meta_tags(static_property, tags: list<tag>) {
+	for (tag in tags) {
+		_create_static_property_meta_tag(static_property, tag);
+	}
+}
+
+function find_structure_properties_by_meta_tag(
+	structure, 
+	tag_name: name
+): list<structure_property> {
+	return (
+		sp: structure_property,  
+		spmt: structure_property_meta_tag
+	) @* {
+		sp.structure == structure,
+		spmt.structure_property == sp,
+		spmt.name == tag_name
+	} (
+		sp
+	);
+}
+
+function find_static_structure_properties_by_meta_tag(
+	structure, tag_name: name
+): list<static_property> {
+	return (
+		ssp: static_property,  
+		sspmt: static_property_meta_tag
+	) @* {
+		ssp.structure == structure,
+		sspmt.static_property == ssp,
+		sspmt.name == tag_name
+	} (
+		ssp
+	);
+}

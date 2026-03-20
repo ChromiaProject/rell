@@ -1,0 +1,4 @@
+modules:
+  - "modules/main.yml"
+
+default_entity_handler: generate

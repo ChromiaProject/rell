@@ -1,0 +1,263 @@
+import ^.component_definition.*;
+
+entity interface {
+	key name: text, brid;
+	brid: byte_array;
+	mutable description: text;
+}
+
+entity extended_interface {
+	index extended;
+	key extended, base;
+	extended: interface;
+	base: interface;
+	direct: boolean;
+}
+
+entity interface_property {
+	index interface;
+	key name, interface;
+	name: text;
+	type: property_type;
+	mutation: mutation_type;
+	optional: boolean;
+	static: boolean;
+	encoded_prop: byte_array;
+}
+
+entity interface_meta_tag {
+	index interface;
+	key interface, name;
+	value: text;
+}
+
+entity interface_property_meta_tag {
+	index interface_property;
+	key interface_property, name;
+	value: text;
+}
+
+entity interface_property_meta {
+	index interface_property;
+	key interface_property, name;
+	value: text;
+}
+
+struct interface_ {
+	name;
+	description = description("");
+	extends = extends(list<interface>());
+	chain = chain(chain_context.blockchain_rid);
+	properties: map<text, prop> = map<text, prop>();
+	meta = meta(list<tag>());
+}
+
+struct extends {
+	interfaces: list<interface> = list<interface>();
+}
+
+function defI(interface_): interface {
+	return create_interface(
+		interface_.name, 
+		interface_.chain.id, 
+		interface_.description.value, 
+		interface_.properties,
+		interface_.extends.interfaces,
+		interface_.meta
+	);
+}
+
+function Interface(name): interface {
+	return get_interface_by_name(name);
+}
+
+function Interfaces(names: list<name>): list<interface> {
+	return get_interfaces_by_names(names);
+}
+
+function create_interface(
+	name, brid: byte_array, 
+	description: text, 
+	properties: map<name, prop>, 
+	extends: list<interface>,
+	meta: meta
+): interface {
+	val inf = create interface(
+		name = name,
+		brid = brid,
+		description = description
+	);
+	
+	val extended_interfaces = set<interface>();
+	
+	for (interface in extends) {
+		create extended_interface(
+			extended = inf,
+			base = interface,
+			direct = true
+		);
+		
+		extended_interfaces.add(interface);
+		
+		for (ext_interface in interface_extended_interfaces(interface)) {
+			if (not extended_interfaces.contains(ext_interface)) {
+				create extended_interface(
+					extended = inf,
+					base = ext_interface,
+					direct = false
+				);
+				
+				extended_interfaces.add(ext_interface);
+			}			
+		}
+	}
+	
+	for ((prop_name, property) in properties) {
+		val p = create interface_property(
+			inf,
+			prop_name,
+			type = property.prop_type_struct.type,
+			mutation = property.mutation.value,
+			optional = property.optional.value,
+			static = property.static.value,
+			encoded_prop = property.to_bytes()
+		);
+		
+		_create_interface_property_meta_tags(p, property.meta.tags);
+	}
+	
+	for (tag in meta.tags) {
+		create interface_meta_tag(
+			inf,
+			name = tag.name,
+			value = tag.value.value
+		);		
+	}
+	
+	return inf;
+}
+
+function get_interfaces_by_names(interfaces_names: list<text>): list<interface> {
+	var interface_entities = list<interface>();
+	
+	for (interface_name in interfaces_names) {
+		val interface = interface @ { .name == interface_name };
+		interface_entities.add(interface);
+	}
+	
+	return interface_entities;
+}
+
+function interface_base_interfaces(interface): list<interface> {
+	return extended_interface @* {
+		.extended == interface,
+		.direct == true
+	}( .base );
+}
+
+function interface_extended_interfaces(interface): list<interface> {
+	return extended_interface @* {
+		.extended == interface
+	}( .base );
+}
+
+function get_interface_by_name(interface_name: text): interface {
+	return interface @ { .name == interface_name, .brid == chain_context.blockchain_rid };
+}
+
+function get_interface_properties(interface_name: text): list<interface_property> {
+	return interface_property @* {
+		.interface == interface @ { .name == interface_name }
+	};
+}
+
+function set_interface_description(interface, description: text) {
+	interface.description = description;
+}
+
+function find_interface_properties_by_meta_tag(
+	interface, 
+	tag_name: name
+): list<(property: interface_property, tag: interface_property_meta_tag)> {
+	return (ip: interface_property, ipmt: interface_property_meta_tag) @* {
+		ip.interface == interface,
+		ipmt.interface_property == ip,
+		ipmt.name == tag_name
+	} (
+		property = ip, tag = ipmt
+	);
+}
+
+function _create_interface_property_meta_tag(interface_property, tag): interface_property_meta_tag {
+	return create interface_property_meta_tag(
+		interface_property,
+		name = tag.name,
+		value = tag.value.value
+	);
+}
+
+
+function get_interfaces_extending_interface(interface): list<(interface: name, base: name)> {
+	val indirect_extension = (
+		ei1: extended_interface,
+		ei2: extended_interface
+	) @* {
+		ei1.base == interface,
+		ei2.base == ei1.extended,
+		ei2.direct == true
+	} (
+		interface = ei2.extended.name,
+		base = ei2.base.name
+	);
+	
+	val direct_extension = extended_interface @* { 
+		.base == interface,
+		.direct == true
+	} (
+		interface = .extended.name,
+		base = .base.name
+	);
+	
+	val interfaces = set<(interface: name, base: name)>();
+	interfaces.add_all(indirect_extension);
+	interfaces.add_all(direct_extension);
+	
+	return interfaces.sorted();
+}
+
+function _create_interface_property_meta_tags(interface_property, tags: list<tag>) {
+	for (tag in tags) {
+		_create_interface_property_meta_tag(interface_property, tag);
+	}
+}
+
+function require_interface_property_static(interface_property) {
+	require(
+		interface_property.static, 
+		"Property '" + interface_property.name + "' is not static"
+	);
+}
+
+function require_interface_property_type(interface_property, property_type) {
+	require(
+		interface_property.type == property_type,
+		"Property '" + interface_property.name + "' is not of type " + property_type
+	);
+}
+
+function _get_interface_all_properties(interface): list<interface_property> {
+	val interface_properties = list<interface_property>();
+	
+	interface_properties.add_all(interface_property @* { interface });
+	interface_properties.add_all((
+		ip: interface_property, 
+		ei: extended_interface
+	) @* {
+		ei.extended == interface,
+		ip.interface == ei.base
+	} ( 
+		ip
+	));
+	
+	return interface_properties;
+}

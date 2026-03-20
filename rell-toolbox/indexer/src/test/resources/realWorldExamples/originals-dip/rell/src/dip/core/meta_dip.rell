@@ -1,0 +1,193 @@
+import ^.util.*;
+
+enum a_constraint {
+	public_mutable,
+	min,
+	max,
+	interface
+}
+
+enum a_meta_type {
+	optional,
+	default_value
+}
+
+struct s_meta {
+	name;
+	value: byte_array;
+}
+
+enum m_method {
+	creating,
+	updating,
+	deleting
+}
+
+struct meta_context {
+	m_method;
+	context: gtv?;
+}
+
+function META_SUFFIX() = "/meta";
+function META_ATTR(dclass) = dclass.name + META_SUFFIX();
+
+/*
+ * Create meta map for each interface map<text,byte_array>
+ * - attribute name -> interface_name/meta
+ * - each key is interface meta data -> key
+ * or attribute meta data -> attribute_name/key
+ */
+
+function create_meta_attribute(dclass, meta_attributes: map<gtv,gtv>) {
+	val dclass_meta_attr = create attribute(dclass, META_ATTR(dclass), a_type.meta);
+	
+	val map_inst = create instance();
+	create_map_type(dclass_meta_attr, a_type.text, a_type.byte_array);
+	create_map_attribute(map_inst, dclass_meta_attr, meta_attributes.to_gtv());
+}
+
+function get_default_value(attribute): gtv? {
+	return get_meta_value_by_key(attribute, a_meta_type.default_value.name);
+}
+
+function is_attribute_optional(attribute): boolean {
+	val res = get_meta_value_by_key(attribute, a_meta_type.optional.name);
+	
+	if(res??) {
+		return boolean.from_gtv(res);
+	}
+
+	return false;
+}
+
+function get_meta_value_by_key(attribute, suffix: text): gtv?  {
+	val key_name = attribute.name + SEPERATOR() + suffix;
+	val map_attr = get_map_attribute(attribute);
+	if(map_attr??) {
+		if(map_contains_key(map_attr.instance, map_attr.attribute, key_name.to_gtv())) {
+			
+			val res = map_get(map_attr.instance, map_attr.attribute, key_name.to_gtv());
+			return gtv.from_bytes(byte_array.from_gtv(res));
+		}		
+	}
+	
+	return null;
+}
+
+/*
+ * Constraint engine
+ * Basic constraint checks
+ * Further checks can be implement with check_dapp_constraint
+ */
+function constraint_engine(i: instance, attribute, value: gtv, context: meta_context) {
+	val map_attr = get_map_attribute(attribute);
+	var is_mutable = false;
+	
+	if(map_attr??) {
+		val meta_map = map_unpack(map_attr.instance, map_attr.attribute);
+		
+		for ((k,v) in meta_map.values) {
+			var parsed_key = text.from_gtv(k);
+			val splitted_key = parsed_key.split(SEPERATOR());
+			
+			if(splitted_key[0] == attribute.name) {
+				val meta_value = gtv.from_bytes(byte_array.from_gtv(v));
+				when (splitted_key[1]) {
+					a_constraint.public_mutable.name -> is_mutable = true;
+					a_constraint.min.name -> check_min_constraint(i, attribute, meta_value, value);
+					a_constraint.max.name -> check_max_constraint(i, attribute, meta_value, value);
+					a_constraint.interface.name -> check_interface_constraint(i, attribute, meta_value, value);
+					
+					else -> is_mutable = is_mutable or check_dapp_constraint(i, attribute, splitted_key[1], meta_value, value, context);
+				}
+			}
+		}
+	} 
+	
+	if (context.m_method != m_method.creating) {
+		require(is_mutable, "Tried to change immutable attribute.");
+	}
+}
+
+function get_map_attribute(attribute): map_attribute? {
+	return map_attribute @? {.attribute.name == META_ATTR(attribute.dclass)};
+}
+
+function is_attribute_readonly(i: instance, attribute, meta_value: gtv) {
+	require(false, "Read-only attribute " + attribute.name + " already initialized");
+}
+
+function check_min_constraint(i: instance, attribute, meta_value: gtv, value: gtv) {
+	val constraint_value = integer.from_gtv(meta_value);
+
+	var is_valid = true;
+	when (attribute.a_type) {
+		a_type.decimal -> is_valid = decimal.from_gtv(value) >= constraint_value;
+		a_type.integer -> is_valid = integer.from_gtv(value) >= constraint_value;
+		a_type.text -> is_valid = text.from_gtv(value).size() >= constraint_value;
+		a_type.byte_array -> is_valid = byte_array.from_gtv(value).size() >= constraint_value;
+	}
+	
+	require(is_valid,
+		"Minimum constraint violation on attribute " + attribute.name + 
+		" with value " + value +
+		" on constraint " + constraint_value
+	);
+	
+}
+
+function check_max_constraint(i: instance, attribute, meta_value: gtv, value: gtv) {
+	val constraint_value = integer.from_gtv(meta_value);
+	
+	var is_valid = true;
+	when (attribute.a_type) {
+		a_type.decimal -> is_valid = decimal.from_gtv(value) <= constraint_value;
+		a_type.integer -> is_valid = integer.from_gtv(value) <= constraint_value;
+		a_type.text -> is_valid = text.from_gtv(value).size() <= constraint_value;
+		a_type.byte_array -> is_valid = byte_array.from_gtv(value).size() <= constraint_value;
+	}
+	
+	require(is_valid,
+		"Maximum constraint violation on attribute " + attribute.name + 
+		" with value " + value +
+		" on constraint " + constraint_value
+	);
+}
+
+function check_interface_constraint(i: instance, attribute, meta_value: gtv, value: gtv) {
+	val constraint_value = text.from_gtv(meta_value);
+	
+	val instance = instance.from_gtv(value);
+	val is_implemented = instance_dclass @? {instance, .dclass.name == constraint_value};
+	
+	require(is_implemented,
+		"Instance not implementing interface " + constraint_value
+	);
+}
+
+/*
+ * Meta function wrapper
+ */
+ 
+function create_type_attribute_meta(i: instance, attribute, value: gtv, context: gtv? = null) {
+	util.ensure_not_implemented(i, attribute);
+	constraint_engine(i, attribute, value, meta_context(m_method.creating, context));
+	add_type_attribute(i, attribute, value);	
+}
+ 
+function add_type_attribute_meta(i: instance, attribute, value: gtv, context: gtv? = null) {
+	util.ensure_not_implemented(i, attribute);
+	constraint_engine(i, attribute, value, meta_context(m_method.updating, context));
+	add_type_attribute(i, attribute, value);
+}
+
+function set_type_attribute_meta(i: instance, attribute, value: gtv, context: gtv? = null) {
+	constraint_engine(i, attribute, value, meta_context(m_method.updating, context));
+	set_type_attribute(i, attribute, value);
+}
+
+function remove_type_attribute_meta(i: instance, attribute, context: gtv? = null): gtv {
+	util.ensure_optional(attribute);
+	constraint_engine(i, attribute, (0).to_gtv(), meta_context(m_method.deleting, context));
+	return remove_type_attribute(i, attribute);
+}

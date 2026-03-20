@@ -1,0 +1,6 @@
+@mount("dev.original")
+module;
+
+import ^^^.original;
+import ^^^.instance;
+import ft3: rell_modules.ft3.account;

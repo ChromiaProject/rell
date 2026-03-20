@@ -1,0 +1,105 @@
+// from hedget: https://bitbucket.org/chromawallet/hedget_0/src/b4cbd207b16af9f3b0a9baa8a956071b89d04e84/rell/src/lib/ft3_helper/account_fun.rell
+
+import ft3_a: ^.ft3.account;
+import ft3: ^.ft3.core;
+
+function LOCKED(reason: text) = "LOCKED_" + reason;
+
+// TODO: this should be part of FT3
+
+// special account is a virtual account which no one has keys to
+// it can be based on existing user account
+
+function special_account_id (kind: text, refid: byte_array, params: gtv): byte_array {
+	return ("SA", kind, refid, params).hash();
+}
+
+function find_special_account (kind:text, refid: byte_array, params: gtv): ft3_a.account? {
+	val id = special_account_id (kind, refid, params);
+	return ft3_a.account @? { id };
+}
+
+// create a special account or return one if it already exists
+// E.g. for locked funds related to existing account, we could use:
+// ensure_special_account("LOCKED_FUNDS", account.id, list<gtv>().to_gtv())
+function ensure_special_account (kind: text, refid: byte_array, params: gtv): ft3_a.account {
+	val id = special_account_id (kind, refid, params);
+	val existing_acc = ft3_a.account @? { id };
+	return if (exists(existing_acc)) existing_acc
+	else 
+	create ft3_a.account ( id );
+}
+
+// simplified version of ensure_special_account
+function ensure_locked_account (reason: text, ft3_a.account): ft3_a.account {
+	return ensure_special_account(LOCKED(reason), account.id, 
+		list<gtv>().to_gtv()
+	);
+}
+
+function find_locked_account(reason: text, ft3_a.account): ft3_a.account? {
+	return find_special_account(LOCKED(reason), account.id,  list<gtv>().to_gtv());
+}
+
+function transfer_asset (from: ft3_a.account, to: ft3_a.account, ft3.asset, amount: integer) {
+	val b1 = ft3.ensure_balance(from, asset);
+	require(b1.amount >= amount);
+	val b2 = ft3.ensure_balance(to, asset);
+	b1.amount -= amount;
+	b2.amount += amount;
+	
+	create ft3.payment_history_entry (
+        from,
+        asset,
+        .delta = amount,
+        .op_index = 0,
+        .is_input = true,
+        .entry_index = 0
+      );
+    create ft3.payment_history_entry (
+        to,
+        asset,
+        .delta = amount,
+        .op_index = 0,
+        .is_input = false,
+        .entry_index = 0
+      );
+}
+
+// automatically flip sides when amount is negative
+function transfer_asset_auto(from: ft3_a.account, to: ft3_a.account, ft3.asset, amount: integer) {
+	if (amount < 0)
+		transfer_asset(to, from, asset, -amount);
+	else
+		transfer_asset(from, to, asset, amount);
+}
+
+function issue_asset (to: ft3_a.account, ft3.asset, amount: integer): ft3.payment_history_entry {
+	val b = ft3.ensure_balance(to, asset); 
+	b.amount += amount;
+	return create ft3.payment_history_entry (
+        to,
+        asset,
+        .delta = amount,
+        .op_index = 0,
+        .is_input = false,
+        .entry_index = 0
+      );
+}
+
+function destroy_asset (from: ft3_a.account, ft3.asset, amount: integer): ft3.payment_history_entry {
+	val b = ft3.ensure_balance(from, asset); 
+	require(b.amount >= amount);
+	b.amount -= amount;
+	return create ft3.payment_history_entry (
+        from,
+        asset,
+        .delta = amount,
+        .op_index = 0,
+        .is_input = true,
+        .entry_index = 0
+      );
+}
+
+
+

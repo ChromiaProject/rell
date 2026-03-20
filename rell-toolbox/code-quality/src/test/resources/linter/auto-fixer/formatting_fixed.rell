@@ -1,0 +1,9 @@
+module;
+
+function foo() {
+    var x = 0;
+}
+
+function Bar() {
+    val y = 3434;
+}

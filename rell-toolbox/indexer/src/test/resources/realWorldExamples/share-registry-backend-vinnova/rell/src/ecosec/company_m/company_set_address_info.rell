@@ -1,0 +1,83 @@
+
+//****************************************
+// company_set_address_info - business logic
+//
+// - Sets the company address info
+// - Requires that time stamp has NOT changed
+// - 
+//
+// LIMITATIONS
+// - 
+
+import ecosec.extlib_m;
+import ecosec.appmsg_m;
+import ecosec.auth_m;
+import ecosec.history_m;
+
+function company_set_address_info(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				address1: text, address2: text,
+				postal_code: text, city: text, country: text,
+				visit_address1: text, visit_address2: text,
+				visit_postal_code: text, visit_city: text, visit_country: text,
+				orig_time_stamp: integer) {
+		
+	// Check authorization for self
+	require(auth_m.have_auth_agent(agent_pubkey, agent_id), appmsg_m.msg('MSGE0101', 'agent', 'company_set_address_info')); // Supplied pubkey not signer?
+	
+	// Check authorization for action
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_set_address_info')); // Not board representative?
+	
+	// Check that that current state is as expected
+	val orig_company = company @? { .org_nr == org_nr, .changed_time_stamp == orig_time_stamp }(
+		.rowid,
+		.name,
+		.address1, .address2,
+		.postal_code, .city, .country,
+		.visit_address1, .visit_address2,
+		.visit_postal_code, .visit_city, .visit_country
+	);
+	require( orig_company != null, appmsg_m.msg('MSGE0201', 'Company', 'company_set_address_info')); // Company changed by someone else?
+	
+	// update share count / quota
+	update company @ { orig_company!!.rowid }(
+		.address1 = address1,
+		.address2 = address2,
+		.postal_code = postal_code,
+		.city = city,
+		.country = country,
+		.visit_address1 = visit_address1,
+		.visit_address2 = visit_address2,
+		.visit_postal_code = visit_postal_code,
+		.visit_city = visit_city,
+		.visit_country = visit_country,
+		changed_time_stamp = op_context.last_block_time
+	);
+	
+	// History log - Company address
+	val company_old = history_m.company_address_json(
+		address1 = orig_company.address1, address2 = orig_company.address2,
+		postal_code = orig_company.postal_code, city = orig_company.city, country = orig_company.country,
+		visit_address1 = orig_company.visit_address1, visit_address2 = orig_company.visit_address2,
+		visit_postal_code = orig_company.visit_postal_code, visit_city = orig_company.visit_city, visit_country = orig_company.visit_country
+	);
+	val company_new = history_m.company_address_json(
+		address1 = address1, address2 = address2,
+		postal_code = postal_code, city = city, country = country,
+		visit_address1 = visit_address1, visit_address2 = visit_address2,
+		visit_postal_code = visit_postal_code, visit_city = visit_city, visit_country = visit_country
+	);
+	history_m.add(
+		org_nr,
+		op_context.last_block_time,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.COMPANY,
+		history_m.event_type_enum.COMPANY_ADDRESS,
+		company_old.to_gtv_pretty().to_json(),
+		company_new.to_gtv_pretty().to_json(),
+		org_nr,
+		orig_company.name + ' (' + org_nr + ')',
+		''
+	);	
+}

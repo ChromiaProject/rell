@@ -1,0 +1,265 @@
+function check_signer (pubkey) {
+  require(is_signer(pubkey));
+}
+
+function boolean_to_string(value: boolean): text {
+  if (value == true) {
+    return 'true';
+  } else {
+    return '';
+  }
+}
+
+function remove_user_lobby_relations (user_id: user) {
+  val user_exist_in_lobby = user_lobby @? {
+    .user == user_id
+  };
+
+  if (user_exist_in_lobby != null) {
+    val user_chat_member = chat_member @ {
+      .user == user_id
+    };
+
+    val lobby_users = user_lobby @* {
+      .lobby == user_exist_in_lobby.lobby,
+      .user != user_id
+    } ( .user );
+
+    if (lobby_users.size() == 0) {
+      val lobby_id = lobby @ {
+        lobby == user_exist_in_lobby.lobby
+      };
+
+      val lobby_map_id = lobby_battlefield_map @ {
+        .lobby == user_exist_in_lobby.lobby
+      };
+      val battlefield_map_id = battlefield_map @ {
+        battlefield_map == lobby_map_id.battlefield_map
+      };
+      val lobby_chat = chat @ {
+        .lobby == user_exist_in_lobby.lobby
+      };
+
+      val chat_members = chat_member @* {
+        .chat == lobby_chat
+      };
+
+      val messages = message @* {
+        .chat_member.chat == lobby_chat
+      };
+
+      var j = 0;
+      while (j < messages.size()) {
+        delete messages[j];
+        j = j + 1;
+      };
+
+      var i = 0;
+      while (i < chat_members.size()) {
+        delete chat_members[i];
+        i = i + 1;
+      };
+
+      delete lobby_chat;
+
+      delete user_exist_in_lobby;
+
+      delete lobby_map_id;
+
+      delete battlefield_map_id;
+
+      delete lobby_id;
+    }
+
+    delete user_chat_member;
+    delete user_exist_in_lobby;
+  }
+}
+
+function create_map (lobby_id: lobby) {
+  val exist_lobby_id = lobby @? {
+    lobby == lobby_id
+  };
+
+  if (exist_lobby_id != null) {
+    val lobby_map_exists = lobby_battlefield_map @? {
+      .lobby == lobby_id
+    };
+
+    if (lobby_map_exists == null) {
+      val map_id = create battlefield_map (
+        type = 0,
+        field_max_x = 10,
+        filed_max_y = 10
+      );
+
+      create lobby_battlefield_map (
+        lobby = exist_lobby_id,
+        battlefield_map = map_id
+        );
+    }
+  }
+}
+
+function init_heroes () {
+  var i = 0;
+  while (i < 4) {
+    val hero_created = hero @? { .type == i };
+
+    if (hero_created == null) {
+      create_hero(i);
+    }
+    i+=1;
+  }
+}
+
+function create_hero (hero_type: integer) {
+  if (hero_type == config.soldier_hero.type) {
+    create hero (
+      name = config.soldier_hero.name,
+      type = config.soldier_hero.type,
+      max_health = config.soldier_hero.max_health,
+      step = config.soldier_hero.step,
+      damage = config.soldier_hero.damage,
+      attack_range = config.soldier_hero.attack_range,
+      health = config.soldier_hero.health,
+      price = config.soldier_hero.price
+    );
+  }
+
+  if (hero_type == config.tank_hero.type) {
+    create hero (
+      name = config.tank_hero.name,
+      type = config.tank_hero.type,
+      max_health = config.tank_hero.max_health,
+      step = config.tank_hero.step,
+      damage = config.tank_hero.damage,
+      attack_range = config.tank_hero.attack_range,
+      health = config.tank_hero.health,
+      price = config.tank_hero.price
+    );
+  }
+
+  if (hero_type == config.archer_hero.type) {
+    create hero (
+      name = config.archer_hero.name,
+      type = config.archer_hero.type,
+      max_health = config.archer_hero.max_health,
+      step = config.archer_hero.step,
+      damage = config.archer_hero.damage,
+      attack_range = config.archer_hero.attack_range,
+      health = config.archer_hero.health,
+      price = config.archer_hero.price
+    );
+  }
+}
+
+function init_heroes_positions (lobby_id: lobby) {
+  val players = user_lobby @* {
+    .lobby == lobby_id,
+    .is_player == true
+  } ( .user );
+
+  val map_id = lobby_battlefield_map @ {
+    .lobby == lobby_id
+  } ( .battlefield_map );
+
+  val field_max_x = map_id.field_max_x - 1;
+  val field_max_y = map_id.filed_max_y - 1;
+
+  var player_index = 0;
+  for (player in players) {
+    if (player_index == players.size()) {
+      break;
+    }
+
+    val heroes = user_hero @* {
+      .user == player
+    } ( .hero );
+
+    var hero_index = 0;
+    for (hero_id in heroes) {
+      if (hero_index == heroes.size()) {
+        break;
+      }
+
+      if (player_index == 0) {
+        update user_hero @ {
+          .hero == hero_id,
+          .user == player
+        } ( .pos_y = 0, .pos_x = field_max_y - hero_index);
+      }
+
+      if (player_index == 1) {
+        update user_hero @ {
+          .hero == hero_id,
+          .user == player
+        } ( .pos_y = field_max_y, .pos_x = hero_index );
+      }
+
+      if (player_index == 2) {
+        update user_hero @ {
+          .hero == hero_id,
+          .user == player
+        } ( .pos_y = field_max_y - hero_index, .pos_x = field_max_x );
+      }
+
+      if (player_index == 3) {
+        update user_hero @ {
+          .hero == hero_id,
+          .user == player
+        } ( .pos_y = hero_index, .pos_x = 0 );
+      }
+
+      hero_index+=1;
+    }
+
+    player_index+=1;
+  }
+}
+function filter_older_messages (
+  oldest_message_id: message, unfiltered_messages: list<(username: text, chat_member: chat_member, text: text, created: integer, id: message)>
+  ): list<(username: text, chat_member: chat_member, text: text, created: integer, id: message)> {
+    var filtered_messages =list<(username: text, chat_member: chat_member, text: text, created: integer, id: message)>();
+    for (message in unfiltered_messages) {
+      if (message.id > oldest_message_id) {
+        filtered_messages.add(message);
+      };
+    };
+    return filtered_messages;
+  }
+
+  function filter_newer_messages (
+  newest_message_id: message, unfiltered_messages: list<(username: text, chat_member: chat_member, text: text, created: integer, id: message)>
+  ): list<(username: text, chat_member: chat_member, text: text, created: integer, id: message)> {
+    var filtered_messages =list<(username: text, chat_member: chat_member, text: text, created: integer, id: message)>();
+    for (message in unfiltered_messages) {
+      if (message.id < newest_message_id) {
+        filtered_messages.add(message);
+      };
+    };
+    return filtered_messages;
+  }
+
+function filter_muted_messages(
+  chat_member, unfiltered_messages: list<(username: text, chat_member: chat_member, text: text, created: integer, id: message)>
+  ): list<(username: text, chat_member: chat_member, text: text, created: integer, id: message)> {
+  val muted_members = mute_member @* {
+    .chat_member == chat_member
+  };
+
+  var filtered_messages = list<(username: text, chat_member: chat_member, text: text, created: integer, id: message)>();
+  for (message in unfiltered_messages) {
+    if (muted_members.size() > 0) {
+      for (muted_member in muted_members) {
+        if (message.chat_member != muted_member.muted_chat_member) {
+          filtered_messages.add(message);
+        };
+      };
+    } else {
+      filtered_messages.add(message);
+    };
+  };
+
+  return filtered_messages;
+}

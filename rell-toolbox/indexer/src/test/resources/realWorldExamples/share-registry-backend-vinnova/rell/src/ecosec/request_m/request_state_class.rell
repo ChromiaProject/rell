@@ -1,0 +1,11 @@
+
+//****************************************
+// request_state - class
+//
+// Table naming the different possible type of states a request can have (New, Approved, Rejected, ...)
+
+entity request_state {
+    key request; // One request can only have one state
+    index request_state_type; // The current state of the request
+}
+

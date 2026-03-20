@@ -1,0 +1,107 @@
+entity instance_attribute {
+	index instance, attribute, instance_value;
+	index instance, attribute;
+	index attribute, instance_value;
+	mutable instance_value: instance;
+}
+
+function get_instance_attribute (instance, attribute): instance? {
+	var attr = instance_attribute @? { instance, attribute };
+ 	
+ 	if(attr??) {
+ 		return attr.instance_value;
+ 	} else {
+ 		val prototypes = get_prototypes(instance);
+ 		for (p in prototypes) {
+ 			attr = instance_attribute @? { .instance == p, attribute };
+ 			if(attr??) {
+ 				return attr.instance_value;
+ 			}
+ 		}
+ 	}
+ 	
+ 	return null;
+}
+
+function get_instance_attributes (instance, attribute): list<instance> {
+	var attrs = instance_attribute @* { instance, attribute } (.instance_value);
+ 	
+ 	if(not empty(attrs)) {
+ 		return attrs;
+ 	} else {
+ 		val prototypes = get_prototypes(instance);
+ 		
+ 		for (p in prototypes) {
+ 			attrs = instance_attribute @* { .instance == p, attribute } (.instance_value);
+ 			if(not empty(attrs)) {
+ 				return attrs;
+ 			}
+ 		}
+ 	}
+ 	
+ 	return list<instance>();
+}
+
+function set_instance_attribute (instance, attribute, instance_value: instance) {
+	util.ensure_type(a_type.instance, attribute.a_type);
+	
+	update instance_attribute @ { instance, attribute } (.instance_value = instance_value);
+}
+
+function add_instance_attribute (instance, attribute, instance_value: instance) {
+	util.ensure_type(a_type.instance, attribute.a_type);
+	create instance_attribute ( instance, attribute, instance_value );
+}
+
+function remove_instance_attribute (instance, attribute): gtv {	
+	val i = instance_attribute @ {instance, attribute};
+	val value = i.instance_value;
+	
+	delete i;
+	
+	return value.to_gtv();
+}
+
+function _fetch_instance_range_from(attribute, value: instance, from: rowid) {
+	return instance_attribute @* {
+		attribute, .instance_value == value, .instance.rowid > from
+	} (.instance) limit 100;
+}
+
+function apply_instance_filter(instances: list<instance>, filter, from: p_from):
+ (results: list<instance>, from: p_from?) {
+	val limit_count = 100;
+	val attribute = filter.attribute;
+	val value = instance.from_gtv(filter.parameter);
+	
+	if(instances.empty()) {
+		return find_instances_by_type_attribute(attribute, value.to_gtv(), from, limit_count);
+	};
+	
+	var res = list<instance>();
+	
+	val first = instances[0];
+	val last = instances[instances.size() - 1];
+	
+	val in_prototype = (a: instance_attribute, ip: instance_prototype) @* {
+		a.attribute == attribute, a.instance_value == value,
+		ip.prototype == a.instance,
+		ip.instance >= first, ip.instance <= last
+	} (ip.instance) limit limit_count;
+	
+	res.add_all(in_prototype);
+	
+	val in_attribute = (a: instance_attribute) @* {
+			attribute,
+			a.instance_value == value,
+			a.instance >= first, a.instance <= last
+	} (a.instance) limit limit_count;
+	
+	res.add_all(in_attribute);
+	
+	val prior_instances = set(instances);
+	res = res @* {prior_instances.contains($)};
+	
+	return (results = res, from = null);
+
+}

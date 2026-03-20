@@ -1,0 +1,41 @@
+namespace maxLineWidth {
+    function foo() {
+        var a = [1, 2, 3, 4];
+
+        var b = [
+            1,
+            2
+        ];
+
+        // var c = ["This is a very long string to make this line length be above 120", "second value to make this line > 120"];
+        var c = [
+            "This is a very long string to make this line length be above 120",
+            "second value to make this line > 120"
+        ];
+
+        // Line length above 120
+        // val user4 = user4 @* {.first_name == "",.last_name == "",.salary == 2,.age == 2} (@sort .salary,.first_name,.last_name,.age);
+        val user4a = user4 @* {
+            .first_name == "",
+            .last_name == "",
+            .salary == 2,
+            .age == 2
+        } (
+            @sort .salary,
+            .first_name,
+            .last_name,
+            .age
+        );
+
+        val user4b = user4 @* { .first_name == "", .age == 2 } ( @sort .salary, .first_name );
+
+        // Line break remains if user defined expression using line break
+        val user4c = user4 @* {
+            .first_name == "",
+            .age == 2
+        } (
+            @sort .salary,
+            .first_name
+        );
+    }
+}

@@ -1,0 +1,8 @@
+module;
+
+namespace ft3 {
+	import acc: ^.account;
+	import acc_op: ^.account.operations;
+	import transfer_op: ^.core.operations.transfer;
+}
+

@@ -1,0 +1,117 @@
+@mount("marketplace")
+module;
+
+import ^^.marketplace;
+import ^^.instance.*;
+import ^^.original;
+
+query find_originals_by_interface(interface_name: text) {
+	val originals = marketplace.find_originals_by_interface(interface_name, x"");
+	
+	var originals_list = list<map<name, gtv>>();
+	for (original in originals) {
+		val original_map = map<name, gtv>();
+		original_map["name"] = original.name.to_gtv();
+		original_map["display_name"] = get_static_property_text(original, "name")!!.to_gtv();
+	
+		originals_list.add(original_map);
+	}
+	return originals_list;
+}
+
+query find_listed_instances_by_interface(
+	interface_name: text, 
+	after_rowid: rowid, 
+	page_size: integer
+) {
+	val instances = marketplace.find_listed_instances_by_interface(
+		interface_name, 
+		x"", 
+		after_rowid, 
+		page_size
+	);
+	
+	return marketplace.map_instances_to_query_result(instances);
+}
+
+query find_instances_by_original(original_name: text) {
+	return marketplace.find_instances_by_original(original_name);
+}
+
+query get_categories() {
+	return marketplace.get_categories().to_gtv_pretty();
+}
+
+query find_instance_by_id(structure: name, id: byte_array) {
+	val instance = find_by_id(id);
+	
+	return if (instance??) marketplace.map_original_instance(instance) else null;
+}
+
+query find_original_instances_by_owner_id(
+	owner_id: byte_array, 
+	after_rowid: integer, 
+	page_size: integer
+) {
+	var instances = original.find_original_instances_by_owner_id(
+		owner_id, 
+		rowid.from_gtv(after_rowid.to_gtv()), 
+		page_size
+	);
+	
+	return marketplace.map_instances_to_query_result(instances);
+}
+
+query find_original_instances_by_owner_id_and_status(
+	owner_id: byte_array, 
+	listed_state: boolean, 
+	after_rowid: rowid, 
+	page_size: integer
+) {
+	var instances = original.find_original_instances_by_owner_id_and_status(
+		owner_id, 
+		listed_state, 
+		after_rowid, 
+		page_size
+	);
+	
+	return marketplace.map_instances_to_query_result(instances);
+}
+
+query find_original_instance_trade_history(instance_id: byte_array) {
+	return original.find_original_trade_events(
+		find_by_id(instance_id)!!
+	);
+}
+
+query find_original_instance_trade_history_page(
+	instance_id: byte_array, 
+	before_rowid: rowid, 
+	page_size: integer
+) {
+	return original.find_original_trade_events_page(
+		find_by_id(instance_id)!!, 
+		before_rowid, 
+		page_size
+	);
+}
+
+query get_interface_filters(interface: name) {
+	return marketplace.get_interface_filters(interface, x"");
+}
+
+query search(text, after_rowid: rowid, page_size: integer) {
+	val instances = marketplace.search(text, after_rowid, page_size);
+	
+	return marketplace.map_instances_to_query_result(instances); 
+}
+
+query find_originals_by_designer_id(id: byte_array) {
+	val result = marketplace.find_originals_by_designer_id(id);
+	
+	return marketplace.map_original_long(result);
+}
+
+query get_grouped_interfaces() {
+	return marketplace.get_grouped_interfaces();
+}

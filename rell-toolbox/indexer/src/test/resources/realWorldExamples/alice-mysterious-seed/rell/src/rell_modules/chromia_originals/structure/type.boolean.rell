@@ -1,0 +1,106 @@
+
+
+/* 
+ * instance properties
+ */
+
+function _create_structure_property_boolean(structure, name, prop): structure_property {
+	val bool_props = bool.from_gtv(prop.prop_type_struct.type_gtv);
+	
+	val value = bool_props.value;
+	
+	val property = create structure_property(
+		structure,
+		name = name,
+		optional = prop.optional.value,
+		mutation = prop.mutation.value,
+		type = property_type.boolean,
+		value = if (value??) value.to_gtv().to_bytes() else x""
+	);
+	
+	_create_structure_property_meta_tags(property, prop.meta.tags);
+	
+	return property;
+}
+
+/* static properties */
+
+entity static_property_value_boolean {
+	key static_property;
+	mutable value: boolean;
+}
+
+function set_static_property_boolean(structure, property_name: name, value: boolean) {
+	_set_static_property_boolean(_static_property(structure, property_name), value);
+}
+
+function _set_static_property_boolean(static_property, value: boolean) {
+	val property = static_property_value_boolean @? { static_property };
+	
+	if (property??) {
+		property.value = value;
+	} else {
+		create static_property_value_boolean(
+			static_property,
+			value
+		);
+	}
+}
+
+function get_static_property_boolean(structure, property_name: name): boolean? {
+	return _get_static_property_boolean(_static_property(structure, property_name));
+}
+
+function _get_static_property_boolean(static_property): boolean? {
+	require(static_property.type == property_type.boolean);
+	return static_property_value_boolean @? { static_property }?.value;
+}
+
+function unset_property_s_bool(static_property) {
+	delete static_property_value_boolean @ { static_property };
+}
+
+function create_static_structure_property_boolean(
+	structure, 
+	name, 
+	prop, 
+	init_value: gtv?
+): static_property {
+	val property = create static_property(
+		structure,
+		name = name,
+		readonly = prop.mutation.value == mutation_type.readonly,
+		optional = prop.optional.value,
+		type = property_type.boolean
+	);
+	
+	_create_static_property_meta_tags(property, prop.meta.tags);
+	
+	val bool_def = bool.from_gtv(prop.prop_type_struct.type_gtv);
+	
+	val value = bool_def.value;
+	val init_value_bool = if (init_value??) boolean.from_gtv(init_value) else null;
+	
+	require(
+		value != null or init_value_bool != null or prop.optional.value == true,
+		"Non-optional property '" + name + "' is not initialized"
+	); 
+	
+	require(
+		prop.mutation.value != mutation_type.readonly
+			or
+		((value == null or init_value_bool == null) and prop.mutation.value == mutation_type.readonly),
+		"Read-only property '" + name + "' can be initialized only once"
+	);
+	
+	val v = init_value_bool ?: value;
+	
+	if (v??) {
+		create static_property_value_boolean(
+			property,
+			v
+		);
+	}
+	
+	return property;
+}

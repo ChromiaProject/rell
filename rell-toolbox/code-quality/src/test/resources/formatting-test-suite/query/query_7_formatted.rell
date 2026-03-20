@@ -1,0 +1,8 @@
+query q1() {
+    return (
+        u: user,
+        @outer c: contract @* {
+            c.user == u
+        }
+    ) @* { } ( u, c );
+}

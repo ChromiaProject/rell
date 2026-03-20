@@ -1,0 +1,19 @@
+struct rate_limit_config {
+    active: boolean = true;
+    max_points: integer = 10;
+    recovery_time: integer = 5000;
+    points_at_account_creation: integer = 323;
+}
+
+struct rate_limit_config {
+    active = true;
+    max_points: integer = 10;
+    recovery_time = 5000;
+    points_at_account_creation = 323;
+}
+
+struct user {
+    id: integer;
+    @max_size(50) userName: text;
+    mutable @size(1) name;
+}

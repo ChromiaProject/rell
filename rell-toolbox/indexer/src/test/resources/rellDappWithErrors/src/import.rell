@@ -1,0 +1,7 @@
+module;
+
+import ^.semantic_error.*;
+
+operation create_c() {
+    create c(name = "");
+}

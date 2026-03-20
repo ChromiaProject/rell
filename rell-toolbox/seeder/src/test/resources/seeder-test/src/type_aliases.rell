@@ -1,0 +1,14 @@
+module;
+
+entity entity_typealiases {
+    my_pub_key: pubkey;
+    my_created_at: timestamp;
+    my_tuid: tuid;
+    my_name: name;
+    name;
+    pubkey;
+    timestamp;
+    tuid;
+}
+
+

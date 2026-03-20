@@ -1,0 +1,3 @@
+operation a() {
+    var land_upgrade = land_upgrades @* { .account == account, .upgradeType == upgrade_type } limit 1;
+}

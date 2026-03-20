@@ -1,0 +1,27 @@
+entityConfigs:
+  employee:
+    count: 100
+    fieldConfigs:
+      age:
+        type: "range"
+        min: 18
+        max: 65
+      first_name:
+        type: "stringConfig"
+        minLength: 5
+        maxLength: 50
+      last_name:
+        type: "stringConfig"
+        minLength: 5
+        maxLength: 50
+    rules:
+      - type: "unique"
+        fields: ["personal_email"]
+
+  department:
+    count: 20
+    fieldConfigs:
+      name:
+        type: "stringConfig"
+        minLength: 5
+        maxLength: 50

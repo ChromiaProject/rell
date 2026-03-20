@@ -1,0 +1,92 @@
+
+function require_instance_property_not_readonly(instance_property) {
+	require(
+		is_instance_property_readonly(instance_property) == false,
+		"Trying to update readonly property '" + 
+		instance_property_name(instance_property) + 
+		"'"	
+	);
+}
+
+function require_instance_property_optional(instance_property) {
+	require(
+		is_instance_property_optional(instance_property),
+		"Trying to unset non-optional property '" + 
+		instance_property_name(instance_property) + 
+		"'"
+	);
+}
+
+function require_instance_owner(instance, ft3.account) {
+	val owner = require(
+		_get_instance_owner(instance),
+		"Account " + account.id + " is not instance owner" // TODO: add instance id to the error message if possible
+	);
+	
+	require(owner == account);
+}
+
+function require_instance_is_of_valid_type(instance_property, instance) {
+	_require_property_structure_or_interface(instance_property);
+	
+	val name = instance_property_name(instance_property);
+	val type = instance_property_type(instance_property);
+	
+	when(type) {
+		property_type.interface -> {
+			val interface = structure_property_interface @ { 
+				instance_property.structure_property
+			}.interface;
+			
+			require(
+				structure_implements_interface(instance.structure, interface),
+				"Property '" + name + "' is not of '" + interface.name + "' type."
+			);
+		}
+		property_type.structure -> {
+			val structure = structure_property_structure @ { 
+				instance_property.structure_property
+			}.structure;
+			
+			require(
+				instance.structure == structure,
+				"Property '" + name + "' is not of '" + structure.name + "' type."
+			);
+		}
+	}
+}
+
+function _require_property_structure_or_interface(instance_property) {
+	val name = instance_property_name(instance_property);
+	val type = instance_property_type(instance_property);
+
+	require(
+		type == property_type.structure or type == property_type.interface,
+		"Property '" + name + "' is not an interface or a structure"
+	);
+}
+
+function require_account_can_update_property(
+	instance_property, 
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	when (instance_property.structure_property.mutation) {
+		mutation_type.public -> 
+			return;
+		
+		mutation_type.owner -> {
+			val instance_owner = _get_instance_owner(instance_property.instance);
+			if (empty(instance_owner)) return;
+			val account = Account(account_id);
+			require(account == instance_owner);
+			ft3.require_auth(account, auth_descriptor_id, list<text>());
+		}
+		
+		mutation_type.dapp ->
+			throw("User is not authorized to update property: " + instance_property.structure_property.name);
+			
+		mutation_type.readonly ->
+			throw("Cannot update read-only property: " + instance_property.structure_property.name);
+	}
+}

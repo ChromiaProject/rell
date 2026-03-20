@@ -1,0 +1,1258 @@
+/////////////////////////////////
+// API definitions
+/////////////////////////////////
+
+// TODO: operations_queries_api (API General): Move all authorization checks to this file (operation auth missing) to allow for more efficient reuse of operation functions?
+
+// Modules (file modules)
+import ecosec.init_m;
+
+// Modules (folder modules)
+import ecosec.agent_m;
+import ecosec.appmsg_m;
+import ecosec.auth_m;
+import ecosec.company_m;
+import ecosec.demoauth_m;
+import ecosec.extlib_m;
+import ecosec.history_m;
+import ecosec.identity_m;
+import ecosec.persona_m;
+import ecosec.request_m;
+import ecosec.share_block_m;
+
+// Blockchain initialization
+/////////////////////////////////////////////////////////////////////
+
+// Initiate reference tables and add founder
+operation api_init (founder_pubkey: pubkey) {
+	// This operation can only be run once (BC must be empty)
+
+    init_m.init(founder_pubkey);
+}
+
+// Check if blockchain init data exists
+query api_init_exists():(exists: boolean) {
+	// Return Agent list
+	return (exists=((agent_m.cert@*{} limit 1).size() != 0));
+}
+
+// Agent
+/////////////////////////////////////////////////////////////////////
+
+// Get agent id / record by pubkey (Used at initial authentication)
+query api_agent_get_info(agent_pubkey: pubkey) {
+
+	// TODO: Find a way to sign queries and check auth for agent_pubkey here
+
+	val agent_id = auth_m.query_pubkey_get_active_cert_agent_id(agent_pubkey);
+
+	require(agent_id != null, appmsg_m.msg('MSGE0105', 'agent', 'api_agent_get_info')); // No active cert
+
+	// Check if agent have any BR role
+	val is_br = ((pa: persona_m.persona_agent, pr: persona_m.persona_role) @? {
+		pa.agent.id == agent_id!!,
+		pr.role_type.id == persona_m.role_type_enum.BOARD_REP
+	} limit 1) != null;
+
+	// Return Agent record
+	return agent_m.agent @ { .id == agent_id }(
+		.id,
+        //identity_type_id=.identity_type.id.value,
+        //.identity_nr,
+        .first_name,
+        .last_name,
+        .address1,
+        .address2,
+        .postal_code,
+        .city,
+        .country,
+        .email,
+        .phone,
+        .administrator,
+        .created_time_stamp,
+        .changed_time_stamp,
+        board_rep = is_br
+	);
+}
+
+// Check if a specific agent_id exists (Only allowed for superadmin / founder, primarily used for testdata creation)
+query api_agent_get_exists(agent_pubkey: pubkey, agent_id: text, check_agent_id: text):(exists: boolean) {
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert =auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_history_list_global')); // No active cert
+
+	// Check authorization, Is admin
+	require(auth_m.have_auth_admin(agent_id), appmsg_m.msg('MSGE0103', 'agent', 'api_blockchain_get_last_block_history')); // Not admin
+
+	// Return Agent list
+	return (exists=((agent_m.agent @* { .id == check_agent_id }).size() > 0));
+}
+
+// Get agent authorized personas with company information
+query api_agent_get_authorized_personas(agent_pubkey: pubkey, agent_id: text){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert = auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_agent_get_authorized_personas')); // No active cert
+
+	// Get all personas and their companies
+	return persona_m.persona_agent @* {.agent.id == agent_id} (
+		persona_id= .persona.id,
+		persona_first_name= .persona.first_name,
+		persona_last_name= .persona.last_name,
+		persona_address1= .persona.address1,
+		persona_address2= .persona.address2,
+		persona_postal_code= .persona.postal_code,
+		persona_city= .persona.city,
+		persona_country= .persona.country,
+		persona_email= .persona.email,
+		persona_phone= .persona.phone,
+		persona_type= .persona.type.value,
+		persona_created_time_stamp= .persona.created_time_stamp,
+		persona_changed_time_stamp= .persona.changed_time_stamp,
+		company_org_nr= .persona.company.org_nr,
+		company_name= .persona.company.name,
+		company_address1= .persona.company.address1,
+		company_address2= .persona.company.address2,
+		company_postal_code= .persona.company.postal_code,
+		company_city= .persona.company.city,
+		company_country= .persona.company.country,
+		company_visit_address1= .persona.company.visit_address1,
+		company_visit_address2= .persona.company.visit_address2,
+		company_visit_postal_code= .persona.company.visit_postal_code,
+		company_visit_city= .persona.company.visit_city,
+		company_visit_country= .persona.company.visit_country,
+		company_email= .persona.company.email,
+		company_phone= .persona.company.phone
+	);
+}
+
+// Get agent oldest group of requests where at least one is still pending, otherwise return empty array
+//
+// LIMITATIONS
+//  - group of request found through same timestamp (of last block when req created)
+//		which means that repeated UX requests for agent could have same timestamp
+//		and this api return state of both these groups
+query api_agent_get_oldest_request_group(agent_pubkey: pubkey, agent_id: text){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert = auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_agent_get_oldest_request_group')); // No active cert
+
+	// Get oldest pending request to get timestamp.
+	val req = request_m.request_state @? { .request.agent.id == agent_id, .request_state_type.id == request_m.request_state_type_enum.PENDING }(
+		request_id= .request.rowid,
+		company_org_nr= .request.persona.company.org_nr,
+		company_name= .request.persona.company.name,
+		request_state_type_id= .request_state_type.id,
+		@sort created_time_stamp= .request.created_time_stamp
+	) limit 1;
+
+    val tstamp = if( req == null)
+        0
+    else
+        req.created_time_stamp;
+
+	return request_m.request_state @* { .request.agent.id == agent_id, .request.created_time_stamp == tstamp }(
+		request_id= .request.rowid,
+		company_org_nr= .request.persona.company.org_nr,
+		company_name= .request.persona.company.name,
+		request_state_type_id= .request_state_type.id.value,
+		request_state_type_name= .request_state_type.name,
+		created_time_stamp= .request.created_time_stamp
+	);
+}
+
+// Get list of all agents (only available to superadmin / founder)
+query api_agent_list(agent_pubkey: pubkey, agent_id: text) {
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert =auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_history_list_global')); // No active cert
+
+	// Check authorization, Is admin
+	require(auth_m.have_auth_admin(agent_id), appmsg_m.msg('MSGE0103', 'agent', 'api_blockchain_get_last_block_history')); // Not admin
+
+	// Return Agent list
+	return agent_m.cert_status @* {  }(
+		agent_id= .cert.agent.id,
+
+		@sort last_name= .cert.agent.last_name,
+		@sort first_name= .cert.agent.first_name,
+        @sort identity_type_id= .cert.identity_type.id.value,
+        @sort identity_nr= .cert.identity_nr,
+
+        address1= .cert.agent.address1,
+        address2= .cert.agent.address2,
+        postal_code= .cert.agent.postal_code,
+        city= .cert.agent.city,
+        country= .cert.agent.country,
+
+        phone= .cert.agent.phone,
+        email= .cert.agent.email,
+
+        administrator= .cert.agent.administrator,
+        created_time_stamp= .cert.agent.created_time_stamp,
+        changed_time_stamp= .cert.agent.changed_time_stamp,
+
+        cert_status= .cert_status_type.id.value,
+        cert_valid_from= .valid_from,
+        cert_expire_at= .expire_at
+	);
+}
+
+// Set target agent as system wide administrator
+operation api_agent_set_admin(agent_pubkey: pubkey, agent_id: text, target_agent_id: text, target_agent_administrator: integer){
+
+	agent_m.agent_set_admin(agent_pubkey, agent_id, target_agent_id, target_agent_administrator);
+}
+
+// Create request for address change (one request for each authroized persona is created)
+operation api_agent_request_address_change(agent_pubkey: pubkey, agent_id: text, //agent_first_name: text, agent_last_name: text,
+				agent_address1: text, agent_address2: text, agent_postal_code: text, agent_city: text, agent_country: text,
+				agent_phone: text, agent_email: text) {
+
+	agent_m.agent_request_address_change(agent_pubkey, agent_id, //agent_first_name, agent_last_name,
+				agent_address1, agent_address2, agent_postal_code, agent_city, agent_country,
+				agent_phone, agent_email);
+}
+
+// Get all pending requests for Bord representative (sorted by create time stamp)
+query api_agent_br_get_pending_requests(agent_pubkey: pubkey, agent_id: text){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert =auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_agent_br_get_pending_requests')); // No active cert
+
+	// Get company pending requests (sort by name, persona_id, create time stamp)
+	//return (persona p, persona x) @* { p.company.org_nr == '919191-9191' }(
+	return (a_br: agent_m.agent, persona_m.persona_agent, p_br: persona_m.persona, persona_m.persona_role, c_br:company_m.company, p_rq: persona_m.persona , rq: request_m.request, request_m.request_state ) @* {
+	        a_br.id ==  agent_id,           // Current BR agent
+	        a_br == persona_agent.agent,    // Crossref all agent => personas
+	        p_br == persona_agent.persona,  // Crossref all agent => personas
+	        p_br == persona_role.persona,  // Crossref only persona role BR
+	        persona_role.role_type == persona_m.role_type@{persona_m.role_type_enum.BOARD_REP},  // Crossref only persona role BR
+	        p_br.company == c_br,           // Find all companies for br agent
+
+	        c_br == p_rq.company,   // Find potential request personas from br companies
+	        rq.persona == p_rq,     // Find requests for potential personas
+
+	        request_state.request == rq, // Link to request state
+	        request_state.request_state_type == request_m.request_state_type@{request_m.request_state_type_enum.PENDING} // Request state must be pending
+	        }
+	    (
+		company_org_nr= c_br.org_nr,
+		company_name= c_br.name,
+
+	    persona_id= p_rq.id,
+	    persona_first_name= p_rq.first_name,
+	    persona_last_name= p_rq.last_name,
+		persona_address1= p_rq.address1,
+		persona_address2= p_rq.address2,
+		persona_postal_code= p_rq.postal_code,
+		persona_city= p_rq.city,
+		persona_country= p_rq.country,
+		persona_created_time_stamp= p_rq.created_time_stamp,
+		persona_changed_time_stamp= p_rq.changed_time_stamp,
+		request_id= rq.rowid,
+		//request_first_name= rq.first_name,
+		//request_last_name= rq.last_name,
+		request_address1= rq.address1,
+		request_address2= rq.address2,
+		request_postal_code= rq.postal_code,
+		request_city= rq.city,
+		request_country= rq.country,
+		request_phone= rq.phone,
+		request_email= rq.email,
+		@sort request_created_timestamp= rq.created_time_stamp
+	);
+}
+
+// Company
+/////////////////////////////////////////////////////////////////////
+
+// List companies where agent have authorization
+query api_company_list(agent_pubkey: pubkey, agent_id: text){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert = auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'Agent', 'api_company_list')); // No active cert
+
+	// Authorization check, Is admin
+	if(auth_m.have_auth_admin(agent_id)){
+		return company_m.company @* {}(
+			org_nr= .org_nr,
+		    name= .name,
+
+		    created_time_stamp= .created_time_stamp,
+		    changed_time_stamp= .changed_time_stamp
+		);
+	}
+	else { // Authorization check, Not admin
+
+		// Use set to eliminate duplicates from personas with multiple roles, identity mappings
+		// TODO: api_company_list, When "SQL grouping" is coming in Rell refactor?
+		val c = set<(org_nr:text,name:text,created_time_stamp:timestamp,changed_time_stamp:timestamp)>();
+
+		// Add all explicitly (cross-ref) mapped persona companies
+		c.add_all((company_m.company, persona_m.persona, persona_m.persona_role, persona_m.role_type, persona_m.persona_agent, agent_m.agent) @* {
+			persona.company == company, persona_role.persona == persona,
+			persona_agent.persona == persona, persona_agent.agent == agent,
+			agent.id == agent_id
+		}(
+			org_nr= company.org_nr,
+		    name= company.name,
+
+		    created_time_stamp= company.created_time_stamp,
+		    changed_time_stamp= company.changed_time_stamp
+		));
+
+		// Add all agent auto identity mapped persona companies
+		// TODO: api_company_list, See if auto identity mapping should instead be done by creating cross-ref when setting identity numbers
+		// TODO: api_company_list, Find out if "SQL left / right joing" is coming in Rell (to possibly eliminate this separate select)
+		c.add_all((company_m.company, persona_m.persona) @* {
+			persona.company == company,
+			//persona.identity_type == (cert @ { cert == active_cert!! } (identity_type=.identity_type.id)).identity_type,
+			persona.identity_type == active_cert!!.identity_type, // Shorthand for line above
+			persona.identity_nr == active_cert!!.identity_nr
+		}(
+			org_nr= company.org_nr,
+		    name= company.name,
+
+		    created_time_stamp= company.created_time_stamp,
+		    changed_time_stamp= company.changed_time_stamp
+		));
+
+		return list<(org_nr:text,name:text,created_time_stamp:timestamp,changed_time_stamp:timestamp)>(c);
+	}
+}
+
+// Get company record
+query api_company_get(agent_pubkey: pubkey, agent_id: text, org_nr: text){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert = auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'Agent', 'api_company_get')); // No active cert
+
+	// Check authorization, Is BR
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_set_br')); // Not board representative?
+
+	return company_m.company @ {.org_nr == org_nr} (
+	    org_nr= .org_nr,
+
+	    name= .name,
+
+	    address1= .address1,
+	    address2= .address2,
+	    postal_code= .postal_code,
+	    city= .city,
+		country= .country,
+		visit_address1= .visit_address1,
+		visit_address2= .visit_address2,
+		visit_postal_code= .visit_postal_code,
+		visit_city= .visit_city,
+		visit_country= .visit_country,
+		email= .email,
+		phone= .phone,
+
+		summons = .summons.value,
+
+		share_count = .share_count,
+		share_value = .share_value,
+
+		clause_conversion = .clause_conversion,
+    	clause_consent = .clause_consent,
+    	clause_purchase_right = .clause_purchase_right,
+    	clause_refusal = .clause_refusal,
+    	clause_redemption = .clause_redemption,
+
+	    created_time_stamp= .created_time_stamp,
+	    changed_time_stamp= .changed_time_stamp
+	);
+}
+
+// Create initial company record for later updating
+operation api_company_onboard(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text, name: text,
+				email: text, phone: text) {
+
+	company_m.company_onboard(agent_pubkey, agent_id,
+			org_nr, name, email, phone);
+}
+
+// Switch company board representative (from, to)
+operation api_company_set_br(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text, old_br_persona_id: text, new_br_persona_id: text) {
+		// old_br_persona_id : Can be empty string if no BR exists
+
+	company_m.company_set_br(agent_pubkey, agent_id,
+			org_nr, old_br_persona_id, new_br_persona_id);
+}
+
+// Set Company share info
+/* Deprecated
+operation api_company_set_share_info(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				old_share_count: integer, old_share_value: integer,
+				new_share_count: integer, new_share_value: integer) {
+
+	company_set_share_info(agent_pubkey, agent_id,
+			org_nr,
+			old_share_count, old_share_value,
+			new_share_count, new_share_value);
+} */
+
+// Set Company name
+operation api_company_set_name(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				name: text,
+				orig_time_stamp: integer) {
+
+	company_m.company_set_name(agent_pubkey, agent_id,
+			org_nr,
+			name,
+			orig_time_stamp);
+}
+
+// Set Company clauses
+operation api_company_set_clause_info(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				clause_conversion: boolean, clause_consent: boolean,
+				clause_purchase_right: boolean, clause_refusal: boolean,
+				clause_redemption: boolean,
+				orig_time_stamp: integer) {
+
+	company_m.company_set_clause_info(agent_pubkey, agent_id,
+			org_nr,
+			clause_conversion, clause_consent,
+			clause_purchase_right, clause_refusal,
+			clause_redemption,
+			orig_time_stamp);
+}
+
+// Set Company address
+operation api_company_set_address_info(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				address1: text, address2: text,
+				postal_code: text, city: text, country: text,
+				visit_address1: text, visit_address2: text,
+				visit_postal_code: text, visit_city: text, visit_country: text,
+				orig_time_stamp: integer) {
+
+	company_m.company_set_address_info(agent_pubkey, agent_id,
+			org_nr,
+			address1, address2,
+			postal_code, city, country,
+			visit_address1, visit_address2,
+			visit_postal_code, visit_city, visit_country,
+			orig_time_stamp);
+}
+
+// Set Company contact info
+operation api_company_set_contact_info(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				email: text, phone: text,
+				orig_time_stamp: integer) {
+
+	company_m.company_set_contact_info(agent_pubkey, agent_id,
+			org_nr,
+			email, phone,
+			orig_time_stamp);
+}
+
+// Set Company Summons
+operation api_company_set_summons(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				summons: company_m.company_summons_enum,
+				orig_time_stamp: integer) {
+
+	company_m.company_set_summons(agent_pubkey, agent_id,
+			org_nr,
+			summons,
+			orig_time_stamp);
+}
+
+// Get company warnings (Check company for inconsitencies)
+query api_company_get_warnings(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text) {
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert = auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'Agent', 'api_company_get_warnings')); // No active cert
+
+	// Check authorization, Is BR
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_set_br')); // Not board representative?
+
+	var no_shares = 0;
+	var persona_no_role = 0;
+
+	// No share block ?
+	if((share_block_m.share_block @* { .company.org_nr == org_nr } limit 1).size() != 1 ){
+		no_shares = 1;
+	}
+
+	// Any Persona without roles?
+	for(p in persona_m.persona @* { .company.org_nr == org_nr }){
+		if((persona_m.persona_role @* { .persona.company.org_nr == org_nr, .persona == p } limit 1).size() != 1){
+			persona_no_role = 1;
+		}
+	}
+
+	// TODO: api_company_get_warnings, Better way to be able to return any structure?
+	var warnings = list<(no_shares: integer, persona_no_role: integer)>();
+	warnings.add((no_shares = no_shares, persona_no_role = persona_no_role));
+	return warnings[0];
+}
+
+// Get all pending requests for company (sorted  create time stamp)
+query api_company_get_pending_requests(agent_pubkey: pubkey, agent_id: text, org_nr: text){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert =auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_company_get_pending_requests')); // No active cert
+
+	// Check authorization, Is BR
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_set_br')); // Not board representative?
+
+	// Get company pending requests (sort by name, persona_id, create time stamp)
+	return request_m.request_state @* { .request.persona.company.org_nr == org_nr, .request_state_type.id == request_m.request_state_type_enum.PENDING } (
+		persona_id= .request.persona.id,
+		persona_first_name= .request.persona.first_name,
+		persona_last_name= .request.persona.last_name,
+		persona_address1= .request.persona.address1,
+		persona_address2= .request.persona.address2,
+		persona_postal_code= .request.persona.postal_code,
+		persona_city= .request.persona.city,
+		persona_country= .request.persona.country,
+		persona_created_time_stamp= .request.persona.created_time_stamp,
+		persona_changed_time_stamp= .request.persona.changed_time_stamp,
+		request_id= .request.rowid,
+		//request_first_name= .request.first_name,
+		//request_last_name= .request.last_name,
+		request_address1= .request.address1,
+		request_address2= .request.address2,
+		request_postal_code= .request.postal_code,
+		request_city= .request.city,
+		request_country= .request.country,
+		@sort request_created_timestamp= .request.created_time_stamp
+	);
+}
+
+// Get pending requests for company persona (sorted by name create time stamp)
+query api_company_get_persona_pending_requests(agent_pubkey: pubkey, agent_id: text, org_nr: text, persona_id: text ){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert =auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_company_get_persona_pending_requests')); // No active cert
+
+	// Check authorization, Is BR
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_set_br')); // Not board representative?
+
+	// Get persona pending requests (sort by  create time stamp)
+	return request_m.request_state @* { .request.persona.id == persona_id, .request_state_type.id == request_m.request_state_type_enum.PENDING } (
+		persona_id= .request.persona.id,
+		persona_first_name= .request.persona.first_name,
+		persona_last_name= .request.persona.last_name,
+		persona_address1= .request.persona.address1,
+		persona_address2= .request.persona.address2,
+		persona_postal_code= .request.persona.postal_code,
+		persona_city= .request.persona.city,
+		persona_country= .request.persona.country,
+		persona_created_time_stamp= .request.persona.created_time_stamp,
+		persona_changed_time_stamp= .request.persona.changed_time_stamp,
+		request_id= .request.rowid,
+		//request_first_name= .request.first_name,
+		//request_last_name= .request.last_name,
+		request_address1= .request.address1,
+		request_address2= .request.address2,
+		request_postal_code= .request.postal_code,
+		request_city= .request.city,
+		request_country= .request.country,
+		request_phone= .request.phone,
+		request_email= .request.email,
+		@sort request_created_timestamp= .request.created_time_stamp
+	);
+}
+
+// Company approve request
+operation api_company_approve_request(agent_pubkey: pubkey, agent_id: text, org_nr: text, request_id: rowid) {
+
+	company_m.company_approve_request(agent_pubkey, agent_id, org_nr, request_id);
+}
+
+// Company Reject request
+operation api_company_reject_request(agent_pubkey: pubkey, agent_id: text, org_nr: text, request_id: rowid) {
+
+	company_m.company_reject_request(agent_pubkey, agent_id, org_nr, request_id);
+}
+
+
+// Persona
+/////////////////////////////////////////////////////////////////////
+
+// Get all personas including share count for company
+// - Filter to only return share holders
+// - Also include role information
+// - Sort by share count
+query api_persona_list_with_share_count(agent_pubkey: pubkey, agent_id: text, org_nr: text){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert =auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_persona_list')); // No active cert
+
+	// Check authorization, Is BR
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_set_br')); // Not board representative?
+
+	// Get the company's total share count
+	val company_share_count =company_m.company @ { .org_nr == org_nr }( .share_count);
+
+	// Get company personas (sort by role_id getting board rep on top)
+	// TODO: api_persona_list, decide what information is allowed to show in the list
+	// TODO: api_persona_list, If needed, optimize to single select each for roles and share count
+	// TODO: api_persona_list, When Rell supports Group by / sum() this api can be further optimized
+	// TODO: api_persona_list, If API sort option is required, both "list definition" and "persona_shares.add" need multiple paths with different field sequences
+
+	// Create the list with the query return format
+	val persona_return = list<(share_count: integer, last_name: text, first_name: text,
+							identity_type_id: integer, identity_nr: text,
+							persona_id: text, type: integer,
+							company_share_count: integer,
+							created_time_stamp: timestamp, changed_time_stamp: timestamp,
+							roles: list<(id: integer, name: text)>
+							)>();
+
+	// Get the company Personas (missing role information and share count information)
+	val p_list = persona_m.persona @* { .company.org_nr == org_nr };
+
+	for( p in p_list ){
+		val share_count = share_block_m.get_share_count_for_persona(p);
+
+		if(share_count > 0){ // Only add persona if shares are owned
+			val identity_type_id =p.identity_type.id; // TODO: api_persona_list_with_roles, Rell Bug gives error for directly using "p.identity_type.id.value"
+			val persona_type = p.type; // TODO: api_persona_list_with_roles, Rell Bug gives error for directly using "p.type.value"
+
+			// Add persona to return list
+			persona_return.add( ( share_count = share_count,
+				last_name = p.last_name, first_name = p.first_name,
+				identity_type_id = identity_type_id.value, identity_nr = p.identity_nr,
+				persona_id = p.id, type = persona_type.value,
+				company_share_count = company_share_count,
+				created_time_stamp = p.created_time_stamp, changed_time_stamp = p.changed_time_stamp,
+				roles = persona_m.get_roles_for_persona(p)
+			) );
+		}
+	}
+
+	persona_return._sort();
+
+	return persona_return;
+}
+
+// Get all personas including roles for company
+// - Sort by last_name, first_name
+query api_persona_list_with_roles(agent_pubkey: pubkey, agent_id: text, org_nr: text){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert =auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_persona_list')); // No active cert
+
+	// Check authorization, Is BR
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_set_br')); // Not board representative?
+
+	// Get company personas (sort last_name, first_name)
+	// TODO: api_persona_list, decide what information is allowed to show in the list
+	// TODO: api_persona_list, If needed, optimize to single select each for roles
+	// TODO: api_persona_list, When Rell supports Group by / sum() this api can be further optimized
+	// TODO: api_persona_list, If API sort option is required, both "list definition" and "persona_list.add" need multiple paths with different field sequences
+
+	// Create the list with the query return format
+	val persona_return = list<(last_name: text, first_name: text,
+							identity_type_id: integer, identity_nr: text,
+							persona_id: text, type: integer,
+							created_time_stamp: timestamp, changed_time_stamp: timestamp,
+							roles: list<(id: integer, name: text)>
+							)>();
+
+	// Get the company Personas (missing role information )
+	val p_list = persona_m.persona @* { .company.org_nr == org_nr };
+
+	for( p in p_list ){
+		val identity_type_id =p.identity_type.id; // TODO: api_persona_list_with_roles, Rell Bug gives error for directly using "p.identity_type.id.value"
+		val persona_type = p.type; // TODO: api_persona_list_with_roles, Rell Bug gives error for directly using "p.type.value"
+
+		persona_return.add( (last_name = p.last_name, first_name = p.first_name,
+			identity_type_id = identity_type_id.value, identity_nr = p.identity_nr,
+			persona_id = p.id, type = persona_type.value,
+			created_time_stamp = p.created_time_stamp, changed_time_stamp = p.changed_time_stamp,
+			roles = persona_m.get_roles_for_persona(p)
+		) );
+	}
+
+	persona_return._sort();
+
+	return persona_return;
+}
+
+// Add new Persona
+operation api_persona_add(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				id: text, first_name: text,  last_name: text,
+				address1: text, address2: text, postal_code: text, city: text, country: text,
+				phone: text, email: text,
+				type: persona_m.persona_type_enum,
+				identity_type_id: identity_m.id_type_enum, identity_nr: text,
+				trustee: boolean,
+				board_member: boolean
+				){
+
+	persona_m.persona_add(agent_pubkey, agent_id,
+				org_nr,
+				id, first_name, last_name,
+				address1, address2, postal_code, city, country,
+				phone, email,
+				type,
+				identity_type_id, identity_nr,
+				trustee,
+				board_member
+				);
+
+}
+
+// Add new Persona
+operation api_persona_change(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				id: text, first_name: text,  last_name: text,
+				address1: text, address2: text, postal_code: text, city: text, country: text,
+				phone: text, email: text,
+				type: persona_m.persona_type_enum,
+				identity_type_id: identity_m.id_type_enum, identity_nr: text,
+				trustee: boolean,
+				board_member: boolean,
+				orig_time_stamp: integer
+				){
+
+	persona_m.persona_change(agent_pubkey, agent_id,
+				org_nr,
+				id, first_name, last_name,
+				address1, address2, postal_code, city, country,
+				phone, email,
+				type,
+				identity_type_id, identity_nr,
+				trustee,
+				board_member,
+				orig_time_stamp
+				);
+
+}
+
+// Get Persona info
+// - Agent must be authorized for Persona or be a BR
+query api_persona_get(agent_pubkey: pubkey, agent_id: text, org_nr: text, persona_id: text){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert =auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_persona_get')); // No active cert
+
+	// Check authorization, Is BR or agent authorized for persona
+	val have_auth_for_persona = (persona_m.persona_agent @? { .agent.id == agent_id, .persona.id == persona_id}) != null;
+	if((persona_m.persona_agent @? { .agent.id == agent_id, .persona.id == persona_id}) == null){ // If agent is not authorized for persona
+		require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_set_br')); // Not board representative?
+	}
+
+    // Get Persona
+    val p = persona_m.persona @ { .id == persona_id };
+
+    val identity_type_id =p.identity_type.id; // TODO: api_persona_get, Rell Bug gives error for directly using "p.identity_type.id.value"
+    val persona_type_id =p.type; // TODO: api_persona_get, Rell Bug gives error for directly using "p.type.value"
+
+	// Return persona including roles list
+	return (id=p.id, first_name=p.first_name, last_name=p.last_name, address1=p.address1, address2=p.address2, postal_code=p.postal_code, city=p.city, country=p.country,
+		phone=p.phone, email=p.email, type=persona_type_id.value, identity_type_id=identity_type_id.value, identity_nr=p.identity_nr, trustee=p.trustee,
+		created_time_stamp=p.created_time_stamp, changed_time_stamp=p.changed_time_stamp,
+		roles=persona_m.get_roles_for_persona(p)
+	);
+}
+
+// Share blocks
+/////////////////////////////////////////////////////////////////////
+
+// Get all share blocks for company
+query api_share_block_list(agent_pubkey: pubkey, agent_id: text, org_nr: text){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert =auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_share_block_list')); // No active cert
+
+	// Check authorization, Is BR
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_set_br')); // Not board representative?
+
+	// Get the company's total share count
+	val (company_share_count,company_share_value) = company_m.company @ { .org_nr == org_nr }( .share_count, .share_value);
+
+	val sb_list = (sb: share_block_m.share_block, sbp: share_block_m.share_block_persona) @* {
+				sbp.share_block == sb,
+				sb.company.org_nr == org_nr
+			}(
+				@sort org_nr = sb.company.org_nr,
+				@sort share_from = sb.share_from,
+				@sort share_to = sb.share_to,
+
+				persona_id = sbp.persona.id,
+				persona_first_name = sbp.persona.first_name,
+				persona_last_name = sbp.persona.last_name,
+				persona_identity_type = sbp.persona.identity_type,
+				persona_identity_nr = sbp.persona.identity_nr,
+
+				share_type = sb.share_type,
+				certificate = sb.certificate,
+				pledging = sb.pledging,
+				recalled = sb.recalled,
+
+				created_time_stamp= sb.created_time_stamp,
+		    	changed_time_stamp= sb.changed_time_stamp
+			);
+
+	return (share_block = sb_list,
+		company_share_count = company_share_count,
+		company_share_value = company_share_value
+		);
+}
+
+// Get list of share blocks for persona including own/company share count
+// - Requires agent is authorized for persona or agent is BR
+query api_share_block_list_for_persona(agent_pubkey: pubkey, agent_id: text, org_nr: text, persona_id: text){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert =auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_persona_get')); // No active cert
+
+	// Check authorization, Is BR or agent authorized for persona
+	val have_auth_for_persona = (persona_m.persona_agent @? { .agent.id == agent_id, .persona.id == persona_id}) != null;
+	if((persona_m.persona_agent @? { .agent.id == agent_id, .persona.id == persona_id}) == null){ // If agent is not authorized for persona
+		require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_set_br')); // Not board representative?
+	}
+
+	// Get the company's total share count
+	val (company_share_count,company_share_value) = company_m.company @ { .org_nr == org_nr }( .share_count, .share_value);
+
+	// Get Persona share blocks
+	val sb_list = (sb: share_block_m.share_block, sbp: share_block_m.share_block_persona) @* {
+				sbp.share_block == sb,
+				sb.company.org_nr == org_nr,
+				sbp.persona.id == persona_id
+			}(
+				@sort org_nr = sb.company.org_nr,
+				@sort share_from = sb.share_from,
+				@sort share_to = sb.share_to,
+
+				persona_id = sbp.persona.id,
+				persona_first_name = sbp.persona.first_name,
+				persona_last_name = sbp.persona.last_name,
+				persona_identity_type = sbp.persona.identity_type,
+				persona_identity_nr = sbp.persona.identity_nr,
+
+				share_type = sb.share_type,
+				certificate = sb.certificate,
+				pledging = sb.pledging,
+				recalled = sb.recalled,
+
+				created_time_stamp= sb.created_time_stamp,
+		    	changed_time_stamp= sb.changed_time_stamp
+			);
+
+	// Persona share count
+	var persona_share_count = 0;
+	for(sb in sb_list){
+		persona_share_count += sb.share_to - sb.share_from + 1;
+	}
+
+	return (share_block = sb_list,
+			share_count = persona_share_count,
+			company_share_count = company_share_count,
+			company_share_value = company_share_value
+			);
+}
+
+operation api_share_block_apply_change_list(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				old_share_count: integer, old_share_value: integer,
+				new_share_count: integer, new_share_value: integer,
+				change_list: list<(share_from: integer, share_to: integer,
+				old_persona_id: text, old_share_type: text,
+				old_pledging: boolean, old_certificate: boolean,
+				new_persona_id: text, new_share_type: text,
+				new_pledging: boolean, new_certificate: boolean,
+				new_parts: list<integer>)>
+				){
+
+	share_block_m.apply_change_list(agent_pubkey, agent_id,
+				org_nr,
+				old_share_count, old_share_value,
+				new_share_count, new_share_value,
+				change_list
+				);
+}
+
+operation api_set_all_share_blocks(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				old_share_count: integer, old_share_value: integer,
+				new_share_count: integer, new_share_value: integer,
+				new_share_blocks: list<(share_from: integer, share_to: integer,
+				old_share_type: text, old_pledging: boolean,
+				old_certificate: boolean, old_persona_id: text,
+				new_share_type: text, new_pledging: boolean,
+				new_certificate: boolean, new_persona_id: text)>
+				){
+
+	share_block_m.set_all_share_blocks(agent_pubkey, agent_id,
+				org_nr,
+				old_share_count, old_share_value,
+				new_share_count, new_share_value,
+				new_share_blocks
+				);
+}
+
+// Add new share block
+/* Deprecated
+ * operation api_share_block_add(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				share_from: integer, share_to: integer,
+				persona_id: text, share_type: text,
+				pledging: integer, certificate: integer
+				){
+
+	share_block.add(agent_pubkey, agent_id,
+				org_nr,
+				share_from, share_to,
+				persona_id, share_type,
+				pledging, certificate
+				);
+
+}*/
+
+// Update share block
+/* Deprecated
+ * operation api_share_block_change(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				share_from: integer, share_to: integer,
+				old_persona_id: text, old_share_type: text,
+				old_pledging: integer, old_certificate: integer,
+				new_persona_id: text, new_share_type: text,
+				new_pledging: integer, new_certificate: integer
+				){
+
+	share_block.change(agent_pubkey, agent_id,
+				org_nr,
+				share_from, share_to,
+				old_persona_id, old_share_type,
+				old_pledging, old_certificate,
+				new_persona_id, new_share_type,
+				new_pledging, new_certificate
+				);
+}*/
+
+// Devide share block in new_parts of length x,y,z,...
+/* Deprecated
+ * operation api_share_block_divide(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				persona_id: text,
+				share_from: integer, share_to: integer,
+				share_type: text,
+				pledging: integer,
+				certificate: integer,
+				recalled: integer,
+				//orig_time_stamp: integer,
+				new_parts: list<integer>
+				){
+
+	share_block.divide(agent_pubkey, agent_id,
+				org_nr,
+				persona_id,
+				share_from, share_to,
+				share_type,
+				pledging,
+				certificate,
+				recalled,
+				//orig_time_stamp,
+				new_parts
+				);
+}*/
+
+// Checks (require) that company share count and sum(share block shares) are the same and fails otherwise
+/* Deprecated
+ * operation api_share_block_require_share_count(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text){
+
+	share_block.require_share_count(agent_pubkey, agent_id,
+				org_nr);
+}*/
+
+// History Log
+/////////////////////////////////////////////////////////////////////
+
+// List history for one company
+query api_history_list_company(agent_pubkey: pubkey, agent_id: text, org_nr: text, from_time_stamp: timestamp){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert =auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_history_list_company')); // No active cert
+
+	// Check authorization, Is BR
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_set_br')); // Not board representative?
+
+	return (h: history_m.history) @* { .company_org_nr == org_nr, .created_time_stamp >= from_time_stamp}(
+		@sort .company_org_nr,
+		@sort .created_time_stamp,
+		@sort .rowid, // TODO: api_history_list_global, Index with rowid at end currently not possible,
+
+		// Agent acting in the solution
+		.agent_id,
+		//.agent_pubkey, // Should not be sent to front-end if not required (at least until system is secured)
+		.agent_first_name,
+		.agent_last_name,
+		.agent_identity_type_id,
+		.agent_identity_nr,
+
+		// Changes
+		.object_type_id,
+		.object_type_text,
+		.event_type_id,
+		.event_type_text,
+		.old,
+		.new,
+
+		// Allow search based on affected object
+		.object_id,
+		.object_text,
+
+		// Allow search based on affected persona
+		.persona_id,
+		.persona_first_name,
+		.persona_last_name,
+		.persona_identity_type_id,
+		.persona_identity_nr,
+
+		// Allow mapping to blockchain block
+		.block_height,
+
+		// Blockchain version at the time of the record
+		.major_version,
+		.minor_version
+	);
+}
+
+// List history for system (non company specific) (This logging is not yet implemented!)
+query api_history_list_system(agent_pubkey: pubkey, agent_id: text, from_time_stamp: timestamp){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert =auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_history_list_system')); // No active cert
+
+	// Check authorization, Is admin
+	require(auth_m.have_auth_admin(agent_id), appmsg_m.msg('MSGE0103', 'agent', 'api_blockchain_get_last_block_history')); // Not admin
+
+	return (h: history_m.history) @* { .company_org_nr == '000000-0000', .created_time_stamp >= from_time_stamp}(
+		@sort .company_org_nr,
+		@sort .created_time_stamp,
+		@sort .rowid, // TODO: api_history_list_global, Index with rowid at end currently not possible
+
+		// Agent acting in the solution
+		.agent_id,
+		//.agent_pubkey, // Should not be sent to front-end if not required (at least until system is secured)
+		.agent_first_name,
+		.agent_last_name,
+		.agent_identity_type_id,
+		.agent_identity_nr,
+
+		// Changes
+		.object_type_id,
+		.object_type_text,
+		.event_type_id,
+		.event_type_text,
+		.old,
+		.new,
+
+		// Allow search based on affected object
+		.object_id,
+		.object_text,
+
+		// Allow search based on affected persona
+		.persona_id,
+		.persona_first_name,
+		.persona_last_name,
+		.persona_identity_type_id,
+		.persona_identity_nr,
+
+		// Allow mapping to blockchain block
+		.block_height,
+
+		// Blockchain version at the time of the record
+		.major_version,
+		.minor_version
+	);
+}
+
+// List global history, ie for system and all companies
+query api_history_list_global(agent_pubkey: pubkey, agent_id: text, from_time_stamp: timestamp){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert =auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_history_list_global')); // No active cert
+
+	// Check authorization, Is admin
+	require(auth_m.have_auth_admin(agent_id), appmsg_m.msg('MSGE0103', 'agent', 'api_blockchain_get_last_block_history')); // Not admin
+
+		return (h: history_m.history) @* { .created_time_stamp >= from_time_stamp}(
+			.company_org_nr,
+			@sort .created_time_stamp,
+			@sort .rowid, // TODO: api_history_list_global, Index with rowid at end currently not possible
+
+			// Agent acting in the solution
+			.agent_id,
+			//.agent_pubkey, // Should not be sent to front-end if not required (at least until system is secured)
+			.agent_first_name,
+			.agent_last_name,
+			.agent_identity_type_id,
+			.agent_identity_nr,
+
+			// Changes
+			.object_type_id,
+			.object_type_text,
+			.event_type_id,
+			.event_type_text,
+			.old,
+			.new,
+
+			// Allow search based on affected object
+			.object_id,
+			.object_text,
+
+			// Allow search based on affected persona
+			.persona_id,
+			.persona_first_name,
+			.persona_last_name,
+			.persona_identity_type_id,
+			.persona_identity_nr,
+
+			// Allow mapping to blockchain block
+			.block_height,
+
+			// Blockchain version at the time of the record
+			.major_version,
+			.minor_version
+		);
+}
+
+
+// Blockhain - Mini explorer
+/////////////////////////////////////////////////////////////////////
+
+// Get the last "count" blocks with block_height and timestamp
+query api_blockchain_get_last_block(count: integer){
+	return block @* {} (
+		@sort_desc .block_height,
+		.block_rid,
+		.timestamp
+	) limit count;
+}
+
+// Get the last "count" blocks with history
+//
+// LIMITATIONS
+// - Only blocks with history records are listed
+query api_blockchain_get_last_block_history(agent_pubkey: pubkey, agent_id: text, count: integer){
+
+	// Check authorization, have cert
+	// TODO: Find a way to sign queries and check auth for agent_id here
+	// For now, check that Agent have active cert based on public key
+	val active_cert =auth_m.query_get_active_cert(agent_pubkey, agent_id);
+	require(active_cert != null, appmsg_m.msg('MSGE0105', 'agent', 'api_blockchain_get_last_block_history')); // No active cert
+
+	// Check authorization, Is admin
+	require(auth_m.have_auth_admin(agent_id), appmsg_m.msg('MSGE0103', 'agent', 'api_blockchain_get_last_block_history')); // Not admin
+
+	// TODO: api_blockchain_get_last_block_history, When "left join" exist in Rell, adopt to always list every block even if no history records
+	val block_height = block @ {}( @sort_desc .block_height ) limit 1;
+
+	return (b: block, h: history_m.history) @* { b.block_height > block_height - count } (
+		@sort block_height = b.block_height,
+		timestamp = b.timestamp,
+		block_rid = b.block_rid,
+		@sort rowid = h.rowid,
+		org_nr = h.company_org_nr,
+		object_type_id = h.object_type_id,
+		object_type_text = h.object_type_text,
+		event_type_id = h.event_type_id,
+		event_type_text = h.event_type_text,
+		object_id = h.object_id,
+		object_text = h.object_text
+	);
+}
+
+// DemoAuth - emulated sign up / sign in
+/////////////////////////////////////////////////////////////////////
+
+// Demo emulated Signup for agent
+operation api_demoauth_sign_up(new_agent_pubkey: pubkey, new_agent_id: text,
+			identity_nr: text,
+			first_name: text,
+			last_name: text,
+			address1: text,
+			address2: text,
+			postal_code: text,
+			city: text,
+			country: text,
+			phone: text,
+			email: text
+		){
+
+	demoauth_m.sign_up(new_agent_pubkey, new_agent_id,
+			identity_nr,
+			first_name,
+			last_name,
+			address1,
+			address2,
+			postal_code,
+			city,
+			country,
+			phone,
+			email
+		);
+}

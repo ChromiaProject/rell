@@ -1,0 +1,89 @@
+
+@log 
+entity achievement {
+	key name;
+	display_name: name;
+	description: text;
+	image: text;
+}
+
+entity original_achievement_event {
+	key achievement, original_event;
+}
+
+struct achievement_event {
+	name;
+	display_name: name;
+	description: text;
+	image: text;
+	timestamp;
+	block_height: integer;
+}
+
+function add_achievement(
+	name, 
+	display_name: name, 
+	description: text, 
+	image: text
+): achievement {
+	return create achievement(
+		name,
+		display_name,
+		description,
+		image
+	);
+}
+
+function log_achievement_event(instance, achievement_name: name): original_achievement_event {
+	return log_achievement_event_with_description(instance, achievement_name, "");
+}
+
+function log_achievement_event_with_description(
+	instance, 
+	achievement_name: name, 
+	description: text
+): original_achievement_event {
+	val achievement = achievement @ { .name == achievement_name };
+	
+	val event = create original_event(
+		instance,
+		type = "achievement",
+		level = 1,
+		description
+	);
+	
+	return create original_achievement_event(
+		achievement,
+		event
+	);
+}
+
+function instance_achievements(instance): list<achievement_event> {
+	val events = (event: original_achievement_event, a: achievement, oe: original_event) @* {
+		oe.instance == instance,
+		event.original_event == oe,
+		event.achievement == a
+	} (
+		a.name,
+		a.display_name,
+		description = if (oe.description.size() > 0) oe.description else a.description,
+		a.image,
+//		oe.transaction.block.timestamp,
+		timestamp = 0,
+		@sort_desc oe.transaction.block.block_height
+	);
+	
+	val event_list = list<achievement_event>();
+	for ((name, display_name, description, image, timestamp, block_height) in events) {
+		event_list.add(achievement_event(
+			name,
+			display_name,
+			description,
+			image,
+			timestamp,
+			block_height
+		));
+	}
+	
+	return event_list;
+}

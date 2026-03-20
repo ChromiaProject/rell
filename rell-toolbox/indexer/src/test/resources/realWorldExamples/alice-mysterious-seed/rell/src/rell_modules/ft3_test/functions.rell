@@ -1,0 +1,29 @@
+struct auth_data {
+	id: byte_array;
+	auth_descriptor: byte_array;
+	rell.test.keypair;
+}
+
+function create_ft3_test_acc(rell.test.keypair) {
+	val auth_descriptor = create_auth_descriptor(keypair.pub);
+	val tx1 = rell.test.tx()
+		.op(ft3.dev_op_account.dev_register_account(auth_descriptor))
+		.sign(keypair);
+		
+	rell.test.block().tx(tx1).run();
+		
+	val account = ft3.acc.account_auth_descriptor @ { 
+		.descriptor_id == auth_descriptor.hash()
+	} ( .account.id );
+	
+	return auth_data(
+		id = account, 
+		auth_descriptor = auth_descriptor.hash(),
+		keypair = keypair
+	);
+}
+
+function create_auth_descriptor(pubkey): ft3.acc.auth_descriptor {
+	val rules = [ "block_height".to_gtv(), "gt".to_gtv(), integer(0).to_gtv() ].to_gtv();
+	return ft3.acc.auth_descriptor("S", [ pubkey ], [ ["T"].to_gtv(), pubkey.to_hex().to_gtv() ], rules = rules.to_gtv());
+}

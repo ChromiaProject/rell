@@ -1,0 +1,16 @@
+
+operation log_trade_event(
+	instance_id: byte_array, 
+	seller_id: byte_array, 
+	buyer_id: byte_array, 
+	asset_id: byte_array, 
+	price: integer
+) {
+	original.log_original_event_buy(
+		original.find_by_id(instance_id)!!,
+		ft3.account @ { buyer_id },
+		ft3.account @ { seller_id },
+		asset_id,
+		price
+	);
+}

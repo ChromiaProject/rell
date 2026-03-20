@@ -1,0 +1,54 @@
+
+entity instance_property_value_set {
+	key instance_property;
+	mutable value: collection_set;
+}
+
+function _initialize_set_property(instance_property, init_value: gtv?) {
+	if (not init_value??) return;
+	
+	if (is_integer(init_value)) {
+		val s = collection_set @ { rowid.from_gtv(init_value) };
+		
+		create instance_property_value_set(instance_property, s);
+	}
+}
+
+function get_property_set(instance, path: text): collection_set? {
+	return _get_property_set(_instance_property_of_path(instance, path));
+}
+
+function _get_property_set(instance_property): collection_set? {
+	require(
+		instance_property.structure_property.type == property_type._set
+	);
+	
+	return instance_property_value_set @? { instance_property }?.value;
+}
+
+function set_property_set(instance, path: text, value: collection_set) {
+	_set_property_set(_instance_property_of_path(instance, path), value);
+}
+
+function _set_property_set(instance_property, value: collection_set?) {
+	require_instance_property_not_readonly(instance_property);
+	
+	if (empty(value)) {
+		require_instance_property_optional(instance_property);
+		delete instance_property_value_set @? { instance_property };
+		return;
+	}
+	
+	//TODO: Check if sets are of the same type
+	
+	val property_value = instance_property_value_set @? { instance_property };
+	
+	if (property_value??) {
+		property_value.value = value;
+	} else {
+		create instance_property_value_set(
+			instance_property,
+			value
+		);
+	}
+}

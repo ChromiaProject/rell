@@ -1,0 +1,21 @@
+
+//****************************************
+// get_share_count_for_persona - share_block
+//
+// - Function to sum share count for persona
+// - Workaround for Rell missing group by/ sum
+//
+// LIMITATIONS
+// - Caller must have done the authorization check
+
+import ecosec.persona_m;
+
+function get_share_count_for_persona(p: persona_m.persona): integer{
+	var persona_share_count = 0;
+	
+	for(sbp in share_block_persona @* {.persona == p}){
+		persona_share_count += sbp.share_block.share_to - sbp.share_block.share_from + 1; 
+	}
+	
+	return persona_share_count;
+}

@@ -1,0 +1,96 @@
+
+
+function map_instances_to_query_result(
+	instances: list<instance>
+): (count: integer, instances: list<map<text, gtv?>>, last_rowid: gtv) {
+	val result = list<map<text, gtv?>>();
+	
+	for (instance in instances) {
+		result.add(map_original_instance(instance));
+	}
+	
+	val last_rowid = 
+		if (instances.size() > 0) 
+			instances[instances.size()-1].rowid.to_gtv() 
+		else 
+			(0).to_gtv();
+	
+	return (
+		count = instances.size(),
+		instances = result,
+		last_rowid = last_rowid
+	);
+}
+
+function map_original_instance(instance): map<name, gtv?> {
+	val ITradeableOriginal = Interface("ITradeableOriginal");
+	
+	val mapping_rules = [
+		map_(struct_details(), to_map("_structure")),
+		map_(interfaces([ITradeableOriginal.name]), direct()),
+		map_(interface_props([ITradeableOriginal.name]), to_list("children")),
+		map_(meta_tags(["filter-property"]), to_map("attributes")),
+		map_(tx_history(), to_list("tx_history")),
+		map_(achievements(), to_list("achievements"))
+	];
+	
+	return map_instance(instance, 
+		mapping_rules,
+		[
+			interface_type(ITradeableOriginal, mapping_rules)
+		]
+	);
+}
+
+function map_original(structure): map<name, gtv?> {
+	val property_values = map<text, gtv?>();
+	
+	val original_properties = map_structure(structure, [
+		map_(interfaces(["ITradeableOriginal"]), direct()),
+		map_(instance_count(), to_map("_count"))
+	]);
+	
+	property_values.put_all(original_properties);
+	property_values["_name"] = structure.name.to_gtv();
+	
+	return property_values;
+}
+
+function map_original_long(structures: list<structure>): list<map<name, gtv?>> {
+	val result = list<map<text, gtv?>>();
+	for (structure in structures) {
+		val s = map_original(structure);
+		val interfaces = _get_structure_direct_interfaces(structure);
+		val interface = map<name, gtv>();
+		if (interfaces.size() > 0) {
+			//TODO: FIX THIS!!! ONLY FIRST INTERFACE IS USED
+			val i = interfaces[0];
+			val tag = interface_meta_tag @? { i, .name == "marketplace_category"};
+			interface["name"] = i.name.to_gtv();
+			if (tag??) {
+				interface["display_name"] = tag.value.to_gtv();
+			}
+			s["_interface"] = interface.to_gtv();
+		}
+		result.add(s);
+	}
+	return result;
+}
+
+function text_list_to_gtv_list(text_list: list<text>): list<gtv> {
+	val gtv_list = list<gtv>();
+	for (value in text_list) {
+		gtv_list.add(value.to_gtv());
+	}
+	return gtv_list;
+}
+
+function property_list_to_property_map(property_list: list<property>): map<text, gtv> {
+	val properties = map<text, gtv>();
+	
+	for (property in property_list) {
+		properties[property.name] = property.value;
+	}
+	
+	return properties;
+}

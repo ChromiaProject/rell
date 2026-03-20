@@ -1,0 +1,7 @@
+@test module;
+
+function foo() {
+    rell.test.tx().op(
+        propose_update_voter_set(p1.pub, test_set, null, null, add_providers, list<pubkey>()), // Add p2 again
+    ).sign(p1).run_must_fail("%s is already a member of voter set %s".format(p2.pub, test_set));
+}

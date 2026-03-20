@@ -1,0 +1,26 @@
+module;
+
+
+entity user {
+    username: text;
+}
+
+entity contract {
+    user;
+    name;
+}
+
+query with_condition() = (
+    u: user,
+    @outer c: contract @* { c.user == u }
+    ) @* {} ( u, c );
+
+query with_empty_join_condition() = (
+    u: user,
+    @outer c: contract @* {  }
+    ) @* {} ( u, c );
+
+query without_join_condition() = (
+    u: user,
+    @outer c: contract
+    ) @* { } ( u, c );

@@ -1,0 +1,79 @@
+module;
+
+/////////////////////////////////
+// function - init_bc
+
+// TODO: Refactor, Make all IDs enums in class definition file (and use in all code)
+
+import ecosec.identity_m;
+import ecosec.agent_m;
+import ecosec.persona_m;
+import ecosec.request_m;
+import ecosec.config_m;
+
+function init (founder_pubkey: pubkey) {
+	require( (agent_m.cert@*{} limit 1).size() == 0 );
+
+	// Create type records
+	////
+	
+	// identity_type
+	create identity_m.id_type ( identity_m.id_type_enum.NO_ID, "Not set");
+	create identity_m.id_type ( identity_m.id_type_enum.SWE_ID, "Swedish personal identity number");
+	create identity_m.id_type ( identity_m.id_type_enum.SWE_CORP, "Swedish corporate identity number");
+	create identity_m.id_type ( identity_m.id_type_enum.PASSPORT, "Passport number");
+
+	
+	// role_type
+	//create role_type ( role_type_enum.NONE, "No role"); // Not allowed to be stored on blockchain
+	create persona_m.role_type ( persona_m.role_type_enum.BOARD_REP, "Board representative");
+	create persona_m.role_type ( persona_m.role_type_enum.BOARD_MEMBER, "Board member");
+	create persona_m.role_type ( persona_m.role_type_enum.SHARE_HOLDER, "Share holder");
+	
+	// request_state_type
+	create request_m.request_state_type ( request_m.request_state_type_enum.PENDING, "Pending");
+	create request_m.request_state_type ( request_m.request_state_type_enum.APPROVED, "Approved");
+	create request_m.request_state_type ( request_m.request_state_type_enum.REJECTED, "Rejected");
+	
+	// cert_status_type
+	create agent_m.cert_status_type ( agent_m.cert_status_type_enum.FOUNDER, "Founder");
+	create agent_m.cert_status_type ( agent_m.cert_status_type_enum.NEW, "New");
+	create agent_m.cert_status_type ( agent_m.cert_status_type_enum.ACTIVE, "Active");
+	create agent_m.cert_status_type ( agent_m.cert_status_type_enum.REVOKED, "Revoked");
+	
+	// Create founder agent
+	val founder_agent = create agent_m.agent (
+		id = "founder",
+		//identity_type_id = 0,
+		//identity_nr = "",
+		first_name = "Founder",
+		last_name = "Founderer",
+		address1 = "",
+		address2 = "",
+		postal_code = "",
+		city = "",
+		country = "",
+		email = "",
+		phone = "",
+		created_time_stamp = op_context.last_block_time,
+		changed_time_stamp = op_context.last_block_time
+	);
+	
+	// Create cert for founder pubkey
+	val founder_cert = create agent_m.cert (
+	    founder_agent,
+	    identity_type = identity_m.id_type@{identity_m.id_type_enum.NO_ID},
+	    identity_nr = "",
+	    pubkey=founder_pubkey,
+	    signer_pubkey=founder_pubkey);
+	
+	// Create cert status (=founder 99)
+	create agent_m.cert_status (
+		founder_cert,
+		agent_m.cert_status_type@{agent_m.cert_status_type_enum.FOUNDER},
+		valid_from = op_context.last_block_time,
+		expire_at = integer.MAX_VALUE
+	);
+}
+
+

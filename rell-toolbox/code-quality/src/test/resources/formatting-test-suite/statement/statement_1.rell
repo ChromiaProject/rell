@@ -1,0 +1,32 @@
+function varVal() {
+var var1 = "var1";
+
+
+
+
+    var var2    :       integer  =  2   ;
+    ++ var2 ;
+
+                var2=var2 +1
+                ;
+
+    val  ( a ,  b ,  c )  =  ( 1 ,  2 ,  3);
+    val (   (d,  e),     f
+    , g) = 
+    (
+        (1, 2)
+    ,     2    ,    3);
+
+    val h=2/6;
+    var i   =    2   ==   4   ;
+    val j: integer = 2*2    ;
+
+    val k =
+    true and false  ;
+
+
+
+}
+
+
+

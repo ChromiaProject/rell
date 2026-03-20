@@ -1,0 +1,46 @@
+
+//****************************************
+// company - class
+
+entity company {
+    key org_nr: text;
+    
+    mutable name: text;
+    
+    // Mail address
+    mutable address1: text = "";
+    mutable address2: text = "";
+    mutable postal_code: text = "";
+    mutable city: text = "";
+    mutable country: text = "";
+    
+    // Visit address
+    mutable visit_address1: text = "";
+    mutable visit_address2: text = "";
+    mutable visit_postal_code: text = "";
+    mutable visit_city: text = "";
+    mutable visit_country: text = "";
+    
+    mutable email: text = "";
+    mutable phone: text = "";
+    
+    mutable summons: company_summons_enum; // summon_type EMAIL, MAIL - Method to use to summon share holder meeting
+    //mutable reservation: text = "0";  // Reservation / clause: reservation_type Number 0-5, for shares, one of five
+    mutable share_count: integer = 0; // Number of shares that should be defined for company
+    mutable share_value: integer = 0; // Value of one share (used to calc total share value)
+    
+    mutable clause_conversion: boolean = false; // Clause Conversion, UI 0 = no, 1 = yes
+    mutable clause_consent: boolean = false; // Clause consent, UI 0 = no, 1 = yes
+    mutable clause_purchase_right: boolean = false; // Clause Post-sale purchase right, UI 0 = no, 1 = yes
+    mutable clause_refusal: boolean = false; // Clause Right of first refusal, UI 0 = no, 1 = yes
+    mutable clause_redemption: boolean = false; // Clause Redemption, UI 0 = no, 1 = yes
+	
+	created_time_stamp: timestamp;
+	mutable changed_time_stamp: timestamp;
+}
+
+enum company_summons_enum {
+	EMAIL,
+	MAIL
+}
+

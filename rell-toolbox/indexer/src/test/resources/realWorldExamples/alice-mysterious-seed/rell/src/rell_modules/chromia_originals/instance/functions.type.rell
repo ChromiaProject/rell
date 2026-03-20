@@ -1,0 +1,8 @@
+
+function is_interface(instance, interface): boolean {
+	return structure_implements_interface(instance.structure, interface);
+}
+
+function is_structure(instance, structure): boolean {
+	return instance.structure == structure;
+}

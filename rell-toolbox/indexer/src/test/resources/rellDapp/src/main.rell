@@ -1,0 +1,14 @@
+module;
+import ^.objects.*;
+import ^.entities.*;
+import ^.subfolder.entities.*;
+
+operation set_name(name) {
+  my_name.name = name;
+}
+
+operation create_rell_ent(name:text, age:integer) {
+    create rell_ent(name, age);
+}
+
+query hello_world() = "Hello %s!".format(my_name.name);

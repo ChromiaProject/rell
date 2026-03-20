@@ -1,0 +1,11 @@
+module;
+
+query Hello() {
+    var x = 5;
+
+    val y = "wrong quotes";
+
+    
+    var z = "more " + y;
+    return "Hi!";
+}

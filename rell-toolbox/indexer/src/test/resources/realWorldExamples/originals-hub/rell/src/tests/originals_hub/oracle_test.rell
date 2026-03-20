@@ -1,0 +1,124 @@
+@test module;
+
+import ^^.ft3.*;
+import originals_hub.*;
+
+function publish(chain: (brid: byte_array, location: text), auth_data) {
+	return rell.test.tx()
+        .op(publish_chain_op(chain.brid, chain.location, auth_data.id, auth_data.auth_descriptor))
+        .nop()
+        .sign(auth_data.keypair);
+}
+
+function unpublish(brid: byte_array, auth_data) {
+	return rell.test.tx()
+        .op(unpublish_chain_op(brid, auth_data.id, auth_data.auth_descriptor))
+        .nop()
+        .sign(auth_data.keypair);
+}
+
+function update_chain(brid: byte_array, new_chain: (brid: byte_array, location: text), auth_data) {
+	return rell.test.tx()
+        .op(update_chain_op(brid, new_chain.brid, new_chain.location, auth_data.id, auth_data.auth_descriptor))
+        .nop()
+        .sign(auth_data.keypair);
+}
+
+function test_publish() {
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val chain = (brid = x"deadbeef", location = "http://localhost:7740");
+	
+	publish(chain, admin_acc).run();
+        
+	assert_equals(get_chain_q(chain.brid), chain);
+}
+
+function test_publish_twice() {
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val chain = (brid = x"deadbeef", location = "http://localhost:7740");
+		
+	publish(chain, admin_acc).run();
+	publish(chain, admin_acc).run_must_fail();
+        
+	assert_equals(get_chain_q(chain.brid), chain);
+}
+
+function test_unpublish() {
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val chain = (brid = x"deadbeef", location = "http://localhost:7740");
+	
+	publish(chain, admin_acc).run();
+    unpublish(chain.brid, admin_acc).run();
+    
+	assert_equals(get_chain_q(chain.brid), null);
+}
+
+function test_unpublish_wrong_owner() {
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val bob_acc = create_ft3_test_acc(bob_keypair());
+	val chain = (brid = x"deadbeef", location = "http://localhost:7740");
+	
+	publish(chain, admin_acc).run();
+    unpublish(chain.brid, bob_acc).run_must_fail();
+}
+
+function test_unpublish_after_update() {
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val chain = (brid = x"deadbeef", location = "http://localhost:7740");
+	val new_chain = (brid = x"deadaffe", location = "http://localhost:7750");
+	
+	publish(chain, admin_acc).run();
+	update_chain(chain.brid, new_chain, admin_acc).run();
+    unpublish(chain.brid, admin_acc).run_must_fail();
+    unpublish(new_chain.brid, admin_acc).run();
+    
+    assert_equals(chain_oracle_history @ {} (@sum 1), 0);
+	assert_equals(get_chain_q(chain.brid), null);
+	assert_equals(get_chain_q(new_chain.brid), null);
+}
+
+function test_update() {
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val chain = (brid = x"deadbeef", location = "http://localhost:7740");
+	val new_chain = (brid = x"deadaffe", location = "http://localhost:7750");
+		
+	publish(chain, admin_acc).run();
+	update_chain(chain.brid, new_chain, admin_acc).run();
+        
+	assert_equals(get_chain_q(new_chain.brid), new_chain);
+	assert_equals(get_chain_q(chain.brid), new_chain);
+}
+
+function test_update_wrong_owner() {
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val bob_acc = create_ft3_test_acc(bob_keypair());
+	val chain = (brid = x"deadbeef", location = "http://localhost:7740");
+	val new_chain = (brid = x"deadaffe", location = "http://localhost:7750");
+	
+	publish(chain, admin_acc).run();
+	update_chain(chain.brid, new_chain, bob_acc).run_must_fail();
+}
+
+function test_update_many() {
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val chain = (brid = x"deadbeef", location = "http://localhost:7740");
+	val new_chains = [
+		(brid = x"deadaffe", location = "http://localhost:7750"),
+		(brid = x"424242", location = "http://localhost:7760"),
+		(brid = x"caffee", location = "http://localhost:7770"),
+		(brid = x"ffffff", location = "http://localhost:7780")
+	];
+	val last_chain = new_chains[new_chains.size()-1];
+	
+	publish(chain, admin_acc).run();
+	for (new_chain in new_chains) {
+		val pos = new_chains.index_of(new_chain);
+		val previous_chain = if (pos == 0) chain else new_chains[pos-1];
+		update_chain(previous_chain.brid, new_chain, admin_acc).run();
+	}
+        
+	assert_equals(get_chain_q(chain.brid), last_chain);
+	for (new_chain in new_chains) {
+		assert_equals(get_chain_q(new_chain.brid), last_chain);	
+	}
+}

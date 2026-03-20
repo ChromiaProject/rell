@@ -1,0 +1,92 @@
+operation initialize() {
+    require(op_context.is_signer(chain_context.args.admin_pubkey));
+	initialize_mysterious_seed();
+}
+
+operation plant_seed(account_id: byte_array, auth_descriptor_id: byte_array, id: byte_array) {
+	val account = ft3.acc.account @ {.id == account_id};
+	ft3.acc.require_auth(account, auth_descriptor_id, list<text>());
+
+	activate_seed(account, id);
+}
+
+// Increases the water level of the plant.
+// A plant can only absorb 10 water droplets per day, 
+// Contributing more than that on a daily basis doesn't have any extra effect.
+operation water_plant(account_id: byte_array, auth_descriptor_id: byte_array, droplets: integer) {
+	val account = ft3.acc.account @ { .id == account_id };
+	ft3.acc.require_auth(account, auth_descriptor_id, list<text>());
+	
+	val plant = plant @ { account };
+	require(is_plant_alive(plant, op_context.last_block_time), "Plant is dead, please re-plant a seed");
+	
+	increment_water_level(plant, droplets);
+}
+
+// Increases the fertilizer level of the plant.
+// A plant can only absorb 10 shovels of fertilizer per day.
+// Contributing more than that on a daily basis doesn't have any extra effect.
+operation fertilize_plant(account_id: byte_array, auth_descriptor_id: byte_array, shovels: integer) {
+	val account = ft3.acc.account @ {.id == account_id};
+	ft3.acc.require_auth(account, auth_descriptor_id, list<text>());
+	
+	val plant = plant @ { account };
+	require(is_plant_alive(plant, op_context.last_block_time), "Plant is dead, please re-plant a seed");
+	
+	increment_fertilizer_level(plant, shovels);
+}
+
+// Increases the happiness level of the plant.
+// A plant can only absorb 10 joys for its happiness per day.
+// Contributing more than that on a daily basis doesn't have any extra effect.
+operation entertain_plant(account_id: byte_array, auth_descriptor_id: byte_array, joy: integer) {
+	val account = ft3.acc.account @ {.id == account_id};
+	ft3.acc.require_auth(account, auth_descriptor_id, list<text>());
+	
+	val plant = plant @ { account };
+	require(is_plant_alive(plant, op_context.last_block_time), "Plant is dead, please re-plant a seed");
+	
+	increment_happiness_level(plant, joy);
+}
+
+operation evolve_plant(account_id: byte_array, auth_descriptor_id: byte_array) {
+	val account = ft3.acc.account @ {.id == account_id};
+	ft3.acc.require_auth(account, auth_descriptor_id, list<text>());
+	
+	val plant = plant @ { account };
+	require(
+		calculate_plant_health(plant, op_context.last_block_time) == "completed", 
+		"The plant can't be evolved"
+	);
+
+	transform_plant(account, plant);
+}
+
+operation transfer_seed(
+  account_id: byte_array, 
+  auth_descriptor_id: byte_array, 
+  id: byte_array, 
+  target_account_id: byte_array
+) {
+  val account = ft3.acc.account @ {.id == account_id};
+  ft3.acc.require_auth(account, auth_descriptor_id, list<text>());
+  
+  transfer("Seed", account, id, target_account_id);
+
+  val plant = plant @? { account };
+  if (plant != null and plant.id == id) {
+    delete_plant(plant);
+  }
+}
+
+operation transfer_fruit(
+  account_id: byte_array, 
+  auth_descriptor_id: byte_array, 
+  id: byte_array, 
+  target_account_id: byte_array
+) {
+  val account = ft3.acc.account @ {.id == account_id};
+  ft3.acc.require_auth(account, auth_descriptor_id, list<text>());
+  
+  transfer("Fruit", account, id, target_account_id);
+}

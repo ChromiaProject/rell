@@ -1,0 +1,218 @@
+@test module;
+import ^^^.dip.*;
+
+function INTSET() {
+	return [
+			integer(1).to_gtv(),
+			integer(2).to_gtv()
+		];
+}
+
+function TEXTSET() {
+	return [
+			"Hello".to_gtv(),
+			"Test".to_gtv()
+		];
+}
+
+function test_set_definition() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+}
+
+function test_set_initialization() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	
+	Instance_(["ITest"], ["set": Set(value=INTSET())]).run();
+	val instance = get_last_instance();
+	
+	val attr = get_attribute_by_dclass_name("ITest", "set");
+	val values = unpack_set(instance, attr)!!.values;
+	assert_true( set<gtv>.from_gtv(values).contains_all(INTSET()) );
+}
+
+function test_set_initialization_cannot_be_implemented_twice() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	
+	Prototype_(["ITest"], ["set": Set(value=INTSET())], "PrototypeName").run();
+	Instance_([], ["set": Set(value=INTSET())], "ITest.PrototypeName").run_must_fail();
+}
+
+function test_set_initialization_wrong_type() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	Instance_(["ITest"], ["set": Set(value=TEXTSET())]).run_must_fail();
+}
+
+function test_set_add() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	val empty_list = list<gtv>();
+	Prototype_(["ITest"], ["set": Set(value=empty_list)], "PrototypeName").run();
+	
+	val prototype = get_prototype_by_dclass_name("ITest", "PrototypeName")!!;
+	val attr = get_attribute_by_dclass_name("ITest", "set");
+	
+	assert_true(set_attribute_empty(prototype, attr));
+	
+	set_add_(prototype, attr, integer(3).to_gtv()).run();
+	
+	val values = unpack_set(prototype, attr)!!.values;
+	assert_true( set<gtv>.from_gtv(values).contains_all( [integer(3).to_gtv()] ));
+}
+
+function test_set_add_wrong_value() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	Prototype_(["ITest"], ["set": Set(value=list<gtv>())], "PrototypeName").run();
+	
+	val prototype = get_prototype_by_dclass_name("ITest", "PrototypeName")!!;
+	val attr = get_attribute_by_dclass_name("ITest", "set");
+	
+	set_add_(prototype, attr, "Wrong".to_gtv()).run_must_fail();
+}
+
+
+function test_set_add_all() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	Prototype_(["ITest"], ["set": Set(value=list<gtv>())], "PrototypeName").run();
+	
+	val prototype = get_prototype_by_dclass_name("ITest", "PrototypeName")!!;
+	val attr = get_attribute_by_dclass_name("ITest", "set");
+	
+	assert_true(set_attribute_empty(prototype, attr));
+	
+	set_add_all_(prototype, attr, INTSET().to_gtv()).run();
+	
+	val values = unpack_set(prototype, attr)!!.values;
+	assert_true( set<gtv>.from_gtv(values).contains_all( INTSET() ));
+}
+
+function test_set_add_same_value() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	Instance_(["ITest"], ["set": Set(value=INTSET())]).run();
+	
+	val instance = get_last_instance();
+	val attr = get_attribute_by_dclass_name("ITest", "set");
+	
+	set_add_(instance, attr, integer(1).to_gtv()).run();
+	
+	val values = unpack_set(instance, attr)!!.values;
+	assert_true( set<gtv>.from_gtv(values).contains_all(INTSET()) );
+}
+
+function test_set_remove() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	Instance_(["ITest"], ["set": Set(value=INTSET())]).run();
+	
+	val instance = get_last_instance();
+	val attr = get_attribute_by_dclass_name("ITest", "set");
+	
+	set_remove_(instance, attr, integer(1).to_gtv()).run();
+	
+	val values = unpack_set(instance, attr)!!.values;
+	assert_true( set<gtv>.from_gtv(values).contains_all( [integer(2).to_gtv()] ));
+}
+
+function test_set_remove_all() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	Instance_(["ITest"], ["set": Set(value=INTSET())]).run();
+	
+	val instance = get_last_instance();
+	val attr = get_attribute_by_dclass_name("ITest", "set");
+	
+	set_remove_all_(instance, attr, INTSET().to_gtv()).run();
+	assert_true(set_attribute_empty(instance, attr));
+}
+
+function test_set_clear() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	Instance_(["ITest"], ["set": Set(value=INTSET())]).run();
+	
+	val instance = get_last_instance();
+	val attr = get_attribute_by_dclass_name("ITest", "set");
+	
+	set_clear_(instance, attr).run();
+	assert_true(set_attribute_empty(instance, attr));
+}
+
+function test_set_size() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	Instance_(["ITest"], ["set": Set(value=INTSET())]).run();
+	
+	val instance = get_last_instance();
+	val attr = get_attribute_by_dclass_name("ITest", "set");
+	
+	assert_equals(set_attribute_size(instance, attr), 2);
+}
+
+function test_set_contains_value() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	Instance_(["ITest"], ["set": Set(value=INTSET())]).run();
+	
+	val instance = get_last_instance();
+	val attr = get_attribute_by_dclass_name("ITest", "set");
+	
+	assert_true(set_attribute_contains(instance, attr, integer(1).to_gtv()));
+	assert_false(set_attribute_contains(instance, attr, integer(3).to_gtv()));
+}
+
+function test_set_contains_values() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	Instance_(["ITest"], ["set": Set(value=INTSET())]).run();
+	
+	val instance = get_last_instance();
+	val attr = get_attribute_by_dclass_name("ITest", "set");
+	
+	assert_true(set_attribute_contains_all(instance, attr, INTSET().to_gtv()));
+	assert_false(set_attribute_contains_all(instance, attr, [integer(3).to_gtv()].to_gtv()));
+}
+
+function test_unpack_values() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	Prototype_(["ITest"], ["set": Set(value=INTSET())], "PrototypeName").run();
+	Instance_([], [:], "ITest.PrototypeName").run();
+	
+	val instance = get_last_instance();
+	val prototype = get_prototype_by_dclass_name("ITest", "PrototypeName")!!;
+	val attr = get_attribute_by_dclass_name("ITest", "set");
+	var values = unpack_set(instance, attr)!!.values;
+	assert_true( set<gtv>.from_gtv(values).contains_all(INTSET()) );
+	
+	values = unpack_set(prototype, attr)!!.values;
+	assert_true( set<gtv>.from_gtv(values).contains_all(INTSET()) );
+}
+
+function test_set_find_instances() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	Prototype_(["ITest"], ["set": Set(value=INTSET())], "PrototypeName").run();
+	
+	for(i in range(5)) {
+		Instance_([], [:], "ITest.PrototypeName").run();
+	}
+	val instances = get_last_instances();
+	
+	val attr = get_attribute_by_dclass_name("ITest", "set");
+	
+	assert_true(find_instances_by_type_attribute(attr, integer(1).to_gtv(), p_from(), integer.MAX_VALUE).results.contains_all( instances ));
+}
+
+function test_set_find_instances_paginated() {
+	Interface_("ITest", ["set": Type(Set(a_type.integer))]).run();
+	Prototype_(["ITest"], ["set": Set(value=INTSET())], "PrototypeName").run();
+	
+	for(i in range(0, 5)) {
+		Instance_([], [:], "ITest.PrototypeName").run();
+	}
+	
+	val instances = get_last_instances();
+	val attr = get_attribute_by_dclass_name("ITest", "set");
+	
+	var res = find_instances_by_type_attribute(attr, integer(1).to_gtv(), p_from(), 5);
+	assert_true( res.results.contains_all( instances ) );
+	
+	res = find_instances_by_type_attribute(attr, integer(1).to_gtv(), res.from, 2);
+	assert_true( res.results.contains_all( instances.sub(0, 2) ) );
+	
+	res = find_instances_by_type_attribute(attr, integer(1).to_gtv(), res.from, 2 );
+	assert_true( res.results.contains_all( instances.sub(2, 4) ) );
+	
+	res = find_instances_by_type_attribute(attr, integer(1).to_gtv(), res.from, 2);
+	assert_true( res.results.contains_all( instances.sub(4, 5) ) );
+}

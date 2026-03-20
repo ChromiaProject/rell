@@ -1,0 +1,52 @@
+
+
+
+function exprHeader() {
+    val     a   =map < text , text > ( ) ;
+val     a   =
+ map
+ <
+ text
+ ,
+ text
+ >
+ (
+
+ )
+ ;
+
+    val  b  =  [ 
+        "a"
+    : 2
+    , "b"
+    : 1
+    ]
+    ;
+
+    val c  =  (
+        z 
+        =
+         2
+         );
+
+    val d = [
+            1
+            ,
+            2
+            ,
+         3,
+4
+                                    ]
+;
+    val e =     [   1, 2, 3];
+
+    val f = struct
+<   mutable  user1      >   (   first_name = "name" ,  salary =   1   )    ;
+    val g =     struct < user4 > (
+    first_name  =   "name"  ,
+            last_name   =  "name"       ,
+age  =   99
+        ,
+    salary = 1  )   ;
+
+}

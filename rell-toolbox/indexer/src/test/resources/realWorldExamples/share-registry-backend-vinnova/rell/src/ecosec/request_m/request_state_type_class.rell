@@ -1,0 +1,16 @@
+
+//****************************************
+// request_state_type - class
+//
+// Table naming the different possible type of states a request can have (New, Approved, Rejected, ...)
+
+entity request_state_type {
+    key id: request_state_type_enum;
+    mutable name: text;
+}
+
+enum request_state_type_enum {
+	PENDING,
+	APPROVED,
+	REJECTED
+}

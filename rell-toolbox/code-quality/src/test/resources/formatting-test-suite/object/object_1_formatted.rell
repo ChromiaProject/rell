@@ -1,0 +1,4 @@
+object event_stats {
+    event_count: integer = 0;
+    last_event: text = 'n/a';
+}

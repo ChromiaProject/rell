@@ -1,0 +1,22 @@
+function init_structures() {
+	val ITradeableOriginal = Interface("ITradeableOriginal");
+	
+	val ISeed = defI(interface_("Seed", extends([ITradeableOriginal]),
+		[
+			"type": prop(
+				propT(txt())
+			),
+			"created_at": prop(
+				propI(int())
+			)
+		]
+	));
+	
+	val IFruit = defI(interface_("Fruit", extends([ITradeableOriginal]), 
+		[
+			"created_at": prop(
+				propI(int())
+			)
+		]
+	));
+}

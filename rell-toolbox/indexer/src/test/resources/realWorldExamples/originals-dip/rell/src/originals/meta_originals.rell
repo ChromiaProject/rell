@@ -1,0 +1,65 @@
+enum a_constraint {
+	creator_mutable,
+	owner_mutable
+}
+
+struct acc_auth {
+	account_id: byte_array;
+	auth_descriptor_id: byte_array;
+}
+
+override function check_dapp_constraint(i: instance, attribute, meta_key: text, meta_value: gtv, value: gtv, context: meta_context): boolean {
+	when (meta_key) {
+		a_constraint.owner_mutable.name -> {
+			check_owner_mutable(i, attribute, meta_value, context);
+			return true;
+		}
+		a_constraint.creator_mutable.name -> {
+			check_creator_mutable(i, attribute, meta_value, context);
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+function check_owner_mutable(i: instance, attribute, meta_value: gtv, meta_context) {
+	if (meta_context.m_method == m_method.creating) {
+		return;
+	}
+	
+	require(meta_context.context, "No context for authdescriptor provided");
+	val acc_auth = acc_auth.from_gtv(meta_context.context!!);
+	
+	ft3_helper.require_transfer_auth(acc_auth.account_id, acc_auth.auth_descriptor_id);
+	
+	val id = get_id_attribute(i, ID_ATTR());
+	require(id, "No id value found from instance");
+	
+	require(ft3_helper.owns_asset(acc_auth.account_id, id), "Attribute " + attribute.name + " can only be changed by owner.");
+}
+
+function check_creator_mutable(i: instance, attribute, meta_value: gtv, meta_context) {
+	if (meta_context.m_method == m_method.creating) {
+		return;
+	}
+	
+	require(meta_context.context, "No context for authdescriptor provided");
+	val acc_auth = acc_auth.from_gtv(meta_context.context!!);
+	
+	val creator_id = get_byte_array_attribute(i, CREATOR_ID_ATTR());
+	require(creator_id, "No creator value found from instance");
+	
+	ft3_helper.require_transfer_auth(acc_auth.account_id, acc_auth.auth_descriptor_id);
+	
+	require(creator_id == acc_auth.account_id, "Only the creator can modify that attribute");
+}
+
+
+function OwnerMutable(): s_meta {
+	return s_meta(a_constraint.owner_mutable.name, true.to_gtv().to_bytes());
+}
+
+function CreatorMutable(): s_meta {
+	return s_meta(a_constraint.creator_mutable.name, true.to_gtv().to_bytes());
+}

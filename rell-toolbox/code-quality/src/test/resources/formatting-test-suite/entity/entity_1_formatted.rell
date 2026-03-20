@@ -1,0 +1,5 @@
+entity account {
+    key id: byte_array;
+    mutable account_type;
+    mutable args: byte_array;
+}

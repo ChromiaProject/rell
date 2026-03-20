@@ -1,0 +1,413 @@
+
+function _instance_property(instance, name): instance_property {
+	return instance_property @ { .structure_property.name == name, instance };
+}
+
+function _instance_property_of_path(instance, path: text): instance_property {
+	val (nested_instance, name) 
+		= _get_instance_and_property_name_of_path(instance, path, map<text, instance>());
+		
+	return _instance_property(nested_instance, name);
+}
+
+function _instance_property_of_path_with_cache(instance, path: text, cache: map<text, instance>): instance_property {
+	val (nested_instance, name) 
+		= _get_instance_and_property_name_of_path(instance, path, cache);
+		
+	return _instance_property(nested_instance, name);
+}
+
+function _get_instance_owner(instance): ft3.account? {
+	val owner_property_name = instance.structure.owner_property_name;
+	return if (owner_property_name.size() != 0) 
+			get_property_account(instance, owner_property_name) 
+		else 
+			null;
+}
+
+function _get_instance_properties_of_interface(
+	instance, 
+	interface
+): set<instance_property> {
+	val instance_properties = (
+		si: structure_interface,
+		ei: extended_interface,
+		ip: instance_property, 
+		infp: interface_property
+	) @* {
+		si.structure == instance.structure,
+		si.interface == interface 
+			or 
+		(ei.extended == interface and si.interface == ei.base), 
+		infp.interface == si.interface,
+		ip.instance == instance,
+		ip.structure_property.name == infp.name
+	} ( ip );
+	
+	return set<instance_property>(instance_properties);
+}
+
+function _get_instance_properties_of_interfaces(
+	instance, 
+	interfaces: list<interface>
+): set<instance_property> {
+	val instance_properties = set<instance_property>();
+	
+	for (interface in interfaces) {
+		instance_properties.add_all(
+			_get_instance_properties_of_interface(instance, interface)
+		);	
+	}
+	
+	return instance_properties;
+}
+
+function _get_instance_property_names_from(
+	instance, 
+	interfaces: list<interface>
+): set<name> {
+	val property_names = set<name>();
+	val instance_properties = _get_instance_properties_of_interfaces(instance, interfaces);
+	for (instance_property in instance_properties) {
+		property_names.add(instance_property_name(instance_property));
+	}
+	return property_names;
+}
+
+function _get_instance_properties_of_interface_type(instance, interface): list<instance_property> {
+	return ( 
+		ip: instance_property,
+		ei: extended_interface,
+		spi: structure_property_interface,
+		ipvi: instance_property_value_instance
+	) @* { 
+		ip.instance == instance,
+		ip.structure_property.type == property_type.interface,
+		spi.structure_property == ip.structure_property,
+		spi.interface == interface
+			or 
+		(spi.interface == ei.extended and ei.base == interface)
+	} ( ip );
+}
+
+function _get_instance_properties_of_interface_types(instance, interfaces: list<interface>): list<instance_property> {
+	val instance_properties = set<instance_property>();
+	for (interface in interfaces) {
+		instance_properties.add_all(_get_instance_properties_of_interface_type(instance, interface));
+	}
+	return instance_properties.sorted();
+}
+
+function _get_instance_and_property_name_of_path(instance, path: text, cache: map<text, instance>): (instance, name) {
+	//TODO: validate path
+	val path_components = path.split(".");
+	
+	if (path_components.size() == 1) {
+		return (instance, path_components[0]);
+	}
+	
+	var child_instance: instance;
+	var partial_path = path_components[0];
+	
+	if (cache.contains(partial_path)) {
+		child_instance = cache[partial_path];
+	} else {
+		child_instance = require(
+			get_property_instance(instance, path_components[0]),
+			"Cannot find instance at path: " + partial_path
+		);
+		cache[partial_path] = child_instance;
+	}
+	
+	for (i in range(1, path_components.size()-1)) {
+		val path_component = path_components[i];
+		partial_path = partial_path + "." + path_component;
+		
+		if (cache.contains(partial_path)) {
+			child_instance = cache[partial_path];
+		} else {
+			child_instance = require(
+				get_property_instance(child_instance, path_component),
+				"Cannot find instance"	
+			);
+			cache[partial_path] = child_instance;
+		}
+	}
+	
+	return (child_instance, path_components[path_components.size()-1]);
+}
+
+function deep_copy(original_instance: instance): instance {
+	require(
+		not original_instance.structure.is_entity,
+		"Cannot deep copy entity instances"
+	);
+	
+	val instance = create instance(original_instance.structure);
+	
+	_copy_integer_properties(original_instance, instance);
+	_copy_text_properties(original_instance, instance);
+	_copy_byte_array_properties(original_instance, instance);
+	_copy_boolean_properties(original_instance, instance);
+	_copy_account_properties(original_instance, instance);
+	_copy_instance_properties(original_instance, instance);
+	//TODO: analyze how to handle index properties
+
+	return instance;
+}
+
+function _copy_integer_properties(source: instance, destination: instance) {
+	val instance_properties 
+		= instance_properties_of_type(source, property_type.integer);
+	
+	for (property in instance_properties) {
+		val instance_property = create instance_property(
+			destination,
+			property.structure_property
+		);
+		
+		val value = _get_property_integer(property);
+		if (value??) {
+			create instance_property_value_integer(
+				instance_property,
+				.value = value				
+			);
+		}
+	}
+}
+
+function _copy_text_properties(source: instance, destination: instance) {
+	val instance_properties 
+		= instance_properties_of_type(source, property_type.text);
+	
+	for (property in instance_properties) {
+		val instance_property = create instance_property(
+			destination,
+			property.structure_property
+		);
+		
+		val value = _get_property_text(property);
+		if (value??) {
+			create instance_property_value_text(
+				instance_property,
+				.value = value				
+			);
+		}
+	}
+}
+
+function _copy_byte_array_properties(source: instance, destination: instance) {
+	val instance_properties 
+		= instance_properties_of_type(source, property_type.byte_array);
+	
+	for (property in instance_properties) {
+		val instance_property = create instance_property(
+			destination,
+			property.structure_property
+		);
+		
+		val value = _get_property_byte_array(property);
+		if (value??) {
+			create instance_property_value_byte_array(
+				instance_property,
+				.value = value				
+			);
+		}
+	}
+}
+
+function _copy_boolean_properties(source: instance, destination: instance) {
+	val instance_properties = instance_properties_of_type(source, property_type.boolean);
+	
+	for (property in instance_properties) {
+		val instance_property = create instance_property(
+			destination,
+			property.structure_property
+		);
+		
+		val value = _get_property_boolean(property);
+		if (value??) {
+			create instance_property_value_boolean(
+				instance_property,
+				.value = value				
+			);
+		}
+	}
+}
+
+function _copy_account_properties(source: instance, destination: instance) {
+	val instance_properties 
+		= instance_properties_of_type(source, property_type.account);
+	
+	for (property in instance_properties) {
+		val instance_property = create instance_property(
+			destination,
+			property.structure_property
+		);
+		
+		val value = _get_property_account(property);
+		if (value??) {
+			create instance_property_value_account(
+				instance_property,
+				.value = value				
+			);
+		}
+	}
+}
+
+function _copy_instance_properties(source: instance, destination: instance) {
+	val instance_properties = instance_property @* {
+		source, 
+		.structure_property.type == property_type.interface
+			or 
+		.structure_property.type == property_type.structure
+	};
+	
+	for (property in instance_properties) {
+		val instance_property = create instance_property(
+			destination,
+			property.structure_property			
+		);
+		
+		val value = _get_property_instance(property);
+		if (value??) {
+			val instance_value =
+				if (value.structure.is_entity) 
+					value
+				else
+					deep_copy(value);
+			
+			create instance_property_value_instance(
+				instance_property,
+				value = instance_value
+			);
+		}
+	}
+}
+
+function _delete_instance(instance) {
+	require(
+	 	not instance.structure.is_entity,
+	 	"Cannot delete entity instance"
+	);
+	
+	val is_assigned = (
+		instance_property_value_instance @* { .value == instance }
+	).size() > 0;
+	
+	require(
+		not is_assigned,
+		"Cannot delete instance which is assigned"
+	);
+	
+	delete instance_property_value_integer @* { 
+		.instance_property.instance == instance
+	};
+	
+	delete instance_property_value_text @* {
+		.instance_property.instance == instance		
+	};
+	
+	delete instance_property_value_boolean @* {
+		.instance_property.instance == instance
+	};
+	
+	delete instance_property_value_byte_array @* {
+		.instance_property.instance == instance		
+	};
+
+	delete instance_property_value_index @* {
+		.instance_property.instance == instance		
+	};
+	
+	delete instance_property_value_account @* {
+		.instance_property.instance == instance		
+	};
+	
+	delete instance_property @* {
+		instance
+	};
+	
+	delete instance;
+}
+
+function _delete_instance_entity(instance) {
+	val is_assigned = (
+		instance_property_value_instance @* { .value == instance }
+	).size() > 0;
+	
+	require(
+		not is_assigned,
+		"Cannot delete instance which is assigned"
+	);
+	
+	delete instance_property_value_integer @* { 
+		.instance_property.instance == instance
+	};
+	
+	delete instance_property_value_text @* {
+		.instance_property.instance == instance		
+	};
+	
+	delete instance_property_value_boolean @* {
+		.instance_property.instance == instance
+	};
+	
+	delete instance_property_value_byte_array @* {
+		.instance_property.instance == instance		
+	};
+
+	delete instance_property_value_index @* {
+		.instance_property.instance == instance		
+	};
+	
+	delete instance_property_value_account @* {
+		.instance_property.instance == instance		
+	};
+	
+	delete instance_property_value_id @* {
+		.instance_property.instance == instance
+	};
+	
+	delete instance_property @* {
+		instance
+	};
+	
+	delete instance;
+}
+
+function instance_properties_of_type(instance, property_type): list<instance_property> {
+	return instance_property @* {
+		instance, .structure_property.type == property_type 
+	};
+}
+
+function get_instances_count(structure): integer {
+	return instance @* { structure } ( .rowid ).size();
+}
+
+function get_instances_max_count(structure): integer? {
+	val property = structure_property @? { structure, .type == property_type.indx };
+	
+	if (not property??) return null;
+	
+	return structure_property_index_max_count @? {
+		property
+	}.value;
+}
+
+function find_instance_properties_by_meta_tag(
+	instance, 
+	tag_name: name
+): list<instance_property> {
+	return (
+		ip: instance_property, 
+		spmt: structure_property_meta_tag
+	) @* {
+		ip.instance == instance,
+		spmt.structure_property == ip.structure_property,
+		spmt.name == tag_name
+	} (
+		ip
+	);
+}

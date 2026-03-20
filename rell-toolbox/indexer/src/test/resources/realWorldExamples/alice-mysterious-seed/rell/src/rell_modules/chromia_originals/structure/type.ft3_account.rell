@@ -1,0 +1,90 @@
+/* instance properties */
+
+function _create_structure_property_account(structure, name, prop): structure_property {
+	val account_props = account.from_gtv(prop.prop_type_struct.type_gtv);
+	
+	val property = create structure_property(
+		structure,
+		name = name,
+		optional = prop.optional.value,
+		mutation = prop.mutation.value,
+		type = property_type.account,
+		value = x""
+	);
+	
+	_create_structure_property_meta_tags(property, prop.meta.tags);
+	
+	return property;
+}
+
+entity static_property_value_account {
+	key static_property;
+	mutable value: ft3.account;
+}
+
+function set_static_property_account(structure, property_name: name, value: ft3.account) {
+	_set_static_property_account(_static_property(structure, property_name), value);
+}
+
+function _set_static_property_account(static_property, value: ft3.account) {
+	require(
+		static_property.readonly == false,
+		"Cannot update read-only property '" + static_property.name + "'"
+	);
+	
+	val property_value = static_property_value_account @? { static_property };
+	
+	if (property_value??) {
+		property_value.value = value;
+	} else {
+		create static_property_value_account(
+			static_property,
+			value
+		);
+	}
+}
+
+function get_static_property_account(structure, property_name: name): ft3.account? {
+	return _get_static_property_account(_static_property(structure, property_name));
+}
+
+function _get_static_property_account(static_property): ft3.account? {
+	return static_property_value_account @? { static_property }.value;
+}
+
+function _get_static_property_account_serialized(static_property): gtv? {
+	return _get_static_property_account(static_property)?.id?.to_gtv();
+}
+
+function _create_static_property_account(
+	structure, 
+	name, 
+	prop, 
+	init_value: gtv?
+): static_property {
+	val property = create static_property(
+		structure,
+		name = name,
+		readonly = prop.mutation.value == mutation_type.readonly,
+		optional = prop.optional.value,
+		type = property_type.account
+	);
+	
+	_create_static_property_meta_tags(property, prop.meta.tags);
+	
+	val value = if (init_value??) ft3.account.from_gtv(init_value) else null;
+	
+	require(
+		value != null or prop.optional.value == true,
+		"Non-optional property '" + name + "' is not initialized"
+	);
+	
+	if (value??) {
+		create static_property_value_account(
+			property,
+			value
+		);
+	}
+	
+	return property;
+}

@@ -1,0 +1,10 @@
+module;
+
+import wallet.blockchain;
+import wallet.payment_history;
+
+entity crosschain_history_entry (log) {
+  payment_history.payment_history_entry;
+  index blockchain.blockchain;
+  to: pubkey;
+}

@@ -1,0 +1,34 @@
+struct seed_user {
+	ft3.acc.account;
+	auth_descriptor: byte_array;
+	rell.test.keypair;
+	address: text;
+}
+
+function finalize_seed_user(ft3_test.auth_data) {
+	val mock_eth_address = auth_data.id.to_hex();
+	
+	val tx2 = rell.test.tx()
+		.op(minter.link_external_account(auth_data.id, 1620219504000, mock_eth_address))
+		.sign(util.admin_keypair());
+		
+	rell.test.block().tx(tx2).run();
+	
+	return seed_user(
+		account = ft3.acc.account @ { auth_data.id },
+		auth_descriptor = auth_data.auth_descriptor,
+		keypair = auth_data.keypair,
+		address = mock_eth_address
+	);
+}
+
+function get_originals_for_account(id: byte_array) {
+	val originals = original.find_original_instances_by_owner_id(
+		id, 
+		rowid.from_gtv((0).to_gtv()), 
+		25
+	);
+	
+	val result = marketplace.map_instances_to_query_result(originals);
+	return result.instances;
+}

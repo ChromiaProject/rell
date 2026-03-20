@@ -1,0 +1,23 @@
+function createNFAClass(name, desc: text, max_entities: integer): nfa {
+    return create nfa(
+    .name = name.lower_case(),
+        (name, chain_context.blockchain_rid).hash(),
+        desc,
+        max_entities
+    //		a comment
+    );
+}
+
+function createNFAClass(name, desc: text, max_entities: integer): nfa {
+    return create nfa(
+    .name = name.lower_case(),
+        (name, chain_context.blockchain_rid).hash(),
+        desc,
+        max_entities
+    /*
+    this is
+    a
+    comment
+    */
+    );
+}

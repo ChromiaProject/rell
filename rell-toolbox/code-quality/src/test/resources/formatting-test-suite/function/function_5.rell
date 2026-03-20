@@ -1,0 +1,8 @@
+function test_transaction_with_simple_working_rule() {
+    val acc_data = setup_account_with_rules(
+        accounts.serialize_rules(
+            [less_than(block_height(100))]
+        )
+    );
+    authenticate_account_signed_tx(acc_data).run();
+}

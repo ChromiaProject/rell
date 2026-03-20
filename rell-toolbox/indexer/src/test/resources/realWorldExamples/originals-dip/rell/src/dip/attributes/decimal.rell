@@ -1,0 +1,110 @@
+entity decimal_attribute {
+	index instance, attribute, value;
+	index instance, attribute;
+	index attribute, value;
+	mutable value: decimal;
+}
+
+function get_decimal_attribute (instance, attribute): decimal? {
+	var attr = decimal_attribute @? { instance, attribute };
+ 	
+ 	if(attr??) {
+ 		return attr.value;
+ 	} else {
+ 		val prototypes = get_prototypes(instance);
+ 		for (p in prototypes) {
+ 			attr = decimal_attribute @? { p, attribute };
+ 			if(attr??) {
+ 				return attr.value;
+ 			}
+ 		}
+ 	}
+ 	
+ 	return null;
+}
+
+function get_decimal_attributes (instance, attribute): list<decimal> {
+	var attrs = decimal_attribute @* { instance, attribute } (.value);
+ 	
+ 	if(not empty(attrs)) {
+ 		return attrs;
+ 	} else {
+ 		val prototypes = get_prototypes(instance);
+ 		
+ 		for (p in prototypes) {
+ 			attrs = decimal_attribute @* { p, attribute } (.value);
+ 			if(not empty(attrs)) {
+ 				return attrs;
+ 			}
+ 		}
+ 	}
+ 	
+ 	return list<decimal>();
+}
+
+function set_decimal_attribute (instance, attribute, value: decimal) {
+	util.ensure_type(a_type.decimal, attribute.a_type);
+	update decimal_attribute @ { instance, attribute } (.value = value);
+}
+
+function add_decimal_attribute (instance, attribute, value: decimal) {
+	util.ensure_type(a_type.decimal, attribute.a_type);
+	create decimal_attribute ( instance, attribute, value );
+}
+
+function remove_decimal_attribute (instance, attribute): gtv {	
+	val i = decimal_attribute @ {instance, attribute};
+	val value = i.value;
+	
+	delete i;
+	
+	return value.to_gtv();
+}
+
+function _fetch_decimal_range_from(attribute, value: decimal, from: rowid) {
+	return decimal_attribute @* {
+		attribute, .value == value, .instance.rowid > from
+	} (.instance) limit 100;
+}
+
+function apply_decimal_filter (instances: list<instance>, filter, from: p_from) {
+	when (filter.a_filter) {
+		a_filter.exact -> return apply_decimal_exact_filter(instances, filter.attribute, decimal.from_gtv(filter.parameter), from);
+		else -> return (results = instances, from = null);
+	}
+}
+
+function apply_decimal_exact_filter(instances: list<instance>, attribute, value: decimal, from: p_from):
+ (results: list<instance>, from: p_from?) {
+    val limit_count = 100;
+	
+	if(instances.empty()) {
+		return find_instances_by_type_attribute(attribute, value.to_gtv(), from, limit_count);
+	};
+	
+	var res = list<instance>();
+	
+	val first = instances[0];
+	val last = instances[instances.size() - 1];
+	
+	val in_prototype = (a: decimal_attribute, ip: instance_prototype) @* {
+		a.attribute == attribute, a.value == value,
+		ip.prototype == a.instance,
+		ip.instance >= first, ip.instance <= last
+	} (ip.instance) limit limit_count;
+	
+	res.add_all(in_prototype);
+	
+	val in_attribute = (a: decimal_attribute) @* {
+			attribute,
+			a.value == value,
+			a.instance >= first, a.instance <= last
+	} (a.instance) limit limit_count;
+	
+	res.add_all(in_attribute);
+	
+	val prior_instances = set(instances);
+	res = res @* {prior_instances.contains($)};
+	
+	return (results = res, from = null);
+}

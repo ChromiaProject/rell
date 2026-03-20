@@ -1,0 +1,24 @@
+
+//****************************************
+// agent - class
+
+entity agent {
+    key id: text; // Unique id set by front-end at creation
+    
+    mutable first_name: text;
+    mutable last_name: text;
+    mutable address1: text = "";
+    mutable address2: text = "";
+    mutable postal_code: text = "";
+    mutable city: text = "";
+    mutable country: text = "";
+    
+    mutable email: text = "";
+    mutable phone: text = "";
+    
+    mutable administrator: integer = 0; // Sets the Agent's system wide administrator 0=No admin role, 1=Super admin role
+
+	created_time_stamp: timestamp;
+	mutable changed_time_stamp: timestamp;
+}
+

@@ -1,0 +1,489 @@
+
+enum mapper_type {
+	struct_details,
+	interface_props,
+	interface,
+	property_list,
+	meta_tag,
+	all_properties,
+	tx_history,
+	achievements,
+	instance_count
+}
+
+enum mapper_property_type {
+	direct,
+	array,
+	dict
+}
+
+function to_list(name): map_property_type {
+	return map_property_type(
+		mapper_property_type.array,
+		name		
+	);
+}
+
+function to_map(name): map_property_type {
+	return map_property_type(
+		mapper_property_type.dict,
+		name		
+	);
+}
+
+function direct(): map_property_type {
+	return map_property_type(
+		mapper_property_type.direct,
+		""		
+	);
+}
+
+function interfaces(interface_names: list<name>): map_type {
+	return map_type(
+		mapper_type.interface,
+		interface_names		
+	);
+}
+
+function struct_details(): map_type {
+	return map_type(
+		mapper_type.struct_details,
+		list<name>()		
+	);
+}
+
+function properties(property_names: list<name>): map_type {
+	return map_type(
+		mapper_type.property_list,
+		property_names	
+	);
+}
+
+function all_properties(): map_type {
+	return map_type(
+		mapper_type.all_properties,
+		list<name>()
+	);
+}
+
+function meta_tags(meta_tags: list<name>): map_type {
+	return map_type(
+		mapper_type.meta_tag,
+		meta_tags
+	);
+}
+
+function interface_props(interface_names: list<name>): map_type {
+	return map_type(
+		mapper_type.interface_props,
+		interface_names
+	);
+}
+
+function instance_count(): map_type {
+	return map_type(
+		mapper_type.instance_count,
+		list<name>()
+	);
+}
+
+function tx_history(): map_type {
+	return map_type(
+		mapper_type.tx_history,
+		list<name>()
+	);
+}
+
+function achievements(): map_type {
+	return map_type(
+		mapper_type.achievements,
+		list<name>()
+	);
+}
+
+struct map_ {
+	map_type;
+	map_property_type;
+}
+
+struct map_type {
+	type: mapper_type;
+	names: list<name>;
+}
+
+struct map_property_type {
+	type: mapper_property_type;
+	name;
+}
+
+struct instance_type {
+	type: text;
+	t: gtv;
+}
+
+struct instance_map_rule {
+	instance_type;
+	rules: list<map_>;
+}
+
+function structure_type(structure, definitions: list<map_>): instance_map_rule {
+	return instance_map_rule(
+		instance_type(
+			type = "structure",
+			t = structure.to_gtv()
+		),
+		definitions
+	);
+}
+
+function interface_type(interface, definitions: list<map_>): instance_map_rule {
+	return instance_map_rule(
+		instance_type(
+			type = "interface",
+			t = interface.to_gtv()
+		),
+		definitions
+	);
+}
+
+function all(): list<instance_map_rule> {
+	return list<instance_map_rule>();
+}
+
+function map_instance(instance, map_definitions: list<map_>, rules: list<instance_map_rule>): map<text, gtv?> {
+	val instance_map = map<text, gtv?>();
+	
+	for (map_definition in map_definitions) {
+		val m: map<name, gtv?>;
+		
+		when (map_definition.map_type.type) {
+			mapper_type.interface -> 
+				m = _handle_interface_mapping(instance, map_definition.map_type);
+			mapper_type.property_list ->
+				m = _handle_property_list_mapping(instance, map_definition.map_type, rules);
+			mapper_type.meta_tag ->
+				m = _handle_meta_tag_mapping(instance, map_definition.map_type);
+			mapper_type.struct_details ->
+				m = _handle_struct_details_mapping(instance, map_definition.map_type);
+			mapper_type.interface_props -> 
+				m = _handle_interface_props_mapping(instance, map_definition.map_type, rules);
+			mapper_type.all_properties ->
+				m = _handle_all_properties_mapping(instance, map_definition.map_type, rules);
+			mapper_type.tx_history -> 
+				m = _handle_tx_history_mapping(instance, map_definition.map_type);
+			mapper_type.achievements ->
+				m = _handle_achievements_mapping(instance);
+			else -> {
+				throw("Mapping '" + map_definition.map_type.type.name + "' not implemented");
+				m = map<name, gtv?>(); // never executed. added to 
+			}
+				
+		}
+		
+		when (map_definition.map_property_type.type) {
+			mapper_property_type.direct -> 
+				instance_map.put_all(m);
+			mapper_property_type.dict ->
+				instance_map[map_definition.map_property_type.name] 
+					= m.to_gtv();
+			mapper_property_type.array ->
+				instance_map[map_definition.map_property_type.name] 
+					= _dict_to_array(m).to_gtv();
+		}
+	}
+	
+	return instance_map;
+}
+
+function _handle_property_list_mapping(instance, map_type, rules: list<instance_map_rule>): map<name, gtv?> {
+	require(map_type.type == mapper_type.property_list); //TODO: Add error message
+	
+	val property_map = map<name, gtv?>();
+	
+	for (property_name in map_type.names) {
+		val instance_property = _instance_property(instance, property_name);
+		property_map[property_name] = _get_property_serialized_with_rules(instance_property, rules);
+	}
+	
+	return property_map;
+}
+
+function _handle_interface_mapping(instance, map_type): map<name, gtv?> {
+	require(map_type.type == mapper_type.interface); //TODO: Add error message
+	
+	val interfaces = Interfaces(map_type.names);
+	val instance_properties = _get_instance_properties_of_interfaces(instance, interfaces);
+	val static_properties = _get_static_properties_of_interfaces(instance.structure, interfaces);
+	
+	val property_map = map<name, gtv?>();
+	property_map.put_all(_get_instance_property_values(instance_properties.sorted()));
+	property_map.put_all(_get_static_property_values(static_properties));
+	return property_map;
+}
+
+function _handle_interface_props_mapping(instance, map_type, rules: list<instance_map_rule>): map<name, gtv?> {
+	require(map_type.type == mapper_type.interface_props); //TODO: Add error message
+	
+	val interfaces = Interfaces(map_type.names);
+	val instance_properties = _get_instance_properties_of_interface_types(instance, interfaces);
+	
+	val properties_map = map<name, gtv?>();
+	
+	for (instance_property in instance_properties) {
+		val serialized_instance = _get_property_instance_serialized_with_rules(instance_property, rules);
+		
+		if (serialized_instance??) {
+			properties_map[instance_property_name(instance_property)] = serialized_instance;
+		}
+	}
+	
+	return properties_map;
+}
+
+function _handle_meta_tag_mapping(instance, map_type): map<name, gtv?> {
+	require(map_type.type == mapper_type.meta_tag); //TODO: Add error message
+	val instance_properties = find_instance_properties_by_meta_tag(instance, map_type.names[0]);
+	val static_properties = find_static_properties_by_meta_tag(instance.structure, map_type.names[0]);
+	
+	val property_values = map<name, gtv?>();
+	property_values.put_all(_get_instance_property_values(instance_properties));
+	property_values.put_all(_get_static_property_values(static_properties));
+	return property_values;
+}
+
+function _handle_struct_details_mapping(instance, map_type): map<name, gtv?> {
+	require(map_type.type == mapper_type.struct_details); //TODO: Add error message
+	return instance_structure_info(instance);
+}
+
+function _handle_all_properties_mapping(
+	instance, 
+	map_type, 
+	rules: list<instance_map_rule>
+): map<name, gtv?> {
+	require(map_type.type == mapper_type.all_properties);
+	
+	val properties = instance_property @* { instance }; 
+	
+	val properties_map = map<name, gtv?>();
+	for (property in properties) {
+		properties_map[instance_property_name(property)] = 
+			_get_property_serialized_with_rules(property, rules);
+	}
+	return properties_map;
+}
+
+function _handle_tx_history_mapping(instance, map_type): map<name, gtv?> {
+	require(map_type.type == mapper_type.tx_history);
+	
+	val trade_events = original.find_original_trade_events(instance);
+	
+	val trade_events_map = map<name, gtv?>();
+	
+	for (i in range(trade_events.size())) {
+		trade_events_map[i.to_text()] = trade_events[i].to_gtv_pretty();
+	}
+	
+	return trade_events_map;
+}
+
+function _handle_achievements_mapping(instance): map<name, gtv?> {
+	val achievements = original.instance_achievements(instance);
+	
+	val achievements_map = map<name, gtv?>();
+	for (i in range(achievements.size())) {
+		achievements_map[i.to_text()] = achievements[i].to_gtv_pretty();
+	}
+	return achievements_map;
+}
+
+function _get_instance_property_values(instance_properties: list<instance_property>): map<name, gtv?> {
+	val properties_map = map<name, gtv?>();
+	for (property in instance_properties) {
+		properties_map[instance_property_name(property)] = _get_property_serialized(property);
+	}
+	return properties_map;
+}
+
+function _get_static_property_values(static_properties: list<static_property>): map<name, gtv?> {
+	val properties_map = map<name, gtv?>();
+	for (property in static_properties) {
+		properties_map[property.name] = _get_static_property_serialized(property);
+	}
+	return properties_map;
+}
+
+function _dict_to_array(dict: map<name, gtv?>): list<gtv?> {
+	val values = list<gtv?>();
+	for ((_, value) in dict) {
+		values.add(value);
+	}
+	return values;
+}
+
+function _mapping_rules(instance, rules: list<instance_map_rule>): list<map_> {
+	for (rule in rules) {
+		when (rule.instance_type.type) {
+			"structure" -> {
+				//TODO: check why strucutre.from_gtv() doesn't work
+				val s = structure @ { rowid.from_gtv(rule.instance_type.t) };
+				if (s == instance.structure) {
+					return rule.rules;
+				}
+			}
+			"interface" -> {
+				val interface = interface.from_gtv(rule.instance_type.t);
+				if (structure_implements_interface(instance.structure, interface)) {
+					return rule.rules;
+				}
+			}
+			else -> {
+				throw("unknown instance type");
+			}
+				
+		}
+	}
+	
+	return [map_(all_properties(), direct())];
+}
+
+
+function _instance_to_primitive_values_map(instance): map<name, gtv?> {
+	val property_value_map = map<text, gtv?>();
+	property_value_map.put_all(instance_values_integer(instance));
+	property_value_map.put_all(instance_values_text(instance));
+	property_value_map.put_all(instance_values_byte_array(instance));
+	property_value_map.put_all(instance_values_index(instance));
+	property_value_map.put_all(instance_values_boolean(instance));
+	property_value_map.put_all(instances_values_account(instance));
+	property_value_map.put_all(instance_value_id(instance));
+	return property_value_map;
+}
+
+
+function instance_structure_info(instance): map<text, gtv?> {
+	val structure_info = map<text, gtv?>();
+	
+	structure_info["name"] = instance.structure.name.to_gtv();
+	structure_info["implements"] = structure_interface @* { 
+		instance.structure,
+		.direct == true
+	} ( .interface.name ).to_gtv();
+	
+	return structure_info;
+}
+
+function instance_values_integer(instance): map<text, gtv?> {
+	val properties = instance_property @* { 
+		instance, .structure_property.type == property_type.integer
+	};
+	
+	val property_value_map = map<text, gtv?>();
+	
+	for (property in properties) {
+		val name = instance_property_name(property);
+		property_value_map[name] = _get_property_integer(property)?.to_gtv(); 
+	}
+	
+	return property_value_map;
+}
+
+function instance_values_text(instance): map<text, gtv?> {
+	val properties = instance_property @* { 
+		instance, .structure_property.type == property_type.text
+	};
+	
+	val property_value_map = map<text, gtv?>();
+	
+	for (property in properties) {
+		val name = instance_property_name(property);
+		property_value_map[name] = _get_property_text(property)?.to_gtv(); 
+	}
+
+	return property_value_map;
+}
+
+function instance_values_byte_array(instance): map<text, gtv?> {
+	val properties = instance_property @* { 
+		instance, .structure_property.type == property_type.byte_array
+	};
+	
+	val property_value_map = map<text, gtv?>();
+	
+	for (property in properties) {
+		val name = instance_property_name(property);
+		val value = instance_property_value_byte_array @? { property }.value?.to_gtv();
+		property_value_map[name] = value; 
+	}
+	
+	return property_value_map;
+}
+
+function instance_values_index(instance): map<text, gtv?> {
+	val properties = instance_property @* { 
+		instance, .structure_property.type == property_type.indx
+	};
+	
+	val property_value_map = map<text, gtv?>();
+	
+	for (property in properties) {
+		val name = instance_property_name(property);
+		val value = instance_property_value_index @? { property }.value?.to_gtv();
+		property_value_map[name] = value; 
+	}
+	
+	return property_value_map;
+}
+
+function instance_values_boolean(instance): map<text, gtv?> {
+	val properties = instance_property @* { 
+		instance, .structure_property.type == property_type.boolean
+	};
+	
+	val property_value_map = map<text, gtv?>();
+	
+	for (property in properties) {
+		val name = instance_property_name(property);
+		val value = instance_property_value_boolean @? { property }.value?.to_gtv();
+		property_value_map[name] = value; 
+	}
+	
+	return property_value_map;
+}
+
+function instance_value_id(instance): map<text, gtv> {
+	val property = (
+		i: instance, 
+		ip: instance_property, 
+		ipvi: instance_property_value_id
+	) @? {
+		i == instance,
+		ip.instance == i,
+		ipvi.instance_property == ip
+	} ( ipvi );
+	
+	return 
+		if (property??) [
+				property.instance_property.structure_property.name: property.value.to_gtv()
+			]
+		else 
+			map<text, gtv>();
+}
+
+function instances_values_account(instance): map<text, gtv?> {
+	val properties = instance_property @* { 
+		instance, 
+		.structure_property.type == property_type.account 
+	};
+	
+	val property_value_map = map<text, gtv?>();
+	
+	for (property in properties) {
+		val name = instance_property_name(property);
+		val account = instance_property_value_account @? { property }.value;
+		
+		property_value_map[name] = account?.id?.to_gtv();
+	}
+	
+	return property_value_map;
+}

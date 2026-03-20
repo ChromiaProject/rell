@@ -1,0 +1,54 @@
+
+//****************************************
+// load_selected_test_data - test
+//
+// - Chooses test data based on settings and arguments
+// - Argument test_data: 0=default, 1=None, 2=Limited dataset, 3=Demo data set
+//
+// LIMITATIONS
+// - Caller must be founder
+// 
+/*
+import ecosec.auth_m;
+import ecosec.appmsg_m;
+
+function load_selected_test_data(founder_pubkey: pubkey, test_data: integer){
+	
+	// Check authorization for self
+	require( is_signer(founder_pubkey), appmsg_m.msg('MSGE0101', 'Signer', 'test_m.test_select_test_data') ); // Require that supplied pubkey is same as signing pubkey
+	
+	// Check authorization
+	require(auth_m.pubkey_is_founder(founder_pubkey), appmsg_m.msg('MSGE0104', 'Founder', 'test_m.test_select_test_data'));
+	
+	// Convert selection in integer to enum
+	var td = data_set_enum.value(test_data);
+	
+	// If no data should be created, return from function
+	if(td==data_set_enum.NONE){
+		return;
+	}
+	
+	// If default test data is requested, find default values 
+	if(td==data_set_enum.DEFAULT){
+		td = data_set_enum.DEMO;
+	}
+	
+	if(td == data_set_enum.LIMITED){
+		test_init_data (founder_pubkey,
+			byte_array("0000000000000000000000000000000000000000000000000000000000000000"),
+			byte_array("0000000000000000000000000000000000000000000000000000000000000000"),
+			byte_array("0000000000000000000000000000000000000000000000000000000000000000"),
+			byte_array("0000000000000000000000000000000000000000000000000000000000000000"));
+	}
+	else if(td == data_set_enum.DEMO){
+		init_data_set_2(founder_pubkey);
+	}
+}
+
+enum data_set_enum {
+	DEFAULT,
+	NONE,
+	LIMITED,
+	DEMO
+}
+*/

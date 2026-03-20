@@ -1,0 +1,39 @@
+
+//****************************************
+// history_object_type - class
+
+/* For future use if object type
+ * text should be fetched from database
+entity history_object_type {
+	key id: object_type_enum;
+	key name: text;
+}
+
+function object_type_init(){
+	// Initialize blockchain with object type texts
+	...
+}
+*/
+
+// Getting English example text for object type
+function object_type_text(id: object_type_enum): text{
+	return when(id){
+		object_type_enum.AGENT -> 'Agent';
+		object_type_enum.COMPANY -> 'Company';
+		object_type_enum.PERSONA -> 'Pesona';
+		object_type_enum.SHAREBLOCK -> 'Share block';
+		object_type_enum.REQUEST -> 'Request';
+		//else -> 'Unknown'; // Not needed (or allowed) since all cases must always be covered
+	};
+}
+
+enum object_type_enum {
+	// Please note!
+	//	When solution is live new objects MUST only be added to the end!
+	
+	AGENT,
+	COMPANY,
+	PERSONA,
+	SHAREBLOCK,
+	REQUEST
+}

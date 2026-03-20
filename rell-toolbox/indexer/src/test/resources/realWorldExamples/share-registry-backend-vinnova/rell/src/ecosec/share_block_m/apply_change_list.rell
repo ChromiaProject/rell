@@ -1,0 +1,96 @@
+
+//****************************************
+// apply_change_list - share_block
+//
+// - Takes a list of changes and modifies the
+//   company's share blocks add, change, divide
+// - Sets the company's share count + share value
+// - Checks that company share count matches sum
+//   of share block share count after all modifications
+// - Missing old_persona_id (=="") in change_list is
+//   assumed to be a new share block added
+// - Missing new_persona_id (=="") is assumed to be a divide
+//   described in "new_parts"
+//
+// LIMITATIONS
+// - 
+
+import ecosec.extlib_m;
+import ecosec.appmsg_m;
+import ecosec.auth_m;
+import ecosec.company_m;
+import ecosec.history_m;
+
+function apply_change_list(agent_pubkey: pubkey, agent_id: text, 
+				org_nr: text,
+				old_share_count: integer, old_share_value: integer,
+				new_share_count: integer, new_share_value: integer,
+				change_list: list<(share_from: integer, share_to: integer,
+				old_persona_id: text, old_share_type: text,
+				old_pledging: boolean, old_certificate: boolean,
+				new_persona_id: text, new_share_type: text,
+				new_pledging: boolean, new_certificate: boolean,
+				new_parts: list<integer>)>
+				){
+	/*				
+	print('------------------------------------------------------------------------------');
+	print('------------------------------------------------------------------------------');
+	print('------------------------------------------------------------------------------');
+	print('org_nr: ' + org_nr);
+	print('change_list[0].share_from: ' + change_list[0].share_from);
+	print('change_list[0].old_persona_id: ' + change_list[0].old_persona_id);
+	print('change_list[0].new_persona_id: ' + change_list[0].new_persona_id);
+	print('change_list[0].new_parts.size(): ' + change_list[0].new_parts.size());
+	print('------------------------------------------------------------------------------');
+	print('------------------------------------------------------------------------------');
+	print('------------------------------------------------------------------------------');
+	*/
+
+	// Check authorization for self
+	require(auth_m.have_auth_agent(agent_pubkey, agent_id), appmsg_m.msg('MSGE0101', 'agent', 'apply_change_list')); // Supplied pubkey not signer?
+	
+	// Check authorization for action
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'apply_change_list')); // Not board representative?
+	
+	for(change in change_list){
+		if(change.old_persona_id != '' and change.new_persona_id != '' and change.new_parts.size() == 0){ // This is a change of "fields" in an existing share block
+			change(agent_pubkey, agent_id, 
+				org_nr,
+				change.share_from, change.share_to,
+				change.old_persona_id, change.old_share_type,
+				change.old_pledging, change.old_certificate,
+				change.new_persona_id, change.new_share_type,
+				change.new_pledging, change.new_certificate
+				);
+		}
+		else if(change.old_persona_id != "" and change.new_persona_id == "" and change.new_parts.size() > 1){ // This is a divide of an existing share block
+			divide(agent_pubkey, agent_id, 
+				org_nr,
+				change.share_from, change.share_to,
+				change.old_persona_id, change.old_share_type,
+				change.old_pledging, change.old_certificate,
+				change.new_parts
+				);
+		}
+		else if(change.old_persona_id == '' and change.new_persona_id != '' and change.new_parts.size() == 0) { // Assume this is a new share block to add
+			add(agent_pubkey, agent_id, 
+				org_nr,
+				change.share_from, change.share_to,
+				change.new_persona_id, change.new_share_type,
+				change.new_pledging, change.new_certificate
+				);
+		}
+		else { // Incorrect combination of arguments in change list entry
+			require(false, appmsg_m.msg('MSGE0305', 'share block change list entry', 'apply_change_list')); // Incorrect combination of arguments in change row
+		}
+	}
+	
+	// Update company share count
+	company_m.company_set_share_info(agent_pubkey, agent_id,
+				org_nr,
+				old_share_count, old_share_value,
+				new_share_count, new_share_value);
+	
+	// Verify that share count is consistent for company
+	require_share_count(agent_pubkey, agent_id, org_nr);
+}

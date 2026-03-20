@@ -1,0 +1,17 @@
+module;
+
+object obj {
+mutable name= "foo";
+}
+
+entity long_name {
+    name;
+}
+
+entity x {
+    name;
+}
+
+function change_obj(name) {
+    obj.name = name;
+}

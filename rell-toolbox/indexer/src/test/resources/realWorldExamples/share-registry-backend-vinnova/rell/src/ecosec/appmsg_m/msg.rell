@@ -1,0 +1,31 @@
+
+//****************************************
+// appmessage - Function to get message string by message code
+//
+// - Used to enforce standardized "require()" messages
+// - Ensure unique message codes cross app, that can be used by frontend for user feedback
+// - Centralizes the message format
+//
+// LIMITATIONS
+// - 
+//
+
+
+/*include "apptext"; // Standardized texts by code
+function main(){
+	print(appmessage('MSGE0000', 'Persona', 'Func'));
+	print(appmessage('MSGE0101', 'Superadmin', 'Func'));
+	print(appmessage('MSGE0201', 'Persona', 'Func'));
+}*/
+
+function msg(code: text, arg1: text, arg2: text): text {
+	// code : Unique message code mapping to a text
+	// arg1 : Context info. Recommended: object (class / type / role / etc)
+	// arg2 : Context info. Recommended: function/operation/query name 
+
+	val msg = 'APPMESSAGE:{ code: "' + code + '", text: "' + apptext(code) + '", arg1: "' + arg1 + '", arg2: "' + arg2 + '"}';
+	
+	print(msg);
+	
+	return msg;
+}

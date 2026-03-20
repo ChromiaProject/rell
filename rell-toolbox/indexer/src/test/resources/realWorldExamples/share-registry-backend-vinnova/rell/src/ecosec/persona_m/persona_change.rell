@@ -1,0 +1,147 @@
+
+//****************************************
+// persona_change - business logic
+//
+// - Update an existing Persona
+// - 
+//
+// LIMITATIONS
+// - 
+
+import ecosec.appmsg_m;
+import ecosec.auth_m;
+import ecosec.identity_m;
+import ecosec.history_m;
+
+function persona_change(agent_pubkey: pubkey, agent_id: text, 
+				org_nr: text,
+				id: text, first_name: text, last_name: text,
+				address1: text, address2: text, postal_code: text, city: text, country: text,
+				phone: text, email: text,
+				type: persona_type_enum,
+				identity_type_id: identity_m.id_type_enum, identity_nr: text,
+				trustee: boolean,
+				board_member: boolean,
+				orig_time_stamp: integer
+				){
+
+	// Check authorization for self
+	require(auth_m.have_auth_agent(agent_pubkey, agent_id), appmsg_m.msg('MSGE0101', 'agent', 'persona_update')); // Supplied pubkey not signer?
+	
+	// Check authorization for action
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'persona_update')); // Not board representative?
+	
+	// Check that Persona has not been changed
+	val orig_persona = persona @* { .id == id, .changed_time_stamp == orig_time_stamp }(
+		.id, .first_name, .last_name,
+		.address1, .address2, .postal_code, .city, .country,
+		.phone, .email,
+		.type,
+		identity_type_id = .identity_type.id, .identity_nr,
+		.trustee
+	);
+	require(orig_persona.size() == 1, appmsg_m.msg('MSGE0201', 'Persona', 'persona_update')); // Persona changed by someone else?
+	
+	// History log - Persona change
+	// History limitation for persona: Must create history before persona update!
+	val persona_old = history_m.persona_json(id = id, first_name = orig_persona[0].first_name, last_name = orig_persona[0].last_name,
+	    address1 = orig_persona[0].address1, address2 = orig_persona[0].address2, postal_code = orig_persona[0].postal_code, city = orig_persona[0].city, country = orig_persona[0].country,
+	    phone = orig_persona[0].phone, email = orig_persona[0].email,
+	    type = orig_persona[0].type.value,
+	    identity_type_id = orig_persona[0].identity_type_id, identity_nr = orig_persona[0].identity_nr,
+	    trustee = orig_persona[0].trustee);
+	val persona_new = history_m.persona_json(id = id, first_name = first_name, last_name = last_name,
+	    address1 = address1, address2 = address2, postal_code = postal_code, city = city, country = country,
+	    phone = phone, email = email,
+	    type = type.value,
+	    identity_type_id = identity_type_id, identity_nr = identity_nr,
+	    trustee = trustee);
+	  
+	history_m.add(
+		org_nr,
+		op_context.last_block_time,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.PERSONA,
+		history_m.event_type_enum.CHANGED,
+		persona_old.to_gtv_pretty().to_json(),
+		persona_new.to_gtv_pretty().to_json(),
+		id,
+		orig_persona[0].first_name + ' ' + orig_persona[0].last_name + ' (' + orig_persona[0].identity_nr + ')',
+		id
+	);
+		
+	// Set correct board member status
+	val was_board_member = ( persona_role @* { persona_role.persona.id == id, persona_role.role_type.id == role_type_enum.BOARD_MEMBER }).size() > 0; // Old board member setting
+	if(was_board_member != board_member){ // Board member setting changed?
+		if(board_member == false){
+			delete persona_role @ { persona_role.persona.id == id, persona_role.role_type.id == role_type_enum.BOARD_MEMBER };
+			
+			history_m.add(
+				org_nr,
+				op_context.last_block_time,
+				agent_id,
+				agent_pubkey,
+				history_m.object_type_enum.PERSONA,
+				history_m.event_type_enum.PERSONA_LOSTBM,
+				history_m.empty_json(),
+				history_m.empty_json(),
+				id,
+				orig_persona[0].first_name + ' ' + orig_persona[0].last_name + ' (' + orig_persona[0].identity_nr + ')',
+				id
+			);
+		}
+		else {
+			create persona_role (
+				persona = persona @ { .id == id },
+				role_type = role_type @ { .id == role_type_enum.BOARD_MEMBER }
+			);
+			
+			history_m.add(
+				org_nr,
+				op_context.last_block_time,
+				agent_id,
+				agent_pubkey,
+				history_m.object_type_enum.PERSONA,
+				history_m.event_type_enum.PERSONA_GAINEDBM,
+				history_m.empty_json(),
+				history_m.empty_json(),
+				id,
+				orig_persona[0].first_name + ' ' + orig_persona[0].last_name + ' (' + orig_persona[0].identity_nr + ')',
+				id
+			);
+		}
+	}	
+	
+	// Update Persona
+	update persona @ { .id == id } (
+	
+	    first_name = first_name,
+	    last_name = last_name,
+	    address1 = address1,
+	    address2 = address2,
+	    postal_code = postal_code,
+	    city = city,
+	    country = country,
+	    
+	    phone = phone,
+	    email = email,
+	    
+	    identity_type = identity_m.id_type @ {identity_type_id},
+	    identity_nr = identity_nr,
+	    
+	    trustee = trustee,
+		
+		changed_time_stamp = op_context.last_block_time
+	);
+	
+	// Sync (remove/add) agent authorization for persona based on new identity_type/identity_nr
+	//print('persona_change, Check if identity changed for persona ' + orig_persona[0].identity_nr + ' : ' + identity_nr);
+	if(orig_persona[0].identity_type_id != identity_type_id or orig_persona[0].identity_nr != identity_nr){
+		print('persona_change, Identity changed for persona ' + orig_persona[0].identity_nr + ' : ' + identity_nr);
+		auth_m.auth_sync_persona_identity_change(agent_pubkey, agent_id,
+				persona @ { .id == id },
+				orig_persona[0].identity_type_id, orig_persona[0].identity_nr,
+				identity_type_id, identity_nr);
+	}
+}

@@ -1,0 +1,154 @@
+
+function Interface_(name, types: map<text, gtv>, extends: list<name> = list()) {
+	return rell.test.tx(test.dip.op.create_interface_(name, types, extends))
+		.nop();
+}
+
+function Instance_(interfaces: list<text>, types: map<text, gtv>, prototype: text? = null) {
+	return rell.test.tx()
+        .op(test.dip.op.create_instance_(interfaces, prototype, types))
+        .nop();
+}
+
+function Prototype_(interfaces: list<text>, types: map<text, gtv>, prototype_name: text, prototype: text? =  null) {
+	return rell.test.tx()
+        .op(test.dip.op.create_instance_(interfaces, prototype, types, prototype_name))
+        .nop();
+}
+
+function add_type_attribute_(i: instance, attribute, value: gtv) {
+	return rell.test.tx()
+        .op(test.dip.op.add_type_attribute_(i, attribute, value))
+        .nop();
+}
+
+function set_type_attribute_(i: instance, attribute, value: gtv) {
+	return rell.test.tx()
+        .op(test.dip.op.set_type_attribute_(i, attribute, value))
+        .nop();
+}
+
+function add_type_attribute_meta_(i: instance, attribute, value: gtv, context: gtv? = null) {
+	return rell.test.tx()
+        .op(test.dip.op.add_type_attribute_meta_(i, attribute, value, context))
+        .nop();
+}
+
+function set_type_attribute_meta_(i: instance, attribute, value: gtv, context: gtv? = null) {
+	return rell.test.tx()
+        .op(test.dip.op.set_type_attribute_meta_(i, attribute, value, context))
+        .nop();
+}
+
+function create_instance() {
+	rell.test.tx()
+        .op(test.dip.op.create_instance())
+        .nop()
+        .run();
+    return instance @ {(instance @* {} (@sort_desc .rowid) limit 1)[0]};
+}
+
+/** Map */
+function map_put_(instance, attribute, element: (gtv, gtv)) {
+	return rell.test.tx()
+        .op(test.dip.op.map_put_(instance, attribute, element))
+        .nop();
+}
+
+function map_put_all_(instance, attribute, elements: map<gtv,gtv>) {
+	return rell.test.tx()
+        .op(test.dip.op.map_put_all_(instance, attribute, elements))
+        .nop();
+}
+
+function map_remove_(instance, attribute, idx: gtv) {
+	return rell.test.tx()
+        .op(test.dip.op.map_remove_(instance, attribute, idx))
+        .nop();
+}
+
+function map_clear_(instance, attribute) {
+	return rell.test.tx()
+        .op(test.dip.op.map_clear_(instance, attribute))
+        .nop();
+}
+/** Map end */
+
+/** Set */	
+function set_add_(instance, attribute, value: gtv) {
+	return rell.test.tx()
+        .op(test.dip.op.set_add_(instance, attribute, value))
+        .nop();
+}
+
+function set_add_all_(instance, attribute, values: gtv) {
+	return rell.test.tx()
+        .op(test.dip.op.set_add_all_(instance, attribute, values))
+        .nop();
+}
+
+function set_remove_(instance, attribute, value: gtv) {
+	return rell.test.tx()
+        .op(test.dip.op.set_remove_(instance, attribute, value))
+        .nop();
+}
+
+function set_remove_all_(instance, attribute, values: gtv) {
+	return rell.test.tx()
+        .op(test.dip.op.set_attribute_remove_all_(instance, attribute, values))
+        .nop();
+}
+
+function set_clear_(instance, attribute) {
+	return rell.test.tx()
+        .op(test.dip.op.set_clear_(instance, attribute))
+        .nop();
+}
+/** Set end */
+
+/** List */	
+function list_add_(instance, attribute, value: gtv, pos: integer = -1) {
+	return rell.test.tx()
+        .op(test.dip.op.list_add_(instance, attribute, value, pos))
+        .nop();
+}
+
+function list_add_all_(instance, attribute, values: gtv, pos: integer = -1) {
+	return rell.test.tx()
+        .op(test.dip.op.list_add_all_(instance, attribute, values, pos))
+        .nop();
+}
+
+function list_clear_(instance, attribute) {
+	return rell.test.tx()
+        .op(test.dip.op.list_clear_(instance, attribute))
+        .nop();
+}
+
+function list_remove_(instance, attribute, value: gtv) {
+	return rell.test.tx()
+        .op(test.dip.op.list_remove_(instance, attribute, value))
+        .nop();
+}
+
+function list_remove_all_(instance, attribute, values: gtv) {
+	return rell.test.tx()
+        .op(test.dip.op.list_remove_all_(instance, attribute, values))
+        .nop();
+}
+
+function list_remove_at_(instance, attribute, idx: integer) {
+	return rell.test.tx()
+        .op(test.dip.op.list_remove_at_(instance, attribute, idx))
+        .nop();
+}
+/** List end */
+
+/* Query Helper */
+function get_last_instance() {
+	return (instance_dclass @* {.instance.is_prototype == false} (@omit @sort_desc .rowid, .instance) limit 1)[0];
+}
+
+function get_last_instances() {
+	return (instance_dclass @* {.instance.is_prototype == false} (@omit @sort .rowid, .instance));
+}

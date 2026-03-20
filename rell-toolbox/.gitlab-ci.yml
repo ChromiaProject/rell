@@ -1,0 +1,99 @@
+image: registry.gitlab.com/chromaway/core-tools/chromia-images/maven-docker-java21:1.0.11@sha256:a985644b469b4d01dcbd726176d69e238d8c7012c077a429beb65f86905d0bd1
+include:
+  - project: chromaway/core-infra/gitlab-automation
+    ref: 1.3.3
+    file:
+      - templates/release.yml
+      - templates/report-code-coverage.yml
+
+# Disable the Gradle daemon for Continuous Integration servers as correctness
+# is usually a priority over speed in CI environments. Using a fresh
+# runtime for each build is more reliable since the runtime is completely
+# isolated from any previous builds.
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true"
+  DOCKER_HOST: tcp://docker:2375
+  JACOCO_REPORT_DIR: language-server/build/reports/jacoco/testCodeCoverageReport
+  JACOCO_REPORT_XML: testCodeCoverageReport.xml
+  JACOCO_REPORT_HTML: html/index.html
+
+.setup:
+  before_script:
+    - chmod +x ./gradlew
+    - GRADLE_USER_HOME="$(pwd)/.gradle"
+    - export GRADLE_USER_HOME
+  services:
+    - name: docker:23.0.4-dind
+      alias: docker
+      command: [ "--tls=false" , "--experimental" ]
+  artifacts:
+    when: always
+    paths:
+      - "**/*.log"
+      - $JACOCO_REPORT_DIR/*
+    reports:
+      junit:
+        - "*/build/test-results/test/**/TEST-*.xml"
+    expire_in: 1 week
+
+stages:
+  - build-and-test
+  - code-coverage
+  - publish
+  - release
+
+build-and-test:
+  stage: build-and-test
+  interruptible: true
+  extends:
+    - .setup
+    - .visualise-test-coverage
+  script: ./gradlew check --info
+  artifacts:
+    reports:
+      codequality: ["build/reports/detekt/code-climate.json"]
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull-push
+    paths:
+      - "**/build"
+      - .gradle
+
+publish:
+  stage: publish
+  extends: .setup
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
+  script: ./gradlew --build-cache publish -Pversion=$CI_COMMIT_TAG
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - "**/build"
+      - .gradle
+
+test-coverage-report:
+  stage: code-coverage
+  dependencies:
+    - build-and-test
+
+pages:
+  stage: release
+  script:
+    - ./gradlew dokkaHtml
+    - mkdir -p public/ast
+    - mkdir -p public/code-quality
+    - mkdir -p public/common
+    - mkdir -p public/indexer
+    - mkdir -p public/language-server
+    - mv ast/build/dokka/html public/ast
+    - mv code-quality/build/dokka/html public/code-quality
+    - mv common/build/dokka/html public/common
+    - mv indexer/build/dokka/html public/indexer
+    - mv language-server/build/dokka/html public/language-server
+  artifacts:
+      paths:
+          - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
+

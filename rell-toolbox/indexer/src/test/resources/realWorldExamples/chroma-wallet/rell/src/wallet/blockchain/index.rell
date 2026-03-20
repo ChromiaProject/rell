@@ -1,0 +1,3 @@
+entity blockchain {
+  key blockchain_rid: byte_array, chain_id: integer; // TOREMOVE
+}

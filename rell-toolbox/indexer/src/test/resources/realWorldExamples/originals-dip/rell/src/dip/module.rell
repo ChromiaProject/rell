@@ -1,0 +1,6 @@
+@mount('dip')
+abstract module;
+
+namespace dip {
+	import ^.dip.*;
+}

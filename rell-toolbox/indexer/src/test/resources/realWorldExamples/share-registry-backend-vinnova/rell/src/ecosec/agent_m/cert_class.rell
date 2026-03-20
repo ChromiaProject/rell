@@ -1,0 +1,16 @@
+
+//****************************************
+// cert - class
+
+import ecosec.identity_m;
+
+entity cert {
+	index agent;			// table user_data record which this cert relates to
+	identity_type: identity_m.id_type;	// The identity type included in the certificate
+	identity_nr: text;		// The identity number included in the certificate (of type "identity_type")
+	pubkey;					// Public key that have a status as defined in table certificate_status
+
+	signer_pubkey: pubkey; 	// Public key of certificate signer
+	
+	index identity_type, identity_nr; // Allow search by identity
+}

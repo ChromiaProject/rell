@@ -1,0 +1,15 @@
+function seed_day(): integer {
+	return chain_context.args.day_in_millis;
+}
+
+function seed_to_fruit_duration_in_millis(): integer {
+	return chain_context.args.day_in_millis * chain_context.args.seed_to_fruit_days;
+}
+
+function millis_from_dying_to_death(): integer {
+	return chain_context.args.day_in_millis / 2;
+}
+
+function task_fertilizer() {
+	return "Fertilizer";
+} 

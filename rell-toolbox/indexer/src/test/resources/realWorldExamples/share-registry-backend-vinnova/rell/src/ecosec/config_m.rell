@@ -1,0 +1,27 @@
+module;
+//****************************************
+// settings - record
+//
+// - Used for global settings that are
+//   blockchain code version dependent.
+
+// Settings for running code version
+struct settings {
+	major_version: integer = 0;
+	minor_version: integer = 1;
+}
+
+// Settings in DB (Should be pushed
+object db_settings {
+	major_version: integer = 0;
+	minor_version: integer = 1;
+}
+
+// XML arguments
+//struct module_args {
+//	varname: integer;
+//}
+// Make reading args available from any module
+//function module_args_get():module_args{
+//	return chain_context.args;
+//}

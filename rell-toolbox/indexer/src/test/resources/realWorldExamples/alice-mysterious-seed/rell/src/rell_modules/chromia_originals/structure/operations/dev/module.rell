@@ -1,0 +1,10 @@
+import ^^^.instance;
+import ^^^.structure;
+
+//operation def_structure(name, interfaces_names: list<text>, property_list: list<structure.property>) {
+//	structure.def_structure(name, interfaces_names, property_list);
+//}
+
+//operation new_instance(structure_name: text, property_list: list<structure.property>) {
+//	instance.new_instance(structure_name, property_list);
+//}

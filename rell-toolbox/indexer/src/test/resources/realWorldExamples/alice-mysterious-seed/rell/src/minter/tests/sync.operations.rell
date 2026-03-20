@@ -1,0 +1,33 @@
+function test_admin_should_be_able_to_update_ethereum_sync_block() {
+	val tx1 = rell.test
+		.tx()
+		.op(minter.update_block_height("Ethereum", 10))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val height = minter.sync_status @ { "Ethereum" } ( .block_height );
+	
+	assert_equals(height, 10);
+}
+
+function test_admin_should_be_able_to_update_bsc_sync_block() {
+	val tx1 = rell.test
+		.tx()
+		.op(minter.update_block_height("BSC", 10))
+		.sign(util.admin_keypair());
+		
+	rell.test
+		.block()
+		.tx(init())
+		.tx(tx1)
+		.run();
+		
+	val height = minter.sync_status @ { "BSC" } ( .block_height );
+	
+	assert_equals(height, 10);
+}

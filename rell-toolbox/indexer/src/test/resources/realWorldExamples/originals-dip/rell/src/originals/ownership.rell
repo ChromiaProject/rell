@@ -1,0 +1,126 @@
+import ^.ft3_helper;
+
+function transfer(original_id: byte_array,
+	from_id: byte_array, from_auth_desc: byte_array,
+	to_id: byte_array, quantity: integer = 1
+) {
+	require(from_id != to_id, "No self transfer");
+	
+	ft3_helper.transfer(original_id, from_id, from_auth_desc, to_id, quantity);
+	
+	// Transfer all linked originals
+	val instances = get_linked_instances(original_id);
+	while (not instances.empty()) {
+		val instance = instances.remove_at(0);
+		val child_id = get_id_attribute(instance, ID_ATTR());
+		require(child_id, "Linked Original not found.");
+		
+		ft3_helper.transfer_locked_asset(child_id, from_id, to_id);
+		instances.add_all(get_linked_instances(child_id));
+	}
+}
+
+function fractionalize(id: byte_array, owner_id: byte_array, owner_auth_desc: byte_array, fractions: integer): byte_array {
+	require(is_nfo(id), "Only non fungible originals can be fractionalized.");
+	require(owns_original(owner_id, id), "Only the owner can fractionalize the NFO");
+	
+	ft3_helper.require_transfer_auth(owner_id, owner_auth_desc);
+	
+	val instance = get_instance_by_id(id);
+	require(instance, "Original with id " + id + " not found.");
+	
+	// Get creator data from original to fractionalize
+	val creator_id = get_byte_array_attribute(instance, CREATOR_ID_ATTR());
+	val creator_name = get_text_attribute(instance, CREATOR_NAME_ATTR());
+	
+	val fractional_type = original_type([IFRO()], [
+		"creator_id": ByteArray(creator_id),
+		"creator_name": Text(creator_name),
+		"original": Id(id),
+		"max_supply": Integer(fractions)
+	]);
+	
+	return mint_fungible_original(fractional_type, null, owner_id, owner_auth_desc, fractions);
+}
+
+function get_highest_base_instance(id: byte_array): instance {
+	var base = get_instance_by_id(id)!!;
+	
+	while (true) {
+		val new_base = instance_attribute @? {.instance_value == base}.instance;
+		if (new_base??) {
+			base = new_base;
+		} else {
+			break;
+		}
+	}
+	
+	return base;
+}
+
+function get_base_instance(id: byte_array): instance {
+	return instance_attribute @ {.instance_value == get_instance_by_id(id)!!}.instance;
+}
+
+function get_linked_instances(id: byte_array): list<instance> {
+	return instance_attribute @* {.instance == get_instance_by_id(id)!!}.instance_value;
+}
+
+function is_linked(id: byte_array): boolean {
+	return instance_attribute @? {.instance_value == get_instance_by_id(id)!!}??;
+}
+
+function owns_original(account_id: byte_array, original_id: byte_array): boolean {
+	return ft3_helper.owns_asset(account_id, original_id);
+}
+
+function amount_owned_of_original(account_id: byte_array, original_id: byte_array): integer {
+	return ft3_helper.get_asset_balance(account_id, original_id);
+}
+
+function link_instance(account_id: byte_array, auth_id: byte_array, attr_name: text, base_id: byte_array, child_id: byte_array) {
+	val base = get_instance_by_id(base_id);
+	val child = get_instance_by_id(child_id);
+	
+	require(base, "Base not found.");
+	require(child, "Child not found.");
+	require(not is_linked(child_id), "Child is already linked to something");
+	ft3_helper.require_transfer_auth(account_id, auth_id);
+	
+	val attribute = get_attribute_from_instance_by_name(attr_name, base);
+	
+	val context = acc_auth(account_id = account_id, auth_descriptor_id = auth_id);
+	val linked_instance = instance_attribute @? {attribute, .instance == base}.instance_value;
+	if (linked_instance??) {
+		unlock_original(account_id, child_id);
+		set_type_attribute_meta(base, attribute, child.to_gtv(), context.to_gtv());
+	} else {
+		add_type_attribute_meta(base, attribute, child.to_gtv(), context.to_gtv());
+	}
+	
+	lock_original(account_id, child_id);
+}
+
+function unlink_instance(account_id: byte_array, auth_id: byte_array, attr_name: text, base_id: byte_array) {
+	val base = get_instance_by_id(base_id);
+	
+	require(base, "Base not found.");
+	ft3_helper.require_transfer_auth(account_id, auth_id);
+	
+	val attribute = get_attribute_from_instance_by_name(attr_name, base);	
+	
+	val context = acc_auth(account_id = account_id, auth_descriptor_id = auth_id);
+	val child = instance.from_gtv(remove_type_attribute_meta(base, attribute, context.to_gtv()));
+	val child_id = get_id_attribute(child, ID_ATTR());
+	require(child_id, "ID attribute not found in original.");
+	
+	unlock_original(account_id, child_id);
+}
+
+function lock_original(account_id: byte_array, original_id: byte_array) {
+	ft3_helper.lock_asset(account_id, original_id);
+}
+
+function unlock_original(account_id: byte_array, original_id: byte_array) {
+	ft3_helper.unlock_asset(account_id, original_id);
+}

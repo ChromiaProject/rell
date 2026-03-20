@@ -1,0 +1,6 @@
+@mount('originals_hub')
+module;
+
+import ft3_acc: ^.ft3.account;
+import ft3_core: ^.ft3.core;
+import .external.*;

@@ -1,0 +1,99 @@
+import acc: ft3.account.*;
+import core: ft3.core.*;
+
+function SPECIAL() = "LINK";
+
+function get_ft3_account(account_id: byte_array): acc.account {
+	return acc.account @ { .id == account_id };
+}
+
+function require_transfer_auth(account_id: byte_array, auth_id: byte_array) {
+	acc.require_auth(get_ft3_account(account_id), auth_id, ["T"]);
+}
+
+function create_asset(init_id: byte_array): core.asset {
+	val issuing_chain_rid = chain_context.blockchain_rid;
+	val id = (init_id, issuing_chain_rid).hash();
+	
+	return create core.asset (id, issuing_chain_rid, id.to_hex());
+}
+
+function create_and_mint_asset(init_id: byte_array, account_id: byte_array, quantity: integer): byte_array {
+	val asset = create_asset(init_id);
+	
+	core.ensure_balance(get_ft3_account(account_id), asset).amount += quantity;
+	
+	return asset.id;
+}
+
+function mint_existing_asset(asset_id: byte_array, account_id: byte_array, quantity: integer) {
+	core.ensure_balance(get_ft3_account(account_id), core.asset @ {.id == asset_id}).amount += quantity;
+}
+
+function owns_asset(account_id: byte_array, asset_id: byte_array): boolean {
+	return core.balance @? {.asset.id == asset_id, .account.id == account_id, .amount > 0}??;
+}
+
+function get_asset_balance(account_id: byte_array, asset_id: byte_array): integer {
+	val balance = core.get_asset_balance(account_id, asset_id);
+	
+	return if (balance??) balance.amount else 0;
+}
+
+function get_asset_supply(asset_id: byte_array): integer {
+	return core.balance @ {.asset.id == asset_id} (@sum .amount);
+}
+
+function lock_asset(account_id: byte_array, asset_id: byte_array) {
+	val asset = core.asset @ {.id == asset_id};
+	val account = get_ft3_account(account_id);
+	
+	transfer_asset(
+		account,
+		ensure_locked_account(SPECIAL(), account),
+		asset, 1
+	);
+}
+
+function unlock_asset(account_id: byte_array, asset_id: byte_array) {
+	val asset = core.asset @ {.id == asset_id};
+	val account = get_ft3_account(account_id);
+	
+	transfer_asset(
+		ensure_locked_account(SPECIAL(), account),
+		account,
+		asset, 1
+	);
+}
+
+function is_asset_locked(account_id: byte_array, asset_id: byte_array) {
+	val locked_account_id = special_account_id(LOCKED(SPECIAL()), account_id, list<gtv>().to_gtv());
+	
+	return owns_asset(locked_account_id, asset_id);
+}
+
+function transfer(asset_id: byte_array,
+	from_id: byte_array, from_auth_desc: byte_array,
+	to_id: byte_array, quantity: integer = 1
+) {	
+	val asset = core.asset @ {.id == asset_id};	
+	val inputs = list<core.xfer_input>();
+    val outputs = list<core.xfer_output>();
+    
+    inputs.add(core.xfer_input(account_id = from_id, asset_id = asset.id, auth_descriptor_id = from_auth_desc, amount = quantity, map<text, gtv>()));
+    outputs.add(core.xfer_output(account_id = to_id, asset_id = asset.id, amount = quantity, map<text, gtv>()));
+    
+    core._transfer(inputs, outputs);
+}
+
+function transfer_locked_asset(asset_id: byte_array, from_account_id: byte_array, to_account_id: byte_array) {
+	val asset = core.asset @ {.id == asset_id};
+	val from = get_ft3_account(from_account_id);
+	val to = get_ft3_account(to_account_id);
+	
+	transfer_asset(
+		ensure_locked_account(SPECIAL(), from),
+		ensure_locked_account(SPECIAL(), to),
+		asset, 1
+	);
+}

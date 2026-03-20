@@ -1,0 +1,11 @@
+enum type {
+    TEXT,
+    INTEGER,
+    DECIMAL
+
+,
+
+
+}
+
+enum type2 {TEXT, INTEGER    ,    }

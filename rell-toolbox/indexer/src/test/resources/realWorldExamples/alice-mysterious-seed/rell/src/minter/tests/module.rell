@@ -1,0 +1,17 @@
+@test module;
+
+namespace mysterious_seed {
+	import mysterious_seed.*;
+}
+
+namespace util {
+	import rell_modules.test_util.*;
+}
+
+namespace ft3_test {
+	import rell_modules.ft3_test.*;
+}
+
+namespace minter {
+	import minter.*;
+}

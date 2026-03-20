@@ -1,0 +1,12 @@
+module;
+
+enum shirt_size {
+    small,
+    medium,
+    large
+}
+
+entity person {
+    name;
+    shirt_size;
+}

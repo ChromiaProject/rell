@@ -1,0 +1,20 @@
+@mount("minter")
+module;
+
+namespace ft3 {
+	import rell_modules.ft3.core.*;
+	import rell_modules.ft3.operations.dev_op_asset;
+	import rell_modules.ft3.operations.dev_op_account;
+	import rell_modules.ft3.account.operations;
+	import rell_modules.ft3.core.operations.transfer;
+	import rell_modules.ft3.operations.dev_op_balance;
+	import rell_modules.ft3.operations.dev_op_rate_limit;
+}
+
+namespace mysterious_seed {
+	import mysterious_seed.*;
+}
+
+struct module_args {
+	admin_pubkey: pubkey;
+}

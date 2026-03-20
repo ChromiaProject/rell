@@ -1,0 +1,136 @@
+@test module;
+import ^^.originals.*;
+import ^^.dip.*;
+import ^^^.ft3_helper;
+
+//Interface(IO(), [
+//	"id": Type(Id()),
+//	"creator_id": Type(ByteArray(), [ReadOnly()]),
+//	"creator_name": Type(Text(), [ReadOnly()]),
+//	"description": Type(Text(), [ReadOnly(), Optional()])
+//]);
+
+function test_mint() {
+	Initialize_original_interfaces();
+	val acc_data = create_ft3_test_acc(admin_keypair());
+	
+	val original = original_type(
+		[INFO()],
+		[
+			"creator_id": ByteArray(acc_data.id),
+			"creator_name": Text("Admin")
+		]
+	);
+	
+	MintNonFungibleOriginal(original, acc_data.id, acc_data.auth_descriptor).sign(acc_data.keypair).run();
+}
+
+function test_mint_and_link() {
+	Initialize_original_interfaces();
+	val acc_data = create_ft3_test_acc(admin_keypair());
+	
+	Interface_("ITestDapp", [:], [INFO()]).run();
+	
+	Prototype_(["ITestDapp"], [
+		"creator_id": ByteArray(acc_data.id),
+		"creator_name": Text("Admin")
+	], "TestDapp").run();
+	
+	Interface_("ICharacter", ["sword": Type(Instance(), [Optional(), OwnerMutable()])], ["ITestDapp"]).run();
+	Interface_("ISword", [:], ["ITestDapp"]).run();
+	
+	val sword_type = original_type(["ISword"], types = [:], "ITestDapp.TestDapp");
+	MintNonFungibleOriginal(sword_type, acc_data.id, acc_data.auth_descriptor).sign(acc_data.keypair).run();
+	val sword_instance = get_last_instance();
+	val sword_id = get_id_attribute(sword_instance, ID_ATTR())!!;
+	
+	val character_type_fail = original_type(["ICharacter"], types = [
+		"sword": Instance(sword_instance)
+	], "ITestDapp.TestDapp");
+	
+	MintNonFungibleOriginal(character_type_fail, acc_data.id, acc_data.auth_descriptor).sign(acc_data.keypair).run_must_fail();	
+	
+	val character_type = original_type(["ICharacter"], types = [
+		"sword": Id(sword_id)
+	], "ITestDapp.TestDapp");
+	
+	MintNonFungibleOriginal(character_type, acc_data.id, acc_data.auth_descriptor).sign(acc_data.keypair).run();
+	val character_instance = get_last_instance();
+	val character_id = get_id_attribute(character_instance, ID_ATTR())!!;
+	
+	assert_true(is_linked(sword_id));
+	assert_false(owns_original(acc_data.id, sword_id));
+	assert_equals(get_base_instance(sword_id), character_instance);
+}
+
+function test_mint_fungible_original_exceeds_max_supply() {
+	Initialize_original_interfaces();
+	val acc_data = create_ft3_test_acc(admin_keypair());
+		
+	val original = original_type(
+		[IFO()],
+		[
+			"creator_id": ByteArray(acc_data.id),
+			"creator_name": Text("Admin"),
+			"max_supply": Integer(5)
+		]
+	);
+	
+	MintFungibleOriginal(original, null, acc_data.id, acc_data.auth_descriptor).sign(acc_data.keypair).run();
+	var id = get_last_id();
+
+	assert_equals(ft3_helper.get_asset_balance(acc_data.id, id), 1);
+	
+	MintFungibleOriginal(null, id, acc_data.id, acc_data.auth_descriptor, 4).sign(acc_data.keypair).run();
+	id = get_last_id();
+
+	assert_equals(ft3_helper.get_asset_balance(acc_data.id, id), 5);
+	
+	MintFungibleOriginal(null, id, acc_data.id, acc_data.auth_descriptor, 1).sign(acc_data.keypair).run_must_fail();
+}
+
+function test_mint_non_fungible_to_account() {
+	Initialize_original_interfaces();
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val bob_acc = create_ft3_test_acc(bob_keypair());
+	
+	val original = original_type(
+		[INFO()],
+		[
+			"creator_id": ByteArray(admin_acc.id),
+			"creator_name": Text("Admin")
+		]
+	);
+	
+	MintNonFungibleOriginalToAccount(original, admin_acc.id, admin_acc.auth_descriptor, bob_acc.id).sign(admin_acc.keypair).run();
+	val id = get_last_id();
+	
+	assert_true(owns_original(bob_acc.id, id));
+	assert_false(owns_original(admin_acc.id, id));
+}
+
+function test_mint_fungible_to_account() {
+	Initialize_original_interfaces();
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val bob_acc = create_ft3_test_acc(bob_keypair());
+	
+	val original = original_type(
+		[IFO()],
+		[
+			"creator_id": ByteArray(admin_acc.id),
+			"creator_name": Text("Admin"),
+			"max_supply": Integer(150)
+		]
+	);
+	
+	MintFungibleOriginal(original, null, admin_acc.id, admin_acc.auth_descriptor, 100).sign(admin_acc.keypair).run();
+	val id = get_last_id();
+	
+	assert_equals(amount_owned_of_original(admin_acc.id, id), 100);
+	
+	MintFungibleOriginalToAccount(null, id, admin_acc.id, admin_acc.auth_descriptor, bob_acc.id, 50).sign(bob_acc.keypair).run_must_fail();
+	MintFungibleOriginalToAccount(null, id, admin_acc.id, admin_acc.auth_descriptor, bob_acc.id, 50).sign(admin_acc.keypair).run();
+	
+	assert_equals(amount_owned_of_original(admin_acc.id, id), 100);
+	assert_equals(amount_owned_of_original(bob_acc.id, id), 50);
+}

@@ -1,0 +1,61 @@
+
+//****************************************
+// company_set_name - business logic
+//
+// - Sets the company name
+// - Requires that time stamp has NOT changed
+// - 
+//
+// LIMITATIONS
+// - 
+
+import ecosec.extlib_m;
+import ecosec.appmsg_m;
+import ecosec.auth_m;
+import ecosec.history_m;
+
+function company_set_name(agent_pubkey: pubkey, agent_id: text,
+				org_nr: text,
+				name: text,
+				orig_time_stamp: integer) {
+		
+	// Check authorization for self
+	require(auth_m.have_auth_agent(agent_pubkey, agent_id), appmsg_m.msg('MSGE0101', 'agent', 'company_set_name')); // Supplied pubkey not signer?
+	
+	// Check authorization for action
+	require(auth_m.have_auth_br(agent_id, org_nr), appmsg_m.msg('MSGE0102', 'board representative', 'company_set_name')); // Not board representative?
+	
+	// Check that that current state is as expected
+	val orig_company = company @? { .org_nr == org_nr, .changed_time_stamp == orig_time_stamp }(
+		.rowid,
+		.name
+	);
+	require( orig_company != null, appmsg_m.msg('MSGE0201', 'Company', 'company_set_name')); // Company changed by someone else?
+	
+	// update share count / quota
+	update company @ { orig_company!!.rowid }(
+		.name = name,
+		changed_time_stamp = op_context.last_block_time
+	);	
+	
+	// History log - Company name
+	val company_old = history_m.company_name_json(
+		name = orig_company.name
+	);
+	val company_new = history_m.company_name_json(
+		name = name
+	);
+	history_m.add(
+		org_nr,
+		op_context.last_block_time,
+		agent_id,
+		agent_pubkey,
+		history_m.object_type_enum.COMPANY,
+		history_m.event_type_enum.COMPANY_NAME,
+		company_old.to_gtv_pretty().to_json(),
+		company_new.to_gtv_pretty().to_json(),
+		org_nr,
+		orig_company.name + ' (' + org_nr + ')',
+		''
+	);
+}

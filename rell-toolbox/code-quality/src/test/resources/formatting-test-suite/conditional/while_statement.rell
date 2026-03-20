@@ -1,0 +1,17 @@
+module;
+
+namespace foo {
+    function showWhileControll() {
+        var i = 1;
+
+        while (i <= 5) {
+            var j = 0;
+            if (j == 3) break;
+            while (j < 4) {
+                j++;
+                break;
+            }
+            i++;
+        }
+    }
+}

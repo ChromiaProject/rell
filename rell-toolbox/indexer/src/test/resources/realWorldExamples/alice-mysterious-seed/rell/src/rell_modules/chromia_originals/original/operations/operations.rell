@@ -1,0 +1,116 @@
+
+import ^^.component_definition.{
+	property_type
+};
+
+import ^^.instance.{
+	instance,
+	set_property,
+	find_by_id,
+	set_property_account,
+	is_text_or_byte_array,
+	instance_property,
+	require_account_can_update_property,
+	is_interface,
+	_set_property,
+	_set_property_account,	
+	_set_property_instance,
+	_instance_property,
+	_instance_property_of_path,
+	_instance_property_of_path_with_cache
+};
+
+import ^^.structure.{
+	Structure
+};
+
+import ^^.interface.{
+	Interface
+};
+
+import ft3: rell_modules.ft3.account;
+
+struct property {
+	name;
+	value: gtv?;
+}
+
+operation set_instance_properties(
+	id: byte_array, 
+	properties: list<property>, 
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	_set_instance_properties(id, properties, account_id, auth_descriptor_id);
+}
+
+function _set_instance_properties(
+	id: byte_array, 
+	properties: list<property>, 
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	val instance = require(
+		find_by_id(id),
+		"Instance '" + id + "' not found"
+	);
+	
+	for (property in properties) {
+		val instance_property = _instance_property(instance, property.name);
+		_auth_set_instance_property(instance_property, property.value, account_id, auth_descriptor_id);
+	}
+}
+
+function _auth_set_instance_property(instance_property, value: gtv?, account_id: byte_array, auth_descriptor_id: byte_array) {
+	require_account_can_update_property(instance_property, account_id, auth_descriptor_id);
+	_set_instance_property(instance_property, value);
+}
+
+function _set_instance_property(instance_property, value: gtv?) {
+	if (empty(value)) {
+		_set_property_instance(instance_property, null);
+		return;
+	}
+	
+	when(instance_property.structure_property.type) {
+		property_type.interface,
+		property_type.structure -> {
+			if(is_text_or_byte_array(value)) {
+				val instance_id = byte_array.from_gtv(value);
+				val i = find_by_id(instance_id)!!;
+				_set_property_instance(instance_property, i); 
+			}
+			// FIXME: handle other options or throw an error
+		}
+		property_type.account -> {
+			val account_id = byte_array.from_gtv(value);
+			val account = ft3.account @ { account_id };
+			_set_property_account(instance_property, account);
+		}
+		else -> {
+			_set_property(instance_property, value);
+		}
+	}
+}
+
+struct instance_properties {
+	id: byte_array;
+	properties: list<property>;
+}
+
+operation update_instances(
+	instance_properties_list: list<instance_properties>, 
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	for (instance_properties in instance_properties_list) {
+		_set_instance_properties(
+			instance_properties.id,
+			instance_properties.properties,	
+			account_id,
+			auth_descriptor_id
+		);
+	}
+}
+
+

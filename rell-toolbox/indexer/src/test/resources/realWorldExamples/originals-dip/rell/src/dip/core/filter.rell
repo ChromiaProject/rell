@@ -1,0 +1,123 @@
+enum a_filter {
+	exact,
+	min,
+	max,
+	range,
+	contains,
+	contains_all,
+	starts_with
+}
+
+struct filter {
+	attribute;
+	parameter: gtv;
+	a_filter = a_filter.exact;
+}
+
+function resolve_filter(instances: list<instance>, filter, from: p_from): 
+	(results: list<instance>, from: p_from?) {
+	
+	when(filter.attribute.a_type) {
+		a_type.boolean -> return apply_boolean_filter(instances, filter, from);
+		a_type.byte_array -> return apply_byte_array_filter(instances, filter, from);
+		a_type.decimal -> return apply_decimal_filter(instances, filter, from);
+		a_type.instance -> return apply_instance_filter(instances, filter, from);
+		a_type.integer -> return apply_integer_filter(instances, filter, from);
+		a_type.text -> return apply_text_filter(instances, filter, from);
+		else -> {
+		    	return (results=list<instance>(), from=null);
+	    }
+	}
+}
+
+function find_instances(filters: list<filter>, from: p_from, max_results: integer):
+ (results: list<instance>, from: p_from) {
+	var results = list<instance>();
+	var cur_from = from;
+
+	while (true) {
+		var instances = list<instance>();
+
+		for(filter in filters) {
+			val rf = resolve_filter(instances, filter, cur_from);
+			instances = rf.results;
+			
+			if(rf.from??) cur_from = rf.from!!;
+			
+			if (instances.empty()) {
+				break;
+			}
+		}
+
+		results.add_all(instances);
+		if(results.size() >= max_results or cur_from.instance_rowid == util.r_zero()) break;
+	}
+	
+	if(results.empty()) return (results = results, from = cur_from );	
+	
+	val min_size = min(max_results, results.size());
+	
+	if(results.size() > max_results) {
+		val last_instance = results[min_size-1];
+		val first_filter = filters[0];
+		cur_from = get_prototype_from_instance(first_filter.attribute, last_instance);
+	}
+	
+	return (results = results.sub(0, min_size), from = cur_from);
+}
+
+function get_prototype_from_instance(attribute, instance): p_from {
+	var prototype: instance? = null;
+	
+	when(attribute.a_type) {
+		a_type.boolean -> {
+			prototype = (ip: instance_prototype, a: boolean_attribute) @? { 
+				a.attribute == attribute,
+				ip.prototype == a.instance,
+				ip.instance == instance
+			} (ip.prototype);
+		}
+		a_type.byte_array -> {
+			prototype = (ip: instance_prototype, a: byte_array_attribute) @? { 
+				a.attribute == attribute,
+				ip.prototype == a.instance,
+				ip.instance == instance
+			} (ip.prototype);
+		}
+		a_type.decimal -> {
+			prototype = (ip: instance_prototype, a: decimal_attribute) @? { 
+				a.attribute == attribute,
+				ip.prototype == a.instance,
+				ip.instance == instance
+			} (ip.prototype);
+		}
+		a_type.instance -> {
+			prototype = (ip: instance_prototype, a: instance_attribute) @? { 
+				a.attribute == attribute,
+				ip.prototype == a.instance,
+				ip.instance == instance
+			} (ip.prototype);
+		}
+		a_type.integer -> {
+			prototype = (ip: instance_prototype, a: integer_attribute) @? { 
+				a.attribute == attribute,
+				ip.prototype == a.instance,
+				ip.instance == instance
+			} (ip.prototype);
+		}
+		a_type.text -> {
+			prototype = (ip: instance_prototype, a: text_attribute) @? { 
+				a.attribute == attribute,
+				ip.prototype == a.instance,
+				ip.instance == instance
+			} (ip.prototype);
+		}
+	}
+
+	if(prototype??) {
+		return p_from(instance_rowid = prototype.rowid, prototype_rowid = instance.rowid);
+	} 
+	
+	return p_from(instance_rowid = instance.rowid, prototype_rowid = util.r_zero());
+
+}

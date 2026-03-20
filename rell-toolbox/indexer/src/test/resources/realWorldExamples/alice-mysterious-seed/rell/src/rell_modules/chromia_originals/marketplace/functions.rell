@@ -1,0 +1,341 @@
+import ft3: rell_modules.ft3.account;
+import ft3_core: rell_modules.ft3.core;
+
+struct property_def {
+	name;
+	prop;
+}
+
+function find_originals_by_interface(name, brid: byte_array): list<structure> {	
+	return (si1: structure_interface, si2: structure_interface) @* {
+		si1.interface == Interface("IOriginal"),
+		si2.interface == Interface(name),
+		si1.structure == si2.structure 	
+	} ( si1.structure );
+}
+
+function find_listed_instances_by_interface(
+	name, 
+	brid: byte_array, 
+	after_rowid: rowid, 
+	page_size: integer
+): list<instance> {
+	return (
+		i: instance, 
+		ip: instance_property, 
+		ipvb: instance_property_value_boolean, 
+		si1: structure_interface, 
+		si2: structure_interface
+	) @* {
+		si1.interface == Interface("ITradeableOriginal"),
+		si2.interface == Interface(name),
+		si1.structure == si2.structure,
+		i.structure == si1.structure,
+		i.rowid > after_rowid,
+		ip.structure_property.name == "is_listed",
+		ip.instance == i,
+		ipvb.instance_property == ip,
+		ipvb.value == true
+	} ( @sort i ) limit page_size;
+}
+
+function find_originals_by_designer_id(id: byte_array): list<structure> {
+	return (
+		si: structure_interface,
+		sp: static_property,
+		spvb: static_property_value_byte_array 
+	) @* {
+		si.interface == Interface("ITradeableOriginal"),
+		sp.structure == si.structure,
+		sp.name == "designer_id",
+		spvb.static_property == sp,
+		spvb.value == id
+	} ( sp.structure );
+}
+
+function find_instances_by_original(original_name: text): list<instance> {	
+	return (i: instance, si: structure_interface) @* {
+		si.structure.name == original_name,
+		si.interface == Interface("IOriginal"),
+		i.structure == si.structure
+	} ( i );
+}
+
+function buy_original_instance(
+	structure_name: name, 
+	instance_id: byte_array, 
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	val new_owner = ft3.account @ { account_id };
+	ft3.require_auth(new_owner, auth_descriptor_id, ["T"]);
+	
+	val instance = find_by_id(instance_id)!!;
+	
+	val is_listed = get_property_boolean(instance, "is_listed")!!;
+	require(is_listed, "Original is not for sale");
+	
+	val current_owner = get_property_account(instance, "owner")!!;
+	
+	val price = get_property_integer(instance, "price")!!;
+	val asset_id = get_property_byte_array(instance, "asset_id")!!;
+	
+	val input = ft3_core.xfer_input(
+		account_id = new_owner.id,
+		amount = price,
+		asset_id = asset_id,
+		auth_descriptor_id = auth_descriptor_id,
+		extra = map<text, gtv>()
+	);
+	
+	val output = ft3_core.xfer_output(
+		account_id = current_owner.id,
+		amount = price,
+		asset_id = asset_id,
+		extra = map<text, gtv>()
+	);
+	
+	ft3_core._transfer([input], [output]);
+	
+	val child_original_properties = _get_instance_properties_of_interface_types(
+		instance, 
+		[Interface("ITradeableOriginal")]
+	);
+	
+	log_original_event_buy(instance, current_owner, new_owner, asset_id, price);
+	
+	set_property_account(instance, "owner", new_owner);
+	set_property_boolean(instance, "is_listed", false);
+	
+	for (property in child_original_properties) {
+		val child_original = _get_property_instance(property); 
+		if (child_original??) {
+			log_original_event_buy(child_original, current_owner, new_owner, asset_id, 0); //TODO: Check which price to set for child assets
+			set_property_account(child_original, "owner", new_owner);
+			set_property_boolean(child_original, "is_listed", false);			
+		}
+	}
+}
+
+struct trade_info {
+	asset_id: byte_array;
+	price: integer;
+	is_listed: boolean;
+}
+
+function set_original_instance_trade_info(
+	structure_name: name, 
+	instance_id: byte_array,
+	trade_info,
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	val account = ft3.account @ { account_id };
+	ft3.require_auth(account, auth_descriptor_id, ["T"]);
+	
+	val instance = find_by_id(instance_id);
+	
+	require(instance??);
+	require_instance_owner(instance!!, account);
+	
+	set_properties(instance, [
+		"is_listed": trade_info.is_listed.to_gtv(),
+		"price": trade_info.price.to_gtv(),
+		"asset_id": trade_info.asset_id.to_gtv()
+	]);
+}
+
+function set_original_instance_sale_status(
+	structure_name: name, 
+	instance_id: byte_array, 
+	is_listed: boolean,
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	val account = ft3.account @ { account_id };
+	ft3.require_auth(account, auth_descriptor_id, ["T"]);
+	
+	val instance = find_by_id(instance_id);
+	
+	require(instance??);
+	require_instance_owner(instance!!, account);
+	require(get_property_byte_array(instance, "asset_id")??, "Asset ID not set");
+	require(get_property_integer(instance, "price")??, "Price not set");
+	
+	set_property(instance, "is_listed", is_listed.to_gtv());
+}
+
+function def_structure(
+	structure_name: name, 
+	interface_names: list<name>,
+	property_list: list<property>,
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	val account = ft3.account @ { account_id };
+	ft3.require_auth(account, auth_descriptor_id, ["T"]);
+	
+	val properties = property_list_to_property_map(property_list);
+	
+	if ("designer_id" in properties) {
+		require(
+			byte_array.from_gtv(properties["designer_id"]) == account_id,
+			"Caller account id is not equal to designer id"
+		);		
+	} else {
+		properties["designer_id"] = account_id.to_gtv();
+	}
+	
+	def_(structure_(structure_name, implements(get_interfaces_by_names(interface_names)),
+		init(properties)
+	));
+}
+
+function def_original(
+	structure_name: name, 
+	interface_names: list<name>,
+	def_property_list: list<property_def>,
+	init_property_list: list<property>,
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	val account = ft3.account @ { account_id };
+	ft3.require_auth(account, auth_descriptor_id, ["T"]);
+	
+	val properties = property_list_to_property_map(init_property_list);
+	
+	val property_definitions = map<name, prop>();
+	
+	for (property in def_property_list) {
+		property_definitions[property.name] = property.prop;
+	}
+	
+	if ("designer_id" in properties) {
+		require(
+			byte_array.from_gtv(properties["designer_id"]) == account_id,
+			"Caller account id is not equal to designer id"
+		);		
+	} else {
+		properties["designer_id"] = account_id.to_gtv();
+	}
+	
+	def_(structure_(structure_name, implements(get_interfaces_by_names(interface_names)),
+		property_definitions,
+		init(properties)
+	));
+}
+
+function new_instance(
+	structure_name: name, 
+	properties: list<property>, 
+	auth_descriptor_id: byte_array
+): instance {
+	val structure = Structure(structure_name);
+	val designer_id = get_static_property_byte_array(structure, "designer_id");
+	
+	val account = ft3.account @ { designer_id!! };
+	ft3.require_auth(account, auth_descriptor_id, ["T"]);
+	
+	val props = map<name, gtv>();
+	
+	for (property in properties) {
+		props[property.name] = property.value;
+	}
+	
+	props["owner"] = account.to_gtv();
+	
+	return new_(instance_(structure, init(props)));
+}
+
+function __get_child_interfaces(interface_name: name, interface_map: map<name, list<name>>): list<name> {
+	val child_interfaces = list<name>();
+	
+	if (not interface_map.contains(interface_name)) {
+		return list<name>();
+	}
+	
+	for (interface in interface_map[interface_name]) {
+		child_interfaces.add(interface);
+		child_interfaces.add_all(__get_child_interfaces(interface, interface_map));
+	}
+	
+	return child_interfaces;
+}
+
+function get_grouped_interfaces(): map<name, list<map<name, gtv>>> {
+	val ITradeableOriginal = Interface('ITradeableOriginal');
+	
+	val tags = (
+		imt: interface_meta_tag,
+		ei: extended_interface
+	) @* {
+		imt.name == "marketplace_category",
+		imt.interface == ei.extended,
+		ei.base == ITradeableOriginal
+	} (
+		name = imt.value,
+		imt.interface
+	);
+	
+	val category_names = map<name, name>();
+	
+	for ((name, interface) in tags) {
+		category_names[interface.name] = name;
+	}
+	
+	val interfaces = get_interfaces_extending_interface(
+		ITradeableOriginal
+	);
+	
+	val interface_map = map<name, list<name>>();
+	
+	val top_level_interfaces = set<name>();
+	
+	for ((interface, base) in interfaces) {
+		if (base == ITradeableOriginal.name) {
+			top_level_interfaces.add(interface);
+		} else {
+			top_level_interfaces.add(base);
+		}
+	}
+	
+	for ((interface, base) in interfaces) {
+		// 'interface' extends 'base' interface, so it cannot be top level interface
+		if (top_level_interfaces.contains(interface) and base != ITradeableOriginal.name) {
+			top_level_interfaces.remove(interface);
+		}
+		
+		if (interface_map.contains(base)) {
+			interface_map[base].add(interface);
+		} else {
+			interface_map[base] = [interface];
+		}
+	}
+	
+	val grouped_interfaces = map<name, list<map<name, gtv>>>();
+	
+	for (interface in top_level_interfaces) {
+		val name 
+			= if (category_names.contains(interface)) 
+				category_names[interface] 
+			else 
+				interface;
+		val child_interfaces = [interface];
+		child_interfaces.add_all(__get_child_interfaces(interface, interface_map));
+		val interface_details = list<map<name, gtv>>();
+		
+		for (child_interface in child_interfaces) {
+			val child_interface_map = map<name, gtv>();
+
+			interface_details.add(interface_definition(Interface(child_interface), id_config(
+				static_key.static,
+				optional_key.non_optional,
+				tags = ["marketplace_label", "marketplace_description"],
+				interface_tags = ["marketplace_name", "marketplace_description"]
+			)));
+		}
+		grouped_interfaces[name] = interface_details;
+	}
+	
+	return grouped_interfaces;
+}

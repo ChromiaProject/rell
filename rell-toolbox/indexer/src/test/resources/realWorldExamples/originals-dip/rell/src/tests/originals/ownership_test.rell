@@ -1,0 +1,317 @@
+@test module;
+import ^^.originals.*;
+import ^^.dip.*;
+
+function test_composable_ownership() {
+	Initialize_original_interfaces();
+	val acc_data = create_ft3_test_acc(admin_keypair());
+	val bob_acc_data = create_ft3_test_acc(bob_keypair());
+	
+	Interface_("ITestDapp", [:], [INFO()]).run();
+	
+	Prototype_(["ITestDapp"], [
+		"creator_id": ByteArray(acc_data.id),
+		"creator_name": Text("Admin")
+	], "TestDapp").run();
+	
+	Interface_("ICharacter", ["sword": Type(Instance(), [Optional(), OwnerMutable()])], ["ITestDapp"]).run();
+	Interface_("ISword", ["damage": Type(Integer(100))], ["ITestDapp"]).run();
+	
+	
+	val character_type = original_type(["ICharacter"], types = [:], "ITestDapp.TestDapp");
+	val sword_type = original_type(["ISword"], types = [:], "ITestDapp.TestDapp");
+	
+	MintNonFungibleOriginal(character_type, acc_data.id, acc_data.auth_descriptor).sign(acc_data.keypair).run();
+	val character_id = get_last_id();
+	val character_instance = get_instance_by_id(character_id)!!;
+	
+	MintNonFungibleOriginal(sword_type, acc_data.id, acc_data.auth_descriptor).sign(acc_data.keypair).run();
+	val sword_id = get_last_id();
+	val sword_instance = get_instance_by_id(sword_id)!!;
+	
+	// no/wrong signer/owner
+	LinkInstance(bob_acc_data.id, bob_acc_data.auth_descriptor, "sword", character_id, sword_id).sign(bob_acc_data.keypair).run_must_fail();
+	LinkInstance(acc_data.id, acc_data.auth_descriptor, "sword", character_id, sword_id).sign(bob_acc_data.keypair).run_must_fail();
+	LinkInstance(acc_data.id, acc_data.auth_descriptor, "sword", character_id, sword_id).run_must_fail();
+	
+	LinkInstance(acc_data.id, acc_data.auth_descriptor, "sword", character_id, sword_id).sign(acc_data.keypair).run();
+	
+	assert_true(is_linked(sword_id));
+	assert_false(owns_original(acc_data.id, sword_id));
+	assert_equals(get_base_instance(sword_id), character_instance);
+	
+	// relinking
+	LinkInstance(acc_data.id, acc_data.auth_descriptor, "sword", character_id, sword_id).sign(acc_data.keypair).run_must_fail();
+	
+	// wrong/no owner/signer
+	UnlinkInstance(bob_acc_data.id, bob_acc_data.auth_descriptor, "sword", character_id).sign(bob_acc_data.keypair).run_must_fail();
+	UnlinkInstance(acc_data.id, acc_data.auth_descriptor, "sword", character_id).sign(bob_acc_data.keypair).run_must_fail();
+	UnlinkInstance(acc_data.id, acc_data.auth_descriptor, "sword", character_id).run_must_fail();
+	
+	UnlinkInstance(acc_data.id, acc_data.auth_descriptor, "sword", character_id).sign(acc_data.keypair).run();
+	
+	// already unlinked
+	UnlinkInstance(acc_data.id, acc_data.auth_descriptor, "sword", character_id).sign(acc_data.keypair).run_must_fail();
+	
+	assert_false(is_linked(sword_id));
+	assert_true(owns_original(acc_data.id, sword_id));
+}
+
+function test_composable_ownership_directly() {
+	Initialize_original_interfaces();
+	val acc_data = create_ft3_test_acc(admin_keypair());
+	val bob_acc_data = create_ft3_test_acc(bob_keypair());
+	
+	Interface_("ITestDapp", [:], [INFO()]).run();
+	
+	Prototype_(["ITestDapp"], [
+		"creator_id": ByteArray(acc_data.id),
+		"creator_name": Text("Admin")
+	], "TestDapp").run();
+	
+	Interface_("ICharacter", ["sword": Type(Instance(), [Optional(), OwnerMutable()])], ["ITestDapp"]).run();
+	Interface_("ISword", ["damage": Type(Integer(100))], ["ITestDapp"]).run();
+	
+	val sword_type = original_type(["ISword"], types = [:], "ITestDapp.TestDapp");	
+	MintNonFungibleOriginal(sword_type, acc_data.id, acc_data.auth_descriptor).sign(acc_data.keypair).run();
+	val sword_id = get_last_id();
+	val sword_instance = get_instance_by_id(sword_id)!!;
+	
+	val character_type = original_type(["ICharacter"], types = ["sword": Id(sword_id)], "ITestDapp.TestDapp");	
+	MintNonFungibleOriginal(character_type, acc_data.id, acc_data.auth_descriptor).sign(acc_data.keypair).run();
+	val character_id = get_last_id();
+	val character_instance = get_instance_by_id(character_id)!!;
+	
+	assert_true(is_linked(sword_id));
+	assert_false(owns_original(acc_data.id, sword_id));
+	assert_equals(get_base_instance(sword_id), character_instance);
+	
+	// relinking
+	LinkInstance(acc_data.id, acc_data.auth_descriptor, "sword", character_id, sword_id).sign(acc_data.keypair).run_must_fail();
+	
+	// wrong/no owner/signer
+	UnlinkInstance(bob_acc_data.id, bob_acc_data.auth_descriptor, "sword", character_id).sign(bob_acc_data.keypair).run_must_fail();
+	UnlinkInstance(acc_data.id, acc_data.auth_descriptor, "sword", character_id).sign(bob_acc_data.keypair).run_must_fail();
+	UnlinkInstance(acc_data.id, acc_data.auth_descriptor, "sword", character_id).run_must_fail();
+	
+	UnlinkInstance(acc_data.id, acc_data.auth_descriptor, "sword", character_id).sign(acc_data.keypair).run();
+	
+	// already unlinked
+	UnlinkInstance(acc_data.id, acc_data.auth_descriptor, "sword", character_id).sign(acc_data.keypair).run_must_fail();
+	
+	assert_false(is_linked(sword_id));
+	assert_true(owns_original(acc_data.id, sword_id));
+}
+
+function test_ownership_transfer_fail_cases() {
+	Initialize_original_interfaces();
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val bob_acc = create_ft3_test_acc(bob_keypair());
+	
+	val original = original_type(
+		[INFO()],
+		[
+			"creator_id": ByteArray(admin_acc.id),
+			"creator_name": Text("Admin")
+		]
+	);
+	
+	MintNonFungibleOriginal(original, admin_acc.id, admin_acc.auth_descriptor).sign(admin_acc.keypair).run();
+	
+	val id = get_last_id();
+	assert_true(owns_original(admin_acc.id, id));
+	
+	// self transfer
+	Transfer(id, 
+		admin_acc.id, admin_acc.auth_descriptor,
+		admin_acc.id
+	).sign(admin_acc.keypair).run_must_fail();
+	
+	// wrong quantity for NFO
+	Transfer(id, 
+		admin_acc.id, admin_acc.auth_descriptor,
+		bob_acc.id, 2
+	).sign(admin_acc.keypair).run_must_fail();
+	
+	// not owner
+	Transfer(id, 
+		bob_acc.id, bob_acc.auth_descriptor,
+		admin_acc.id
+	).sign(bob_acc.keypair).run_must_fail();
+	
+	// wrong key signer
+	Transfer(id, 
+		admin_acc.id, admin_acc.auth_descriptor,
+		bob_acc.id
+	).sign(bob_acc.keypair).run_must_fail();
+}
+
+function test_ownership_transfer_non_fungible() {
+	Initialize_original_interfaces();
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val bob_acc = create_ft3_test_acc(bob_keypair());
+	
+	val original = original_type(
+		[INFO()],
+		[
+			"creator_id": ByteArray(admin_acc.id),
+			"creator_name": Text("Admin")
+		]
+	);
+	
+	MintNonFungibleOriginal(original, admin_acc.id, admin_acc.auth_descriptor).sign(admin_acc.keypair).run();
+	
+	val id = get_last_id();
+	assert_true(owns_original(admin_acc.id, id));
+	
+	Transfer(id, 
+		admin_acc.id, admin_acc.auth_descriptor,
+		bob_acc.id
+	).sign(admin_acc.keypair).run();
+	
+	assert_false(owns_original(admin_acc.id, id));
+	assert_true(owns_original(bob_acc.id, id));
+}
+
+function test_ownership_transfer_fungible() {
+	Initialize_original_interfaces();
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val bob_acc = create_ft3_test_acc(bob_keypair());
+	
+	val original = original_type(
+		[IFO()],
+		[
+			"creator_id": ByteArray(admin_acc.id),
+			"creator_name": Text("Admin"),
+			"max_supply": Integer(100)
+		]
+	);
+	
+	MintFungibleOriginal(original, null, admin_acc.id, admin_acc.auth_descriptor, 100).sign(admin_acc.keypair).run();
+	
+	val id = get_last_id();
+	assert_equals(amount_owned_of_original(admin_acc.id, id), 100);
+	
+	Transfer(id, 
+		admin_acc.id, admin_acc.auth_descriptor,
+		bob_acc.id, 50
+	).sign(admin_acc.keypair).run();
+	
+	assert_equals(amount_owned_of_original(admin_acc.id, id), 50);
+	assert_equals(amount_owned_of_original(bob_acc.id, id), 50);
+	
+	Transfer(id, 
+		admin_acc.id, admin_acc.auth_descriptor,
+		bob_acc.id, 50
+	).sign(admin_acc.keypair).run();
+	
+	assert_equals(amount_owned_of_original(admin_acc.id, id), 0);
+	assert_equals(amount_owned_of_original(bob_acc.id, id), 100);
+}
+
+function test_fractionalize_ownership() {
+	Initialize_original_interfaces();
+	
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val alice_acc = create_ft3_test_acc(alice_keypair());
+	val bob_acc = create_ft3_test_acc(bob_keypair());
+	
+	val original = original_type(
+		[INFO()],
+		[
+			"creator_id": ByteArray(admin_acc.id),
+			"creator_name": Text("Admin")
+		]
+	);
+	
+	MintNonFungibleOriginal(original, admin_acc.id, admin_acc.auth_descriptor).sign(admin_acc.keypair).run();
+	
+	val id = get_last_id();
+	// wrong owner
+	Fractionalize(id, bob_acc.id, bob_acc.auth_descriptor, 100).sign(bob_acc.keypair).run_must_fail();
+	
+	// wrong amount of fractions
+	Fractionalize(id, admin_acc.id, admin_acc.auth_descriptor, 0).sign(admin_acc.keypair).run_must_fail();
+	Fractionalize(id, admin_acc.id, admin_acc.auth_descriptor, -1).sign(admin_acc.keypair).run_must_fail();
+	
+	// wrong/no signer
+	Fractionalize(id, admin_acc.id, admin_acc.auth_descriptor, 100).sign(bob_acc.keypair).run_must_fail();
+	Fractionalize(id, admin_acc.id, admin_acc.auth_descriptor, 100).run_must_fail();
+	
+	Fractionalize(id, admin_acc.id, admin_acc.auth_descriptor, 100).sign(admin_acc.keypair).run();
+	val fractionalized_id = get_last_id();
+	
+	assert_false(owns_original(admin_acc.id, id));
+	assert_equals(amount_owned_of_original(admin_acc.id, fractionalized_id), 100);
+	
+	Transfer(id, 
+		admin_acc.id, admin_acc.auth_descriptor,
+		alice_acc.id
+	).sign(admin_acc.keypair).run_must_fail();
+	
+	Transfer(fractionalized_id, 
+		admin_acc.id, admin_acc.auth_descriptor,
+		bob_acc.id, 50
+	).sign(admin_acc.keypair).run();
+	
+	assert_equals(amount_owned_of_original(admin_acc.id, fractionalized_id), 50);
+	assert_equals(amount_owned_of_original(bob_acc.id, fractionalized_id), 50);
+}
+
+function test_composable_ownership_transfer() {
+	Initialize_original_interfaces();
+	val admin_acc = create_ft3_test_acc(admin_keypair());
+	val bob_acc = create_ft3_test_acc(bob_keypair());
+	
+	Interface_("ITestDapp", [:], [INFO()]).run();
+	
+	Prototype_(["ITestDapp"], [
+		"creator_id": ByteArray(admin_acc.id),
+		"creator_name": Text("Admin")
+	], "TestDapp").run();
+	
+	Interface_("ICharacter", ["sword": Type(Instance(), [Optional(), OwnerMutable()])], ["ITestDapp"]).run();
+	Interface_("ISword", ["gem": Type(Instance(), [Optional(), OwnerMutable()])], ["ITestDapp"]).run();
+	Interface_("IGem", ["damage": Type(Integer(100))], ["ITestDapp"]).run();
+	
+	val gem_type = original_type(["IGem"], types = [:], "ITestDapp.TestDapp");	
+	MintNonFungibleOriginal(gem_type, admin_acc.id, admin_acc.auth_descriptor).sign(admin_acc.keypair).run();
+	val gem_id = get_last_id();
+	val gem_instance = get_instance_by_id(gem_id)!!;
+	
+	val sword_type = original_type(["ISword"], types = ["gem": Id(gem_id)], "ITestDapp.TestDapp");	
+	MintNonFungibleOriginal(sword_type, admin_acc.id, admin_acc.auth_descriptor).sign(admin_acc.keypair).run();
+	val sword_id = get_last_id();
+	val sword_instance = get_instance_by_id(sword_id)!!;
+	
+	val character_type = original_type(["ICharacter"], types = ["sword": Id(sword_id)], "ITestDapp.TestDapp");	
+	MintNonFungibleOriginal(character_type, admin_acc.id, admin_acc.auth_descriptor).sign(admin_acc.keypair).run();
+	val character_id = get_last_id();
+	val character_instance = get_instance_by_id(character_id)!!;
+	
+	assert_true(owns_original(admin_acc.id, character_id));
+	assert_false(owns_original(admin_acc.id, sword_id));
+	assert_false(owns_original(admin_acc.id, gem_id));
+	assert_true(ft3_helper.is_asset_locked(admin_acc.id, sword_id));
+	assert_true(ft3_helper.is_asset_locked(admin_acc.id, gem_id));
+	
+	Transfer(sword_id, 
+		admin_acc.id, admin_acc.auth_descriptor,
+		bob_acc.id
+	).sign(admin_acc.keypair).run_must_fail();
+	
+	Transfer(character_id, 
+		admin_acc.id, admin_acc.auth_descriptor,
+		bob_acc.id
+	).sign(admin_acc.keypair).run();
+	
+	assert_false(owns_original(admin_acc.id, character_id));
+	assert_false(ft3_helper.is_asset_locked(admin_acc.id, sword_id));
+	assert_false(ft3_helper.is_asset_locked(admin_acc.id, gem_id));
+	
+	assert_true(owns_original(bob_acc.id, character_id));
+	assert_false(owns_original(bob_acc.id, sword_id));
+	assert_false(owns_original(bob_acc.id, gem_id));
+	assert_true(ft3_helper.is_asset_locked(bob_acc.id, sword_id));
+	assert_true(ft3_helper.is_asset_locked(bob_acc.id, gem_id));
+}

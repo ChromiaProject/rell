@@ -1,0 +1,203 @@
+import .core.*;
+import .util.*;
+
+struct _attribute_type {
+	attr_def: gtv;
+	meta: list<s_meta>? = null;
+}
+
+struct _attribute_value {
+	type: a_type;
+	value: gtv?;
+	inner_type: gtv? = null;
+}
+
+function Interface(name, types: map<text, gtv>, extends: list<name> = list()) {
+	validate_name(name);
+	val dclass = create dclass (name);
+	val extendees = dclass @* {.name in extends};
+	create_dclass_inheritance(dclass, extendees);
+	
+	val meta_attributes = map<gtv, gtv>();
+	
+	for ((attr_name, type) in types) {
+		validate_name(attr_name);
+		
+		val t = _attribute_type.from_gtv(type);
+		val v = _attribute_value.from_gtv(t.attr_def);
+		val attr = create attribute(dclass, attr_name, v.type);
+		
+		when (v.type) {
+			a_type.ordered_container -> {
+				val inner_type = a_type.from_gtv(v.inner_type!!);
+				create_list_type(attr, inner_type);
+			}
+			a_type.unordered_container -> {
+				val inner_type = a_type.from_gtv(v.inner_type!!);
+				util.ensure_simple_type(inner_type);
+				create set_inner_type(attr, inner_type);
+			}
+			a_type.addressable_container -> {
+				val inner_types = MapTypes.from_gtv(v.inner_type!!);
+				create_map_type(attr, inner_types.K, inner_types.V);
+			}
+		}
+		
+		if(t.meta != null) {
+			for (m in t.meta!!) {				
+				meta_attributes.put((attr_name + SEPERATOR() + m.name).to_gtv(), m.value.to_gtv());
+			}
+		}
+		
+		// Add default value to meta
+		// use _attribute_value struct to support complex default values
+		if(v.value??) {
+			meta_attributes.put((attr_name + SEPERATOR() + a_meta_type.default_value).to_gtv(), t.attr_def.to_bytes().to_gtv());
+		}
+	}
+	
+	if(not meta_attributes.empty()) {
+		create_meta_attribute(dclass, meta_attributes);
+	}	
+}
+
+function Instantiation(interface: list<text>, prototype: text?, types: map<text, gtv>, prototype_name: text? = null): instance {
+	val _prototype = split_prototype_name(prototype);
+	val dclasses = get_dclasses(interface, _prototype);
+	
+	val instance = create instance (prototype_name != null);
+	for (dclass in dclasses) {
+		create instance_dclass(dclass, instance);	
+	}
+	
+	if (_prototype??) link_instance_prototypes_by_name(instance, _prototype);	
+	
+	for ((attr_name, type) in types) {
+		validate_name(attr_name);
+		val v = _attribute_value.from_gtv(type);
+		
+		if (v.value??) {
+			val attr = get_attribute_from_interfaces_by_name(attr_name, dclasses);
+			create_type_attribute_meta(instance, attr, v.value!!);
+		}
+	}
+	
+	if(prototype_name??) {
+		_prototype(interface, instance, prototype, prototype_name);
+	} else {
+		_instance(dclasses, instance);
+	}
+	
+	return instance;
+}
+
+function _prototype(interface: list<text>, instance, prototype: text?, prototype_name: text) {
+	validate_name(prototype_name);
+	val proto_interfaces = list(interface);
+	val _prototype = split_prototype_name(prototype);
+	
+	if (_prototype??) {
+		proto_interfaces.add(_prototype.interface);	
+	}
+	
+	for (i in proto_interfaces) {
+		create prototype_name (dclass @ {i}, prototype_name, instance);
+	}
+}
+
+function _instance(dclasses: set<dclass>, instance) {
+	val attributes = attribute @* {.dclass in dclasses, .a_type != a_type.meta};
+	for (attr in attributes) {
+		
+		val is_implemented = util.is_implemented(instance, attr);
+		if(not is_implemented) {
+			val default_value = get_default_value(attr);
+			
+			if(default_value??) {
+				val v = _attribute_value.from_gtv(default_value);
+				create_type_attribute_meta(instance, attr, v.value!!);
+			} else {
+				require(is_attribute_optional(attr), "Attribute " + attr.name + " is not optional and has no default value");
+			}
+		}
+	}
+}
+
+function Type(type: gtv, meta_data: list<s_meta>? = null): gtv {
+	return _attribute_type(type, meta_data).to_gtv();
+}
+
+function Prototype(name): text {
+	return name;
+}
+
+function Boolean(value: boolean? = null): gtv {
+	return _attribute_value(type = a_type.boolean, value = value?.to_gtv()).to_gtv();
+}
+
+function ByteArray(value: byte_array? = null): gtv {
+	return _attribute_value(type = a_type.byte_array, value = value?.to_gtv()).to_gtv();
+}
+
+function Decimal(value: decimal? = null): gtv {
+	return _attribute_value(type = a_type.decimal, value = value?.to_gtv()).to_gtv();
+}
+
+function Id(value: byte_array? = null): gtv {
+	return _attribute_value(type = a_type.id, value = value?.to_gtv()).to_gtv();
+}
+
+function Instance(value: instance? = null): gtv {
+	return _attribute_value(type = a_type.instance, value = value?.to_gtv()).to_gtv();
+}
+
+function Integer(value: integer? = null): gtv {
+	return _attribute_value(type = a_type.integer, value = value?.to_gtv()).to_gtv();
+}
+
+function Text(value: text? = null): gtv {
+	return _attribute_value(type = a_type.text, value = value?.to_gtv()).to_gtv();
+}
+
+function List(inner_type: a_type? = null, value: gtv? = null): gtv {
+	require(inner_type == null or inner_type != a_type.meta, "Defining meta attributes through types is not allowed");
+	return _attribute_value(inner_type = inner_type?.to_gtv(), type = a_type.ordered_container, value = value?.to_gtv()).to_gtv();
+}
+
+function Set(inner_type: a_type? = null, value: list<gtv>? = null): gtv {
+	require(inner_type == null or inner_type != a_type.meta, "Defining meta attributes through types is not allowed");
+	return _attribute_value(inner_type = inner_type?.to_gtv(), type = a_type.unordered_container, value = value?.to_gtv()).to_gtv();
+}
+
+struct MapTypes {
+	K: a_type;
+	V: a_type;
+}
+
+function Map(inner_types: MapTypes? = null, value: map<gtv, gtv>? = null): gtv {
+	require(inner_types == null or inner_types.V != a_type.meta, "Defining meta attributes through types is not allowed");
+	return _attribute_value(inner_type = inner_types?.to_gtv(), type = a_type.addressable_container, value = value?.to_gtv()).to_gtv();
+}
+
+
+/* Constraints */
+
+function Mutable(): s_meta {
+	return s_meta(a_constraint.public_mutable.name, true.to_gtv().to_bytes());
+}
+
+function Optional(): s_meta {
+	return s_meta(a_meta_type.optional.name, true.to_gtv().to_bytes());
+}
+
+function Max(max: integer): s_meta {
+	return s_meta(a_constraint.max.name,  max.to_gtv().to_bytes());
+}
+
+function Min(min: integer): s_meta {
+	return s_meta(a_constraint.min.name,  min.to_gtv().to_bytes());
+}
+
+function ImplementsInferface(interface: text): s_meta {
+	return s_meta(a_constraint.interface.name, interface.to_gtv().to_bytes());
+}

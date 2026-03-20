@@ -1,0 +1,58 @@
+function test_seed_transferable() {
+  val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+  val bob = finalize_seed_user(ft3_test.create_ft3_test_acc(util.bob_keypair()));
+  
+  
+  rell.test
+    .block()
+    .tx(init())
+    .tx(rell.test
+      .tx()
+      .op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+      .sign(util.admin_keypair()))
+    .run();
+    
+  val alice_originals = get_originals_for_account(alice.account.id);
+  val seed_id = byte_array.from_gtv(require(alice_originals[0].get("id")));
+  
+  rell.test
+    .tx()
+    .op(mysterious_seed.transfer_seed(alice.account.id, alice.auth_descriptor, seed_id, bob.account.id))
+    .sign(alice.keypair)
+    .run();
+    
+  val bob_originals = get_originals_for_account(bob.account.id);
+  assert_equals(bob_originals.size(), 1);
+}
+
+function test_seed_transfer_deactivate_plants_if_seed_active() {
+  val alice = finalize_seed_user(ft3_test.create_ft3_test_acc(util.alice_keypair()));
+  val bob = finalize_seed_user(ft3_test.create_ft3_test_acc(util.bob_keypair()));
+  
+  rell.test
+    .block()
+    .tx(init())
+    .tx(rell.test
+      .tx()
+      .op(minter.mint_alice_seed(alice.address, "Ethereum", "1"))
+      .sign(util.admin_keypair()))
+    .run();
+    
+  val alice_originals = get_originals_for_account(alice.account.id);
+  val seed_id = byte_array.from_gtv(require(alice_originals[0].get("id")));
+  
+  rell.test
+    .tx()
+    .op(mysterious_seed.plant_seed(alice.account.id, alice.auth_descriptor, seed_id))
+    .sign(alice.keypair)
+    .run();
+  
+  rell.test
+    .tx()
+    .op(mysterious_seed.transfer_seed(alice.account.id, alice.auth_descriptor, seed_id, bob.account.id))
+    .sign(alice.keypair)
+    .run();
+    
+  val plant = mysterious_seed.plant @? { alice.account } ( .id );
+  assert_null(plant);
+}

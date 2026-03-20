@@ -1,0 +1,15 @@
+function foo() {
+    val required_number_for_finished = (
+            required_percentage * current_users
+                .size() / hundred_percentage
+                .to_decimal()
+        )
+        .ceil()
+        .to_integer();
+
+    val required_number_for_finished = (
+            required_percentage * current_users.size() / hundred_percentage.to_decimal()
+        )
+        .ceil()
+        .to_integer();
+}

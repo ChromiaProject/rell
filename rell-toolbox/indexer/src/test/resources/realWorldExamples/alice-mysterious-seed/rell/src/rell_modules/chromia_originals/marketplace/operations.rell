@@ -1,0 +1,111 @@
+@mount("marketplace")
+module;
+
+import ^^.marketplace;
+import ^.abstract_operations.*;
+
+override function a_buy_original_instance(
+	structure_name: name, 
+	instance_id: byte_array, 
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	marketplace.buy_original_instance(
+		structure_name, 
+		instance_id, 
+		account_id, 
+		auth_descriptor_id
+	);
+}
+
+override function a_set_original_instance_trade_info(
+	structure_name: name, 
+	instance_id: byte_array, 
+	marketplace.trade_info,
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	marketplace.set_original_instance_trade_info(
+		structure_name, 
+		instance_id, 
+		trade_info,
+		account_id, 
+		auth_descriptor_id
+	);
+}
+
+override function a_list_original_instance_for_sale(
+	structure_name: name, 
+	instance_id: byte_array, 
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	marketplace.set_original_instance_sale_status(
+		structure_name,
+		instance_id,
+		true,
+		account_id,
+		auth_descriptor_id
+	);
+}
+
+override function a_remove_original_instance_from_sale(
+	structure_name: name, 
+	instance_id: byte_array, 
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	marketplace.set_original_instance_sale_status(
+		structure_name,
+		instance_id,
+		false,
+		account_id,
+		auth_descriptor_id
+	);
+}
+
+override function a_def_original(
+	structure_name: name, 
+	interface_names: list<name>,
+	def_property_list: list<marketplace.property_def>,
+	init_property_list: list<marketplace.property>,
+	account_id: byte_array, 
+	auth_descriptor_id: byte_array
+) {
+	marketplace.def_original(
+		structure_name, 
+		interface_names,
+		def_property_list, 
+		init_property_list, 
+		account_id, 
+		auth_descriptor_id
+	);
+}
+
+override function a_def_structure(
+	structure_name: name, 
+	interface_names: list<name>, 
+	property_list: list<marketplace.property>,
+	account_id: byte_array,
+	auth_descriptor_id: byte_array
+) {
+	marketplace.def_structure(
+		structure_name,
+		interface_names,
+		property_list,
+		account_id,
+		auth_descriptor_id
+	);
+}
+
+override function a_new_instance(
+	structure_name: name, 
+	properties: list<marketplace.property>, 
+	auth_descriptor_id: byte_array
+) {
+	marketplace.new_instance(
+		structure_name, 
+		properties, 
+		auth_descriptor_id
+	);
+}

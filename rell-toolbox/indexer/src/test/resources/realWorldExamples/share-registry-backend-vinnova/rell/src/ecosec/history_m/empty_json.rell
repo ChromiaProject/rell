@@ -1,0 +1,15 @@
+
+//****************************************
+// empty_json - Function returning json that is empty per history definition
+//
+// - This function is used to enforce same layout for all
+//   empty json returned to front-end (when prev/next state does not exist)
+//
+// LIMITATIONS
+// - 
+//
+
+function empty_json (): json{
+	
+	return ((empty="")).to_gtv_pretty().to_json();
+}

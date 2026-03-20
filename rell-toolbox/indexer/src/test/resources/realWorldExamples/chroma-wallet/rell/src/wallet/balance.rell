@@ -1,0 +1,49 @@
+import .account;
+
+entity balance {
+  key account.account, asset;
+  mutable amount: integer;
+
+  chain_id: integer; // TOREMOVE
+}
+
+function create_balance_if_not_exists(account.account, asset, chain_id: integer): balance {
+    print(8);
+    print("Account", account.id);
+    print("ASSet", asset.name);
+    print(chain_id);
+  require(account.mother_chain == _this_blockchain@{chain_id}.blockchain, "Accounts from other blockchains can't own money");
+  val balance_exists = balance@?{asset, account, .chain_id == chain_id};
+
+    print(9, balance_exists);
+  if(balance_exists == null) {
+    return create balance(account, asset, amount = 0, .chain_id = chain_id);
+  }
+  return balance_exists!!;
+}
+
+operation give_balance(account_id: byte_array, asset_name: text, amount: integer, chain_id: integer) {
+  require(import_state.dev == true);
+  require(amount>0);
+  val account = account.account@{.id == account_id, .chain_id == chain_id};
+  val asset = asset@{asset_name, chain_id};
+  val balance = create_balance_if_not_exists(account, asset, chain_id);
+  balance.amount += amount;
+}
+
+query get_tokens_amount(id: text, asset_id: text, chain_id: integer) {
+  return balance@{
+    account.account@{.id == byte_array(id), chain_id},
+    asset@{.id == byte_array(asset_id), chain_id},
+    chain_id
+  }.amount;
+}
+
+query get_user_balance(id: byte_array) {
+    return balance@*{ .account.id == id } (
+        account = .account.id,
+        asset_id = .asset.id,
+        asset = .asset.name,
+        amount = .amount
+    );
+}

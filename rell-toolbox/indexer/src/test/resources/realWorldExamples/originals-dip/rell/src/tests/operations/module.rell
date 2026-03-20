@@ -1,0 +1,149 @@
+module;
+
+import dip.*;
+import originals.*;
+
+namespace test.dip.op {
+	operation create_interface_(name, types: map<text, gtv>, extends: list<name> = list()) {
+		Interface(name, types, extends);
+	}
+	
+	operation create_instance_(interfaces: list<text>, prototype: text?, types: map<text, gtv>, prototype_name: text? = null) {
+		Instantiation(interfaces, prototype, types, prototype_name);
+	}
+	
+	operation add_type_attribute_(i: instance, attribute, value: gtv) {
+		add_type_attribute(i, attribute, value);
+	}
+	
+	operation set_type_attribute_(i: instance, attribute, value: gtv) {
+		set_type_attribute(i, attribute, value);
+	}
+
+	operation create_instance() {
+		create instance();
+	}
+	
+	operation add_type_attribute_meta_(i: instance, attribute, value: gtv, context: gtv?) {
+		add_type_attribute_meta(i, attribute, value, context);
+	}
+	
+	operation set_type_attribute_meta_(i: instance, attribute, value: gtv, context: gtv?) {
+		set_type_attribute_meta(i, attribute, value, context);
+	}
+	
+	/** Map */	
+	operation map_put_(instance, attribute, element: (gtv, gtv)) {
+		map_put(instance, attribute, element);
+	}
+	
+	operation map_put_all_(instance, attribute, elements: map<gtv,gtv>) {
+		map_put_all(instance, attribute, elements);
+	}
+	
+	operation map_remove_(instance, attribute, idx: gtv) {
+		map_remove(instance, attribute, idx);
+	}
+	
+	operation map_clear_(instance, attribute) {
+		map_clear(instance, attribute);
+	}
+	/** Map end */
+	
+	/** Set */	
+	operation set_add_(instance, attribute, value: gtv) {
+		add_set_attribute_element(instance, attribute, value);
+	}
+	
+	operation set_add_all_(instance, attribute, values: gtv) {
+		add_set_attribute_elements(instance, attribute, values);
+	}
+	
+	operation set_remove_(instance, attribute, value: gtv) {
+		set_attribute_remove(instance, attribute, value);
+	}
+	
+	operation set_attribute_remove_all_(instance, attribute, values: gtv) {
+		set_attribute_remove_all(instance, attribute, values);
+	}
+	
+	operation set_clear_(instance, attribute) {
+		set_attribute_clear(instance, attribute);
+	}
+	/** Set end */
+
+	/** List */	
+	operation list_add_(instance, attribute, value: gtv, pos: integer = -1) {
+		list_add(instance, attribute, value, pos);
+	}
+	
+	operation list_add_all_(instance, attribute, values: gtv, pos: integer = -1) {
+		list_add_all(instance, attribute, values, pos);
+	}
+	
+	operation list_clear_(instance, attribute) {
+		list_clear(instance, attribute);
+	}
+	
+	operation list_remove_(instance, attribute, value: gtv) {
+		list_remove(instance, attribute, value);
+	}
+	
+	operation list_remove_all_(instance, attribute, values: gtv) {
+		list_remove_all(instance, attribute, values);
+	}
+	
+	operation list_remove_at_(instance, attribute, idx: integer) {
+		list_remove_at(instance, attribute, idx);
+	}
+	/** List end */
+}
+
+namespace test.originals.op {
+	
+	operation init_originals_interface() {
+		initialize_original_interfaces();
+	}
+	
+	operation mint_non_fungible_original_(original_type, creator_id: byte_array, creator_auth: byte_array) {
+		mint_non_fungible_original(original_type, creator_id, creator_auth);
+	}
+	
+	operation mint_non_fungible_original_to_account_(original_type, 
+		creator_id: byte_array, creator_auth: byte_array,
+		to_account_id: byte_array
+	) {
+		mint_non_fungible_original_to_account(original_type, creator_id, creator_auth, to_account_id);
+	}
+	
+	operation mint_fungible_original_(original_type?, fungible_id: byte_array?, creator_id: byte_array, creator_auth: byte_array, quantity: integer = 1) {
+		mint_fungible_original(original_type, fungible_id, creator_id, creator_auth, quantity);
+	}
+	
+	operation mint_fungible_original_to_account_(original_type?, fungible_id: byte_array?, 
+		creator_id: byte_array, creator_auth: byte_array,
+		to_account_id: byte_array,
+		quantity: integer = 1
+	) {
+		mint_fungible_original_to_account(original_type, fungible_id, creator_id, creator_auth, to_account_id, quantity);
+	}
+
+	operation link_instance_(account_id: byte_array, auth_id: byte_array, attr_name: text, base_id: byte_array, child_id: byte_array) {
+		link_instance(account_id, auth_id, attr_name, base_id, child_id);
+	}
+
+	operation unlink_instance_(account_id: byte_array, auth_id: byte_array, attr_name: text, base_id: byte_array) {
+		unlink_instance(account_id, auth_id, attr_name, base_id);
+	}
+
+	operation transfer_(original_id: byte_array,
+		from_id: byte_array, from_auth_desc: byte_array,
+		to_id: byte_array, quantity: integer = 1
+	) {
+		transfer(original_id, from_id, from_auth_desc, to_id, quantity);
+	}
+
+	operation fractionalize_(id: byte_array, owner_id: byte_array, owner_auth_desc: byte_array, fractions: integer) {
+		fractionalize(id, owner_id, owner_auth_desc, fractions);
+	}
+}

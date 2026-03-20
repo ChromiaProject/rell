@@ -1,0 +1,25 @@
+
+
+function propSet(_set): prop_type_struct {
+	return prop_type_struct(property_type._set, _set.to_gtv());
+}
+
+struct _set {
+	type: set_type;
+}
+
+function _create_property_set(structure, name, prop): structure_property {
+		
+	val property = create structure_property (
+		name,
+		structure,
+		optional = prop.optional.value,
+		mutation = prop.mutation.value,
+		type = property_type._set,
+		value = x""
+	);
+		
+	_create_structure_property_meta_tags(property, prop.meta.tags);
+	
+	return property;
+}

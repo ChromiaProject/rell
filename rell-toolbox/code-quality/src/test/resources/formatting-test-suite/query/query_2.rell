@@ -1,0 +1,4 @@
+query multiLineUserDefinedQuery(
+    arg1: integer,
+    arg2: text
+): text {val val1 = 1;val val2 = "val2";return val2;}

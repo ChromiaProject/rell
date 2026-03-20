@@ -1,0 +1,17 @@
+
+//****************************************
+// role_type - class
+//
+// Table naming the different possible types of roles a persona can have (Board represenative, share holder, ...)
+
+entity role_type {
+	key id: role_type_enum;
+	mutable name: text;
+}
+
+enum role_type_enum {
+	NO_ROLE, // Never stored in blockchain
+	BOARD_REP,
+	BOARD_MEMBER,
+	SHARE_HOLDER
+}

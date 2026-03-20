@@ -1,0 +1,16 @@
+
+//****************************************
+// rowid_to_text - Functions to convert rowid to text
+//
+// - When using rowid as identity / number on a record which is shown 
+//   to end user in a generic context. (ie mixed type of identities)
+// - One use case is a generic History table storing IDs of different
+//   types as text for user reading reference
+//
+// LIMITATIONS
+// - 
+//
+
+function rowid_to_text(rowid: rowid): text{
+    return '%s'.format(rowid);
+}

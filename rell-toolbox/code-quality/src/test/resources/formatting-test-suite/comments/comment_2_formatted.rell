@@ -1,0 +1,12 @@
+//this is a comment
+function a() {
+    return 2;
+}
+
+/*
+this is
+a comment
+*/
+function a() {
+    return 2;
+}

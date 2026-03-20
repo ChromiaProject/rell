@@ -1,0 +1,162 @@
+
+@log 
+entity original_event {
+	index instance;
+	type: text;
+	level: integer;
+	description: text;
+}
+
+struct event {
+	type: text;
+	level: integer;
+	description: text;
+	timestamp: integer;
+	block_height: integer;
+}
+
+@log 
+entity original_trade_event {
+	index instance;
+	seller: ft3.account;
+	buyer: ft3.account;
+	asset_id: byte_array;
+	price: integer;
+}
+
+struct trade_event {
+	seller_id: byte_array;
+	buyer_id: byte_array;
+	asset_id: byte_array;
+	price: integer;
+	timestamp: integer;
+	block_height: integer;
+}
+
+function log_original_event_buy(
+	instance, 
+	seller: ft3.account,
+	buyer: ft3.account,  
+	asset_id: byte_array, 
+	price: integer
+) {
+	create original_event(
+		instance,
+		type = "buy",
+		level = 0,
+		description = "Original bought from " + seller.id.to_hex() + " by " + buyer.id.to_hex()
+	);
+	
+	create original_trade_event(
+		instance,
+		seller,
+		buyer,
+		asset_id,
+		price
+	);
+}
+
+function log_event(instance, type: text, level: integer, description: text) {
+	create original_event(
+		instance,
+		type,
+		level,
+		description
+	);
+}
+
+function find_original_events_by_type(instance, event_type: text): list<event> {
+	val events = original_event @* { instance, .type == event_type } (
+		.type,
+		.level,
+		.description,
+//		.transaction.block.timestamp,
+		timestamp = 0,
+		@sort_desc .transaction.block.block_height
+	);
+	
+	val event_list = list<event>();
+	
+	for ((type, level, description, block_height, timestamp) in events) {
+		event_list.add(event(type, level, description, block_height, timestamp));
+	}
+	
+	return event_list;
+}
+
+function find_original_events_by_level(instance, event_level: integer): list<event> {
+	val events = original_event @* { instance, .level <= event_level } (
+		.type,
+		.level,
+		.description,
+		timestamp = 0,
+//		timestamp = .transaction.block.timestamp,
+		@sort_desc .transaction.block.block_height
+	);
+	
+	val event_list = list<event>();
+	
+	for ((type, level, description, block_height, timestamp) in events) {
+		event_list.add(event(type, level, description, block_height, timestamp));
+	}
+	
+	return event_list;
+}
+
+function find_original_trade_events(instance): list<trade_event> {
+	val events = original_trade_event @* { instance } (
+		seller_id = .seller.id,
+		buyer_id = .buyer.id,
+		.asset_id,
+		.price,
+		.transaction.block.timestamp,
+		@sort_desc .transaction.block.block_height
+	);
+	
+	val event_list = list<trade_event>();
+	for ((seller_id, buyer_id, asset_id, price, timestamp, block_height) in events) {
+		event_list.add(
+			trade_event(seller_id, buyer_id, asset_id, price, timestamp, block_height)
+		);
+	}
+	
+	return event_list;
+}
+
+function find_original_trade_events_page(
+	instance, 
+	before_rowid: rowid, 
+	page_size: integer
+): (count: integer, events: list<gtv>, last_rowid: gtv) {
+	val events = (ote: original_trade_event) @* { 
+		instance, 
+		ote.rowid < before_rowid
+	} (
+		seller_id = .seller.id,
+		buyer_id = .buyer.id,
+		.asset_id,
+		.price,
+		.transaction.block.timestamp,
+		.transaction.block.block_height,
+		@sort_desc .rowid
+	) limit page_size;
+	
+	val event_list = list<gtv>();
+	for ((seller_id, buyer_id, asset_id, price, timestamp, block_height, rowid) in events) {
+		event_list.add(
+			trade_event(seller_id, buyer_id, asset_id, price, timestamp, block_height).to_gtv_pretty()
+		);
+	}
+	
+	val last_rowid =
+		if (events.size() > 0)
+			events[events.size()-1].rowid.to_gtv()
+		else
+			(0).to_gtv();
+	
+	return (
+		count = events.size(),
+		events = event_list,
+		last_rowid = (0).to_gtv()
+	);
+}

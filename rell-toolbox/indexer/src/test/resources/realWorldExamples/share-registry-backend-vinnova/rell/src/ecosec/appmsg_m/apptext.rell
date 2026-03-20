@@ -1,0 +1,47 @@
+
+//****************************************
+// apptext - Functions to get text string by text code
+//
+// - Ensure unique text codes cross app, that can be used by frontend for localized user feedback
+// - Keep a centralized reference list of all text codes
+// - Used to enforce standardized "require()" messages
+//
+// LIMITATIONS
+// - 
+//
+
+function apptext(code: text): text{
+	// TODO: apptext, texts could be moved to database / localized
+	
+	return when(code){
+		// Error messages
+		'MSGE0000' -> ''; // Code for empty message
+		
+		'MSGE0101' -> 'Authorization missing, Supplied pubkey not the same as the signing key';
+		'MSGE0102' -> 'Authorization missing, NOT board representative';
+		'MSGE0103' -> 'Authorization missing, NOT superadmin';
+		'MSGE0104' -> 'Authorization missing, NOT founder';
+		'MSGE0105' -> 'Authorization missing, no active certificate';
+		'MSGE0106' -> 'Authorization inconsistencies, there are multiple agents with requested persona identity_type/identity_nr';
+		'MSGE0107' -> 'Authorization changes not allowed on self';
+		
+		// Generic application errors
+		'MSGE0201' -> 'No update possible. <1> Information had already been changed by someone else';
+		'MSGE0202' -> 'No create possible. <1> Id is already taken';
+		
+		// Area specific application errors
+		////////////////////////////////////////////
+		// Share block
+		'MSGE0301' -> 'No share block divide possible. Parts do not match share count';
+		'MSGE0302' -> 'Share count on company level does not match the sum of shares in share blocks';
+		'MSGE0303' -> 'New share block interval is incorrect';
+		'MSGE0304' -> 'New share block interval does not start with first available share number';
+		'MSGE0305' -> 'Incorrect share block change in change list (one change can only be one of add, change, divide)';
+		'MSGE0306' -> 'List of updated and/or new share blocks is empty';
+		
+		// Requests
+		'MSGE0310' -> 'Request does not belong to the specified company (org_nr)';
+		'MSGE0311' -> 'There is an older request that needs to be approved first';
+		else -> 'Unknown';
+	};
+}

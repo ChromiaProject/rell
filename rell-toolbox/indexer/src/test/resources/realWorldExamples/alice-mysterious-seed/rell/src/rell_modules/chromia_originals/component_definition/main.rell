@@ -1,0 +1,190 @@
+import ^.interface.*;
+import ^.structure;
+import ^.e.*;
+
+struct description {
+	value: text;
+}
+
+enum property_type {
+	integer,
+	text,
+	indx,
+	byte_array,
+	interface,
+	structure,
+	account,
+	boolean,
+	id,
+	_enum,
+	_set
+}
+
+struct implements {
+	interfaces: list<interface>;
+}
+
+struct static {
+	value: boolean = true;
+}
+
+struct optional {
+	value: boolean = true;
+}
+
+enum mutation_type {
+	readonly,
+	dapp,
+	owner,
+	public
+}
+
+struct mutation {
+	value: mutation_type;
+}
+
+function readonly(): mutation {
+	return mutation(mutation_type.readonly);
+}
+
+function owner_mutable(): mutation {
+	return mutation(mutation_type.owner);
+}
+
+function public_mutable(): mutation {
+	return mutation(mutation_type.public);
+}
+
+function dapp_mutable(): mutation {
+	return mutation(mutation_type.dapp);
+}
+
+struct prop_type_struct {
+	type: property_type;
+	type_gtv: gtv;
+}
+
+struct max_count {
+	value: integer;
+}
+
+struct tag {
+	name;
+	value = value("");
+}
+
+struct value {
+	value: text;
+}
+
+struct meta {
+	tags: list<tag>;
+}
+
+struct prop {
+	optional = optional(false);
+	static = static(false);
+	mutation = dapp_mutable();
+	meta = meta(list<tag>());
+	prop_type_struct;
+}
+
+function propI(int): prop_type_struct {
+	return prop_type_struct(property_type.integer, int.to_gtv());
+}
+
+struct chain {
+	id: byte_array;
+}
+
+struct int {
+	min: integer = integer.MIN_VALUE;
+	max: integer = integer.MAX_VALUE;
+	value: integer? = null;
+}
+
+function propT(txt): prop_type_struct {
+	return prop_type_struct(property_type.text, txt.to_gtv());
+}
+
+struct txt {
+	max_length: integer = 256;
+	value: text? = null;
+}
+
+function propIndx(indx): prop_type_struct {
+	return prop_type_struct(property_type.indx, indx.to_gtv());
+}
+
+struct indx {
+	max_count: integer? = null;
+}
+
+struct configure {
+	props: map<text, gtv> = map<text, gtv>();
+}
+
+struct bytes {
+	max_length: integer = 256;
+	value: byte_array? = null;
+}
+
+function propB(bytes): prop_type_struct {
+	return prop_type_struct(property_type.byte_array, bytes.to_gtv());
+}
+
+struct owner {
+	value: boolean = true;
+}
+
+struct account {
+	owner = owner(false);
+}
+
+function propA(account): prop_type_struct {
+	return prop_type_struct(property_type.account, account.to_gtv());
+}
+
+struct inf {
+	interface;
+}
+
+function propInf(inf): prop_type_struct {
+	return prop_type_struct(property_type.interface, inf.to_gtv());
+}
+
+struct strct {
+	structure.structure;
+}
+
+function propS(strct): prop_type_struct {
+	return prop_type_struct(property_type.structure, strct.to_gtv());
+}
+
+struct bool {
+	value: boolean? = null;
+}
+
+function propBool(bool): prop_type_struct {
+	return prop_type_struct(property_type.boolean, bool.to_gtv());
+}
+
+struct id {
+}
+
+function propID(id): prop_type_struct {
+	return prop_type_struct(property_type.id, id.to_gtv());
+}
+
+struct enm {
+	_enum;
+}
+
+function propE(enm): prop_type_struct {
+	return prop_type_struct(property_type._enum, enm.to_gtv());
+}
+
+struct where {
+	name;
+	value: gtv;
+}

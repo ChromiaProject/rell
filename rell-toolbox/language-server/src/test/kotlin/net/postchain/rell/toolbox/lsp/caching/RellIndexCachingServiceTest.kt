@@ -1,0 +1,248 @@
+package net.postchain.rell.toolbox.lsp.caching
+
+import assertk.assertThat
+import assertk.assertions.isFalse
+import assertk.assertions.isNotNull
+import assertk.assertions.isNull
+import assertk.assertions.isTrue
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.mockkStatic
+import io.mockk.spyk
+import io.mockk.unmockkObject
+import io.mockk.unmockkStatic
+import io.mockk.verify
+import net.postchain.rell.base.compiler.base.utils.C_SourceFile
+import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
+import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.indexer.RellResourceFactory
+import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.linter.FormattingStyleLinter
+import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.linter.RellLinter
+import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
+import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
+import net.postchain.rell.toolbox.lsp.server.RellDiagnosticsManager
+import net.postchain.rell.toolbox.lsp.server.RellIndexingManager
+import net.postchain.rell.toolbox.lsp.server.VersionInfo
+import net.postchain.rell.toolbox.parser.AntlrRellParser
+import org.eclipse.lsp4j.WorkspaceFolder
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.io.IOException
+import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
+
+class SourceFile(val filePath: String, val fileContent: String)
+
+class RellIndexCachingServiceTest {
+
+    private lateinit var indexSerializer: RellIndexSerializer
+    private lateinit var cachingService: RellIndexCachingService
+    private lateinit var workspaceFolderUri: URI
+    private lateinit var dummyWorkspaceIndexer: WorkspaceIndexer
+    private lateinit var cacheFile: File
+
+    private val rellLinter = RellLinter()
+    private val formattingStyleLinter = FormattingStyleLinter()
+    private val formatterOptions = FormatterOptions()
+    private val linterOptions = LinterOptions()
+
+    @BeforeEach
+    fun setup(@TempDir tempDir: Path) {
+        indexSerializer = spyk(
+            RellIndexSerializer(
+                rellLinter,
+                formattingStyleLinter,
+                RellFormatterOptionsResolver(),
+                RellLinterOptionsResolver()
+            )
+        )
+        cachingService = spyk(RellIndexCachingService(indexSerializer))
+        workspaceFolderUri = Files.createDirectories(tempDir.resolve("src")).toUri()
+        val sourceFiles = listOf(
+            SourceFile("dummy.rell", "module; function dummy() {}"),
+            SourceFile("dummy2.rell", "module; function dummy2() {}")
+        )
+        dummyWorkspaceIndexer = createDummyWorkspaceIndexer(workspaceFolderUri, sourceFiles)
+        cacheFile = tempDir.resolve("dummy.cache").toFile()
+        every { cachingService.getCacheFile(workspaceFolderUri) } returns cacheFile
+    }
+
+    @Test
+    fun `Should return null when cache file does not exist`() {
+        val workspaceFolderUri = URI("file:///notExistingWorkspaceFolder")
+        val result = cachingService.getWorkspaceIndexer(workspaceFolderUri)
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun `Should return WorkspaceIndexer when cache file exists`() {
+        cachingService.saveWorkspaceIndexers(listOf(dummyWorkspaceIndexer))
+        val result = cachingService.getWorkspaceIndexer(workspaceFolderUri)
+        assertThat(result).isNotNull()
+    }
+
+    @Test
+    fun `Should delete cache file when deserialization fails`() {
+        every { indexSerializer.deserializeAsWorkspaceIndexer(any()) } throws IOException()
+        cachingService.saveWorkspaceIndexers(listOf(dummyWorkspaceIndexer))
+
+        assertThat(cacheFile.exists()).isTrue()
+        val result = cachingService.getWorkspaceIndexer(workspaceFolderUri)
+        assertThat(cacheFile.exists()).isFalse()
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun `Should delete cache file when deserialization fails because of cache version mismatch`() {
+        mockkObject(VersionInfo)
+        every { VersionInfo.getImplementationVersion() } returns "1.0.0"
+        cachingService.saveWorkspaceIndexers(listOf(dummyWorkspaceIndexer))
+
+        assertThat(cacheFile.exists()).isTrue()
+
+        every { VersionInfo.getImplementationVersion() } returns "2.0.0"
+        val result = cachingService.getWorkspaceIndexer(workspaceFolderUri)
+
+        assertThat(cacheFile.exists()).isFalse()
+
+        assertThat(result).isNull()
+        unmockkObject(VersionInfo)
+    }
+
+    @Test
+    fun `Should return null when reading from cache file fails`() {
+        withMockedStatic("kotlin.io.FilesKt__FileReadWriteKt") {
+            val mockFile = mockk<File>()
+            every { cachingService.getCacheFile(workspaceFolderUri) } returns mockFile
+            every { mockFile.exists() } returns true
+            every { mockFile.readBytes() } throws IOException()
+
+            val result = cachingService.getWorkspaceIndexer(workspaceFolderUri)
+            assertThat(result).isNull()
+        }
+    }
+
+    private fun withMockedStatic(staticName: String, block: () -> Unit) {
+        mockkStatic(staticName)
+        block()
+        unmockkStatic(staticName)
+    }
+
+    @Test
+    fun `Should not throw when writing to disk fails`() {
+        withMockedStatic("kotlin.io.FilesKt__FileReadWriteKt") {
+            val mockFile = mockk<File>()
+            every { cachingService.getCacheFile(workspaceFolderUri) } returns mockFile
+            every { indexSerializer.serializeAsBytes(any()) } returns byteArrayOf(1, 2, 3)
+            every { mockFile.writeBytes(any()) } throws IOException()
+            cachingService.saveWorkspaceIndexers(listOf(dummyWorkspaceIndexer))
+        }
+    }
+
+    @Test
+    fun `Should persist index caches`() {
+        cachingService.persistOnDiskPeriodically(listOf(dummyWorkspaceIndexer), 1.minutes)
+
+        Thread.sleep(100)
+
+        verify(exactly = 1) { cachingService.saveWorkspaceIndexers(listOf(dummyWorkspaceIndexer)) }
+    }
+
+    @Test
+    fun `Should cleanup old caches`() {
+        cachingService.saveWorkspaceIndexers(listOf(dummyWorkspaceIndexer))
+        every { cachingService.getCacheFolder() } returns cacheFile.parentFile
+        assertThat(cacheFile.exists()).isTrue()
+        Thread.sleep(100)
+        cachingService.cleanupOldCaches(1.milliseconds)
+        assertThat(cacheFile.exists()).isFalse()
+    }
+
+    @Test
+    fun `Should invalidate caches`() {
+        cachingService.saveWorkspaceIndexers(listOf(dummyWorkspaceIndexer))
+        every { cachingService.getCacheFolder() } returns cacheFile.parentFile
+        assertThat(cacheFile.exists()).isTrue()
+        val result = cachingService.invalidateCaches()
+        assertThat(cacheFile.exists()).isFalse()
+        assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `Should skip persisting indexers with single files`() {
+        val singleFileIndexer = createDummyWorkspaceIndexer(
+            workspaceFolderUri,
+            listOf(SourceFile("dummy.rell", "module; function dummy() {}"))
+        )
+        every { cachingService.getCacheFolder() } returns cacheFile.parentFile
+
+        cachingService.saveWorkspaceIndexers(listOf(singleFileIndexer))
+
+        assertThat(cacheFile.exists()).isFalse()
+    }
+
+    @Test
+    fun `Should delete old cache folder if found`(@TempDir tempDir: Path) {
+        val oldCacheFolder = tempDir.resolve("oldCacheFolder").toFile()
+        oldCacheFolder.mkdirs()
+        val testFile = oldCacheFolder.resolve("testFile.txt")
+        testFile.writeText("test")
+
+        val newCacheFolder = tempDir.resolve("newCacheFolder").toFile()
+        newCacheFolder.mkdirs()
+
+        every { cachingService.getCacheFolder() } returns newCacheFolder
+        every { cachingService.getOldCacheFolder() } returns oldCacheFolder
+
+        assertThat(oldCacheFolder.exists()).isTrue()
+        assertThat(newCacheFolder.exists()).isTrue()
+
+        workspaceFolderUri = Files.createDirectories(tempDir.resolve("src")).toUri()
+        val sourceFiles = listOf(
+            SourceFile("dummy.rell", "module; function dummy() {}"),
+            SourceFile("dummy2.rell", "module; function dummy2() {}")
+        )
+        dummyWorkspaceIndexer = createDummyWorkspaceIndexer(workspaceFolderUri, sourceFiles)
+
+        val diagnosticsManager = RellDiagnosticsManager()
+        val indexingManager = RellIndexingManager(
+            cachingService,
+            diagnosticsManager,
+            rellLinter,
+            formattingStyleLinter,
+            RellFormatterOptionsResolver(),
+            RellLinterOptionsResolver()
+        )
+        indexingManager.indexCachingEnabled = true
+        val workspaceFolder = WorkspaceFolder(workspaceFolderUri.toString(), "testWorkspace")
+        indexingManager.initialize(listOf(workspaceFolder))
+
+        assertThat(oldCacheFolder.exists()).isFalse()
+        assertThat(newCacheFolder.exists()).isTrue()
+    }
+
+    private fun createDummyWorkspaceIndexer(workspaceFolderUri: URI, sourceFiles: List<SourceFile>): WorkspaceIndexer {
+        val resourceFactory = RellResourceFactory(workspaceFolderUri, AntlrRellParser(), ChromiaModelProvider(null))
+        val indexer =
+            WorkspaceIndexer(workspaceFolderUri, rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
+        val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
+
+        sourceFiles.forEach {
+            val fileUri = workspaceFolderUri.resolve(it.filePath)
+            File(fileUri).writeText(it.fileContent)
+            indexer.fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileMap)
+        }
+
+        return indexer
+    }
+}

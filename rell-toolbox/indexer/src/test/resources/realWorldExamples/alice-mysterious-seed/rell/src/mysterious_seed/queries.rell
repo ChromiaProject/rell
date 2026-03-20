@@ -1,0 +1,29 @@
+query get_plant_id(account_id: byte_array) {
+	val account = ft3.acc.account @ {.id == account_id};
+	return plant @? { account } ( .id );
+}
+
+// Returns current water level in decimal on a scale between 0 - 1.
+query get_water_meter(account_id: byte_array, timestamp): meter {
+	val account = ft3.acc.account @ {.id == account_id};
+	return retrieve_water_level(account, timestamp);
+}
+
+query get_fertilizer_meter(account_id: byte_array, timestamp): meter {
+	val account = ft3.acc.account @ {.id == account_id};
+	return retrieve_fertilizer_level(account, timestamp);
+}
+
+query get_happiness_meter(account_id: byte_array, timestamp): meter {
+	val account = ft3.acc.account @ {.id == account_id};
+	return retrieve_happiness_level(account, timestamp);
+}
+
+query get_plant_status(account_id: byte_array, timestamp): plant_status {
+	val account = ft3.acc.account @ {.id == account_id};
+	return retrieve_plant_status(account, timestamp);
+}
+
+query get_previous_block_timestamp(): integer {
+  return time.now();
+}

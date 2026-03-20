@@ -1,0 +1,178 @@
+
+//****************************************
+// init_data_set_2 - test
+//
+// - Insert test data into the blockchain from data set 2
+//
+// LIMITATIONS
+// - Caller must be founder
+// 
+/*
+import ecosec.auth_m;
+import ecosec.appmsg_m;
+import ecosec.company_m;
+import ecosec.agent_m;
+import ecosec.persona_m;
+import ecosec.identity_m;
+import ecosec.share_block_m;
+
+function init_data_set_2(founder_pubkey: pubkey){
+	
+	// Check authorization for self
+	require( is_signer(founder_pubkey), appmsg_m.msg('MSGE0101', 'Signer', 'test_m.test_select_test_data') ); // Require that supplied pubkey is same as signing pubkey
+	
+	// Check authorization
+	require(auth_m.pubkey_is_founder(founder_pubkey), appmsg_m.msg('MSGE0104', 'Founder', 'test_m.test_select_test_data'));
+	
+	// Get agent Id
+	val founder_id = auth_m.pubkey_get_active_cert_agent_id(founder_pubkey)!!;
+	
+	val testdata = (
+	superadmin_list = [
+		(first_name = 'Martina', last_name = 'Larsson', identity_type = 1, identity_nr = '19780819-6687', address1 = 'Haspelgatan 3', address2 = '', postal_code = '117 88', city = 'Hägersten', country = 'Sweden', phone = '+46734177635', email = 'martina@ecosec.com', privkey = '31393738303831392d3636383731393738303831392d36363837313937383038', pubkey = '03d2e0b50c1d53207304424a923d2c5f32320646045a8c1fbd19675620898da3ce'),
+		(first_name = 'Sebastian', last_name = 'Myrhage', identity_type = 1, identity_nr = '19820511-4513', address1 = 'Bondegatan 78', address2 = '', postal_code = '114 30', city = 'Stockholm', country = 'Sweden', phone = '+46767196854', email = 'Seb@ecosec.com', privkey = '31393832303531312d3435313331393832303531312d34353133313938323035', pubkey = '030e393d0febaa1440ee571ae4883adb35b65d895bd8be880d20f1afa8e1a6df25')
+
+	],
+	company_list = [
+		(
+	org_nr = '556798-6756', name = 'Letigo AB', phone = '070-43255694', email = 'info@letigo.se', address1 = 'Kustvägen 4', address2 = '', postal_code = '271 31', city = 'Simrishamn', country = 'Sweden', visit_address1 = 'Kustvägen 4', visit_address2 = '', visit_postal_code = '271 31', visit_city = 'Simrishamn', visit_country = 'Sweden', summons = 0, share_count = 200, share_value = 250, clause_conversion = 0, clause_consent = 0, clause_purchase_right = 0, clause_refusal = 0, clause_redemption = 0,
+	persona_list = [
+		(first_name = 'Leif', last_name = 'Svensson', agent = 0, board_member = 1, board_representative = 0, identity_type = 1, identity_nr = '19580728-7255', address1 = 'Kabelvägen 3', address2 = '', postal_code = '121 33', city = 'Stockholm', country = 'Sweden', phone = '+46704562332', email = 'leif.svensson@telia.se', type = 0, trustee = 0),
+		(first_name = 'Jonas', last_name = 'Sjöblom', agent = 0, board_member = 1, board_representative = 0, identity_type = 1, identity_nr = '19650802-7331', address1 = 'Usterstavägen 92', address2 = '', postal_code = '621 41', city = 'Visby', country = 'Sweden', phone = '+46762325587', email = 'jonas@outlook.com', type = 0, trustee = 0),
+		(first_name = 'Ifran', last_name = 'Bicen', agent = 0, board_member = 1, board_representative = 0, identity_type = 1, identity_nr = '19950228-4191', address1 = 'Drottninggatan 24a', address2 = '', postal_code = '220 02', city = 'Lund', country = 'Sweden', phone = '+46704127743', email = 'ifranbicen@gmail.com', type = 0, trustee = 0),
+		(first_name = 'Rauf', last_name = 'Karadag', agent = 0, board_member = 1, board_representative = 0, identity_type = 1, identity_nr = '19760404-3736', address1 = 'Östra Torggatan 46', address2 = '', postal_code = '762 00', city = 'Rimbo', country = 'Sweden', phone = '+46704127743', email = 'r.karadag@comcast.net', type = 0, trustee = 0),
+		(first_name = 'Anna', last_name = 'Larsson', agent = 1, board_member = 0, board_representative = 0, identity_type = 1, identity_nr = '19850518-6582', address1 = 'Skogsgatan 18', address2 = '', postal_code = '272 21', city = 'Simrishamn', country = 'Sweden', phone = '+46104561123', email = 'anna.larsson@gmail.com', type = 0, trustee = 0),
+		(first_name = 'Michael', last_name = 'Ekrot', agent = 1, board_member = 0, board_representative = 1, identity_type = 1, identity_nr = '19781224-4732', address1 = 'Kungsvägen 242', address2 = '', postal_code = '200 25', city = 'Malmö', country = 'Sweden', phone = '+46702584432', email = 'ekrot@hotmail.com', type = 0, trustee = 0),
+		(first_name = 'Orhan', last_name = 'Arikan', agent = 1, board_member = 0, board_representative = 0, identity_type = 1, identity_nr = '19600101-1818', address1 = 'Riddarallén 98', address2 = '', postal_code = '271 21', city = 'Ystad', country = 'Sweden', phone = '+46761632254', email = 'orhan@gmail.com', type = 0, trustee = 0),
+		(first_name = 'Corebridge AB', last_name = '', agent = 0, board_member = 0, board_representative = 0, identity_type = 2, identity_nr = '559753-8341', address1 = 'Richertsgatan 65', address2 = '', postal_code = '411 23', city = 'Göteborg', country = 'Sweden', phone = '+467647444519', email = 'support@corebridge.com', type = 0, trustee = 0)
+
+	],
+	share_block_list = [
+		(share_from = 1, share_to = 50, first_name = 'Anna', last_name = 'Larsson', identity_type = 1, identity_nr = '19850518-6582', share_type = 'A', pledging = 0, certificate = 0),
+		(share_from = 51, share_to = 100, first_name = 'Michael', last_name = 'Ekrot', identity_type = 1, identity_nr = '19781224-4732', share_type = 'A', pledging = 0, certificate = 0),
+		(share_from = 101, share_to = 125, first_name = 'Orhan', last_name = 'Arikan', identity_type = 1, identity_nr = '19600101-1818', share_type = 'A', pledging = 0, certificate = 0),
+		(share_from = 126, share_to = 175, first_name = 'Corebridge AB', last_name = '', identity_type = 2, identity_nr = '559753-8341', share_type = 'A', pledging = 0, certificate = 0),
+		(share_from = 176, share_to = 200, first_name = 'Anna', last_name = 'Larsson', identity_type = 1, identity_nr = '19850518-6582', share_type = 'A', pledging = 0, certificate = 0)
+
+	])
+	]);
+
+	// Create test data in a way / order that creates correct History
+	
+	// Create Superadmins
+	print('>>>>>>>>>>>>>>>>>>>>>>>Starting on superadmins>>>>>>>>>>>>>>');
+	var first_superadmin_id = '';
+	var first_superadmin_pubkey = byte_array('00'); // Dummy value
+	
+	print('>>>>>>>>>>>>>>>>>>>>>>>Loop superadmins>>>>>>>>>>>>>>');
+	// Loop Superadmins
+	for(s in testdata.superadmin_list){
+		val agent_pubkey = byte_array(s.pubkey);
+		val agent_id = 'id'+s.identity_nr;
+		// Impersonate agent signup
+		founder_impersonated_signup(founder_pubkey,
+			agent_pubkey, agent_id,
+			s.identity_nr,
+			s.first_name,
+			s.last_name,
+			s.address1,
+			s.address2,
+			s.postal_code,
+			s.city,
+			s.country,
+			s.phone,
+			s.email
+		);
+		
+		// Set agent as superadmin (Impersonate first superadmin)
+		if(first_superadmin_id==''){ // For first superadmin, act as founder
+			first_superadmin_id = agent_id;
+			first_superadmin_pubkey = agent_pubkey;
+
+			agent_m.agent_set_admin(founder_pubkey, founder_id, agent_id, 1);
+		}
+		else { // For additional superadmins, act as first superadmin
+			agent_m.agent_set_admin(founder_pubkey, first_superadmin_id, agent_id, 1);
+		}
+	}
+	
+	// Create Companies with personas and share blocks
+	print('>>>>>>>>>>>>>>>>>>>>>>>Starting on companies>>>>>>>>>>>>>>');
+	// Loop companies
+	for(c in testdata.company_list){
+		var board_rep_id = '';
+		print('>>>>>>>>>>>>>>>>>>>>>>>Searching for br>>>>>>>>>>>>>>');
+		// Onboard company, Loop personas, to find BR
+		for(p in c.persona_list){
+			if(p.board_representative != 0){ // This is the (first?) BR, only one allowed
+				print('>>>>>>>>>>>>>>>>>>>>>>>onboarding company>>>>>>>>>>>>>>');
+				// Store BR for future reference
+				board_rep_id = 'id' + c.org_nr + p.identity_nr;
+				
+				//Onobard company
+				company_m.company_onboard(founder_pubkey, founder_id,
+					c.org_nr, c.name, c.email, c.phone);
+					
+				//Onboard a persona (BR)
+				persona_m.persona_add(founder_pubkey, founder_id, 
+					c.org_nr,
+					'id'+c.org_nr+p.identity_nr, p.first_name, p.last_name, 
+					p.address1, p.address2, p.postal_code, p.city, p.country,
+					p.phone, p.email,
+					persona_m.persona_type_enum.value(p.type),
+					identity_m.id_type_enum.value(p.identity_type), p.identity_nr,
+					when(p.trustee){1->true;else->false;},
+					when(p.board_member){1->true;else->false;}
+					);
+				
+				//Set persona as BR
+				company_m.company_set_br(founder_pubkey, first_superadmin_id,
+					c.org_nr, '', board_rep_id);
+					
+				break;
+			}
+		}
+		
+		// Setup company profile
+		// TODO: For each part of company profile, get change_time_stamp, set property
+		
+		// Add Personas: Loop personas, exclude BR
+		print('>>>>>>>>>>>>>>>>>>>>>>>Looping personas>>>>>>>>>>>>>>');
+		for(p in c.persona_list){
+			val persona_id = 'id' + c.org_nr + p.identity_nr;
+			
+			if(persona_id != board_rep_id){ // Not the already added BR
+
+				//Onboard a persona (BR)
+				persona_m.persona_add(founder_pubkey, board_rep_id, 
+					c.org_nr,
+					persona_id, p.first_name, p.last_name, 
+					p.address1, p.address2, p.postal_code, p.city, p.country,
+					p.phone, p.email,
+					persona_m.persona_type_enum.value(p.type),
+					identity_m.id_type_enum.value(p.identity_type), p.identity_nr,
+					when(p.trustee){1->true;else->false;},
+					when(p.board_member){1->true;else->false;}
+					);
+				
+				// Sing up agent?
+				// TODO: For each agent: Check not exist, find way to do signup as founder, use id+pnr as ID
+			}
+		}
+		
+		// Loop share blocks
+		for(sb in c.share_block_list){
+			// Add new share blocks
+			share_block_m.add(founder_pubkey, founder_id, 
+				c.org_nr,
+				sb.share_from,
+				sb.share_to,
+				'id'+c.org_nr+sb.identity_nr,
+				sb.share_type,
+				when(sb.pledging){1->true;else->false;},
+				when(sb.certificate){1->true;else->false;}
+				);
+		}
+	}
+}
+ */

@@ -1,0 +1,76 @@
+
+function search(text, after_rowid: rowid, page_size: integer): list<instance> {
+	if (text.size() != 64) return list<instance>();
+	
+	val id = byte_array(text);
+	
+	val ITradeableOriginal = Interface("ITradeableOriginal");
+	
+	val instances = set<instance>();
+	
+	val instance_by_id = (
+		i: instance, 
+		si: structure_interface,
+		ip: instance_property,
+		ipvi: instance_property_value_id
+	) @? {
+		i.structure == si.structure,
+		si.interface == ITradeableOriginal,
+		ip.instance == i,		
+		ipvi.value == id,
+		ipvi.instance_property == ip,
+		i.rowid > after_rowid
+	} (
+		i
+	);
+	
+	if (instance_by_id??) {
+		instances.add(instance_by_id);
+	}
+	
+	val instances_by_owner = (
+		i: instance, 
+		si: structure_interface,
+		ip: instance_property,
+		ipva: instance_property_value_account
+	) @* {
+		i.structure == si.structure,
+		si.interface == ITradeableOriginal,
+		ip.instance == i,
+		ip.structure_property.name == "owner",
+		ipva.value.id == id,
+		ipva.instance_property == ip,
+		i.rowid > after_rowid
+	} (
+		i,
+		@omit @sort i.rowid
+	) limit page_size;
+	
+	instances.add_all(instances_by_owner);
+	
+	val instances_by_designer = (
+		i: instance, 
+		si: structure_interface,
+		sp: static_property,
+		spvb: static_property_value_byte_array
+	) @* {
+		i.structure == si.structure,
+		si.interface == ITradeableOriginal,
+		sp.structure == si.structure,
+		sp.name == "designer_id",
+		spvb.static_property == sp,
+		spvb.value == id,
+		i.rowid > after_rowid
+	} (
+		i,
+		@omit @sort i.rowid
+	) limit page_size;
+	
+	instances.add_all(instances_by_designer);
+	
+	return 
+		if (instances.size() > page_size)
+			instances.sorted().sub(0, page_size)
+		else
+			instances.sorted();
+}

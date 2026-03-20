@@ -1,0 +1,10 @@
+blockchains:
+  seeder_test:
+    module: main
+compile:
+  rellVersion: 0.14.2
+database:
+  schema: schema_seeder_test
+test:
+  modules:
+    - test

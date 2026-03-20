@@ -1,0 +1,14 @@
+module;
+
+operation maxLineWidthOperation(
+    arg1: integer,
+    arg2: text,
+    arg3: text,
+    arg4: integer,
+    extraLongArgument1: text,
+    extraLongArgument2: text
+) {
+    val val1 = 1;
+
+    val val2 = "val2";
+}

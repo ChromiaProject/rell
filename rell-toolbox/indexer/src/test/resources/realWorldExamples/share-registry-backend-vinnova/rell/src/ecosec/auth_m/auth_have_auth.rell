@@ -1,0 +1,217 @@
+// Authorization handling
+//
+// - This authorization handling is temporary Mockup
+//   and needs to be cleaned up when BankID or similar
+//   is implemented
+// - Since before Rell had modules, the auth check functions have
+//   the prefix "have auth_..."
+
+//  TODO: Authorization, refactor to integrate with BankID or similar
+
+import ecosec.appmsg_m;
+import ecosec.agent_m;
+import ecosec.persona_m;
+
+// Get agent_id by pubkey based on valid certificate
+// LIMITATIONS
+// -
+function query_pubkey_get_active_cert_agent_id(agent_pubkey: pubkey):text?{
+	val validation_time_stamp = query_cert_worst_case_time();
+
+	/*print('>>>>>>>>>>>>>>>>>>validation_time_stamp ' + validation_time_stamp);
+	val valid_from = agent_m.cert_status @? {
+		.cert.pubkey==agent_pubkey
+	}(
+		.valid_from
+	) limit 1;
+	print('>>>>>>>>>>>>>>>>>>valid_from ' + valid_from);
+	val expire_at = agent_m.cert_status @? {
+		.cert.pubkey==agent_pubkey
+	}(
+		.expire_at
+	) limit 1;
+	print('>>>>>>>>>>>>>>>>>>expire_at ' + expire_at);
+
+	print('>>>>>>>>>>>>>>>>>>agent_pubkey ' + agent_pubkey.to_hex());
+
+	val real_pubkey = agent_m.cert_status @? {
+		.cert.identity_nr=='19750912-1682'
+	}(
+		idenity_nr=.cert.identity_nr,
+		pkey=.cert.pubkey
+	) limit 1;
+	if(real_pubkey!=null){
+		print('>>>>>>>>>>>>>>>>>>real_pubkey ' + real_pubkey.pkey.to_hex());
+	}*/
+
+	return agent_m.cert_status @? {
+		.cert.pubkey==agent_pubkey and
+		.valid_from <= validation_time_stamp and
+		.expire_at >= validation_time_stamp and
+		(.cert_status_type.id == agent_m.cert_status_type_enum.ACTIVE or .cert_status_type.id == agent_m.cert_status_type_enum.FOUNDER)
+	}(
+		.cert.agent.id
+	) limit 1;
+}
+
+// Get agent_id by pubkey based on valid certificate
+// LIMITATIONS
+// -
+function pubkey_get_active_cert_agent_id(agent_pubkey: pubkey):text?{
+	val validation_time_stamp = cert_worst_case_time();
+
+	return agent_m.cert_status @? {
+		.cert.pubkey==agent_pubkey and
+		.valid_from <= validation_time_stamp and
+		.expire_at >= validation_time_stamp and
+		(.cert_status_type.id == agent_m.cert_status_type_enum.ACTIVE or .cert_status_type.id == agent_m.cert_status_type_enum.FOUNDER)
+	}(
+		.cert.agent.id
+	) limit 1;
+}
+
+// Get Agent's active certificate
+// LIMITATIONS
+// -
+function query_get_active_cert(agent_pubkey: pubkey, agent_id: text): agent_m.cert? {
+	print('Authorization: query_get_active_cert?');
+
+	val validation_time_stamp = query_cert_worst_case_time();
+
+	// Check that pubkey is valid for agent_id (all agent pubkey should have at least one status)
+	val cs = agent_m.cert_status @? {
+		.cert.pubkey==agent_pubkey and .cert.agent.id == agent_id and
+		.valid_from <= validation_time_stamp and
+		.expire_at >= validation_time_stamp and
+		(.cert_status_type.id == agent_m.cert_status_type_enum.ACTIVE or .cert_status_type.id == agent_m.cert_status_type_enum.FOUNDER)
+	}(
+		.cert, expire=.expire_at, @sort_desc .valid_from
+	) limit 1;
+
+	if(cs == null){
+		print('Authorization: query_get_active_cert, no cert found');
+		return null;
+	}
+
+	print('Authorization: query_get_active_cert, returning cert...');
+
+	return (agent_m.cert @ { cert == cs.cert});
+}
+
+// Does signer have auth for agent_pubkey, agent_id ?
+function have_auth_agent(agent_pubkey: pubkey, agent_id: text): boolean {
+
+	print('Authorization: have_auth_agent?');
+
+    // Check that agent_pubkey matches signer
+    if(is_signer(agent_pubkey)==false){
+    	print('Authorization: Pubkey not signer');
+        return false;
+    }
+
+    // Check that there is a certificate for the pubkey/agent_id
+    val cert_agent_id = pubkey_get_active_cert_agent_id(agent_pubkey);
+    if(cert_agent_id == null){
+    	// No Active certificate was found for pubkey
+    	print('Authorization: No active certificate');
+    	return false;
+    }
+    else if(cert_agent_id != agent_id){ // Check that pubkey match agent_id
+    	// agent_id does not match pubkey (and this is NOT founder impersonation)
+    	print('Authorization: pubkey does not match agent_id');
+    	return false;
+    }
+
+    // Have auth
+    return true;
+}
+
+// Does agent_id have auth Company BR ?
+function have_auth_br(agent_id: text, org_nr: text): boolean {
+
+	print('Authorization: have_auth_br?');
+
+	// Check if agent_id is persona in company
+	val br = (p: persona_m.persona, pr: persona_m.persona_role, rt: persona_m.role_type, a: agent_m.agent, pa: persona_m.persona_agent) @? {
+		p == pr.persona and rt == pr.role_type and pa.persona == p and pa.agent == a and
+		a.id == agent_id and p.company.org_nr == org_nr and pr.role_type.id == persona_m.role_type_enum.BOARD_REP
+	}(
+		persona_id = p.id
+	);
+
+	if (not exists(br)){
+		// TODO: have_auth_br, Also search for auto mapped BR personas?
+	}
+
+	// TODO: have_auth_br, Revoke Superadmins right to always act as BR for all companies?
+	if (not exists(br) and not have_auth_admin(agent_id)){
+		return false;
+	}
+
+	print('Authorization: have_auth_br, Authorized');
+
+    // Have auth
+    return true;
+}
+
+// Does Agent id have auth: system administrator (or founder) ?
+function have_auth_admin(agent_id: text): boolean {
+
+	print('Authorization: have_auth_admin?');
+
+    // Check this agent is a system administrator
+    if((agent_m.agent @* { .id == agent_id, .administrator == 1 } limit 1).size() != 1){
+    	print('Authorization: Missing "system administrator", checking founder');
+    	// Not system administrator. Still allow if founder
+    	return have_auth_founder(agent_id);
+    }
+
+    print('Authorization: Action, by system administrator');
+
+    // Have auth
+    return true;
+}
+
+// Does Agent id have auth: Founder ?
+function have_auth_founder(agent_id: text): boolean {
+
+    // Check that agent_id have a founder certificate
+    if( ((agent_m.agent, agent_m.cert, agent_m.cert_status, agent_m.cert_status_type) @* { cert.agent == agent, cert_status.cert == cert, cert_status.cert_status_type == cert_status_type,
+    		agent.id == agent_id, cert_status_type.id == agent_m.cert_status_type_enum.FOUNDER } limit 1).size() != 1 ){
+    	print('Authorization: Missing "Founder"');
+    	return false;
+    }
+
+    print('Authorization: Action, by Founder');
+
+    // Have auth
+    return true;
+}
+
+// get a pubkeys active cert_status
+function get_pubkey_active_cert_status(agent_pubkey: pubkey): agent_m.cert_status?{
+	val validation_time_stamp = query_cert_worst_case_time();
+
+	return agent_m.cert_status @? {
+		.cert.pubkey==agent_pubkey and
+		.valid_from <= validation_time_stamp and
+		.expire_at >= validation_time_stamp and
+		(.cert_status_type.id == agent_m.cert_status_type_enum.ACTIVE or .cert_status_type.id == agent_m.cert_status_type_enum.FOUNDER)
+	} limit 1;
+}
+
+// get a pubkeys active cert
+function get_pubkey_active_cert(agent_pubkey: pubkey): agent_m.cert?{
+	val cs = get_pubkey_active_cert_status(agent_pubkey);
+
+	if(cs == null){
+		return null;
+	}
+
+	return cs.cert;
+}
+
+// Is pubkey a founder?
+function pubkey_is_founder(founder_pubkey: pubkey): boolean{
+	return (get_pubkey_active_cert_status(founder_pubkey) != null);
+}
