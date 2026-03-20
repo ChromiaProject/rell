@@ -1,0 +1,10 @@
+=======================================================================================
+==  NOTICE file corresponding to the section 4 d of the Apache License, Version 2.0, ==
+=======================================================================================
+
+Chomaway AB
+Copyright 2024 Chromia
+
+The Initial Developer of the files in src/main/kotlin/com/chromia/rell/dokka/moduledocs/ was developed by The Dokka Project
+Copyright 2014-2023 JetBrains s.r.o
+

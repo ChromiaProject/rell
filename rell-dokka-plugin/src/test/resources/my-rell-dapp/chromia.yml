@@ -1,0 +1,10 @@
+blockchains:
+  test_chain_11:
+    module: main
+compile:
+  rellVersion: 0.14.2
+database:
+  schema: schema_my_rell_dapp
+test:
+  modules:
+    - test

@@ -1,0 +1,16 @@
+enum Priority {
+    LOW,
+    MEDIUM,
+    HIGH
+}
+
+val DEFAULT_PRIORITY: Priority = Priority.MEDIUM;
+
+entity Task {
+    name: text = "Default Task";
+    completed: boolean = false;
+}
+
+function is_task_urgent(task: Task): boolean {
+    return task.name == "Urgent" and not task.completed;
+}
