@@ -1,0 +1,10 @@
+module;
+import .nested;
+
+entity c_entity {
+    name;
+}
+
+entity c_nested_entity {
+    a: nested.nested_enum;
+}

@@ -1,0 +1,6 @@
+@external module;
+
+@log
+entity e_entity {
+    key name;
+}

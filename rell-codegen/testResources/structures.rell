@@ -1,0 +1,38 @@
+module;
+
+struct boolean_struct { a: boolean; }
+struct integer_struct { a: integer; }
+struct big_integer_struct { a: big_integer; }
+struct decimal_struct { a: decimal; }
+struct text_struct { a: text; }
+struct byte_array_struct { a: byte_array; }
+struct rowid_struct { a: rowid; }
+struct json_struct { a: json; }
+struct map_struct { a: map<text,integer>; }
+struct entity_struct { a: a; }
+struct list_struct { a: list<text>; }
+struct set_struct { a: set<text>; }
+struct multi_struct { a: text; i: integer; }
+
+struct builtin_name { name; }
+struct builtin_pubkey { pubkey; }
+struct builtin_blockchain_rid { blockchain_rid: byte_array; }
+struct builtin_transaction { transaction; }
+struct builtin_block { block; }
+struct builtin_block_struct { block_struct: struct<block>; }
+struct builtin_transaction_struct { transaction_struct: struct<transaction>; }
+
+entity a { name; }
+struct nested_struct { a: text_struct; }
+struct nested_struct2 { a: struct<a>; }
+
+struct nullable_struct { a: text?; }
+
+// namespaceTest()
+namespace my_ns1 {
+    struct ns_struct1 { name; }
+    namespace my_ns2 {
+        struct ns_struct2 { name; }
+        struct ns_struct_3 { name; }
+    }
+}

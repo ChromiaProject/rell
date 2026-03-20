@@ -1,0 +1,17 @@
+plugins {
+    id("net.postchain.rell.codegen.kotlin-library-conventions")
+}
+
+dependencies {
+    implementation(project(":codegen"))
+    implementation(libs.rell)
+    implementation(libs.postchain.gtv)
+    implementation(libs.postchain.common)
+    implementation(libs.postchain.client)
+    testImplementation("org.jetbrains.kotlin:kotlin-compiler-embeddable")
+    testImplementation(project(":codegen", "testConfiguration"))
+}
+
+sourceSets.getByName("test") {
+    resources.srcDir("${rootProject.rootDir}/testResources")
+}

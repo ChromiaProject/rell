@@ -1,0 +1,21 @@
+module;
+
+entity decimal_entity {
+    key name;
+    data: decimal;
+}
+
+struct decimal_struct {
+    name;
+    data: decimal;
+}
+
+query decimal_query(name): decimal {
+    return decimal_entity @ { name } (.data);
+}
+
+query nullable_decimal_query(name): decimal? {
+    return decimal_entity @? { name } (.data);
+}
+
+operation decimal_op(decimal, d: decimal?, decimal_struct) { }

@@ -1,0 +1,42 @@
+module;
+
+entity test_entity {
+    name: text;
+    num: integer;
+    b_type: boolean;
+}
+
+entity boolean_entity { a: boolean; }
+entity integer_entity { a: integer; }
+entity big_integer_entity { a: big_integer; }
+entity decimal_entity { a: decimal; }
+entity text_entity { a: text; }
+entity byte_array_entity { a: byte_array; }
+entity rowid_entity { a: rowid; }
+entity json_entity { a: json; }
+
+entity builtin_name { name; }
+entity builtin_pubkey { pubkey; }
+entity builtin_timestamp { timestamp; }
+
+entity multi_text_entity {
+    name;
+    a: text;
+    b: text;
+}
+
+entity nested_entity { a: text_entity; }
+
+entity transaction_entity { key transaction; }
+
+entity pubkey_entity { pubkey; }
+entity blockchain_rid_entity { blockchain_rid: byte_array; }
+
+// namespaceTest()
+namespace my_ns1 {
+    entity ns_entity1 { name; }
+    namespace my_ns2 {
+        entity ns_entity2 { name; }
+        entity ns_entity_3 { name; }
+    }
+}

@@ -1,0 +1,8 @@
+package net.postchain.rell.codegen.app.util
+
+enum class LanguageSupport {
+    Kotlin,
+    Typescript,
+    Javascript,
+    Mermaid
+}

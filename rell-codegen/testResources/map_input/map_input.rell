@@ -1,0 +1,15 @@
+module;
+
+enum test_enum { a }
+
+operation input_parameter_map_text_text(m: map<text,text>) {}
+operation input_parameter_map_text_bytearray(m: map<text,byte_array>) {}
+operation input_parameter_map_text_gtv(m: map<text,gtv>) {}
+operation input_parameter_map_integer_text(m: map<integer,text>) {}
+operation input_parameter_map_gtv_text(m: map<gtv,text>) {}
+operation input_parameter_map_gtv_gtv(m: map<gtv,gtv>) {}
+operation input_parameter_map_enum_text(m: map<test_enum,text>) {}
+
+query return_type_map_enum_text() = map<test_enum,text>();
+query return_type_map_text_gtv() = map<text,gtv>();
+query return_type_map_gtv_text() = map<gtv,text>();

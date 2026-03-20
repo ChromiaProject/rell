@@ -1,0 +1,21 @@
+[versions]
+rell = "0.15.2"
+
+# NOTE: Alaways use the latest release version of postchain
+postchain = "latest.release"
+postchain-client = "latest.release"
+clikt = "5.0.3"
+testcontainers = "2.0.3"
+testcontainers_junit = "1.21.4"
+
+[libraries]
+clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
+postchain-client = { module = "net.postchain.client:postchain-client", version.ref = "postchain-client" }
+postchain-common = { module = "net.postchain:postchain-common", version.ref = "postchain" }
+postchain-gtv = { module = "net.postchain:postchain-gtv", version.ref = "postchain" }
+rell = { module = "net.postchain.rell:rell-api-base", version.ref = "rell" }
+testcontainers-base = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers_junit" }
+
+[bundles]
+testcontainers = ["testcontainers-base", "testcontainers-junit"]
