@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.indexer.references
 
 import net.postchain.rell.base.compiler.ast.S_Pos

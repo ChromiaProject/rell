@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
@@ -323,7 +327,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
             addFile(
                 "submodule/another_importing.rell",
                 """
-                
+
                 function another_reference_from_submodule() {
                     val result = better_addition(24, 343);
                 }
@@ -370,12 +374,12 @@ class RellLanguageServerDidChangeWatchedFilesTest {
     fun `didChangeWatched chromia yml rell compile version updated`() {
         val fileContent = """
          module;
-            
+
          entity foo {
             name;
             bool: boolean;
          }
-                
+
          function bar() {
             val abc = foo @? { .name == "hello" };
             require(exists(abc), "abc is real");

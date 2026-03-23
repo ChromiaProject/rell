@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.codegen.python
 
 import assertk.assertThat
@@ -27,7 +31,7 @@ internal class PythonDocGeneratorTest {
         assertThat(formatted).contains("""
             ${"\"\"\""}
             Some entity docs
-            
+
             Author: some_author
             See: something else
             Since: 1.0.0
@@ -51,7 +55,7 @@ internal class PythonDocGeneratorTest {
         assertThat(formatted).contains("""
             ${"\"\"\""}
             Some enum docs
-            
+
             Author: some_author
             See: something else
             Since: 1.0.0
@@ -151,7 +155,7 @@ internal class PythonDocGeneratorTest {
         assertThat(formatted).contains("""
             ${"\"\"\""}
             Some struct docs
-            
+
             Author: some_author
             See: something else
             Since: 1.0.0

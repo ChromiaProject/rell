@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.testing
 
 import java.nio.file.Files
@@ -40,7 +44,7 @@ class TestDirectoryBuilder(private val basePath: Path) {
         filePath.writeText(content)
         return filePath
     }
-    
+
     fun directory(name: String, block: TestDirectoryBuilder.() -> Unit): Path {
         val dirPath = basePath.resolve(name)
         Files.createDirectories(dirPath)

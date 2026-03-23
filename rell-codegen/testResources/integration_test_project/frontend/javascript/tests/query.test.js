@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 import { getClient } from "../src/client";
 import {
 	inputParameterAnyMapQueryObject,
@@ -441,7 +445,7 @@ describe('Return Type Query Object Functions', () => {
 
 		expect(response === null || (Array.isArray(response) &&
 			response.every(item => Array.isArray(item) && item.length === 2))).toBeTruthy();
-	});	
+	});
 
 	it('should generate the correct QueryObject for returnTypeAnyMapQueryObject', async () => {
 		const queryObject = returnTypeAnyMapQueryObject();

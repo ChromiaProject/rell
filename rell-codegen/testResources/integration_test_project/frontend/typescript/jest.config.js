@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 /** @type {import('jest').Config} */
 module.exports = {
 	preset: 'ts-jest', // Use ts-jest to transpile TypeScript files

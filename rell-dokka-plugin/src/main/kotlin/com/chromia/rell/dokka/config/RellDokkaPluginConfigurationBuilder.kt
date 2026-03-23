@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package com.chromia.rell.dokka.config
 
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration.Companion.SYSTEM_TITLE
@@ -63,8 +67,8 @@ class RellDokkaPluginConfigurationBuilder private constructor(
         this.sourceLinks.add(SourceLinkDefinitionImpl(localDirectory, remoteUrl, remoteLineSuffix))
     }
 
-    fun cliEnv(cliEnv: RellCliEnv) = apply { 
-        this.cliEnv = cliEnv 
+    fun cliEnv(cliEnv: RellCliEnv) = apply {
+        this.cliEnv = cliEnv
         // store it in the singleton holder to bypass serialization
         RellDokkaGlobalState.setCliEnv(cliEnv)
     }
@@ -74,9 +78,9 @@ class RellDokkaPluginConfigurationBuilder private constructor(
             return RellDokkaPluginConfiguration.SYSTEM_CONFIG
         }
         return RellDokkaPluginConfiguration(
-            name = title, 
-            modules = modules, 
-            filteredModules = filteredModules, 
+            name = title,
+            modules = modules,
+            filteredModules = filteredModules,
             additionalModules = additionalModules
         )
     }
@@ -85,7 +89,7 @@ class RellDokkaPluginConfigurationBuilder private constructor(
             PluginConfigurationImpl(
                     DokkaBase::class.qualifiedName!!,
                     DokkaConfiguration.SerializationFormat.JSON,
-                    """{ 
+                    """{
                         ${customStyleSheets?.let { styles -> "\"customStyleSheets\": [${styles.joinToString { "\"$it\"" }}]," } ?: ""}
                         ${customAssets?.let { a -> "\"customAssets\":[${a.joinToString { "\"$it\"" }}]," } ?: ""}
                         "footerMessage": "$footerMessage"

@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package com.chromia.rell.dokka.doc
 
 import assertk.assertThat
@@ -24,7 +28,7 @@ class RellMarkdownParserTest {
     fun `Can parse with references`() {
         val rellDoc = """
             | My doc
-            | 
+            |
             | My doc references [a.b.my_fun]
         """.trimMargin()
         val expected = DocumentationNode(listOf(

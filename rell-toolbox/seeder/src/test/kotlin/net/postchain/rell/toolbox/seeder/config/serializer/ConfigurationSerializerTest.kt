@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.seeder.config.serializer
 
 import assertk.assertThat
@@ -93,7 +97,7 @@ class ConfigurationSerializerTest {
         assertThat(gameAssetsContent).isEqualTo(
             """
                 module: game.assets
-                
+
                 location:
                   count: 203
                   attributes:
@@ -103,7 +107,7 @@ class ConfigurationSerializerTest {
                       max: 20
                     description:
                       generator: text
-                
+
                 player:
                   count: 50
                   attributes:
@@ -125,7 +129,7 @@ class ConfigurationSerializerTest {
         assertThat(inventoryContent).isEqualTo(
             """
                 module: inventory
-                
+
                 item:
                   count: 500
                   attributes:
@@ -225,7 +229,7 @@ class ConfigurationSerializerTest {
         assertThat(moduleContent).isEqualTo(
             """
                 module: very.deeply.nested.namespace
-        
+
                 test_entity:
                   count: 5
                   attributes:

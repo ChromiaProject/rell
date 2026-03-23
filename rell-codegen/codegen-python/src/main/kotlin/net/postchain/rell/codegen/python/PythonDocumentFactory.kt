@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.codegen.python
 
 import net.postchain.rell.base.model.R_EntityDefinition
@@ -37,4 +41,4 @@ class PythonDocumentFactory : DocumentFactory {
     override fun getBuiltins(neededObjects: List<ClassName>) = PythonBuiltinType.entries
             .filter { it.className in neededObjects.map { x -> x.className } }
             .map { it.createBuiltin() }
-} 
+}

@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.lsp.symbols
 
 import assertk.assertThat
@@ -40,12 +44,12 @@ class RellCompletionSymbolServiceTest {
             addMainFile(
                 """
                 module;
-                
+
                 import lib.something;
                 import other.module;
-                
+
                 namespace ns {
-                    
+
                     function test() {}
                 }
                 """.trimIndent()
@@ -72,7 +76,7 @@ class RellCompletionSymbolServiceTest {
         val fileUri = testDataBuilder.mainFileUri
         val document = fileUri.toDocument()
         val resource = indexer.getResource(fileUri)!!
-        val offset = document.getOffSet(Position(6, 2)) // Position inside namespace
+        val offset = document.getOffSet(Position(6, 0)) // Position inside namespace
 
         val symbol = completionSymbolService.findEnclosingFileOrNamespace(fileUri, document, resource, offset)
 

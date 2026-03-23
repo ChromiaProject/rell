@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.codegen.python
 
 import assertk.Assert
@@ -50,7 +54,7 @@ class PythonCodegenITTest {
             val projectRootTestResources =  File(this::class.java.getResource("/integration_test_project")!!.toURI())
             val projectRellPath = "$projectRootTestResources/rell"
             val projectFrontendPath = "$projectRootTestResources/frontend/python"
-            
+
             val projectRootInContainer = "/usr/app/integration_test_project"
             val projectRellPathInContainer = "$projectRootInContainer/rell"
             val projectFrontendPathInContainer = "$projectRootInContainer/frontend/python"
@@ -150,4 +154,4 @@ class PythonCodegenITTest {
             ?.groupValues?.get(1)
             ?: throw AssertionError("Could not parse info.version from PyPI response for $packageName")
     }
-} 
+}

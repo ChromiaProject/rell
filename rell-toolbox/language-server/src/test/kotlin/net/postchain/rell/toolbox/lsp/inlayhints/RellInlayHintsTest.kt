@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.lsp.inlayhints
 
 import assertk.assertThat
@@ -23,11 +27,11 @@ internal class RellInlayHintsTest : WorkspaceManagerTestBase() {
                 testFilePath,
                 """
                 module;
-                
+
                 function test_function(param1: integer, param2: text) {
                     return param1;
                 }
-                
+
                 function main() {
                     val result = test_function(42, "hello");
                 }
@@ -68,7 +72,7 @@ internal class RellInlayHintsTest : WorkspaceManagerTestBase() {
                 testFilePath,
                 """
                 module;
-                
+
                 function main() {
                     val my_integer = 42;
                     val my_string = "hello";
@@ -114,7 +118,7 @@ internal class RellInlayHintsTest : WorkspaceManagerTestBase() {
                 testFilePath,
                 """
                 module;
-                
+
                 function main() {
                     val my_integer: integer = 42;
                     val my_string: text = "hello";
@@ -148,11 +152,11 @@ internal class RellInlayHintsTest : WorkspaceManagerTestBase() {
                 testFilePath,
                 """
                 module;
-                
+
                 function test_function(param1: integer, param2: text) {
                     return param1;
                 }
-                
+
                 function main() {
                     val result = test_function(param1 = 42, param2 = "hello");
                 }
@@ -184,7 +188,7 @@ internal class RellInlayHintsTest : WorkspaceManagerTestBase() {
                 testFilePath,
                 """
                 module;
-                
+
                 function main() {
                     val my_integer = 42;
                     val my_string = "hello";
@@ -221,11 +225,11 @@ internal class RellInlayHintsTest : WorkspaceManagerTestBase() {
                 testFilePath,
                 """
                 module;
-                
+
                 function test_function(param1: integer, param2: text) {
                     return param1;
                 }
-                
+
                 function main() {
                     val param1 = 42;
                     val different_name = "hello";
@@ -267,15 +271,15 @@ internal class RellInlayHintsTest : WorkspaceManagerTestBase() {
                 testFilePath,
                 """
                 module;
-                
+
                 function main() {
                     val numbers: list<integer> = [1, 2, 3, 4, 5];
                     val texts: list<text> = ["hello", "world"];
-                    
+
                     for (num in numbers) {
                         print(num);
                     }
-                    
+
                     for (text in texts) {
                         print(text);
                     }
@@ -315,15 +319,15 @@ internal class RellInlayHintsTest : WorkspaceManagerTestBase() {
                 testFilePath,
                 """
                 module;
-                
+
                 function main() {
                     val numbers: list<integer> = [1, 2, 3, 4, 5];
                     val texts: list<text> = ["hello", "world"];
-                    
+
                     for (num: integer in numbers) {
                         print(num);
                     }
-                    
+
                     for (text: text in texts) {
                         print(text);
                     }
@@ -357,10 +361,10 @@ internal class RellInlayHintsTest : WorkspaceManagerTestBase() {
                 testFilePath,
                 """
                 module;
-                
+
                 function main() {
                     val pairs: list<(integer, text)> = [(1, "one"), (2, "two")];
-                    
+
                     for ((num, text) in pairs) {
                         print(num);
                         print(text);
@@ -401,12 +405,12 @@ internal class RellInlayHintsTest : WorkspaceManagerTestBase() {
                 testFilePath,
                 """
                 module;
-                
+
                 function main() {
                     val my_integer = 42;
                     test_function(42, "hello");
                 }
-                
+
                 function test_function(param1: integer, param2: text) {
                     return param1;
                 }

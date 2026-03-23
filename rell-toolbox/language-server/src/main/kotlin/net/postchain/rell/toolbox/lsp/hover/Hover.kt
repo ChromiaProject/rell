@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.lsp.hover
 
 import net.postchain.rell.base.utils.doc.DocCommentTag

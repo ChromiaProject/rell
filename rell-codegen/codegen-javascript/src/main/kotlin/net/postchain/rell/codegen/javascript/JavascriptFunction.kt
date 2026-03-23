@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.codegen.javascript
 
 import net.postchain.rell.base.lib.type.R_BigIntegerType
@@ -86,7 +90,7 @@ abstract class JavascriptFunction(
 
     private fun formatNullableAssertion(valueType: R_Type, paramName: String): String {
         return """
-            if ($paramName != null) ${rTypeToBuiltinType(valueType).builtin.functionName}($paramName) 
+            if ($paramName != null) ${rTypeToBuiltinType(valueType).builtin.functionName}($paramName)
         """.trimIndent()
     }
 

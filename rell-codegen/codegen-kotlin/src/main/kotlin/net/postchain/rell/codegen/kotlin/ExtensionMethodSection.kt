@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.codegen.kotlin
 
 import net.postchain.common.BlockchainRid
@@ -72,11 +76,11 @@ abstract class ExtensionMethodSection(
         val functionString = """
         |const val ${className.constantName} = "$mountName"
         |/**
-        | * $kind ${className.rellName} 
+        | * $kind ${className.rellName}
         |${KotlinDocGenerator.formatDoc(docSymbol, padding = " * ")}
         | */
         |${GeneratedAnnotation.createAnnotation(className.rellName)}
-        |fun ${extendedClass.simpleName}.$queryMethodName(${formatInputParameters()}) = 
+        |fun ${extendedClass.simpleName}.$queryMethodName(${formatInputParameters()}) =
         |   $extendenMethod(${className.constantName}${formatGtvParameters()})${formatReturnType(returnType)}
     """.trimMargin()
         val returnTypeString = "\n${returnStructure(returnType)}"

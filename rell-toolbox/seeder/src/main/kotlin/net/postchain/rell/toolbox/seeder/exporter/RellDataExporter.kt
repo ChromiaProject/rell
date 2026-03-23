@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.seeder.exporter
 
 import com.fasterxml.jackson.core.JsonGenerator
@@ -19,13 +23,13 @@ class RellDataExporter : BaseDataExporter() {
         private val seederModuleWarning = """
         /*
          * WARNING: SEEDER MODULE - TEST DATA ONLY
-         * 
+         *
          * This module contains seed_data operation intended for testing and development purposes only.
          * Including this module in production blockchain environments can lead to unintended consequences.
-         * 
+         *
          * RECOMMENDED ACTION:
          * Ensure this module is not imported in any production blockchain modules.
-         * 
+         *
          */
         """.trimIndent()
     }
@@ -133,7 +137,7 @@ class RellDataExporter : BaseDataExporter() {
             |    val records = list<struct<$simpleEntityName>>.from_gtv_pretty(gtv.from_json(json_data));
             |    var batch = list<struct<$simpleEntityName>>();
             |    var persisted = list<$simpleEntityName>();
-            |    
+            |
             |    var count = 0;
             |    for (r in records) {
             |        batch.add(r);
@@ -146,7 +150,7 @@ class RellDataExporter : BaseDataExporter() {
             |    if (count % batch_size != 0) {
             |        persisted.add_all(create $simpleEntityName(batch));
             |    }
-            |    
+            |
             |    existing_data[get_entity_id(rell.meta($simpleEntityName).full_name)] = persisted.to_gtv();
             |}
         """.trimMargin()

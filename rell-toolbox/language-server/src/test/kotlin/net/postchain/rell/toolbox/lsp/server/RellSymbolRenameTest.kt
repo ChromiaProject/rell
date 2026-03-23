@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
@@ -73,18 +77,18 @@ class RellSymbolRenameTest {
                 module;
                 import submodule.*;
                 import somealias: ^.submodule;
-                
+
                 @extendable function some_extendable(amount: integer);
-                
+
                 function other_addition(paramA: integer, paramB: integer): integer {
                     require(paramA > 0);
                     val localA = paramA;
                     val localB = paramB;
-                
+
                     val localC = localA + paramA;
-                
+
                     return localC;
-                }                    
+                }
                 """.trimIndent()
             )
         }
@@ -126,19 +130,19 @@ class RellSymbolRenameTest {
                 """
                 module;
                 import submodule.*;
-                
+
                 function $oldName(paramA: integer, paramB: integer): integer {
                     val localA = paramA;
                     val localB = paramB;
-                
+
                     val localC = localA + paramA;
-                
+
                     return localC;
                 }
-                                    
+
                 function local_reference() {
                     val result = $oldName(4, 6);
-                }                                    
+                }
                 """.trimIndent()
             )
             addFile(
@@ -146,15 +150,15 @@ class RellSymbolRenameTest {
                 """
                 function another_reference_from_submodule() {
                     val result = $oldName(24, 343);
-                }                    
+                }
                 """.trimIndent()
             )
             addFile(
                 "$submoduleName/module.rell",
                 """
                 module;
-                
-                import ^.main.*;                    
+
+                import ^.main.*;
                 """.trimIndent()
             )
         }
@@ -203,7 +207,7 @@ class RellSymbolRenameTest {
                 function not_rell() {
                     console.log("not_rell");
                 }
-                
+
                 not_rell();
                 """.trimIndent()
             )
@@ -232,32 +236,32 @@ class RellSymbolRenameTest {
             addMainFile(
                 """
                 module;
-                
+
                 struct my_struct1 {
                     a_property: text;
                     $oldName;
                 }
-                
+
                 function f1(my_struct1) = my_struct1.$oldName;
-                
+
                 struct my_struct2 {
                     a_property: text;
                     $oldName: $oldName;
                 }
-                
+
                 function f2(my_struct2) = my_struct2.$oldName;
-                
+
                 struct my_struct3 {
                     a_property: text;
                     ref_property: $oldName;
                 }
-                
+
                 function f3(my_struct3) = my_struct3.ref_property;
-                                
+
                 enum $oldName {
                     foo,
                     bar
-                }                    
+                }
                 """.trimIndent()
             )
         }
@@ -300,9 +304,9 @@ class RellSymbolRenameTest {
             addMainFile(
                 """
                 module;
-    
+
                 function f($oldName) = $oldName;
-                
+
                 enum $oldName {
                     foo,
                     bar
@@ -349,11 +353,11 @@ class RellSymbolRenameTest {
                 module;
 
                 function f($oldName) = $oldName;
-                
+
                 enum $oldName {
                     foo,
                     bar
-                }  
+                }
                 """.trimIndent()
             )
         }
@@ -399,11 +403,11 @@ class RellSymbolRenameTest {
                 module;
 
                 function f($oldName) = $oldName;
-                
+
                 enum $oldName {
                     foo,
                     bar
-                }  
+                }
                 """.trimIndent()
             )
         }
@@ -444,28 +448,28 @@ class RellSymbolRenameTest {
             addMainFile(
                 """
                 module;
-                
+
                 struct my_struct1 {
                     a_property: text;
                     $oldName;
                 }
-                
+
                 function f1(my_struct1) = my_struct1.$oldName.another_property;
-                
+
                 struct my_struct2 {
                     a_property: text;
                     $oldName: $oldName;
                 }
-                
+
                 function f2(my_struct2) = my_struct2.$oldName.another_property;
-                
+
                 struct my_struct3 {
                     a_property: text;
                     ref_property: $oldName;
                 }
-                
+
                 function f3(my_struct3) = my_struct3.ref_property.another_property;
-                                
+
                 struct $oldName {
                     another_property: text;
                 }
@@ -511,31 +515,31 @@ class RellSymbolRenameTest {
             addMainFile(
                 """
                 module;
-            
+
                 struct my_struct1 {
                     a_property: text;
                     $oldName;
                 }
-                
+
                 function f1(my_struct1) = my_struct1.$oldName.another_property;
-                
+
                 struct my_struct2 {
                     a_property: text;
                     $oldName: $oldName;
                 }
-                
+
                 function f2(my_struct2) = my_struct2.$oldName.another_property;
-                
+
                 struct my_struct3 {
                     a_property: text;
                     ref_property: $oldName;
                 }
-                
+
                 function f3(my_struct3) = my_struct3.ref_property.another_property;
-                                
+
                 struct $oldName {
                     another_property: text;
-                }                    
+                }
                 """.trimIndent()
             )
         }
@@ -577,31 +581,31 @@ class RellSymbolRenameTest {
             addMainFile(
                 """
                 module;
-                
+
                 struct my_struct1 {
                     a_property: text;
                     $oldName;
                 }
-                
+
                 function f1(my_struct1) = my_struct1.$oldName.another_property;
-                
+
                 struct my_struct2 {
                     a_property: text;
                     $oldName: $oldName;
                 }
-                
+
                 function f2(my_struct2) = my_struct2.$oldName.another_property;
-                
+
                 struct my_struct3 {
                     a_property: text;
                     ref_property: $oldName;
                 }
-                
+
                 function f3(my_struct3) = my_struct3.ref_property.another_property;
-                                
+
                 struct $oldName {
                     another_property: text;
-                }                    
+                }
                 """.trimIndent()
             )
         }
@@ -644,28 +648,28 @@ class RellSymbolRenameTest {
             addMainFile(
                 """
                 module;
-                
+
                 entity my_entity1 {
                     a_property: text;
                     $oldName;
                 }
-                
+
                 function q1() = my_entity1 @* { .$oldName.another_property == "test" };
-                
+
                 entity my_entity2 {
                     a_property: text;
                     $oldName: $oldName;
                 }
-                
+
                 function q2() = my_entity2 @* { .$oldName.another_property == "test" };
-                
+
                 entity my_entity3 {
                     a_property: text;
                     ref_property: $oldName;
                 }
-                
+
                 function q3() = my_entity3 @* { .ref_property.another_property == "test" };
-                
+
                 entity $oldName {
                     another_property: text;
                 }
@@ -724,26 +728,26 @@ class RellSymbolRenameTest {
                 """
                 module;
                 import entity_module;
-                
+
                 entity my_entity1 {
                     a_property: text;
                     entity_module.$oldName;
                 }
-                
+
                 function q1() = my_entity1 @* { .$oldName.another_property == "test" };
-                
+
                 entity my_entity2 {
                     a_property: text;
                     $oldName: entity_module.$oldName;
                 }
-                
+
                 function q2() = my_entity2 @* { .$oldName.another_property == "test" };
-                
+
                 entity my_entity3 {
                     a_property: text;
                     ref_property: entity_module.$oldName;
                 }
-                
+
                 function q3() = my_entity3 @* { .ref_property.another_property == "test" };
                 """.trimIndent()
             )
@@ -796,8 +800,8 @@ class RellSymbolRenameTest {
             addMainFile(
                 """
                 module;
-                
-                import a: foobar_module.{$oldName};   
+
+                import a: foobar_module.{$oldName};
                 """.trimIndent()
             )
             addFile(
@@ -807,7 +811,7 @@ class RellSymbolRenameTest {
 
                 entity $oldName {
                     name;
-                }    
+                }
                 """.trimIndent()
             )
         }
@@ -853,9 +857,9 @@ class RellSymbolRenameTest {
             addMainFile(
                 """
                 module;
-                
+
                 entity $oldName {}
-                
+
                 entity bar_entity {
                     $oldName;
                 }
@@ -907,17 +911,17 @@ class RellSymbolRenameTest {
             addMainFile(
                 """
                 module;
-    
+
                 entity my_entity {
                     a_property: text;
                     $oldName;
                 }
-                
+
                 entity $oldName {
                     another_property: text;
                 }
-                
-                function q() = my_entity @* { .$oldName.another_property == "test" };                    
+
+                function q() = my_entity @* { .$oldName.another_property == "test" };
                 """.trimIndent()
             )
         }
@@ -960,22 +964,22 @@ class RellSymbolRenameTest {
             addMainFile(
                 """
                 module;
-    
+
                 entity my_entity {
                     a_property: text;
                     field: $oldName;
                 }
-                
+
                 entity my_entity2 {
                     a_property: text;
                     $oldName;
                 }
-                
+
                 entity $oldName {
                     another_property: text;
                 }
-                
-                function q() = my_entity2 @* { .$oldName.another_property == "test" };                    
+
+                function q() = my_entity2 @* { .$oldName.another_property == "test" };
                 """.trimIndent()
             )
         }
@@ -1018,17 +1022,17 @@ class RellSymbolRenameTest {
             addMainFile(
                 """
                 module;
-    
+
                 entity my_entity {
                     a_property: text;
                     field: $oldName;
                 }
-                
+
                 entity $oldName {
                     another_property: text;
                 }
-                
-                function q() = my_entity @* { .field.another_property == "test" };                    
+
+                function q() = my_entity @* { .field.another_property == "test" };
                 """.trimIndent()
             )
         }
@@ -1074,26 +1078,26 @@ class RellSymbolRenameTest {
                 """
                 module;
                 import entity_module;
-                
+
                 entity my_entity1 {
                     a_property: text;
                     entity_module.$oldName;
                 }
-                
+
                 function q1() = my_entity1 @* { .$oldName.another_property == "test" };
-                
+
                 entity my_entity2 {
                     a_property: text;
                     $oldName: entity_module.$oldName;
                 }
-                
+
                 function q2() = my_entity2 @* { .$oldName.another_property == "test" };
-                
+
                 entity my_entity3 {
                     a_property: text;
                     ref_property: entity_module.$oldName;
                 }
-                
+
                 function q3() = my_entity3 @* { .ref_property.another_property == "test" };
                 """.trimIndent()
             )
@@ -1153,26 +1157,26 @@ class RellSymbolRenameTest {
                 """
                 module;
                 import entity_module;
-                
+
                 entity my_entity1 {
                     a_property: text;
                     entity_module.$oldName;
                 }
-                
+
                 function q1() = my_entity1 @* { .$oldName.another_property == "test" };
-                
+
                 entity my_entity2 {
                     a_property: text;
                     $oldName: entity_module.$oldName;
                 }
-                
+
                 function q2() = my_entity2 @* { .$oldName.another_property == "test" };
-                
+
                 entity my_entity3 {
                     a_property: text;
                     ref_property: entity_module.$oldName;
                 }
-                
+
                 function q3() = my_entity3 @* { .ref_property.another_property == "test" };
                 """.trimIndent()
             )

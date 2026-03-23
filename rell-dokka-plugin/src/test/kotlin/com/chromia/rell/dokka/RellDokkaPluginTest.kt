@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package com.chromia.rell.dokka
 
 import assertk.assertThat
@@ -65,13 +69,13 @@ class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
     fun `entity transformation`() {
         singleFileTestInline("""
             entity simple {}
-            
+
             entity my_entity {
               key name;
               index my_value: integer;
               mutable hash: byte_array;
               simple;
-              // index my_value, simple; 
+              // index my_value, simple;
             }
         """.trimIndent()) {
             documentablesTransformationStage = { m ->
@@ -106,7 +110,7 @@ class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
     fun `struct transformation`() {
         singleFileTestInline("""
             struct simple {}
-            
+
             struct my_struct {
               order: integer;
               mutable hash: byte_array;
@@ -140,7 +144,7 @@ class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `object transformation`() {
-        singleFileTestInline("""           
+        singleFileTestInline("""
             object my_object {
               order: integer = 1;
               mutable name: text = "my_object";
@@ -169,7 +173,7 @@ class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `enum transformation`() {
-        singleFileTestInline("""           
+        singleFileTestInline("""
             enum my_enum {
               A, B, C
             }
@@ -194,7 +198,7 @@ class RellDokkaPluginTest : SingleFileRellDokkaPluginTest() {
 
     @Test
     fun `function transformation`() {
-        singleFileTestInline("""           
+        singleFileTestInline("""
             function my_fun(name) = 13;
             operation my_operation(name) {}
             query my_query(name) = 13;

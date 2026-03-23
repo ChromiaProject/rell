@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
@@ -52,7 +56,7 @@ class RellLanguageServerWorkspaceSymbolsTest {
                 query my_query() = 1;
                 function my_function(paramA: integer, paramB: integer): integer {
                     return 42;
-                }                    
+                }
                 """.trimIndent()
             )
             addFile(
@@ -60,7 +64,7 @@ class RellLanguageServerWorkspaceSymbolsTest {
                 """
                 module;
                 val some_value = 123;
-                operation some_operation() {}                    
+                operation some_operation() {}
                 """.trimIndent()
             )
         }

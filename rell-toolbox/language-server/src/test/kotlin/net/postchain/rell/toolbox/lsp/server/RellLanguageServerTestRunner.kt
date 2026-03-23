@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
@@ -34,7 +38,7 @@ class RellLanguageServerTestRunner {
         testFile = File(srcDir, "test_file.rell").apply {
             writeText(
                 """
-                @test module; 
+                @test module;
                 function test_1() { return 1; }
                 function not_test() { return 1; }
                 function test_2() { return 1; }
@@ -45,7 +49,7 @@ class RellLanguageServerTestRunner {
         notATestFile = File(srcDir, "main.rell").apply {
             writeText(
                 """
-                module; 
+                module;
                 operation foo() {}
                 """.trimIndent()
             )

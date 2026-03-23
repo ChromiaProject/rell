@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.seeder.generator
 
 import assertk.assertThat
@@ -298,7 +302,7 @@ class DataGenPredefinedTest {
                 enum priority {
                     LOW, MEDIUM, HIGH, CRITICAL
                 }
-                
+
                 entity $entityName {
                     $priorityFieldName: priority;
                 }
@@ -352,7 +356,7 @@ class DataGenPredefinedTest {
                 enum task_status {
                     TODO, IN_PROGRESS, DONE, CANCELLED
                 }
-                
+
                 entity $entityName {
                     $statusFieldName: task_status;
                 }

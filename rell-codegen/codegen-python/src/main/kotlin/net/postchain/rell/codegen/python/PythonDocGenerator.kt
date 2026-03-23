@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.codegen.python
 
 import net.postchain.rell.base.model.R_FunctionParam
@@ -8,7 +12,7 @@ import net.postchain.rell.codegen.util.camelToSnakeCase
 import net.postchain.rell.codegen.util.rTypeToPythonType
 
 object PythonDocGenerator : AbstractDocGenerator() {
-    
+
     override fun formatDoc(
         docSymbol: DocSymbol?,
         wrapInDocComments: Boolean,
@@ -67,7 +71,7 @@ object PythonDocGenerator : AbstractDocGenerator() {
 
     override fun format(docSymbol: DocSymbol?, params: List<R_FunctionParam>, returnType: String?): String {
         docSymbol?.comment ?: return ""
-        
+
         return buildString {
             docSymbol.comment?.let { comment ->
                 appendLine(sanitizeDescription(comment.description))
@@ -118,4 +122,4 @@ object PythonDocGenerator : AbstractDocGenerator() {
             }
         }
     }
-} 
+}

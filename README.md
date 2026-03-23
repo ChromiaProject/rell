@@ -60,17 +60,3 @@ Output:
 ```text
 Hello, world!
 ```
-
-## Copyright & License Information
-
-Copyright (c) 2017–2025 ChromaWay AB. All rights reserved.
-
-This software can be used either under the terms of a commercial license
-obtained from ChromaWay AB or, alternatively, under the terms
-of the GNU General Public License with additional linking exceptions.
-See the LICENSE file for details.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.

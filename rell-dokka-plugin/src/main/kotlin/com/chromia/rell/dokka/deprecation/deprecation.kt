@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package com.chromia.rell.dokka.deprecation
 
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated

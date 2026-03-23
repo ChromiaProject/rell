@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.codegen.kotlin
 
 import assertk.assertThat
@@ -24,10 +28,10 @@ internal class KotlinDocGeneratorTest {
         val formatted = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity).format()
         assertThat(formatted).contains("""
             /**
-            * Entity docs:doc_entity 
+            * Entity docs:doc_entity
             *
             * Rell entity is typically encoded as a GtvInteger. If used as struct<docs:doc_entity>, then GtvObjectMapper.toGtvArray() is used for encoding.
-            * 
+            *
             * Some entity docs
             * @author some_author
             * @see something else
@@ -43,10 +47,10 @@ internal class KotlinDocGeneratorTest {
         val formatted = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity).format()
         assertThat(formatted).contains("""
             /**
-            * Entity docs:not_doc_entity 
+            * Entity docs:not_doc_entity
             *
             * Rell entity is typically encoded as a GtvInteger. If used as struct<docs:not_doc_entity>, then GtvObjectMapper.toGtvArray() is used for encoding.
-            * 
+            *
             */
          """.trimIndent())
     }
@@ -58,7 +62,7 @@ internal class KotlinDocGeneratorTest {
         assertThat(formatted).contains("""
             /**
             * Enum docs:doc_enum
-            * 
+            *
             * Some enum docs
             * @author some_author
             * @see something else
@@ -74,7 +78,7 @@ internal class KotlinDocGeneratorTest {
         assertThat(formatted).contains("""
             /**
             * Enum docs:not_doc_enum
-            * 
+            *
             */
         """.trimIndent())
     }
@@ -85,8 +89,8 @@ internal class KotlinDocGeneratorTest {
         val formatted = KotlinOperation(op).format()
         assertThat(formatted).contains("""
             /**
-             * Operation docs:doc_operation 
-             * 
+             * Operation docs:doc_operation
+             *
              * Some operation docs
              * @see something else
              * @since 1.0.0
@@ -102,8 +106,8 @@ internal class KotlinDocGeneratorTest {
         val formatted = KotlinOperation(op).format()
         assertThat(formatted).contains("""
             /**
-             * Operation docs:not_doc_operation 
-             * 
+             * Operation docs:not_doc_operation
+             *
              */
         """.trimIndent())
     }
@@ -114,8 +118,8 @@ internal class KotlinDocGeneratorTest {
         val formatted = KotlinOperation(op).format()
         assertThat(formatted).contains("""
             /**
-             * Operation docs:missing_tags_doc_operation 
-             * 
+             * Operation docs:missing_tags_doc_operation
+             *
              * Missing tags
              */
         """.trimIndent())
@@ -127,8 +131,8 @@ internal class KotlinDocGeneratorTest {
         val formatted = KotlinQuery(query).format()
         assertThat(formatted).contains("""
             /**
-             * Query docs:doc_query 
-             * 
+             * Query docs:doc_query
+             *
              * Some query docs
              * another line
              * @see something else
@@ -146,8 +150,8 @@ internal class KotlinDocGeneratorTest {
         val formatted = KotlinQuery(query).format()
         assertThat(formatted).contains("""
             /**
-             * Query docs:not_doc_query 
-             * 
+             * Query docs:not_doc_query
+             *
              */
         """.trimIndent())
     }
@@ -158,8 +162,8 @@ internal class KotlinDocGeneratorTest {
         val formatted = KotlinQuery(query).format()
         assertThat(formatted).contains("""
             /**
-             * Query docs:missing_tags_doc_query 
-             * 
+             * Query docs:missing_tags_doc_query
+             *
              * Some description without param or return
              */
         """.trimIndent())
@@ -171,8 +175,8 @@ internal class KotlinDocGeneratorTest {
         val formatted = KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
         assertThat(formatted).contains("""
             /**
-            * Struct docs:doc_struct 
-            * 
+            * Struct docs:doc_struct
+            *
             * Some struct docs
             * @author some_author
             * @see something else
@@ -187,8 +191,8 @@ internal class KotlinDocGeneratorTest {
         val formatted = KotlinStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
         assertThat(formatted).contains("""
             /**
-            * Struct docs:not_doc_struct 
-            * 
+            * Struct docs:not_doc_struct
+            *
             */
         """.trimIndent())
     }
@@ -199,8 +203,8 @@ internal class KotlinDocGeneratorTest {
         val formatted = KotlinQuery(query).format()
         assertThat(formatted).contains("""
             /**
-             * Query docs:weird_comment 
-             * 
+             * Query docs:weird_comment
+             *
              * Weird first line
              *  @return weird number
              */

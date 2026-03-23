@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.codegen.javascript
 
 import assertk.assertThat
@@ -23,7 +27,7 @@ internal class JavascriptDocGeneratorTest {
         val formatted = JavascriptOperation(op).format()
         assertThat(formatted).contains("""
             |/**
-            |* 
+            |*
             |* Some operation docs
             |* @see something else
             |* @since 1.0.0
@@ -52,7 +56,7 @@ internal class JavascriptDocGeneratorTest {
         val formatted = JavascriptOperation(op).format()
         assertThat(formatted).contains("""
             |/**
-            |* 
+            |*
             |* Missing tags
             |* @param {number} intParam
             |* @return {Operation}
@@ -66,7 +70,7 @@ internal class JavascriptDocGeneratorTest {
         val formatted = JavascriptQuery(query).format()
         assertThat(formatted).contains("""
             |/**
-            |* 
+            |*
             |* Some query docs
             |* another line
             |* @see something else
@@ -96,7 +100,7 @@ internal class JavascriptDocGeneratorTest {
         val formatted = JavascriptQuery(query).format()
         assertThat(formatted).contains("""
             |/**
-            |* 
+            |*
             |* Some description without param or return
             |* @param {string | null} t
             |* @return {QueryObject}
@@ -110,7 +114,7 @@ internal class JavascriptDocGeneratorTest {
         val formatted = JavascriptQuery(query).format()
         assertThat(formatted).contains("""
             |/**
-            |* 
+            |*
             |* Weird first line
             |* /* @return weird number
             |* @return {QueryObject}

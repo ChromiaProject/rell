@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.codegen.python.util
 
 import net.postchain.rell.codegen.section.Builtin
@@ -80,7 +84,7 @@ object GtxTransactionStruct : Builtin {
     override fun format() = """
         |@dataclass(frozen=True)
         |class GtxTransaction:
-        |    body: 'GtxTransactionBody' 
+        |    body: 'GtxTransactionBody'
         |    signatures: List[Any]
     """.trimMargin()
-} 
+}

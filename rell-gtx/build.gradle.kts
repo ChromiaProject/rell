@@ -1,7 +1,3 @@
-/*
- * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
- */
-
 import org.gradle.api.publish.maven.MavenPublication
 
 plugins {

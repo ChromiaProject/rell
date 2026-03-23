@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.seeder.config.parser
 
 import assertk.assertThat
@@ -281,7 +285,7 @@ class ConfigurationParserTest {
                     id: integer;
                     name: text;
                 }
-                
+
                 entity $entityName {
                     $fieldName: text;
                     customer: customer;
@@ -329,7 +333,7 @@ class ConfigurationParserTest {
                     id: integer;
                     name: text;
                 }
-                
+
                 entity $entityName {
                     $fieldName: text;
                     $refEntityName;

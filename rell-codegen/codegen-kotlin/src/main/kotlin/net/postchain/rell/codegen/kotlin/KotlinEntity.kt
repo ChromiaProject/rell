@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.codegen.kotlin
 
 import net.postchain.rell.base.model.R_EntityDefinition
@@ -12,7 +16,7 @@ class KotlinEntity(className: ClassName, entity: R_EntityDefinition) : DataClass
     override fun format(): String {
         return """
             |/**
-            |* Entity ${className.rellName} 
+            |* Entity ${className.rellName}
             |*
             |* Rell entity is typically encoded as a GtvInteger. If used as struct<${className.rellName}>, then GtvObjectMapper.toGtvArray() is used for encoding.
             |${KotlinDocGenerator.formatDoc(docSymbol)}

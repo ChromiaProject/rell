@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.chromia
 
 import assertk.assertThat
@@ -133,7 +137,7 @@ class ChromiaModelProviderTest {
                       rellDappWithLib:
                         module: main
                     compile:
-                      rellVersion: 
+                      rellVersion:
                     """.trimIndent()
                 )
             }

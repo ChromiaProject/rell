@@ -1,6 +1,10 @@
 
 
 
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 export function isRawGtv(value) {
     return (
         value === null ||
@@ -16,12 +20,12 @@ export function isRawGtv(value) {
 
 export function isMapWithTestStructAsKey(response) {
     return (
-        Array.isArray(response) && 
+        Array.isArray(response) &&
         response.every(
-            item => 
-                Array.isArray(item) && 
-                item.length === 2 && 
-                typeof item[0] === 'object' && 
+            item =>
+                Array.isArray(item) &&
+                item.length === 2 &&
+                typeof item[0] === 'object' &&
                 'a' in item[0] && // assuming TestStruct has an 'a' property
                 typeof item[1] === 'string'
         )

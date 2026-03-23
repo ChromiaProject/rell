@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.lsp.symbols
 
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
@@ -22,7 +26,7 @@ enum class RellRelevantImportSymbol(
         private val ideSymbolKindMap = entries.associateBy { it.ideSymbolKind }
 
         fun fromIdeSymbolKind(kind: IdeSymbolKind): RellRelevantImportSymbol? = ideSymbolKindMap[kind]
-        
+
         fun getAllIdeSymbolKinds(): List<IdeSymbolKind> = entries.map { it.ideSymbolKind }
     }
 }

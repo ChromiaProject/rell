@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.seeder.generator
 
 import assertk.assertThat
@@ -216,7 +220,7 @@ class DataGenUniqueValueTest {
                 moduleName.replace(".", "/"),
                 """
                 module;
-   
+
                 entity $customerEntity {
                     key $cardEntity;
                 }

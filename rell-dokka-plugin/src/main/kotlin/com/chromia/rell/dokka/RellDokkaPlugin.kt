@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package com.chromia.rell.dokka
 
 import com.chromia.rell.dokka.config.RellDokkaGlobalState
@@ -44,7 +48,7 @@ class RellDokkaPlugin : DokkaPlugin() {
     val sourceToDocumentableTranslator by extending {
         CoreExtensions.sourceToDocumentableTranslator providing { context ->
             initializeHiddenModulesRegistry(context)
-            
+
             when (config(context)?.system) {
                 true -> RellSystemLibToDocumentableTranslator
                 else -> RellSourceToDocumentableTranslator(context)

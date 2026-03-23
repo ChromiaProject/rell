@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.indexer
 
 import assertk.assertThat
@@ -98,7 +102,7 @@ class WorkspaceIndexerTest {
                 """
                 module;
                 import ^^.main.*;
-                
+
                 function d() {
                     create f(name = "");
                 }
@@ -132,7 +136,7 @@ class WorkspaceIndexerTest {
                 """
                 module;
                 import ^.importer.*;
-                
+
                 function d() {
                     create f(name = "");
                 }
@@ -292,12 +296,12 @@ class WorkspaceIndexerTest {
     fun `Rell Version default gives smart null check error`(@TempDir dir: File) {
         val fileContent = """
          module;
-            
+
          entity foo {
             name;
             bool: boolean;
          }
-                
+
          function bar() {
             val abc = foo @? { .name == "hello" };
             require(exists(abc), "abc is real");
@@ -332,12 +336,12 @@ class WorkspaceIndexerTest {
     fun `Rell Version 0-14-1 gives smart null check error`(@TempDir dir: File) {
         val fileContent = """
          module;
-            
+
          entity foo {
             name;
             bool: boolean;
          }
-                
+
          function bar() {
             val abc = foo @? { .name == "hello" };
             require(exists(abc), "abc is real");

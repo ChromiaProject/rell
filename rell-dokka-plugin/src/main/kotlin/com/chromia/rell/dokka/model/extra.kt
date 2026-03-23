@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package com.chromia.rell.dokka.model
 
 import net.postchain.rell.base.model.R_MountName
@@ -70,7 +74,7 @@ fun DClasslike.isEntity() = this is DClass && this.extra[IsEntity] != null
 class IsNamespace(val name: String): ExtraProperty<DPackage> {
     override val key: ExtraProperty.Key<DPackage, *> get() = Companion
     companion object: ExtraProperty.Key<DPackage, IsNamespace> {
-        override fun mergeStrategyFor(left: IsNamespace, right: IsNamespace) = 
+        override fun mergeStrategyFor(left: IsNamespace, right: IsNamespace) =
             MergeStrategy.Replace(left)
     }
 }

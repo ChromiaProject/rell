@@ -1,7 +1,3 @@
-/*
- * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
- */
-
 rootProject.name = "rell"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

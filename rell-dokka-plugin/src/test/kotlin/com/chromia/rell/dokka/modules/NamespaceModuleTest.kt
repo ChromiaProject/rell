@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package com.chromia.rell.dokka.modules
 
 import assertk.assertThat
@@ -63,7 +67,7 @@ class NamespaceModuleTest: SingleFileRellDokkaPluginTest() {
                 enum my_enum {A}
                 val my_const = "";
             }
-     
+
         """.trimIndent(), listOf(writerPlugin)) {
             renderingStage = { _,_ ->
                 val nameSpacePages = writerPlugin.writer.contents.keys.filter { it.startsWith("test-dapp/main.a") }

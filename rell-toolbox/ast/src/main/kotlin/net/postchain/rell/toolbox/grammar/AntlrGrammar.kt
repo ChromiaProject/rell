@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 @file:Suppress("all")
 @file:JvmName("AntlrGrammarGenerator")
 package net.postchain.rell.lsp.grammar
@@ -82,7 +86,7 @@ private fun generateFooter() {
         ${tokens.integer.name} ::= COMMON_INT;
 
         STRCHAR ::= '\t' | '\\' ('b'|'t'|'n'|'f'|'r'|'"'|"'"|'\\' | 'u' HEXDIG HEXDIG HEXDIG HEXDIG)
-        
+
         X_tkElse ::= 'else'
         X_tkLimit ::= 'limit'
         X_tkOffset ::= 'offset'

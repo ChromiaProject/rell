@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.lsp
 
 import net.postchain.rell.toolbox.jacoco.annotations.ExcludeFromJacocoGeneratedReport

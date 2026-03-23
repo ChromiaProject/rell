@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.codegen.typescript
 
 import assertk.assertThat
@@ -25,7 +29,7 @@ internal class TypescriptDocGeneratorTest {
         val formatted = TypescriptEntity(CamelCaseClassName.fromRellDefinition(entity), entity).format()
         assertThat(formatted).contains("""
             /**
-            * 
+            *
             * Some entity docs
             * @author some_author
             * @see something else
@@ -48,7 +52,7 @@ internal class TypescriptDocGeneratorTest {
         val formatted = TypescriptEnumeration(CamelCaseClassName.fromRellDefinition(enum), enum).format()
         assertThat(formatted).contains("""
             /**
-            * 
+            *
             * Some enum docs
             * @author some_author
             * @see something else
@@ -70,7 +74,7 @@ internal class TypescriptDocGeneratorTest {
         val formatted = TypescriptOperation(op).format()
         assertThat(formatted).contains("""
             |/**
-            |* 
+            |*
             |* Some operation docs
             |* @see something else
             |* @since 1.0.0
@@ -93,7 +97,7 @@ internal class TypescriptDocGeneratorTest {
         val formatted = TypescriptOperation(op).format()
         assertThat(formatted).contains("""
             |/**
-            |* 
+            |*
             |* Missing tags
             |*/
         """.trimMargin())
@@ -105,7 +109,7 @@ internal class TypescriptDocGeneratorTest {
         val formatted = TypescriptQuery(query).format()
         assertThat(formatted).contains("""
             |/**
-            |* 
+            |*
             |* Some query docs
             |* another line
             |* @see something else
@@ -130,7 +134,7 @@ internal class TypescriptDocGeneratorTest {
         val formatted = TypescriptQuery(query).format()
         assertThat(formatted).contains("""
              |/**
-             |* 
+             |*
              |* Some description without param or return
              |*/
         """.trimMargin())
@@ -142,7 +146,7 @@ internal class TypescriptDocGeneratorTest {
         val formatted = TypescriptStruct(CamelCaseClassName.fromRellDefinition(struct), struct).format()
         assertThat(formatted).contains("""
             /**
-            * 
+            *
             * Some struct docs
             * @author some_author
             * @see something else
@@ -164,7 +168,7 @@ internal class TypescriptDocGeneratorTest {
         val formatted = TypescriptQuery(query).format()
         assertThat(formatted).contains("""
             |/**
-            |* 
+            |*
             |* Weird first line
             |* /* @return weird number
             |*/

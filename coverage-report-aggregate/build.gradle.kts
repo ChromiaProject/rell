@@ -1,7 +1,3 @@
-/*
- * Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
- */
-
 plugins {
     base
     `jacoco-report-aggregation`

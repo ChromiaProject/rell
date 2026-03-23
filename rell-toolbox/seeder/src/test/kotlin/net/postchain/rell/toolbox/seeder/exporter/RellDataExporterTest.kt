@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.seeder.exporter
 
 import assertk.assertThat
@@ -344,17 +348,17 @@ class RellDataExporterTest {
             addMainFile(
                 """
                 module;
-                
+
                 enum shirt_size {
                     small,
                     medium,
                     large
                 }
-                
+
                 entity waste_level {
                     name: text;
                 }
-                
+
                 entity some {
                     name;
                     last_name: text;

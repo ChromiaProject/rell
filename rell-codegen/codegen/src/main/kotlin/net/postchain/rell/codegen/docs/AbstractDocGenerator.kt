@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.codegen.docs
 
 import net.postchain.rell.base.model.R_FunctionParam
@@ -29,7 +33,7 @@ abstract class AbstractDocGenerator {
     }
 
     private fun padLeft(comment: String, padding: String = "* "): String {
-        return comment.trimEnd('\n').lines().joinToString("\n") { "$padding$it" }
+        return comment.trimEnd('\n').lines().joinToString("\n") { "$padding$it".trimEnd() }
     }
 
     open fun format(docSymbol: DocSymbol?, params: List<R_FunctionParam>, returnType: String?): String {

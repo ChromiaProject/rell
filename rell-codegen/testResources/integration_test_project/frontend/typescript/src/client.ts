@@ -1,4 +1,8 @@
 
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 import * as pcl from "postchain-client"
 
 

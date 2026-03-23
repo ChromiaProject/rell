@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
@@ -67,9 +71,9 @@ internal class HoverRellWorkspaceManagerTest : WorkspaceManagerTestBase() {
                 testFilePath,
                 """
                 module;
-                
+
                 function test() = my_function();
-                
+
                 /**
                  * This doc comment is accessible
                  * @see other_function

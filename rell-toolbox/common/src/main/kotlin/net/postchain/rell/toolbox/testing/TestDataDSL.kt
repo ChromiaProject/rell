@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.testing
 
 import com.chromia.build.tools.keystore.ChromiaKeyStore
@@ -15,7 +19,7 @@ class TestDataBuilder {
         module;
         struct module_args { name = "Baloo"; }
         query hello() = "Hi!";
-        operation call_op(value: integer) {} 
+        operation call_op(value: integer) {}
     """.trimIndent()
     private val sourceFiles = mutableMapOf<String, () -> String>()
     private val workspaceFiles = mutableMapOf<String, () -> String>()
@@ -241,8 +245,8 @@ class SecretBuilder {
             it.parentFile.mkdirs()
         }.writeText(
             """
-           pubkey=${TestDataBuilder.keyPair.pubKey.hex()} 
-           privkey=${TestDataBuilder.keyPair.privKey.hex()} 
+           pubkey=${TestDataBuilder.keyPair.pubKey.hex()}
+           privkey=${TestDataBuilder.keyPair.privKey.hex()}
             """.trimIndent()
         )
     }

@@ -1,5 +1,5 @@
 Rell, a programming language used in Postchain
-    Copyright (C) 2017-2025 ChromaWay AB
+    Copyright (C) 2017-2026 ChromaWay AB
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -13,6 +13,8 @@ Rell, a programming language used in Postchain
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+    A copy of the GNU General Public License is included in this
+    distribution in the file COPYING.
 
 This project includes third-party software components that are licensed under the Eclipse Distribution License 1.0 (EDL-1.0). The EDL-1.0 license can be found here.
 
@@ -31,4 +33,4 @@ Certain files distributed by Chromia and/or its affiliates are subject to the fo
 Note that Chromia includes multiple, independent programs in this software package. Some of those programs are provided under licenses deemed incompatible with the GPLv3 by the Free Software Foundation and others. For example, the package includes programs licensed under the EPL 1.0. Such programs are licensed to you under their original licenses.
 
 Contact Information:
-ChromaWay AB Jakobsbergsgatan 24, S-114 44 Stockholm, Sweden info@chromaway.com
+ChromaWay AB Mäster Samuelsgatan 1, 111 44 Stockholm, Sweden hello@chromaway.com

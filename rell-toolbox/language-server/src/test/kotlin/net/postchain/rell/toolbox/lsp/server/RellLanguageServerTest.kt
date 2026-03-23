@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
@@ -165,7 +169,7 @@ class RellLanguageServerTest {
                 function foo() {
                     val x = bar.name;
                 }
-                
+
                 entity bar {
                     name;
                 }
@@ -193,7 +197,7 @@ class RellLanguageServerTest {
                 function foo() {
                     val x = bar.name;
                 }
-                
+
                 entity bar {
                     name;
                 }
@@ -276,7 +280,7 @@ class RellLanguageServerTest {
                 function foo() {
                     val x = bar.name;
                 }
-                
+
                 entity bar {
                     name;
                 }
@@ -317,7 +321,7 @@ class RellLanguageServerTest {
                 function foo() {
                     val x = bar.name;
                 }
-                
+
                 entity bar {
                     name;
                 }
@@ -595,9 +599,9 @@ class RellLanguageServerTest {
                 "import.rell",
                 """
                     module;
-                    
+
                     import ^.semantic_error.*;
-                    
+
                     operation create_c() {
                         create c(name = "");
                     }
@@ -611,11 +615,11 @@ class RellLanguageServerTest {
                     function a() {
                         val a = "a"
                     }
-                    
+
                     va = 2;
-                    
+
                     function () = ;
-                    
+
                     create anEntity(name);
                 """.trimIndent()
             )
@@ -637,15 +641,15 @@ class RellLanguageServerTest {
                     entity c {
                         name;
                     }
-                    
+
                     function a() {
                         create b(name = "");
                     }
-                    
+
                     function a() {
                         val a = 2;
                     }
-                    
+
                     function foo() {
                         val a = 2;
                     }
@@ -671,19 +675,19 @@ class RellLanguageServerTest {
                     function a() {
                         val a = 2
                     }
-                    
-                    
+
+
                     namespace ns {
                         function ns_b() {
                             val a = 2
                         }
-                    
+
                         operation ns_op() {
                             errVal = "error
                         }
                     }
-                    
-                    
+
+
                     function c()
                 """.trimIndent()
             )

@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.lsp.testrunner
 
 import assertk.assertThat
@@ -100,7 +104,7 @@ class RellTestRunnerTest : WorkspaceManagerTestBase() {
             addFile(
                 testFilePath,
                 """
-                @test module; 
+                @test module;
                 function test_1() { return 1; }
                 function test_2() { return 1; }
                 function not_test() { return 1; }

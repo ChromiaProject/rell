@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.codegen.kotlin
 
 import net.postchain.rell.base.model.R_StructDefinition
@@ -13,7 +17,7 @@ class KotlinStruct(className: ClassName, struct: R_StructDefinition) : DataClass
     override fun format(): String {
         return """
             |/**
-            |* Struct ${className.rellName} 
+            |* Struct ${className.rellName}
             |${KotlinDocGenerator.formatDoc(docSymbol)}
             |*/
             |${super.format()}

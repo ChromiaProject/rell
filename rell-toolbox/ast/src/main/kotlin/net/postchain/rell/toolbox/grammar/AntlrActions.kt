@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 @file:Suppress("all")
 package net.postchain.rell.lsp.grammar
 

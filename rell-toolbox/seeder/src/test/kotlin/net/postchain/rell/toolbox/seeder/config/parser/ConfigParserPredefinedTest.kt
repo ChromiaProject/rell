@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.seeder.config.parser
 
 import assertk.assertThat
@@ -33,7 +37,7 @@ class ConfigParserPredefinedTest {
                 """
                 module;
                 enum product_status { ACTIVE, INACTIVE, SOLD_OUT }
-                
+
                 entity $entityName {
                     name: text;
                     $fieldName: product_status;
@@ -78,7 +82,7 @@ class ConfigParserPredefinedTest {
                 """
                 module;
                 enum product_status { ACTIVE, INACTIVE, SOLD_OUT }
-                
+
                 entity $entityName {
                     name: text;
                     $fieldName: product_status;
@@ -212,7 +216,7 @@ class ConfigParserPredefinedTest {
                 "test/predefined",
                 """
                 module;
-                
+
                 entity $entityName {
                     $fieldName: big_integer;
                 }
@@ -256,7 +260,7 @@ class ConfigParserPredefinedTest {
                 "test/predefined",
                 """
                 module;
-                
+
                 entity $entityName {
                     $fieldName: decimal;
                 }
@@ -300,7 +304,7 @@ class ConfigParserPredefinedTest {
                 "test/predefined",
                 """
                 module;
-                
+
                 entity $entityName {
                     $fieldName: decimal;
                 }
@@ -348,7 +352,7 @@ class ConfigParserPredefinedTest {
                 "test/predefined",
                 """
                 module;
-                
+
                 entity $entityName {
                     $fieldName: text;
                 }
@@ -393,7 +397,7 @@ class ConfigParserPredefinedTest {
                 "test/predefined",
                 """
                 module;
-                
+
                 entity $entityName {
                     $fieldName: json;
                 }
@@ -451,7 +455,7 @@ class ConfigParserPredefinedTest {
                 "test/predefined",
                 """
                 module;
-                
+
                 entity $entityName {
                     $fieldName: byte_array;
                 }
@@ -586,7 +590,7 @@ class ConfigParserPredefinedTest {
                 "test/predefined",
                 """
                 module;
-                
+
                 entity $entityName {
                     $fieldName: rowid;
                 }
@@ -630,7 +634,7 @@ class ConfigParserPredefinedTest {
                 "test/predefined",
                 """
                 module;
-                
+
                 entity $entityName {
                     $fieldName: rowid;
                 }

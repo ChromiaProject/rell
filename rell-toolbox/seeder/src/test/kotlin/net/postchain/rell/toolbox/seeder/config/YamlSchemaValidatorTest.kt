@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.seeder.config
 
 import assertk.assertThat
@@ -105,7 +109,7 @@ class YamlSchemaValidatorTest {
     fun `validate throws exception when YAML is malformed`() {
         val invalidYamlContent = """
             module: somemodule
-            
+
             person:
                 attributes:
                     name: "John Doe

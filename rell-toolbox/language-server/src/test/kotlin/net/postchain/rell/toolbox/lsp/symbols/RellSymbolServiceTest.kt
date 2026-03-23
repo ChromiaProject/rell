@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.lsp.symbols
 
 import assertk.Assert
@@ -89,21 +93,21 @@ class RellSymbolServiceTest {
                   mutable amount: integer;
                   chain_id: integer;
                 }
-                
+
                 function create_balance_if_not_exists(account.account, asset, chain_id: integer): balance {
                   val balance_exists = balance@?{asset, account, .chain_id == chain_id};
                   return balance_exists!!;
                 }
-                
+
                 operation give_balance(account_id: byte_array, asset_name: text, amount: integer, chain_id: integer) {
                   val balance = create_balance_if_not_exists(account, asset, chain_id);
                   balance.amount += amount;
                 }
-                
+
                 query get_tokens_amount(id: text, asset_id: text, chain_id: integer) {
                   return balance@{chain_id}.amount;
                 }
-                
+
                 namespace XXX {
                   namespace YYY {
                     query get_user_balance(id: byte_array) {
@@ -166,15 +170,15 @@ class RellSymbolServiceTest {
                 object my_name {
                     mutable name = "World";
                 }
-                
+
                 operation set_name(name) {
                     my_name.name = name;
                 }
-                
+
                 query hello_world() = "Hello %s!".format(my_name.name);
-                
-                
-                
+
+
+
                 entity
                 operation send_message()
                 """.trimIndent().trimEnd()

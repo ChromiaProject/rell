@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 import { getClient } from "../src/client";
 import { IClient, Operation } from "postchain-client";
 import {

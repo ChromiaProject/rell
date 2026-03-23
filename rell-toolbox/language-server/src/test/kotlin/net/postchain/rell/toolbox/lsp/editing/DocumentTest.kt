@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
 package net.postchain.rell.toolbox.lsp.editing
 
 import assertk.assertThat
@@ -15,7 +19,7 @@ internal class DocumentTest {
     private val fileContent = """
             Holabaloo
             this iS my second line.
-        
+
             foUrth linE
         """.trimIndent()
     private val document = Document(
