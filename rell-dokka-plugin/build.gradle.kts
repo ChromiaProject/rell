@@ -10,7 +10,6 @@ val dependenciesToUnshade: Configuration by configurations.creating
 val unshadedClassesTarget = layout.buildDirectory.dir("unshaded")
 
 dependencies {
-    implementation(enforcedPlatform(libs.jackson.bom))
     implementation(libs.dokka.core)
     implementation(libs.dokka.base)
     implementation(libs.dokka.analysis.markdown)

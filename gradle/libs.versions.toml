@@ -36,7 +36,7 @@ json-schema-validator = "1.5.6"
 commons-text = "1.9"
 
 # rell-dokka-plugin dependencies
-dokka = "1.9.20"
+dokka = "2.1.0"
 kotlinx-html = "0.8.0"
 kotlinx-serialization-json = "1.6.0"
 jsoup = "1.17.2"

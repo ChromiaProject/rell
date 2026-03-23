@@ -24,7 +24,7 @@ internal class NavigationMenuTest : SingleFileRellDokkaPluginTest() {
         """.trimIndent(), listOf(writerPlugin)) {
             renderingStage = { _, _ ->
                 val searchRecords = writerPlugin.writer.pagesJson()
-                val content = writerPlugin.writer.navigationHtml().select("div.sideMenuPart")
+                val content = writerPlugin.writer.navigationHtml().select("div.toc--part")
                 assertThat(content.size).isEqualTo(4)
 
                 content.last()!!.assertNavigationLink(
@@ -49,7 +49,7 @@ internal class NavigationMenuTest : SingleFileRellDokkaPluginTest() {
         """.trimIndent(), listOf(writerPlugin), listOf("main")) {
             renderingStage = { _, _ ->
                 val searchRecords = writerPlugin.writer.pagesJson()
-                val content = writerPlugin.writer.navigationHtml().select("div.sideMenuPart")
+                val content = writerPlugin.writer.navigationHtml().select("div.toc--part")
                 assertThat(content.size).isEqualTo(1)
 
                 content.last()!!.assertNavigationLink(

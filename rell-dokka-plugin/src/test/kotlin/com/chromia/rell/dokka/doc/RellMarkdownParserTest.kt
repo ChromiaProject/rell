@@ -3,7 +3,7 @@ package com.chromia.rell.dokka.doc
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import org.jetbrains.dokka.InternalDokkaApi
-import org.jetbrains.dokka.analysis.markdown.jb.MARKDOWN_ELEMENT_FILE_NAME
+import org.jetbrains.dokka.analysis.kotlin.markdown.MARKDOWN_ELEMENT_FILE_NAME
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.doc.CustomDocTag
 import org.jetbrains.dokka.model.doc.Description

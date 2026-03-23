@@ -133,7 +133,7 @@ class RellDokkaGeneratorTest {
         val navigationHtmlFile = File(targetFolder, "navigation.html")
         val htmlContent = navigationHtmlFile.readText()
 
-        val regex = Regex("""<div class="overview"><a href="model/([^"]+)"""")
+        val regex = Regex("""<a href="model/([^"]+)" class="toc--link"""")
         val result = regex.findAll(htmlContent)
                 .mapNotNull { match -> match.groupValues.getOrNull(1) }
                 .mapNotNull { path ->
