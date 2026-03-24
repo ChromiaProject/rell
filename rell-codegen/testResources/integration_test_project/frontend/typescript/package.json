@@ -6,12 +6,12 @@
   },
   "dependencies": {
     "postchain-client": "^2.1.2",
-    "typescript": "^5.0.0"
+    "typescript": "~5.8.0"
   },
   "devDependencies": {
     "@types/jest": "^29.0.0",
     "jest": "^29.0.0",
-    "ts-jest": "^29.0.0",
+    "ts-jest": "~29.2.0",
     "ts-node": "^10.0.0"
   }
 }

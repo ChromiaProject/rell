@@ -48,6 +48,50 @@ class SnapshotModuleTest: BaseGtxIntegrationTest() {
         chkData(4, "2,10,123,bob", "3,11,456,alice", "4,12,789,trudy")
     }
 
+    @Test fun testCreateWithDefaults() {
+        val node = setupNode()
+
+        // Create entity with all defaults - x defaults to -1, y defaults to 'n/a'
+        enqueueTx(node, txNewDataDefaults(10), 0)
+        buildBlockAndCommit(node)
+
+        // Update to non-default values
+        enqueueTx(node, txUpdateData(10, x = 999, y = "updated"), -1)
+        buildBlockAndCommit(node)
+
+        // Snapshot sync should restore the updated values, not the defaults
+        restore(node)
+        chkData(2, "2,10,999,updated")
+    }
+
+    @Test fun testCreateWithDefaultsThenNoUpdate() {
+        val node = setupNode()
+
+        // Create with defaults, then create another with explicit values
+        enqueueTx(node, txNewDataDefaults(10), 0)
+        enqueueTx(node, txNewData(11, 456, "alice"), -1)
+        buildBlockAndCommit(node)
+
+        // Snapshot sync - entity with defaults should keep default values
+        restore(node)
+        chkData(3, "2,10,-1,n/a", "3,11,456,alice")
+    }
+
+    @Test fun testCreateWithPartialDefaults() {
+        val node = setupNode()
+
+        // Create with explicit x but default y
+        enqueueTx(node, txNewDataPartial(10, 777), 0)
+        buildBlockAndCommit(node)
+
+        // Update y to non-default
+        enqueueTx(node, txUpdateData(10, y = "changed"), -1)
+        buildBlockAndCommit(node)
+
+        restore(node)
+        chkData(2, "2,10,777,changed")
+    }
+
     @Test fun testUpdate() {
         val node = setupNode()
 
@@ -62,6 +106,35 @@ class SnapshotModuleTest: BaseGtxIntegrationTest() {
 
         restore(node)
         chkData(4, "2,10,123,bob", "3,11,654,alice", "4,12,789,ydurt")
+    }
+
+    @Test fun testUpdateAt() {
+        val node = setupNode()
+
+        enqueueTx(node, txNewData(10, 123, "bob"), 0)
+        enqueueTx(node, txNewData(11, 456, "alice"), -1)
+        enqueueTx(node, txNewData(12, 789, "trudy"), -1)
+        buildBlockAndCommit(node)
+
+        enqueueTx(node, txUpdateDataAt(11, x = 654), -1)
+        enqueueTx(node, txUpdateDataAt(12, y = "ydurt"), -1)
+        buildBlockAndCommit(node)
+
+        restore(node)
+        chkData(4, "2,10,123,bob", "3,11,654,alice", "4,12,789,ydurt")
+    }
+
+    @Test fun testCreateWithDefaultsUpdateAt() {
+        val node = setupNode()
+
+        enqueueTx(node, txNewDataDefaults(10), 0)
+        buildBlockAndCommit(node)
+
+        enqueueTx(node, txUpdateDataAt(10, x = 999, y = "updated"), -1)
+        buildBlockAndCommit(node)
+
+        restore(node)
+        chkData(2, "2,10,999,updated")
     }
 
     @Test fun testDelete() {
@@ -166,7 +239,10 @@ class SnapshotModuleTest: BaseGtxIntegrationTest() {
     }
 
     private fun txNewData(k: Int, x: Long, y: String): ByteArray = makeTx("new_data", k, x, y)
+    private fun txNewDataDefaults(k: Int): ByteArray = makeTx("new_data_defaults", k)
+    private fun txNewDataPartial(k: Int, x: Int): ByteArray = makeTx("new_data_partial", k, x)
     private fun txUpdateData(k: Int, x: Int? = null, y: String? = null): ByteArray = makeTx("update_data", k, x, y)
+    private fun txUpdateDataAt(k: Int, x: Int? = null, y: String? = null): ByteArray = makeTx("update_data_at", k, x, y)
     private fun txDeleteData(k: Int): ByteArray = makeTx("delete_data", k)
     private fun txUpdateState(a: Int? = null, b: String? = null): ByteArray = makeTx("update_state", a, b)
     private fun txAddCompany(name: String): ByteArray = makeTx("add_company", name)

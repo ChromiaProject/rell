@@ -22,7 +22,21 @@ operation new_data(k: integer, x: integer, y: text) {
     create data(k, x, y);
 }
 
+operation new_data_defaults(k: integer) {
+    create data(k);
+}
+
+operation new_data_partial(k: integer, x: integer) {
+    create data(k, x);
+}
+
 operation update_data(k: integer, x: integer?, y: text?) {
+    val data_to_update = data @ { .k == k };
+    if (x != null) data_to_update.x = x;
+    if (y != null) data_to_update.y = y;
+}
+
+operation update_data_at(k: integer, x: integer?, y: text?) {
     update data @ { .k == k } ( .x = x ?: .x, .y = y ?: .y );
 }
 

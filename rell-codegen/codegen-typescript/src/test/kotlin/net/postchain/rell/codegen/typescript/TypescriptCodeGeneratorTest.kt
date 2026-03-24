@@ -71,8 +71,10 @@ internal class TypescriptCodeGeneratorTest {
                     "noEmitOnError": true,
                     "removeComments": false,
                     "moduleResolution": "node",
+                    "ignoreDeprecations": "6.0",
                     "sourceMap": true,
                     "target": "es2015",
+                    "rootDir": ".",
                     "outDir": "dist",
                     "skipLibCheck": true,
                     "paths": {

@@ -162,11 +162,36 @@ internal sealed class R_BaseUpdateStatement(
     protected abstract fun processSnapshot(frame: Rt_CallFrame, rEntity: R_EntityDefinition, rows: List<List<Rt_Value>>)
 
     fun executeSql(frame: Rt_CallFrame, fromItems: List<RedDb_AtFromItem>) {
-        frame.block(fromBlock) {
-            val ctx = SqlGenContext.createTop(frame.sqlCtx, fromItems)
-            val pSql = buildSql(frame, ctx, false, false)
-            pSql.execute(frame.userSqlExec)
+        val snapshot = frame.exeCtx.opCtx.hasSnapshotContext()
+
+        if (!snapshot) {
+            frame.block(fromBlock) {
+                val ctx = SqlGenContext.createTop(frame.sqlCtx, fromItems)
+                val pSql = buildSql(frame, ctx, false, false)
+                pSql.execute(frame.userSqlExec)
+            }
+            return
         }
+
+        val rEntity = target.entity().rEntity
+
+        val rows = frame.block(fromBlock) {
+            val ctx = SqlGenContext.createTop(frame.sqlCtx, fromItems)
+            val returningAttrs = this is R_UpdateStatement
+            val pSql = buildSql(frame, ctx, true, returningAttrs)
+
+            val rows = mutableListOf<List<Rt_Value>>()
+            pSql.executeQuery(frame.userSqlExec) { row ->
+                val rowid = Rt_RowidValue.get(row.getLong(1))
+                val row = if (!returningAttrs) listOf() else rEntity.attributes.values.mapIndexed { i, attr ->
+                    attr.type.sqlAdapter.fromSql(row, i + 2, false)
+                }
+                rows.add(immListOf(rowid) + row)
+            }
+            rows
+        }
+
+        processSnapshot(frame, rEntity, rows)
     }
 
     fun executeSqlCount(frame: Rt_CallFrame, fromItems: List<RedDb_AtFromItem>): Int {
