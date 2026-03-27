@@ -1,5 +1,3 @@
-group = "com.chromia.rell.dokka"
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)

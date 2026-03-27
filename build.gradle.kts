@@ -195,6 +195,17 @@ subprojects {
 
             publications.create<MavenPublication>("mavenJava") {
                 from(components["java"])
+
+                // Relocated artifacts: new names under net.postchain.rell to avoid
+                // version conflicts with independently-versioned legacy registries.
+                when {
+                    project.path.startsWith(":rell-toolbox:") -> {
+                        artifactId = "rell-toolbox-${project.name}"
+                    }
+                    project.path.startsWith(":rell-codegen:") -> {
+                        artifactId = "rell-${project.name}"
+                    }
+                }
                 versionMapping {
                     usage("java-api") {
                         fromResolutionOf("runtimeClasspath")

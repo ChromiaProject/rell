@@ -29,15 +29,48 @@ The following projects have been merged into the main Rell repository:
 - rell-codegen (client stub generation for Kotlin, TypeScript, JavaScript, Python, Mermaid)
 - rell-dokka-plugin (Dokka plugin for Rell system library documentation)
 
-All modules are now built, tested, and published as part of the Rell Gradle build. Artifacts are
-available from the main Rell Maven registry under their original coordinates:
+All modules are now built, tested, and published as part of the Rell from the main
+Rell Maven registry. The separate GitLab Maven registries for these projects will not be updated in the future.
 
-- net.postchain.rell.toolbox (common, ast, indexer, code-quality, language-server, seeder)
-- net.postchain.rell (codegen, codegen-kotlin, codegen-typescript, codegen-javascript, codegen-python, codegen-mermaid, rellgen)
-- com.chromia.rell.dokka (rell-dokka-plugin)
+Artifact coordinates have changed. All artifacts are now published under group net.postchain.rell
+with version aligned to Rell. Update your dependencies as follows:
 
-The separate GitLab Maven registries for these projects will not be updated in the future;
-use the Rell registry instead.
+    ┌────────────────────────────────────────────────────────────────────────────────────────────┐
+    │ rell-toolbox                                                                               │
+    ├───────────────────────────────────────────┬────────────────────────────────────────────────┤
+    │ Old coordinates                           │ New coordinates                                │
+    ├───────────────────────────────────────────┼────────────────────────────────────────────────┤
+    │ net.postchain.rell.toolbox:common         │ net.postchain.rell:rell-toolbox-common         │
+    │ net.postchain.rell.toolbox:ast            │ net.postchain.rell:rell-toolbox-ast            │
+    │ net.postchain.rell.toolbox:indexer        │ net.postchain.rell:rell-toolbox-indexer        │
+    │ net.postchain.rell.toolbox:code-quality   │ net.postchain.rell:rell-toolbox-code-quality   │
+    │ net.postchain.rell.toolbox:language-server│ net.postchain.rell:rell-toolbox-language-server│
+    │ net.postchain.rell.toolbox:seeder         │ net.postchain.rell:rell-toolbox-seeder         │
+    └───────────────────────────────────────────┴────────────────────────────────────────────────┘
+
+    ┌───────────────────────────────────────────────────────────────────────────────────────────┐
+    │ rell-codegen                                                                              │
+    ├──────────────────────────────────────────┬────────────────────────────────────────────────┤
+    │ Old coordinates                          │ New coordinates                                │
+    ├──────────────────────────────────────────┼────────────────────────────────────────────────┤
+    │ net.postchain.rell:codegen               │ net.postchain.rell:rell-codegen                │
+    │ net.postchain.rell:codegen-kotlin        │ net.postchain.rell:rell-codegen-kotlin         │
+    │ net.postchain.rell:codegen-typescript    │ net.postchain.rell:rell-codegen-typescript     │
+    │ net.postchain.rell:codegen-javascript    │ net.postchain.rell:rell-codegen-javascript     │
+    │ net.postchain.rell:codegen-python        │ net.postchain.rell:rell-codegen-python         │
+    │ net.postchain.rell:codegen-mermaid       │ net.postchain.rell:rell-codegen-mermaid        │
+    │ net.postchain.rell:rellgen               │ net.postchain.rell:rell-rellgen                │
+    └──────────────────────────────────────────┴────────────────────────────────────────────────┘
+
+    ┌───────────────────────────────────────────────────────────────────────────────────────────┐
+    │ rell-dokka-plugin                                                                         │
+    ├──────────────────────────────────────────┬────────────────────────────────────────────────┤
+    │ Old coordinates                          │ New coordinates                                │
+    ├──────────────────────────────────────────┼────────────────────────────────────────────────┤
+    │ com.chromia.rell.dokka:rell-dokka-plugin │ net.postchain.rell:rell-dokka-plugin           │
+    └──────────────────────────────────────────┴────────────────────────────────────────────────┘
+
+Artifacts are renamed to avoid version conflicts with the independently versioned legacy registry.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 4. Tools: CLI library changed from Picocli to Clikt
