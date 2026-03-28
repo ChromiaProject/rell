@@ -51,9 +51,10 @@ update_rell_version() {
     RELL_VERSION=$(./gradlew -q properties | grep "^version:" | awk '{print $2}')
     echo "Local Rell version: $RELL_VERSION"
 
-    # Update chromia-cli with the correct Rell version
+    # Update chromia-cli with the correct Rell version (core + dokka plugin)
     cd "$CHR_REPO_DIR"
     mvn versions:set-property -Dproperty=rell.version -DnewVersion="$RELL_VERSION"
+    mvn versions:set-property -Dproperty=rell.dokka.version -DnewVersion="$RELL_VERSION"
     cd "$REPO_ROOT"
 }
 
@@ -67,7 +68,6 @@ build_chromia_cli() {
 
 sync_local_rell_jars() {
     local dist_lib="$CHR_REPO_DIR/chromia-cli/target/chromia-cli-dev-dist/lib"
-    local local_repo="$HOME/.m2/repository/net/postchain/rell"
     local synced=0
 
     if [ ! -d "$dist_lib" ]; then
@@ -75,18 +75,18 @@ sync_local_rell_jars() {
         exit 1
     fi
 
-    if [ ! -d "$local_repo" ]; then
-        echo "Error: local Rell Maven repo not found at $local_repo" >&2
-        exit 1
-    fi
+    local local_repos=("$HOME/.m2/repository/net/postchain/rell" "$HOME/.m2/repository/com/chromia/rell/dokka")
 
-    for jar in "$local_repo"/*/"$RELL_VERSION"/*-"$RELL_VERSION".jar; do
-        [ -e "$jar" ] || continue
-        jar_name=$(basename "$jar")
-        if [ -f "$dist_lib/$jar_name" ]; then
-            cp -f "$jar" "$dist_lib/$jar_name"
-            synced=$((synced + 1))
-        fi
+    for repo in "${local_repos[@]}"; do
+        [ -d "$repo" ] || continue
+        for jar in "$repo"/*/"$RELL_VERSION"/*-"$RELL_VERSION".jar; do
+            [ -e "$jar" ] || continue
+            jar_name=$(basename "$jar")
+            if [ -f "$dist_lib/$jar_name" ]; then
+                cp -f "$jar" "$dist_lib/$jar_name"
+                synced=$((synced + 1))
+            fi
+        done
     done
 
     if [ "$synced" -eq 0 ]; then
@@ -126,9 +126,9 @@ echo "Updating Rell version..."
 update_rell_version
 
 if [ "$SKIP_PUBLISH" != true ]; then
-    # Run always to ensure the build is fresh
+    # Clean first to guarantee a fresh build — Gradle's build cache can miss source changes
     echo "Publishing Rell artifacts to local Maven with Gradle..."
-    ./gradlew publishToMavenLocal
+    ./gradlew clean publishToMavenLocal
 else
     echo "Skipping publishToMavenLocal (requested)"
 fi
@@ -140,4 +140,5 @@ fi
 sync_local_rell_jars
 
 # Execute chr with arguments passed to this script (excluding --rebuild)
+export JAVA_ARGS="${JAVA_ARGS:-} --enable-native-access=ALL-UNNAMED"
 "$CHR_EXECUTABLE" "${ARGS[@]}"

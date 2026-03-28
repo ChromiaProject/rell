@@ -9,8 +9,10 @@ This generated site includes JavaScript code to provide a navigation bar. While 
 If you have Docker installed, you can quickly host the site using an HTTP server container:
 
 ```bash
-docker run -dit --name my-docs-site -p 8080:80 -v "$PWD":/usr/local/apache2/htdocs/ httpd:2.4
+docker run --rm -p 8080:80 -v "$PWD":/usr/local/apache2/htdocs/:ro httpd:2.4
 ```
+
+The site will be available at `http://localhost:8080`. Press Ctrl+C to stop the server.
 
 ### Using Node.js
 
