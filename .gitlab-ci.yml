@@ -1,4 +1,4 @@
-image: registry.gitlab.com/chromaway/core-tools/chromia-images/maven-docker-java21:1.0.13@sha256:4c094d2ec60af3fb3dbb8a3b3fde037b3343e08f247067a21fa1edd504ee24bc
+image: eclipse-temurin:21-jdk-noble
 
 stages:
   - build
@@ -31,6 +31,11 @@ cache:
 .setup:
   tags: [ saas-linux-xlarge-amd64 ]
   before_script:
+    - apt-get update && apt-get install -y ca-certificates curl gnupg jq
+    - install -m 0755 -d /etc/apt/keyrings
+    - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu noble stable" > /etc/apt/sources.list.d/docker.list
+    - apt-get update && apt-get install -y docker-ce-cli
     - docker run
       --detach
       --name postgres
