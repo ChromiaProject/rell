@@ -3,12 +3,14 @@
 # Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
 #
 
+set -eu
+
 SCRIPT_DIR="$(dirname "$0")"
 RELL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-ARGS=()
-if [ $# -gt 0 ]; then
-    ARGS+=(--args="$*")
-fi
+DIST_DIR="$RELL_DIR/rell-tools/build/install/rell-dist/postchain-node"
 
-exec "$RELL_DIR/gradlew" -q --console=plain :rell-tools:runRepl "${ARGS[@]}"
+# Build the local distribution (quietly).
+"$RELL_DIR/gradlew" -q --console=plain :rell-tools:installRellDist
+
+exec "$DIST_DIR/rell.sh" "$@"

@@ -121,6 +121,11 @@ object SqlTestUtils {
             props.load(ins)
         }
 
+        return dbPropsFromProperties(props)
+    }
+
+
+    private fun dbPropsFromProperties(props: Properties): DbConnProps {
         val url = System.getenv("POSTCHAIN_DB_URL") ?: props.getProperty("database.url")
         val user = System.getenv("POSTGRES_USER") ?: props.getProperty("database.username")
         val password = System.getenv("POSTGRES_PASSWORD") ?: props.getProperty("database.password")

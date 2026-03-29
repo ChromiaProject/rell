@@ -12,4 +12,4 @@ D=`dirname "${BASH_SOURCE[0]}"`
 
 CP="$D/lib/*:$D/extra/*"
 
-exec ${RELL_JAVA:-java} -cp "$CP" "$MAIN_CLASS" "$@"
+exec ${RELL_JAVA:-java} --enable-native-access=ALL-UNNAMED -cp "$CP" "$MAIN_CLASS" "$@"

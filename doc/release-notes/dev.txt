@@ -38,3 +38,9 @@ available from the main Rell Maven registry under their original coordinates:
 
 The separate GitLab Maven registries for these projects will not be updated in the future;
 use the Rell registry instead.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Tools: CLI library changed from Picocli to Clikt
+
+The CLI argument parsing library for tools has been replaced.
+All options and arguments remain the same, but the format of help and error output differs minimally.

@@ -4,74 +4,69 @@
 
 package net.postchain.rell.tools
 
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.optional
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.gtv.Gtv
 import net.postchain.rell.api.base.RellCliBasicException
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.api.base.RellConfigGen
 import net.postchain.rell.base.utils.PostchainGtvUtils
-import picocli.CommandLine
-import java.io.File
-import java.io.FileOutputStream
 import java.io.OutputStream
+import kotlin.io.path.*
 
 fun main(args: Array<String>) {
     RellToolsLogUtils.initLogging()
-    RellToolsUtils.runCli(args, RellConfigGenCliArgs(), ::main0)
+    RellToolsUtils.runCli(args, RellConfigGenCommand())
 }
 
-private fun main0(args: RellConfigGenCliArgs) {
-    val target = RellToolsUtils.getTarget(args.sourceDir, args.module)
+private class RellConfigGenCommand : RellBaseCommand("RellConfigGen") {
+    val module by argument("MODULE", help = "Module name")
+    val outputFile by argument("OUTPUT_FILE", help = "Output configuration file").optional()
+    val configTemplateFile by option("--template", metavar = "TEMPLATE_FILE", help = "Configuration template file")
+    val binaryOutput by option("--binary-output", help = "Write output as binary").flag()
 
-    val template = if (args.configTemplateFile == null) null else {
-        readFile(File(args.configTemplateFile))
-    }
+    override fun run() {
+        val target = RellToolsUtils.getTarget(sourceDir, module)
 
-    val configGen = RellConfigGen.create(RellCliEnv.DEFAULT, target)
-    val config = configGen.makeConfig(template)
+        val theConfigTemplateFile = configTemplateFile
 
-    if (args.outputFile != null) {
-        val outputFile = File(args.outputFile)
-        verifyCfg(outputFile.absoluteFile.parentFile.isDirectory, "Path not found: $outputFile")
-        FileOutputStream(outputFile).use {
-            writeResult(args, it, config)
+        val template = if (theConfigTemplateFile == null) null else {
+            val file = Path(theConfigTemplateFile)
+            verifyCfg(file.isRegularFile(), "File not found: $file")
+            file.readText()
         }
-    } else {
-        writeResult(args, System.out, config)
+
+        val configGen = RellConfigGen.create(RellCliEnv.DEFAULT, target)
+        val config = configGen.makeConfig(template)
+
+        val theOutputFile = outputFile
+
+        if (theOutputFile != null) {
+            val outFile = Path(theOutputFile)
+            verifyCfg(outFile.absolute().parent.isDirectory(), "Path not found: $outFile")
+            outFile.outputStream().use {
+                writeResult(it, config)
+            }
+        } else {
+            writeResult(System.out, config)
+        }
     }
-}
 
-private fun writeResult(args: RellConfigGenCliArgs, os: OutputStream, config: Gtv) {
-    val bytes = if (args.binaryOutput) {
-        PostchainGtvUtils.gtvToBytes(config)
-    } else {
-        val text = RellConfigGen.configToText(config)
-        text.toByteArray()
+    private fun writeResult(os: OutputStream, config: Gtv) {
+        val bytes = if (binaryOutput) {
+            PostchainGtvUtils.gtvToBytes(config)
+        } else {
+            val text = RellConfigGen.configToText(config)
+            text.toByteArray()
+        }
+        os.write(bytes)
     }
-    os.write(bytes)
-}
 
-private fun readFile(file: File): String {
-    verifyCfg(file.isFile, "File not found: ${file.path}")
-    return file.readText()
-}
-
-private fun verifyCfg(b: Boolean, msg: String) {
-    if (!b) {
-        throw RellCliBasicException(msg)
+    private fun verifyCfg(b: Boolean, msg: String) {
+        if (!b) {
+            throw RellCliBasicException(msg)
+        }
     }
-}
-
-@CommandLine.Command(name = "RellConfigGen", description = ["Generates Rell Postchain configuration"])
-class RellConfigGenCliArgs: RellBaseCliArgs() {
-    @CommandLine.Parameters(index = "0", paramLabel = "MODULE", description = ["Module name"])
-    var module: String = ""
-
-    @CommandLine.Parameters(index = "1", arity = "0..1", paramLabel = "OUTPUT_FILE", description = ["Output configuration file"])
-    var outputFile: String? = null
-
-    @CommandLine.Option(names = ["--template"], paramLabel = "TEMPLATE_FILE", description = ["Configuration template file"])
-    var configTemplateFile: String? = null
-
-    @CommandLine.Option(names = ["--binary-output"], paramLabel = "BINARY_OUTPUT", description = ["Write output as binary"])
-    var binaryOutput: Boolean = false
 }

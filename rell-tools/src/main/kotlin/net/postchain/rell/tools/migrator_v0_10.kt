@@ -4,14 +4,17 @@
 
 package net.postchain.rell.tools
 
+import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
 import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.utils.checkEquals
-import picocli.CommandLine
-import java.io.File
-import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.*
 
 private val MIGRATION_MAP = mapOf(
         "class" to "entity",
@@ -46,46 +49,50 @@ private val MIGRATION_MAP = mapOf(
 
 fun main(args: Array<String>) {
     RellToolsLogUtils.initLogging()
-    RellToolsUtils.runCli(args, RellMigratorCliArgs(), ::main0)
+    RellToolsUtils.runCli(args, RellMigratorCommand())
 }
 
-private fun main0(args: RellMigratorCliArgs) {
-    val dir = RellToolsUtils.checkDir(args.directory)
+private class RellMigratorCommand : CliktCommand(name = "migrator") {
+    val dryRun by option("--dry-run", help = "Do not modify files, only print replace counts").flag()
+    val directory by argument("DIRECTORY", help = "Directory")
 
-    var totalFileCount = 0
-    var replaceFileCount = 0
-    var replaceTokenCount = 0
+    override fun run() {
+        val dir = RellToolsUtils.checkDir(directory)
 
-    Files.walk(dir.toPath()).forEach {
-        val file = it.toFile()
-        if (file.isFile && file.name.endsWith(".rell")) {
-            ++totalFileCount
+        var totalFileCount = 0
+        var replaceFileCount = 0
+        var replaceTokenCount = 0
 
-            val count = try {
-                processFile(file, args.dryRun)
-            } catch (e: Throwable) {
-                println("$file $e")
-                0
-            }
+        for (path in dir.walk()) {
+            if (path.isRegularFile() && path.name.endsWith(".rell")) {
+                ++totalFileCount
 
-            if (count > 0) {
-                println("$file $count")
-                ++replaceFileCount
-                replaceTokenCount += count
+                val count = try {
+                    processFile(path, dryRun)
+                } catch (e: Throwable) {
+                    println("$path $e")
+                    0
+                }
+
+                if (count > 0) {
+                    println("$path $count")
+                    ++replaceFileCount
+                    replaceTokenCount += count
+                }
             }
         }
+
+        println("Replaced $replaceTokenCount tokens in $replaceFileCount of $totalFileCount .rell files")
     }
 
-    println("Replaced $replaceTokenCount tokens in $replaceFileCount of $totalFileCount .rell files")
-}
-
-private fun processFile(file: File, dryRun: Boolean): Int {
-    val text = file.readText()
-    val (text2, count) = replaceTokens(text)
-    if (text2 != text && !dryRun) {
-        file.writeText(text2)
+    private fun processFile(path: Path, dryRun: Boolean): Int {
+        val text = path.readText()
+        val (text2, count) = replaceTokens(text)
+        if (text2 != text && !dryRun) {
+            path.writeText(text2)
+        }
+        return count
     }
-    return count
 }
 
 private fun replaceTokens(text: String): Pair<String, Int> {
@@ -119,15 +126,3 @@ private fun tokenize(text: String): List<TokenReplace> {
 }
 
 private class TokenReplace(val pos: Int, val oldStr: String, val newStr: String)
-
-@CommandLine.Command(
-        name = "migrator",
-        description = ["Replaces deprecated keywords and names in all .rell files in the directory (recursively)"]
-)
-private class RellMigratorCliArgs: RellCliArgs() {
-    @CommandLine.Option(names = ["--dry-run"], description = ["Do not modify files, only print replace counts"])
-    var dryRun = false
-
-    @CommandLine.Parameters(index = "0", paramLabel = "DIRECTORY", description = ["Directory"])
-    var directory: String = ""
-}

@@ -1,5 +1,3 @@
-import org.gradle.api.publish.maven.MavenPublication
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.git.properties)
@@ -21,7 +19,7 @@ dependencies {
     api(projects.rellGtx)
     api(projects.rellApiShell)
 
-    implementation(libs.picocli)
+    implementation(libs.clikt)
 
     runtimeOnly(libs.log4j.slf4j2.impl)
 
@@ -133,15 +131,6 @@ val installRellDist by tasks.registering(Copy::class) {
     dependsOn(tasks.jar)
     into(layout.buildDirectory.dir("install/rell-dist"))
     with(rellDistCopySpec)
-}
-
-tasks.register<JavaExec>("runRepl") {
-    group = "application"
-    description = "Starts the Rell REPL (interactive shell)"
-    dependsOn(tasks.classes)
-    mainClass = "net.postchain.rell.tools.RellCLIKt"
-    classpath = sourceSets.main.get().runtimeClasspath
-    standardInput = System.`in`
 }
 
 publishing.publications.named<MavenPublication>("mavenJava") {

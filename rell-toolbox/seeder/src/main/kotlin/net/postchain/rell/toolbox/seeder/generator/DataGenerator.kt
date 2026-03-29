@@ -34,4 +34,4 @@ class DataGenerator(
     }
 }
 
-class DataGenerationException(msg: String, cause: Exception? = null) : RuntimeException(msg, cause)
+class DataGenerationException(msg: String, cause: Throwable? = null) : RuntimeException(msg, cause)

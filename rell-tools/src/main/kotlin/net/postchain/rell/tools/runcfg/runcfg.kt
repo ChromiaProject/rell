@@ -12,9 +12,12 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.utils.*
-import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.absolute
+import kotlin.io.path.pathString
+import kotlin.io.path.readText
 
-class RellPostAppCliConfig(val sourceDir: C_SourceDir, val configDir: File, val config: RellPostAppConfig)
+class RellPostAppCliConfig(val sourceDir: C_SourceDir, val configDir: Path, val config: RellPostAppConfig)
 
 class RellPostAppConfig(
         val node: RellPostAppNode,
@@ -85,19 +88,19 @@ class RellRunConfigParams(
 
 object RellRunConfigGenerator {
     fun generateCli(
-            sourceDir: File,
-            runConfFile: File,
+            sourceDir: Path,
+            runConfFile: Path,
             sourceVersion: R_LangVersion,
             unitTest: Boolean
     ): RellPostAppCliConfig {
-        val cSourceDir = C_SourceDir.diskDir(sourceDir)
+        val cSourceDir = C_SourceDir.diskDir(sourceDir.toFile())
 
-        val configDir = runConfFile.absoluteFile.parentFile
-        val generalConfigDir = DiskGeneralDir(configDir)
+        val configDir = runConfFile.absolute().parent
+        val generalConfigDir = DiskGeneralDir(configDir.toFile())
         val params = RellRunConfigParams(cSourceDir, generalConfigDir, sourceVersion, unitTest)
 
         val runConfText = runConfFile.readText()
-        val config = generate(RellCliEnv.DEFAULT, params, runConfFile.path, runConfText)
+        val config = generate(RellCliEnv.DEFAULT, params, runConfFile.pathString, runConfText)
 
         return RellPostAppCliConfig(cSourceDir, configDir, config)
     }

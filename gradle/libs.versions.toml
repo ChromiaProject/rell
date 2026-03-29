@@ -7,8 +7,7 @@ junit = "6.0.2"
 kotlinx-collections-immutable = "0.4.0"
 better-parse = "0.4.4"
 jline = "3.28.0"
-picocli = "3.9.6"
-clikt = "5.0.3"
+clikt = "5.1.0"
 jackson = "2.15.3"
 
 # rell-toolbox dependencies
@@ -73,7 +72,6 @@ testcontainers-junit-jupiter = { module = "org.testcontainers:testcontainers-jun
 better-parse = { module = "com.github.h0tk3y.betterParse:better-parse-jvm", version.ref = "better-parse" }
 
 jline = { module = "org.jline:jline", version.ref = "jline" }
-picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
 
 # versions from junit-bom
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }

@@ -4,6 +4,9 @@
 
 package net.postchain.rell.tools
 
+import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.main
+import com.github.ajalt.clikt.parameters.options.option
 import mu.KLogging
 import net.postchain.rell.api.base.*
 import net.postchain.rell.base.compiler.base.core.C_CompilationResult
@@ -19,17 +22,19 @@ import net.postchain.rell.base.runtime.Rt_RellVersion
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.immListOfNotNull
-import picocli.CommandLine
-import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.Path
+import kotlin.io.path.absolute
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
 import kotlin.system.exitProcess
 
 object RellToolsUtils: KLogging() {
-    fun <T: RellCliArgs> runCli(args: Array<String>, argsObj: T, block: (T) -> Unit) {
+    fun runCli(args: Array<String>, command: CliktCommand) {
         CommonUtils.failIfUnitTest() // Make sure unit test check works
 
-        parseCliArgs(args, argsObj)
         try {
-            block(argsObj)
+            command.main(args)
         } catch (e: RellCliExitException) {
             exitProcess(e.code)
         } catch (e: RellCliException) {
@@ -38,17 +43,6 @@ object RellToolsUtils: KLogging() {
         } catch (e: Throwable) {
             e.printStackTrace()
             exitProcess(3)
-        }
-    }
-
-    private fun <T> parseCliArgs(args: Array<String>, argsObj: T) {
-        val cl = CommandLine(argsObj)
-        try {
-            cl.parse(*args)
-        } catch (e: CommandLine.PicocliException) {
-            cl.usageHelpWidth = 1000
-            cl.usage(System.err)
-            exitProcess(1)
         }
     }
 
@@ -102,32 +96,28 @@ object RellToolsUtils: KLogging() {
     }
 
     fun getTarget(sourceDir: String?, module: String): RellCliTarget {
-        val sourcePath = checkDir(sourceDir ?: ".").absoluteFile
-        val cSourceDir = C_SourceDir.diskDir(sourcePath)
+        val sourcePath = checkDir(sourceDir ?: ".").absolute()
+        val cSourceDir = C_SourceDir.diskDir(sourcePath.toFile())
         val moduleName = checkModule(module)
-        return RellCliTarget(sourcePath, cSourceDir, listOf(moduleName))
+        return RellCliTarget(sourcePath.toFile(), cSourceDir, listOf(moduleName))
     }
 
-    fun prepareDir(dir: File) {
-        check(dir.isDirectory || dir.mkdirs()) { "Cannot create directory: $dir" }
-    }
-
-    fun check(b: Boolean, msgCode: () -> String) {
+    inline fun check(b: Boolean, msgCode: () -> String) {
         if (!b) {
             val msg = msgCode()
             throw RellCliBasicException(msg)
         }
     }
 
-    fun checkDir(path: String): File {
-        val file = File(path)
-        check(file.isDirectory) { "Directory not found: $path" }
+    fun checkDir(path: String): Path {
+        val file = Path(path)
+        check(file.isDirectory()) { "Directory not found: $path" }
         return file
     }
 
-    fun checkFile(path: String): File {
-        val file = File(path)
-        check(file.isFile) { "File not found: $path" }
+    fun checkFile(path: String): Path {
+        val file = Path(path)
+        check(file.isRegularFile()) { "File not found: $path" }
         return file
     }
 
@@ -155,10 +145,7 @@ object RellToolsUtils: KLogging() {
     }
 }
 
-abstract class RellCliArgs
-
-abstract class RellBaseCliArgs: RellCliArgs() {
-    @CommandLine.Option(names = ["-d", "--source-dir"], paramLabel = "SOURCE_DIR",
-        description = ["Rell source code directory (default: current directory)"])
-    var sourceDir: String? = null
+abstract class RellBaseCommand(name: String) : CliktCommand(name = name) {
+    val sourceDir by option("-d", "--source-dir", metavar = "SOURCE_DIR",
+        help = "Rell source code directory (default: current directory)")
 }

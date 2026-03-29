@@ -75,6 +75,11 @@ class FieldValueGenerator(
                 "Could not generate unique values for '${attribute.name}' of entity '${entity.qualifiedName}'",
                 e
             )
+        } catch (e: StackOverflowError) {
+            throw DataGenerationException(
+                "Could not generate unique values for '${attribute.name}' of entity '${entity.qualifiedName}'",
+                e,
+            )
         }
     }
 
