@@ -52,6 +52,7 @@ cache:
     paths:
       - $JACOCO_REPORT_DIR/*
       - "**/build/test-results/**/*"
+      - build/reports/configuration-cache/**/*
     reports:
       junit: [ "**/build/test-results/**/TEST-*.xml" ]
       coverage_report:
