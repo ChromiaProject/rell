@@ -65,13 +65,9 @@ private fun tags(
 
 class DocDeclaration(
     val code: DocCode,
-    internal val internalCompletion: Completion?,
+    val completion: Completion?,
     internal val isDeprecated: Boolean,
 ) {
-    @Suppress("unused")
-    @Deprecated("intended for internal use; but kept public for compatibility with client code")
-    val completion = internalCompletion
-
     class Completion(
         val params: ImmList<IdeCompletionParam>?,
         val result: String?,

@@ -16,18 +16,10 @@ The site will be available at `http://localhost:8080`. Press Ctrl+C to stop the 
 
 ### Using Node.js
 
-If you prefer using Node.js, you can host the site with `http-server`:
-
-First, install `http-server` globally:
+If you have Node.js installed, you can host the site with the `http-server` package:
 
 ```bash
-npm install -g http-server
-```
-
-Then navigate to the directory containing the `index.html` file and run:
-
-```bash
-http-server
+npx http-server
 ```
 
 This will start a local web server, and you can access the site at `http://localhost:8080` in your browser.

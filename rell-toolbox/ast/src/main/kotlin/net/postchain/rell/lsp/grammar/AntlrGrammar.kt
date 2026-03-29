@@ -17,6 +17,7 @@ import com.github.h0tk3y.betterParse.grammar.ParserReference
 import net.postchain.rell.base.compiler.parser.RellToken
 import net.postchain.rell.base.compiler.parser.RellTokens
 import net.postchain.rell.base.utils.LateInit
+import net.postchain.rell.base.utils.capitalizeEx
 import net.postchain.rell.base.utils.grammar.GrammarUtils
 import org.apache.commons.collections4.MapUtils
 import java.util.Locale
@@ -199,16 +200,16 @@ private object AntlrNontermGen {
             val sub = subs[0]
             if (sub is AntlrGramExpr_Nonterm && transform == null) {
                 val expr = convertExpr(sub, null)
-                return AntlrProd(null, expr)
+                return AntlrProd(expr)
             } else if (sub is AntlrGramExpr_Token) {
                 val expr = convertExpr(sub, null)
                 if (transform == null) {
-                    val tokenType = createTokenType(sub.name)
-                    return AntlrProd(tokenType, expr)
+                    createTokenType(sub.name)
+                    return AntlrProd(expr)
                 } else {
                     val token = if (sub.name in specialTokens) sub.name else null
                     createAction(type, AntlrAction_Token(token), transform)
-                    return AntlrProd(type, expr)
+                    return AntlrProd(expr)
                 }
             }
         }
@@ -229,7 +230,7 @@ private object AntlrNontermGen {
         val expr = if (exprs.size == 1) exprs[0] else AntlrExpr_And(exprs)
         createAction(type, AntlrAction_General(attrs), transform)
 
-        return AntlrProd(type, expr)
+        return AntlrProd(expr)
     }
 
     private fun convertExpr(gram: AntlrGramExpr, attr: AntlrAttr?): AntlrExpr {
@@ -271,7 +272,7 @@ private object AntlrNontermGen {
             check(ntName !in xNonterms)
             val expr = convertToken0(name)
             val type = createTokenType(name)
-            val prod = AntlrProd(type, expr)
+            val prod = AntlrProd(expr)
             val nonterm = AntlrNonterm(ntName)
             nonterm.prods.set(listOf(prod))
             xTokenNonterms[name] = nonterm
@@ -289,7 +290,7 @@ private object AntlrNontermGen {
     }
 
     private fun createTokenType(name: String): String {
-        val tail = if (name !in specialTokens) "" else name.lowercase(Locale.getDefault()).capitalize()
+        val tail = if (name !in specialTokens) "" else name.lowercase(Locale.getDefault()).capitalizeEx()
         val type = nontermNameToAntlr("token$tail")
         if (type !in actions) {
             val token = if (name in specialTokens) name else null
@@ -324,6 +325,7 @@ private object AntlrGramExprGen {
         return createAntlrGramExpr0(parser)
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun createAntlrGramExpr0(parser: Any): AntlrGramExpr {
         return when (parser) {
             is ParserReference<*> -> createAntlrGramExprSub(parser.parser)
@@ -354,20 +356,16 @@ private object AntlrGramExprGen {
     }
 }
 
-private fun nontermNameToAntlr(name: String): String {
-    return "X_" + name.capitalize()
-}
+private fun nontermNameToAntlr(name: String): String = "X_" + name.capitalizeEx()
 
 private fun nontermNameToAntlrRuleCtx(name: String): String {
     if (name.all { it.isUpperCase() }) {
-        return "RuleX_tk" + name.capitalize() + "Context"
+        return "RuleX_tk" + name.capitalizeEx() + "Context"
     }
-    return "RuleX_" + name.capitalize() + "Context"
+    return "RuleX_" + name.capitalizeEx() + "Context"
 }
 
-private fun termNameToAntlr(name: String): String {
-    return "X_$name"
-}
+private fun termNameToAntlr(name: String): String = "X_$name"
 
 private class AntlrNonterm(val name: String) {
     val prods = LateInit<List<AntlrProd>>()
@@ -385,11 +383,8 @@ private class AntlrNonterm(val name: String) {
     }
 }
 
-private class AntlrProd(private val type: String?, private val expr: AntlrExpr) {
-    fun generate(): String {
-        val s = expr.generate()
-        return if (type != null) "$s" else s
-    }
+private class AntlrProd(private val expr: AntlrExpr) {
+    fun generate(): String = expr.generate()
 }
 
 private sealed class AntlrExpr {
@@ -436,14 +431,14 @@ private sealed class AntlrGramExpr {
 private class AntlrGramExpr_Token(val name: String) : AntlrGramExpr() {
     override fun hasValue() = true
     override fun many() = false
-    override fun getRuleClassString(): String = "${nontermNameToAntlrRuleCtx(name)}"
+    override fun getRuleClassString(): String = nontermNameToAntlrRuleCtx(name)
 }
 
 private class AntlrGramExpr_Nonterm(val name: String) : AntlrGramExpr() {
     override fun hasValue() = true
     override fun many() = false
 
-    override fun getRuleClassString(): String = "${nontermNameToAntlrRuleCtx(name)}"
+    override fun getRuleClassString(): String = nontermNameToAntlrRuleCtx(name)
 }
 
 private class AntlrGramExpr_Skip(val sub: AntlrGramExpr) : AntlrGramExpr() {
@@ -463,14 +458,14 @@ private class AntlrGramExpr_Map(val sub: AntlrGramExpr, val transform: (Any) -> 
 private class AntlrGramExpr_And(val subs: List<AntlrGramExpr>) : AntlrGramExpr() {
     override fun hasValue() = subs.any { it.hasValue() }
     override fun many() = subs.any { it.many() }
-    override fun getRuleClassString(): String = subs.get(0).getRuleClassString()
+    override fun getRuleClassString(): String = subs[0].getRuleClassString()
 }
 
 private class AntlrGramExpr_Or(val subs: List<AntlrGramExpr>) : AntlrGramExpr() {
     override fun hasValue() = subs.any { it.hasValue() }
     override fun many() = subs.any { it.many() }
 
-    override fun getRuleClassString(): String = subs.get(0).getRuleClassString()
+    override fun getRuleClassString(): String = subs[0].getRuleClassString()
 }
 
 private class AntlrGramExpr_Opt(val sub: AntlrGramExpr) : AntlrGramExpr() {

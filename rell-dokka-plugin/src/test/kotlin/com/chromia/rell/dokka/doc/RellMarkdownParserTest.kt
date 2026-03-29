@@ -6,7 +6,6 @@ package com.chromia.rell.dokka.doc
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import org.jetbrains.dokka.InternalDokkaApi
 import org.jetbrains.dokka.analysis.kotlin.markdown.MARKDOWN_ELEMENT_FILE_NAME
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.doc.CustomDocTag
@@ -23,7 +22,6 @@ class RellMarkdownParserTest {
     private fun parseMarkdownToDocNode(text: String) =
             RellMarkdownParser().parseStringToDocNode(text)
 
-    @OptIn(InternalDokkaApi::class)
     @Test
     fun `Can parse with references`() {
         val rellDoc = """

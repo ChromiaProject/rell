@@ -6,6 +6,7 @@
 package net.postchain.rell.lsp.grammar
 
 import net.postchain.rell.base.utils.RellVersions
+import net.postchain.rell.base.utils.capitalizeEx
 import net.postchain.rell.base.utils.grammar.GrammarUtils
 import java.util.*
 
@@ -96,7 +97,7 @@ sealed class AntlrAction {
 class AntlrAction_Token(private val name: String?) : AntlrAction() {
 
     override fun generate(type: String): List<String> {
-        val tail = name?.lowercase(Locale.getDefault())?.capitalize() ?: ""
+        val tail = name?.lowercase(Locale.getDefault())?.capitalizeEx() ?: ""
         println("                Object var_0 = RellcUtils.token$tail(node);")
         return listOf("a")
     }

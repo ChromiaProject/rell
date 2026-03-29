@@ -21,13 +21,13 @@ class VarStmtFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<RuleX_VarStmtContext> {
-    override fun format(xVarStmt: RuleX_VarStmtContext, doc: FormattableDocument) {
-        whitespaceFormatter.formatSemicolon(xVarStmt, doc)
-        val equalSign = tokenAnalyzer.tokenFor(xVarStmt, "=")
+    override fun format(node: RuleX_VarStmtContext, doc: FormattableDocument) {
+        whitespaceFormatter.formatSemicolon(node, doc)
+        val equalSign = tokenAnalyzer.tokenFor(node, "=")
         doc.surround(equalSign) { it.oneSpace() }
-        doc.surround(xVarStmt.ruleX_VarDeclarator()) { it.oneSpace() }
-        doc.format(xVarStmt.ruleX_VarDeclarator())
-        doc.format(xVarStmt.ruleX_Expression())
+        doc.surround(node.ruleX_VarDeclarator()) { it.oneSpace() }
+        doc.format(node.ruleX_VarDeclarator())
+        doc.format(node.ruleX_Expression())
     }
 }
 
@@ -37,10 +37,10 @@ class TupleVarDecFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
     private val lineAnalyzer: LineAnalyzer,
 ) : NodeFormatter<RuleX_TupleVarDeclaratorContext> {
-    override fun format(xTupleVarDec: RuleX_TupleVarDeclaratorContext, doc: FormattableDocument) {
-        val tupleVarContext = xTupleVarDec.getTupleVarContext()
+    override fun format(node: RuleX_TupleVarDeclaratorContext, doc: FormattableDocument) {
+        val tupleVarContext = node.getTupleVarContext()
         braceFormatter.formatBracePairWithoutSpace(tupleVarContext, doc, BracePairTypes.PARENTHESES)
-        val (varDeclarators, trailingComma) = xTupleVarDec.getVarDeclaratorWithTrailingComma()
+        val (varDeclarators, trailingComma) = node.getVarDeclaratorWithTrailingComma()
         val lineSeparate = lineAnalyzer.formatAsMultiLine(varDeclarators)
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
         argumentFormatter.formatArguments(varDeclarators, doc)
@@ -52,13 +52,13 @@ class ConstantDefFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<RuleX_ConstantDefContext> {
-    override fun format(xConstantDef: RuleX_ConstantDefContext, doc: FormattableDocument) {
-        val equalSign = tokenAnalyzer.tokenFor(xConstantDef, "=")
+    override fun format(node: RuleX_ConstantDefContext, doc: FormattableDocument) {
+        val equalSign = tokenAnalyzer.tokenFor(node, "=")
         doc.surround(equalSign) { it.oneSpace() }
-        doc.prepend(xConstantDef.ruleX_Name()) { it.oneSpace() }
-        whitespaceFormatter.formatType(xConstantDef, doc)
-        whitespaceFormatter.formatSemicolon(xConstantDef, doc)
-        doc.format(xConstantDef.ruleX_TypeRef())
-        doc.format(xConstantDef.ruleX_ExpressionRef())
+        doc.prepend(node.ruleX_Name()) { it.oneSpace() }
+        whitespaceFormatter.formatType(node, doc)
+        whitespaceFormatter.formatSemicolon(node, doc)
+        doc.format(node.ruleX_TypeRef())
+        doc.format(node.ruleX_ExpressionRef())
     }
 }

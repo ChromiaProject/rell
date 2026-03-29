@@ -2,19 +2,21 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package com.chromia.rell.dokka.page
 
 import com.chromia.rell.dokka.config.RellDokkaGlobalState
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
+import com.chromia.rell.dokka.customTags
+import com.chromia.rell.dokka.descriptions
+import com.chromia.rell.dokka.dri
 import com.chromia.rell.dokka.model.isFunction
 import com.chromia.rell.dokka.model.isNamespace
 import com.chromia.rell.dokka.model.isOperation
 import com.chromia.rell.dokka.model.isQuery
 import com.chromia.rell.dokka.model.namespaceName
 import com.chromia.rell.dokka.renderers.html.RellTabbedContentType
+import com.chromia.rell.dokka.sourceSets
 import org.jetbrains.dokka.DokkaConfiguration
-import org.jetbrains.dokka.InternalDokkaApi
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
 import org.jetbrains.dokka.base.resolvers.anchors.SymbolAnchorHint
 import org.jetbrains.dokka.base.signatures.SignatureProvider
@@ -22,10 +24,6 @@ import org.jetbrains.dokka.base.transformers.pages.comments.CommentsToContentCon
 import org.jetbrains.dokka.base.transformers.pages.tags.CustomTagContentProvider
 import org.jetbrains.dokka.base.translators.documentables.DefaultPageCreator
 import org.jetbrains.dokka.base.translators.documentables.PageContentBuilder
-import org.jetbrains.dokka.base.translators.documentables.customTags
-import org.jetbrains.dokka.base.translators.documentables.descriptions
-import org.jetbrains.dokka.base.translators.documentables.dri
-import org.jetbrains.dokka.base.translators.documentables.sourceSets
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.DClasslike
@@ -53,7 +51,6 @@ import org.jetbrains.dokka.pages.TabbedContentTypeExtra
 import org.jetbrains.dokka.pages.TextStyle
 import org.jetbrains.dokka.utilities.DokkaLogger
 
-@OptIn(InternalDokkaApi::class)
 class RellPageCreator(
         private val rellDokkaPluginConfiguration: RellDokkaPluginConfiguration?,
         configuration: DokkaBaseConfiguration?,
@@ -94,7 +91,7 @@ class RellPageCreator(
                     sourceSets = m.sourceSets.toSet(),
                     needsAnchors = true,
                     headers = listOf(
-                            headers("Name")
+                            contentBuilder.contentFor(mainDRI, mainSourcesetData) { text("Name") }
                     )
             ) { dPackage ->
 
@@ -328,10 +325,10 @@ class RellPageCreator(
                                 kind = rowKind,
                                 extra = extra
                         ) {
-                            sortedElements.map { element ->
+                            for (element in sortedElements) {
                                 instance(
-                                        setOf(element.dri),
-                                        element.sourceSets.toSet()
+                                    setOf(element.dri),
+                                    element.sourceSets.toSet()
                                 ) {
                                     divergent(extra = PropertyContainer.empty()) {
                                         group {
@@ -339,7 +336,7 @@ class RellPageCreator(
                                         }
                                     }
                                     after(
-                                            extra = PropertyContainer.empty()
+                                        extra = PropertyContainer.empty()
                                     ) {
                                         contentForBrief(element)
                                         contentForCustomTagsBrief(element) //TODO: Verify if we can skip

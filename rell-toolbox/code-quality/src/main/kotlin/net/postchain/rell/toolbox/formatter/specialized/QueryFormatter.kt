@@ -20,17 +20,17 @@ class QueryDefFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
     private val argumentFormatter: ArgumentFormatter,
 ) : NodeFormatter<RuleX_QueryDefContext> {
-    override fun format(xQueryDef: RuleX_QueryDefContext, doc: FormattableDocument) {
-        doc.surround(xQueryDef) { it.setNewLines(2) }
-        doc.prepend(xQueryDef.ruleX_Name()) { it.oneSpace() }
-        doc.append(xQueryDef.ruleX_Name()) { it.noSpace() }
-        braceFormatter.formatBracePairWithoutSpace(xQueryDef, doc, BracePairTypes.PARENTHESES)
-        whitespaceFormatter.formatType(xQueryDef, doc)
-        val lineSeparate = lineAnalyzer.lineSeparateArguments(xQueryDef, BracePairTypes.PARENTHESES)
-        val (formalParameters, trailingComma) = xQueryDef.ruleX_FormalParameters().getFormalParameterWithTrailingComma()
+    override fun format(node: RuleX_QueryDefContext, doc: FormattableDocument) {
+        doc.surround(node) { it.setNewLines(2) }
+        doc.prepend(node.ruleX_Name()) { it.oneSpace() }
+        doc.append(node.ruleX_Name()) { it.noSpace() }
+        braceFormatter.formatBracePairWithoutSpace(node, doc, BracePairTypes.PARENTHESES)
+        whitespaceFormatter.formatType(node, doc)
+        val lineSeparate = lineAnalyzer.lineSeparateArguments(node, BracePairTypes.PARENTHESES)
+        val (formalParameters, trailingComma) = node.ruleX_FormalParameters().getFormalParameterWithTrailingComma()
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
         argumentFormatter.formatArguments(formalParameters, doc, formatAsMultiLine = lineSeparate)
         argumentFormatter.formatParametersType(formalParameters, doc)
-        doc.format(xQueryDef.ruleX_QueryBody())
+        doc.format(node.ruleX_QueryBody())
     }
 }

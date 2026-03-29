@@ -15,15 +15,15 @@ class StructDefFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
     private val whitespaceFormatter: WhitespaceFormatter,
 ) : NodeFormatter<RuleX_StructDefContext> {
-    override fun format(xObjectDef: RuleX_StructDefContext, doc: FormattableDocument) {
-        doc.surround(xObjectDef) { it.setNewLines(2) }
-        doc.interiorIndent(xObjectDef)
-        doc.surround(xObjectDef.ruleX_Name()) { it.oneSpace() }
-        for (xAttriDef in xObjectDef.ruleX_AttributeClause()) {
-            whitespaceFormatter.formatSemicolon(xObjectDef, doc)
+    override fun format(node: RuleX_StructDefContext, doc: FormattableDocument) {
+        doc.surround(node) { it.setNewLines(2) }
+        doc.interiorIndent(node)
+        doc.surround(node.ruleX_Name()) { it.oneSpace() }
+        for (xAttriDef in node.ruleX_AttributeClause()) {
+            whitespaceFormatter.formatSemicolon(node, doc)
             doc.format(xAttriDef)
         }
-        val closingCurly = tokenAnalyzer.tokenFor(xObjectDef, "}")
+        val closingCurly = tokenAnalyzer.tokenFor(node, "}")
         doc.prepend(closingCurly) { it.newLine() }
     }
 }

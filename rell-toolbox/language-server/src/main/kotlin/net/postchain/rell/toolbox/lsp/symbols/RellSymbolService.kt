@@ -40,9 +40,6 @@ class RellSymbolService {
             is IdeGlobalSymbolLink -> getGlobalLink(link.globalId(), workspaceUri, indexer)
             is IdeModuleSymbolLink -> getModuleLink(link.moduleFile(), workspaceUri)
             is IdeLocalSymbolLink -> getLocalLink(link.localPos(), resource, document)
-            else -> {
-                mutableListOf()
-            }
         }
     }
 
@@ -76,9 +73,6 @@ class RellSymbolService {
             is IdeGlobalSymbolLink -> Pair(getGlobalLink(link.globalId(), workspaceUri, indexer)[0], symbol)
             is IdeModuleSymbolLink -> Pair(getModuleLink(link.moduleFile(), workspaceUri)[0], symbol)
             is IdeLocalSymbolLink -> Pair(getLocalLink(link.localPos(), resource, document)[0], symbol)
-            else -> {
-                null
-            }
         }
     }
 

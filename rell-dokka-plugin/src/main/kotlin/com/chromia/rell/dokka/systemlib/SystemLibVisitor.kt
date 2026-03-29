@@ -79,7 +79,7 @@ class SystemLibVisitor(
         val blacklistedNamespaces = listOf("")
     }
 
-    fun visitRellModule(rellModule: RellModule): List<DPackage> {
+    @Suppress("UNCHECKED_CAST") fun visitRellModule(rellModule: RellModule): List<DPackage> {
         val dri = rellModule.dri
         val module = rellModule.module
 

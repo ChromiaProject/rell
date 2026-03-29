@@ -7,7 +7,7 @@ package com.chromia.rell.dokka
 import com.chromia.rell.dokka.config.RellDokkaGlobalState
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration
 import com.chromia.rell.dokka.doc.AliasDocTagProvider
-import com.chromia.rell.dokka.moduledocs.rellModuleAndPackageDocumentationTransformer
+import com.chromia.rell.dokka.moduledocs.RellModuleAndPackageDocumentationReader
 import com.chromia.rell.dokka.navigation.RellNavigationPageInstaller
 import com.chromia.rell.dokka.renderers.html.ChromiaAssetsInstaller
 import com.chromia.rell.dokka.renderers.html.RellHtmlRenderer
@@ -18,10 +18,10 @@ import com.chromia.rell.dokka.translators.RellSourceToDocumentableTranslator
 import com.chromia.rell.dokka.translators.RellSystemLibToDocumentableTranslator
 import com.chromia.rell.dokka.translators.documentables.RellDocumentableToPageTranslator
 import org.jetbrains.dokka.CoreExtensions
+import org.jetbrains.dokka.analysis.kotlin.internal.InternalKotlinAnalysisPlugin
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.plugability.DokkaContext
 import org.jetbrains.dokka.plugability.DokkaPlugin
-import org.jetbrains.dokka.plugability.DokkaPluginApiPreview
 import org.jetbrains.dokka.plugability.Extension
 import org.jetbrains.dokka.plugability.PluginApiPreviewAcknowledgement
 import org.jetbrains.dokka.plugability.configuration
@@ -32,7 +32,6 @@ import org.jetbrains.dokka.transformers.pages.PageTransformer
  * It can also produce documentation for the system library.
  */
 class RellDokkaPlugin : DokkaPlugin() {
-    @DokkaPluginApiPreview
     override fun pluginApiPreviewAcknowledgement() = PluginApiPreviewAcknowledgement
 
     private fun initializeHiddenModulesRegistry(context: DokkaContext) {
@@ -107,8 +106,8 @@ class RellDokkaPlugin : DokkaPlugin() {
     }
 
     val rellModuleAndPackageDocumentation by extending {
-        with (plugin<DokkaBase>()) {
-            preMergeDocumentableTransformer providing ::rellModuleAndPackageDocumentationTransformer override modulesAndPackagesDocumentation
+        with (plugin<InternalKotlinAnalysisPlugin>()) {
+            moduleAndPackageDocumentationReader providing ::RellModuleAndPackageDocumentationReader
         }
     }
 

@@ -2,8 +2,6 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-
 package com.chromia.rell.dokka.translators
 
 import com.chromia.rell.dokka.config.RellModule

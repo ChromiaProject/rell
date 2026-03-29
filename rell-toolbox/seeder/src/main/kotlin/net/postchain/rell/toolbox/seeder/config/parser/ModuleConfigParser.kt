@@ -48,7 +48,7 @@ class ModuleConfigParser(
         rellSchema: RellSchema
     ): MutableMap<String, EntityConfig> {
         val entityConfigs = mutableMapOf<String, EntityConfig>()
-        entityNode.fields().forEach { (fieldName, fieldObject) ->
+        for ((fieldName, fieldObject) in entityNode.properties()) {
             if (fieldName != "module") {
                 val entityConfig = entityConfigParser.createEntityNode(fieldName, fieldObject, moduleName, rellSchema)
                 entityConfigs[fieldName] = entityConfig

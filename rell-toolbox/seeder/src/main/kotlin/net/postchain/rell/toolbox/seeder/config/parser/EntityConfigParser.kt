@@ -43,7 +43,7 @@ class EntityConfigParser {
         val attributeConfigs = mutableMapOf<String, AttributeConfig>()
         val attributesNode = entityNode.get("attributes") ?: return attributeConfigs
 
-        attributesNode.fields().forEach { (attributeName, attributeNode) ->
+        for ((attributeName, attributeNode) in attributesNode.properties()) {
             val attribute = findAttributeInEntity(attributeName, entityName, schemaEntity)
             val attributeConfig = try {
                 attributeConfigParser.createAttributeConfig(attributeNode, attribute)

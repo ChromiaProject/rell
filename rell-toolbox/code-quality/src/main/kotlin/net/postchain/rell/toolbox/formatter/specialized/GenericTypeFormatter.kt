@@ -21,12 +21,12 @@ class GenTypeExprFormatter(
     private val braceFormatter: BraceFormatter,
     private val expressionFormatter: ExpressionFormatter,
 ) : NodeFormatter<RuleX_GenericTypeExprContext> {
-    override fun format(xGenTypeExpr: RuleX_GenericTypeExprContext, doc: FormattableDocument) {
-        doc.format(xGenTypeExpr.ruleX_GenericType())
-        if (xGenTypeExpr.ruleX_BaseExprTailMember() != null) {
-            doc.format(xGenTypeExpr.ruleX_BaseExprTailMember())
-        } else if (xGenTypeExpr.ruleX_BaseExprTailCall() != null) {
-            val tailCall = xGenTypeExpr.ruleX_BaseExprTailCall()
+    override fun format(node: RuleX_GenericTypeExprContext, doc: FormattableDocument) {
+        doc.format(node.ruleX_GenericType())
+        if (node.ruleX_BaseExprTailMember() != null) {
+            doc.format(node.ruleX_BaseExprTailMember())
+        } else if (node.ruleX_BaseExprTailCall() != null) {
+            val tailCall = node.ruleX_BaseExprTailCall()
             val (callArg, _) = tailCall.ruleX_CallArgs().getCallArgWithTrailingComma()
             doc.prepend(tailCall) { it.noSpace() }
             if (!callArg.isNullOrEmpty()) {
@@ -45,10 +45,10 @@ class GenericTypeFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
     private val lineAnalyzer: LineAnalyzer,
 ) : NodeFormatter<RuleX_GenericTypeContext> {
-    override fun format(xGenericType: RuleX_GenericTypeContext, doc: FormattableDocument) {
-        doc.append(xGenericType.ruleX_QualifiedName()) { it.noSpace() }
-        braceFormatter.formatBracePairWithoutSpace(xGenericType.getGenericTypeContext(), doc, BracePairTypes.ANGLE)
-        val (typeRef, trailingComma) = xGenericType.getTypeRefWithTrailingComma()
+    override fun format(node: RuleX_GenericTypeContext, doc: FormattableDocument) {
+        doc.append(node.ruleX_QualifiedName()) { it.noSpace() }
+        braceFormatter.formatBracePairWithoutSpace(node.getGenericTypeContext(), doc, BracePairTypes.ANGLE)
+        val (typeRef, trailingComma) = node.getTypeRefWithTrailingComma()
         val lineSeparate = lineAnalyzer.formatAsMultiLine(typeRef)
         argumentFormatter.formatArguments(typeRef, doc, formatAsMultiLine = lineSeparate)
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)

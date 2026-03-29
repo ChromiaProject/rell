@@ -135,21 +135,18 @@ fun getNameRegion(node: S_Node): Range {
     return Range(startPos, endPos)
 }
 
-fun getSymbolKind(type: IdeOutlineNodeType): SymbolKind {
-    return when (type) {
-        IdeOutlineNodeType.ENTITY -> SymbolKind.Class
-        IdeOutlineNodeType.OBJECT -> SymbolKind.Object
-        IdeOutlineNodeType.STRUCT -> SymbolKind.Struct
-        IdeOutlineNodeType.ATTRIBUTE -> SymbolKind.Property
-        IdeOutlineNodeType.KEY_INDEX -> SymbolKind.Property
-        IdeOutlineNodeType.ENUM -> SymbolKind.Enum
-        IdeOutlineNodeType.ENUM_ATTRIBUTE -> SymbolKind.EnumMember
-        IdeOutlineNodeType.NAMESPACE -> SymbolKind.Namespace
-        IdeOutlineNodeType.FUNCTION -> SymbolKind.Function
-        IdeOutlineNodeType.OPERATION -> SymbolKind.Method
-        IdeOutlineNodeType.QUERY -> SymbolKind.Function
-        IdeOutlineNodeType.IMPORT -> SymbolKind.Package
-        IdeOutlineNodeType.CONSTANT -> SymbolKind.Constant
-        else -> throw IllegalArgumentException("Unknown symbol kind: $type")
-    }
+fun getSymbolKind(type: IdeOutlineNodeType): SymbolKind = when (type) {
+    IdeOutlineNodeType.ENTITY -> SymbolKind.Class
+    IdeOutlineNodeType.OBJECT -> SymbolKind.Object
+    IdeOutlineNodeType.STRUCT -> SymbolKind.Struct
+    IdeOutlineNodeType.ATTRIBUTE -> SymbolKind.Property
+    IdeOutlineNodeType.KEY_INDEX -> SymbolKind.Property
+    IdeOutlineNodeType.ENUM -> SymbolKind.Enum
+    IdeOutlineNodeType.ENUM_ATTRIBUTE -> SymbolKind.EnumMember
+    IdeOutlineNodeType.NAMESPACE -> SymbolKind.Namespace
+    IdeOutlineNodeType.FUNCTION -> SymbolKind.Function
+    IdeOutlineNodeType.OPERATION -> SymbolKind.Method
+    IdeOutlineNodeType.QUERY -> SymbolKind.Function
+    IdeOutlineNodeType.IMPORT -> SymbolKind.Package
+    IdeOutlineNodeType.CONSTANT -> SymbolKind.Constant
 }

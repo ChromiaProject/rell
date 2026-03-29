@@ -16,15 +16,7 @@ import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.withClass
-import org.jetbrains.dokka.model.Bound
-import org.jetbrains.dokka.model.DParameter
-import org.jetbrains.dokka.model.DProperty
-import org.jetbrains.dokka.model.DTypeParameter
-import org.jetbrains.dokka.model.DefaultValue
-import org.jetbrains.dokka.model.Invariance
-import org.jetbrains.dokka.model.Star
-import org.jetbrains.dokka.model.TypeParameter
-import org.jetbrains.dokka.model.Variance
+import org.jetbrains.dokka.model.*
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.properties.PropertyContainer
 
@@ -63,7 +55,7 @@ fun makeDarameter(sourceSet: DokkaConfiguration.DokkaSourceSet,
                 type = type,
         )
 
-fun List<M_TypeParam>.toGenerics(dri: DRIWithSourceSet) = mapNotNull {
+@Suppress("UNCHECKED_CAST") fun List<M_TypeParam>.toGenerics(dri: DRIWithSourceSet) = mapNotNull {
     val projection = it.bounds.toProjection()
     if (projection is Star)
         DTypeParameter(

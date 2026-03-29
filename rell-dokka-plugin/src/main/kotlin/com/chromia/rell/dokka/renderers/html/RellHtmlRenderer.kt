@@ -2,7 +2,6 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package com.chromia.rell.dokka.renderers.html
 
 import com.chromia.rell.dokka.dri.escapeAnonymousFunctionName
@@ -12,7 +11,6 @@ import com.chromia.rell.dokka.model.isQuery
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
 import org.jetbrains.dokka.DokkaSourceSetID
-import org.jetbrains.dokka.InternalDokkaApi
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.renderers.*
 import org.jetbrains.dokka.base.renderers.html.HtmlRenderer
@@ -20,8 +18,6 @@ import org.jetbrains.dokka.base.renderers.html.buildBreakableText
 import org.jetbrains.dokka.base.renderers.html.command.consumers.ImmediateResolutionTagConsumer
 import org.jetbrains.dokka.base.renderers.html.innerTemplating.DefaultTemplateModelFactory
 import org.jetbrains.dokka.base.renderers.html.innerTemplating.DefaultTemplateModelMerger
-import org.jetbrains.dokka.base.renderers.html.innerTemplating.HtmlTemplater
-import org.jetbrains.dokka.base.renderers.html.shouldRenderSourceSetTabs
 import org.jetbrains.dokka.base.renderers.html.strike
 import org.jetbrains.dokka.base.renderers.html.templateCommand
 import org.jetbrains.dokka.base.renderers.html.underline
@@ -30,7 +26,6 @@ import org.jetbrains.dokka.base.resolvers.anchors.SymbolAnchorHint
 import org.jetbrains.dokka.base.resolvers.local.DokkaBaseLocationProvider
 import org.jetbrains.dokka.base.templating.*
 import org.jetbrains.dokka.base.transformers.documentables.CallableExtensions
-import org.jetbrains.dokka.base.translators.documentables.shouldDocumentConstructors
 import org.jetbrains.dokka.model.*
 import org.jetbrains.dokka.model.properties.PropertyContainer
 import org.jetbrains.dokka.model.properties.WithExtraProperties
@@ -40,15 +35,15 @@ import org.jetbrains.dokka.transformers.pages.PageTransformer
 import org.jetbrains.dokka.utilities.htmlEscape
 import java.util.Locale
 
-internal const val TEMPLATE_REPLACEMENT: String = "###"
 internal const val TOGGLEABLE_CONTENT_TYPE_ATTR = "data-togglable"
 
+
+private object HorizontalBreakLineStyle : Style
 
 enum class RellTabbedContentType: TabbedContentType {
     OPERATION, QUERY, FUNCTION
 }
 
-@OptIn(InternalDokkaApi::class)
 class RellHtmlRenderer(
         context: DokkaContext
 ) : HtmlRenderer(context) {
@@ -61,11 +56,9 @@ class RellHtmlRenderer(
 
     private val templateModelFactories = listOf(DefaultTemplateModelFactory(context)) // TODO: Make extension point
     private val templateModelMerger = DefaultTemplateModelMerger()
-    private val templater = HtmlTemplater(context).apply {
-        setupSharedModel(templateModelMerger.invoke(templateModelFactories) { buildSharedModel() })
-    }
 
-    private var shouldRenderSourceSetTabs: Boolean = false
+    // Rell documentation always uses a single source set, so source set tabs are never needed
+    private val shouldRenderSourceSetTabs: Boolean = false
 
     override val preprocessors: List<PageTransformer> = context.plugin<DokkaBase>().query { htmlPreprocessors }
 
@@ -93,7 +86,8 @@ class RellHtmlRenderer(
         val scopes = documentables.filterIsInstance<WithScope>()
         val constructorsToDocumented = csWithConstructor.flatMap { it.constructors }
 
-        val containsRenderableConstructors = constructorsToDocumented.isNotEmpty() && documentables.shouldDocumentConstructors()
+        // Rell has no annotations, so constructors are always documentable
+        val containsRenderableConstructors = constructorsToDocumented.isNotEmpty()
         val containsRenderableMembers =
                 containsRenderableConstructors || scopes.any { it.classlikes.isNotEmpty() || it.functions.isNotEmpty() || it.properties.isNotEmpty() }
 
@@ -186,7 +180,7 @@ class RellHtmlRenderer(
     ) {
         val additionalClasses = node.style.joinToString(" ") { it.toString().lowercase(Locale.getDefault()) }
         return when {
-            node.hasStyle(org.jetbrains.dokka.pages.ContentStyle.TabbedContent) -> div(additionalClasses) {
+            node.hasStyle(ContentStyle.TabbedContent) -> div(additionalClasses) {
                 val contentTabs = createTabs(pageContext)
 
                 div(classes = "tabs-section") {
@@ -205,58 +199,58 @@ class RellHtmlRenderer(
                 }
             }
 
-            node.hasStyle(org.jetbrains.dokka.pages.ContentStyle.WithExtraAttributes) -> div {
+            node.hasStyle(ContentStyle.WithExtraAttributes) -> div {
                 node.extra.extraHtmlAttributes().forEach { attributes[it.extraKey] = it.extraValue }
                 childrenCallback()
             }
 
-            node.dci.kind in setOf(org.jetbrains.dokka.pages.ContentKind.Symbol) -> div("symbol $additionalClasses") {
+            node.dci.kind in setOf(ContentKind.Symbol) -> div("symbol $additionalClasses") {
                 childrenCallback()
             }
 
-            node.hasStyle(org.jetbrains.dokka.pages.ContentStyle.KDocTag) -> span("kdoc-tag") { childrenCallback() }
-            node.hasStyle(org.jetbrains.dokka.pages.ContentStyle.Footnote) -> div("footnote") { childrenCallback() }
-            node.hasStyle(org.jetbrains.dokka.pages.TextStyle.BreakableAfter) -> {
+            node.hasStyle(ContentStyle.KDocTag) -> span("kdoc-tag") { childrenCallback() }
+            node.hasStyle(ContentStyle.Footnote) -> div("footnote") { childrenCallback() }
+            node.hasStyle(TextStyle.BreakableAfter) -> {
                 span { childrenCallback() }
                 wbr { }
             }
 
-            node.hasStyle(org.jetbrains.dokka.pages.TextStyle.Breakable) -> {
+            node.hasStyle(TextStyle.Breakable) -> {
                 span("breakable-word") { childrenCallback() }
             }
 
-            node.hasStyle(org.jetbrains.dokka.pages.TextStyle.Span) -> span { childrenCallback() }
-            node.dci.kind == org.jetbrains.dokka.pages.ContentKind.Symbol -> div("symbol $additionalClasses") {
+            node.hasStyle(TextStyle.Span) -> span { childrenCallback() }
+            node.dci.kind == ContentKind.Symbol -> div("symbol $additionalClasses") {
                 childrenCallback()
             }
 
-            node.dci.kind == org.jetbrains.dokka.pages.SymbolContentKind.Parameters -> {
+            node.dci.kind == SymbolContentKind.Parameters -> {
                 span("parameters $additionalClasses") {
                     childrenCallback()
                 }
             }
 
-            node.dci.kind == org.jetbrains.dokka.pages.SymbolContentKind.Parameter -> {
+            node.dci.kind == SymbolContentKind.Parameter -> {
                 span("parameter $additionalClasses") {
                     childrenCallback()
                 }
             }
 
-            node.hasStyle(org.jetbrains.dokka.pages.TextStyle.InlineComment) -> div("inline-comment") { childrenCallback() }
-            node.dci.kind == org.jetbrains.dokka.pages.ContentKind.BriefComment -> div("brief $additionalClasses") { childrenCallback() }
-            node.dci.kind == org.jetbrains.dokka.pages.ContentKind.Cover -> div("cover $additionalClasses") { //TODO this can be removed
+            node.hasStyle(TextStyle.InlineComment) -> div("inline-comment") { childrenCallback() }
+            node.dci.kind == ContentKind.BriefComment -> div("brief $additionalClasses") { childrenCallback() }
+            node.dci.kind == ContentKind.Cover -> div("cover $additionalClasses") { //TODO this can be removed
                 childrenCallback()
             }
 
-            node.dci.kind == org.jetbrains.dokka.pages.ContentKind.Deprecation -> div("deprecation-content") { childrenCallback() }
-            node.hasStyle(org.jetbrains.dokka.pages.TextStyle.Paragraph) -> p(additionalClasses) { childrenCallback() }
-            node.hasStyle(org.jetbrains.dokka.pages.TextStyle.Block) -> div(additionalClasses) {
+            node.dci.kind == ContentKind.Deprecation -> div("deprecation-content") { childrenCallback() }
+            node.hasStyle(TextStyle.Paragraph) -> p(additionalClasses) { childrenCallback() }
+            node.hasStyle(TextStyle.Block) -> div(additionalClasses) {
                 childrenCallback()
             }
 
-            node.hasStyle(org.jetbrains.dokka.pages.TextStyle.Quotation) -> blockQuote(additionalClasses) { childrenCallback() }
-            node.hasStyle(org.jetbrains.dokka.pages.TextStyle.FloatingRight) -> span("clearfix") { span("floating-right") { childrenCallback() } }
-            node.hasStyle(org.jetbrains.dokka.pages.TextStyle.Strikethrough) -> strike { childrenCallback() }
+            node.hasStyle(TextStyle.Quotation) -> blockQuote(additionalClasses) { childrenCallback() }
+            node.hasStyle(TextStyle.FloatingRight) -> span("clearfix") { span("floating-right") { childrenCallback() } }
+            node.hasStyle(TextStyle.Strikethrough) -> strike { childrenCallback() }
             node.isAnchorable -> buildAnchor(
                     node.anchor!!,
                     node.anchorLabel!!,
@@ -264,17 +258,17 @@ class RellHtmlRenderer(
             ) { childrenCallback() }
 
             node.extra[InsertTemplateExtra] != null -> node.extra[InsertTemplateExtra]?.let { templateCommand(it.command) }
-                    ?: kotlin.Unit
+                    ?: Unit
 
-            node.hasStyle(org.jetbrains.dokka.pages.ListStyle.DescriptionTerm) -> DT(emptyMap(), consumer).visit {
+            node.hasStyle(ListStyle.DescriptionTerm) -> DT(emptyMap(), consumer).visit {
                 this@wrapGroup.childrenCallback()
             }
 
-            node.hasStyle(org.jetbrains.dokka.pages.ListStyle.DescriptionDetails) -> DD(emptyMap(), consumer).visit {
+            node.hasStyle(ListStyle.DescriptionDetails) -> DD(emptyMap(), consumer).visit {
                 this@wrapGroup.childrenCallback()
             }
 
-            node.extra.extraTabbedContentType() != null -> div() {
+            node.extra.extraTabbedContentType() != null -> div {
                 node.extra.extraTabbedContentType()?.let { attributes[TOGGLEABLE_CONTENT_TYPE_ATTR] = it.value.toHtmlAttribute() }
                 this@wrapGroup.childrenCallback()
             }
@@ -312,11 +306,11 @@ class RellHtmlRenderer(
     }
 
     private fun FlowContent.buildPlatformDependent(
-            nodes: Map<DisplaySourceSet, Collection<ContentNode>>,
-            pageContext: ContentPage,
-            extra: PropertyContainer<ContentNode> = org.jetbrains.dokka.model.properties.PropertyContainer.empty(),
-            styles: Set<Style> = emptySet(),
-            shouldHaveTabs: Boolean = shouldRenderSourceSetTabs
+        nodes: Map<DisplaySourceSet, Collection<ContentNode>>,
+        pageContext: ContentPage,
+        extra: PropertyContainer<ContentNode> = PropertyContainer.empty(),
+        styles: Set<Style> = emptySet(),
+        shouldHaveTabs: Boolean = shouldRenderSourceSetTabs
     ) {
         val contents = contentsForSourceSetDependent(nodes, pageContext)
         val isOnlyCommonContent = contents.singleOrNull()?.let { (sourceSet, _) ->
@@ -380,13 +374,13 @@ class RellHtmlRenderer(
             val groupedInstancesBySourceSet = node.children.flatMap { instance ->
                 instance.sourceSets.map { sourceSet -> instance to sourceSet }
             }.groupBy(
-                    kotlin.Pair<ContentDivergentInstance, DisplaySourceSet>::second,
-                    kotlin.Pair<ContentDivergentInstance, DisplaySourceSet>::first
+                    Pair<ContentDivergentInstance, DisplaySourceSet>::second,
+                    Pair<ContentDivergentInstance, DisplaySourceSet>::first
             )
 
-            val nodes = groupedInstancesBySourceSet.mapValues {
+            val nodes = groupedInstancesBySourceSet.mapValues { (key, value) ->
                 val distinct =
-                        groupDivergentInstancesWithSourceSet(it.value, it.key, pageContext,
+                        groupDivergentInstancesWithSourceSet(value, key, pageContext,
                                 beforeTransformer = { instance, _, sourceSet ->
                                     createHTML(prettyPrint = false).prepareForTemplates().div {
                                         instance.before?.let { before ->
@@ -409,17 +403,17 @@ class RellHtmlRenderer(
                     distinctInstances.firstOrNull()?.before?.let { contentOfSourceSet.add(it) }
                     contentOfSourceSet.addAll(distinctInstances.map { it.divergent })
                     (distinctInstances.firstOrNull()?.after
-                            ?: if (index != distinct.size - 1) ContentBreakLine(setOf(it.key)) else null)
+                            ?: if (index != distinct.size - 1) ContentBreakLine(setOf(key)) else null)
                             ?.let { contentOfSourceSet.add(it) }
 
                     // content kind main is important for declarations list to avoid double line breaks
-                    if (node.dci.kind == org.jetbrains.dokka.pages.ContentKind.Main && index != distinct.size - 1) {
+                    if (node.dci.kind == ContentKind.Main && index != distinct.size - 1) {
                         if (isPageWithOverloadedMembers) {
                             // add some spacing and distinction between function/property overloads.
                             // not ideal, but there's no other place to modify overloads page atm
-                            contentOfSourceSet.add(ContentBreakLine(setOf(it.key), style = setOf(org.jetbrains.dokka.base.renderers.html.HorizontalBreakLineStyle)))
+                            contentOfSourceSet.add(ContentBreakLine(setOf(key), style = setOf(HorizontalBreakLineStyle)))
                         } else {
-                            contentOfSourceSet.add(ContentBreakLine(setOf(it.key)))
+                            contentOfSourceSet.add(ContentBreakLine(setOf(key)))
                         }
                     }
                 }
@@ -439,15 +433,15 @@ class RellHtmlRenderer(
             pageContext: ContentPage,
             beforeTransformer: (ContentDivergentInstance, ContentPage, DisplaySourceSet) -> String,
             afterTransformer: (ContentDivergentInstance, ContentPage, DisplaySourceSet) -> String
-    ): Map<SerializedBeforeAndAfter, List<ContentDivergentInstance>> =
+    ): Map<Pair<String, String>, List<ContentDivergentInstance>> =
             instances.map { instance ->
                 instance to Pair(
                         beforeTransformer(instance, pageContext, sourceSet),
                         afterTransformer(instance, pageContext, sourceSet)
                 )
             }.groupBy(
-                    Pair<ContentDivergentInstance, SerializedBeforeAndAfter>::second,
-                    Pair<ContentDivergentInstance, SerializedBeforeAndAfter>::first
+                    Pair<ContentDivergentInstance, Pair<String, String>>::second,
+                    Pair<ContentDivergentInstance, Pair<String, String>>::first
             )
 
     private fun ContentPage.documentables(): List<Documentable> {
@@ -464,7 +458,7 @@ class RellHtmlRenderer(
                 ol { buildListItems(node.children, pageContext, sourceSetRestriction) }
             }
 
-            node.hasStyle(org.jetbrains.dokka.pages.ListStyle.DescriptionList) -> {
+            node.hasStyle(ListStyle.DescriptionList) -> {
                 dl { node.children.forEach { it.build(this, pageContext, sourceSetRestriction) } }
             }
 
@@ -558,7 +552,7 @@ class RellHtmlRenderer(
                 div("main-subrow " + contextNode.style.joinToString(separator = " ")) {
                     buildRowHeaderLink(toRender, pageContext, sourceSetRestriction, contextNode.anchor)
                     div("pull-right") {
-                        if (org.jetbrains.dokka.pages.ContentKind.shouldBePlatformTagged(contextNode.dci.kind)) {
+                        if (ContentKind.shouldBePlatformTagged(contextNode.dci.kind)) {
                             createPlatformTags(contextNode, cssClasses = "no-gutters")
                         }
                     }
@@ -583,11 +577,11 @@ class RellHtmlRenderer(
             div("main-subrow keyValue " + contextNode.style.joinToString(separator = " ")) {
                 buildRowHeaderLink(toRender, pageContext, sourceSetRestriction, contextNode.anchor)
                 div {
-                    toRender.filter { it !is ContentLink && !it.hasStyle(org.jetbrains.dokka.pages.ContentStyle.RowTitle) }
+                    toRender.filter { it !is ContentLink && !it.hasStyle(ContentStyle.RowTitle) }
                             .takeIf { it.isNotEmpty() }?.let {
                                 div("title") {
-                                    it.forEach {
-                                        it.build(this, pageContext, sourceSetRestriction)
+                                    for (node in it) {
+                                        node.build(this, pageContext, sourceSetRestriction)
                                     }
                                 }
                             }
@@ -603,15 +597,15 @@ class RellHtmlRenderer(
             anchorDestination: String?,
             classes: String = ""
     ) {
-        toRender.filter { it is ContentLink || it.hasStyle(org.jetbrains.dokka.pages.ContentStyle.RowTitle) }.takeIf { it.isNotEmpty() }?.let {
+        toRender.filter { it is ContentLink || it.hasStyle(ContentStyle.RowTitle) }.takeIf { it.isNotEmpty() }?.let { contentNodes ->
             div(classes) {
-                it.filter { sourceSetRestriction == null || it.sourceSets.any { s -> s in sourceSetRestriction } }
-                        .forEach {
+                contentNodes.filter { sourceSetRestriction == null || it.sourceSets.any { s -> s in sourceSetRestriction } }
+                        .forEach { node ->
                             span("inline-flex") {
                                 div {
-                                    it.build(this, pageContext, sourceSetRestriction)
+                                    node.build(this, pageContext, sourceSetRestriction)
                                 }
-                                if (it is ContentLink && !anchorDestination.isNullOrBlank()) {
+                                if (node is ContentLink && !anchorDestination.isNullOrBlank()) {
                                     buildAnchorCopyButton(anchorDestination)
                                 }
                             }
@@ -642,9 +636,9 @@ class RellHtmlRenderer(
             sourceSetRestriction: Set<DisplaySourceSet>?,
     ) {
         toRender.filter { it !is ContentLink }.takeIf { it.isNotEmpty() }?.let {
-            it.forEach {
-                span(classes = if (it.dci.kind == org.jetbrains.dokka.pages.ContentKind.Comment) "brief-comment" else "") {
-                    it.build(this, pageContext, sourceSetRestriction)
+            it.forEach { node ->
+                span(classes = if (node.dci.kind == ContentKind.Comment) "brief-comment" else "") {
+                    node.build(this, pageContext, sourceSetRestriction)
                 }
             }
         }
@@ -685,7 +679,7 @@ class RellHtmlRenderer(
             sourceSetRestriction: Set<DisplaySourceSet>?
     ) {
         when {
-            node.style.contains(org.jetbrains.dokka.pages.CommentTable) -> buildDefaultTable(node, pageContext, sourceSetRestriction)
+            node.style.contains(CommentTable) -> buildDefaultTable(node, pageContext, sourceSetRestriction)
             else -> div(classes = "table") {
                 node.extra.extraHtmlAttributes().forEach { attributes[it.extraKey] = it.extraValue }
                 node.children.forEach {
@@ -830,7 +824,7 @@ class RellHtmlRenderer(
     }
 
     override fun FlowContent.buildLineBreak(node: ContentBreakLine, pageContext: ContentPage) {
-        if (node.style.contains(org.jetbrains.dokka.base.renderers.html.HorizontalBreakLineStyle)) {
+        if (node.style.contains(HorizontalBreakLineStyle)) {
             hr()
         } else {
             buildLineBreak()
@@ -868,7 +862,7 @@ class RellHtmlRenderer(
     ) {
         div("sample-container") {
             val codeLang = "lang-" + code.language.ifEmpty { "kotlin" }
-            val stylesWithBlock = code.style + org.jetbrains.dokka.pages.TextStyle.Block + codeLang
+            val stylesWithBlock = code.style + TextStyle.Block + codeLang
             pre {
                 code(stylesWithBlock.joinToString(" ") { it.toString().lowercase(Locale.getDefault()) }) {
                     attributes["theme"] = "idea"
@@ -926,12 +920,12 @@ class RellHtmlRenderer(
 
     private inline fun FlowContent.applyStyle(styleToApply: Style, crossinline body: FlowContent.() -> Unit) {
         when (styleToApply) {
-            org.jetbrains.dokka.pages.TextStyle.Bold -> b { body() }
-            org.jetbrains.dokka.pages.TextStyle.Italic -> i { body() }
-            org.jetbrains.dokka.pages.TextStyle.Strikethrough -> strike { body() }
-            org.jetbrains.dokka.pages.TextStyle.Strong -> strong { body() }
-            org.jetbrains.dokka.pages.TextStyle.Var -> htmlVar { body() }
-            org.jetbrains.dokka.pages.TextStyle.Underlined -> underline { body() }
+            TextStyle.Bold -> b { body() }
+            TextStyle.Italic -> i { body() }
+            TextStyle.Strikethrough -> strike { body() }
+            TextStyle.Strong -> strong { body() }
+            TextStyle.Var -> htmlVar { body() }
+            TextStyle.Underlined -> underline { body() }
             is TokenStyle -> span("token ${styleToApply.prismJsClass()}") { body() }
             else -> body()
         }
@@ -944,22 +938,9 @@ class RellHtmlRenderer(
         else -> this.toString().lowercase(Locale.getDefault())
     }
 
-    override fun render(root: RootPageNode) {
-        shouldRenderSourceSetTabs = shouldRenderSourceSetTabs(root)
-        super.render(root)
-    }
-
     override fun buildPage(page: ContentPage, content: (FlowContent, ContentPage) -> Unit): String =
             buildHtml(page, page.embeddedResources) {
                 content(this, page)
-            }
-
-    private fun PageNode.getDocumentableType(): String? =
-            when (this) {
-                is PackagePage -> "package"
-                is ClasslikePage -> "classlike"
-                is MemberPage -> "member"
-                else -> null
             }
 
     /*public open fun buildHtml(
@@ -1059,8 +1040,6 @@ private fun TabbedContentType.toHtmlAttribute(): String =
  * @see ContentStyle.TabbedContent]
  */
 private data class ContentTab(val text: String, val tabbedContentTypes: List<TabbedContentType>)
-
-public fun List<SimpleAttr>.joinAttr(): String = joinToString(" ") { it.extraKey + "=" + it.extraValue }
 
 private fun String.stripDiv() = drop(5).dropLast(6) // TODO: Find a way to do it without arbitrary trims
 

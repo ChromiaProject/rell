@@ -72,10 +72,10 @@ internal class R_VarExpr(type: R_Type, private val ptr: R_VarPtr, private val na
         val frame: Rt_CallFrame,
     ): Rt_ValueRef() {
         override fun get(): Rt_Value {
-            val value = frame.getOpt(ptr)
-            if (value == null) {
-                throw Rt_Exception.common("expr_var_uninit:$name", "Variable '$name' has not been initialized")
-            }
+            val value = frame.getOpt(ptr) ?: throw Rt_Exception.common(
+                "expr_var_uninit:$name",
+                "Variable '$name' has not been initialized"
+            )
             return value
         }
 
@@ -220,16 +220,14 @@ internal class R_MapSubscriptExpr(
         override fun get() = getValue(frame, errPos, map, key)
 
         override fun set(value: Rt_Value) {
-            map.put(key, value)
+            map[key] = value
         }
     }
 
     companion object {
         fun getValue(frame: Rt_CallFrame, errPos: R_ErrorPos, map: Map<Rt_Value, Rt_Value>, key: Rt_Value): Rt_Value {
-            val value = map[key]
-            if (value == null) {
-                frame.error(errPos, "fn_map_get_novalue:${key.strCode()}", "Key not in map: ${key.str()}")
-            }
+            val value =
+                map[key] ?: frame.error(errPos, "fn_map_get_novalue:${key.strCode()}", "Key not in map: ${key.str()}")
             return value
         }
     }

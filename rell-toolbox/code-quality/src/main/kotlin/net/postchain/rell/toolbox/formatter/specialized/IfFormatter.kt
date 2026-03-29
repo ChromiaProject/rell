@@ -16,10 +16,10 @@ class IfStmtFormatter(
     private val expressionFormatter: ExpressionFormatter,
     private val lineAnalyzer: LineAnalyzer,
 ) : NodeFormatter<RuleX_IfStmtContext> {
-    override fun format(xIfStmt: RuleX_IfStmtContext, doc: FormattableDocument) {
-        doc.append(xIfStmt.ruleX_tkIF()) { it.oneSpace() }
-        doc.surround(xIfStmt.ruleX_Expression()) { it.noSpace() }
-        val xExpression = xIfStmt.ruleX_Expression()
+    override fun format(node: RuleX_IfStmtContext, doc: FormattableDocument) {
+        doc.append(node.ruleX_tkIF()) { it.oneSpace() }
+        doc.surround(node.ruleX_Expression()) { it.noSpace() }
+        val xExpression = node.ruleX_Expression()
         if (lineAnalyzer.formatAsMultiLine(
                 expressionFormatter.prependNodeList(xExpression, xExpression.ruleX_BinaryExprOperand())
             )
@@ -33,30 +33,30 @@ class IfStmtFormatter(
             doc.format(xExpression)
         }
 
-        if (xIfStmt.ruleX_tkIF().stop.line != xIfStmt.ruleX_StatementRef().start.line) {
-            val openingCurly = tokenAnalyzer.tokenFor(xIfStmt.ruleX_StatementRef(), "{")
+        if (node.ruleX_tkIF().stop.line != node.ruleX_StatementRef().start.line) {
+            val openingCurly = tokenAnalyzer.tokenFor(node.ruleX_StatementRef(), "{")
             doc.prepend(openingCurly) {
                 it.oneSpace()
                 it.setNewLines(0)
                 it.highPriority()
             }
-            doc.prepend(xIfStmt.ruleX_StatementRef()) {
+            doc.prepend(node.ruleX_StatementRef()) {
                 it.newLine()
             }
             if (openingCurly == null) {
-                doc.prepend(xIfStmt.ruleX_StatementRef()) {
+                doc.prepend(node.ruleX_StatementRef()) {
                     it.indent()
                 }
                 doc.interiorIndentRangeIncludeLast(
-                    xIfStmt.ruleX_StatementRef(),
-                    xIfStmt.ruleX_StatementRef()
+                    node.ruleX_StatementRef(),
+                    node.ruleX_StatementRef()
                 )
             }
         } else {
-            doc.prepend(xIfStmt.ruleX_StatementRef()) { it.oneSpace() }
+            doc.prepend(node.ruleX_StatementRef()) { it.oneSpace() }
         }
 
-        val elseStatement = xIfStmt.ruleX_ElseStmt()
+        val elseStatement = node.ruleX_ElseStmt()
         if (elseStatement?.ruleX_tkELSE() != null && elseStatement.ruleX_StatementRef() != null) {
             if (elseStatement.ruleX_tkELSE().stop.line != elseStatement.ruleX_StatementRef().start.line) {
                 doc.prepend(elseStatement.ruleX_tkELSE()) { it.newLine() }
@@ -77,20 +77,20 @@ class IfStmtFormatter(
                 }
             }
         }
-        doc.format(xIfStmt.ruleX_StatementRef())
-        doc.format(xIfStmt.ruleX_ElseStmt())
+        doc.format(node.ruleX_StatementRef())
+        doc.format(node.ruleX_ElseStmt())
     }
 }
 
 class IfExprFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<RuleX_IfExprContext> {
-    override fun format(xIfExpr: RuleX_IfExprContext, doc: FormattableDocument) {
-        val checkExpr = xIfExpr.ruleX_ExpressionRef(0)
-        val conditionalIfExpr = xIfExpr.ruleX_ExpressionRef(1)
-        val conditionalElseExpr = xIfExpr.ruleX_ExpressionRef(2)
+    override fun format(node: RuleX_IfExprContext, doc: FormattableDocument) {
+        val checkExpr = node.ruleX_ExpressionRef(0)
+        val conditionalIfExpr = node.ruleX_ExpressionRef(1)
+        val conditionalElseExpr = node.ruleX_ExpressionRef(2)
 
-        doc.surround(xIfExpr.ruleX_tkIF()) { it.oneSpace() }
+        doc.surround(node.ruleX_tkIF()) { it.oneSpace() }
         doc.surround(checkExpr) { it.noSpace() }
         doc.format(checkExpr)
 
@@ -109,7 +109,7 @@ class IfExprFormatter(
             }
         }
 
-        val elseKeyword = tokenAnalyzer.tokenFor(xIfExpr, "else")
+        val elseKeyword = tokenAnalyzer.tokenFor(node, "else")
         if (elseKeyword != null) {
             if (elseKeyword.symbol.line != conditionalElseExpr.start.line) {
                 doc.prepend(conditionalElseExpr) {

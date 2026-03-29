@@ -21,21 +21,21 @@ class FunctionDefFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
     private val lineAnalyzer: LineAnalyzer,
 ) : NodeFormatter<RuleX_FunctionDefContext> {
-    override fun format(xFunctionDef: RuleX_FunctionDefContext, doc: FormattableDocument) {
-        doc.surround(xFunctionDef) { it.setNewLines(2) }
-        doc.prepend(xFunctionDef.ruleX_QualifiedName()) { it.oneSpace() }
-        doc.append(xFunctionDef.ruleX_QualifiedName()) { it.noSpace() }
+    override fun format(node: RuleX_FunctionDefContext, doc: FormattableDocument) {
+        doc.surround(node) { it.setNewLines(2) }
+        doc.prepend(node.ruleX_QualifiedName()) { it.oneSpace() }
+        doc.append(node.ruleX_QualifiedName()) { it.noSpace() }
 
-        xFunctionDef.ruleX_FormalParameters() ?: return
+        node.ruleX_FormalParameters() ?: return
 
         braceFormatter.formatBracePairWithoutSpace(
-            xFunctionDef.ruleX_FormalParameters(),
+            node.ruleX_FormalParameters(),
             doc,
             BracePairTypes.PARENTHESES
         )
-        whitespaceFormatter.formatType(xFunctionDef, doc)
-        val lineSeparate = lineAnalyzer.lineSeparateArguments(xFunctionDef, BracePairTypes.PARENTHESES)
-        val (formalParameters, trailingComma) = xFunctionDef.ruleX_FormalParameters()
+        whitespaceFormatter.formatType(node, doc)
+        val lineSeparate = lineAnalyzer.lineSeparateArguments(node, BracePairTypes.PARENTHESES)
+        val (formalParameters, trailingComma) = node.ruleX_FormalParameters()
             .getFormalParameterWithTrailingComma()
 
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
@@ -45,15 +45,15 @@ class FunctionDefFormatter(
             formatAsMultiLine = lineSeparate
         )
         argumentFormatter.formatParametersType(formalParameters, doc)
-        doc.format(xFunctionDef.ruleX_FunctionBody())
+        doc.format(node.ruleX_FunctionBody())
     }
 }
 
 class FunctionBodyShortFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
 ) : NodeFormatter<RuleX_FunctionBodyShortContext> {
-    override fun format(xFunctionBodyShort: RuleX_FunctionBodyShortContext, doc: FormattableDocument) {
-        whitespaceFormatter.formatSemicolon(xFunctionBodyShort, doc)
-        doc.format(xFunctionBodyShort.ruleX_Expression())
+    override fun format(node: RuleX_FunctionBodyShortContext, doc: FormattableDocument) {
+        whitespaceFormatter.formatSemicolon(node, doc)
+        doc.format(node.ruleX_Expression())
     }
 }

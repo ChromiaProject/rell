@@ -206,15 +206,13 @@ class RellSignatureProvider internal constructor(
                     }
                 }
             }
-            if (c is WithSupertypes) {
-                c.supertypes.filter { it.key == sourceSet }.map { (s, typeConstructors) ->
-                    list(typeConstructors, prefix = " : ", sourceSets = setOf(s)) {
-                        link(it.typeConstructor.dri.sureClassNames, it.typeConstructor.dri, sourceSets = setOf(s))
-                        list(it.typeConstructor.projections, prefix = "<", suffix = "> ",
-                                separatorStyles = mainStyles + TokenStyle.Punctuation,
-                                surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
-                            signatureForProjection(it)
-                        }
+            c.supertypes.filter { it.key == sourceSet }.map { (s, typeConstructors) ->
+                list(typeConstructors, prefix = " : ", sourceSets = setOf(s)) { (constructor, _) ->
+                    link(constructor.dri.sureClassNames, constructor.dri, sourceSets = setOf(s))
+                    list(constructor.projections, prefix = "<", suffix = "> ",
+                            separatorStyles = mainStyles + TokenStyle.Punctuation,
+                            surroundingCharactersStyle = mainStyles + TokenStyle.Operator) { p ->
+                        signatureForProjection(p)
                     }
                 }
             }

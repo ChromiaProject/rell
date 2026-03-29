@@ -16,9 +16,9 @@ class BaseExprFormatter(
     private val expressionFormatter: ExpressionFormatter,
     private val lineAnalyzer: LineAnalyzer,
 ) : NodeFormatter<RuleX_BaseExprContext> {
-    override fun format(xBaseExpr: RuleX_BaseExprContext, doc: FormattableDocument) {
-        val exprHead = xBaseExpr.ruleX_BaseExprHead()
-        val exprTailList = xBaseExpr.ruleX_BaseExprTail()
+    override fun format(node: RuleX_BaseExprContext, doc: FormattableDocument) {
+        val exprHead = node.ruleX_BaseExprHead()
+        val exprTailList = node.ruleX_BaseExprTail()
         var shouldLineSeparateExpression: Boolean
         var previousExpr: ParserRuleContext? = exprHead
 

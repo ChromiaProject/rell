@@ -17,11 +17,11 @@ class EnumDefFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<RuleX_EnumDefContext> {
-    override fun format(xEnumDef: RuleX_EnumDefContext, doc: FormattableDocument) {
-        doc.surround(xEnumDef) { it.setNewLines(2, 2, 2) }
-        doc.surround(xEnumDef.ruleX_Name()) { it.oneSpace() }
+    override fun format(node: RuleX_EnumDefContext, doc: FormattableDocument) {
+        doc.surround(node) { it.setNewLines(2, 2, 2) }
+        doc.surround(node.ruleX_Name()) { it.oneSpace() }
 
-        val (xNames, trailingComma) = xEnumDef.getXNamesWithTrailingComma()
+        val (xNames, trailingComma) = node.getXNamesWithTrailingComma()
         val lineSeparate = lineAnalyzer.formatAsMultiLine(xNames)
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
         xNames?.forEachIndexed { index, xName ->
@@ -33,7 +33,7 @@ class EnumDefFormatter(
                 doc.append(xName) { it.newLine() }
             }
         }
-        val closingCurly = tokenAnalyzer.tokenFor(xEnumDef, "}")
+        val closingCurly = tokenAnalyzer.tokenFor(node, "}")
         doc.prepend(closingCurly) { it.newLine() }
     }
 }

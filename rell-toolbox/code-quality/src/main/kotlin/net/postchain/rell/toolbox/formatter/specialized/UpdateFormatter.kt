@@ -21,16 +21,16 @@ class UpdateStmtFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
     private val argumentFormatter: ArgumentFormatter,
 ) : NodeFormatter<RuleX_UpdateStmtContext> {
-    override fun format(xUpdateStmt: RuleX_UpdateStmtContext, doc: FormattableDocument) {
-        doc.append(xUpdateStmt.ruleX_tkUPDATE()) { it.oneSpace() }
-        doc.append(xUpdateStmt.ruleX_UpdateTarget()) { it.oneSpace() }
-        doc.format(xUpdateStmt.ruleX_UpdateTarget())
-        braceFormatter.formatBracePairWithSpace(xUpdateStmt, doc, BracePairTypes.PARENTHESES)
-        val (whatExpr, trailingComma) = xUpdateStmt.getUpdateWhatExprWithTrailingComma()
-        val lineSeparate = lineAnalyzer.lineSeparateArguments(xUpdateStmt, BracePairTypes.PARENTHESES)
+    override fun format(node: RuleX_UpdateStmtContext, doc: FormattableDocument) {
+        doc.append(node.ruleX_tkUPDATE()) { it.oneSpace() }
+        doc.append(node.ruleX_UpdateTarget()) { it.oneSpace() }
+        doc.format(node.ruleX_UpdateTarget())
+        braceFormatter.formatBracePairWithSpace(node, doc, BracePairTypes.PARENTHESES)
+        val (whatExpr, trailingComma) = node.getUpdateWhatExprWithTrailingComma()
+        val lineSeparate = lineAnalyzer.lineSeparateArguments(node, BracePairTypes.PARENTHESES)
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
         argumentFormatter.formatArguments(whatExpr, doc, formatAsMultiLine = lineSeparate)
-        whitespaceFormatter.formatSemicolon(xUpdateStmt, doc)
+        whitespaceFormatter.formatSemicolon(node, doc)
     }
 }
 
@@ -40,13 +40,13 @@ class UpdateTargetAtFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
     private val argumentFormatter: ArgumentFormatter,
 ) : NodeFormatter<RuleX_UpdateTargetAtContext> {
-    override fun format(xUpdateTargetAt: RuleX_UpdateTargetAtContext, doc: FormattableDocument) {
+    override fun format(node: RuleX_UpdateTargetAtContext, doc: FormattableDocument) {
         // doc.append(xUpdateTargetAt.ruleX_AtExprFrom()) { it.oneSpace() }
-        doc.append(xUpdateTargetAt.ruleX_UpdateFrom()) { it.oneSpace() }
-        doc.append(xUpdateTargetAt.ruleX_AtExprAt()) { it.oneSpace() }
+        doc.append(node.ruleX_UpdateFrom()) { it.oneSpace() }
+        doc.append(node.ruleX_AtExprAt()) { it.oneSpace() }
 
         // TODO: Format atExprWhere should work, duplication of code
-        val atExprWhere = xUpdateTargetAt.ruleX_AtExprWhere()
+        val atExprWhere = node.ruleX_AtExprWhere()
         braceFormatter.formatBracePairWithSpace(atExprWhere, doc, BracePairTypes.CURLY)
         val (expressionRef, trailingComma) = atExprWhere.getExpressionRefWithTrailingComma()
         val lineSeparate = lineAnalyzer.lineSeparateArguments(atExprWhere, BracePairTypes.CURLY)

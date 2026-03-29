@@ -51,8 +51,8 @@ tasks.generateGrammarSource {
     arguments = arguments + listOf(
         "-visitor",
         "-long-messages",
-        "-package", "net.postchain.rell.toolbox.parser"
     )
+    packageName = "net.postchain.rell.toolbox.parser"
     outputDirectory = layout.buildDirectory.dir("generated/antlr").get().asFile
 }
 

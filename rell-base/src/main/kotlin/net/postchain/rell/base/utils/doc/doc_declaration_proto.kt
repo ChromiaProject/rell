@@ -166,7 +166,7 @@ internal class DocDeclarationProto_ImportExactAlias_Single(
     override val wildcard = false
 
     override fun getCompletion0(): Completion {
-        val targetComp = targetDeclaration.internalCompletion
+        val targetComp = targetDeclaration.completion
         val result = targetComp?.result ?: "${moduleName.str()}:${qualifiedName.str()}"
         return Completion(targetComp?.params, result)
     }
@@ -650,7 +650,7 @@ internal class DocDeclarationProto_Alias(
     private val targetQualifiedName: R_QualifiedName = targetFullName.qualifiedName,
 ): DocDeclarationProto_Annotated(modifiers) {
     override fun getCompletion0(): Completion {
-        val targetComp = targetDeclaration.internalCompletion
+        val targetComp = targetDeclaration.completion
         val result = targetComp?.result ?: targetFullName.str()
         return Completion(targetComp?.params, result)
     }

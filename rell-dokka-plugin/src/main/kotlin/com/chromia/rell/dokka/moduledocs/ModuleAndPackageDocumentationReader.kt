@@ -6,7 +6,6 @@
 package com.chromia.rell.dokka.moduledocs
 
 import org.jetbrains.dokka.DokkaConfiguration
-import org.jetbrains.dokka.InternalDokkaApi
 import org.jetbrains.dokka.analysis.kotlin.internal.ModuleAndPackageDocumentationReader
 import org.jetbrains.dokka.model.DModule
 import org.jetbrains.dokka.model.DPackage
@@ -20,7 +19,6 @@ import org.jetbrains.dokka.utilities.associateWithNotNull
  * Copied from https://github.com/Kotlin/dokka/blob/1.9.10/subprojects/analysis-kotlin-symbols/src/main/kotlin/org/jetbrains/dokka/analysis/kotlin/symbols/kdoc/moduledocs/ModuleAndPackageDocumentationReader.kt
  * This is due to its internal dependency on SymbolsAnalysisPlugin which we have removed here
  */
-@OptIn(InternalDokkaApi::class)
 class RellModuleAndPackageDocumentationReader(
         private val context: DokkaContext
 ) : ModuleAndPackageDocumentationReader {
@@ -32,7 +30,6 @@ class RellModuleAndPackageDocumentationReader(
                 sourceSet.includes.flatMap { include -> parseModuleAndPackageDocumentationFragments(include) }
             }
 
-    @OptIn(InternalDokkaApi::class)
     private fun findDocumentationNodes(
             sourceSets: Set<DokkaConfiguration.DokkaSourceSet>,
             predicate: (ModuleAndPackageDocumentationFragment) -> Boolean

@@ -14,14 +14,14 @@ class ObjectDefFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
     private val whitespaceFormatter: WhitespaceFormatter,
 ) : NodeFormatter<RuleX_ObjectDefContext> {
-    override fun format(xObjectDef: RuleX_ObjectDefContext, doc: FormattableDocument) {
-        doc.surround(xObjectDef) { it.setNewLines(2) }
-        doc.interiorIndent(xObjectDef)
-        doc.surround(xObjectDef.ruleX_Name()) { it.oneSpace() }
+    override fun format(node: RuleX_ObjectDefContext, doc: FormattableDocument) {
+        doc.surround(node) { it.setNewLines(2) }
+        doc.interiorIndent(node)
+        doc.surround(node.ruleX_Name()) { it.oneSpace() }
 
-        for (xAttriDef in xObjectDef.ruleX_AttributeClause()) {
-            whitespaceFormatter.formatSemicolon(xObjectDef, doc)
-            whitespaceFormatter.formatEqualSign(xObjectDef, doc)
+        for (xAttriDef in node.ruleX_AttributeClause()) {
+            whitespaceFormatter.formatSemicolon(node, doc)
+            whitespaceFormatter.formatEqualSign(node, doc)
             doc.append(xAttriDef.ruleX_AttributeDefinition().ruleX_BaseAttributeDefinition().ruleX_AttrHeader()) {
                 it.setNewLines(0)
                 it.oneSpace()
@@ -29,7 +29,7 @@ class ObjectDefFormatter(
             doc.format(xAttriDef)
         }
 
-        val closingCurly = tokenAnalyzer.tokenFor(xObjectDef, "}")
+        val closingCurly = tokenAnalyzer.tokenFor(node, "}")
         doc.prepend(closingCurly) { it.newLine() }
     }
 }

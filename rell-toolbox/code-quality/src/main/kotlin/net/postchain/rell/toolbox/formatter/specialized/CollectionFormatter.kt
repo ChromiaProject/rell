@@ -23,12 +23,12 @@ class MapExprFormatter(
     val lineAnalyzer: LineAnalyzer,
     val whitespaceFormatter: WhitespaceFormatter,
 ) : NodeFormatter<RuleX_NonEmptyMapLiteralExprContext> {
-    override fun format(xMapExpr: RuleX_NonEmptyMapLiteralExprContext, doc: FormattableDocument) {
-        val mapExprContext = xMapExpr.getMapExprContext()
+    override fun format(node: RuleX_NonEmptyMapLiteralExprContext, doc: FormattableDocument) {
+        val mapExprContext = node.getMapExprContext()
 
         braceFormatter.formatBracePairWithoutSpace(mapExprContext, doc, BracePairTypes.BRACKETS)
-        val lineSeparate = lineAnalyzer.lineSeparateArguments(xMapExpr, BracePairTypes.BRACKETS)
-        val (mapExprEntries, trailingComma) = xMapExpr.getMapExprEntryWithTrailingComma()
+        val lineSeparate = lineAnalyzer.lineSeparateArguments(node, BracePairTypes.BRACKETS)
+        val (mapExprEntries, trailingComma) = node.getMapExprEntryWithTrailingComma()
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
 
         mapExprEntries?.forEachIndexed { index, mapEntry ->
@@ -54,10 +54,10 @@ class MapExprFormatter(
 }
 
 class TupleEqExprFormatter : NodeFormatter<RuleX_TupleExprFieldContext> {
-    override fun format(xTupleEqExpr: RuleX_TupleExprFieldContext, doc: FormattableDocument) {
-        doc.surround(xTupleEqExpr.ruleX_NameNode()) { it.oneSpace() }
-        doc.surround(xTupleEqExpr.ruleX_tkASSIGN()) { it.oneSpace() }
-        doc.format(xTupleEqExpr.ruleX_ExpressionRef())
+    override fun format(node: RuleX_TupleExprFieldContext, doc: FormattableDocument) {
+        doc.surround(node.ruleX_NameNode()) { it.oneSpace() }
+        doc.surround(node.ruleX_tkASSIGN()) { it.oneSpace() }
+        doc.format(node.ruleX_ExpressionRef())
     }
 }
 
@@ -67,10 +67,10 @@ class ListExprFormatter(
     val whitespaceFormatter: WhitespaceFormatter,
     val argumentFormatter: ArgumentFormatter,
 ) : NodeFormatter<RuleX_ListLiteralExprContext> {
-    override fun format(xListExpr: RuleX_ListLiteralExprContext, doc: FormattableDocument) {
-        val xLisExprContext = xListExpr.getListLiteralExprContext()
+    override fun format(node: RuleX_ListLiteralExprContext, doc: FormattableDocument) {
+        val xLisExprContext = node.getListLiteralExprContext()
         braceFormatter.formatBracePairWithoutSpace(xLisExprContext, doc, BracePairTypes.BRACKETS)
-        val (expressionRef, trailingComma) = xListExpr.getExpressionRefWithTrailingComma()
+        val (expressionRef, trailingComma) = node.getExpressionRefWithTrailingComma()
         val lineSeparate = lineAnalyzer.formatAsMultiLine(expressionRef)
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
         argumentFormatter.formatArguments(expressionRef, doc)
@@ -79,11 +79,11 @@ class ListExprFormatter(
 }
 
 class MirrorStructFormatter(val braceFormatter: BraceFormatter) : NodeFormatter<RuleX_MirrorStructType0Context> {
-    override fun format(xMirrorStruct: RuleX_MirrorStructType0Context, doc: FormattableDocument) {
-        braceFormatter.formatBracePairWithoutSpace(xMirrorStruct, doc, BracePairTypes.ANGLE)
-        doc.append(xMirrorStruct) { it.noSpace() }
-        doc.append(xMirrorStruct.ruleX_tkSTRUCT()) { it.noSpace() }
-        doc.append(xMirrorStruct.ruleX_tkMUTABLE()) { it.oneSpace() }
+    override fun format(node: RuleX_MirrorStructType0Context, doc: FormattableDocument) {
+        braceFormatter.formatBracePairWithoutSpace(node, doc, BracePairTypes.ANGLE)
+        doc.append(node) { it.noSpace() }
+        doc.append(node.ruleX_tkSTRUCT()) { it.noSpace() }
+        doc.append(node.ruleX_tkMUTABLE()) { it.oneSpace() }
     }
 }
 
@@ -93,15 +93,15 @@ class TupleExprContextFormatter(
     val whitespaceFormatter: WhitespaceFormatter,
     val argumentFormatter: ArgumentFormatter,
 ) : NodeFormatter<RuleX_TupleExprContext> {
-    override fun format(xTupleExprContext: RuleX_TupleExprContext, doc: FormattableDocument) {
-        val xTupleExpr = xTupleExprContext.ruleX_CommaSeparated_14()
+    override fun format(node: RuleX_TupleExprContext, doc: FormattableDocument) {
+        val xTupleExpr = node.ruleX_CommaSeparated_14()
         val opening = xTupleExpr.ruleX_tkLPAR()
         val closing = xTupleExpr.ruleX_tkRPAR()
         val lineSeparateExpression = lineAnalyzer.lineSeparateExpr(opening?.start, closing?.start)
         braceFormatter.formatBracePairWithoutSpace(xTupleExpr, doc, BracePairTypes.PARENTHESES)
 
         val commaSeparateExpr13 = xTupleExpr.ruleX_CommaSeparated_13()
-        val (tupleExprField, trailingComma) = xTupleExprContext.getXNamesWithTrailingComma()
+        val (tupleExprField, trailingComma) = node.getXNamesWithTrailingComma()
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparateExpression)
 
         if (lineSeparateExpression) {

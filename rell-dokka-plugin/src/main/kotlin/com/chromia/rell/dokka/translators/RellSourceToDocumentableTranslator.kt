@@ -2,8 +2,6 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-
 package com.chromia.rell.dokka.translators
 
 import com.chromia.rell.dokka.RellDokkaPlugin
@@ -57,9 +55,7 @@ class RellSourceToDocumentableTranslator(context: DokkaContext) : SourceToDocume
             context: DokkaContext,
             rellAnalysis: RellAnalysis,
             moduleFilter: (RellAnalysis) -> List<R_Module>,
-    ): List<DPackage> {
-        return RellModuleVisitor(sourceSet, context.logger, rellAnalysis).run {
-            moduleFilter(rellAnalysis).flatMap { visitRellModule(it) }
-        }
+    ): List<DPackage> = RellModuleVisitor(sourceSet, context.logger, rellAnalysis).run {
+        moduleFilter(rellAnalysis).flatMap { visitRellModule(it) }
     }
 }
