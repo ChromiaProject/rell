@@ -47,7 +47,7 @@ internal class JavascriptCodeGeneratorTest {
             assertThat(res).executeSuccessFully()
         }
 
-        private fun Assert<ExecResult>.executeSuccessFully() = given { actual ->
+        private fun Assert<ExecResult>.executeSuccessFully(): Unit = given { actual ->
             if (actual.exitCode == 0) return
             expected("to execute successfully but but exit code was ${show(actual.exitCode)}: ${actual.stderr.ifBlank { actual.stdout }}")
         }
