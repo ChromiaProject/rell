@@ -8,6 +8,7 @@ stages:
 variables:
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
   GRADLE_OPTS: "-Dorg.gradle.caching=true"
+  ORG_GRADLE_PROJECT_gitlabAuthHeaderValue: $CI_JOB_TOKEN
   POSTCHAIN_DB_URL: jdbc:postgresql://docker/postchain
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""

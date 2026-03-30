@@ -64,11 +64,6 @@ subprojects {
             compilerOptions.jvmTarget = JvmTarget.JVM_21
         }
 
-        tasks.withType<JavaCompile> {
-            options.release = 21
-            options.encoding = "UTF-8"
-        }
-
         tasks.withType<Test> {
             useJUnitPlatform()
             // Include integration-test style classes as Maven Failsafe did
@@ -171,20 +166,12 @@ subprojects {
             repositories {
                 mavenLocal()
 
-                val gitlabToken = providers.environmentVariable("CI_JOB_TOKEN")
-                    .orElse(providers.environmentVariable("GITLAB_CI_TOKEN"))
-                    .orElse(providers.environmentVariable("GITLAB_TOKEN"))
-                    .orNull
-
-                if (gitlabToken != null) {
+                if (providers.gradleProperty("gitlabAuthHeaderValue").isPresent) {
                     maven {
                         name = "gitlab"
                         url = uri("https://gitlab.com/api/v4/projects/32802097/packages/maven")
 
-                        credentials(HttpHeaderCredentials::class) {
-                            name = "Job-Token"
-                            value = gitlabToken
-                        }
+                        credentials(HttpHeaderCredentials::class)
 
                         authentication {
                             create<HttpHeaderAuthentication>("header")
