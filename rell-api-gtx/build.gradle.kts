@@ -43,10 +43,9 @@ dependencies {
 }
 
 // Aggregate Rell test cases when -PgenerateTestCases is set (replacement for Maven assembly)
-val shouldGenerateTestCases = generateTestCases
 val rellTestCasesArchive by tasks.registering(Zip::class) {
     archiveClassifier = "rell-test-cases"
-    onlyIf { shouldGenerateTestCases }
+    enabled = generateTestCases
     dependsOn(
         tasks.test,
         project(":rell-base").tasks.test,
