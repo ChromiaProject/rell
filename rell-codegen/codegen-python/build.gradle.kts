@@ -6,6 +6,7 @@ dependencies {
     implementation(projects.rellCodegen.codegen)
     implementation(projects.rellBase)
     implementation(projects.rellApiBase)
+
     testImplementation(kotlin("test-junit5"))
     testImplementation(libs.assertk)
     testImplementation(libs.junit.jupiter)

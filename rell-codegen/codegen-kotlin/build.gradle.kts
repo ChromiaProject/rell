@@ -4,7 +4,9 @@ plugins {
 
 dependencies {
     implementation(projects.rellCodegen.codegen)
+    implementation(projects.rellBase)
     implementation(projects.rellApiBase)
+
     implementation(libs.postchainClient)
     testImplementation(kotlin("test-junit5"))
     testImplementation(kotlin("compiler-embeddable"))
