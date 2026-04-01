@@ -27,7 +27,7 @@ artifacts {
 }
 
 dependencies {
-    api(projects.rellBase)
+    implementation(projects.rellBase)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(kotlin("test-junit5"))

@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(projects.rellBase)
     implementation(projects.rellApiBase)
     testImplementation(kotlin("test-junit5"))
     testImplementation(libs.assertk)
