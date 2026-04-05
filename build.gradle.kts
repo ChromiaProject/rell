@@ -19,6 +19,11 @@ description = "Rell programming language"
 // Opt-in flag to generate Rell test cases (replacement for Maven profile generate-test-cases)
 val generateTestCases by extra(providers.gradleProperty("generateTestCases").isPresent)
 
+// Load local.properties (not committed) for machine-specific settings like Docker socket paths.
+val localProperties = java.util.Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+
 apiValidation {
     ignoredProjects += listOf(
         "rell-base", "rell-gtx", "rell-tools",
@@ -70,11 +75,19 @@ subprojects {
             include("**/*Test.*", "**/*Tests.*", "**/*TestCase.*", "**/*IT.*")
             systemProperty("java.awt.headless", "true")
 
-            // Forward Docker config to test JVM for Testcontainers in DinD CI
-            listOf("DOCKER_HOST", "DOCKER_TLS_CERTDIR", "TESTCONTAINERS_HOST_OVERRIDE", "TESTCONTAINERS_RYUK_DISABLED").forEach { key ->
-                providers.environmentVariable(key).orNull?.let { environment(key, it) }
+            // Forward Docker config to test JVM for Testcontainers.
+            // local.properties values take precedence over environment variables.
+            listOf(
+                "DOCKER_HOST",
+                "DOCKER_TLS_CERTDIR",
+                "TESTCONTAINERS_HOST_OVERRIDE",
+                "TESTCONTAINERS_RYUK_DISABLED",
+                "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE",
+            ).forEach { key ->
+                val value = localProperties.getProperty(key) ?: providers.environmentVariable(key).orNull
+                if (value != null) environment(key, value)
             }
-            providers.environmentVariable("DOCKER_HOST").orNull?.let { dockerHost ->
+            (localProperties.getProperty("DOCKER_HOST") ?: providers.environmentVariable("DOCKER_HOST").orNull)?.let { dockerHost ->
                 systemProperty("docker.host", dockerHost)
             }
 

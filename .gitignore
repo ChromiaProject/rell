@@ -17,6 +17,7 @@
 .gradle/
 .kotlin/
 **/build/
+/local.properties
 
 # Editor / IDE
 .vscode/
