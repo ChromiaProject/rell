@@ -75,7 +75,10 @@ build:
     - master
     - dev
     - /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
-  script: [ "./gradlew check :coverage-report-aggregate:testCodeCoverageReport" ]
+  script:
+    - ./gradlew check :coverage-report-aggregate:testCodeCoverageReport
+    - "awk -F, 'NR>1 { missed += $4; covered += $5 } END { printf \"Line coverage: %.2f%%\\n\", 100 * covered / (missed + covered) }' $JACOCO_REPORT_DIR/testCodeCoverageReport.csv"
+  coverage: '/Line coverage: (\d+\.\d+%)/'
 
 deploy:
   extends: .setup
@@ -84,7 +87,10 @@ deploy:
     - master
     - dev
     - /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
-  script: [ "./gradlew check publish -PgenerateTestCases" ]
+  script:
+    - ./gradlew check :coverage-report-aggregate:testCodeCoverageReport publish -PgenerateTestCases
+    - "awk -F, 'NR>1 { missed += $4; covered += $5 } END { printf \"Line coverage: %.2f%%\\n\", 100 * covered / (missed + covered) }' $JACOCO_REPORT_DIR/testCodeCoverageReport.csv"
+  coverage: '/Line coverage: (\d+\.\d+%)/'
 
 dependency-check:
   extends: .setup
