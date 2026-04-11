@@ -91,11 +91,14 @@ subprojects {
                 systemProperty("docker.host", dockerHost)
             }
 
-            // Arguments for test JVM
-            jvmArgs("-Xmx2g", "-XX:+HeapDumpOnOutOfMemoryError")
+            // Test JVM heap. Default is frugal (2g) to suit 16 GiB dev machines;
+            // CI sets TEST_JVM_MAX_HEAP for the larger runners.
+            maxHeapSize = providers.environmentVariable("TEST_JVM_MAX_HEAP").orElse("2g").get()
+            jvmArgs("-XX:+HeapDumpOnOutOfMemoryError")
 
             systemProperty("junit.jupiter.execution.parallel.enabled", "true")
             systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
+            systemProperty("junit.jupiter.execution.parallel.mode.classes.default", "concurrent")
 
             // maxParallelForks = 1: Only one test worker JVM within this task.
             // forkEvery = 0: Reuse the same JVM for all tests (no per-class forking).

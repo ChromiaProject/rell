@@ -13,8 +13,25 @@ stages:
   - qodana
 
 variables:
+  # Opt-in build scan publication. Defaults to "false" so regular
+  # pipelines don't publish; override to "true" via the manual pipeline UI
+  # ("Run pipeline" → variables) when investigating a slow or flaky build.
+  PUBLISH_BUILD_SCAN:
+    value: "false"
+    description: "Set to 'true' to publish a Develocity build scan for this pipeline (visible at scans.gradle.com)."
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
-  GRADLE_OPTS: "-Dorg.gradle.caching=true"
+  # CI-specific Gradle args.
+  #   - -Pkotlin.daemon.jvmargs=-Xmx6g: Kotlin compiler daemon heap (Kotlin only reads it only as a project property)
+  #   - --max-workers=8: caps total parallel workers
+  #
+  # Heap budget on saas-linux-xlarge-amd64 (16 vCPU / 64 GiB):
+  #   Gradle daemon  12g
+  #   Kotlin daemon   6g
+  #   Test JVMs       8 workers × 4g = 32g (TEST_JVM_MAX_HEAP × --max-workers)
+  #   Headroom       ~14g for Postgres, Docker
+  GRADLE_FLAGS: "-Dorg.gradle.caching=true -Dorg.gradle.jvmargs=-Xmx12g -Pkotlin.daemon.jvmargs=-Xmx6g --max-workers=8"
+  # Heap for forked test JVMs (read by build.gradle.kts).
+  TEST_JVM_MAX_HEAP: "4g"
   ORG_GRADLE_PROJECT_gitlabAuthHeaderValue: $CI_JOB_TOKEN
   POSTCHAIN_DB_URL: jdbc:postgresql://docker/postchain
   DOCKER_HOST: tcp://docker:2375
@@ -54,7 +71,27 @@ cache:
       --publish 5432:5432
       postgres:16.13-alpine3.23@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416
     - chmod +x gradlew
-    - ./gradlew --version
+    # When PUBLISH_BUILD_SCAN=true, append a Develocity plugin block to settings.gradle.kts in flight.
+    # The plugin is intentionally NOT committed so that local devs neither pull the plugin dependency nor have ToU
+    # auto-accepted on their behalf. The Develocity 4.x plugin only reads termsOfUseAgree from a Kotlin DSL block, so a
+    # tracked-file edit is the only way to express it.
+    #
+    - |
+      if [ "$PUBLISH_BUILD_SCAN" = "true" ]; then
+        cat >> settings.gradle.kts <<'EOF'
+
+      plugins { id("com.gradle.develocity") version "4.3.2" }
+
+      develocity {
+          buildScan {
+              termsOfUseUrl = "https://gradle.com/help/legal-terms-of-use"
+              termsOfUseAgree = "yes"
+              uploadInBackground = false
+          }
+      }
+      EOF
+      fi
+    - ./gradlew $GRADLE_FLAGS --version
   artifacts:
     when: always
     paths:
@@ -76,7 +113,7 @@ build:
     - dev
     - /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
   script:
-    - ./gradlew check :coverage-report-aggregate:testCodeCoverageReport
+    - ./gradlew $GRADLE_FLAGS check :coverage-report-aggregate:testCodeCoverageReport
     - "awk -F, 'NR>1 { missed += $4; covered += $5 } END { printf \"Line coverage: %.2f%%\\n\", 100 * covered / (missed + covered) }' $JACOCO_REPORT_DIR/testCodeCoverageReport.csv"
   coverage: '/Line coverage: (\d+\.\d+%)/'
 
@@ -88,7 +125,7 @@ deploy:
     - dev
     - /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
   script:
-    - ./gradlew check :coverage-report-aggregate:testCodeCoverageReport publish -PgenerateTestCases
+    - ./gradlew $GRADLE_FLAGS check :coverage-report-aggregate:testCodeCoverageReport publish -PgenerateTestCases
     - "awk -F, 'NR>1 { missed += $4; covered += $5 } END { printf \"Line coverage: %.2f%%\\n\", 100 * covered / (missed + covered) }' $JACOCO_REPORT_DIR/testCodeCoverageReport.csv"
   coverage: '/Line coverage: (\d+\.\d+%)/'
 
@@ -99,12 +136,13 @@ dependency-check:
   only:
     variables:
       - $RUN_DEPENDENCY_CHECK == "true"
-  script: [ "./gradlew dependencyCheckAggregate" ]
+  script: [ "./gradlew $GRADLE_FLAGS dependencyCheckAggregate" ]
   artifacts:
     when: always
     paths: [ build/reports/dependency-check-report.* ]
 
 qodana:
+  tags: [ saas-linux-xlarge-amd64 ]
   variables:
     QODANA_MR_MODE: "false"
   rules:

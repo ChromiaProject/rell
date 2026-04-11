@@ -27,14 +27,21 @@ import org.jetbrains.dokka.testApi.logger.TestLogger
 import org.jetbrains.dokka.utilities.DokkaConsoleLogger
 import org.jetbrains.dokka.utilities.LoggingLevel
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
 import kotlin.test.assertNotNull
 
 class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogger(LoggingLevel.WARN))) {
-    private val configuration = RellDokkaPluginConfigurationBuilder.SYSTEM.build()
+    @TempDir
+    lateinit var tempDir: Path
+
+    private fun configuration() = RellDokkaPluginConfigurationBuilder.newSystemBuilder()
+            .targetFolder(tempDir.toFile())
+            .build()
 
     @Test
     fun `Rell plugin can generate system lib`() {
-        testFromData(configuration, cleanupOutput = false) {
+        testFromData(configuration(), cleanupOutput = false) {
             documentablesTransformationStage = { module ->
                 assertThat(module.packages.map { it.name }).containsAtLeast("rell", "rell.test", "crypto", "op_context", "chain_context")
                 val rellPackage = module.packages.find { it.name == "rell" }
@@ -48,7 +55,7 @@ class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogge
 
     @Test
     fun `Aliases are properly named`() {
-        testFromData(configuration, cleanupOutput = false) {
+        testFromData(configuration(), cleanupOutput = false) {
             documentablesTransformationStage = { module ->
                 val rellPackage = module.rootPackage
                 assertNotNull(rellPackage)
@@ -65,7 +72,7 @@ class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogge
 
     @Test
     fun `Test aliases are found in root`() {
-        testFromData(configuration, cleanupOutput = false) {
+        testFromData(configuration(), cleanupOutput = false) {
             documentablesTransformationStage = { module ->
                 val rellPackage = module.rootPackage
                 assertNotNull(rellPackage)
@@ -78,7 +85,7 @@ class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogge
 
     @Test
     fun `Type aliases are found one each type`() {
-        testFromData(configuration, cleanupOutput = false) {
+        testFromData(configuration(), cleanupOutput = false) {
             documentablesTransformationStage = { module ->
                 val rellPackage = module.rootPackage
                 assertNotNull(rellPackage)
@@ -94,7 +101,7 @@ class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogge
 
     @Test
     fun `Structs are created`() {
-        testFromData(configuration, cleanupOutput = false) {
+        testFromData(configuration(), cleanupOutput = false) {
             documentablesTransformationStage = { module ->
                 val rellPackage = module.rootPackage
                 assertNotNull(rellPackage)
@@ -106,7 +113,7 @@ class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogge
 
     @Test
     fun `is_signer is deprecated`() {
-        testFromData(configuration, cleanupOutput = false) {
+        testFromData(configuration(), cleanupOutput = false) {
             documentablesTransformationStage = { module ->
                 val rellPackage = module.rootPackage
                 assertNotNull(rellPackage)
@@ -119,7 +126,7 @@ class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogge
 
     @Test
     fun `aliased types can be found`() {
-        testFromData(configuration, cleanupOutput = false) {
+        testFromData(configuration(), cleanupOutput = false) {
             documentablesTransformationStage = { module ->
                 val rellPackage = module.rootPackage
                 assertNotNull(rellPackage)
@@ -131,7 +138,7 @@ class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogge
 
     @Test
     fun `All members of Lib_Rell and Lib_RellTest is covered`() {
-        testFromData(configuration, cleanupOutput = false) {
+        testFromData(configuration(), cleanupOutput = false) {
             documentablesTransformationStage = { module ->
                 val documentablesInPackage = module.packages.flatMap { it.children }
                 val sysLibDefs = Lib_Rell.MODULE.lModule.namespace.getAllDefs()
@@ -148,7 +155,7 @@ class SystemLibTestTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogge
 
     @Test
     fun `All types of Lib_Rell and Lib_RellTest are covered`() {
-        testFromData(configuration, cleanupOutput = false) {
+        testFromData(configuration(), cleanupOutput = false) {
             documentablesTransformationStage = { module ->
                 val sysLibDefs = Lib_Rell.MODULE.lModule.namespace.getAllDefs()
                 val testLibDefs = Lib_RellTest.MODULE.lModule.namespace.getAllDefs()

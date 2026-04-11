@@ -11,13 +11,19 @@ import org.jetbrains.dokka.plugability.DokkaPlugin
 import org.jetbrains.dokka.testApi.logger.TestLogger
 import org.jetbrains.dokka.utilities.DokkaConsoleLogger
 import org.jetbrains.dokka.utilities.LoggingLevel
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.nio.file.Path
 
 const val TEST_DAPP_NAME = "test-dapp"
 
 abstract class SingleFileRellDokkaPluginTest : BaseAbstractTest(logger = TestLogger(DokkaConsoleLogger(LoggingLevel.WARN))) {
+    @TempDir
+    lateinit var tempDir: Path
+
     private fun buildConfiguration(configurationBuilder: RellDokkaPluginConfigurationBuilder.() -> Unit, filteredModules: List<String>) =
             RellDokkaPluginConfigurationBuilder(TEST_DAPP_NAME, listOf("main"), File("src/"))
+                    .targetFolder(tempDir.toFile())
                     .apply(configurationBuilder)
                     .filteredModules(filteredModules)
                     .build()

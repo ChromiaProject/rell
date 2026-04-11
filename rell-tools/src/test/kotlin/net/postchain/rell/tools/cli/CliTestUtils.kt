@@ -73,7 +73,7 @@ object CliTestUtils {
             .start()
 
         val stdout = process.inputStream.bufferedReader().readText()
-        val stderr = process.errorStream.bufferedReader().readText()
+        val stderr = stripJvmStartupNoise(process.errorStream.bufferedReader().readText())
         val finished = process.waitFor(timeoutSec, TimeUnit.SECONDS)
         if (!finished) {
             process.destroyForcibly()
@@ -157,6 +157,35 @@ object CliTestUtils {
             expected.size, actual.size,
             "Extra output lines after expected ${expected.size} lines:\n${actual.drop(expected.size).joinToString("\n")}"
         )
+    }
+
+    /**
+     * Lines the JDK prints to stderr at child-JVM startup that are not produced
+     * by the rell tools themselves. We scrub them centrally in [runCommand] so
+     * stderr assertions stay stable regardless of how the parent process's
+     * environment is configured.
+     *
+     * Currently filters:
+     *  - `[NOTE: ]Picked up JAVA_TOOL_OPTIONS / JDK_JAVA_OPTIONS / _JAVA_OPTIONS: ...`
+     *    emitted whenever those env vars are set (e.g. CI exports
+     *    `JAVA_TOOL_OPTIONS=-XX:+UseZGC -XX:+ZGenerational`).
+     *  - `OpenJDK ... warning: Ignoring option <name>; support was removed in <ver>`
+     *    emitted when an inherited JVM flag is no longer supported on the
+     *    running JDK (e.g. `-XX:+ZGenerational` on JDK 24+, where generational
+     *    ZGC is the only mode and the flag became obsolete). The option is, by
+     *    definition, ignored — it cannot affect runtime behavior — so it is
+     *    informational, not an error.
+     */
+    private val JVM_STARTUP_NOISE_REGEXES = listOf(
+        Regex("""^(?:NOTE: )?Picked up (?:JAVA_TOOL_OPTIONS|JDK_JAVA_OPTIONS|_JAVA_OPTIONS):.*$"""),
+        Regex("""^OpenJDK .* warning: Ignoring option \w+; support was removed in [\d.]+$"""),
+    )
+
+    private fun stripJvmStartupNoise(stderr: String): String {
+        if (stderr.isEmpty()) return stderr
+        return stderr.split('\n')
+            .filterNot { line -> JVM_STARTUP_NOISE_REGEXES.any { it.matches(line) } }
+            .joinToString("\n")
     }
 
     private fun filterIgnored(actual: String, ignored: List<String>): String {

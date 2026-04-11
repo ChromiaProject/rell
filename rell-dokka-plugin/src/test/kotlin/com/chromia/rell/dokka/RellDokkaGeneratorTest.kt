@@ -10,18 +10,21 @@ import assertk.assertions.*
 import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.nio.file.Path
 
 class RellDokkaGeneratorTest {
-    lateinit var projectRoot: File
-    lateinit var targetFolder: File
+    private lateinit var projectRoot: File
+    private lateinit var targetFolder: File
+
+    @TempDir
+    lateinit var tempDir: Path
 
     @BeforeEach
     fun setup() {
         projectRoot = File(this.javaClass.classLoader.getResource("my-rell-dapp")!!.file)
-        targetFolder = File(projectRoot.resolve("build").absolutePath)
-
-        targetFolder.takeIf { it.exists() }?.deleteRecursively()
+        targetFolder = tempDir.resolve("build").toFile()
         targetFolder.mkdirs()
     }
 
