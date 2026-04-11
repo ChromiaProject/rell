@@ -51,7 +51,7 @@ class AttributeConfigBuilder(private val name: String) {
     fun build(): AttributeConfig {
         return when (generatorType) {
             "text" -> AttributeConfig.TextConfig(min?.toInt(), max?.toInt())
-            "byte_array" -> AttributeConfig.ByteArrayConfig(size?.toInt())
+            "byte_array" -> AttributeConfig.ByteArrayConfig(size)
             "range" -> {
                 requireNotNull(min) { "min value is required for range generator" }
                 requireNotNull(max) { "max value is required for range generator" }

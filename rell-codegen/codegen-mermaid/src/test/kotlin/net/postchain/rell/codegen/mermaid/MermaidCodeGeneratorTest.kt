@@ -19,10 +19,11 @@ import org.junit.jupiter.api.Test
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.shaded.org.awaitility.Awaitility
+import org.testcontainers.utility.MountableFile
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.time.Duration
-import kotlin.io.path.absolutePathString
 import kotlin.io.path.exists
 
 @Disabled
@@ -45,12 +46,18 @@ internal class MermaidCodeGeneratorTest {
         DocumentSaver(target.toFile()).saveDocuments(documents)
 
         val containerPath = "/data"
-        GenericContainer("ghcr.io/mermaid-js/mermaid-cli/mermaid-cli")
-                .withFileSystemBind(target.absolutePathString(), containerPath)
+        val container = GenericContainer("ghcr.io/mermaid-js/mermaid-cli/mermaid-cli")
+                .withCopyToContainer(MountableFile.forHostPath(target), containerPath)
                 .withCommand("-i rell.mmd -o out.svg")
-                .start()
+        container.start()
+        val outSvg = target.resolve("out.svg")
         Awaitility.await().atMost(Duration.ofSeconds(30)).until {
-            target.resolve("out.svg").exists()
+            runCatching {
+                container.copyFileFromContainer("$containerPath/out.svg") { input ->
+                    Files.copy(input, outSvg, StandardCopyOption.REPLACE_EXISTING)
+                }
+                outSvg.exists()
+            }.getOrDefault(false)
         }
         return sections to documents
     }

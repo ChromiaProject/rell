@@ -11,7 +11,7 @@ import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import java.lang.reflect.Field
 
-fun Assert<S_RellFile>.isSimilarTo(expected: S_RellFile) = given { actual ->
+fun Assert<S_RellFile>.isSimilarTo(expected: S_RellFile): Unit = given { actual ->
     val areEqual = SRellFileComparator().compare(actual, expected) == 0
     if (areEqual) {
         return

@@ -15,7 +15,7 @@ fun Assert<LinterIssue>.matches(
     expectedRuleId: String,
     expectedMessage: String,
     fix: LinterFix? = null
-) = given { actual ->
+): Unit = given { actual ->
     if (actualMatchesExpected(actual, expectedRuleId, expectedMessage, expectedLine, expectedColumn, fix)) {
         return
     }

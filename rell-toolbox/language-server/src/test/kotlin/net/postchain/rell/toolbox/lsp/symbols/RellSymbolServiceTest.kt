@@ -200,7 +200,7 @@ class RellSymbolServiceTest {
     }
 }
 
-fun Assert<Range>.isInBetween(full: Range) = given { part ->
+fun Assert<Range>.isInBetween(full: Range): Unit = given { part ->
     val between = when {
         part.start.line < full.start.line -> false
         part.start.line == full.start.line && part.start.character < full.start.character -> false
