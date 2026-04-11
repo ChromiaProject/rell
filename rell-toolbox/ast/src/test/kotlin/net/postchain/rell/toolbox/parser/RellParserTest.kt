@@ -7,7 +7,6 @@ package net.postchain.rell.toolbox.parser
 import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.isEqualTo
-import assertk.assertions.isGreaterThan
 import assertk.assertions.isGreaterThanOrEqualTo
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
@@ -30,12 +29,20 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.junit.jupiter.api.Test
 
 class RellParserTest {
-
     @Test
-    fun `ANTLR parser correctly parses Rell files`() {
-        val testCases = TestCaseSnippets.getTestCases()
-        assertThat(testCases.size).isGreaterThan(0)
-        testCases.forEach(::validateTestCase)
+    fun `ANTLR parser correctly parses Rell files`() = TestCaseSnippets.getTestCases().use { testCases ->
+        testCases.forEach { testCase ->
+            for ((sourceFile, sourceCode) in testCase.files) {
+                val actualNumberOfErrors = tryParsing(sourceCode)
+                val expectedErrors = testCase.parsing[sourceFile] ?: listOf()
+
+                val parsedWithoutErrors = actualNumberOfErrors == 0
+                val shouldNotHaveErrors = expectedErrors.isEmpty()
+
+                assertThat(parsedWithoutErrors).isEqualTo(shouldNotHaveErrors)
+                assertThat(actualNumberOfErrors).isGreaterThanOrEqualTo(expectedErrors.size)
+            }
+        }
     }
 
     @Test
@@ -64,27 +71,29 @@ class RellParserTest {
 
     @Test
     fun `ANTLR parsed AST is correctly transformed to Rell AST`() {
-        val testCases = TestCaseSnippets.getTestCases()
-        val parser = AntlrRellParser()
-        testCases.forEachIndexed { index, testCaseSnippet ->
-        //    if (index != 0) return@forEachIndexed
-            val parsingArtifacts = mutableListOf<ParsingArtifacts>()
+        // Per-case work here is big (parser + AST transform + similarity check + doc validation),
+        // so .parallel() is a real win.
+        TestCaseSnippets.getTestCases().use { testCases ->
+            testCases.parallel().forEach { testCaseSnippet ->
+                val parser = AntlrRellParser()
+                val parsingArtifacts = mutableListOf<ParsingArtifacts>()
 
-            for (file in testCaseSnippet.files) {
-                try {
-                    parsingArtifacts += compareAntlrAndCompilerParsedAst(
-                        file.value,
-                        file.key,
-                        parser,
-                    )
-                } catch (@Suppress("SwallowedException") error: C_CommonError) {
-                    // We are skipping cases with syntax errors, as compiler parser isn't recovering from them,
-                    // Thus AST cannot be constructed for later comparison with ANTLR AST
-                    continue
+                for ((sourceFile, sourceCode) in testCaseSnippet.files) {
+                    try {
+                        parsingArtifacts += compareAntlrAndCompilerParsedAst(
+                            sourceFile,
+                            sourceCode,
+                            parser,
+                        )
+                    } catch (_: C_CommonError) {
+                        // Skipping cases with syntax errors, as compiler parser isn't recovering from them,
+                        // thus AST cannot be constructed for comparison with ANTLR
+                        continue
+                    }
                 }
-            }
 
-            validateUserDocs(testCaseSnippet, parsingArtifacts)
+                validateUserDocs(testCaseSnippet, parsingArtifacts)
+            }
         }
     }
 
@@ -93,7 +102,7 @@ class RellParserTest {
             val expectedComments = testCaseSnippet.comments
             val actualComments = try {
                 getUserDocComments(parsingArtifacts, testCaseSnippet.options)
-            } catch (@Suppress("SwallowedException") e: Exception) {
+            } catch (_: Exception) {
                 // Ignore cases with compilation issues
                 null
             }
@@ -104,9 +113,9 @@ class RellParserTest {
     }
 
     private fun compareAntlrAndCompilerParsedAst(
-        sourceCode: String,
         sourceFile: String,
-        parser: AntlrRellParser
+        sourceCode: String,
+        parser: AntlrRellParser,
     ): ParsingArtifacts {
         val sourcePath = IdeDirApi.parseSourcePath(sourceFile)
         val idePath = IdeSourcePathFilePath(sourcePath!!)
@@ -116,48 +125,33 @@ class RellParserTest {
 
         try {
             assertThat(transformedAst).isSimilarTo(compilerAst)
-        } catch (@Suppress("SwallowedException") e: Exception) {
-            e
+        } catch (_: Exception) {
         }
         return ParsingArtifacts(sourcePath, idePath, transformedAst, sourceCode)
     }
 
     private fun getUserDocComments(
         parsingArtifacts: List<ParsingArtifacts>,
-        options: C_CompilerOptions
+        options: C_CompilerOptions,
     ): Map<String, String> {
         val fileMap = mutableMapOf<C_SourcePath, C_SourceFile>()
         val modules = mutableListOf<R_ModuleName>()
-        parsingArtifacts.forEach {
-            fileMap[it.sourcePath] = AstSourceFile.make(it.transformedAst, it.idePath, it.sourceCode)
-            modules.add(IdeApi.getModuleName(it.sourcePath, it.transformedAst)!!)
+
+        for ((sourcePath, idePath, transformedAst, sourceCode) in parsingArtifacts) {
+            fileMap[sourcePath] = AstSourceFile.make(transformedAst, idePath, sourceCode)
+            modules += IdeApi.getModuleName(sourcePath, transformedAst)!!
         }
+
         val selfDir = IdeDirApi.mapDir(fileMap)
         return IdeApi.getAllComments(selfDir, modules.toImmList(), options)
     }
 
-    private fun validateTestCase(testCaseSnippet: IdeCodeSnippet) {
-        testCaseSnippet.files.forEach { file ->
-            val actualNumberOfErrors = tryParsing(file.value)
-            val expectedErrors = testCaseSnippet.parsing[file.key] ?: listOf()
-
-            val parsedWithoutErrors = actualNumberOfErrors == 0
-            val shouldNotHaveErrors = expectedErrors.isEmpty()
-
-            assertThat(parsedWithoutErrors).isEqualTo(shouldNotHaveErrors)
-            assertThat(actualNumberOfErrors).isGreaterThanOrEqualTo(expectedErrors.size)
-        }
-    }
-
-    private fun tryParsing(text: String): Int {
-        val input = CharStreams.fromString(text)
-        val lexer = RellLexer(input)
+    private fun tryParsing(sourceCode: String): Int {
+        val lexer = RellLexer(CharStreams.fromString(sourceCode))
         lexer.removeErrorListeners()
-        val tokens = CommonTokenStream(lexer)
-        val parser = RellParser(tokens)
+        val parser = RellParser(CommonTokenStream(lexer))
         parser.removeErrorListeners()
         parser.ruleX_RootParser()
-
         return parser.numberOfSyntaxErrors
     }
 }

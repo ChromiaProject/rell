@@ -41,6 +41,7 @@ venv/
 
 # Misc
 *.log
+*.hprof
 bin/
 
 CLAUDE.md

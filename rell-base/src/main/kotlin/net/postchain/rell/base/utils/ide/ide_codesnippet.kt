@@ -95,17 +95,16 @@ class IdeCodeSnippet(
         @JvmStatic fun deserialize(s: String): List<IdeCodeSnippet> {
             val any = mapper.readValue(s, Any::class.java)
             val list = any as List<Any>
-            return list.map { deserialize0(it) }
+            return list.map { deserializeFromRaw(it as Map<String, Any>) }
         }
 
         private fun deserializeOne(s: String): IdeCodeSnippet {
             val any = mapper.readValue(s, Any::class.java)
-            return deserialize0(any)
+            return deserializeFromRaw(any as Map<String, Any>)
         }
 
-        private fun deserialize0(any: Any): IdeCodeSnippet {
-            val obj = any as Map<String, Any>
-
+        @JvmStatic
+        fun deserializeFromRaw(obj: Map<String, Any>): IdeCodeSnippet {
             val filesRaw = obj.getValue("files") as Map<Any, Any>
             val files = filesRaw.map { (k, v) -> k as String to v as String }.toImmMap()
 

@@ -22,16 +22,15 @@ variables:
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
   # CI-specific Gradle args.
   #   - -Pkotlin.daemon.jvmargs=-Xmx6g: Kotlin compiler daemon heap (Kotlin only reads it only as a project property)
-  #   - --max-workers=8: caps total parallel workers
   #
   # Heap budget on saas-linux-xlarge-amd64 (16 vCPU / 64 GiB):
   #   Gradle daemon  12g
   #   Kotlin daemon   6g
-  #   Test JVMs       8 workers × 4g = 32g (TEST_JVM_MAX_HEAP × --max-workers)
+  #   Test JVMs       16 workers × 2g = 32g (TEST_JVM_MAX_HEAP × --max-workers)
   #   Headroom       ~14g for Postgres, Docker
-  GRADLE_FLAGS: "-Dorg.gradle.caching=true -Dorg.gradle.jvmargs=-Xmx12g -Pkotlin.daemon.jvmargs=-Xmx6g --max-workers=8"
+  GRADLE_FLAGS: "-Dorg.gradle.caching=true -Dorg.gradle.jvmargs=-Xmx12g -Pkotlin.daemon.jvmargs=-Xmx6g"
   # Heap for forked test JVMs (read by build.gradle.kts).
-  TEST_JVM_MAX_HEAP: "4g"
+  TEST_JVM_MAX_HEAP: "2g"
   ORG_GRADLE_PROJECT_gitlabAuthHeaderValue: $CI_JOB_TOKEN
   POSTCHAIN_DB_URL: jdbc:postgresql://docker/postchain
   DOCKER_HOST: tcp://docker:2375
