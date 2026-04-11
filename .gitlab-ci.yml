@@ -1,9 +1,16 @@
 image: eclipse-temurin:21-jdk-noble
 
+include:
+  - component: $CI_SERVER_FQDN/qodana/qodana/qodana-gitlab-ci@v2025.3
+    inputs:
+      stage: qodana
+      args: --image,jetbrains/qodana-jvm-community:2025.3
+
 stages:
   - build
   - deploy
   - dependency-check
+  - qodana
 
 variables:
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
@@ -90,3 +97,9 @@ dependency-check:
   artifacts:
     when: always
     paths: [ build/reports/dependency-check-report.* ]
+
+qodana:
+  variables:
+    QODANA_MR_MODE: "false"
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "merge_request_event"
