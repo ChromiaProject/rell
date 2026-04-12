@@ -86,6 +86,47 @@ The highly recommended and simple way to provide a Postgres instance for running
 
 Use the run configuration `All_tests` (Gradle `check`).
 
+### Testcontainers Configuration
+
+Some integration tests use [Testcontainers](https://www.testcontainers.org/) to spin up disposable Docker containers. Testcontainers requires a working Docker daemon. On Linux with Docker Engine installed natively this works out of the box.
+
+#### macOS: Using Colima Instead of Docker Desktop
+
+On macOS, [Colima](https://github.com/abiosoft/colima) is a lightweight alternative to Docker Desktop.
+
+Because Colima exposes its Docker socket at a non-default path, you need to tell both Testcontainers and the Gradle build where to find it.
+
+**1. Configure Testcontainers globally** — create or edit `~/.testcontainers.properties`:
+
+```properties
+docker.host=unix://${HOME}/.colima/default/docker.sock
+ryuk.disabled=true
+```
+
+`ryuk.disabled=true` avoids a common issue where the Ryuk resource-reaper container fails to start under Colima.
+
+**2. Forward Docker config to Gradle test JVMs** — create `local.properties` in the project root:
+
+```properties
+DOCKER_HOST=unix://${HOME}/.colima/default/docker.sock
+TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
+TESTCONTAINERS_RYUK_DISABLED=true
+```
+
+The build script (`build.gradle.kts`) loads `local.properties` and forwards these variables as environment variables and system properties to every test JVM, so Testcontainers inside Gradle picks up the correct socket.
+
+#### Supported Environment Variables
+
+The following variables are forwarded to test JVMs (via `local.properties` or the shell environment):
+
+| Variable | Purpose |
+|---|---|
+| `DOCKER_HOST` | Docker daemon socket URL |
+| `DOCKER_TLS_CERTDIR` | TLS certificate directory (if using TLS) |
+| `TESTCONTAINERS_HOST_OVERRIDE` | Override the host Testcontainers connects to |
+| `TESTCONTAINERS_RYUK_DISABLED` | Disable the Ryuk resource reaper (`true`/`false`) |
+| `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE` | Override the socket path inside the container |
+
 ### Running Rell Shell (REPL)
 
 To start the interactive Rell shell:
