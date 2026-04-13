@@ -38,7 +38,6 @@ dependencies {
     api(libs.kotlinx.collections.immutable)
 
     testImplementation(libs.junit.jupiter)
-    testImplementation(libs.junit.platform.launcher)
     testImplementation(kotlin("test-junit5"))
     testImplementation(libs.log4j.slf4j2.impl)
 }
