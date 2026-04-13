@@ -3,12 +3,11 @@ version: "1.0"
 # Pinned to match .gitlab-ci.yml
 linter: jetbrains/qodana-jvm-community:2025.3
 
-inspections:
-  - id: UnusedImport
-    severity: info
-
 profile:
   name: qodana.recommended
+  inspections:
+    - inspection: UnusedImport
+      severity: INFO
 
 # Exclude build output and Gradle/IDE caches from all inspections. The `build` entry also covers ANTLR-generated
 # Java. The JVM linter already skips non-JVM trees (pytests/, doc/, work/) automatically.
