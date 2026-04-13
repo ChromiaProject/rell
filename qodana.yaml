@@ -3,6 +3,10 @@ version: "1.0"
 # Pinned to match .gitlab-ci.yml
 linter: jetbrains/qodana-jvm-community:2025.3
 
+inspections:
+  - id: UnusedImport
+    severity: info
+
 profile:
   name: qodana.recommended
 
