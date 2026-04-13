@@ -57,7 +57,7 @@ subprojects {
         dependencies {
             "implementation"(platform(rootProject.libs.postchain.bom))
             "testImplementation"(platform(rootProject.libs.junit.bom))
-            "testRuntimeOnly"(rootProject.libs.junit.platform.launcher)
+            "testImplementation"(rootProject.libs.junit.platform.launcher)
         }
 
         extensions.configure<JavaPluginExtension> {

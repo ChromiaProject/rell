@@ -30,8 +30,10 @@ artifacts {
 
 tasks.processTestResources {
     val rellVersion = project.version.toString().removeSuffix("-SNAPSHOT")
-    filesMatching("**/snapshot_config.xml") {
-        expand("rellVersion" to rellVersion)
+    eachFile {
+        if (name == "snapshot_config.xml") {
+            expand("rellVersion" to rellVersion)
+        }
     }
 }
 

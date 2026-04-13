@@ -19,8 +19,10 @@ sentry {
 tasks.processResources {
     val projectVersion = project.version.toString()
     inputs.property("projectVersion", projectVersion)
-    filesMatching("sentry.properties") {
-        expand("version" to projectVersion)
+    eachFile {
+        if (name == "sentry.properties") {
+            expand("version" to projectVersion)
+        }
     }
 }
 
