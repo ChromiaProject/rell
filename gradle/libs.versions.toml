@@ -25,7 +25,6 @@ chromia-build-tools = "0.5.17"
 fury-core = "0.4.1"
 commons-collections4 = "4.3"
 system-stubs-jupiter = "2.1.7"
-sentry-log4j2 = "7.16.0"
 serpro69-faker = "1.16.0"
 json-schema-validator = "1.5.6"
 
@@ -40,25 +39,30 @@ jsoup = "1.17.2"
 
 # Plugins
 binary-compatibility-validator = "0.18.1"
-dependency-check = "12.1.9"
+dependency-check = "12.2.1"
 gradle-git-properties = "2.5.7"
-sentry = "4.13.0"
-shadow = "9.4.0"
+sentry = "6.4.0"
+shadow = "9.4.1"
 
 [libraries]
 postchain-bom = { module = "net.postchain:postchain", version.ref = "postchain" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 
+postchain-client = { module = "net.postchain.client:postchain-client", version = "3.39.1" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm", version.ref = "kotlinx-collections-immutable" }
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
+jline = { module = "org.jline:jline", version.ref = "jline" }
+better-parse = { module = "com.github.h0tk3y.betterParse:better-parse-jvm", version.ref = "better-parse" }
+
+# common testing
+assertk = { module = "com.willowtreeapps.assertk:assertk-jvm", version.ref = "assertk" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 # versions from postchain-bom
 postchain-gtv = { module = "net.postchain:postchain-gtv" }
 postchain-spi = { module = "net.postchain:postchain-spi" }
 postchain-base = { module = "net.postchain:postchain-base" }
 postchain-devtools = { module = "net.postchain:postchain-devtools" }
-postchain-common = { module = "net.postchain:postchain-common" }
-postchainClient = { module = "net.postchain.client:postchain-client", version = "3.39.1" }
 guava = { module = "com.google.guava:guava" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 jooq = { module = "org.jooq:jooq" }
@@ -68,10 +72,6 @@ kotlinLogging = { module = "io.github.microutils:kotlin-logging-jvm" }
 log4j-slf4j2-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl" }
 testcontainers = { module = "org.testcontainers:testcontainers" }
 testcontainers-junit-jupiter = { module = "org.testcontainers:testcontainers-junit-jupiter" }
-
-better-parse = { module = "com.github.h0tk3y.betterParse:better-parse-jvm", version.ref = "better-parse" }
-
-jline = { module = "org.jline:jline", version.ref = "jline" }
 
 # versions from junit-bom
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
@@ -86,10 +86,8 @@ koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-logger = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
 jackson-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
-jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson" }
 antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
 antlr-runtime = { module = "org.antlr:antlr4-runtime", version.ref = "antlr" }
-assertk = { module = "com.willowtreeapps.assertk:assertk-jvm", version.ref = "assertk" }
 oshai = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "oshai" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 log4j-jul = { module = "org.apache.logging.log4j:log4j-jul", version.ref = "log4j" }
@@ -101,7 +99,7 @@ chromia-build-tools = { module = "com.chromia.cli.tools:chromia-build-tools", ve
 fury-core = { module = "org.furyio:fury-core", version.ref = "fury-core" }
 commons-collections4 = { module = "org.apache.commons:commons-collections4", version.ref = "commons-collections4" }
 system-stubs-jupiter = { module = "uk.org.webcompere:system-stubs-jupiter", version.ref = "system-stubs-jupiter" }
-sentry-log4j2 = { module = "io.sentry:sentry-log4j2", version.ref = "sentry-log4j2" }
+sentry-log4j2 = { module = "io.sentry:sentry-log4j2" }
 serpro69-faker = { module = "io.github.serpro69:kotlin-faker", version.ref = "serpro69-faker" }
 json-schema-validator = { module = "com.networknt:json-schema-validator", version.ref = "json-schema-validator" }
 
@@ -119,7 +117,6 @@ dokka-base-test-utils = { module = "org.jetbrains.dokka:dokka-base-test-utils", 
 kotlinx-html = { module = "org.jetbrains.kotlinx:kotlinx-html-jvm", version.ref = "kotlinx-html" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
-slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 [bundles]
 lsp4j = ["lsp4j", "lsp4j-debug", "lsp4j-websocket"]

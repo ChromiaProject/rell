@@ -7,7 +7,7 @@ dependencies {
     implementation(projects.rellBase)
     implementation(projects.rellApiBase)
 
-    implementation(libs.postchainClient)
+    implementation(libs.postchain.client)
     testImplementation(kotlin("test-junit5"))
     testImplementation(kotlin("compiler-embeddable"))
     testImplementation(libs.assertk)

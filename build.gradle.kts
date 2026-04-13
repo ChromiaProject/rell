@@ -91,21 +91,24 @@ subprojects {
                 systemProperty("docker.host", dockerHost)
             }
 
-            // Test JVM heap. Default is frugal (2g) to suit 16 GiB dev machines;
-            // CI sets TEST_JVM_MAX_HEAP for the larger runners.
-            maxHeapSize = providers.environmentVariable("TEST_JVM_MAX_HEAP").orElse("2g").get()
-            jvmArgs("-XX:+HeapDumpOnOutOfMemoryError")
+            // Test JVM heap. Default suits 16 GiB dev machines; CI overrides via -PtestJvmMaxHeap.
+            maxHeapSize = providers.gradleProperty("testJvmMaxHeap").orElse("2g").get()
 
             systemProperty("junit.jupiter.execution.parallel.enabled", "true")
             systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
             systemProperty("junit.jupiter.execution.parallel.mode.classes.default", "concurrent")
 
+            // JUnit ForkJoinPool parallelism per test worker.
+            // Default (dynamic/1) uses availableProcessors(), which over-subscribes when
+            // Gradle also runs --max-workers test tasks.  Use "fixed" strategy so CI can
+            // cap it via -PjunitParallelThreads (e.g. 4 workers × 4 threads = 16 cores).
+            providers.gradleProperty("junitParallelThreads").orNull?.let { threads ->
+                systemProperty("junit.jupiter.execution.parallel.config.strategy", "fixed")
+                systemProperty("junit.jupiter.execution.parallel.config.fixed.parallelism", threads)
+            }
+
             // maxParallelForks = 1: Only one test worker JVM within this task.
             // forkEvery = 0: Reuse the same JVM for all tests (no per-class forking).
-            //
-            // Tests within a single worker can run in parallel via JUnit's parallel
-            // execution mode configured above. Cross-process database isolation is
-            // handled by SqlSchemaUtils (PID-scoped schemas + advisory locks).
             maxParallelForks = 1
             forkEvery = 0
 

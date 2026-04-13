@@ -20,18 +20,28 @@ variables:
     value: "false"
     description: "Set to 'true' to publish a Develocity build scan for this pipeline (visible at scans.gradle.com)."
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
-  # CI-specific Gradle args.
-  #   - -Pkotlin.daemon.jvmargs=-Xmx6g: Kotlin compiler daemon heap (Kotlin only reads it only as a project property)
+  # CI-specific Gradle args — all build tuning lives here.
+  #   -Pkotlin.daemon.jvmargs  Kotlin compiler daemon heap (only reads project properties)
+  #   -PtestJvmMaxHeap         Forked test JVM heap (default 2g in build.gradle.kts)
+  #   -PjunitParallelThreads   JUnit ForkJoinPool threads per test worker (unset = availableProcessors())
+  #   -PgitlabAuthHeaderValue  GitLab Package Registry auth token
   #
   # Heap budget on saas-linux-xlarge-amd64 (16 vCPU / 64 GiB):
   #   Gradle daemon  12g
   #   Kotlin daemon   6g
-  #   Test JVMs       16 workers × 2g = 32g (TEST_JVM_MAX_HEAP × --max-workers)
+  #   Test JVMs       16 workers × 2g = 32g (testJvmMaxHeap × --max-workers)
   #   Headroom       ~14g for Postgres, Docker
-  GRADLE_FLAGS: "-Dorg.gradle.caching=true -Dorg.gradle.jvmargs=-Xmx12g -Pkotlin.daemon.jvmargs=-Xmx6g"
-  # Heap for forked test JVMs (read by build.gradle.kts).
-  TEST_JVM_MAX_HEAP: "2g"
-  ORG_GRADLE_PROJECT_gitlabAuthHeaderValue: $CI_JOB_TOKEN
+  #
+  # Thread budget (16 vCPU):
+  #   16 Gradle workers × 4 JUnit threads = 64 runnable threads.
+  #   Most are I/O-bound (DB round-trips), so moderate over-subscription is fine.
+  GRADLE_FLAGS: >-
+    -Dorg.gradle.caching=true
+    -Dorg.gradle.jvmargs=-Xmx12g
+    -Pkotlin.daemon.jvmargs=-Xmx6g
+    -PtestJvmMaxHeap=2g
+    -PjunitParallelThreads=4
+    -PgitlabAuthHeaderValue=$CI_JOB_TOKEN
   POSTCHAIN_DB_URL: jdbc:postgresql://docker/postchain
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
@@ -135,7 +145,7 @@ dependency-check:
   only:
     variables:
       - $RUN_DEPENDENCY_CHECK == "true"
-  script: [ "./gradlew $GRADLE_FLAGS dependencyCheckAggregate" ]
+  script: [ "./gradlew $GRADLE_FLAGS --no-configuration-cache dependencyCheckAggregate" ]
   artifacts:
     when: always
     paths: [ build/reports/dependency-check-report.* ]
