@@ -18,12 +18,7 @@ enum class R_AtCardinality(val code: String, val zero: Boolean, val many: Boolea
     ONE_MANY("@+", false, true),
     ;
 
-    fun matches(count: Int): Boolean {
-        if (count < 0 || count == 0 && !zero || count > 1 && !many) {
-            return false
-        }
-        return true
-    }
+    fun matches(count: Int): Boolean = !(count < 0 || count == 0 && !zero || count > 1 && !many)
 }
 
 class R_DbAtEntity(val rEntity: R_EntityDefinition, val id: R_AtEntityId) {

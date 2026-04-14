@@ -5,18 +5,14 @@
 package net.postchain.rell.toolbox.seeder.config.parser
 
 import com.fasterxml.jackson.databind.JsonNode
-import net.postchain.rell.base.lib.type.R_BigIntegerType
-import net.postchain.rell.base.lib.type.R_DecimalType
-import net.postchain.rell.base.lib.type.R_IntegerType
-import net.postchain.rell.base.lib.type.R_JsonType
-import net.postchain.rell.base.lib.type.R_RowidType
-import net.postchain.rell.toolbox.seeder.Attribute
+import net.postchain.rell.base.lib.type.*
+import net.postchain.rell.base.model.R_EnumType
+import net.postchain.rell.toolbox.seeder.schema.Attribute
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.config.Distribution
 import net.postchain.rell.toolbox.seeder.generator.pattern.DataPatternGenerator
 import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGeneratorFactory
 import java.math.BigInteger
-import net.postchain.rell.base.model.R_EnumType
 
 class AttributeConfigParser {
     fun createAttributeConfig(
@@ -56,11 +52,11 @@ class AttributeConfigParser {
             return true
         }
 
-        return when {
-            attribute.type is R_BigIntegerType && generator.type is R_IntegerType -> true
-            attribute.type is R_DecimalType && generator.type is R_IntegerType -> true
-            attribute.type is R_JsonType && generator.identifier == "random.json" -> true
-            attribute.type is R_EnumType && generator.identifier == "random.enum" -> true
+        return when (attribute.type) {
+            is R_BigIntegerType if generator.type is R_IntegerType -> true
+            is R_DecimalType if generator.type is R_IntegerType -> true
+            is R_JsonType if generator.identifier == "random.json" -> true
+            is R_EnumType if generator.identifier == "random.enum" -> true
             else -> false
         }
     }

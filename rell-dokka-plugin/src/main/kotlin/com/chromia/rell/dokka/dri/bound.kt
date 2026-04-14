@@ -6,29 +6,8 @@ package com.chromia.rell.dokka.dri
 
 import com.chromia.rell.dokka.model.IsTuple
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.mtype.M_GenericTypeParent
-import net.postchain.rell.base.mtype.M_Type
-import net.postchain.rell.base.mtype.M_TypeSet
-import net.postchain.rell.base.mtype.M_TypeSet_One
-import net.postchain.rell.base.mtype.M_TypeSet_SubOf
-import net.postchain.rell.base.mtype.M_TypeSet_SuperOf
-import net.postchain.rell.base.mtype.M_Type_Function
-import net.postchain.rell.base.mtype.M_Type_Generic
-import net.postchain.rell.base.mtype.M_Type_Nullable
-import net.postchain.rell.base.mtype.M_Type_Param
-import net.postchain.rell.base.mtype.M_Type_Simple
-import net.postchain.rell.base.mtype.M_Type_Tuple
-import org.jetbrains.dokka.model.Bound
-import org.jetbrains.dokka.model.Contravariance
-import org.jetbrains.dokka.model.Covariance
-import org.jetbrains.dokka.model.FunctionalTypeConstructor
-import org.jetbrains.dokka.model.GenericTypeConstructor
-import org.jetbrains.dokka.model.Invariance
-import org.jetbrains.dokka.model.Nullable
-import org.jetbrains.dokka.model.Projection
-import org.jetbrains.dokka.model.Star
-import org.jetbrains.dokka.model.TypeParameter
-import org.jetbrains.dokka.model.UnresolvedBound
+import net.postchain.rell.base.mtype.*
+import org.jetbrains.dokka.model.*
 import org.jetbrains.dokka.model.properties.ExtraProperty
 import org.jetbrains.dokka.model.properties.PropertyContainer
 

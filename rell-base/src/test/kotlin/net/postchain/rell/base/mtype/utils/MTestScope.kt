@@ -5,7 +5,9 @@
 package net.postchain.rell.base.mtype.utils
 
 import net.postchain.rell.base.mtype.*
-import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.ImmMap
+import net.postchain.rell.base.utils.mapToImmList
+import net.postchain.rell.base.utils.toImmMap
 
 internal class MTestScope private constructor(
     private val genTypes: ImmMap<String, M_GenericType>,

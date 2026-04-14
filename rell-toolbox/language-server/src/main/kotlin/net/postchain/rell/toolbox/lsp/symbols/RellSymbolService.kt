@@ -5,26 +5,14 @@
 package net.postchain.rell.toolbox.lsp.symbols
 
 import net.postchain.rell.base.compiler.ast.S_Pos
-import net.postchain.rell.base.utils.ide.IdeApi
-import net.postchain.rell.base.utils.ide.IdeFilePath
-import net.postchain.rell.base.utils.ide.IdeGlobalSymbolLink
-import net.postchain.rell.base.utils.ide.IdeLocalSymbolLink
-import net.postchain.rell.base.utils.ide.IdeModuleSymbolLink
-import net.postchain.rell.base.utils.ide.IdeSymbolGlobalId
-import net.postchain.rell.base.utils.ide.IdeSymbolInfo
-import net.postchain.rell.base.utils.ide.IdeSymbolKind
+import net.postchain.rell.base.utils.ide.*
 import net.postchain.rell.toolbox.indexer.IdeSymbolInfoWithInterval
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.transformer.AntlrPos
 import org.antlr.v4.runtime.misc.Interval
-import org.eclipse.lsp4j.DocumentSymbol
-import org.eclipse.lsp4j.Location
-import org.eclipse.lsp4j.Position
-import org.eclipse.lsp4j.Range
-import org.eclipse.lsp4j.SymbolKind
-import org.eclipse.lsp4j.WorkspaceSymbol
+import org.eclipse.lsp4j.*
 import java.net.URI
 
 class RellSymbolService {
@@ -201,7 +189,7 @@ class RellSymbolService {
     }
 
     private fun lastSegment(uri: URI): String {
-        val path = uri.getPath()
+        val path = uri.path
         return path.substring(path.lastIndexOf('/') + 1)
     }
 

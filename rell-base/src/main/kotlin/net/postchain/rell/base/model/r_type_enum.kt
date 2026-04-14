@@ -96,7 +96,7 @@ class R_EnumType(val enum: R_EnumDefinition): R_SimpleType(enum.appLevelName, en
 }
 
 private class GtvRtConversion_Enum(private val enum: R_EnumDefinition): GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
 
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean): Gtv {
         val e = rt.asEnum()

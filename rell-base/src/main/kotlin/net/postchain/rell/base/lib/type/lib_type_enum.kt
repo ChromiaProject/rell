@@ -109,13 +109,10 @@ object Lib_Type_Enum {
                         val enum = enumType.enum
                         body { a ->
                             val name = a.asString()
-                            val attr = enum.attr(name)
-                            if (attr == null) {
-                                throw Rt_Exception.common(
-                                    "enum_badname:${enum.appLevelName}:$name",
-                                    "Enum '${enum.simpleName}' has no value '$name'",
-                                )
-                            }
+                            val attr = enum.attr(name) ?: throw Rt_Exception.common(
+                                "enum_badname:${enum.appLevelName}:$name",
+                                "Enum '${enum.simpleName}' has no value '$name'",
+                            )
                             enum.type.getValue(attr)
                         }
                     }
@@ -139,13 +136,10 @@ object Lib_Type_Enum {
                         val enum = enumType.enum
                         body { a ->
                             val value = a.asInteger()
-                            val attr = enum.attr(value)
-                            if (attr == null) {
-                                throw Rt_Exception.common(
-                                    "enum_badvalue:${enum.appLevelName}:$value",
-                                    "Enum '${enum.simpleName}' has no value $value",
-                                )
-                            }
+                            val attr = enum.attr(value) ?: throw Rt_Exception.common(
+                                "enum_badvalue:${enum.appLevelName}:$value",
+                                "Enum '${enum.simpleName}' has no value $value",
+                            )
                             enum.type.getValue(attr)
                         }
                     }

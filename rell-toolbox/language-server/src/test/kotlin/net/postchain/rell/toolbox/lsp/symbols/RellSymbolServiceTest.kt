@@ -6,11 +6,7 @@ package net.postchain.rell.toolbox.lsp.symbols
 
 import assertk.Assert
 import assertk.assertThat
-import assertk.assertions.containsExactly
-import assertk.assertions.extracting
-import assertk.assertions.isEmpty
-import assertk.assertions.isEqualTo
-import assertk.assertions.isNotNull
+import assertk.assertions.*
 import assertk.assertions.support.expected
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer

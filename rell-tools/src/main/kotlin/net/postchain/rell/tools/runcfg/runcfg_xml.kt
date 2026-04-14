@@ -13,6 +13,7 @@ import org.w3c.dom.Node
 import org.xml.sax.InputSource
 import java.io.StringReader
 import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.math.max
 
 class RellXmlParser(private val preserveWhitespace: Boolean = false) {
     fun parse(path: String, text: String, treePath: List<String> = listOf()): RellXmlElement {
@@ -60,7 +61,7 @@ class RellXmlParser(private val preserveWhitespace: Boolean = false) {
         val attrs = mutableMapOf<String, String>()
 
         if (node.attributes != null) {
-            for (i in 0 until node.attributes.length){
+            for (i in 0 until node.attributes.length) {
                 val attrNode = node.attributes.item(i)
                 val name = attrNode.nodeName
                 val value = attrNode.nodeValue
@@ -83,7 +84,7 @@ class RellXmlParser(private val preserveWhitespace: Boolean = false) {
         var textRaw = textBuf.toString()
         if (elems.isNotEmpty() && textRaw.isBlank()) textRaw = ""
         if (!preserveWhitespace) textRaw = textRaw.trim()
-        val text = if (textRaw.isEmpty()) null else textRaw
+        val text = textRaw.ifEmpty { null }
 
         return DomNode(attrs, elems, text)
     }
@@ -105,13 +106,12 @@ object RellXmlIncluder {
         return list[0]
     }
 
-    private fun processElement(xml: RellXmlElement, root: Boolean, includeDir: GeneralDir): List<RellXmlElement> {
+    private fun processElement(xml: RellXmlElement, root: Boolean, includeDir: GeneralDir): List<RellXmlElement> =
         if (xml.tag == "include") {
-            return processInclude(xml, root, includeDir)
+            processInclude(xml, root, includeDir)
         } else {
-            return processOther(xml, includeDir)
+            processOther(xml, includeDir)
         }
-    }
 
     private fun processInclude(xml: RellXmlElement, root: Boolean, includeDir: GeneralDir): List<RellXmlElement> {
         xml.checkNoText()
@@ -156,14 +156,14 @@ object RellXmlIncluder {
 }
 
 class RellXmlElement(
-        val file: String,
-        val treePath: List<String>,
-        val tag: String,
-        val attrs: Map<String, String>,
-        val elems: List<RellXmlElement>,
-        val text: String?
-){
-    fun parentTreePath() = treePath.subList(0, Math.max(0, treePath.size - 1))
+    val file: String,
+    val treePath: List<String>,
+    val tag: String,
+    val attrs: Map<String, String>,
+    val elems: List<RellXmlElement>,
+    val text: String?
+) {
+    fun parentTreePath() = treePath.subList(0, max(0, treePath.size - 1))
     fun attrs() = RellXmlAttrsParser(this)
 
     fun <T> parseText(parser: (String) -> T): T {
@@ -232,10 +232,7 @@ class RellXmlAttrsParser(private val elem: RellXmlElement) {
     }
 
     fun get(key: String): String {
-        val res = getOpt(key)
-        if (res == null) {
-            throw elem.error("missing required attribute '$key'")
-        }
+        val res = getOpt(key) ?: throw elem.error("missing required attribute '$key'")
         return res
     }
 
@@ -286,10 +283,7 @@ class RellXmlAttrsParser(private val elem: RellXmlElement) {
     }
 
     fun <T> getTypeOpt(key: String, type: String?, checker: (T) -> String? = { null }, parser: (String) -> T): T? {
-        val s = getOpt(key)
-        if (s == null) {
-            return null
-        }
+        val s = getOpt(key) ?: return null
         return parseType(key, type, s, parser, checker)
     }
 
@@ -298,7 +292,13 @@ class RellXmlAttrsParser(private val elem: RellXmlElement) {
         return parseType(key, type, s, parser, checker)
     }
 
-    private fun <T> parseType(key: String, type: String?, value: String, parser: (String) -> T, checker: (T) -> String?): T {
+    private fun <T> parseType(
+        key: String,
+        type: String?,
+        value: String,
+        parser: (String) -> T,
+        checker: (T) -> String?
+    ): T {
         val res = try {
             parser(value)
         } catch (e: Throwable) {

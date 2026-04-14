@@ -6,13 +6,7 @@
 @file:JvmName("AntlrGrammarGenerator")
 package net.postchain.rell.lsp.grammar
 
-import com.github.h0tk3y.betterParse.combinators.AndCombinator
-import com.github.h0tk3y.betterParse.combinators.MapCombinator
-import com.github.h0tk3y.betterParse.combinators.OptionalCombinator
-import com.github.h0tk3y.betterParse.combinators.OrCombinator
-import com.github.h0tk3y.betterParse.combinators.RepeatCombinator
-import com.github.h0tk3y.betterParse.combinators.SeparatedCombinator
-import com.github.h0tk3y.betterParse.combinators.SkipParser
+import com.github.h0tk3y.betterParse.combinators.*
 import com.github.h0tk3y.betterParse.grammar.ParserReference
 import net.postchain.rell.base.compiler.parser.RellToken
 import net.postchain.rell.base.compiler.parser.RellTokens
@@ -20,7 +14,7 @@ import net.postchain.rell.base.utils.LateInit
 import net.postchain.rell.base.utils.capitalizeEx
 import net.postchain.rell.base.utils.grammar.GrammarUtils
 import org.apache.commons.collections4.MapUtils
-import java.util.Locale
+import java.util.*
 
 // TODO: Grammar generator should be revisited as current implementation was not used for initial generation.
 // It's used by action generator for tranformer generation.

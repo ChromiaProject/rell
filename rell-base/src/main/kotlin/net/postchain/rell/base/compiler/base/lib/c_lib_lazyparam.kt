@@ -9,7 +9,6 @@ import net.postchain.rell.base.compiler.base.expr.C_DbAtWhatValue_Complex
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_ExprInfo
-import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.R_CompositeType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_TypeMeta

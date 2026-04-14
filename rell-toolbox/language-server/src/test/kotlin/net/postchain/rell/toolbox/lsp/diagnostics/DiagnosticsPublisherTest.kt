@@ -7,7 +7,10 @@ package net.postchain.rell.toolbox.lsp.diagnostics
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isTrue
-import io.mockk.*
+import io.mockk.clearMocks
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import net.postchain.rell.toolbox.indexer.RellIssue
 import net.postchain.rell.toolbox.indexer.RellIssueSeverity
 import org.eclipse.lsp4j.PublishDiagnosticsParams

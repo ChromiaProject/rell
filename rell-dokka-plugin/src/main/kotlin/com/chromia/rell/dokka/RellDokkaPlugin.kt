@@ -20,11 +20,7 @@ import com.chromia.rell.dokka.translators.documentables.RellDocumentableToPageTr
 import org.jetbrains.dokka.CoreExtensions
 import org.jetbrains.dokka.analysis.kotlin.internal.InternalKotlinAnalysisPlugin
 import org.jetbrains.dokka.base.DokkaBase
-import org.jetbrains.dokka.plugability.DokkaContext
-import org.jetbrains.dokka.plugability.DokkaPlugin
-import org.jetbrains.dokka.plugability.Extension
-import org.jetbrains.dokka.plugability.PluginApiPreviewAcknowledgement
-import org.jetbrains.dokka.plugability.configuration
+import org.jetbrains.dokka.plugability.*
 import org.jetbrains.dokka.transformers.pages.PageTransformer
 
 /**

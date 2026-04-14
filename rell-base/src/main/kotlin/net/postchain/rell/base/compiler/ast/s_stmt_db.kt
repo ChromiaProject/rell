@@ -123,23 +123,25 @@ internal class S_UpdateTarget_Expr(private val expr: S_Expr): S_UpdateTarget() {
         return compileTarget(targetCtx)
     }
 
-    private fun compileTarget(targetCtx: C_TargetContext): C_UpdateTarget? {
-        val type = targetCtx.rExpr.type
-        return if (type is R_EntityType) {
-            compileTargetEntity(targetCtx, type.rEntity)
-        } else if (type is R_NullableType && type.valueType is R_EntityType) {
+    private fun compileTarget(targetCtx: C_TargetContext): C_UpdateTarget? = when (val type = targetCtx.rExpr.type) {
+        is R_EntityType -> compileTargetEntity(targetCtx, type.rEntity)
+
+        is R_NullableType if type.valueType is R_EntityType ->
             compileTargetEntity(targetCtx, type.valueType.rEntity)
-        } else if (type is R_ObjectType) {
-            compileTargetObject(targetCtx, type.rObject)
-        } else if (type is R_SetType && type.elementType is R_EntityType) {
+
+        is R_ObjectType -> compileTargetObject(targetCtx, type.rObject)
+
+        is R_SetType if type.elementType is R_EntityType ->
             compileTargetCollection(targetCtx, type.elementType, true)
-        } else if (type is R_ListType && type.elementType is R_EntityType) {
+
+        is R_ListType if type.elementType is R_EntityType ->
             compileTargetCollection(targetCtx, type.elementType, false)
+
+        else -> if (type.isNotError()) {
+            targetCtx.exprCtx.msgCtx.error(expr.startPos, "stmt_update_expr_type:${type.strCode()}",
+                "Invalid expression type: ${type.strCode()}; must be an entity or a collection of an entity")
+            null
         } else {
-            if (type.isNotError()) {
-                targetCtx.exprCtx.msgCtx.error(expr.startPos, "stmt_update_expr_type:${type.strCode()}",
-                        "Invalid expression type: ${type.strCode()}; must be an entity or a collection of an entity")
-            }
             null
         }
     }

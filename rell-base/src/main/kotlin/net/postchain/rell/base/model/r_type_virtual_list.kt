@@ -53,10 +53,10 @@ class Rt_VirtualListValue(
 
     fun get(index: Long): Rt_Value {
         Rt_ListValue.checkIndex(elements.size, index)
-        val value = elements[index.toInt()]
-        if (value == null) {
-            throw Rt_Exception.common("virtual_list:get:novalue:$index", "Element $index has no value")
-        }
+        val value = elements[index.toInt()] ?: throw Rt_Exception.common(
+            "virtual_list:get:novalue:$index",
+            "Element $index has no value"
+        )
         return value
     }
 }

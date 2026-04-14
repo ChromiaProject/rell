@@ -6,8 +6,8 @@ package net.postchain.rell.base.repl
 
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
-import net.postchain.rell.base.compiler.base.utils.lateInit
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
+import net.postchain.rell.base.compiler.base.utils.lateInit
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.stmt.R_BlockStatement
 import net.postchain.rell.base.model.stmt.R_Statement
@@ -146,10 +146,7 @@ class ReplInterpreter private constructor(
     }
 
     private fun executeCode(code: String, forceSqlUpdate: Boolean): Boolean {
-        val success = compile(code)
-        if (success == null) {
-            return false
-        }
+        val success = compile(code) ?: return false
 
         return executeCatch {
             val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(success.app, Rt_ChainSqlMapping(0))

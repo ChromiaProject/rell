@@ -8,11 +8,8 @@ import java.util.function.Supplier
 
 class LateInit<T: Any>(private var fallback: T? = null) {
     val getter = LateGetter(this)
-    val setter = LateSetter(this)
 
     private var value: T? = null
-
-    fun isSet(): Boolean = value != null
 
     fun get(): T {
         var res = value
@@ -42,8 +39,4 @@ class LateGetter<T: Any>(private val init: LateInit<T>): Supplier<T> {
             return init.getter
         }
     }
-}
-
-class LateSetter<T: Any>(private val init: LateInit<T>) {
-    fun set(value: T) = init.set(value)
 }

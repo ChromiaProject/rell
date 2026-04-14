@@ -1,5 +1,3 @@
-import org.gradle.api.publish.maven.MavenPublication
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.git.properties)

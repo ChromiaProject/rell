@@ -167,7 +167,7 @@ internal sealed class R_BaseUpdateStatement(
         if (!snapshot) {
             frame.block(fromBlock) {
                 val ctx = SqlGenContext.createTop(frame.sqlCtx, fromItems)
-                val pSql = buildSql(frame, ctx, false, false)
+                val pSql = buildSql(frame = frame, ctx = ctx, returning = false, returningAttrs = false)
                 pSql.execute(frame.userSqlExec)
             }
             return

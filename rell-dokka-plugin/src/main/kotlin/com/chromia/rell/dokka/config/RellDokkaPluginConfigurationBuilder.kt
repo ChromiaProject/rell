@@ -5,12 +5,12 @@
 package com.chromia.rell.dokka.config
 
 import com.chromia.rell.dokka.config.RellDokkaPluginConfiguration.Companion.SYSTEM_TITLE
+import net.postchain.rell.api.base.RellCliEnv
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.DokkaConfigurationImpl
 import org.jetbrains.dokka.PluginConfigurationImpl
 import org.jetbrains.dokka.SourceLinkDefinitionImpl
 import org.jetbrains.dokka.base.DokkaBase
-import net.postchain.rell.api.base.RellCliEnv
 import java.io.File
 import java.net.URI
 import java.net.URL

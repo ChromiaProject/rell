@@ -5,15 +5,7 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
-import assertk.assertions.contains
-import assertk.assertions.containsExactlyInAnyOrder
-import assertk.assertions.containsOnly
-import assertk.assertions.hasSize
-import assertk.assertions.isEmpty
-import assertk.assertions.isEqualTo
-import assertk.assertions.isNotNull
-import assertk.assertions.isNull
-import assertk.assertions.isTrue
+import assertk.assertions.*
 import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
 import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.Test

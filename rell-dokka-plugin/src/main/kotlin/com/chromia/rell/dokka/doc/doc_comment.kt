@@ -7,15 +7,7 @@ package com.chromia.rell.dokka.doc
 import net.postchain.rell.base.utils.doc.DocComment
 import net.postchain.rell.base.utils.doc.DocCommentTag
 import net.postchain.rell.base.utils.doc.DocSymbol
-import org.jetbrains.dokka.model.doc.DocumentationNode
-import org.jetbrains.dokka.model.doc.TagWrapper
-import org.jetbrains.dokka.model.doc.Param
-import org.jetbrains.dokka.model.doc.Return
-import org.jetbrains.dokka.model.doc.Since
-import org.jetbrains.dokka.model.doc.Author
-import org.jetbrains.dokka.model.doc.Description
-import org.jetbrains.dokka.model.doc.P
-import org.jetbrains.dokka.model.doc.Text
+import org.jetbrains.dokka.model.doc.*
 
 fun DocSymbol.toDocumentationNode(additionalTags: TagWrapper? = null) = comment?.formatDescription(additionalTags) ?: DocumentationNode(listOf())
 

@@ -40,9 +40,7 @@ internal data object S_UnaryOp_Plus: S_UnaryOp("+") {
 
 internal data object S_UnaryOp_Minus: S_UnaryOp("-") {
     override fun compile(ctx: C_ExprContext, startPos: S_Pos, opPos: S_Pos, expr: V_Expr): V_Expr {
-        val type = expr.type
-
-        val vOp = when (type) {
+        val vOp = when (val type = expr.type) {
             R_IntegerType -> V_UnaryOp_Minus(type, R_UnaryOp_Minus_Integer, Db_UnaryOp_Minus_Integer)
             R_BigIntegerType -> V_UnaryOp_Minus(type, R_UnaryOp_Minus_BigInteger, Db_UnaryOp_Minus_BigInteger)
             R_DecimalType -> V_UnaryOp_Minus(type, R_UnaryOp_Minus_Decimal, Db_UnaryOp_Minus_Decimal)

@@ -61,17 +61,14 @@ object CommonUtils {
         }
     }
 
-    fun <T> calcOpt(f: () -> T): T? {
-        try {
-            return f()
-        } catch (e: Throwable) {
-            return null
-        }
+    fun <T> calcOpt(f: () -> T): T? = try {
+        f()
+    } catch (e: Throwable) {
+        null
     }
 
     fun getHomeDir(): File? {
-        val homePath = System.getProperty("user.home")
-        if (homePath == null) return null
+        val homePath = System.getProperty("user.home") ?: return null
         val homeDir = File(homePath)
         return if (homeDir.isDirectory) homeDir else null
     }

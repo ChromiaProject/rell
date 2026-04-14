@@ -15,7 +15,6 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.*
-import net.postchain.rell.base.utils.RellVersions
 import java.math.BigInteger
 import kotlin.reflect.full.createType
 
@@ -541,7 +540,7 @@ class Rt_GtvValue private constructor(val value: Gtv): Rt_Value() {
 }
 
 private object GtvRtConversion_Gtv: GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = rt.asGtv()
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {

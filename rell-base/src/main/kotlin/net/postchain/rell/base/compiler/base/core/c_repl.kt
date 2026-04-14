@@ -170,12 +170,10 @@ internal object C_ReplCompiler {
         oldDefsState: C_ReplDefsState,
         oldCodeState: ReplCodeState,
     ): C_ReplResult {
-        val executor = controller
-
         val appCtx = C_AppContext(
             msgCtx,
             symCtxProvider,
-            executor,
+            controller,
             true,
             oldDefsState.appState,
             extCommand.newModuleHeaders,

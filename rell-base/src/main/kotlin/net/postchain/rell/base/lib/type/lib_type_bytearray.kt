@@ -23,7 +23,6 @@ import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.immSetOf
 import org.bouncycastle.util.Arrays
 import org.jooq.impl.SQLDataType
-import java.math.BigInteger
 import java.util.*
 import kotlin.reflect.full.createType
 
@@ -43,7 +42,7 @@ object Lib_Type_ByteArray {
         val r = ByteArray(s.size)
         for (i in s.indices) {
             val b = s[i].asInteger()
-            if (b < 0 || b > 255) throw Rt_Exception.common("fn:byte_array.from_list:$b", "Byte value out of range: $b")
+            if (b !in 0..255) throw Rt_Exception.common("fn:byte_array.from_list:$b", "Byte value out of range: $b")
             r[i] = b.toByte()
         }
         Rt_ByteArrayValue.get(r)
@@ -344,7 +343,7 @@ class Rt_ByteArrayValue private constructor(private val value: ByteArray): Rt_Va
 }
 
 private object GtvRtConversion_ByteArray: GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvByteArray(rt.asByteArray())
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {

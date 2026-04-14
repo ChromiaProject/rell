@@ -7,8 +7,8 @@ package net.postchain.rell.toolbox.seeder.config
 import assertk.assertThat
 import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.isTrue
-import net.postchain.rell.toolbox.seeder.RellSchema
-import net.postchain.rell.toolbox.seeder.SchemaReader
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.yaml.snakeyaml.Yaml

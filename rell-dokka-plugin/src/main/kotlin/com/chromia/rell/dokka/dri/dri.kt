@@ -5,25 +5,8 @@
 package com.chromia.rell.dokka.dri
 
 import com.chromia.rell.dokka.config.RellModule
-import net.postchain.rell.base.lmodel.L_NamespaceMember
-import net.postchain.rell.base.lmodel.L_NamespaceMember_Function
-import net.postchain.rell.base.lmodel.L_NamespaceMember_Namespace
-import net.postchain.rell.base.lmodel.L_NamespaceMember_SpecialFunction
-import net.postchain.rell.base.lmodel.L_TypeDefMember
-import net.postchain.rell.base.lmodel.L_TypeDefMember_Alias
-import net.postchain.rell.base.lmodel.L_TypeDefMember_Constant
-import net.postchain.rell.base.lmodel.L_TypeDefMember_Constructor
-import net.postchain.rell.base.lmodel.L_TypeDefMember_Function
-import net.postchain.rell.base.lmodel.L_TypeDefMember_Property
-import net.postchain.rell.base.model.R_Definition
-import net.postchain.rell.base.model.R_EntityDefinition
-import net.postchain.rell.base.model.R_EnumDefinition
-import net.postchain.rell.base.model.R_GlobalConstantDefinition
-import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.model.R_ObjectDefinition
-import net.postchain.rell.base.model.R_QualifiedName
-import net.postchain.rell.base.model.R_RoutineDefinition
-import net.postchain.rell.base.model.R_StructDefinition
+import net.postchain.rell.base.lmodel.*
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_Type_Generic
 import org.jetbrains.dokka.DokkaConfiguration
@@ -102,7 +85,7 @@ fun M_Type.toDRI(): DRI {
     return when (this) {
         is M_Type_Generic -> {
             val fullName = genericType.name
-            return when {
+            when {
                 ":" in fullName -> R_QualifiedName.of(fullName.replace(":", "."))
                 else -> R_QualifiedName.of(fullName)
             }.toDRI()

@@ -8,7 +8,6 @@ import kotlin.jvm.functions.Function1;
 import net.postchain.rell.base.compiler.base.utils.C_Error;
 import net.postchain.rell.base.compiler.parser.RellTokenizerDecodingException;
 import net.postchain.rell.lsp.grammar.AntlrActionEx;
-import net.postchain.rell.toolbox.transformer.AntlrToRellContext;
 import org.antlr.v4.runtime.ParserRuleContext;
 final class RellcTransformer {
 

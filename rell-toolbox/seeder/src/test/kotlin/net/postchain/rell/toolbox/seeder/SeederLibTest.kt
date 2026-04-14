@@ -8,6 +8,7 @@ import assertk.assertThat
 import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.isTrue
 import net.postchain.rell.toolbox.seeder.config.InitialConfigGenerator
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import org.junit.jupiter.api.io.TempDir
 import org.yaml.snakeyaml.Yaml
 import java.io.File

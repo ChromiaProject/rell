@@ -17,7 +17,7 @@ import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMemberBase
 import net.postchain.rell.base.compiler.base.utils.*
-import net.postchain.rell.base.lib.type.*
+import net.postchain.rell.base.lib.type.R_UnitType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_FunctionCallTarget_NativeUserFunction
 import net.postchain.rell.base.model.expr.R_FunctionExtension
@@ -303,7 +303,7 @@ private class C_FunctionCompiler_Regular(
     }
 
     private fun checkNoArgs(defCtx: C_DefinitionContext) {
-        if (sFn.params.size != 0) {
+        if (sFn.params.isNotEmpty()) {
             val nameCode = nameErrCode()
             val msg = "Test functions may not have parameters."
             defCtx.msgCtx.error(fnPos, "fn:test_function_with_parameters:$nameCode", msg)

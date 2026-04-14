@@ -10,11 +10,7 @@ import org.jetbrains.dokka.testApi.logger.TestLogger
 import org.jetbrains.dokka.utilities.DokkaConsoleLogger
 import org.jetbrains.dokka.utilities.LoggingLevel
 import org.junit.jupiter.api.Test
-import signatures.Parameter
-import signatures.Parameters
-import signatures.firstSignature
-import signatures.lastSignature
-import signatures.renderedContent
+import signatures.*
 import utils.A
 import utils.TestOutputWriterPlugin
 import utils.match

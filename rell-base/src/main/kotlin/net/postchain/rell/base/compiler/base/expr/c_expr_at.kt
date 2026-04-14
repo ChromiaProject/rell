@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.expr
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_PosValue

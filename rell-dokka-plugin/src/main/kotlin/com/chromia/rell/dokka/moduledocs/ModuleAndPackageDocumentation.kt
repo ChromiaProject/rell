@@ -6,7 +6,6 @@
 package com.chromia.rell.dokka.moduledocs
 
 import org.jetbrains.dokka.model.doc.DocumentationNode
-import java.io.File
 
 /**
  * Copied from https://github.com/Kotlin/dokka/blob/1.9.10/subprojects/analysis-kotlin-symbols/src/main/kotlin/org/jetbrains/dokka/analysis/kotlin/symbols/kdoc/moduledocs/ModuleAndPackageDocumentation.kt

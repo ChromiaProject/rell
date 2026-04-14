@@ -13,8 +13,14 @@ import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtValue
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
 import net.postchain.rell.base.lmodel.*
-import net.postchain.rell.base.model.*
-import net.postchain.rell.base.mtype.*
+import net.postchain.rell.base.model.R_FullName
+import net.postchain.rell.base.model.R_IdeName
+import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.mtype.M_Type
+import net.postchain.rell.base.mtype.M_TypeException
+import net.postchain.rell.base.mtype.M_TypeParam
+import net.postchain.rell.base.mtype.M_TypeUtils
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeSymbolKind

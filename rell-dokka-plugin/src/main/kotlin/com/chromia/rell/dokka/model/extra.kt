@@ -6,14 +6,7 @@ package com.chromia.rell.dokka.model
 
 import net.postchain.rell.base.model.R_MountName
 import org.jetbrains.dokka.links.DRI
-import org.jetbrains.dokka.model.DClass
-import org.jetbrains.dokka.model.DClasslike
-import org.jetbrains.dokka.model.DFunction
-import org.jetbrains.dokka.model.DPackage
-import org.jetbrains.dokka.model.DParameter
-import org.jetbrains.dokka.model.DProperty
-import org.jetbrains.dokka.model.GenericTypeConstructor
-import org.jetbrains.dokka.model.IsVar
+import org.jetbrains.dokka.model.*
 import org.jetbrains.dokka.model.properties.ExtraProperty
 import org.jetbrains.dokka.model.properties.MergeStrategy
 

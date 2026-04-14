@@ -4,12 +4,7 @@
 
 package net.postchain.rell.base.compiler.base.core
 
-import net.postchain.rell.base.compiler.ast.S_Comment
-import net.postchain.rell.base.compiler.ast.S_GuardStatement
-import net.postchain.rell.base.compiler.ast.S_Pos
-import net.postchain.rell.base.compiler.ast.S_PosRange
-import net.postchain.rell.base.compiler.ast.S_Statement
-import net.postchain.rell.base.compiler.ast.S_VarStatement
+import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.def.C_AttrHeader
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_LateInit
@@ -20,9 +15,7 @@ import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.stmt.*
-import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_TypeParamsResolver
-import net.postchain.rell.base.mtype.M_Types
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDeclarationProto_Variable
 import net.postchain.rell.base.utils.doc.DocSymbol

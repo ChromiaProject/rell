@@ -9,9 +9,7 @@ import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.issues.NamingConventionIssue
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_CommaSeparated_11Context
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_ConstantDefContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_NameNodeContext
+import net.postchain.rell.toolbox.parser.RellParser.*
 import org.antlr.v4.runtime.misc.Interval
 
 class NamingConventionRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :

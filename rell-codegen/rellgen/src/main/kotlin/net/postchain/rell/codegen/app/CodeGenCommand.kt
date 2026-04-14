@@ -29,8 +29,8 @@ import net.postchain.rell.codegen.typescript.TypescriptCodeGeneratorConfig
 import net.postchain.rell.codegen.typescript.TypescriptDocumentFactory
 
 
-sealed class LanguageOption(language: String): CodeGeneratorConfig, OptionGroup(language) {
-}
+sealed class LanguageOption(language: String): CodeGeneratorConfig, OptionGroup(language)
+
 class KotlinOptionGroup: KotlinCodeGeneratorConfig, LanguageOption("Kotlin") {
     private val packageNam by option("--package", help = "Name of package").required()
     override fun packageName() = packageNam

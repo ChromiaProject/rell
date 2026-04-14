@@ -170,9 +170,9 @@ public class RellConfigGen(
         }
 
         private fun nodeTypeErr(node: GtvNode, expected: GtvType): RuntimeException {
-            val pathStr = if (node.path == null) "<root>" else node.path
+            val pathStr = node.path ?: "<root>"
             val type = node.type()
-            return RellCliBasicException("Found $type instead of ${expected} ($pathStr)")
+            return RellCliBasicException("Found $type instead of $expected ($pathStr)")
         }
     }
 }
@@ -187,16 +187,16 @@ private sealed class GtvNode(val path: String?) {
         fun subPath(parentPath: String?, key: String) = if (parentPath == null) key else "$parentPath.$key"
         fun subPath(parentPath: String?, index: Int) = if (parentPath == null) "[$index]" else "$parentPath[$index]"
 
-        fun create(path: String?, value: Gtv): GtvNode {
-            return if (value.type == GtvType.DICT) {
+        fun create(path: String?, value: Gtv): GtvNode = when (value.type) {
+            GtvType.DICT -> {
                 val map = value.asDict().mapValues { (k, v) -> create(subPath(path, k), v) }
                 DictGtvNode(path, map)
-            } else if (value.type == GtvType.ARRAY) {
+            }
+            GtvType.ARRAY -> {
                 val array = value.asArray().mapIndexed { i, v -> create(subPath(path, i), v) }
                 ArrayGtvNode(path, array)
-            } else {
-                TermGtvNode(path, value)
             }
+            else -> TermGtvNode(path, value)
         }
     }
 }

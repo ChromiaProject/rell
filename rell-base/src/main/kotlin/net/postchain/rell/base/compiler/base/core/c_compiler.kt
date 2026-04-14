@@ -40,19 +40,8 @@ enum class C_CompilerPass {
     FINISH
     ;
 
-    fun prev(): C_CompilerPass {
-        return VALUES[ordinal - 1]
-    }
-
-    fun next(): C_CompilerPass {
-        return VALUES[ordinal + 1]
-    }
-
-    companion object {
-        private val VALUES = entries
-
-        val LAST = VALUES[VALUES.size - 1]
-    }
+    fun prev(): C_CompilerPass = entries[ordinal - 1]
+    fun next(): C_CompilerPass = entries[ordinal + 1]
 }
 
 class C_StatementVars(val declared: ImmSet<R_Name>, val modified: ImmSet<R_Name>) {

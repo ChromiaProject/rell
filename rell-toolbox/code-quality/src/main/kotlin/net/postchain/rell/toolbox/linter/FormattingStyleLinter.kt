@@ -9,11 +9,7 @@ import net.postchain.rell.toolbox.common.Position
 import net.postchain.rell.toolbox.common.Range
 import net.postchain.rell.toolbox.common.TextEdit
 import net.postchain.rell.toolbox.common.offsetToPosition
-import net.postchain.rell.toolbox.formatter.DeltaType
-import net.postchain.rell.toolbox.formatter.Diff
-import net.postchain.rell.toolbox.formatter.FormatterIssue
-import net.postchain.rell.toolbox.formatter.FormatterOptions
-import net.postchain.rell.toolbox.formatter.RellFormatter
+import net.postchain.rell.toolbox.formatter.*
 import net.postchain.rell.toolbox.indexer.Resource
 
 class FormattingStyleLinter : AbstractFormattingStyleLinter() {

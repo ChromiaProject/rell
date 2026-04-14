@@ -14,7 +14,6 @@ import net.postchain.rell.base.lib.type.R_ListType
 import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.lib.type.R_SetType
 import net.postchain.rell.base.lmodel.L_TypeDefDocCodeStrategy
-import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.doc.DocCode

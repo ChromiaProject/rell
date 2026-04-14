@@ -12,7 +12,7 @@ class RecursionAwareCalculator<K, V>(private val maxDepth: Int, private val erro
     private val stackMap = mutableMapOf<K, StackEntry>()
 
     fun calculate(key: K): RecursionAwareResult<V> {
-        var cached = cache[key]
+        val cached = cache[key]
         if (cached != null) {
             return cached
         }

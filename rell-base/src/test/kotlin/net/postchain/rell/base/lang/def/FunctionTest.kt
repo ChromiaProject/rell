@@ -5,7 +5,6 @@
 package net.postchain.rell.base.lang.def
 
 import net.postchain.rell.base.testutils.BaseRellTest
-import net.postchain.rell.base.utils.checkEquals
 import kotlin.test.Test
 import kotlin.test.assertTrue
 

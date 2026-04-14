@@ -6,7 +6,6 @@ package net.postchain.rell.toolbox.lsp.testrunner
 
 import assertk.assertThat
 import assertk.assertions.containsOnly
-import assertk.assertions.extracting
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
@@ -14,7 +13,6 @@ import net.postchain.rell.toolbox.lsp.server.utils.WorkspaceManagerTestBase
 import net.postchain.rell.toolbox.testing.testData
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File

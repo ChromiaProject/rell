@@ -4,11 +4,7 @@
 
 package net.postchain.rell.codegen
 
-import net.postchain.rell.base.model.R_EntityDefinition
-import net.postchain.rell.base.model.R_EnumDefinition
-import net.postchain.rell.base.model.R_OperationDefinition
-import net.postchain.rell.base.model.R_QueryDefinition
-import net.postchain.rell.base.model.R_StructDefinition
+import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.section.Builtin

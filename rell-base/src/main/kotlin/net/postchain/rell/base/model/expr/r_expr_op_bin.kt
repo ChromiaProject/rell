@@ -15,6 +15,7 @@ import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_Value
 import java.math.BigDecimal
 import java.math.BigInteger
+import kotlin.math.min
 
 sealed class R_CmpOp(val code: String, val str: String, val checker: (Int) -> Boolean) {
     fun check(cmp: Int): Boolean = checker(cmp)
@@ -96,7 +97,7 @@ object R_CmpType_ByteArray: R_CmpType() {
 
         val ln = l.size
         val rn = r.size
-        val n = Math.min(ln, rn)
+        val n = min(ln, rn)
 
         var i = 0
         while (i < n) {
@@ -109,7 +110,7 @@ object R_CmpType_ByteArray: R_CmpType() {
             ++i
         }
 
-        return Integer.compare(ln, rn)
+        return ln.compareTo(rn)
     }
 }
 

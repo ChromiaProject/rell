@@ -773,7 +773,7 @@ private object DocDecUtils {
     fun completion(
         type: DocType? = null,
         params: Map<String, DocDeclaration>? = null,
-    ): DocDeclaration.Completion {
+    ): Completion {
         val ideParams = params?.mapToImmList { (name, param) ->
             val code = C_IdeCompletionsUtils.docCodeToStr(param.code)
             IdeCompletionParam(name, code)
@@ -784,6 +784,6 @@ private object DocDecUtils {
             C_IdeCompletionsUtils.docCodeToStr(typeCode)
         }
 
-        return DocDeclaration.Completion(ideParams, typeStr)
+        return Completion(ideParams, typeStr)
     }
 }

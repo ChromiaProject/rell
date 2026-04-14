@@ -8,11 +8,7 @@ import net.postchain.rell.gtx.testutils.BaseGtxTest
 import org.junit.jupiter.api.parallel.Isolated
 import java.sql.SQLException
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertNotNull
-import kotlin.test.fail
+import kotlin.test.*
 
 private const val joinTimeoutMs = 30_000L
 

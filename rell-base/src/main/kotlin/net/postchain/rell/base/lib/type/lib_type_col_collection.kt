@@ -11,7 +11,6 @@ import net.postchain.rell.base.compiler.base.lib.C_LibTypeDef
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionMetaBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_CompositeType
 import net.postchain.rell.base.model.R_GtvCompatibility
 import net.postchain.rell.base.model.R_LibGenericType
 import net.postchain.rell.base.model.R_Type
@@ -198,7 +197,7 @@ object Lib_Type_Collection {
             val code = "fn:$fnName:not_comparable:${valueType.strCode()}"
             val msg = "Cannot sort values of non-comparable type ${valueType.name}"
             m.validationError(code, msg)
-            return Comparator { _, _ -> 0 }
+            Comparator { _, _ -> 0 }
         }
     }
 }
@@ -230,7 +229,7 @@ sealed class R_CollectionType(
 }
 
 sealed class GtvRtConversion_Collection(val type: R_CollectionType): GtvRtConversion() {
-    final override fun directCompatibility() = R_GtvCompatibility(true, true)
+    final override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
 
     final override fun rtToGtv(rt: Rt_Value, pretty: Boolean): Gtv {
         val elementType = type.elementType

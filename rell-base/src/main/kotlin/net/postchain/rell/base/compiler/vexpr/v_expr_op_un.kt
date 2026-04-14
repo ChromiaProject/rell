@@ -98,8 +98,7 @@ internal class V_UnaryExpr(
     }
 
     override fun constantValue(ctx: V_ConstantValueEvalContext): Rt_Value? {
-        val v = expr.constantValue(ctx)
-        if (v == null) return null
+        val v = expr.constantValue(ctx) ?: return null
         val res = op.evaluate(v)
         return res
     }

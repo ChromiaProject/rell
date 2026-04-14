@@ -6,9 +6,9 @@ package net.postchain.rell.base.compiler.lib
 
 import net.postchain.common.hexStringToByteArray
 import net.postchain.rell.base.lib.type.*
-import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
-import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.testutils.RellTestUtils
 import java.math.BigInteger

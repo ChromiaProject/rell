@@ -390,7 +390,7 @@ internal class C_OwnerBlockContext(
 
         return if (entries.isEmpty()) null else {
             val entry = entries.first()
-            return if (entries.size == 1) {
+            if (entries.size == 1) {
                 C_BlockEntryResolution_Normal(entry)
             } else {
                 val sym = C_Symbol_Name(name)
@@ -586,11 +586,6 @@ internal class C_LambdaBlock(
     fun compileVarDbExpr(blockUid: R_FrameBlockUid = this.blockUid): Db_Expr {
         val rVarExpr = compileVarRExpr(blockUid)
         return Db_InterpretedExpr(rVarExpr)
-    }
-
-    fun compileVarExpr(pos: S_Pos, blockUid: R_FrameBlockUid = this.blockUid): V_Expr {
-        val varRef = localVar.toRef(blockUid)
-        return V_LocalVarExpr(exprCtx, pos, varRef)
     }
 
     companion object {

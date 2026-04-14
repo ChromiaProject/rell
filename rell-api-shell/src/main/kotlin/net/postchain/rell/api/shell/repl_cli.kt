@@ -48,10 +48,7 @@ public object ReplShell {
             Rt_GtvModuleArgsSource(options.moduleArgs.toImmMap(), options.compilerOptions),
         )
 
-        val repl = ReplInterpreter.create(config)
-        if (repl == null) {
-            return
-        }
+        val repl = ReplInterpreter.create(config) ?: return
 
         if (options.printIntroMessage) {
             printIntro(outChannel, repl, module)
@@ -83,8 +80,7 @@ public object ReplShell {
     }
 
     private fun getVersionInfo(): String {
-        val v = Rt_RellVersion.getInstance()
-        if (v == null) return "Version unknown"
+        val v = Rt_RellVersion.getInstance() ?: return "Version unknown"
         val ver = v.properties[Rt_RellVersionProperty.RELL_VERSION] ?: "[unknown version]"
         return "Rell $ver"
     }

@@ -12,16 +12,7 @@ import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsManager
 import net.postchain.rell.toolbox.lsp.server.events.FileEventsBatcher
 import net.postchain.rell.toolbox.lsp.server.events.FileEventsProcessor
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
-import org.eclipse.lsp4j.DidChangeConfigurationParams
-import org.eclipse.lsp4j.DidChangeWatchedFilesParams
-import org.eclipse.lsp4j.FileChangeType
-import org.eclipse.lsp4j.FileEvent
-import org.eclipse.lsp4j.ProgressParams
-import org.eclipse.lsp4j.SymbolInformation
-import org.eclipse.lsp4j.WorkDoneProgressBegin
-import org.eclipse.lsp4j.WorkDoneProgressEnd
-import org.eclipse.lsp4j.WorkspaceSymbol
-import org.eclipse.lsp4j.WorkspaceSymbolParams
+import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware

@@ -6,20 +6,17 @@ package net.postchain.rell.toolbox.seeder.generator
 
 import assertk.assertThat
 import assertk.assertions.each
-import assertk.assertions.isBetween
 import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
-import assertk.assertions.isTrue
 import assertk.assertions.prop
-import java.nio.file.Path
-import kotlin.collections.map
 import net.postchain.common.types.WrappedByteArray
-import net.postchain.rell.toolbox.seeder.SchemaReader
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.seeder.config.dsl.configFile
 import net.postchain.rell.toolbox.seeder.config.parser.ConfigurationParser
 import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
 
 class PrimitiveValueGenTest {
     private val schemaReader = SchemaReader()

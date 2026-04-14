@@ -34,8 +34,7 @@ fun Callable.Companion.from(f: R_RoutineDefinition) = Callable.from(f.simpleName
 fun Callable.Companion.from(name: String, params: List<R_FunctionParam>) = Callable(
         name = name,
         params = params.map {
-            val type = it.type
-            when (type) { // TODO: generalize
+            when (val type = it.type) { // TODO: generalize
                 is R_NullableType -> Nullable(JavaClassReference(type.valueType.strCode()))
                 else -> TypeConstructor(it.name.str, listOf(JavaClassReference(type.strCode())))
             }

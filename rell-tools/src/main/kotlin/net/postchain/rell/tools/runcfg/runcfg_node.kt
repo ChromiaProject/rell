@@ -11,7 +11,7 @@ import java.util.*
 import java.util.regex.Pattern
 
 object RunConfigNodeConfigGen {
-    private val FILE_NAME = "node-config.properties"
+    private const val FILE_NAME = "node-config.properties"
 
     fun generateNodeConfig(nodeConfig: Rcfg_NodeConfig, configDir: GeneralDir): RellPostAppNode {
         return if (nodeConfig.src != null) {
@@ -83,7 +83,7 @@ object RunConfigNodeConfigGen {
     }
 
     private fun trimLines(text: String): String {
-        val res = text.split("\n").map { it.trim() }.joinToString("\n")
+        val res = text.split("\n").joinToString("\n") { it.trim() }
         return res
     }
 

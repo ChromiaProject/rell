@@ -5,11 +5,7 @@
 package com.chromia.rell.dokka
 
 import assertk.assertThat
-import assertk.assertions.containsAtLeast
-import assertk.assertions.doesNotContain
-import assertk.assertions.isEqualTo
-import assertk.assertions.isFalse
-import assertk.assertions.isTrue
+import assertk.assertions.*
 import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
 import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.isAlias

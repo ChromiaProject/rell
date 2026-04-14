@@ -89,11 +89,7 @@ private class C_MemberRestrictions_Normal(
         }
 
         val version = compilerOptions.compatibility
-        if (since != null && version != null && version < since) {
-            return true
-        }
-
-        return false
+        return since != null && version != null && version < since
     }
 
     override fun access(msgCtx: C_MessageContext, pos: S_Pos) {

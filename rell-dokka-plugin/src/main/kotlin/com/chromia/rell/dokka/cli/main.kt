@@ -15,7 +15,7 @@ import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
 import java.net.URI
-import java.util.Calendar
+import java.util.*
 
 class DokkaCommand : CliktCommand() {
     private val source by option().file(mustExist = true, canBeFile = false).default(File("src"))

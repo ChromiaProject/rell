@@ -10,11 +10,9 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.*
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.type.*
-import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.stmt.R_IterableAdapter
 import net.postchain.rell.base.model.stmt.R_IterableAdapter_Direct
-import net.postchain.rell.base.mtype.M_TypeUtils
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
@@ -146,10 +144,7 @@ internal class S_SubscriptExpr(
         val exprType = vExpr.type
         val effectiveBaseType = C_Types.removeNullable(baseType)
 
-        val kind = compileSubscriptKind(ctx, effectiveBaseType, exprType)
-        if (kind == null) {
-            return C_ExprUtils.errorExpr(ctx, opPos)
-        }
+        val kind = compileSubscriptKind(ctx, effectiveBaseType, exprType) ?: return C_ExprUtils.errorExpr(ctx, opPos)
 
         C_Errors.check(ctx.msgCtx, baseType !is R_NullableType, opPos) {
             "expr_subscript_null" toCodeMsg "Cannot apply '[]' on nullable value"
@@ -217,7 +212,7 @@ internal class S_SubscriptExpr(
         return fields[index.toInt()]
     }
 
-    private abstract inner class Subscript(val keyType: R_Type) {
+    private abstract class Subscript(val keyType: R_Type) {
         abstract fun compile(ctx: C_ExprContext, base: V_Expr, key: V_Expr): V_Expr
     }
 

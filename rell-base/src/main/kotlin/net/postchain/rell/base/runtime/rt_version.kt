@@ -47,9 +47,7 @@ class Rt_RellVersion private constructor(
         )
 
         fun getInstance(): Rt_RellVersion? {
-            val raw = getBuildProperties()
-            if (raw == null) return null
-
+            val raw = getBuildProperties() ?: return null
             val properties = getRtProperties(raw)
 
             val rtProperties = properties
@@ -100,7 +98,7 @@ class Rt_RellVersion private constructor(
                 val text = Resources.toString(url, Charsets.UTF_8)
                 val props = Properties()
                 props.load(StringReader(text))
-                return props.stringPropertyNames().sorted().map { it to props.getProperty(it) }.toMap().toImmMap()
+                return props.stringPropertyNames().sorted().associateWith { props.getProperty(it) }
             } catch (_: Exception) {
                 return null
             }

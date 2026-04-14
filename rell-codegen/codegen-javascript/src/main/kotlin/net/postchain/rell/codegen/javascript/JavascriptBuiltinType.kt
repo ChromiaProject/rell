@@ -8,7 +8,7 @@ import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Builtin
 import net.postchain.rell.codegen.util.BuiltinType
-import java.util.Locale
+import java.util.*
 
 
 enum class JavascriptBuiltinType(val builtin: TypeAssertion) : BuiltinType {

@@ -531,8 +531,8 @@ private class C_NameContext_Active(
 }
 
 class C_NameContextManager(
-    private val msgMgr: C_MessageManager,
-    private val opts: C_CompilerOptions,
+    msgMgr: C_MessageManager,
+    opts: C_CompilerOptions,
 ) {
     val nopNameCtx: C_NameContext = C_NameContext_Nop(msgMgr, opts)
 

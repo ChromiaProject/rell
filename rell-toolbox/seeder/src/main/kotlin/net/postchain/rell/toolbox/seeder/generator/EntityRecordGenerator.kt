@@ -4,8 +4,8 @@
 
 package net.postchain.rell.toolbox.seeder.generator
 
-import net.postchain.rell.toolbox.seeder.Entity
-import net.postchain.rell.toolbox.seeder.RellSchema
+import net.postchain.rell.toolbox.seeder.schema.Entity
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import net.postchain.rell.toolbox.seeder.config.Configuration
 import net.postchain.rell.toolbox.seeder.config.EntityConfig
 import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGeneratorFactory

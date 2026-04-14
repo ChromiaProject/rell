@@ -2,6 +2,8 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
+@file:Suppress("UnstableApiUsage")
+
 package net.postchain.rell.base.lib.type
 
 import net.postchain.rell.base.lib.Lib_Rell

@@ -38,6 +38,7 @@ import org.bouncycastle.math.ec.custom.sec.SecP256K1Curve;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+@SuppressWarnings("ALL")
 public class Signer {
 
     public static final ECDomainParameters CURVE_PARAMS;

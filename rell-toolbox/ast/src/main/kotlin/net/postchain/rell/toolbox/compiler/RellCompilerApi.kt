@@ -10,7 +10,6 @@ import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.toolbox.parser.RellParser.RuleX_RootParserContext

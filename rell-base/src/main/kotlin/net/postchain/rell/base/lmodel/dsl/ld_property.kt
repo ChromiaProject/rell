@@ -10,10 +10,8 @@ import net.postchain.rell.base.compiler.base.lib.C_SysFunctionCtx
 import net.postchain.rell.base.compiler.base.lib.C_SysProperty
 import net.postchain.rell.base.lmodel.L_NamespaceProperty
 import net.postchain.rell.base.lmodel.L_TypeProperty
-import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.runtime.Rt_CallContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils

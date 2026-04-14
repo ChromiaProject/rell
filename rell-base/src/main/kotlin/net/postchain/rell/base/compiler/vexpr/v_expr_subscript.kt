@@ -12,11 +12,7 @@ import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_VarPathItem
 import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_Errors
-import net.postchain.rell.base.lib.type.Lib_Type_ByteArray
-import net.postchain.rell.base.lib.type.Lib_Type_Text
-import net.postchain.rell.base.lib.type.R_IntegerType
-import net.postchain.rell.base.lib.type.R_JsonType
-import net.postchain.rell.base.lib.type.R_TextType
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.sql.SqlConstants

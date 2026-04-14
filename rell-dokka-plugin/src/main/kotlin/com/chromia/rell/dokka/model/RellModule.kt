@@ -4,14 +4,7 @@
 
 package com.chromia.rell.dokka.model
 
-import net.postchain.rell.base.model.R_EntityDefinition
-import net.postchain.rell.base.model.R_EnumDefinition
-import net.postchain.rell.base.model.R_FunctionDefinition
-import net.postchain.rell.base.model.R_GlobalConstantDefinition
-import net.postchain.rell.base.model.R_ObjectDefinition
-import net.postchain.rell.base.model.R_OperationDefinition
-import net.postchain.rell.base.model.R_QueryDefinition
-import net.postchain.rell.base.model.R_StructDefinition
+import net.postchain.rell.base.model.*
 
 data class RellModule(
         val operations: Collection<R_OperationDefinition>,

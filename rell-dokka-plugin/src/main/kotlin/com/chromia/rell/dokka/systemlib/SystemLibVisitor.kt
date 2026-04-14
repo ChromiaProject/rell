@@ -8,55 +8,18 @@ import com.chromia.rell.dokka.config.RellModule
 import com.chromia.rell.dokka.deprecation.toAnnotation
 import com.chromia.rell.dokka.doc.AliasDocTagProvider
 import com.chromia.rell.dokka.doc.toDocumentationNode
-import com.chromia.rell.dokka.dri.DriOfRoot
-import com.chromia.rell.dokka.dri.from
-import com.chromia.rell.dokka.dri.toBound
-import com.chromia.rell.dokka.dri.toDRI
-import com.chromia.rell.dokka.dri.toTypeConstructor
-import com.chromia.rell.dokka.dri.withAlias
-import com.chromia.rell.dokka.dri.withSourceSet
-import com.chromia.rell.dokka.model.IsFunction
-import com.chromia.rell.dokka.model.IsHidden
-import com.chromia.rell.dokka.model.IsStruct
-import com.chromia.rell.dokka.model.IsType
-import com.chromia.rell.dokka.model.IsVararg
+import com.chromia.rell.dokka.dri.*
+import com.chromia.rell.dokka.model.*
 import com.chromia.rell.dokka.translators.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
-import net.postchain.rell.base.lmodel.L_FunctionParam
-import net.postchain.rell.base.lmodel.L_NamespaceMember_Alias
-import net.postchain.rell.base.lmodel.L_NamespaceMember_Constant
-import net.postchain.rell.base.lmodel.L_NamespaceMember_Function
-import net.postchain.rell.base.lmodel.L_NamespaceMember_Namespace
-import net.postchain.rell.base.lmodel.L_NamespaceMember_Property
-import net.postchain.rell.base.lmodel.L_NamespaceMember_SpecialFunction
-import net.postchain.rell.base.lmodel.L_NamespaceMember_Struct
-import net.postchain.rell.base.lmodel.L_NamespaceMember_Type
-import net.postchain.rell.base.lmodel.L_TypeDefMember_Alias
-import net.postchain.rell.base.lmodel.L_TypeDefMember_Constant
-import net.postchain.rell.base.lmodel.L_TypeDefMember_Constructor
-import net.postchain.rell.base.lmodel.L_TypeDefMember_Function
-import net.postchain.rell.base.lmodel.L_TypeDefMember_Property
-import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
+import net.postchain.rell.base.lmodel.*
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
+import org.jetbrains.dokka.links.*
 import org.jetbrains.dokka.links.Callable
-import org.jetbrains.dokka.links.DRI
-import org.jetbrains.dokka.links.JavaClassReference
-import org.jetbrains.dokka.links.PointingToCallableParameters
-import org.jetbrains.dokka.links.withClass
-import org.jetbrains.dokka.model.Annotations
-import org.jetbrains.dokka.model.DClass
-import org.jetbrains.dokka.model.DFunction
-import org.jetbrains.dokka.model.DPackage
-import org.jetbrains.dokka.model.DParameter
-import org.jetbrains.dokka.model.DProperty
-import org.jetbrains.dokka.model.DTypeAlias
-import org.jetbrains.dokka.model.Documentable
-import org.jetbrains.dokka.model.KotlinClassKindTypes
-import org.jetbrains.dokka.model.KotlinModifier.Empty
+import org.jetbrains.dokka.model.*
 import org.jetbrains.dokka.model.KotlinModifier.Abstract
+import org.jetbrains.dokka.model.KotlinModifier.Empty
 import org.jetbrains.dokka.model.KotlinVisibility.Public
-import org.jetbrains.dokka.model.TypeConstructorWithKind
-import org.jetbrains.dokka.model.TypeParameter
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.doc.P
@@ -69,7 +32,7 @@ import org.jetbrains.dokka.utilities.DokkaLogger
  */
 class SystemLibVisitor(
         val sourceSet: DokkaSourceSet,
-        private val logger: DokkaLogger,
+        logger: DokkaLogger,
 ) {
     private val typeDefVisitor = TypeDefMemberVisitor(sourceSet, logger)
 

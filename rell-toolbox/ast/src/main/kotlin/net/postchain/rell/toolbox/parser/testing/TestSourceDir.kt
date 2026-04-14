@@ -5,11 +5,7 @@
 package net.postchain.rell.toolbox.parser.testing
 
 import net.postchain.rell.base.compiler.ast.S_RellFile
-import net.postchain.rell.base.compiler.base.utils.C_CommonError
-import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.compiler.base.utils.C_SourceFile
-import net.postchain.rell.base.compiler.base.utils.C_SourcePath
-import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.utils.ide.IdeDirApi.mapDir
 import net.postchain.rell.base.utils.ide.IdeDirApi.parseSourcePath
@@ -38,11 +34,7 @@ class TestSourceFile(
     val text: String
 ) : C_SourceFile() {
 
-    private val idePath: IdeFilePath
-
-    init {
-        idePath = IdeSourcePathFilePath(path)
-    }
+    private val idePath: IdeFilePath = IdeSourcePathFilePath(path)
 
     override fun idePath(): IdeFilePath {
         return idePath

@@ -5,9 +5,9 @@
 package net.postchain.rell.toolbox.seeder.config.parser
 
 import com.fasterxml.jackson.databind.JsonNode
-import net.postchain.rell.toolbox.seeder.Attribute
-import net.postchain.rell.toolbox.seeder.Entity
-import net.postchain.rell.toolbox.seeder.RellSchema
+import net.postchain.rell.toolbox.seeder.schema.Attribute
+import net.postchain.rell.toolbox.seeder.schema.Entity
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.config.EntityConfig
 
@@ -59,7 +59,7 @@ class EntityConfigParser {
     private fun findAttributeInEntity(
         attributeName: String,
         entityName: String,
-        schemaEntity: net.postchain.rell.toolbox.seeder.Entity
+        schemaEntity: Entity,
     ): Attribute =
         schemaEntity.attributes.find { it.name == attributeName }
             ?: throw ConfigurationValidationException(

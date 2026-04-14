@@ -12,6 +12,7 @@ import net.postchain.rell.toolbox.seeder.config.parser.ConfigurationParser
 import net.postchain.rell.toolbox.seeder.exporter.DataExporterFactory
 import net.postchain.rell.toolbox.seeder.exporter.OutputFormat
 import net.postchain.rell.toolbox.seeder.generator.DataGenerator
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import java.io.File
 import java.nio.file.Path
 

@@ -17,12 +17,7 @@ import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.PointingToCallableParameters
 import org.jetbrains.dokka.links.TypeConstructor
-import org.jetbrains.dokka.model.DFunction
-import org.jetbrains.dokka.model.DParameter
-import org.jetbrains.dokka.model.DTypeParameter
-import org.jetbrains.dokka.model.Nullable
-import org.jetbrains.dokka.model.TypeParameter
-import org.jetbrains.dokka.model.Void
+import org.jetbrains.dokka.model.*
 import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.properties.PropertyContainer
 

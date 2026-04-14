@@ -5,16 +5,9 @@
 package net.postchain.rell.toolbox.seeder.config.parser
 
 import com.fasterxml.jackson.databind.JsonNode
-import net.postchain.rell.base.lib.type.R_BigIntegerType
-import net.postchain.rell.base.lib.type.R_BooleanType
-import net.postchain.rell.base.lib.type.R_ByteArrayType
-import net.postchain.rell.base.lib.type.R_DecimalType
-import net.postchain.rell.base.lib.type.R_IntegerType
-import net.postchain.rell.base.lib.type.R_JsonType
-import net.postchain.rell.base.lib.type.R_RowidType
-import net.postchain.rell.base.lib.type.R_TextType
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.R_EnumType
-import net.postchain.rell.toolbox.seeder.Attribute
+import net.postchain.rell.toolbox.seeder.schema.Attribute
 import java.math.BigInteger
 
 object PredefinedValueParser {

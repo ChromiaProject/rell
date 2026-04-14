@@ -16,13 +16,12 @@ import net.postchain.rell.base.compiler.base.namespace.C_NamespacePropertyContex
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_ConstantValueEvalContext
 import net.postchain.rell.base.lib.Lib_OpContext
-import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.ide.*
-import java.util.EnumSet
+import java.util.*
 
 sealed class S_AttrHeader: S_Node() {
     internal abstract fun discoverVar(): R_Name

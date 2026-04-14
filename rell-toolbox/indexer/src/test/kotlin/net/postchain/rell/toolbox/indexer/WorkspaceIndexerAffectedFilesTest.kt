@@ -9,7 +9,6 @@ import assertk.assertThat
 import assertk.assertions.containsAtLeast
 import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
-import assertk.assertions.isTrue
 import io.mockk.every
 import io.mockk.mockk
 import net.postchain.rell.toolbox.formatter.FormatterOptions

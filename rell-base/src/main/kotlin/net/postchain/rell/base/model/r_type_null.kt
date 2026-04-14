@@ -35,7 +35,7 @@ object Rt_NullValue: Rt_Value() {
 }
 
 object GtvRtConversion_Null: GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
 
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean): Gtv {
         checkEquals(rt, Rt_NullValue)

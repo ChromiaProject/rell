@@ -1,6 +1,3 @@
-import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.tasks.bundling.Zip
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     jacoco

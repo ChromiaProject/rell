@@ -34,7 +34,7 @@ internal object C_AnnUtils {
         min: Int,
         max: Int,
     ) {
-        if (args.size < min || args.size > max) {
+        if (args.size !in min..max) {
             ctx.msgCtx.error(name.pos, "ann:$name:arg_count:${args.size}",
                 "Wrong number of arguments (expected between $min and $max arguments (inclusive), got ${args.size})")
         }

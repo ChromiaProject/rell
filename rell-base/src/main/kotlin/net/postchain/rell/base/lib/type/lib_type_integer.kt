@@ -366,8 +366,8 @@ class Rt_IntValue private constructor(val value: Long): Rt_Value() {
     companion object {
         const val MAX_VALUE = Long.MAX_VALUE
         const val MIN_VALUE = Long.MIN_VALUE
-        val MAX_VALUE_AS_BIGINT = BigInteger.valueOf(MAX_VALUE)
-        val MIN_VALUE_AS_BIGINT = BigInteger.valueOf(MIN_VALUE)
+        val MAX_VALUE_AS_BIGINT: BigInteger = BigInteger.valueOf(MAX_VALUE)
+        val MIN_VALUE_AS_BIGINT: BigInteger = BigInteger.valueOf(MIN_VALUE)
         private const val NVALUES = 1000
 
         private val VALUES = (-NVALUES .. NVALUES).mapToImmList { Rt_IntValue(it.toLong()) }
@@ -385,7 +385,7 @@ class Rt_IntValue private constructor(val value: Long): Rt_Value() {
 }
 
 private object GtvRtConversion_Integer: GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvInteger(rt.asInteger())
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {

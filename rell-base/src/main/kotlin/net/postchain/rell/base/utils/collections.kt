@@ -8,9 +8,6 @@ import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.LinkedListMultimap
 import com.google.common.collect.Multimap
 import kotlinx.collections.immutable.*
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.minus as kminus
 import kotlinx.collections.immutable.plus as kplus
 
@@ -144,24 +141,6 @@ fun <T> ImmList<T>.mapOrSame(f: (T) -> T): ImmList<T> {
     for (i in this.indices) {
         val v = this[i]
         val v2 = f(v)
-        if (res == null && v2 !== v) {
-            res = ArrayList(this.size)
-            for (j in 0 until i) {
-                res.add(this[j])
-            }
-        }
-        res?.add(v2)
-    }
-
-    return res?.toImmList() ?: this
-}
-
-fun <T> List<T>.mapIndexedOrSame(f: (Int, T) -> T): List<T> {
-    var res: MutableList<T>? = null
-
-    for (i in this.indices) {
-        val v = this[i]
-        val v2 = f(i, v)
         if (res == null && v2 !== v) {
             res = ArrayList(this.size)
             for (j in 0 until i) {
@@ -394,10 +373,6 @@ fun <T, K: Any, V: Any> Iterable<T>.toImmMultimap(fn: (T) -> Pair<K, V>): ImmMul
         m.put(key, value)
     }
     return m.toImmMultimap()
-}
-
-fun <T: Any, K: Any> Iterable<T>.toImmMultimapKey(fn: (T) -> K): ImmMultimap<K, T> {
-    return this.toImmMultimap { fn(it) to it }
 }
 
 fun <K: Any, V: Any> Iterable<Pair<K, V>>.toImmMultimap(): ImmMultimap<K, V> {

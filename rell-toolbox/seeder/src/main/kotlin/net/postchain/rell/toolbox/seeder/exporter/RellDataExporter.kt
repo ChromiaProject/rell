@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.module.SimpleModule
 import net.postchain.common.types.WrappedByteArray
-import net.postchain.rell.toolbox.seeder.RellSchema
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import net.postchain.rell.toolbox.seeder.generator.EntityRecord
 import net.postchain.rell.toolbox.seeder.generator.GeneratedData
 import java.io.FileWriter

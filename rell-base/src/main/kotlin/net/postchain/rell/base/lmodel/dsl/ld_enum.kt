@@ -7,7 +7,6 @@ package net.postchain.rell.base.lmodel.dsl
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.lmodel.L_Enum
 import net.postchain.rell.base.model.R_FullName
-import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.toImmList
 
 internal class Ld_EnumDslImpl(

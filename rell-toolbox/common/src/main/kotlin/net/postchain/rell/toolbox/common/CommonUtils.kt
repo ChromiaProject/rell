@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.common
 
 fun offsetToPosition(content: String, offset: Int): Position {
     val contentLength = content.length
-    if (offset < 0 || offset > contentLength) {
+    if (offset !in 0..contentLength) {
         throw IndexOutOfBoundsException(
             "Offset $offset is out of bounds for range [0, $contentLength]"
         )

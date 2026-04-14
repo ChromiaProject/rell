@@ -5,7 +5,6 @@
 package net.postchain.rell.base.lib.test
 
 import com.google.common.math.LongMath
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl

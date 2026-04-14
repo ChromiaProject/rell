@@ -13,7 +13,6 @@ import net.postchain.rell.base.lib.type.R_ListType
 import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.lib.type.R_SetType
 import net.postchain.rell.base.lib.type.R_UnitType
-import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDeclarationProto_TupleAttribute
@@ -121,23 +120,20 @@ internal class S_GenericType(private val name: S_QualifiedName, private val args
 }
 
 internal class S_NullableType(pos: S_Pos, val valueType: S_Type): S_Type(pos) {
-    override fun compile0(ctx: C_DefinitionContext): R_Type {
-        val rValueType = valueType.compile(ctx)
-        return when (rValueType) {
-            is R_NullableType -> {
-                errBadType(ctx, "nullable", "T?")
-                rValueType
-            }
-            R_NullType -> {
-                errBadType(ctx, "null", "null")
-                rValueType
-            }
-            R_UnitType -> {
-                errBadType(ctx, "unit", "unit")
-                R_CtErrorType
-            }
-            else -> R_NullableType(rValueType)
+    override fun compile0(ctx: C_DefinitionContext): R_Type = when (val rValueType = valueType.compile(ctx)) {
+        is R_NullableType -> {
+            errBadType(ctx, "nullable", "T?")
+            rValueType
         }
+        R_NullType -> {
+            errBadType(ctx, "null", "null")
+            rValueType
+        }
+        R_UnitType -> {
+            errBadType(ctx, "unit", "unit")
+            R_CtErrorType
+        }
+        else -> R_NullableType(rValueType)
     }
 
     private fun errBadType(ctx: C_DefinitionContext, valueTypeName: String, valueTypeCode: String) {
@@ -210,10 +206,7 @@ internal class S_VirtualType(pos: S_Pos, val innerType: S_Type): S_Type(pos) {
     override fun compile0(ctx: C_DefinitionContext): R_Type {
         val rInnerType = innerType.compile(ctx)
 
-        val rType = virtualType(rInnerType)
-        if (rType == null) {
-            throw errBadInnerType(rInnerType)
-        }
+        val rType = virtualType(rInnerType) ?: throw errBadInnerType(rInnerType)
 
         ctx.executor.onPass(C_CompilerPass.VALIDATION) {
             validate(rInnerType)

@@ -6,17 +6,8 @@ package net.postchain.rell.toolbox.seeder.schema
 
 import assertk.Assert
 import assertk.assertThat
-import assertk.assertions.containsExactly
-import assertk.assertions.containsExactlyInAnyOrder
-import assertk.assertions.isEmpty
-import assertk.assertions.isEqualTo
-import assertk.assertions.isInstanceOf
-import assertk.assertions.isNotNull
-import assertk.assertions.prop
+import assertk.assertions.*
 import net.postchain.rell.base.model.R_EnumType
-import net.postchain.rell.toolbox.seeder.Entity
-import net.postchain.rell.toolbox.seeder.SchemaReader
-import net.postchain.rell.toolbox.seeder.SchemaReaderException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

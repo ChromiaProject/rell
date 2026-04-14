@@ -8,11 +8,7 @@ import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.base.lib.type.R_CollectionType
 import net.postchain.rell.base.lib.type.R_MapType
-import net.postchain.rell.base.model.R_App
-import net.postchain.rell.base.model.R_NullableType
-import net.postchain.rell.base.model.R_QueryDefinition
-import net.postchain.rell.base.model.R_TupleType
-import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.section.DocumentSection

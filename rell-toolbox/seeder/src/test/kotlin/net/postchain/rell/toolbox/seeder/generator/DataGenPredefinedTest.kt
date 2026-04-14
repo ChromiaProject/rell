@@ -9,7 +9,7 @@ import assertk.assertions.containsOnly
 import assertk.assertions.each
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEqualTo
-import net.postchain.rell.toolbox.seeder.SchemaReader
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.seeder.config.Distribution
 import net.postchain.rell.toolbox.seeder.config.dsl.configFile
 import net.postchain.rell.toolbox.seeder.config.parser.AttributeConfigParser

@@ -12,6 +12,9 @@ import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.runtime.Rt_Exception
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 object Lib_Math {
     val Abs_Integer = C_SysFunctionBody.simple(Db_SysFunction.simple("abs", "ABS"), pure = true) { a ->
@@ -19,7 +22,7 @@ object Lib_Math {
         if (v == Long.MIN_VALUE) {
             throw Rt_Exception.common("abs:integer:overflow:$v", "Integer overflow: $v")
         }
-        val r = Math.abs(v)
+        val r = abs(v)
         Rt_IntValue.get(r)
     }
 
@@ -38,7 +41,7 @@ object Lib_Math {
     val Min_Integer = C_SysFunctionBody.simple(Db_SysFunction.simple("min", "LEAST"), pure = true) { a, b ->
         val v1 = a.asInteger()
         val v2 = b.asInteger()
-        val r = Math.min(v1, v2)
+        val r = min(v1, v2)
         Rt_IntValue.get(r)
     }
 
@@ -59,7 +62,7 @@ object Lib_Math {
     val Max_Integer = C_SysFunctionBody.simple(Db_SysFunction.simple("max", "GREATEST"), pure = true) { a, b ->
         val v1 = a.asInteger()
         val v2 = b.asInteger()
-        val r = Math.max(v1, v2)
+        val r = max(v1, v2)
         Rt_IntValue.get(r)
     }
 

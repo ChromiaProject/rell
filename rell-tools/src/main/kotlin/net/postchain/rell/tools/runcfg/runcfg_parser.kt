@@ -17,11 +17,10 @@ object RunConfigParser {
     private const val TEST_CONFIG_TAG = "test-config"
 
     fun parseConfig(xml: RellXmlElement, opts: RunConfigParserOptions): Rcfg_Run {
-        val root = xml
-        root.checkTag("run")
-        root.checkNoText()
+        xml.checkTag("run")
+        xml.checkNoText()
 
-        val attrs = root.attrs()
+        val attrs = xml.attrs()
         val wipeDb = attrs.getBooleanOpt("wipe-db") ?: false
         attrs.checkNoMore()
 
@@ -31,7 +30,7 @@ object RunConfigParser {
         var chains: List<Rcfg_Chain>? = null
         var tests: List<Rcfg_TestModule>? = null
 
-        for (elem in root.elems) {
+        for (elem in xml.elems) {
             when (elem.tag) {
                 "nodes" -> {
                     elem.check(!nodes) { "nodes specified more than once" }
@@ -50,8 +49,8 @@ object RunConfigParser {
             }
         }
 
-        root.check(nodeConfig != null || testNodeConfig != null) { "node configuration not defined" }
-        root.check(chains != null && !chains.isEmpty()) { "no chains defined" }
+        xml.check(nodeConfig != null || testNodeConfig != null) { "node configuration not defined" }
+        xml.check(!chains.isNullOrEmpty()) { "no chains defined" }
 
         return Rcfg_Run(nodeConfig, testNodeConfig, chains.orEmpty(), tests.orEmpty(), wipeDb = wipeDb)
     }

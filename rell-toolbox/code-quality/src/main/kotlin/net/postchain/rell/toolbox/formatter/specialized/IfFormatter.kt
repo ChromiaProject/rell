@@ -9,7 +9,8 @@ import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.ExpressionFormatter
 import net.postchain.rell.toolbox.formatter.util.LineAnalyzer
 import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
-import net.postchain.rell.toolbox.parser.RellParser.*
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_IfExprContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_IfStmtContext
 
 class IfStmtFormatter(
     private val tokenAnalyzer: TokenAnalyzer,

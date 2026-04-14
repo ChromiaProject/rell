@@ -17,13 +17,7 @@ import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsManager
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider
 import net.postchain.rell.toolbox.lsp.references.RellReferenceService
-import net.postchain.rell.toolbox.lsp.server.FileChangeHandler
-import net.postchain.rell.toolbox.lsp.server.NotificationType
-import net.postchain.rell.toolbox.lsp.server.RellDiagnosticsManager
-import net.postchain.rell.toolbox.lsp.server.RellDocumentManager
-import net.postchain.rell.toolbox.lsp.server.RellIndexingManager
-import net.postchain.rell.toolbox.lsp.server.RellRenamingService
-import net.postchain.rell.toolbox.lsp.server.RellWorkspaceManager
+import net.postchain.rell.toolbox.lsp.server.*
 import net.postchain.rell.toolbox.lsp.symbols.RellCompletionSymbolService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import org.eclipse.lsp4j.WorkspaceFolder

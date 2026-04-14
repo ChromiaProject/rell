@@ -30,6 +30,8 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
 import java.math.RoundingMode
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.reflect.full.createType
 
 object Lib_Type_Decimal {
@@ -219,8 +221,8 @@ object Lib_Type_Decimal {
                 body { a, b ->
                     val v = a.asDecimal()
                     var scale = b.asInteger()
-                    scale = Math.max(scale, -Lib_DecimalMath.DECIMAL_INT_DIGITS.toLong())
-                    scale = Math.min(scale, Lib_DecimalMath.DECIMAL_FRAC_DIGITS.toLong())
+                    scale = max(scale, -Lib_DecimalMath.DECIMAL_INT_DIGITS.toLong())
+                    scale = min(scale, Lib_DecimalMath.DECIMAL_FRAC_DIGITS.toLong())
                     val r = v.setScale(scale.toInt(), RoundingMode.HALF_UP)
                     Rt_DecimalValue.get(r)
                 }
@@ -519,10 +521,7 @@ object Lib_DecimalMath {
         }
     }
 
-    private fun isDigit(s: String, i: Int): Boolean {
-        val c = s[i]
-        return c >= '0' && c <= '9'
-    }
+    private fun isDigit(s: String, i: Int): Boolean = s[i] in '0'..'9'
 }
 
 private object DecFns {
@@ -554,7 +553,7 @@ private object DecFns {
     ) { a ->
         val v = a.asDecimal()
         val bi = v.toBigInteger()
-        if (bi < BIG_INT_MIN || bi > BIG_INT_MAX) {
+        if (bi !in BIG_INT_MIN..BIG_INT_MAX) {
             var s = v.round(MathContext(20, RoundingMode.DOWN))
             s = Lib_DecimalMath.stripTrailingZeros(s)
             throw Rt_Exception.common("decimal.to_integer:overflow:$s", "Value out of range: $s")
@@ -679,7 +678,7 @@ class Rt_DecimalValue private constructor(val value: BigDecimal): Rt_Value() {
 }
 
 private object GtvRtConversion_Decimal: GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvFactory.gtv(Lib_DecimalMath.toString(rt.asDecimal()))
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {

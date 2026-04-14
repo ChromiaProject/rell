@@ -10,7 +10,6 @@ import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.codegen.docs.AbstractDocGenerator
 import net.postchain.rell.codegen.util.rTypeToJsTypeString
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
-import kotlin.collections.forEach
 
 object JavascriptDocGenerator : AbstractDocGenerator() {
     override fun formatDefaultParamTags(sb: StringBuilder, params: List<R_FunctionParam>) {

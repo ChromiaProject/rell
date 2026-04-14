@@ -5,12 +5,7 @@
 package net.postchain.rell.toolbox.lsp.tokens
 
 import assertk.assertThat
-import assertk.assertions.contains
-import assertk.assertions.containsAtLeast
-import assertk.assertions.containsExactly
-import assertk.assertions.extracting
-import assertk.assertions.isEqualTo
-import assertk.assertions.isGreaterThanOrEqualTo
+import assertk.assertions.*
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory

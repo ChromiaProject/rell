@@ -9,7 +9,7 @@ import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.Annotations
 import org.jetbrains.dokka.model.BooleanValue
 import org.jetbrains.dokka.model.StringValue
-import java.util.Locale
+import java.util.*
 
 fun C_Deprecated.toAnnotation() = Annotations.Annotation(
         DRI("kotlin", "Deprecated"),

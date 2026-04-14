@@ -6,8 +6,8 @@ package net.postchain.rell.toolbox.seeder.generator.pattern
 
 import io.github.serpro69.kfaker.Faker
 import io.github.serpro69.kfaker.fakerConfig
-import net.postchain.rell.toolbox.seeder.Attribute
-import net.postchain.rell.toolbox.seeder.Entity
+import net.postchain.rell.toolbox.seeder.schema.Attribute
+import net.postchain.rell.toolbox.seeder.schema.Entity
 import net.postchain.rell.toolbox.seeder.generator.DataGeneratorContext
 import net.postchain.rell.toolbox.seeder.generator.UniqueProducer
 import net.postchain.rell.toolbox.seeder.generator.pattern.category.*

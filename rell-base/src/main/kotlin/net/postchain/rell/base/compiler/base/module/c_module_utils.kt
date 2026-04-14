@@ -39,7 +39,7 @@ internal object C_ModuleUtils {
             return Pair(null, false)
         }
 
-        var nameParts: List<String> = parts.subList(0, n - 1)
+        val nameParts = parts.subList(0, n - 1).toMutableList()
         var directory = false
 
         if (tail == MODULE_FILE || ast.header == null) {
@@ -49,7 +49,7 @@ internal object C_ModuleUtils {
             nameParts += tailName
         }
 
-        val rNames = nameParts.mapNotNullToImmList { R_Name.ofOpt(it) }
+        val rNames = nameParts.mapNotNull { R_Name.ofOpt(it) }
         if (rNames.size != nameParts.size) {
             return Pair(null, false)
         }
@@ -177,7 +177,7 @@ private class C_ModuleDirTree(
 
     private class C_RawModule(val source: C_ModuleSource?)
 
-    private abstract inner class TreeNode(val path: C_SourcePath)
+    private abstract class TreeNode(val path: C_SourcePath)
 
     private inner class DirNode(
         path: C_SourcePath,

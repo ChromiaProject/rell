@@ -6,7 +6,6 @@ package net.postchain.rell.base.lib.type
 
 import net.postchain.gtv.Gtv
 import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.lib.type.R_ListType.Companion
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_TypeMeta
@@ -15,7 +14,6 @@ import net.postchain.rell.base.model.expr.R_BinaryOp_Intersect_Set
 import net.postchain.rell.base.model.expr.R_BinaryOp_Sub_Set
 import net.postchain.rell.base.model.expr.R_BinaryOp_Union_Set
 import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.utils.doc.DocType
 import net.postchain.rell.base.utils.doc.DocUtils
 import net.postchain.rell.base.utils.immListOf
 

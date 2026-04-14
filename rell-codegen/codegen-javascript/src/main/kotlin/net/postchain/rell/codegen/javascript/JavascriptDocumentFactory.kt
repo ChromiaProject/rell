@@ -33,7 +33,7 @@ class JavascriptDocumentFactory : DocumentFactory {
 
     override fun createOperation(rellOperation: R_OperationDefinition) = JavascriptOperation(rellOperation)
 
-    override fun getBuiltins(neededObjects: List<ClassName>) = JavascriptBuiltinType.values()
+    override fun getBuiltins(neededObjects: List<ClassName>) = JavascriptBuiltinType.entries
             .filter { it.builtin.functionName in neededObjects.map { x -> x.className } }
             .map { it.createBuiltin() }
 }

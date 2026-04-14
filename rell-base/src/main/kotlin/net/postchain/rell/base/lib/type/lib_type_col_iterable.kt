@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.lib.type
 
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.Rt_FunctionValue

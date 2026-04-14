@@ -10,7 +10,7 @@ import net.postchain.rell.base.model.R_QueryDefinition
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import net.postchain.rell.codegen.util.snakeToUpperCamelCase
-import java.util.Locale
+import java.util.*
 
 data class CamelCaseClassName(
         override val rellName: String,

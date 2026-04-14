@@ -9,13 +9,7 @@ import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import net.postchain.rell.toolbox.util.getCurrentLogFileName
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.LanguageClient
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.FileOutputStream
-import java.io.InputStream
-import java.io.OutputStream
-import java.io.PrintStream
-import java.io.PrintWriter
+import java.io.*
 
 class StdioServerLauncher(
     private val serverInputStream: InputStream,

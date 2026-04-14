@@ -16,7 +16,6 @@ import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.immSetOf
 import org.jooq.impl.SQLDataType
-import java.math.BigInteger
 import kotlin.reflect.full.createType
 
 object Lib_Type_Boolean {
@@ -166,7 +165,7 @@ class Rt_BooleanValue private constructor(val value: Boolean): Rt_Value() {
 }
 
 private object GtvRtConversion_Boolean: GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvInteger(if (rt.asBoolean()) 1L else 0L)
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {

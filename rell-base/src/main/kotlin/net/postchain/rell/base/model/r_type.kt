@@ -15,8 +15,6 @@ import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.lib.R_RellErrorType
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.mtype.*
-import net.postchain.rell.base.mtype.M_GenericTypeAddon
-import net.postchain.rell.base.mtype.M_Types
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.toGtv
@@ -518,8 +516,7 @@ internal class R_GenericType(
                 arg.typeExtractors.map {
                     it.key to { srcType: R_Type ->
                         if (srcType is R_GenericType && srcType.typeName == typeName && srcType.args.size == args.size) {
-                            val srcArg = srcType.args[i]
-                            val realSrcArg = when (srcArg) {
+                            val realSrcArg = when (val srcArg = srcType.args[i]) {
                                 is R_SubType -> srcArg.valueType
                                 else -> srcArg
                             }

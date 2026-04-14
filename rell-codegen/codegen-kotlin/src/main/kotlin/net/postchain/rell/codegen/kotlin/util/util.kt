@@ -4,18 +4,7 @@
 
 package net.postchain.rell.codegen.kotlin.util
 
-import net.postchain.rell.base.lib.type.R_BigIntegerType
-import net.postchain.rell.base.lib.type.R_BooleanType
-import net.postchain.rell.base.lib.type.R_ByteArrayType
-import net.postchain.rell.base.lib.type.R_DecimalType
-import net.postchain.rell.base.lib.type.R_GtvType
-import net.postchain.rell.base.lib.type.R_IntegerType
-import net.postchain.rell.base.lib.type.R_JsonType
-import net.postchain.rell.base.lib.type.R_ListType
-import net.postchain.rell.base.lib.type.R_MapType
-import net.postchain.rell.base.lib.type.R_RowidType
-import net.postchain.rell.base.lib.type.R_SetType
-import net.postchain.rell.base.lib.type.R_TextType
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 
@@ -67,9 +56,9 @@ fun rTypeToString(name: String, type: R_Type, primitiveTypes: Boolean, aliases: 
             else -> "Gtv"
         }
 
-fun aliasToString(name: String, type: R_Type, enabled: Boolean): String? = if (!enabled) null else when {
-    name == "pubkey" && type is R_ByteArrayType -> "PubKey"
-    name == "blockchain_rid" && type is R_ByteArrayType -> "BlockchainRid"
+fun aliasToString(name: String, type: R_Type, enabled: Boolean): String? = if (!enabled) null else when (name) {
+    "pubkey" if type is R_ByteArrayType -> "PubKey"
+    "blockchain_rid" if type is R_ByteArrayType -> "BlockchainRid"
     else -> null
 }
 

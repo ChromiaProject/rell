@@ -2,6 +2,8 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
+@file:Suppress("UnstableApiUsage")
+
 package net.postchain.rell.base.lib.type
 
 import com.fasterxml.jackson.core.JsonProcessingException
@@ -15,11 +17,7 @@ import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_BodyResult
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_GtvCompatibility
-import net.postchain.rell.base.model.R_PrimitiveType
-import net.postchain.rell.base.model.R_TypeSqlAdapter
-import net.postchain.rell.base.model.R_TypeSqlAdapter_Primitive
-import net.postchain.rell.base.model.Rt_NullValue
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Comparator
 import net.postchain.rell.base.sql.PreparedStatementParams
@@ -213,7 +211,7 @@ object Lib_Type_Json {
                     @return this JSON integer as an integer, or null if this JSON value is not an integer
                 """)
                 dbFunctionSimple("json.as_integer_or_null", SqlConstants.FN_JSON_AS_INTEGER_OR_NULL)
-                asTypeBody(this, JsonUtils::canBeRellInteger, null_on_error = true) { Rt_IntValue.get(it.asLong()) }
+                asTypeBody(this, JsonUtils::canBeRellInteger, nullOnError = true) { Rt_IntValue.get(it.asLong()) }
             }
 
             function("as_big_integer_or_null", result = "big_integer?", pure = true, since = "0.14.16") {
@@ -226,7 +224,7 @@ object Lib_Type_Json {
                     @return this JSON value as a `big_integer`, or null if it cannot be converted to a `big_integer`
                 """)
                 dbFunctionSimple("json.as_big_integer_or_null", SqlConstants.FN_JSON_AS_BIG_INTEGER_OR_NULL)
-                asTypeBody(this, JsonUtils::canBeRellBigInteger, null_on_error = true) {
+                asTypeBody(this, JsonUtils::canBeRellBigInteger, nullOnError = true) {
                     Rt_BigIntegerValue.get(it.bigIntegerValue())
                 }
             }
@@ -237,7 +235,7 @@ object Lib_Type_Json {
                     @return this JSON boolean as a boolean, or null if this JSON value is not a boolean
                 """)
                 dbFunctionSimple("json.as_boolean_or_null", SqlConstants.FN_JSON_AS_BOOLEAN_OR_NULL)
-                asTypeBody(this, JsonNode::isBoolean, null_on_error = true) { Rt_BooleanValue.get(it.asBoolean()) }
+                asTypeBody(this, JsonNode::isBoolean, nullOnError = true) { Rt_BooleanValue.get(it.asBoolean()) }
             }
 
             function("as_text_or_null", result = "text?", pure = true, since = "0.14.16") {
@@ -246,7 +244,7 @@ object Lib_Type_Json {
                     @return this JSON text as text, or null if this JSON value is not text
                 """)
                 dbFunctionSimple("json.as_text_or_null", SqlConstants.FN_JSON_AS_TEXT_OR_NULL)
-                asTypeBody(this, JsonNode::isTextual, null_on_error = true) { Rt_TextValue.get(it.asText()) }
+                asTypeBody(this, JsonNode::isTextual, nullOnError = true) { Rt_TextValue.get(it.asText()) }
             }
 
             function("is_object", result = "boolean", pure = true, since = "0.14.16") {
@@ -366,14 +364,14 @@ object Lib_Type_Json {
 private fun asTypeBody(
     m: Ld_FunctionDsl,
     checkType: (JsonNode) -> Boolean,
-    null_on_error: Boolean = false,
+    nullOnError: Boolean = false,
     getType: (JsonNode) -> Rt_Value,
 ): Ld_BodyResult = with(m) {
     body { json ->
         val jsonValue = json.asJson().node
         when {
             checkType(jsonValue) -> getType(jsonValue)
-            null_on_error -> Rt_NullValue
+            nullOnError -> Rt_NullValue
             else -> {
                 val nodeTypeName = jsonValue.nodeType.name
                 throw Rt_Exception.common(
@@ -460,7 +458,7 @@ class Rt_JsonValue internal constructor(internal val node: JsonNode): Rt_Value()
 }
 
 private object GtvRtConversion_Json: GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvString(rt.asJson().str)
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv) = GtvRtUtils.gtvToJson(ctx, gtv, R_JsonType)
 }
@@ -472,18 +470,16 @@ internal object JsonUtils {
             node.isBigInteger -> {
                 val value = node.bigIntegerValue()
                 value != null &&
-                    value.compareTo(Rt_IntValue.MAX_VALUE_AS_BIGINT) <= 0 &&    // Would be out of range in Kotlin
-                    value.compareTo(Rt_IntValue.MIN_VALUE_AS_BIGINT) >= 0       // or BigInteger would truncate
+                        value <= Rt_IntValue.MAX_VALUE_AS_BIGINT &&    // Would be out of range in Kotlin
+                        value >= Rt_IntValue.MIN_VALUE_AS_BIGINT       // or BigInteger would truncate
             }
             else -> false
         }
     }
 
-    internal fun canBeRellBigInteger(node: JsonNode): Boolean {
-        return node.isIntegralNumber &&
-            node.bigIntegerValue().compareTo(Lib_BigIntegerMath.MAX_VALUE) <= 0 &&
-            node.bigIntegerValue().compareTo(Lib_BigIntegerMath.MIN_VALUE) >= 0
-    }
+    internal fun canBeRellBigInteger(node: JsonNode): Boolean = node.isIntegralNumber &&
+            node.bigIntegerValue() <= Lib_BigIntegerMath.MAX_VALUE &&
+            node.bigIntegerValue() >= Lib_BigIntegerMath.MIN_VALUE
 
     internal sealed interface GetOperationResult
     internal data class Success(val value: JsonNode): GetOperationResult

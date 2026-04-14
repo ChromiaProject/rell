@@ -197,22 +197,22 @@ internal class Rt_TimeFormatValue(format: String): Rt_Value() {
     override fun strCode(showTupleFieldNames: Boolean): String = "rell.time.format[${formatter.pattern}]"
     override fun asRellTimeFormat(): Rt_TimeFormatValue = this
 
-    private val formatter: FastDateFormat = FastDateFormat.getInstance(validate(format), utcTimeZone, Locale.US)
+    private val formatter: FastDateFormat = FastDateFormat.getInstance(validate(format), UTC_TIME_ZONE, Locale.US)
 
     fun textToMs(text: String): Long = formatter.parse(text).time
     fun msToText(ms: Long): String = formatter.format(ms)
     fun toText(): String = formatter.pattern
 
     companion object {
-        private val utcTimeZone: TimeZone by lazy { TimeZone.getTimeZone("UTC") }
-        private const val legalUnquotedAlpha = "yMwWDdEuaHhmsS"
-        private val legalQuotedAlpha: Set<Char> = (('A'..'Z') + ('a'..'z')).toSet()
-        private val legalNonAlpha: Set<Char> =
+        private val UTC_TIME_ZONE: TimeZone = TimeZone.getTimeZone("UTC")
+        private const val LEGAL_UNQUOTED_ALPHA = "yMwWDdEuaHhmsS"
+        private val LEGAL_QUOTED_ALPHA: Set<Char> = (('A'..'Z') + ('a'..'z')).toSet()
+        private val LEGAL_NON_ALPHA: Set<Char> =
             ((' '..'@') +                       // ASCII space, punctuation, symbols and digits
             ('['..'`') + ('{'..'~')).toSet() +  // More ASCII punctuation and symbols
             '\t'                                // ASCII tab character
-        private fun isLegalUnquoted(c: Char): Boolean = legalNonAlpha.contains(c) || legalUnquotedAlpha.contains(c)
-        private fun isLegalQuoted(c: Char): Boolean = legalNonAlpha.contains(c) || legalQuotedAlpha.contains(c)
+        private fun isLegalUnquoted(c: Char): Boolean = c in LEGAL_NON_ALPHA || c in LEGAL_UNQUOTED_ALPHA
+        private fun isLegalQuoted(c: Char): Boolean = c in LEGAL_NON_ALPHA || c in LEGAL_QUOTED_ALPHA
 
         private fun validate(format: String): String {
             var index = 0

@@ -7,11 +7,11 @@ package net.postchain.rell.toolbox.seeder.generator
 import net.postchain.rell.base.lib.type.R_BigIntegerType
 import net.postchain.rell.base.lib.type.R_DecimalType
 import net.postchain.rell.base.lib.type.R_IntegerType
+import net.postchain.rell.base.lib.type.R_RowidType
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGeneratorFactory
 import java.math.BigDecimal
 import java.math.BigInteger
-import net.postchain.rell.base.lib.type.R_RowidType
 
 class NumberValueGenerator(val generatorFactory: FakerGeneratorFactory) {
     fun generateNumberInRange(ctx: DataGeneratorContext): Number {

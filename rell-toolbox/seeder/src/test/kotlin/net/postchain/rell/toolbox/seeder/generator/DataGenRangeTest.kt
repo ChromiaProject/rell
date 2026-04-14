@@ -10,17 +10,17 @@ import assertk.assertions.each
 import assertk.assertions.isBetween
 import assertk.assertions.isGreaterThanOrEqualTo
 import assertk.assertions.isLessThanOrEqualTo
-import net.postchain.rell.toolbox.seeder.SchemaReader
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.seeder.config.dsl.configFile
 import net.postchain.rell.toolbox.seeder.config.parser.ConfigurationParser
+import net.postchain.rell.toolbox.seeder.generator.PrimitiveValueGenerator.Companion.ROWID_MAX_VALUE
+import net.postchain.rell.toolbox.seeder.generator.PrimitiveValueGenerator.Companion.ROWID_MIN_VALUE
 import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.nio.file.Path
-import net.postchain.rell.toolbox.seeder.generator.PrimitiveValueGenerator.Companion.ROWID_MAX_VALUE
-import net.postchain.rell.toolbox.seeder.generator.PrimitiveValueGenerator.Companion.ROWID_MIN_VALUE
 
 class DataGenRangeTest {
     private val schemaReader = SchemaReader()

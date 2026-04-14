@@ -300,9 +300,10 @@ internal object C_ArgMatcher {
             val paramValues = finalMappings
                 .mapNotNull { it.value }
                 .mapNotNullToImmList { m ->
-                    if (m.wild) null else {
-                        val arg = exprArgs[m.index]
-                        when (arg) {
+                    if (m.wild) {
+                        null
+                    } else {
+                        when (val arg = exprArgs[m.index]) {
                             is C_ArgMatchArg_Expr -> m.param to arg.vExpr
                             is C_ArgMatchArg_Default -> null
                         }

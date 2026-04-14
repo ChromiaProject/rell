@@ -4,8 +4,8 @@
 
 package net.postchain.rell.toolbox.seeder.config.dsl
 
-import net.postchain.rell.toolbox.seeder.config.ModuleConfig
 import net.postchain.rell.toolbox.seeder.config.EntityConfig
+import net.postchain.rell.toolbox.seeder.config.ModuleConfig
 
 class ModuleConfigBuilder {
     private var moduleName: String? = null

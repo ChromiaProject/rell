@@ -7,14 +7,11 @@ package net.postchain.rell.base.lmodel.dsl
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lmodel.*
-import net.postchain.rell.base.lmodel.L_FunctionFlags
 import net.postchain.rell.base.model.R_FullName
 import net.postchain.rell.base.model.R_Name
-import net.postchain.rell.base.mtype.M_FunctionHeader
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.doc.DocComment
-import net.postchain.rell.base.utils.mapToImmList
 
 interface Ld_FunctionMaker: Ld_CommonFunctionMaker {
     fun alias(name: String, deprecated: C_MessageType?, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)

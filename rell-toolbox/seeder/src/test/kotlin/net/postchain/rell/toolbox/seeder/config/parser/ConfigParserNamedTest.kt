@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.config.parser
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import net.postchain.rell.toolbox.seeder.SchemaReader
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.config.dsl.configFile
 import net.postchain.rell.toolbox.testing.testData

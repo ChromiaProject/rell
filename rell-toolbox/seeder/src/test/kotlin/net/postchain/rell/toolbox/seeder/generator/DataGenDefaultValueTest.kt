@@ -5,15 +5,10 @@
 package net.postchain.rell.toolbox.seeder.generator
 
 import assertk.assertThat
-import assertk.assertions.each
-import assertk.assertions.isBetween
-import assertk.assertions.isEqualTo
-import assertk.assertions.isInstanceOf
-import assertk.assertions.prop
-import assertk.assertions.size
+import assertk.assertions.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import net.postchain.common.types.WrappedByteArray
-import net.postchain.rell.toolbox.seeder.SchemaReader
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.seeder.config.dsl.configFile
 import net.postchain.rell.toolbox.seeder.config.parser.ConfigurationParser
 import net.postchain.rell.toolbox.testing.testData

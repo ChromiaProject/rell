@@ -142,10 +142,9 @@ class GtvToRtContext private constructor(
             }
         }
 
-        val typeName = name
         throw GtvRtUtils.errGtv(this,
-            "${kind}_noattr:$typeName:${attr.name}",
-            "Missing $kind attribute value: '$typeName.${attr.name}'",
+            "${kind}_noattr:$name:${attr.name}",
+            "Missing $kind attribute value: '$name.${attr.name}'",
         )
     }
 

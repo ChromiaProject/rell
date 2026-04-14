@@ -4,22 +4,15 @@
 
 package net.postchain.rell.toolbox.seeder.config
 
-import net.postchain.rell.toolbox.seeder.RellSchema
-import java.nio.file.Path
-import net.postchain.rell.base.lib.type.R_BigIntegerType
-import net.postchain.rell.base.lib.type.R_BooleanType
-import net.postchain.rell.base.lib.type.R_ByteArrayType
-import net.postchain.rell.base.lib.type.R_DecimalType
-import net.postchain.rell.base.lib.type.R_IntegerType
-import net.postchain.rell.base.lib.type.R_JsonType
-import net.postchain.rell.base.lib.type.R_RowidType
-import net.postchain.rell.base.lib.type.R_TextType
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.R_EnumType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.associateNotNullValues
-import net.postchain.rell.toolbox.seeder.Attribute
-import net.postchain.rell.toolbox.seeder.Entity
+import net.postchain.rell.toolbox.seeder.schema.Attribute
+import net.postchain.rell.toolbox.seeder.schema.Entity
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import net.postchain.rell.toolbox.seeder.config.serializer.ConfigurationSerializer
+import java.nio.file.Path
 
 class InitialConfigGenerator {
 

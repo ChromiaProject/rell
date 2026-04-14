@@ -90,10 +90,7 @@ class RellToken(
 ): Parser<RellTokenMatch> {
     val token: Token = LiteralToken(null, pattern)
 
-    fun isEnabled(version: R_LangVersion): Boolean {
-        if (until != null && version >= until) return false
-        return true
-    }
+    fun isEnabled(version: R_LangVersion): Boolean = until == null || version < until
 
     override fun tryParse(tokens: TokenMatchesSequence, fromPosition: Int): ParseResult<RellTokenMatch> {
         val match = tokens[fromPosition]

@@ -16,7 +16,6 @@ import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.GenericTypeConstructor
 import org.jetbrains.dokka.testApi.logger.TestLogger
 import org.jetbrains.dokka.utilities.DokkaConsoleLogger
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class SystemLibFunctionDocumentableTest {

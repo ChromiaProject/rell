@@ -7,7 +7,6 @@ package net.postchain.rell.base.model
 import net.postchain.rell.base.compiler.base.fn.C_FunctionCallParameters
 import net.postchain.rell.base.compiler.base.lib.C_LibType
 import net.postchain.rell.base.lib.type.R_UnitType
-import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.expr.R_FunctionCallTarget
 import net.postchain.rell.base.model.expr.R_PartialArgMapping
 import net.postchain.rell.base.model.expr.R_PartialCallMapping
@@ -70,7 +69,7 @@ class R_FunctionType(val params: ImmList<R_Type>, val result: R_Type): R_Composi
     }
 
     private inner class Meta: R_TypeMeta() {
-        override fun getTypeOrNull(args: ImmList<R_Type>): R_Type? {
+        override fun getTypeOrNull(args: ImmList<R_Type>): R_Type {
             checkEquals(args.size, params.size + 1)
             val resResult = args[0]
             val resParams = args.drop(1).toImmList()

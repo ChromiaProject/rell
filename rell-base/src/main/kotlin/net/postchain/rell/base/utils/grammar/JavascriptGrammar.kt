@@ -59,7 +59,7 @@ fun main() {
     }
 
     println("    },")
-    println("};");
+    println("};")
 }
 
 private fun parserToJavascript(

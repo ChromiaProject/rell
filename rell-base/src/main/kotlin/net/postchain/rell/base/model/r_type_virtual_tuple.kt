@@ -28,11 +28,10 @@ class R_VirtualTupleType(val innerType: R_TupleType): R_VirtualType(innerType) {
         valueMembers = lazy { Lib_Type_VirtualTuple.getValueMembers(this) },
     )
 
-    private inner class Meta: R_TypeMeta() {
+    private class Meta: R_TypeMeta() {
         override fun getTypeOrNull(args: ImmList<R_Type>): R_Type? {
             checkEquals(args.size, 1)
-            val argType = args[0]
-            return when (argType) {
+            return when (val argType = args[0]) {
                 is R_TupleType -> R_VirtualTupleType(argType)
                 else -> null
             }

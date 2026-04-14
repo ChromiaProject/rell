@@ -4,10 +4,10 @@
 
 package net.postchain.rell.toolbox.lsp.server
 
+import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 
 fun parseFileUri(fileUri: String): URI? {
     if (!fileUri.startsWith("file:/")) {

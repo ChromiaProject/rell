@@ -8,34 +8,14 @@ import com.chromia.rell.dokka.config.RellDokkaGlobalState
 import org.jetbrains.dokka.base.renderers.html.NavigationNode
 import org.jetbrains.dokka.base.renderers.html.NavigationNodeIcon
 import org.jetbrains.dokka.base.renderers.html.NavigationPage
-import org.jetbrains.dokka.pages.RootPageNode
-import org.jetbrains.dokka.plugability.DokkaContext
-import org.jetbrains.dokka.transformers.pages.PageTransformer
 import org.jetbrains.dokka.base.renderers.sourceSets
 import org.jetbrains.dokka.base.signatures.KotlinSignatureUtils.annotations
 import org.jetbrains.dokka.base.transformers.documentables.isDeprecated
 import org.jetbrains.dokka.base.transformers.documentables.isException
-import org.jetbrains.dokka.model.DAnnotation
-import org.jetbrains.dokka.model.DClass
-import org.jetbrains.dokka.model.DEnum
-import org.jetbrains.dokka.model.DEnumEntry
-import org.jetbrains.dokka.model.DFunction
-import org.jetbrains.dokka.model.DInterface
-import org.jetbrains.dokka.model.DObject
-import org.jetbrains.dokka.model.DProperty
-import org.jetbrains.dokka.model.DTypeAlias
-import org.jetbrains.dokka.model.Documentable
-import org.jetbrains.dokka.model.IsVar
-import org.jetbrains.dokka.model.JavaModifier
-import org.jetbrains.dokka.model.KotlinModifier
-import org.jetbrains.dokka.model.withDescendants
-import org.jetbrains.dokka.pages.ClasslikePage
-import org.jetbrains.dokka.pages.ContentPage
-import org.jetbrains.dokka.pages.ModulePage
-import org.jetbrains.dokka.pages.MultimoduleRootPage
-import org.jetbrains.dokka.pages.Style
-import org.jetbrains.dokka.pages.TextStyle
-import org.jetbrains.dokka.pages.WithDocumentables
+import org.jetbrains.dokka.model.*
+import org.jetbrains.dokka.pages.*
+import org.jetbrains.dokka.plugability.DokkaContext
+import org.jetbrains.dokka.transformers.pages.PageTransformer
 
 val canonicalAlphabeticalOrder: Comparator<in String> = String.CASE_INSENSITIVE_ORDER.thenBy { it }
 
@@ -60,16 +40,14 @@ class RellNavigationPageInstaller(private val context: DokkaContext, filterModul
  * Copied from https://github.com/Kotlin/dokka/blob/1.9.10/plugins/base/src/main/kotlin/renderers/html/NavigationDataProvider.kt
  * This is due to an internal dependency of InternalKotlinAnalysisPlugin which is removed here
  */
-public abstract class NavigationDataProvider(private val filterModules: List<String>? = listOf()) {
+abstract class NavigationDataProvider(private val filterModules: List<String>? = listOf()) {
     // Always false (previously dependent on InternalKotlinAnalysisPlugin
-    private fun Documentable.hasAnyJavaSources(): Boolean {
-        return false
-    }
+    private fun hasAnyJavaSources(): Boolean = false
 
-    public open fun navigableChildren(input: RootPageNode): NavigationNode = input.withDescendants()
+    open fun navigableChildren(input: RootPageNode): NavigationNode = input.withDescendants()
             .first { it is ModulePage || it is MultimoduleRootPage }.let { visit(it as ContentPage) }
 
-    public open fun visit(page: ContentPage): NavigationNode =
+    open fun visit(page: ContentPage): NavigationNode =
             NavigationNode(
                     name = page.displayableName(),
                     dri = page.dri.first(),
@@ -95,7 +73,7 @@ public abstract class NavigationDataProvider(private val filterModules: List<Str
     private fun chooseNavigationIcon(contentPage: ContentPage): NavigationNodeIcon? =
             if (contentPage is WithDocumentables) {
                 val documentable = contentPage.documentables.firstOrNull()
-                val isJava = documentable?.hasAnyJavaSources() ?: false
+                val isJava = hasAnyJavaSources() ?: false
 
                 when (documentable) {
                     is DTypeAlias -> NavigationNodeIcon.TYPEALIAS_KT

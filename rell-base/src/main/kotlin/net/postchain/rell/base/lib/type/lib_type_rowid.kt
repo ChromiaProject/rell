@@ -6,7 +6,6 @@ package net.postchain.rell.base.lib.type
 
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvInteger
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.*
@@ -19,7 +18,6 @@ import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.immSetOf
 import net.postchain.rell.base.utils.mapToImmList
 import org.jooq.impl.SQLDataType
-import java.math.BigInteger
 import kotlin.reflect.full.createType
 
 object Lib_Type_Rowid {
@@ -154,7 +152,7 @@ class Rt_RowidValue private constructor(val value: Long): Rt_Value() {
 }
 
 private object GtvRtConversion_Rowid: GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvInteger(rt.asRowid())
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {

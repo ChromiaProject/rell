@@ -5,11 +5,7 @@
 package net.postchain.rell.toolbox.indexer
 
 import net.postchain.rell.base.compiler.ast.S_BasicPos
-import net.postchain.rell.base.compiler.base.utils.C_Message
-import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
-import net.postchain.rell.base.compiler.base.utils.C_SourcePath
-import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompilationResult
 import net.postchain.rell.base.utils.ide.IdeDirApi
 import net.postchain.rell.base.utils.immListOf

@@ -28,11 +28,10 @@ class R_VirtualStructType(val innerType: R_StructType): R_VirtualType(innerType)
         valueMembers = lazy { Lib_Type_VirtualStruct.getValueMembers(this) },
     )
 
-    private inner class Meta: R_TypeMeta() {
+    private class Meta: R_TypeMeta() {
         override fun getTypeOrNull(args: ImmList<R_Type>): R_Type? {
             checkEquals(args.size, 1)
-            val argType = args[0]
-            return when (argType) {
+            return when (val argType = args[0]) {
                 is R_StructType -> R_VirtualStructType(argType)
                 else -> null
             }

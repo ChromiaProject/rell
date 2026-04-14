@@ -8,6 +8,7 @@ import net.postchain.rell.toolbox.seeder.config.dsl.configuration
 import net.postchain.rell.toolbox.seeder.exporter.DataExporterFactory
 import net.postchain.rell.toolbox.seeder.exporter.OutputFormat
 import net.postchain.rell.toolbox.seeder.generator.DataGenerator
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File

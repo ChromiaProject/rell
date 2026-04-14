@@ -4,7 +4,6 @@
 
 package com.chromia.rell.dokka.moduledocs
 
-import org.jetbrains.dokka.DokkaException
 import java.io.File
 
 
@@ -37,7 +36,7 @@ private fun parseModuleAndPackageDocFragment(
         "Module" -> ModuleAndPackageDocumentation.Classifier.Module
         "Package" -> ModuleAndPackageDocumentation.Classifier.Package
         else -> throw IllegalStateException(
-                """Unexpected classifier: "${classifierAndName[0]}", expected either "Module" or "Package". 
+                """Unexpected classifier: "${classifierAndName[0]}", expected either "Module" or "Package".
             |For more information consult the specification: https://kotlinlang.org/docs/dokka-module-and-package-docs.html""".trimMargin()
         )
     }

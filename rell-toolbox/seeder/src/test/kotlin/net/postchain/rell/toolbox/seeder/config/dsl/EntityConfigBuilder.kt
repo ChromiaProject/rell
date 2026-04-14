@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.seeder.config.dsl
 
-import net.postchain.rell.toolbox.seeder.Attribute
+import net.postchain.rell.toolbox.seeder.schema.Attribute
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.config.Distribution
 import net.postchain.rell.toolbox.seeder.config.EntityConfig

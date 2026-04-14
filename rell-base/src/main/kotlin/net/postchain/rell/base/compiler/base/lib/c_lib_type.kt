@@ -171,7 +171,7 @@ private class C_RTypeDef(
     override fun compileType(ctx: C_AppContext, pos: S_Pos, args: List<S_PosValue<R_Type>>): R_Type {
         return if (args.isEmpty()) rType else {
             ctx.msgCtx.error(pos, "type:not_generic:${rType.strCode()}", "Type '${rType.str()}' is not generic")
-            return R_CtErrorType
+            R_CtErrorType
         }
     }
 }

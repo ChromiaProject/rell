@@ -5,12 +5,7 @@
 package net.postchain.rell.toolbox.indexer
 
 import assertk.assertThat
-import assertk.assertions.containsExactlyInAnyOrder
-import assertk.assertions.containsOnly
-import assertk.assertions.extracting
-import assertk.assertions.isEqualTo
-import assertk.assertions.isNotEmpty
-import assertk.assertions.startsWith
+import assertk.assertions.*
 import com.chromia.cli.model.RellLibraryModel
 import io.mockk.every
 import io.mockk.mockk

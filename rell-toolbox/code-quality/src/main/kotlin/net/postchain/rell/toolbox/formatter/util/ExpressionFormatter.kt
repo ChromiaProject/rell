@@ -6,15 +6,7 @@ package net.postchain.rell.toolbox.formatter.util
 
 import net.postchain.rell.toolbox.formatter.BracePairTypes
 import net.postchain.rell.toolbox.formatter.FormattableDocument
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_AnnotatedDefContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_BaseExprHeadContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_BaseExprTailAtContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_BaseExprTailCallContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_BaseExprTailContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_BaseExprTailMemberContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_BinaryExprOperandContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_CallArgsContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_UnaryExprContext
+import net.postchain.rell.toolbox.parser.RellParser.*
 import org.antlr.v4.runtime.ParserRuleContext
 
 class ExpressionFormatter(

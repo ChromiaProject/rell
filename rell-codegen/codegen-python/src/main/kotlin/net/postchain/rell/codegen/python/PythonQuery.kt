@@ -4,11 +4,7 @@
 
 package net.postchain.rell.codegen.python
 
-import net.postchain.rell.base.lib.type.R_CollectionType
-import net.postchain.rell.base.lib.type.R_GtvType
-import net.postchain.rell.base.lib.type.R_ListType
-import net.postchain.rell.base.lib.type.R_MapType
-import net.postchain.rell.base.lib.type.R_SetType
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.R_EnumType
 import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_QueryDefinition
@@ -30,8 +26,8 @@ class PythonQuery(queryDef: R_QueryDefinition) : PythonFunction(
     override fun formatReturnObject(): String = buildString {
         append("return QueryObject(")
         append("""name="${mountName.str()}"""")
-        append(", args=");
-       append(formatReturnObjectArgs())
+        append(", args=")
+        append(formatReturnObjectArgs())
         append(")")
     }
 
@@ -55,8 +51,7 @@ class PythonQuery(queryDef: R_QueryDefinition) : PythonFunction(
                     formatCollectionType(paramName, type, isSetType = true)
                 }
                 is R_NullableType -> {
-                    val innerType = type.valueType
-                    val innerFormat = when (innerType) {
+                    val innerFormat = when (val innerType = type.valueType) {
                         is R_StructType -> "$paramName.to_dict() if $paramName else None"
                         is R_ListType -> formatCollectionType(paramName, innerType, nullable = true)
                         is R_SetType -> formatCollectionType(paramName, innerType, nullable = true, isSetType = true)

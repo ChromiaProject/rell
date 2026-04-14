@@ -23,10 +23,7 @@ internal object C_Annotation_Mount {
         }
 
         private fun processArgs(ctx: C_ModifierContext, modLink: C_ModifierLink, args: List<C_AnnotationArg>): C_MountPath? {
-            val str = C_AnnUtils.checkArgsOneString(ctx, modLink.name, args)
-            if (str == null) {
-                return null
-            }
+            val str = C_AnnUtils.checkArgsOneString(ctx, modLink.name, args) ?: return null
 
             val res = C_MountPath.parse(str)
             if (res == null) {
@@ -138,8 +135,7 @@ internal class C_MountPath private constructor(
 
             val path = mutableListOf<R_Name>()
             for (part in parts) {
-                val rName = R_Name.ofOpt(part)
-                if (rName == null) return null
+                val rName = R_Name.ofOpt(part) ?: return null
                 path.add(rName)
             }
 

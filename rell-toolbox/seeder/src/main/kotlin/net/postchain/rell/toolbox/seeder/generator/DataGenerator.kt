@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.seeder.generator
 
-import net.postchain.rell.toolbox.seeder.RellSchema
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import net.postchain.rell.toolbox.seeder.config.Configuration
 import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGeneratorFactory
 import kotlin.random.Random

@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.seeder.config
 
-import net.postchain.rell.toolbox.seeder.Attribute
+import net.postchain.rell.toolbox.seeder.schema.Attribute
 
 data class Configuration(
     val modules: Map<String, ModuleConfig> = emptyMap()

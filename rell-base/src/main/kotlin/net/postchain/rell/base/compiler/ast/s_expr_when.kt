@@ -198,10 +198,8 @@ internal class S_WhenExpr(
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val conds = cases.map { it.cond }
 
-        val chooserDetails = compileChooserDetails(ctx, expr, conds)?.toVDetails()
-        if (chooserDetails == null) {
-            return C_ExprUtils.errorExpr(ctx, startPos)
-        }
+        val chooserDetails =
+            compileChooserDetails(ctx, expr, conds)?.toVDetails() ?: return C_ExprUtils.errorExpr(ctx, startPos)
 
         val missingElseReported = !chooserDetails.full
         if (missingElseReported) {
@@ -247,10 +245,7 @@ internal class S_WhenExpr(
             expr: S_Expr?,
             conds: List<S_WhenCondition>,
         ): C_WhenChooser? {
-            val chooserDetails = compileChooserDetails(ctx, expr, conds)
-            if (chooserDetails == null) {
-                return null
-            }
+            val chooserDetails = compileChooserDetails(ctx, expr, conds) ?: return null
             return C_WhenChooser(chooserDetails)
         }
 
@@ -311,10 +306,7 @@ internal class S_WhenExpr(
         }
 
         private fun checkFullCoverage(ctx: C_ExprContext, builder: C_WhenChooserDetailsBuilder): Boolean {
-            val keyValue = builder.keyExpr
-            if (keyValue == null) {
-                return builder.elseCase != null
-            }
+            val keyValue = builder.keyExpr ?: return builder.elseCase != null
 
             val keyType = keyValue.type
             val allValues = allTypeValues(keyType)

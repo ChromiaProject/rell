@@ -4,8 +4,10 @@
 
 package net.postchain.rell.base.lmodel
 
-import net.postchain.rell.base.compiler.base.core.*
-import net.postchain.rell.base.lib.type.*
+import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
+import net.postchain.rell.base.compiler.base.core.C_Types
+import net.postchain.rell.base.lib.type.R_CollectionType
+import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.mtype.*
 import net.postchain.rell.base.utils.*

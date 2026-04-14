@@ -24,9 +24,9 @@ abstract class GeneralDir {
 }
 
 class DiskGeneralDir(private val dir: File): GeneralDir() {
-    override fun absolutePath(path: String) = pathToFile(path).absolutePath
-    override fun parentPath(path: String) = pathToFile(path).parent
-    override fun subPath(path1: String, path2: String) = File(path1, path2).path
+    override fun absolutePath(path: String): String = pathToFile(path).absolutePath
+    override fun parentPath(path: String) = pathToFile(path).parent!!
+    override fun subPath(path1: String, path2: String): String = File(path1, path2).path
 
     override fun readTextOpt(path: String): String? {
         val file = pathToFile(path)

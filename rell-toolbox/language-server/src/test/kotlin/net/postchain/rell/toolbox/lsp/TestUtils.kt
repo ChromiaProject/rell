@@ -4,11 +4,7 @@
 
 package net.postchain.rell.toolbox.lsp
 
-import org.eclipse.lsp4j.Position
-import org.eclipse.lsp4j.PrepareRenameResult
-import org.eclipse.lsp4j.Range
-import org.eclipse.lsp4j.TextDocumentItem
-import org.eclipse.lsp4j.TextEdit
+import org.eclipse.lsp4j.*
 import java.io.File
 
 data class TestTextEdit(val range: TestRange, val newText: String) {

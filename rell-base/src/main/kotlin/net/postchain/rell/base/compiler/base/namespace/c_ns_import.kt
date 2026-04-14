@@ -156,8 +156,7 @@ private class C_NsImp_InternalImportsProcessor(
         val res = importResolver.resolveExactImport(imp)
         impDef.names.setIdeInfo(res.ideInfos)
 
-        val resDef = res.valueOrReport(msgCtx)
-        return when (resDef) {
+        return when (val resDef = res.valueOrReport(msgCtx)) {
             null -> {}
             is C_NsAsm_Def_Simple -> {
                 val member = impDef.names.aliasMember(resDef.member)
@@ -185,8 +184,8 @@ private class C_NsImp_InternalImportsProcessor(
                 if (res.value != null) {
                     // Must be no recursion here - the def must not be an import.
                     processImportDef(builder, name, res.value)
+                } else {
                 }
-                Unit
             }
         }
     }
@@ -360,21 +359,16 @@ private class C_NsImp_ImportResolver(
     ): C_RecursionSafeResult<C_Name, C_NsImp_NameRes<C_NsAsm_Namespace>> {
         val res = resolveDef(ns, name)
 
-        var defRes = res.value
-        if (defRes == null) {
-            return C_RecursionSafeResult.error {
-                res.error(it)
-            }
+        var defRes = res.value ?: return C_RecursionSafeResult.error {
+            res.error(it)
         }
 
         var def = defRes.value
         if (def is C_NsAsm_Def_ExactImport) {
             val res2 = resolveExactImport(def.imp)
-            val def2 = res2.value
-            if (def2 == null) {
-                return C_RecursionSafeResult.error {
-                    C_Error.stop(it.pos, "import:name_unresolved:$it", "Cannot resolve name '$it'")
-                }
+
+            val def2 = res2.value ?: return C_RecursionSafeResult.error {
+                C_Error.stop(it.pos, "import:name_unresolved:$it", "Cannot resolve name '$it'")
             }
 
             def = def2

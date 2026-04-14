@@ -16,12 +16,8 @@ import net.postchain.rell.base.model.R_FrameBlock
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_VarPtr
 import net.postchain.rell.base.model.expr.R_ColAtParam
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.ImmMultimap
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmMultimap
 
 internal class C_AtFrom_Iterable(
     outerExprCtx: C_ExprContext,

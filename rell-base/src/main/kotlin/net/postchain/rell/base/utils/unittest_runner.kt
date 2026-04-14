@@ -418,20 +418,22 @@ private fun getValueDiff(type: R_Type, v1: Rt_Value, v2: Rt_Value): Map<List<Str
         type == R_GtvType -> {
             val g1 = v1.asGtv()
             val g2 = v2.asGtv()
-            if (g1.type == g2.type && g1.type == GtvType.ARRAY) {
-                val list1 = g1.asArray().map { Rt_GtvValue.get(it) }
-                val list2 = g2.asArray().map { Rt_GtvValue.get(it) }
-                getValueDiffList(list1, list2, R_GtvType)
-            } else if (g1.type == g2.type && g1.type == GtvType.DICT) {
-                val map1 = g1.asDict()
-                    .map { Rt_GtvValue.get(GtvFactory.gtv(it.key)) to Rt_GtvValue.get(it.value) }
-                    .toMap()
-                val map2 = g2.asDict()
-                    .map { Rt_GtvValue.get(GtvFactory.gtv(it.key)) to Rt_GtvValue.get(it.value) }
-                    .toMap()
-                getValueDiffMap(map1, map2, R_GtvType)
-            } else {
-                immMapOf(immListOf<String>() to (v1 to v2))
+            when (g1.type) {
+                g2.type if g1.type == GtvType.ARRAY -> {
+                    val list1 = g1.asArray().map { Rt_GtvValue.get(it) }
+                    val list2 = g2.asArray().map { Rt_GtvValue.get(it) }
+                    getValueDiffList(list1, list2, R_GtvType)
+                }
+                g2.type if g1.type == GtvType.DICT -> {
+                    val map1 = g1.asDict()
+                        .map { Rt_GtvValue.get(GtvFactory.gtv(it.key)) to Rt_GtvValue.get(it.value) }
+                        .toMap()
+                    val map2 = g2.asDict()
+                        .map { Rt_GtvValue.get(GtvFactory.gtv(it.key)) to Rt_GtvValue.get(it.value) }
+                        .toMap()
+                    getValueDiffMap(map1, map2, R_GtvType)
+                }
+                else -> immMapOf(immListOf<String>() to (v1 to v2))
             }
         }
         else -> immMapOf(immListOf<String>() to (v1 to v2))

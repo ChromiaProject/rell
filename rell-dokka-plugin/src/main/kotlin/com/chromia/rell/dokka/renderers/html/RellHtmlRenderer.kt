@@ -12,28 +12,28 @@ import kotlinx.html.*
 import kotlinx.html.stream.createHTML
 import org.jetbrains.dokka.DokkaSourceSetID
 import org.jetbrains.dokka.base.DokkaBase
-import org.jetbrains.dokka.base.renderers.*
-import org.jetbrains.dokka.base.renderers.html.HtmlRenderer
-import org.jetbrains.dokka.base.renderers.html.buildBreakableText
+import org.jetbrains.dokka.base.renderers.html.*
 import org.jetbrains.dokka.base.renderers.html.command.consumers.ImmediateResolutionTagConsumer
 import org.jetbrains.dokka.base.renderers.html.innerTemplating.DefaultTemplateModelFactory
 import org.jetbrains.dokka.base.renderers.html.innerTemplating.DefaultTemplateModelMerger
-import org.jetbrains.dokka.base.renderers.html.strike
-import org.jetbrains.dokka.base.renderers.html.templateCommand
-import org.jetbrains.dokka.base.renderers.html.underline
-import org.jetbrains.dokka.base.renderers.html.wbr
+import org.jetbrains.dokka.base.renderers.isImage
 import org.jetbrains.dokka.base.resolvers.anchors.SymbolAnchorHint
 import org.jetbrains.dokka.base.resolvers.local.DokkaBaseLocationProvider
-import org.jetbrains.dokka.base.templating.*
+import org.jetbrains.dokka.base.templating.InsertTemplateExtra
+import org.jetbrains.dokka.base.templating.PathToRootSubstitutionCommand
+import org.jetbrains.dokka.base.templating.ProjectNameSubstitutionCommand
+import org.jetbrains.dokka.base.templating.ResolveLinkCommand
 import org.jetbrains.dokka.base.transformers.documentables.CallableExtensions
 import org.jetbrains.dokka.model.*
 import org.jetbrains.dokka.model.properties.PropertyContainer
 import org.jetbrains.dokka.model.properties.WithExtraProperties
 import org.jetbrains.dokka.pages.*
-import org.jetbrains.dokka.plugability.*
+import org.jetbrains.dokka.plugability.DokkaContext
+import org.jetbrains.dokka.plugability.plugin
+import org.jetbrains.dokka.plugability.query
 import org.jetbrains.dokka.transformers.pages.PageTransformer
 import org.jetbrains.dokka.utilities.htmlEscape
-import java.util.Locale
+import java.util.*
 
 internal const val TOGGLEABLE_CONTENT_TYPE_ATTR = "data-togglable"
 

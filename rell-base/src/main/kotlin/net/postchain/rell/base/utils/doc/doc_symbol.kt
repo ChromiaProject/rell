@@ -11,7 +11,7 @@ import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.ide.IdeCompletionParam
 import net.postchain.rell.base.utils.immMapOf
 
-enum class DocSymbolKind constructor(
+enum class DocSymbolKind(
     val msg: String,
     val supportedTags: SupportedCommentTags = tags(),
 ) {

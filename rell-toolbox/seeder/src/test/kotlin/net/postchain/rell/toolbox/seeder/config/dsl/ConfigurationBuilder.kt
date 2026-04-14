@@ -5,8 +5,8 @@
 package net.postchain.rell.toolbox.seeder.config.dsl
 
 import net.postchain.rell.toolbox.seeder.config.Configuration
-import net.postchain.rell.toolbox.seeder.config.serializer.ConfigurationSerializer
 import net.postchain.rell.toolbox.seeder.config.ModuleConfig
+import net.postchain.rell.toolbox.seeder.config.serializer.ConfigurationSerializer
 import java.nio.file.Path
 
 class ConfigurationBuilder {

@@ -7,15 +7,9 @@ package net.postchain.rell.toolbox.formatter.specialized
 import net.postchain.rell.toolbox.formatter.BracePairTypes
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
-import net.postchain.rell.toolbox.formatter.util.ArgumentFormatter
-import net.postchain.rell.toolbox.formatter.util.BraceFormatter
-import net.postchain.rell.toolbox.formatter.util.ExpressionFormatter
-import net.postchain.rell.toolbox.formatter.util.LineAnalyzer
-import net.postchain.rell.toolbox.formatter.util.WhitespaceFormatter
-import net.postchain.rell.toolbox.formatter.util.getCallArgWithTrailingComma
-import net.postchain.rell.toolbox.formatter.util.getGenericTypeContext
-import net.postchain.rell.toolbox.formatter.util.getTypeRefWithTrailingComma
-import net.postchain.rell.toolbox.parser.RellParser.*
+import net.postchain.rell.toolbox.formatter.util.*
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_GenericTypeContext
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_GenericTypeExprContext
 
 class GenTypeExprFormatter(
     private val braceFormatter: BraceFormatter,

@@ -83,8 +83,7 @@ object SqlMeta {
 
         val res = mutableMapOf<String, MetaEntity>()
         for (entityRec in metaEntities) {
-            val type = decodeEntityType(entityRec, msgs)
-            if (type == null) continue
+            val type = decodeEntityType(entityRec, msgs) ?: continue
             val attrs = attrMap[entityRec.id].orEmpty()
             val resAttrMap = attrs.associateToImmMap { it.name to MetaAttr(it.name, it.type) }
             res[entityRec.name] = MetaEntity(entityRec.id, entityRec.name, type, entityRec.log, resAttrMap)

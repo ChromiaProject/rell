@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.expr
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
@@ -315,7 +314,7 @@ internal class C_AtFrom_Entities(
         return cBlock.rBlock
     }
 
-    private inner class C_AtFromBase_Entity(
+    private class C_AtFromBase_Entity(
         private val atEntity: C_AtEntity,
         private val isOuter: Boolean,
     ): C_AtFromBase() {

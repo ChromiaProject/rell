@@ -13,11 +13,7 @@ import net.postchain.rell.base.runtime.Rt_Value
 import org.jooq.Condition
 import org.jooq.Constraint
 import org.jooq.Field
-import org.jooq.impl.DSL.constraint
-import org.jooq.impl.DSL.field
-import org.jooq.impl.DSL.length
-import org.jooq.impl.DSL.name
-import org.jooq.impl.DSL.octetLength
+import org.jooq.impl.DSL.*
 import java.util.*
 
 abstract class R_AttrValidator internal constructor(internal val metadata: R_AttrValidatorMetadata) {

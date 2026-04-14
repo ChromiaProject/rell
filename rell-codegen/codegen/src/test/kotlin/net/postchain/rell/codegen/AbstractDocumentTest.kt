@@ -5,15 +5,15 @@
 package net.postchain.rell.codegen
 
 import assertk.all
-import assertk.assertions.startsWith
-import org.junit.jupiter.api.Test
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.hasSize
+import assertk.assertions.startsWith
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.document.AbstractDocument
 import net.postchain.rell.codegen.section.Entity
+import org.junit.jupiter.api.Test
 
 internal class AbstractDocumentTest{
 

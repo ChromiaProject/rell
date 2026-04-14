@@ -243,10 +243,7 @@ internal sealed class C_BinOp_Common: C_BinOp() {
     }
 
     private fun compile0(ctx: C_BinOpContext, left: V_Expr, right: V_Expr): V_Expr? {
-        val op = compileOp(ctx, left.type, right.type)
-        if (op == null) {
-            return null
-        }
+        val op = compileOp(ctx, left.type, right.type) ?: return null
 
         val resVarStates = compileExprVarStatesDelta(left, right)
         return V_BinaryExpr(ctx.exprCtx, left.pos, op, left, right, resVarStates)
@@ -416,10 +413,7 @@ internal sealed class C_BinOp_Cmp(private val cmpOp: R_CmpOp, private val dbOp: 
             return null
         }
 
-        val rCmpType = R_CmpType.forCmpOpType(left)
-        if (rCmpType == null) {
-            return null
-        }
+        val rCmpType = R_CmpType.forCmpOpType(left) ?: return null
 
         return V_BinaryOp.of(R_BooleanType, R_BinaryOp_Cmp(cmpOp, rCmpType), dbOp)
     }
@@ -697,10 +691,7 @@ internal data object C_BinOp_Elvis: C_BinOp() {
             return null
         }
 
-        val resType = R_Type.commonTypeOpt(leftType.valueType, right.type)
-        if (resType == null) {
-            return null
-        }
+        val resType = R_Type.commonTypeOpt(leftType.valueType, right.type) ?: return null
 
         return V_ElvisExpr(ctx, left.pos, resType, left, right)
     }

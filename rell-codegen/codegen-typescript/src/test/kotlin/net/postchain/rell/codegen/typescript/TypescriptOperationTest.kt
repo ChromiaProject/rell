@@ -7,7 +7,6 @@ package net.postchain.rell.codegen.typescript
 import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
-import assertk.assertions.endsWith
 import net.postchain.rell.codegen.SingleFileRellApp
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 import org.junit.jupiter.api.BeforeAll

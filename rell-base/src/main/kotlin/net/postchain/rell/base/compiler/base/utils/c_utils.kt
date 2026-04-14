@@ -16,9 +16,9 @@ import net.postchain.rell.base.compiler.base.def.C_AttrUtils
 import net.postchain.rell.base.compiler.base.def.C_SysAttribute
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_StmtContext
-import net.postchain.rell.base.compiler.base.module.S_DefinitionContext
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.compiler.base.module.C_ModuleKey
+import net.postchain.rell.base.compiler.base.module.S_DefinitionContext
 import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.compiler.parser.RellTokenizerException
 import net.postchain.rell.base.compiler.parser.S_Grammar
@@ -486,13 +486,11 @@ object C_Parser {
         return ast
     }
 
-    fun checkEofErrorRepl(code: String): C_Error? {
-        val res = parse0(REPL_PARSER_PATH, code, RellVersions.VERSION, S_Grammar.replParser)
-        return when (res) {
+    fun checkEofErrorRepl(code: String): C_Error? =
+        when (val res = parse0(REPL_PARSER_PATH, code, RellVersions.VERSION, S_Grammar.replParser)) {
             is C_SuccessParserResult -> null
             is C_ErrorParserResult -> if (res.eof) res.error else null
         }
-    }
 
     private fun <T> parse0(
         filePath: C_ParserFilePath,
@@ -522,9 +520,7 @@ object C_Parser {
 
     private fun <T> parseToEnd(tokenProducer: TokenProducer, parser: Parser<T>): T {
         val seq = TokenMatchesSequence(tokenProducer)
-        val result = parser.tryParse(seq, 0)
-
-        return when (result) {
+        return when (val result = parser.tryParse(seq, 0)) {
             is ErrorResult -> throw ParseException(result)
             is Parsed -> {
                 checkUnparsedRemainder(seq, result)
@@ -539,7 +535,7 @@ object C_Parser {
             val match = seq[pos]
             match ?: break
             if (!match.type.ignored) {
-                throw throw ParseException(UnparsedRemainder(match))
+                throw ParseException(UnparsedRemainder(match))
             }
             ++pos
         }

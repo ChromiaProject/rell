@@ -17,7 +17,6 @@ import net.postchain.rell.gtx.PostchainBaseUtils
 class RunConfigChainConfigGen private constructor(private val cliEnv: RellCliEnv, params: RellRunConfigParams) {
     private val sourceDir = params.sourceDir
     private val configDir = params.configDir
-    private val sourceVersion = params.sourceVersion
 
     companion object {
         fun generateChainsConfigs(
@@ -43,10 +42,10 @@ class RunConfigChainConfigGen private constructor(private val cliEnv: RellCliEnv
     }
 
     private fun genChainConfig(
-            chain: Rcfg_Chain,
-            brids: Map<Rcfg_Chain, Bytes32>,
-            replaceSigners: Collection<Bytes33>?,
-            commonTestModules: Set<R_ModuleName>
+        chain: Rcfg_Chain,
+        brids: Map<Rcfg_Chain, Bytes32>,
+        replaceSigners: Collection<Bytes33>?,
+        commonTestModules: Set<R_ModuleName>
     ): RellPostAppChain {
         val chainTestModules = (commonTestModules + chain.tests.map { it.module }.toSet()).toList()
 
@@ -71,10 +70,10 @@ class RunConfigChainConfigGen private constructor(private val cliEnv: RellCliEnv
     }
 
     private fun genChainConfig0(
-            config: Rcfg_ChainConfig,
-            brids: Map<Rcfg_Chain, Bytes32>,
-            replaceSigners: Collection<Bytes33>?,
-            testModules: List<R_ModuleName>
+        config: Rcfg_ChainConfig,
+        brids: Map<Rcfg_Chain, Bytes32>,
+        replaceSigners: Collection<Bytes33>?,
+        testModules: List<R_ModuleName>
     ): RellPostAppChainConfig {
         val b = GtvBuilder()
         var module: R_ModuleName? = null
@@ -92,7 +91,8 @@ class RunConfigChainConfigGen private constructor(private val cliEnv: RellCliEnv
 
         val signersGtv = let {
             val elems = (replaceSigners ?: listOf()).map { GtvBuilder.GtvNode.decode(gtv(it.toByteArray())) }
-            val merge = if (replaceSigners != null) GtvBuilder.GtvArrayMerge.REPLACE else GtvBuilder.GtvArrayMerge.APPEND
+            val merge =
+                if (replaceSigners != null) GtvBuilder.GtvArrayMerge.REPLACE else GtvBuilder.GtvArrayMerge.APPEND
             GtvBuilder.GtvArrayNode(elems, merge)
         }
         b.update(signersGtv, "signers")
@@ -118,8 +118,8 @@ class RunConfigChainConfigGen private constructor(private val cliEnv: RellCliEnv
             b.update(gtv("net.postchain.gtx.GTXBlockchainConfigurationFactory"), "configurationfactory")
 
             val modulesGtv = gtv(
-                    gtv("net.postchain.rell.module.RellPostchainModuleFactory"),
-                    gtv("net.postchain.gtx.StandardOpsGTXModule")
+                gtv("net.postchain.rell.module.RellPostchainModuleFactory"),
+                gtv("net.postchain.gtx.StandardOpsGTXModule")
             )
             b.update(modulesGtv, "gtx", "modules")
         }
@@ -140,15 +140,12 @@ class RunConfigChainConfigGen private constructor(private val cliEnv: RellCliEnv
         return RellApiBaseInternal.compileGtv(config, sourceDir, immListOf(app.module))
     }
 
-    private fun genChainGtv(chainGtv: Rcfg_ChainConfigGtv): GtvBuilder.GtvNode {
-        return if (chainGtv.gtv != null) {
-            chainGtv.gtv
-        } else if (chainGtv.src != null) {
+    private fun genChainGtv(chainGtv: Rcfg_ChainConfigGtv): GtvBuilder.GtvNode =
+        chainGtv.gtv ?: if (chainGtv.src != null) {
             val text = configDir.readText(chainGtv.src)
             val elem = RellXmlParser(preserveWhitespace = true).parse(chainGtv.src, text)
-            return RunConfigGtvParser.parseGtvNode(elem, mergeAllowed = true)
+            RunConfigGtvParser.parseGtvNode(elem, mergeAllowed = true)
         } else {
             GtvBuilder.GtvDictNode(mapOf(), GtvBuilder.GtvDictMerge.KEEP_NEW)
         }
-    }
 }

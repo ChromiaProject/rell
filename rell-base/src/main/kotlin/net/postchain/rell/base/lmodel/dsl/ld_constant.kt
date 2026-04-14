@@ -5,7 +5,6 @@
 package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.lmodel.L_Constant
-import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.Rt_Value

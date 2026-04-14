@@ -4,9 +4,7 @@
 
 package net.postchain.rell.base.mtype
 
-import net.postchain.rell.base.compiler.base.core.C_TypeAdapter
 import net.postchain.rell.base.lmodel.L_TypeUtils
-import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.*
 

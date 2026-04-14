@@ -184,7 +184,7 @@ class Rt_StructValue(private val type: R_StructType, private val attributes: Mut
 class GtvRtConversion_Struct(private val struct: R_Struct): GtvRtConversion() {
     private val arrayConv = ArrayConv()
 
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
 
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean): Gtv {
         val attrs = struct.attributesList
@@ -281,7 +281,7 @@ class GtvRtConversion_Struct(private val struct: R_Struct): GtvRtConversion() {
             val gtvFields = GtvRtUtils.gtvToArray(ctx, gtv, type)
             val actualCount = gtvFields.size
 
-            if (actualCount < minCount || actualCount > maxCount) {
+            if (actualCount !in minCount..maxCount) {
                 throw errWrongArraySize(ctx, type, minCount, maxCount, actualCount)
             }
 

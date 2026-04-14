@@ -7,7 +7,6 @@ package net.postchain.rell.base.lib.type
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvString
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_BodyResult
@@ -24,7 +23,6 @@ import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.formatEx
 import net.postchain.rell.base.utils.immSetOf
 import org.jooq.impl.SQLDataType
-import java.math.BigInteger
 import java.nio.ByteBuffer
 import java.util.*
 import java.util.regex.Matcher
@@ -457,7 +455,7 @@ object Lib_Type_Text {
                     for ((name, index) in namedGroups) {
                         val groupText = m.group(index)
                         if (groupText != null) {
-                            matches.put(Rt_TextValue.get(name), Rt_TextValue.get(groupText))
+                            matches[Rt_TextValue.get(name)] = Rt_TextValue.get(groupText)
                         }
                     }
                     Rt_MapValue(MAP_OF_TEXT_TO_TEXT, matches)
@@ -798,21 +796,17 @@ class Rt_TextValue private constructor(val value: String): Rt_Value() {
 
             val buf = StringBuilder(s.length)
             for (c in s) {
-                if (c == '\t') {
-                    buf.append("\\t")
-                } else if (c == '\r') {
-                    buf.append("\\r")
-                } else if (c == '\n') {
-                    buf.append("\\n")
-                } else if (c == '\b') {
-                    buf.append("\\b")
-                } else if (c == '\\') {
-                    buf.append("\\\\")
-                } else if (c >= '\u0020' && c < '\u0080') {
-                    buf.append(c)
-                } else {
-                    buf.append("\\u")
-                    buf.append("%04x".formatEx(c.code))
+                when (c) {
+                    '\t' -> buf.append("\\t")
+                    '\r' -> buf.append("\\r")
+                    '\n' -> buf.append("\\n")
+                    '\b' -> buf.append("\\b")
+                    '\\' -> buf.append("\\\\")
+                    in '\u0020'..<'\u0080' -> buf.append(c)
+                    else -> {
+                        buf.append("\\u")
+                        buf.append("%04x".formatEx(c.code))
+                    }
                 }
             }
 

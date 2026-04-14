@@ -286,10 +286,8 @@ internal object C_Types {
     }
 
     fun adapt(dstType: R_Type, srcType: R_Type, errPos: S_Pos, errSupplier: C_CodeMsgSupplier): C_TypeAdapter {
-        val adapter = dstType.getTypeAdapter(srcType)
-        if (adapter == null) {
-            throw C_Errors.errTypeMismatch(errPos, srcType, dstType, errSupplier)
-        }
+        val adapter =
+            dstType.getTypeAdapter(srcType) ?: throw C_Errors.errTypeMismatch(errPos, srcType, dstType, errSupplier)
         return adapter
     }
 

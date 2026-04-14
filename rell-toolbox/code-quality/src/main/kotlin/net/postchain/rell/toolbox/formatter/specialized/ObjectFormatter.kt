@@ -8,7 +8,7 @@ import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
 import net.postchain.rell.toolbox.formatter.util.WhitespaceFormatter
-import net.postchain.rell.toolbox.parser.RellParser.*
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_ObjectDefContext
 
 class ObjectDefFormatter(
     private val tokenAnalyzer: TokenAnalyzer,

@@ -5,14 +5,7 @@
 package net.postchain.rell.toolbox.seeder.generator
 
 import net.postchain.common.types.WrappedByteArray
-import net.postchain.rell.base.lib.type.R_BigIntegerType
-import net.postchain.rell.base.lib.type.R_BooleanType
-import net.postchain.rell.base.lib.type.R_ByteArrayType
-import net.postchain.rell.base.lib.type.R_DecimalType
-import net.postchain.rell.base.lib.type.R_IntegerType
-import net.postchain.rell.base.lib.type.R_JsonType
-import net.postchain.rell.base.lib.type.R_RowidType
-import net.postchain.rell.base.lib.type.R_TextType
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.R_EnumType
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGeneratorFactory

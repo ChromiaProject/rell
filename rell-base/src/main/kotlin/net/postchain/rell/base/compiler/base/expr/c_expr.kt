@@ -35,23 +35,17 @@ abstract class C_Expr {
 
     internal abstract fun vExprOrError(): C_ValueOrError<V_Expr>
 
-    internal fun vExprOrNull(msgCtx: C_MessageContext): V_Expr? {
-        val res = vExprOrError()
-        return when (res) {
-            is C_ValueOrError_Value -> res.value
-            is C_ValueOrError_Error -> {
-                msgCtx.error(res.error)
-                null
-            }
+    internal fun vExprOrNull(msgCtx: C_MessageContext): V_Expr? = when (val res = vExprOrError()) {
+        is C_ValueOrError_Value -> res.value
+        is C_ValueOrError_Error -> {
+            msgCtx.error(res.error)
+            null
         }
     }
 
-    internal fun vExpr(): V_Expr {
-        val res = vExprOrError()
-        return when (res) {
-            is C_ValueOrError_Value -> res.value
-            is C_ValueOrError_Error -> throw C_Error.stop(res.error)
-        }
+    internal fun vExpr(): V_Expr = when (val res = vExprOrError()) {
+        is C_ValueOrError_Value -> res.value
+        is C_ValueOrError_Error -> throw C_Error.stop(res.error)
     }
 
     internal open fun isCallable() = false

@@ -21,11 +21,9 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
-import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.doc.DocType
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmSet
-import kotlin.reflect.KType
 import kotlin.reflect.full.createType
 
 class R_NullableType(val valueType: R_Type): R_CompositeType(calcName(valueType)) {
@@ -138,7 +136,7 @@ class R_NullableType(val valueType: R_Type): R_CompositeType(calcName(valueType)
 }
 
 private class GtvRtConversion_Nullable(val type: R_NullableType): GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
 
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean): Gtv {
         return if (rt == Rt_NullValue) {

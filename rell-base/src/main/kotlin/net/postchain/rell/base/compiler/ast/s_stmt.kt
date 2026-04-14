@@ -173,9 +173,7 @@ internal class S_ReturnStatement(
 
     private fun processExpr(ctx: C_StmtContext, vExpr: V_Expr?): V_Expr? {
         var vResExpr = vExpr
-        val defType = ctx.defCtx.definitionType
-
-        when (defType) {
+        when (val defType = ctx.defCtx.definitionType) {
             C_DefinitionType.OPERATION -> {
                 if (vExpr != null) {
                     ctx.msgCtx.error(startPos, "stmt_return_op_value", "Operation must return nothing")
@@ -186,7 +184,7 @@ internal class S_ReturnStatement(
                     ctx.msgCtx.error(startPos, "stmt_return_query_novalue", "Query must return a value")
                 }
 
-                val rRetType = if (vExpr == null) R_UnitType else vExpr.type
+                val rRetType = vExpr?.type ?: R_UnitType
                 val adapter = ctx.fnCtx.matchReturnType(startPos, rRetType)
 
                 if (vExpr != null) {
@@ -474,10 +472,7 @@ internal class S_WhileStatement(
             val modifiedVars = getModifiedVars(stmt, ctx)
             val condCtx = ctx.updateVarStates(calcUpdatedVarStatesDelta(modifiedVars))
 
-            val condExpr = expr.compileOpt(condCtx)
-            if (condExpr == null) {
-                return null
-            }
+            val condExpr = expr.compileOpt(condCtx) ?: return null
 
             val vCondExpr = condExpr.vExpr()
             val rExpr = vCondExpr.toRExpr()

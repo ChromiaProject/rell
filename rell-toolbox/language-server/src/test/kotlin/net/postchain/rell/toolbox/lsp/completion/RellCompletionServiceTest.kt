@@ -6,11 +6,7 @@ package net.postchain.rell.toolbox.lsp.completion
 
 import assertk.all
 import assertk.assertThat
-import assertk.assertions.contains
-import assertk.assertions.containsAtLeast
-import assertk.assertions.containsNone
-import assertk.assertions.doesNotContain
-import assertk.assertions.extracting
+import assertk.assertions.*
 import net.postchain.rell.toolbox.common.RellKeywords
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer

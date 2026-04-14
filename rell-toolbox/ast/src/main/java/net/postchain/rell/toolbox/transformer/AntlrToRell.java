@@ -4,7 +4,6 @@
 
 package net.postchain.rell.toolbox.transformer;
 
-import net.postchain.rell.toolbox.transformer.AntlrToRellContext;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -691,7 +690,7 @@ public final class AntlrToRell {
                 Object tup = RellcUtils.tuple(var_0);
                 return TRANS_XAT_EXPR_WHAT_COMPLEX.transform(ctx, node, tup);
             }
-            case RULE_ruleX_AtExprOffset: {
+            case RULE_ruleX_AtExprOffset, RULE_ruleX_AtExprLimit: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionRefContext.class, 0));
                 return RellcUtils.tuple(var_0);
             }
@@ -700,10 +699,6 @@ public final class AntlrToRell {
                 Object var_1 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_AtExprOffsetContext.class, 0));
                 Object tup = RellcUtils.tuple(var_0, var_1);
                 return TRANS_XAT_EXPR_MODIFIERS_0.transform(ctx, node, tup);
-            }
-            case RULE_ruleX_AtExprLimit: {
-                Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionRefContext.class, 0));
-                return RellcUtils.tuple(var_0);
             }
             case RULE_ruleX_AtExprModifiers_1: {
                 Object var_0 = RellcUtils.processObject(ctx, node.getRuleContext(RuleX_ExpressionRefContext.class, 0));

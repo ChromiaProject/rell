@@ -5,7 +5,6 @@
 package net.postchain.rell.toolbox.formatter.util
 
 import net.postchain.rell.toolbox.parser.RellParser.*
-import org.antlr.v4.runtime.ParserRuleContext
 
 internal fun RuleX_CallArgsContext.getCallArgWithTrailingComma():
     Pair<List<RuleX_CallArgContext>?, RuleX_tkCOMMAContext?> {

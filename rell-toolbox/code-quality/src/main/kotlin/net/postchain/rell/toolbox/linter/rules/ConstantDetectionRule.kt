@@ -15,9 +15,7 @@ import net.postchain.rell.toolbox.linter.isUnderscore
 import net.postchain.rell.toolbox.linter.issues.ConstantDetectionIssue
 import net.postchain.rell.toolbox.parser.RellBaseVisitor
 import net.postchain.rell.toolbox.parser.RellParser
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_CommaSeparated_29Context
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_IncrementStmtContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_SimpleVarDeclaratorContext
+import net.postchain.rell.toolbox.parser.RellParser.*
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.misc.Interval
 

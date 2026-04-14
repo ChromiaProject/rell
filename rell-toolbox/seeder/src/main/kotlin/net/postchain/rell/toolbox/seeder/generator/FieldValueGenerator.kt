@@ -6,17 +6,17 @@ package net.postchain.rell.toolbox.seeder.generator
 
 import io.github.serpro69.kfaker.exception.RetryLimitException
 import net.postchain.common.types.WrappedByteArray
+import net.postchain.rell.base.lib.type.R_DecimalType
 import net.postchain.rell.base.model.R_EnumType
-import net.postchain.rell.toolbox.seeder.Attribute
-import net.postchain.rell.toolbox.seeder.Entity
-import net.postchain.rell.toolbox.seeder.RellSchema
+import net.postchain.rell.toolbox.seeder.schema.Attribute
+import net.postchain.rell.toolbox.seeder.schema.Entity
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.config.Configuration
 import net.postchain.rell.toolbox.seeder.config.Distribution
 import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGenerator
 import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGeneratorFactory
 import kotlin.random.Random
-import net.postchain.rell.base.lib.type.R_DecimalType
 
 class FieldValueGenerator(
     private val random: Random,
@@ -93,9 +93,7 @@ class FieldValueGenerator(
             Distribution.RANDOM -> config.values[random.nextInt(config.values.size)]
             Distribution.WEIGHTED -> selectWeightedValue(config)
         }
-        val type = attribute.type
-
-        return when (type) {
+        return when (val type = attribute.type) {
             is R_EnumType -> FieldValue(getOrdinalValue(value as String, type))
             is R_DecimalType -> FieldValue(value.toString())
             else -> FieldValue(value)

@@ -75,8 +75,7 @@ class R_TupleType(val fields: ImmList<R_TupleField>): R_CompositeType(calcName(f
             val otherField = other.fields[i]
             if (field.name != otherField.name) return null
 
-            val type = commonTypeOpt(field.type, otherField.type)
-            if (type == null) return null
+            val type = commonTypeOpt(field.type, otherField.type) ?: return null
 
             when (type) {
                 field.type -> field
@@ -131,7 +130,7 @@ class R_TupleType(val fields: ImmList<R_TupleField>): R_CompositeType(calcName(f
     }
 
     private inner class Meta: R_TypeMeta() {
-        override fun getTypeOrNull(args: ImmList<R_Type>): R_Type? {
+        override fun getTypeOrNull(args: ImmList<R_Type>): R_Type {
             checkEquals(args.size, fields.size)
             val resFields = fields.mapIndexedToImmList { i, f -> R_TupleField(f.index, f.name, args[i]) }
             return R_TupleType(resFields)
@@ -258,7 +257,7 @@ class Rt_TupleValue(val type: R_TupleType, val elements: List<Rt_Value>): Rt_Val
 }
 
 class GtvRtConversion_Tuple(val type: R_TupleType): GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
 
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean): Gtv {
         return if (pretty && type.fields.all { it.name != null }) rtToGtvPretty(rt) else rtToGtvCompact(rt)

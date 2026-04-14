@@ -5,7 +5,6 @@
 package net.postchain.rell.codegen.kotlin
 
 import net.postchain.rell.base.model.*
-import net.postchain.rell.codegen.StringSerializable
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.kotlin.util.KotlinBuiltinType
@@ -29,7 +28,7 @@ class KotlinDocumentFactory(private val config: KotlinCodeGeneratorConfig) : Doc
 
     override fun createOperation(rellOperation: R_OperationDefinition) = KotlinOperation(rellOperation)
 
-    override fun getBuiltins(neededObjects: List<ClassName>) = KotlinBuiltinType.values()
+    override fun getBuiltins(neededObjects: List<ClassName>) = KotlinBuiltinType.entries
             .filter { it.className in neededObjects.map { x -> x.className } }
             .map { it.createBuiltin() }
 }

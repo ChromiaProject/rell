@@ -5,7 +5,6 @@
 package net.postchain.rell.codegen.typescript
 
 import net.postchain.rell.base.model.R_EnumDefinition
-import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.deps.ClassName
 import net.postchain.rell.codegen.section.Enumeration
 

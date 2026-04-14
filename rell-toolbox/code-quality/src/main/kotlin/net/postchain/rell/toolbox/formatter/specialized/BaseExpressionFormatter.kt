@@ -8,7 +8,7 @@ import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.ExpressionFormatter
 import net.postchain.rell.toolbox.formatter.util.LineAnalyzer
-import net.postchain.rell.toolbox.parser.RellParser.*
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_BaseExprContext
 import org.antlr.v4.runtime.ParserRuleContext
 
 

@@ -7,12 +7,7 @@ package net.postchain.rell.toolbox.formatter
 import net.postchain.rell.toolbox.common.TextReplacement
 import net.postchain.rell.toolbox.common.applyTextReplacements
 import net.postchain.rell.toolbox.formatter.specialized.*
-import net.postchain.rell.toolbox.formatter.util.ArgumentFormatter
-import net.postchain.rell.toolbox.formatter.util.BraceFormatter
-import net.postchain.rell.toolbox.formatter.util.ExpressionFormatter
-import net.postchain.rell.toolbox.formatter.util.LineAnalyzer
-import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
-import net.postchain.rell.toolbox.formatter.util.WhitespaceFormatter
+import net.postchain.rell.toolbox.formatter.util.*
 import net.postchain.rell.toolbox.parser.RellCommonTokenStream
 import net.postchain.rell.toolbox.parser.RellLexer
 import net.postchain.rell.toolbox.parser.RellParser

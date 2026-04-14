@@ -11,7 +11,6 @@ import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.compiler.base.core.C_TypeAdapter
 import net.postchain.rell.base.compiler.base.core.C_TypeAdapter_IntegerToBigInteger
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.Lib_Math
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
@@ -23,7 +22,6 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
-import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immSetOf
 import org.jooq.DataType
@@ -32,8 +30,6 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
 import java.math.RoundingMode
-import java.util.*
-import kotlin.reflect.KType
 import kotlin.reflect.full.createType
 
 object Lib_Type_BigInteger {
@@ -327,7 +323,7 @@ object Lib_Type_BigInteger {
                     val n = (bigInt.bitLength() + 7) / 8
                     if (n != bytes.size) {
                         checkEquals(n, bytes.size - 1)
-                        bytes = Arrays.copyOfRange(bytes, 1, bytes.size)
+                        bytes = bytes.copyOfRange(1, bytes.size)
                     }
                     Rt_ByteArrayValue.get(bytes)
                 }
@@ -513,7 +509,7 @@ object Lib_BigIntegerMath {
             }
 
             val res = base.pow(exp)
-            if (res < MIN_VALUE || res > MAX_VALUE) {
+            if (res !in MIN_VALUE..MAX_VALUE) {
                 throw ArithmeticException("Big integer power result out of range")
             }
 
@@ -631,7 +627,7 @@ class Rt_BigIntegerValue private constructor(val value: BigInteger): Rt_Value() 
 }
 
 private object GtvRtConversion_BigInteger: GtvRtConversion() {
-    override fun directCompatibility() = R_GtvCompatibility(true, true)
+    override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvFactory.gtv(rt.asBigInteger())
 
     override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {

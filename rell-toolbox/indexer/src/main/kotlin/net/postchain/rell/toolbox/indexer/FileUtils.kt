@@ -7,10 +7,10 @@ package net.postchain.rell.toolbox.indexer
 import java.io.File
 import java.net.URI
 import java.security.MessageDigest
-import java.util.Locale
+import java.util.*
 
 fun findRellFilesInWorkspace(file: File, uris: MutableList<URI>) {
-    if (file.isDirectory()) {
+    if (file.isDirectory) {
         val files = file.listFiles()
         if (files != null) {
             for (f in files) {

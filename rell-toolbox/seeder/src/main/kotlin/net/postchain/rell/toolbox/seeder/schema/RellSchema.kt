@@ -2,13 +2,9 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
-package net.postchain.rell.toolbox.seeder
+package net.postchain.rell.toolbox.seeder.schema
 
-import net.postchain.rell.base.model.R_Attribute
-import net.postchain.rell.base.model.R_EntityDefinition
-import net.postchain.rell.base.model.R_Index
-import net.postchain.rell.base.model.R_Key
-import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.*
 
 class RellSchema(
     val entities: List<Entity>

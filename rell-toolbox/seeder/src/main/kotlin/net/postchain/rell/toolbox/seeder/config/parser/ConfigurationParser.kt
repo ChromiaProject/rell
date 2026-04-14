@@ -7,7 +7,7 @@ package net.postchain.rell.toolbox.seeder.config.parser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.networknt.schema.ValidationMessage
-import net.postchain.rell.toolbox.seeder.RellSchema
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import net.postchain.rell.toolbox.seeder.config.Configuration
 import net.postchain.rell.toolbox.seeder.config.ModuleConfig
 import net.postchain.rell.toolbox.seeder.config.YamlSchemaValidator

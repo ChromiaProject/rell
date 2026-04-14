@@ -255,7 +255,7 @@ object Lib_Test_Assert {
         return if (comparator != null) comparator else {
             // Must not happen, because there are type constraints (comparable), but checking for extra safety.
             m.validationError("assert:no_comparator:${rType.strCode()}", "Type '${rType.str()}' is not comparable")
-            return Comparator { _, _ -> 0 }
+            Comparator { _, _ -> 0 }
         }
     }
 

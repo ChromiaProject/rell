@@ -27,7 +27,7 @@ data class Document(val fileUri: URI, val version: Int, val content: String) {
     fun offSetInRange(offset: Int, range: Range): Boolean {
         try {
             val (startOffSet, endOffSet) = getStartAndEndOffset(range)
-            return offset >= startOffSet && offset <= endOffSet
+            return offset in startOffSet..endOffSet
         } catch (_: IndexOutOfBoundsException) {
             return false
         }

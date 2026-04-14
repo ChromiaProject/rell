@@ -4,12 +4,12 @@
 
 package net.postchain.rell.codegen.python
 
-import net.postchain.rell.codegen.SingleFileRellApp
-import org.junit.jupiter.api.BeforeAll
 import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
+import net.postchain.rell.codegen.SingleFileRellApp
 import net.postchain.rell.codegen.deps.CamelCaseClassName
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource

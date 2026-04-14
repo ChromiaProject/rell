@@ -112,10 +112,10 @@ class Rt_RangeValue(val start: Long, val end: Long, val step: Long): Rt_Value(),
 
     fun contains(v: Long): Boolean {
         if (step > 0) {
-            if (v < start || v >= end) return false
+            if (v !in start..<end) return false
         } else {
             check(step < 0)
-            if (v > start || v <= end) return false
+            if (v !in (end + 1)..start) return false
         }
         val m1 = valueMod(start, step)
         val m2 = valueMod(v, step)
@@ -139,12 +139,10 @@ class Rt_RangeValue(val start: Long, val end: Long, val step: Long): Rt_Value(),
         private class RangeIterator(private val range: Rt_RangeValue): Iterator<Rt_Value> {
             private var current = range.start
 
-            override fun hasNext(): Boolean {
-                if (range.step > 0) {
-                    return current < range.end
-                } else {
-                    return current > range.end
-                }
+            override fun hasNext(): Boolean = if (range.step > 0) {
+                current < range.end
+            } else {
+                current > range.end
             }
 
             override fun next(): Rt_Value {

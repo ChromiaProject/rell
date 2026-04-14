@@ -141,10 +141,7 @@ class RellTokenizer(version: R_LangVersion = RellVersions.VERSION) {
             scanBlank(seq)
         }
 
-        val k = seq.cur()
-        if (k == null) {
-            return null
-        }
+        val k = seq.cur() ?: return null
 
         seq.keepPos()
 
@@ -507,7 +504,7 @@ class RellTokenizer(version: R_LangVersion = RellVersions.VERSION) {
                     null
                 }
 
-                if (big != null && (big < BIG_MIN_INTEGER || big > BIG_MAX_INTEGER)) {
+                if (big != null && big !in BIG_MIN_INTEGER..BIG_MAX_INTEGER) {
                     throw RellTokenizerDecodingException(pos, "lex:int:range:$s", "Integer literal out of range: $s")
                 } else {
                     throw RellTokenizerDecodingException(pos, "lex:int:invalid:$s", "Invalid integer literal: '$s'")
@@ -562,10 +559,11 @@ class RellTokenizer(version: R_LangVersion = RellVersions.VERSION) {
                 throw RellTokenizerDecodingException(pos, "lex:decimal:invalid:$s", "Invalid decimal literal: '$s'")
             }
 
-            val v = Rt_DecimalValue.getTry(bd)
-            if (v == null) {
-                throw RellTokenizerDecodingException(pos, "lex:decimal:range:$s", "Decimal literal value out of range")
-            }
+            val v = Rt_DecimalValue.getTry(bd) ?: throw RellTokenizerDecodingException(
+                pos,
+                "lex:decimal:range:$s",
+                "Decimal literal value out of range"
+            )
 
             return v
         }

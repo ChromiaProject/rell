@@ -4,8 +4,6 @@
 
 package com.chromia.rell.dokka.renderers.html
 
-import org.jetbrains.dokka.base.DokkaBase
-import org.jetbrains.dokka.base.DokkaBaseConfiguration
 import org.jetbrains.dokka.pages.RendererSpecificResourcePage
 import org.jetbrains.dokka.pages.RenderingStrategy
 import org.jetbrains.dokka.pages.RootPageNode

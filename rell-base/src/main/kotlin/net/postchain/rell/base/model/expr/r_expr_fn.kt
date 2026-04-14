@@ -7,12 +7,12 @@ package net.postchain.rell.base.model.expr
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
+import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyString
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf
 import java.sql.SQLException
-import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
 
 object R_SysFunctionUtils {
     fun call(callCtx: Rt_CallContext, fn: R_SysFunction, nameMsg: LazyString?, values: List<Rt_Value>): Rt_Value {

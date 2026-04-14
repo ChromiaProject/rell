@@ -10,9 +10,7 @@ import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.lmodel.L_Struct
 import net.postchain.rell.base.lmodel.L_StructAttribute
-import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDeclarationProto_StructAttribute
 import net.postchain.rell.base.utils.doc.DocSymbol

@@ -18,7 +18,6 @@ import net.postchain.rell.base.compiler.base.module.C_ModuleKey
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.type.V_ObjectExpr
-import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocDefinition
@@ -396,7 +395,7 @@ private class C_NamespaceMember_SysStruct(
 
 private class C_NamespaceMember_SysEnum(
     base: C_NamespaceMemberBase,
-    private val e: R_EnumDefinition,
+    e: R_EnumDefinition,
 ): C_NamespaceMember(base) {
     private val typeDef: C_TypeDef = C_TypeDef.makeRType(e.type)
 
@@ -672,7 +671,7 @@ internal class C_SysNsProtoBuilder {
     private val entities = mutableListOf<C_NsEntry>()
 
     private var completed = false
-        private set(value) {
+        set(value) {
             check(!field)
             check(value)
             field = true

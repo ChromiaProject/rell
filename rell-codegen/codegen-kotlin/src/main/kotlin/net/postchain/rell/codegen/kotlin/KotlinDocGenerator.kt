@@ -6,7 +6,6 @@ package net.postchain.rell.codegen.kotlin
 
 import net.postchain.rell.base.model.R_FunctionParam
 import net.postchain.rell.base.utils.doc.DocCommentItem
-import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.docs.AbstractDocGenerator
 import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 

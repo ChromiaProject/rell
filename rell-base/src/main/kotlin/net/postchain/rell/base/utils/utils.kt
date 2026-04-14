@@ -9,7 +9,7 @@ typealias Getter<T> = () -> T
 
 class Nullable<T: Any> private constructor(val value: T?) {
     override fun equals(other: Any?) = other === this || (other is Nullable<*> && value == other.value)
-    override fun hashCode() = if (value == null) 0 else value.hashCode()
+    override fun hashCode() = value?.hashCode() ?: 0
     override fun toString(): String = java.lang.String.valueOf(value)
 
     companion object {
@@ -21,8 +21,6 @@ class Nullable<T: Any> private constructor(val value: T?) {
         }
     }
 }
-
-fun <T: Any> Nullable<T>?.orElse(other: T?): T? = if (this != null) this.value else other
 
 data class One<T>(val value: T)
 

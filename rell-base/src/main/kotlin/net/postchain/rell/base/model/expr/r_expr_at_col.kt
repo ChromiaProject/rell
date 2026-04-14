@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.model.expr
 
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.stmt.R_IterableAdapter

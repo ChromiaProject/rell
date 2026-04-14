@@ -12,7 +12,7 @@ import net.postchain.rell.toolbox.util.initializeLogger
 import org.apache.logging.log4j.Level
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
-import java.util.Locale
+import java.util.*
 
 @ExcludeFromJacocoGeneratedReport
 fun main(args: Array<String>) {

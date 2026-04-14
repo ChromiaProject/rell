@@ -11,11 +11,8 @@ import net.postchain.rell.base.lib.type.R_BooleanType
 import net.postchain.rell.base.lib.type.R_DecimalType
 import net.postchain.rell.base.lib.type.R_IntegerType
 import net.postchain.rell.base.lib.type.R_TextType
-import net.postchain.rell.toolbox.seeder.SchemaReader
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
-import net.postchain.rell.toolbox.seeder.config.dsl.configFile
-import net.postchain.rell.toolbox.seeder.config.parser.ConfigurationParser
-import net.postchain.rell.toolbox.seeder.generator.DataGenerator
 import net.postchain.rell.toolbox.seeder.generator.DataGeneratorContext
 import net.postchain.rell.toolbox.seeder.generator.UniqueProducer
 import net.postchain.rell.toolbox.testing.testData

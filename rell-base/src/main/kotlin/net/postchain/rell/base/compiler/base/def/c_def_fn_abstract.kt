@@ -5,6 +5,7 @@
 package net.postchain.rell.base.compiler.base.def
 
 import net.postchain.rell.base.compiler.ast.S_Pos
+import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.base.core.C_CompilerPass
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.compiler.base.fn.C_FunctionCallTarget
@@ -13,9 +14,7 @@ import net.postchain.rell.base.compiler.base.fn.C_FunctionCallTarget_Regular
 import net.postchain.rell.base.compiler.base.module.*
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
-import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.base.utils.lateInit
-import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget_AbstractUserFunction
 import net.postchain.rell.base.model.R_FunctionBase

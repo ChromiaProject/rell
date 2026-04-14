@@ -13,7 +13,6 @@ import net.postchain.rell.base.runtime.GtvRtConversion_None
 import net.postchain.rell.base.runtime.Rt_CoreValueTypes
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.immSetOf
-import java.math.BigInteger
 import kotlin.reflect.full.createType
 
 object Lib_Type_Unit {

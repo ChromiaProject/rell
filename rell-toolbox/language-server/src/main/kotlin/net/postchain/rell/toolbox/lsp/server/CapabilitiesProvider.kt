@@ -6,17 +6,7 @@ package net.postchain.rell.toolbox.lsp.server
 
 import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvider
 import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
-import org.eclipse.lsp4j.CodeActionKind
-import org.eclipse.lsp4j.CodeActionOptions
-import org.eclipse.lsp4j.CompletionOptions
-import org.eclipse.lsp4j.InitializeParams
-import org.eclipse.lsp4j.RenameOptions
-import org.eclipse.lsp4j.SemanticTokensLegend
-import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions
-import org.eclipse.lsp4j.ServerCapabilities
-import org.eclipse.lsp4j.TextDocumentSyncKind
-import org.eclipse.lsp4j.WorkspaceFoldersOptions
-import org.eclipse.lsp4j.WorkspaceServerCapabilities
+import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 
 class CapabilitiesProvider(private val lspSystemPropertiesProvider: LspSystemPropertiesProvider) {

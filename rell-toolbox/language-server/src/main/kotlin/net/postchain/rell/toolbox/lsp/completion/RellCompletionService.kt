@@ -17,8 +17,6 @@ import net.postchain.rell.toolbox.lsp.symbols.RellCompletionSymbolService
 import org.antlr.v4.runtime.misc.Interval
 import org.eclipse.lsp4j.CompletionItem
 import java.net.URI
-import kotlin.collections.component1
-import kotlin.collections.component2
 
 class RellCompletionService(
     private val rellSymbolService: RellCompletionSymbolService,

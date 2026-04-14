@@ -18,7 +18,6 @@ import net.postchain.rell.base.model.expr.R_BinaryOp_Intersect_List
 import net.postchain.rell.base.model.expr.R_BinaryOp_Sub_List
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_ListComparator
-import net.postchain.rell.base.utils.doc.DocType
 import net.postchain.rell.base.utils.doc.DocUtils
 import net.postchain.rell.base.utils.immListOf
 

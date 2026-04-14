@@ -4,28 +4,12 @@
 
 package net.postchain.rell.codegen.util
 
-import net.postchain.rell.codegen.CodeGenerator
-import java.util.*
 import net.postchain.rell.api.base.RellCliEnv
-import net.postchain.rell.base.lib.type.R_BigIntegerType
-import net.postchain.rell.base.lib.type.R_BooleanType
-import net.postchain.rell.base.lib.type.R_ByteArrayType
-import net.postchain.rell.base.lib.type.R_DecimalType
-import net.postchain.rell.base.lib.type.R_GtvType
-import net.postchain.rell.base.lib.type.R_IntegerType
-import net.postchain.rell.base.lib.type.R_JsonType
-import net.postchain.rell.base.lib.type.R_ListType
-import net.postchain.rell.base.lib.type.R_MapType
-import net.postchain.rell.base.lib.type.R_RowidType
-import net.postchain.rell.base.lib.type.R_SetType
-import net.postchain.rell.base.lib.type.R_TextType
-import net.postchain.rell.base.model.R_EntityType
-import net.postchain.rell.base.model.R_EnumType
-import net.postchain.rell.base.model.R_NullableType
-import net.postchain.rell.base.model.R_StructType
-import net.postchain.rell.base.model.R_TupleType
-import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.lib.type.*
+import net.postchain.rell.base.model.*
+import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.deps.CamelCaseClassName
+import java.util.*
 
 fun capitalize(name: String) =
     name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }

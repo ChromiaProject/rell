@@ -14,12 +14,7 @@ import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.common.RellKeywords
 import net.postchain.rell.toolbox.lsp.hover.formatDocSymbol
 import net.postchain.rell.toolbox.lsp.symbols.RellRelevantImportSymbol
-import org.eclipse.lsp4j.CompletionItem
-import org.eclipse.lsp4j.CompletionItemKind
-import org.eclipse.lsp4j.CompletionItemLabelDetails
-import org.eclipse.lsp4j.CompletionItemTag
-import org.eclipse.lsp4j.InsertTextFormat
-import org.eclipse.lsp4j.MarkupContent
+import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 
 class CompletionItemFactory {
@@ -179,7 +174,7 @@ class CompletionItemFactory {
                 description = "module"
             }
             kind = CompletionItemKind.Module
-            insertText = "import $moduleName.{\$0};"
+            insertText = $$"import $$moduleName.{$0};"
             insertTextFormat = InsertTextFormat.Snippet
         }
     )

@@ -28,7 +28,7 @@ class TypescriptDocumentFactory : DocumentFactory {
 
     override fun createOperation(rellOperation: R_OperationDefinition) = TypescriptOperation(rellOperation)
 
-    override fun getBuiltins(neededObjects: List<ClassName>) = TypescriptBuiltinType.values()
+    override fun getBuiltins(neededObjects: List<ClassName>) = TypescriptBuiltinType.entries
             .filter { it.className in neededObjects.map { x -> x.className } }
             .map { it.createBuiltin() }
 }

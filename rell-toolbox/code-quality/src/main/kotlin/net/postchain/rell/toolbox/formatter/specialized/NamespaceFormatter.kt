@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.formatter.specialized
 
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
-import net.postchain.rell.toolbox.parser.RellParser.*
+import net.postchain.rell.toolbox.parser.RellParser.RuleX_NamespaceDefContext
 
 class NamespaceDefFormatter : NodeFormatter<RuleX_NamespaceDefContext> {
     override fun format(node: RuleX_NamespaceDefContext, doc: FormattableDocument) {

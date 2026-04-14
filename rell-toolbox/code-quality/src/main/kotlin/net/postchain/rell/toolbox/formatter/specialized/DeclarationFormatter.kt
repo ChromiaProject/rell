@@ -7,13 +7,7 @@ package net.postchain.rell.toolbox.formatter.specialized
 import net.postchain.rell.toolbox.formatter.BracePairTypes
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
-import net.postchain.rell.toolbox.formatter.util.ArgumentFormatter
-import net.postchain.rell.toolbox.formatter.util.BraceFormatter
-import net.postchain.rell.toolbox.formatter.util.LineAnalyzer
-import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
-import net.postchain.rell.toolbox.formatter.util.WhitespaceFormatter
-import net.postchain.rell.toolbox.formatter.util.getTupleVarContext
-import net.postchain.rell.toolbox.formatter.util.getVarDeclaratorWithTrailingComma
+import net.postchain.rell.toolbox.formatter.util.*
 import net.postchain.rell.toolbox.parser.RellParser.*
 
 

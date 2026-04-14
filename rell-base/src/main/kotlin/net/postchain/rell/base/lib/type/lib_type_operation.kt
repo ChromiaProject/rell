@@ -16,7 +16,6 @@ import net.postchain.rell.base.runtime.GtvRtConversion_None
 import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.doc.DocCode
-import net.postchain.rell.base.utils.immListOf
 
 object Lib_Type_Operation {
     val NAMESPACE = Ld_NamespaceDsl.make {

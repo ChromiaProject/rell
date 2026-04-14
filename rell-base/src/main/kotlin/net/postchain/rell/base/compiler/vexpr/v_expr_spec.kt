@@ -148,8 +148,8 @@ internal class V_SmartNullableExpr private constructor(
             nulled ?: return vExpr
 
             val type = vExpr.type
-            val smartType = if (type is R_NullableType && nulled == false) type.valueType else null
-            return V_SmartNullableExpr(ctx, vExpr, nulled == true, smartType, varKey, varKind)
+            val smartType = if (type is R_NullableType && !nulled) type.valueType else null
+            return V_SmartNullableExpr(ctx, vExpr, nulled, smartType, varKey, varKind)
         }
     }
 }

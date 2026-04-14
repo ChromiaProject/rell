@@ -6,7 +6,6 @@ package net.postchain.rell.base.lib.test
 
 import net.postchain.common.hexStringToByteArray
 import net.postchain.crypto.secp256k1_derivePubKey
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lib.type.Rt_ByteArrayValue
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_StructType

@@ -5,12 +5,11 @@
 package net.postchain.rell.base.compiler.base.def
 
 import net.postchain.rell.base.compiler.ast.S_CallArgument
+import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.base.core.C_CompilerPass
 import net.postchain.rell.base.compiler.base.core.C_TypeHint
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.fn.*
-import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
-import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.base.utils.lateInit
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallTarget_Operation
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall

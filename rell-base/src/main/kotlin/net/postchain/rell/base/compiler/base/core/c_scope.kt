@@ -10,7 +10,6 @@ import net.postchain.rell.base.compiler.base.namespace.C_NamespaceEntry
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMember
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMemberTag
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
-import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.base.utils.lateInit
 import net.postchain.rell.base.model.R_Name
 import net.postchain.rell.base.utils.*
