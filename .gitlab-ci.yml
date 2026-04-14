@@ -158,6 +158,6 @@ qodana:
     - if: $CI_PIPELINE_SOURCE != "merge_request_event"
   artifacts:
     paths:
-      - qodana/report/qodana.sarif.json
+      - .qodana/results/qodana.sarif.json
     when: always
     expire_in: 1 week
