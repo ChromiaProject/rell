@@ -200,7 +200,7 @@ fun <T, K, V> Iterable<T>.groupAdjacent(f: (T) -> Pair<K, V>): List<Pair<K, List
     return res.toImmList()
 }
 
-fun <T: Any> MutableList<T?>.computeIfAbsent(index: Int, f: () -> T): T {
+fun <T: Any> MutableList<T?>.getOrSet(index: Int, f: () -> T): T {
     var n = this.size
     while (n <= index) {
         add(null)

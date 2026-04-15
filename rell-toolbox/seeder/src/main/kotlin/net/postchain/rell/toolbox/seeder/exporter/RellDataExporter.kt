@@ -10,10 +10,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.module.SimpleModule
 import net.postchain.common.types.WrappedByteArray
-import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import net.postchain.rell.toolbox.seeder.generator.EntityRecord
 import net.postchain.rell.toolbox.seeder.generator.GeneratedData
-import java.io.FileWriter
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
+import java.io.Writer
 import java.math.BigDecimal
 import java.nio.file.Path
 
@@ -38,20 +38,20 @@ class RellDataExporter : BaseDataExporter() {
         val module = SimpleModule()
         module.addSerializer(
             WrappedByteArray::class.java,
-            object : JsonSerializer<WrappedByteArray>() {
+            object: JsonSerializer<WrappedByteArray>() {
                 override fun serialize(value: WrappedByteArray, gen: JsonGenerator, serializers: SerializerProvider) {
                     val hexString = value.data.joinToString("") { "%02x".format(it) }
                     gen.writeString(hexString)
                 }
-            }
+            },
         )
         module.addSerializer(
             BigDecimal::class.java,
-            object : JsonSerializer<BigDecimal>() {
+            object: JsonSerializer<BigDecimal>() {
                 override fun serialize(value: BigDecimal, gen: JsonGenerator, serializers: SerializerProvider) {
                     gen.writeString(value.toString())
                 }
-            }
+            },
         )
         registerModule(module)
     }
@@ -60,7 +60,7 @@ class RellDataExporter : BaseDataExporter() {
 
     override fun export(data: GeneratedData, schema: RellSchema, outputPath: Path, mountName: String) {
         val outputFile = prepareOutputFile(outputPath)
-        FileWriter(outputFile).use { writer ->
+        outputFile.bufferedWriter().use { writer ->
             writer.write("$seederModuleWarning\n")
             writer.write("@mount(\"$mountName\")\n")
             writer.write("module;\n\n")
@@ -87,7 +87,7 @@ class RellDataExporter : BaseDataExporter() {
         }
     }
 
-    private fun generateImports(data: GeneratedData, schema: RellSchema, writer: FileWriter) {
+    private fun generateImports(data: GeneratedData, schema: RellSchema, writer: Writer) {
         var importCounter = 1
         schema.entities.groupBy { it.moduleName }.forEach { (moduleName, entities) ->
             val importStatement = "import mod$importCounter: $moduleName;"
@@ -112,7 +112,7 @@ class RellDataExporter : BaseDataExporter() {
             record.fields.map {
                 if (it.value?.isReference == true) {
                     referenceData.add(
-                        listOf(entityMap[it.value!!.entityReferenceType]!!.toLong(), (it.value!!.value as Long))
+                        listOf(entityMap[it.value!!.entityReferenceType]!!.toLong(), (it.value!!.value as Long)),
                     )
                     "%REF"
                 } else {
@@ -185,7 +185,7 @@ class RellDataExporter : BaseDataExporter() {
     private fun getEntityIdFunctionString(data: GeneratedData): String {
         val entityMappingString = getEntityMap(data).entries.joinToString(
             prefix = "[",
-            postfix = "]"
+            postfix = "]",
         ) { "'${it.key}': ${it.value}" }
 
         return """

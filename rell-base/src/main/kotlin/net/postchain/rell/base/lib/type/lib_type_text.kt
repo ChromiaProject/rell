@@ -794,28 +794,27 @@ class Rt_TextValue private constructor(val value: String): Rt_Value() {
         private fun escape(s: String): String {
             if (s.isEmpty()) return ""
 
-            val buf = StringBuilder(s.length)
-            for (c in s) {
-                when (c) {
-                    '\t' -> buf.append("\\t")
-                    '\r' -> buf.append("\\r")
-                    '\n' -> buf.append("\\n")
-                    '\b' -> buf.append("\\b")
-                    '\\' -> buf.append("\\\\")
-                    in '\u0020'..<'\u0080' -> buf.append(c)
-                    else -> {
-                        buf.append("\\u")
-                        buf.append("%04x".formatEx(c.code))
+            return buildString(s.length) {
+                for (c in s) {
+                    when (c) {
+                        '\t' -> append("\\t")
+                        '\r' -> append("\\r")
+                        '\n' -> append("\\n")
+                        '\b' -> append("\\b")
+                        '\\' -> append("\\\\")
+                        in '\u0020'..<'\u0080' -> append(c)
+                        else -> {
+                            append("\\u")
+                            append("%04x".formatEx(c.code))
+                        }
                     }
                 }
             }
-
-            return buf.toString()
         }
     }
 }
 
-private object GtvRtConversion_Text: GtvRtConversion() {
+internal object GtvRtConversion_Text: GtvRtConversion() {
     override fun directCompatibility() = R_GtvCompatibility(fromGtv = true, toGtv = true)
     override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvString(rt.asString())
 

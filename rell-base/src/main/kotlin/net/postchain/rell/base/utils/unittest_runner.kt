@@ -341,7 +341,7 @@ private fun printValueDiff(printer: Rt_Printer, diff: Map<List<String>, Pair<Rt_
         if (path.isEmpty()) continue
         val basePath = path.dropLast(1)
         val last = path.last()
-        val baseMap = groupDiff.computeIfAbsent(basePath) { mutableMapOf() }
+        val baseMap = groupDiff.getOrPut(basePath) { mutableMapOf() }
         baseMap[last] = pair
     }
 

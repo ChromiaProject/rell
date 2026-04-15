@@ -170,7 +170,7 @@ class RellXmlElement(
         val s = text ?: ""
         val res = try {
             parser(s)
-        } catch (e: Throwable) {
+        } catch (_: Throwable) {
             throw error("invalid value: '$s'")
         }
         return res
@@ -301,7 +301,7 @@ class RellXmlAttrsParser(private val elem: RellXmlElement) {
     ): T {
         val res = try {
             parser(value)
-        } catch (e: Throwable) {
+        } catch (_: Throwable) {
             val msg = parseErrMsg(key, type, value) + " (parsing failed)"
             throw elem.error(msg)
         }

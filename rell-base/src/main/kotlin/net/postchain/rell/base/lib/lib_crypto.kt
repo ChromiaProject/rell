@@ -538,7 +538,7 @@ object Lib_Crypto {
         val originalSize = possiblyOriginalSize ?: bytes.size
         val point = try {
             CURVE_PARAMS.curve.decodePoint(bytes)
-        } catch (e: RuntimeException) {
+        } catch (_: RuntimeException) {
             throw Rt_Exception.common(
                 "crypto:bad_pubkey:${originalSize}", "Bad public key (size: ${originalSize})")
         }
@@ -550,7 +550,7 @@ object Lib_Crypto {
         val y = yValue.asBigInteger()
         val point = try {
             CURVE_PARAMS.curve.createPoint(x, y)
-        } catch (e: RuntimeException) {
+        } catch (_: RuntimeException) {
             throw Rt_Exception.common("crypto:bad_point", "Bad EC point coordinates")
         }
         return point

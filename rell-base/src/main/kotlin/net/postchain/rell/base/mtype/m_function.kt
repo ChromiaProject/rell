@@ -262,7 +262,7 @@ internal class M_FunctionParamsMatch(
         val replacedHeader = header.replaceTypeParams(typeSets)
         try {
             replacedHeader.validate()
-        } catch (e: M_TypeException) {
+        } catch (_: M_TypeException) {
             return null
         }
 

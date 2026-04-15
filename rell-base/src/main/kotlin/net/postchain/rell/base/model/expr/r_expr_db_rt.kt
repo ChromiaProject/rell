@@ -73,8 +73,8 @@ class SqlGenContext private constructor(
     fun getRelAlias(baseAlias: SqlTableAlias, rel: R_Attribute, targetEntity: R_EntityDefinition): SqlTableAlias {
         val ctx = getSqlGenCtxForExpr(baseAlias.exprId)
         val tbl = ctx.aliasTableMap.getValue(baseAlias)
-        val map = tbl.subAliases.computeIfAbsent(baseAlias) { mutableMapOf() }
-        val join = map.computeIfAbsent(rel.name) {
+        val map = tbl.subAliases.getOrPut(baseAlias) { mutableMapOf() }
+        val join = map.getOrPut(rel.name) {
             val alias = aliasAllocator.nextAlias(targetEntity, baseAlias.exprId)
             ctx.aliasTableMap[alias] = tbl
             SqlTableJoin(rel, alias)

@@ -101,7 +101,7 @@ private object XtextNontermGen {
 
             val xNt = XtextNonterm(xName)
             xNonterms[name] = xNt
-            xNt.prods.set(convertProds(xName, gram))
+            xNt.prods = convertProds(xName, gram)
         }
 
         return XtextExpr_Symbol(xName)
@@ -200,7 +200,7 @@ private object XtextNontermGen {
             val type = createTokenType(name)
             val prod = XtextProd(type, expr)
             val nonterm = XtextNonterm(ntName)
-            nonterm.prods.set(listOf(prod))
+            nonterm.prods = listOf(prod)
             xTokenNonterms[name] = nonterm
             xNonterms[ntName] = nonterm
         }
@@ -291,10 +291,10 @@ private fun termNameToXtext(name: String): String {
 }
 
 private class XtextNonterm(val name: String) {
-    val prods = LateInit<List<XtextProd>>()
+    var prods by LateInit<List<XtextProd>>()
 
     fun generate(): String {
-        val ps = prods.get().joinToString("\n   | ") { it.generate() }
+        val ps = prods.joinToString("\n   | ") { it.generate() }
         return "\n$name\n   : $ps\n   ;"
     }
 }

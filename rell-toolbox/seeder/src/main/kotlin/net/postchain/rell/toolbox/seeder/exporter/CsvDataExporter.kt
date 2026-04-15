@@ -5,10 +5,9 @@
 package net.postchain.rell.toolbox.seeder.exporter
 
 
-import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import net.postchain.rell.toolbox.seeder.generator.GeneratedData
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import java.io.File
-import java.io.FileWriter
 import java.nio.file.Path
 
 class CsvDataExporter : BaseDataExporter() {
@@ -26,7 +25,7 @@ class CsvDataExporter : BaseDataExporter() {
         for ((entityName, records) in data.entityData) {
             val entityFile = File(outputDir, "$entityName.csv")
 
-            FileWriter(entityFile).use { writer ->
+            entityFile.bufferedWriter().use { writer ->
                 if (records.isNotEmpty()) {
                     // Write header
                     val header = records.first().fields.keys.joinToString(",")

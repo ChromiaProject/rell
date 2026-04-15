@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlin.jvm) apply false
@@ -15,7 +16,7 @@ description = "Rell programming language"
 val generateTestCases by extra(providers.gradleProperty("generateTestCases").isPresent)
 
 // Load local.properties (not committed) for machine-specific settings like Docker socket paths.
-val localProperties = java.util.Properties().apply {
+val localProperties = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
 

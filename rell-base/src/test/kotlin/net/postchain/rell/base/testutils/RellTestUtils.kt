@@ -36,12 +36,12 @@ object RellTestUtils {
     val ENCODER_GTV = { t: R_Type, v: Rt_Value -> GtvTestUtils.gtvToStr(t.rtToGtv(v, true)) }
     val ENCODER_GTV_STRICT = { t: R_Type, v: Rt_Value -> GtvTestUtils.encodeGtvStr(t.rtToGtv(v, true)) }
 
-    fun processApp(code: String, processor: (T_App) -> String): String {
+    inline fun processApp(code: String, processor: (T_App) -> String): String {
         val sourceDir = C_SourceDir.mapDirOf(MAIN_FILE to code)
         return processApp(sourceDir, processor = processor)
     }
 
-    fun processApp(
+    inline fun processApp(
         sourceDir: C_SourceDir,
         errPos: Boolean = false,
         options: C_CompilerOptions = DEFAULT_COMPILER_OPTIONS,
@@ -102,12 +102,12 @@ object RellTestUtils {
         }
     }
 
-    fun catchRtErr(block: () -> String): String {
+    inline fun catchRtErr(block: () -> String): String {
         val p = catchRtErr0(block)
         return p.first?.res ?: p.second!!
     }
 
-    fun <T> catchRtErr0(block: () -> T): Pair<TestCallResult?, T?> {
+    inline fun <T> catchRtErr0(block: () -> T): Pair<TestCallResult?, T?> {
         return try {
             val res = block()
             Pair(null, res)

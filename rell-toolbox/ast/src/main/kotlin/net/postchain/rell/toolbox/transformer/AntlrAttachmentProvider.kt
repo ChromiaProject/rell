@@ -5,13 +5,12 @@
 package net.postchain.rell.toolbox.transformer
 
 import org.antlr.v4.runtime.ParserRuleContext
-import java.util.function.Supplier
 
-class AntlrAttachmentProvider : Supplier<Any?> {
+class AntlrAttachmentProvider : () -> Any? {
     var node: ParserRuleContext? = null
     var attachment: AntlrRellNodeAttachment? = null
 
-    override fun get(): Any? {
+    override fun invoke(): Any? {
         return if (attachment != null) {
             attachment
         } else if (node == null) {

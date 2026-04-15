@@ -24,13 +24,13 @@ sealed class C_NsImp_Def
 class C_NsImp_Def_Simple(val member: C_NamespaceMember): C_NsImp_Def()
 
 internal class C_NsImp_Def_Namespace(
-    private val getter: LateGetter<C_NsImp_Namespace>,
+    private val getter: () -> C_NsImp_Namespace,
     val defName: C_DefinitionName,
     val ideInfo: C_IdeSymbolInfo,
     val deprecated: C_Deprecated?,
     val importModule: C_ModuleDescriptor? = null,
 ): C_NsImp_Def() {
-    fun ns() = getter.get()
+    fun ns() = getter()
 }
 
 internal object C_NsImp_ImportsProcessor {
@@ -87,8 +87,7 @@ private class C_NsImp_InternalImportsProcessor(
             processNamespace(ns)
         }
 
-        val impList = asmList.mapToImmList { nsStates.getValue(it).getNamespace() }
-
+        val impList = asmList.mapToImmList { nsStates.getValue(it).namespace }
         return impList
     }
 
@@ -133,21 +132,16 @@ private class C_NsImp_InternalImportsProcessor(
         }
 
         val resNs = builder.build()
-        state.initNamespace(resNs)
+        state.namespace = resNs
     }
 
-    private fun processDirectDef(builder: C_NsImp_NamespaceBuilder, name: R_Name, def: C_NsAsm_Def) {
-        return when (def) {
-            is C_NsAsm_Def_Simple -> {
-                builder.addDirectDef(name, def.member)
-            }
-            is C_NsAsm_Def_ExactImport -> {
-                processDirectExactImport(builder, name, def)
-            }
-            is C_NsAsm_Def_Namespace -> {
-                val nsDef = processNamespaceDef(def)
-                builder.addDirectDef(name, nsDef)
-            }
+    private fun processDirectDef(builder: C_NsImp_NamespaceBuilder, name: R_Name, def: C_NsAsm_Def): Unit = when (def) {
+        is C_NsAsm_Def_Simple -> builder.addDirectDef(name, def.member)
+        is C_NsAsm_Def_ExactImport -> processDirectExactImport(builder, name, def)
+
+        is C_NsAsm_Def_Namespace -> {
+            val nsDef = processNamespaceDef(def)
+            builder.addDirectDef(name, nsDef)
         }
     }
 
@@ -198,8 +192,8 @@ private class C_NsImp_InternalImportsProcessor(
     private fun processNamespaceDef(def: C_NsAsm_Def_Namespace): C_NsImp_Def_Namespace {
         val ns = def.ns()
         val nsState = processNamespace(ns)
-        val nsGetter = nsState.getNamespaceGetter()
-        return nsDefs.computeIfAbsent(def) {
+        val nsGetter = { nsState.namespace }
+        return nsDefs.getOrPut(def) {
             val ideInfo = def.ideSymbolInfo()
             C_NsImp_Def_Namespace(nsGetter, def.defName, ideInfo, def.deprecated, def.importModule)
         }
@@ -211,19 +205,11 @@ private class C_NsImp_InternalImportsProcessor(
         res.valueOrReport(msgCtx)
     }
 
-    private fun getState(ns: C_NsAsm_Namespace) = nsStates.computeIfAbsent(ns) { C_NsImp_NamespaceState() }
+    private fun getState(ns: C_NsAsm_Namespace) = nsStates.getOrPut(ns) { C_NsImp_NamespaceState() }
 
     private class C_NsImp_NamespaceState {
         var processed = false
-
-        private val nsInit = LateInit<C_NsImp_Namespace>()
-
-        fun initNamespace(ns: C_NsImp_Namespace) {
-            nsInit.set(ns)
-        }
-
-        fun getNamespace() = nsInit.get()
-        fun getNamespaceGetter() = nsInit.getter
+        var namespace by LateInit<C_NsImp_Namespace>()
     }
 }
 
@@ -256,21 +242,18 @@ private class C_NsImp_NamespaceBuilder {
 }
 
 private class C_NsImp_NamespaceConverter {
-    private val map = mutableMapOf<C_NsImp_Namespace, LateGetter<C_NsAsm_Namespace>>()
+    private val map = mutableMapOf<C_NsImp_Namespace, () -> C_NsAsm_Namespace>()
 
-    fun convert(impNs: C_NsImp_Namespace): C_NsAsm_Namespace {
-        val late = convertNamespaceLate(impNs)
-        return late.get()
-    }
+    fun convert(impNs: C_NsImp_Namespace): C_NsAsm_Namespace = convertNamespaceLate(impNs)()
 
-    private fun convertNamespaceLate(impNs: C_NsImp_Namespace): LateGetter<C_NsAsm_Namespace> {
+    private fun convertNamespaceLate(impNs: C_NsImp_Namespace): () -> C_NsAsm_Namespace {
         var getter = map[impNs]
         if (getter == null) {
-            val late = LateInit<C_NsAsm_Namespace>()
-            getter = late.getter
+            var late by LateInit<C_NsAsm_Namespace>()
+            getter = { late }
             map[impNs] = getter
             val ns = convertNamespace(impNs)
-            late.set(ns)
+            late = ns
         }
         return getter
     }
@@ -544,7 +527,7 @@ private class C_NsImp_QNameRes<T>(val value: T, val ideInfos: ImmList<C_IdeSymbo
 private class C_NsImp_Result<T> private constructor(
         val value: T?,
         val ideInfos: ImmList<C_IdeSymbolInfo>,
-        val error: Getter<C_Error>
+        val error: () -> C_Error,
 ) {
     constructor(value: T, ideInfos: ImmList<C_IdeSymbolInfo>): this(value, ideInfos, { throw IllegalStateException("error: no error") })
     constructor(target: C_NsImp_QNameRes<T>): this(target.value, target.ideInfos)
@@ -563,6 +546,6 @@ private class C_NsImp_Result<T> private constructor(
     }
 
     companion object {
-        fun <T> error(ideInfos: List<C_IdeSymbolInfo>, error: Getter<C_Error>) = C_NsImp_Result<T>(null, ideInfos.toImmList(), error)
+        fun <T> error(ideInfos: List<C_IdeSymbolInfo>, error: () -> C_Error) = C_NsImp_Result<T>(null, ideInfos.toImmList(), error)
     }
 }

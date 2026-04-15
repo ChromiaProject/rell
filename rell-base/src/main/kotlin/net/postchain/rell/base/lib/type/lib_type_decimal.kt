@@ -438,30 +438,28 @@ object Lib_DecimalMath {
             else -> precision - 1 - scale
         }
 
-        val buf = StringBuilder()
-
-        if (v.signum() < 0) {
-            buf.append('-')
-        }
-
-        buf.append(unscaledStr[0])
-        buf.append('.')
-
-        if (precision >= 2) {
-            buf.append(unscaledStr.substring(1))
-        } else {
-            buf.append('0')
-        }
-
-        if (e != 0) {
-            buf.append('E')
-            if (e > 0) {
-                buf.append('+')
+        return buildString {
+            if (v.signum() < 0) {
+                append('-')
             }
-            buf.append(e)
-        }
 
-        return buf.toString()
+            append(unscaledStr[0])
+            append('.')
+
+            if (precision >= 2) {
+                append(unscaledStr.substring(1))
+            } else {
+                append('0')
+            }
+
+            if (e != 0) {
+                append('E')
+                if (e > 0) {
+                    append('+')
+                }
+                append(e)
+            }
+        }
     }
 
     private fun removeTrailingZeros(s: String): String {

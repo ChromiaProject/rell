@@ -162,7 +162,7 @@ sealed class C_Namespace {
     internal companion object {
         val EMPTY: C_Namespace = C_BasicNamespace(immMapOf())
 
-        fun makeLate(getter: LateGetter<C_Namespace>): C_Namespace {
+        fun makeLate(getter: () -> C_Namespace): C_Namespace {
             return C_LateNamespace(getter)
         }
     }
@@ -187,10 +187,10 @@ private class C_BasicNamespace(private val entries: ImmMap<R_Name, C_NamespaceEn
     override fun getDocMembers(): ImmMap<String, DocDefinition> = docMembersLazy
 }
 
-private class C_LateNamespace(private val getter: LateGetter<C_Namespace>): C_Namespace() {
-    override fun getEntries() = getter.get().getEntries()
-    override fun getEntry(name: R_Name) = getter.get().getEntry(name)
-    override fun getDocMembers() = getter.get().getDocMembers()
+private class C_LateNamespace(private val getter: () -> C_Namespace): C_Namespace() {
+    override fun getEntries() = getter().getEntries()
+    override fun getEntry(name: R_Name) = getter().getEntry(name)
+    override fun getDocMembers() = getter().getDocMembers()
 }
 
 internal class C_NamespaceBuilder {

@@ -90,9 +90,7 @@ internal object C_SystemLibrary {
 
     fun getScope(config: Config): C_SysLibScope {
         return synchronized(this) {
-            CACHE.computeIfAbsent(config) {
-                createScope(it)
-            }
+            CACHE.getOrPut(config) { createScope(config) }
         }
     }
 

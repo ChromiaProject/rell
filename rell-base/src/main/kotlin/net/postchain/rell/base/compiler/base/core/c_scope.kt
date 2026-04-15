@@ -20,11 +20,11 @@ internal class C_ScopeBuilder {
 
     constructor(): this(null, { C_Namespace.EMPTY })
 
-    private constructor(parentScope: C_Scope?, nsGetter: Getter<C_Namespace>) {
+    private constructor(parentScope: C_Scope?, nsGetter: () -> C_Namespace) {
         this.scope = C_Scope(parentScope, nsGetter)
     }
 
-    fun nested(nsGetter: Getter<C_Namespace>): C_ScopeBuilder {
+    fun nested(nsGetter: () -> C_Namespace): C_ScopeBuilder {
         return C_ScopeBuilder(scope, nsGetter)
     }
 
@@ -32,8 +32,8 @@ internal class C_ScopeBuilder {
 }
 
 internal class C_Scope(
-    private val parent: C_Scope?,
-    private val nsGetter: Getter<C_Namespace>,
+        private val parent: C_Scope?,
+        private val nsGetter: () -> C_Namespace,
 ) {
     private val rootNs: C_Namespace by lazy {
         nsGetter()

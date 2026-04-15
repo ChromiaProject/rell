@@ -657,7 +657,7 @@ object C_GraphUtils {
 
         for (vert in graph.keys) {
             for (adjVert in graph.getValue(vert)) {
-                val set = mut.computeIfAbsent(adjVert) { mutableSetOf() }
+                val set = mut.getOrPut(adjVert) { mutableSetOf() }
                 set.add(vert)
             }
         }

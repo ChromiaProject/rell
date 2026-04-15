@@ -166,7 +166,7 @@ internal class C_MountTablesBuilder(private val stamp: R_AppUid) {
         b.queries.add(C_DeclarationType.QUERY, q, null, q.mountName)
     }
 
-    private fun chainBuilder(chain: String) = chains.computeIfAbsent(chain) { C_ChainMountTablesBuilder(stamp) }
+    private fun chainBuilder(chain: String) = chains.getOrPut(chain) { C_ChainMountTablesBuilder(stamp) }
 
     fun build(): C_MountTables {
         val resChains = chains.mapValuesToImmMap { (_, v) ->

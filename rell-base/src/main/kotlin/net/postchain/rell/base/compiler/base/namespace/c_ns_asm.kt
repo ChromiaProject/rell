@@ -19,7 +19,7 @@ import net.postchain.rell.base.utils.ide.IdeSymbolGlobalId
 import java.util.*
 
 interface C_NsAsm_BasicAssembler {
-    fun futureNs(): Getter<C_Namespace>
+    fun futureNs(): () -> C_Namespace
 }
 
 internal interface C_NsAsm_ComponentAssembler: C_NsAsm_BasicAssembler {
@@ -210,7 +210,7 @@ internal sealed class C_NsAsm_Def_Namespace(
             deprecated: C_Deprecated?,
             ideInfo: C_IdeSymbolInfo,
             importModule: C_ModuleDescriptor?,
-            getter: LateGetter<C_NsAsm_Namespace>,
+            getter: () -> C_NsAsm_Namespace,
         ): C_NsAsm_Def {
             return C_NsAsm_Def_LateNamespace(defName, deprecated, importModule, ideInfo, getter)
         }
@@ -233,9 +233,9 @@ private class C_NsAsm_Def_LateNamespace(
     deprecated: C_Deprecated?,
     importModule: C_ModuleDescriptor?,
     private val ideInfo: C_IdeSymbolInfo,
-    private val getter: LateGetter<C_NsAsm_Namespace>,
+    private val getter: () -> C_NsAsm_Namespace,
 ): C_NsAsm_Def_Namespace(defName, deprecated, importModule) {
-    override fun ns() = getter.get()
+    override fun ns() = getter()
     override fun ideSymbolInfo() = ideInfo
 }
 
@@ -398,7 +398,7 @@ private class C_NsAsm_InternalReplAssembler(
     val comAsm = C_NsAsm_InternalComponentAssembler(executor, nsLinker, nsKey, stamp)
     private var componentAdded = false
 
-    private val nsGetter: Getter<C_Namespace> = if (linkedModule != null) {
+    private val nsGetter: () -> C_Namespace = if (linkedModule != null) {
         val linkedContainer = C_ModuleContainerKey.of(linkedModule)
         val linkedNsKey = C_NsAsm_NamespaceKey(linkedContainer, C_RNamePath.EMPTY)
         nsLinker.getLink(linkedNsKey)
@@ -467,8 +467,12 @@ private class C_NsAsm_InternalReplAssembler(
             val newNs = newDef.ns()
             val resNs = mergeReplNamespace(oldNs, newNs)
             val resDeprecated = oldDef.deprecated ?: newDef.deprecated
-            val getter = LateGetter.of(resNs)
-            C_NsImp_Def_Namespace(getter, oldDef.defName, oldDef.ideInfo, resDeprecated)
+            C_NsImp_Def_Namespace(
+                getter = { resNs },
+                defName = oldDef.defName,
+                ideInfo = oldDef.ideInfo,
+                deprecated = resDeprecated,
+            )
         } else {
             oldDef
         }
@@ -869,7 +873,7 @@ private data class C_NsAsm_NamespaceKey(val container: C_ContainerKey, val path:
 }
 
 private sealed class C_NsAsm_NamespaceLinker {
-    abstract fun getLink(nsKey: C_NsAsm_NamespaceKey): Getter<C_Namespace>
+    abstract fun getLink(nsKey: C_NsAsm_NamespaceKey): () -> C_Namespace
 }
 
 private class C_NsAsm_InternalNamespaceLinker(
@@ -881,9 +885,9 @@ private class C_NsAsm_InternalNamespaceLinker(
     private val containerNamespaces = mutableMapOf<C_ContainerKey, C_Namespace>()
     private var completed = false
 
-    override fun getLink(nsKey: C_NsAsm_NamespaceKey): Getter<C_Namespace> {
+    override fun getLink(nsKey: C_NsAsm_NamespaceKey): () -> C_Namespace {
         check(!completed)
-        val link = links.computeIfAbsent(nsKey) { NamespaceLink(it) }
+        val link = links.getOrPut(nsKey) { NamespaceLink(nsKey) }
         return link.getter
     }
 
@@ -903,7 +907,7 @@ private class C_NsAsm_InternalNamespaceLinker(
     }
 
     private inner class NamespaceLink(private val nsKey: C_NsAsm_NamespaceKey) {
-        val getter: Getter<C_Namespace> = {
+        val getter: () -> C_Namespace = {
             get()
         }
 
@@ -931,7 +935,7 @@ private object C_NsAsm_Utils {
         val namespaces = mutableMapOf<String, MutableList<C_NsAsm_RawDef_Namespace>>()
         for (entry in ns.entries) {
             if (entry.def is C_NsAsm_RawDef_Namespace && entry.def.merge) {
-                val list = namespaces.computeIfAbsent(entry.name.str) { mutableListOf() }
+                val list = namespaces.getOrPut(entry.name.str) { mutableListOf() }
                 list.add(entry.def)
             }
         }

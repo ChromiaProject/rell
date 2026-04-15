@@ -394,13 +394,13 @@ private class C_NameContext_Active(
     }
 
     override fun setDefId(pos: S_Pos, defId: IdeSymbolId) {
-        val extra = extraMap.computeIfAbsent(pos) { ExtraInfo() }
+        val extra = extraMap.getOrPut(pos) { ExtraInfo() }
         checkTest(extra.defId == null) { "name not found: $pos" }
         extra.defId = defId
     }
 
     override fun setLink(pos: S_Pos, link: IdeSymbolLink) {
-        val extra = extraMap.computeIfAbsent(pos) { ExtraInfo() }
+        val extra = extraMap.getOrPut(pos) { ExtraInfo() }
         checkTest(extra.link == null) { "name not found: $pos" }
         extra.link = link
     }
@@ -451,7 +451,7 @@ private class C_NameContext_Active(
         for ((pos, info) in map) {
             if (info.defId != null) {
                 val path = pos.path()
-                val subMap = fileMap.computeIfAbsent(path) { mutableMapOf() }
+                val subMap = fileMap.getOrPut(path) { mutableMapOf() }
                 val oldPos = subMap.put(info.defId, pos)
                 check(oldPos == null) { "$oldPos $pos ${info.defId}" }
             }

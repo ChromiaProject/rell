@@ -250,7 +250,7 @@ class Rt_RegularSqlContext private constructor(
             val res = mutableMapOf<String, MutableMap<String, R_EntityDefinition>>()
             for (entity in entities) {
                 if (entity.external != null && entity.external.metaCheck) {
-                    val map = res.computeIfAbsent(entity.external.chain.name) { mutableMapOf() }
+                    val map = res.getOrPut(entity.external.chain.name) { mutableMapOf() }
                     check(entity.metaName !in map)
                     map[entity.metaName] = entity
                 }

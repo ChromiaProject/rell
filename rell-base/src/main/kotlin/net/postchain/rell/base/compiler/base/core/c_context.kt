@@ -160,7 +160,7 @@ internal class C_RegularModuleContext(
     private val nsAssembler = appCtx.createModuleNsAssembler(descriptor.key, sysDefsScope, external)
     private val defsGetter = nsAssembler.futureDefs()
 
-    val nsGetter: Getter<C_Namespace> = nsAssembler.futureNs()
+    val nsGetter: () -> C_Namespace = nsAssembler.futureNs()
 
     override val scopeBuilder: C_ScopeBuilder = let {
         val rootScopeBuilder = C_ScopeBuilder()
@@ -185,8 +185,8 @@ internal class C_ReplModuleContext(
     appCtx: C_AppContext,
     modProvider: C_ModuleProvider,
     moduleName: R_ModuleName,
-    replNsGetter: Getter<C_Namespace>,
-    componentNsGetter: Getter<C_Namespace>,
+    replNsGetter: () -> C_Namespace,
+    componentNsGetter: () -> C_Namespace,
 ): C_ModuleContext(appCtx, modProvider, moduleName, null, C_ReplContainerKey) {
     override val abstract = false
     override val external = false

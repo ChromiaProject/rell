@@ -4,9 +4,6 @@
 
 package net.postchain.rell.base.utils
 
-
-typealias Getter<T> = () -> T
-
 class Nullable<T: Any> private constructor(val value: T?) {
     override fun equals(other: Any?) = other === this || (other is Nullable<*> && value == other.value)
     override fun hashCode() = value?.hashCode() ?: 0

@@ -77,7 +77,7 @@ internal class C_ModuleReader(
     fun dirSubModules(moduleName: R_ModuleName) = dirTree.dirSubModules(moduleName)
 
     fun readModuleSource(name: R_ModuleName): C_ModuleSource? {
-        val entry = cache.computeIfAbsent(name) {
+        val entry = cache.getOrPut(name) {
             try {
                 val source = dirTree.readModuleSource(name)
                 CacheEntry_OK(source)

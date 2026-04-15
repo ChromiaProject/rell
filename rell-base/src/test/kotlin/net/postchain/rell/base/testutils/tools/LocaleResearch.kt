@@ -48,12 +48,10 @@ private class SqlCheckerCtx(
 
     private val messages = mutableListOf<String>()
 
-    fun <T> select(sql: String, getter: (ResultSetRow) -> T): List<T> {
-        val buf = mutableListOf<T>()
+    fun <T> select(sql: String, getter: (ResultSetRow) -> T): List<T> = buildList {
         sqlExec.executeQuery(sql, {}) { row ->
-            buf.add(getter(row))
+            add(getter(row))
         }
-        return buf.toList()
     }
 
     fun message(s: String) {

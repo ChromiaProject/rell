@@ -78,28 +78,24 @@ internal object C_IdeCompletionsUtils {
         return IdeCompletion(targetDoc.kind, doc.symbolName, docComp?.params, docComp?.result, location, doc, deprecated)
     }
 
-    fun docCodeToStr(docCode: DocCode): String {
-        val b = StringBuilder()
-
+    fun docCodeToStr(docCode: DocCode): String = buildString {
         docCode.visit(object: DocCodeTokenVisitor {
             override fun tab() {
-                b.append(" ")
+                append(" ")
             }
 
             override fun raw(s: String) {
-                b.append(s)
+                append(s)
             }
 
             override fun keyword(s: String) {
-                b.append(s)
+                append(s)
             }
 
             override fun link(s: String) {
-                b.append(s)
+                append(s)
             }
         })
-
-        return b.toString()
     }
 
     internal fun isTargetScope(compilerOptions: C_CompilerOptions, filePath: C_SourcePath, range: S_PosRange?): Boolean {

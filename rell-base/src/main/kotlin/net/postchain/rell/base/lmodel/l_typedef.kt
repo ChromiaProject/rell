@@ -54,7 +54,7 @@ class L_TypeDefMembers(val all: ImmList<L_TypeDefMember>) {
     }
 
     private fun replaceTypeParamsCache(replace: ReplaceState, member: L_TypeDefMember): L_TypeDefMember? {
-        return replace.cache.computeIfAbsent(member) {
+        return replace.cache.getOrPut(member) {
             replaceTypeParams0(replace, member)
         }
     }

@@ -52,7 +52,7 @@ internal object C_LibTypeAdapter {
         member: L_TypeDefMember,
         cache: MutableMap<L_TypeDefMember, Item>,
     ): Item {
-        return cache.computeIfAbsent(member) {
+        return cache.getOrPut(member) {
             convertTypeMember(typeName, member, cache)
         }
     }
@@ -253,7 +253,7 @@ private object C_LibTypeAdapterInternal {
             if (validate) {
                 try {
                     header.validate()
-                } catch (e: M_TypeException) {
+                } catch (_: M_TypeException) {
                     return null
                 }
             }

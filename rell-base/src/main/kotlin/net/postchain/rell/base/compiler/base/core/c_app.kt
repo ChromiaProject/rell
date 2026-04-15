@@ -143,7 +143,7 @@ internal class C_AppContext(
 
     fun addExternalChain(name: String): C_ExternalChain {
         executor.checkPass(C_CompilerPass.DEFINITIONS)
-        return externalChains.computeIfAbsent(name) { createExternalChain(name) }
+        return externalChains.getOrPut(name) { createExternalChain(name) }
     }
 
     private fun createExternalChain(name: String): C_ExternalChain {

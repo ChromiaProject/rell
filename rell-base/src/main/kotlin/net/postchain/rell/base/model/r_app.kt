@@ -169,7 +169,7 @@ class R_Module(
     val moduleArgs: R_StructDefinition?,
     override val docSymbol: DocSymbol,
     override val docSourcePos: DocSourcePos?,
-    private val nsGetter: Getter<C_Namespace>,
+    private val nsGetter: () -> C_Namespace,
 ): DocDefinition() {
     val key = R_ModuleKey(name, externalChain)
 

@@ -20,7 +20,6 @@ import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.ide.IdeFilePath
 import java.util.*
-import java.util.function.Supplier
 
 abstract class S_Pos: Comparable<S_Pos> {
     abstract fun path(): C_SourcePath
@@ -101,20 +100,16 @@ abstract class S_Node {
     val attachment: Any? = getAttachment()
 
     companion object {
-        private val ATTACHMENT_PROVIDER_LOCAL = ThreadLocalContext<Supplier<Any?>>(Supplier { null })
+        private val ATTACHMENT_PROVIDER_LOCAL = ThreadLocalContext<() -> Any?> { null }
 
         @JvmStatic
-        fun runWithAttachmentProvider(provider: Supplier<Any?>, code: Runnable) {
+        fun runWithAttachmentProvider(provider: () -> Any?, code: Runnable) {
             ATTACHMENT_PROVIDER_LOCAL.set(provider) {
                 code.run()
             }
         }
 
-        private fun getAttachment(): Any? {
-            val provider = ATTACHMENT_PROVIDER_LOCAL.get()
-            val res = provider.get()
-            return res
-        }
+        private fun getAttachment(): Any? = ATTACHMENT_PROVIDER_LOCAL.get()()
     }
 }
 

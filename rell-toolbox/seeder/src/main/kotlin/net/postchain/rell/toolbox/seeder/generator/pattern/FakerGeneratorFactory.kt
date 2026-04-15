@@ -67,7 +67,7 @@ class FakerGeneratorFactory {
 
     fun getAttributeFakerGenerator(entity: Entity, attribute: Attribute): FakerGenerator {
         val fakerId = entity.uniqueName + "." + attribute.name
-        return attributeFakerGenerators.computeIfAbsent(fakerId) {
+        return attributeFakerGenerators.getOrPut(fakerId) {
             FakerGenerator(
                 registry,
                 Faker(fakerConfig { uniqueGeneratorRetryLimit = MAX_RETRIES }),

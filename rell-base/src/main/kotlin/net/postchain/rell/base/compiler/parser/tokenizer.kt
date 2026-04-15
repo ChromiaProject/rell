@@ -500,7 +500,7 @@ class RellTokenizer(version: R_LangVersion = RellVersions.VERSION) {
             } catch (e: NumberFormatException) {
                 val big = try {
                     BigInteger(p, radix)
-                } catch (e2: NumberFormatException) {
+                } catch (_: NumberFormatException) {
                     null
                 }
 
@@ -536,7 +536,7 @@ class RellTokenizer(version: R_LangVersion = RellVersions.VERSION) {
 
             val bi = try {
                 BigInteger(p, radix)
-            } catch (e: NumberFormatException) {
+            } catch (_: NumberFormatException) {
                 throw RellTokenizerDecodingException(pos, "lex:bigint:invalid:$s", "Invalid big integer literal: '$s'")
             }
 
@@ -575,7 +575,7 @@ class RellTokenizer(version: R_LangVersion = RellVersions.VERSION) {
         fun decodeByteArray(pos: S_Pos, s: String): ByteArray {
             try {
                 return CommonUtils.hexToBytes(s)
-            } catch (e: IllegalArgumentException) {
+            } catch (_: IllegalArgumentException) {
                 val maxlen = 64
                 val p = if (s.length <= maxlen) s else (s.substring(0, maxlen) + "...")
                 throw RellTokenizerDecodingException(pos, "lex:bad_hex:$p", "Invalid byte array literal: '$p'")

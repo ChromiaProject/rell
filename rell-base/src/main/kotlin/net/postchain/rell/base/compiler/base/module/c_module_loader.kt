@@ -126,7 +126,7 @@ internal class C_ModuleLoader(
 
             val source = try {
                 moduleReader.readModuleSource(curName)
-            } catch (e: C_CommonError) {
+            } catch (_: C_CommonError) {
                 // ignore
                 null
             }

@@ -101,7 +101,7 @@ object SqlUtils {
                 val column = rs.getString(4)
                 val type = rs.getString(6)
                 if (mapping.isChainTable(table)) {
-                    val columns = tables.computeIfAbsent(table) { mutableMapOf() }
+                    val columns = tables.getOrPut(table) { mutableMapOf() }
                     check(column !in columns) { "$table $column" }
                     columns[column] = SqlCol(type)
                 }

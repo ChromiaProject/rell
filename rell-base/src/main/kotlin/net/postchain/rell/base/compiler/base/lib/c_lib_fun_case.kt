@@ -394,7 +394,7 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
         val actualParams = argMatching.mapping
             .mapToImmList {
                 val i = it.param.index
-                simpleParams.computeIfAbsent(i) {
+                simpleParams.getOrSet(i) {
                     val lParam = header.lHeader.params[i]
                     lParam.toSimpleParam()
                 }
@@ -452,7 +452,7 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
 
         try {
             header.validate()
-        } catch (e: M_TypeException) {
+        } catch (_: M_TypeException) {
             return null
         }
 
@@ -649,7 +649,7 @@ private class C_MemberLibFuncCase(
         if (specificHeader !== genericHeader) {
             try {
                 specificHeader.lHeader.validate()
-            } catch (e: M_TypeException) {
+            } catch (_: M_TypeException) {
                 return null
             }
         }

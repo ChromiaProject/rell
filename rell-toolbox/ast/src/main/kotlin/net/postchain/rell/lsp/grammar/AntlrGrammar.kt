@@ -169,7 +169,7 @@ private object AntlrNontermGen {
 
             val xNt = AntlrNonterm(xName)
             xNonterms[name] = xNt
-            xNt.prods.set(convertProds(xName, gram))
+            xNt.prods = convertProds(xName, gram)
         }
 
         return AntlrExpr_Symbol(xName)
@@ -268,7 +268,7 @@ private object AntlrNontermGen {
             val type = createTokenType(name)
             val prod = AntlrProd(expr)
             val nonterm = AntlrNonterm(ntName)
-            nonterm.prods.set(listOf(prod))
+            nonterm.prods = listOf(prod)
             xTokenNonterms[name] = nonterm
             xNonterms[ntName] = nonterm
         }
@@ -362,9 +362,10 @@ private fun nontermNameToAntlrRuleCtx(name: String): String {
 private fun termNameToAntlr(name: String): String = "X_$name"
 
 private class AntlrNonterm(val name: String) {
-    val prods = LateInit<List<AntlrProd>>()
+    var prods by LateInit<List<AntlrProd>>()
+
     fun generate(): String {
-        val ps = prods.get().joinToString("\n   | ") { it.generate() }
+        val ps = prods.joinToString("\n   | ") { it.generate() }
         if (name == "X_IfStmt") {
             return "$name ::= ${ps.replace("'else'", "X_tkElse")}\n"
         }

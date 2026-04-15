@@ -92,7 +92,7 @@ internal class C_LibTypeManager(modules: List<C_LibModule>) {
     }
 
     private fun getCacheEntry(type: R_Type): C_TypeCacheEntry {
-        return typeCache.computeIfAbsent(type) {
+        return typeCache.getOrPut(type) {
             makeCacheEntry(type)
         }
     }

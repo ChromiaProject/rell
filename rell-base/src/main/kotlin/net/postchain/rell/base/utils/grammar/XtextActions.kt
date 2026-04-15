@@ -67,15 +67,13 @@ private fun typeToTransform(type: String): String {
 }
 
 // Must use same algorithm as the Xtext code generator.
-private fun camelCaseToUpper(s: String): String {
-    val b = StringBuilder(s.length * 2)
+private fun camelCaseToUpper(s: String): String = buildString(s.length * 2) {
     for (i in s.indices) {
         val c = s[i]
-        if (c.isUpperCase() && i > 0 && s[i - 1].isLowerCase()) b.append('_')
+        if (c.isUpperCase() && i > 0 && s[i - 1].isLowerCase()) append('_')
         if (c == '_' && i > 0 && s[i - 1].isUpperCase()) continue
-        b.append(c.uppercaseChar())
+        append(c.uppercaseChar())
     }
-    return b.toString()
 }
 
 class XtextActionEx(val action: XtextAction, val transform: ((Any) -> Any)?)

@@ -53,7 +53,7 @@ private class ErrorHandler(
         ignore = true
     }
 
-    fun <T> handleError(msgSupplier: () -> String, code: () -> T): T {
+    inline fun <T> handleError(msgSupplier: () -> String, code: () -> T): T {
         try {
             val res = code()
             return res
@@ -87,7 +87,7 @@ private class ErrorHandler(
         }
     }
 
-    private fun processError(msgSupplier: () -> String, e: Throwable, stack: List<R_StackPos> = listOf()): String {
+    private inline fun processError(msgSupplier: () -> String, e: Throwable, stack: List<R_StackPos> = listOf()): String {
         val subMsg = msgSupplier()
         val errMsg = e.message ?: e.toString()
         val headMsg = "$subMsg: $errMsg"

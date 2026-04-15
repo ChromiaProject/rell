@@ -23,11 +23,11 @@ class R_Attribute internal constructor(
     val keyIndexKind: R_KeyIndexKind?,
     internal val ideInfo: C_IdeSymbolInfo,
     internal val restrictions: C_MemberRestrictions = C_MemberRestrictions.NULL,
-    internal val canSetInCreate: Boolean = true,
-    internal val sqlMapping: String = rName.str,
+    val canSetInCreate: Boolean = true,
+    val sqlMapping: String = rName.str,
     internal val validator: R_AttrValidator? = null,
     override val docSourcePos: DocSourcePos? = null,
-    private val exprGetter: C_LateGetter<R_DefaultValue>?,
+    val exprGetter: C_LateGetter<R_DefaultValue>?,
 ): DocDefinition() {
     val ideName = R_IdeName(rName, ideInfo)
     val name = rName.str

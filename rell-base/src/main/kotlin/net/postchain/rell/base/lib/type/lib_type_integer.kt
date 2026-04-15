@@ -107,7 +107,7 @@ object Lib_Type_Integer {
                     val s = value.asString()
                     val r = try {
                         java.lang.Long.parseUnsignedLong(s, 16)
-                    } catch (e: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         throw Rt_Exception.common("fn:integer.from_hex:$s", "Invalid hex number: '$s'")
                     }
                     Rt_IntValue.get(r)

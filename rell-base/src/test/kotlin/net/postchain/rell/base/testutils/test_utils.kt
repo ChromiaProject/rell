@@ -119,10 +119,12 @@ class Rt_TestOpContext(
 }
 
 class RellTestEval {
-    private var wrapping = false
+    @PublishedApi
+    internal var wrapping = false
+
     private var lastErrorStack = listOf<R_StackPos>()
 
-    fun eval(code: () -> String): String {
+    inline fun eval(code: () -> String): String {
         val oldWrapping = wrapping
         wrapping = true
         return try {
@@ -166,5 +168,6 @@ class RellTestEval {
         return p.second!!
     }
 
-    private class EvalException(val payload: String): RuntimeException()
+    @PublishedApi
+    internal class EvalException(val payload: String): RuntimeException()
 }

@@ -155,12 +155,16 @@ class R_Struct internal constructor(
     internal val rDefBase: R_DefinitionBase?,
     val mirrorStructs: R_MirrorStructs?,
 ) {
-    private val bodyLate = LateInit(ERROR_BODY)
-    private val flagsLate = LateInit(ERROR_STRUCT_FLAGS)
+    private var bodyLate by LateInit(ERROR_BODY)
+    private var flagsLate by LateInit(ERROR_STRUCT_FLAGS)
 
-    val attributes: ImmMap<R_Name, R_Attribute> get() = bodyLate.get().attrMap
-    val attributesList: ImmList<R_Attribute> get() = bodyLate.get().attrList
-    val flags: R_StructFlags get() = flagsLate.get()
+    val attributes: ImmMap<R_Name, R_Attribute>
+        get() = bodyLate.attrMap
+
+    val attributesList: ImmList<R_Attribute>
+        get() = bodyLate.attrList
+
+    val flags: R_StructFlags get() = flagsLate
 
     val strAttributes: ImmMap<String, R_Attribute> by lazy {
         attributes.mapKeysToImmMap { it.key.str }
@@ -173,20 +177,18 @@ class R_Struct internal constructor(
         val attrsList = attrs.values.toImmList()
         attrsList.withIndex().forEach { (idx, attr) -> checkEquals(attr.index, idx) }
         val attrMutable = attrs.values.any { it.mutable }
-        bodyLate.set(R_StructBody(attrs, attrsList, attrMutable))
+        bodyLate = R_StructBody(attrs, attrsList, attrMutable)
     }
 
     fun setFlags(flags: R_StructFlags) {
-        flagsLate.set(flags)
+        flagsLate = flags
     }
 
-    fun isDirectlyMutable() = bodyLate.get().attrMutable
+    fun isDirectlyMutable() = bodyLate.attrMutable
 
-    fun toMetaGtv(): Gtv {
-        return mapOf(
-            "attributes" to attributesList.map { it.toMetaGtv() }.toGtv()
-        ).toGtv()
-    }
+    fun toMetaGtv(): Gtv = mapOf(
+        "attributes" to attributesList.map { it.toMetaGtv() }.toGtv()
+    ).toGtv()
 
     override fun toString() = name
 

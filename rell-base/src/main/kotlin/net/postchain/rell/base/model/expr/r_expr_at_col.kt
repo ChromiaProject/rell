@@ -183,7 +183,7 @@ private class R_ColAtSummarizer_Group(what: R_ColAtWhat): R_ColAtSummarizer() {
     override fun addRecord(values: List<Rt_Value>) {
         checkEquals(values.size, fields.size)
         val key = groupFields.map { values[it] }
-        val aggregator = map.computeIfAbsent(key) { R_ColAtRowAggregator(fields) }
+        val aggregator = map.getOrPut(key) { R_ColAtRowAggregator(fields) }
         aggregator.update(values)
     }
 

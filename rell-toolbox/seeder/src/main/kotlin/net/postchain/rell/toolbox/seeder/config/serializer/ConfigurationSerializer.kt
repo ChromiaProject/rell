@@ -6,13 +6,16 @@ package net.postchain.rell.toolbox.seeder.config.serializer
 
 import net.postchain.rell.toolbox.seeder.config.Configuration
 import net.postchain.rell.toolbox.seeder.config.ModuleConfig
-import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.bufferedWriter
+import kotlin.io.path.createDirectories
+import kotlin.io.path.div
+import kotlin.io.path.writeText
 
 class ConfigurationSerializer {
     private val moduleConfigurationSerializer = ModuleConfigSerializer()
     fun serialize(config: Configuration, outputDirPath: Path): Path {
-        val outputDir = outputDirPath.toFile().apply { mkdirs() }
+        val outputDir = outputDirPath.apply { createDirectories() }
 
         val modulePaths = config.modules.map { (modulePath, moduleConfig) ->
             serializeModule(modulePath, moduleConfig, outputDir)
@@ -22,22 +25,22 @@ class ConfigurationSerializer {
         return serializeMainConfig(modulePaths, outputDir)
     }
 
-    private fun serializeModule(modulePath: String, moduleConfig: ModuleConfig, outputDir: File) {
+    private fun serializeModule(modulePath: String, moduleConfig: ModuleConfig, outputDir: Path) {
         val moduleFile = outputDir.resolve(modulePath)
-        moduleFile.parentFile.mkdirs()
+        moduleFile.parent.createDirectories()
         moduleFile.writeText(moduleConfigurationSerializer.serialize(moduleConfig))
     }
 
-    private fun serializeMainConfig(modulePaths: List<String>, outputDir: File): Path {
-        val configFile = outputDir.resolve("seeder.yml")
+    private fun serializeMainConfig(modulePaths: List<String>, outputDir: Path): Path {
+        val configFile = outputDir / "seeder.yml"
 
-        val configString = buildString {
-            appendLine("modules:")
+        configFile.bufferedWriter().use { writer ->
+            writer.appendLine("modules:")
             modulePaths.forEach {
-                appendLine("  - \"$it\"")
+                writer.appendLine("  - \"$it\"")
             }
         }
-        configFile.writeText(configString)
-        return configFile.toPath()
+
+        return configFile
     }
 }

@@ -123,10 +123,8 @@ private class C_LibNamespaceConverter {
         }
     }
 
-    private fun convertMemberCached(lMember: L_NamespaceMember): C_NamespaceMember? {
-        return memberMap.computeIfAbsent(lMember) {
-            convertMember0(lMember)
-        }
+    private fun convertMemberCached(lMember: L_NamespaceMember): C_NamespaceMember? = memberMap.getOrPut(lMember) {
+        convertMember0(lMember)
     }
 
     private fun convertMember0(lMember: L_NamespaceMember): C_NamespaceMember? {
@@ -173,9 +171,7 @@ private class C_LibNamespaceConverter {
     }
 
     private fun convertMemberType(mf: C_LibNsMemberFactory, lMember: L_NamespaceMember_Type): C_NamespaceMember? {
-        val libTypeDef = typeDefMap.computeIfAbsent(lMember.typeDef) {
-            convertTypeDef(it)
-        }
+        val libTypeDef = typeDefMap.getOrPut(lMember.typeDef) { convertTypeDef(lMember.typeDef) }
 
         return if (libTypeDef.lTypeDef.hidden) null else {
             val restrictions = C_MemberRestrictions.makeLib(lMember, C_DeclarationType.TYPE, lMember.deprecated)

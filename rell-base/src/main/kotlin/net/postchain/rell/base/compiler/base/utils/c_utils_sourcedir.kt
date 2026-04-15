@@ -221,7 +221,7 @@ private class C_MapSourceDir(files: Map<C_SourcePath, C_SourceFile>): C_SourceDi
                 if (len == pos + 1) {
                     files[name] = file
                 } else {
-                    val sub = subs.computeIfAbsent(name) { mutableMapOf() }
+                    val sub = subs.getOrPut(name) { mutableMapOf() }
                     sub[path] = file
                 }
             }
@@ -330,7 +330,7 @@ private class C_CachedSourceDir(private val sourceDir: C_SourceDir): C_SourceDir
         return files
     }
 
-    private fun lookup(path: C_SourcePath): CacheEntry = cache.computeIfAbsent(path) { CacheEntry() }
+    private fun lookup(path: C_SourcePath): CacheEntry = cache.getOrPut(path) { CacheEntry() }
 
     private class C_CachedSourceFile(private val file: C_SourceFile): C_SourceFile() {
         private val idePath = CachedField { file.idePath() }
@@ -342,8 +342,8 @@ private class C_CachedSourceDir(private val sourceDir: C_SourceDir): C_SourceDir
         }
 
         override fun readAst(version: R_LangVersion): S_RellFile {
-            val field = astMap.computeIfAbsent(version) {
-                CachedField { file.readAst(it) }
+            val field = astMap.getOrPut(version) {
+                CachedField { file.readAst(version) }
             }
             return field.get()
         }

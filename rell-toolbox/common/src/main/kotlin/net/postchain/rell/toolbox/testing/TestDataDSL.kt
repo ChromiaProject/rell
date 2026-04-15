@@ -223,19 +223,19 @@ class ConfigBuilder {
     }
 
     internal fun createFile(target: Path): File {
-        val sb = StringBuilder()
-        if (definitions.isNotEmpty()) sb.append("$definitions\n")
-        sb.append(content)
-        if (deployments.isNotEmpty()) sb.append("\n$deployments")
-        if (libs != libStart) sb.append("\n$libs")
-        if (test.isNotEmpty()) sb.append("\n$test")
-        if (docs.isNotEmpty()) sb.append("\n$docs")
-        sb.append("\n$database")
-        if (compile.isNotEmpty()) sb.append("\n$compile")
-        if (extra.isNotEmpty()) sb.append("\n$extra")
-        return File(target.toFile(), "chromia.yml").apply {
-            writeText(sb.toString())
+        val file = File(target.toFile(), "chromia.yml")
+        file.bufferedWriter().use { writer ->
+            if (definitions.isNotEmpty()) writer.append("$definitions\n")
+            writer.append(content)
+            if (deployments.isNotEmpty()) writer.append("\n$deployments")
+            if (libs != libStart) writer.append("\n$libs")
+            if (test.isNotEmpty()) writer.append("\n$test")
+            if (docs.isNotEmpty()) writer.append("\n$docs")
+            writer.append("\n$database")
+            if (compile.isNotEmpty()) writer.append("\n$compile")
+            if (extra.isNotEmpty()) writer.append("\n$extra")
         }
+        return file
     }
 }
 

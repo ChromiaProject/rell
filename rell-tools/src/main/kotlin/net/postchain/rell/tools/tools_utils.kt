@@ -130,7 +130,7 @@ object RellToolsUtils: KLogging() {
         s ?: return RellVersions.VERSION
         val ver = try {
             R_LangVersion.of(s)
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             throw RellCliBasicException("Invalid source version: '$s'")
         }
         if (ver !in RellVersions.SUPPORTED_VERSIONS) {

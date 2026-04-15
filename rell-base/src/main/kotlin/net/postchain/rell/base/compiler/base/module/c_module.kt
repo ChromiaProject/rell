@@ -157,11 +157,11 @@ internal class C_CompiledModule(
 
 internal object C_ModuleCompiler {
     fun compile(
-        modCtx: C_ModuleContext,
-        files: List<C_CompiledRellFile>,
-        docPos: DocSourcePos,
-        docSymbol: DocSymbol,
-        nsGetter: Getter<C_Namespace>,
+            modCtx: C_ModuleContext,
+            files: List<C_CompiledRellFile>,
+            docPos: DocSourcePos,
+            docSymbol: DocSymbol,
+            nsGetter: () -> C_Namespace,
     ): C_CompiledModule {
         val defs = modCtx.getModuleDefs()
 

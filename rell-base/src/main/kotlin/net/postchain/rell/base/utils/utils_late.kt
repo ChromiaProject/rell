@@ -5,17 +5,17 @@
 package net.postchain.rell.base.utils
 
 import java.util.function.Supplier
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
-class LateInit<T: Any>(private var fallback: T? = null) {
-    val getter = LateGetter(this)
-
+class LateInit<T: Any>(private var fallback: T? = null) : ReadWriteProperty<Any?, T> {
     private var value: T? = null
 
     fun get(): T {
         var res = value
         if (res == null) {
             res = fallback
-            checkNotNull(res) { "value not initialized" }
+            checkNotNull(res) { "Value not initialized." }
             value = res
             fallback = null
         }
@@ -27,16 +27,7 @@ class LateInit<T: Any>(private var fallback: T? = null) {
         value = v
         fallback = null
     }
-}
 
-class LateGetter<T: Any>(private val init: LateInit<T>): Supplier<T> {
-    override fun get(): T = init.get()
-
-    companion object {
-        fun <T: Any> of(value: T): LateGetter<T> {
-            val init = LateInit<T>()
-            init.set(value)
-            return init.getter
-        }
-    }
+    override fun getValue(thisRef: Any?, property: KProperty<*>): T = get()
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) = set(value)
 }

@@ -42,12 +42,12 @@ private class C_NsRes_InternalMaker {
         val lateNs = nsMap[ns]
         if (lateNs != null) return lateNs
 
-        val init = LateInit<C_Namespace>()
-        val lateNs2 = C_Namespace.makeLate(init.getter)
+        var init by LateInit<C_Namespace>()
+        val lateNs2 = C_Namespace.makeLate { init }
         nsMap[ns] = lateNs2
 
         val resNs = makeNamespace0(ns)
-        init.set(resNs)
+        init = resNs
 
         return lateNs2
     }
@@ -78,7 +78,7 @@ private class C_NsRes_InternalMaker {
             is C_NsImp_Def_Namespace -> {
                 val impNs = def.ns()
                 val ns = makeNamespace(impNs)
-                nsMemberMap.computeIfAbsent(def) {
+                nsMemberMap.getOrPut(def) {
                     val decType = C_DeclarationType.NAMESPACE
                     val restrictions = C_MemberRestrictions.makeUser(def.defName, decType, def.deprecated)
                     val base = C_NamespaceMemberBase(def.defName, def.ideInfo, restrictions)

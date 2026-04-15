@@ -300,7 +300,7 @@ internal class C_EntityContext(
         sqlMapping: String? = null,
     ) {
         validateAttr(attrDef, attrHeader)
-        val clause = attrMap.computeIfAbsent(attrHeader.rName) { C_EntityAttributeClause(defCtx, null, persistent) }
+        val clause = attrMap.getOrPut(attrHeader.rName) { C_EntityAttributeClause(defCtx, null, persistent) }
         clause.addDefinition(C_EntityAttributeClause.AttrDef(attrDef, attrHeader, primary, comment, sizeConstraint, sqlMapping))
     }
 
