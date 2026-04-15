@@ -13,9 +13,8 @@ stages:
   - qodana
 
 variables:
-  # Opt-in build scan publication. Defaults to "false" so regular
-  # pipelines don't publish; override to "true" via the manual pipeline UI
-  # ("Run pipeline" → variables) when investigating a slow or flaky build.
+  # Opt-in build scan publication. Defaults to "false" so regular pipelines don't publish;
+  # override to "true" via the manual pipeline UI ("Run pipeline" → variables) when investigating a slow or flaky build.
   PUBLISH_BUILD_SCAN:
     value: "false"
     description: "Set to 'true' to publish a Develocity build scan for this pipeline (visible at scans.gradle.com)."
@@ -29,18 +28,33 @@ variables:
   # Heap budget on saas-linux-xlarge-amd64 (16 vCPU / 64 GiB):
   #   Gradle daemon  12g
   #   Kotlin daemon   6g
-  #   Test JVMs       16 workers × 2g = 32g (testJvmMaxHeap × --max-workers)
+  #   Test JVMs       8 workers × 4g = 32g (testJvmMaxHeap × --max-workers)
   #   Headroom       ~14g for Postgres, Docker
   #
   # Thread budget (16 vCPU):
-  #   16 Gradle workers × 4 JUnit threads = 64 runnable threads.
+  #   8 Gradle workers × 4 JUnit threads = 32 runnable threads.
   #   Most are I/O-bound (DB round-trips), so moderate over-subscription is fine.
   GRADLE_FLAGS: >-
     -Dorg.gradle.caching=true
+    --max-workers=8
     -Dorg.gradle.jvmargs=-Xmx12g
     -Pkotlin.daemon.jvmargs=-Xmx6g
-    -PtestJvmMaxHeap=2g
+    -PtestJvmMaxHeap=4g
     -PjunitParallelThreads=4
+    -PgitlabAuthHeaderValue=$CI_JOB_TOKEN
+  # Reduced profile for constrained runners (12 GiB total RAM).
+  # Injected when the runner sets WEAK_RUNNER=true in its config.toml.
+  #   Gradle daemon  4g
+  #   Kotlin daemon  2g
+  #   Test JVMs      1 worker × 4g = 4g
+  #   Headroom      ~2g for Postgres (disk-backed), Docker
+  GRADLE_FLAGS_WEAK: >-
+    -Dorg.gradle.caching=true
+    --max-workers=1
+    -Dorg.gradle.jvmargs=-Xmx4g
+    -Pkotlin.daemon.jvmargs=-Xmx2g
+    -PtestJvmMaxHeap=4g
+    -PjunitParallelThreads=2
     -PgitlabAuthHeaderValue=$CI_JOB_TOKEN
   POSTCHAIN_DB_URL: jdbc:postgresql://docker/postchain
   DOCKER_HOST: tcp://docker:2375
@@ -65,20 +79,29 @@ cache:
 .setup:
   tags: [ saas-linux-xlarge-amd64 ]
   before_script:
+    - |
+      if [ "${WEAK_RUNNER:-}" = "true" ]; then
+        export GRADLE_FLAGS="$GRADLE_FLAGS_WEAK"
+        echo "Weak runner detected — using reduced memory profile (4g/2g/4g×1)"
+      fi
     - apt-get update && apt-get install -y ca-certificates curl gnupg jq
     - install -m 0755 -d /etc/apt/keyrings
     - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu noble stable" > /etc/apt/sources.list.d/docker.list
     - apt-get update && apt-get install -y docker-ce-cli
-    - docker run
-      --detach
-      --name postgres
-      --env POSTGRES_PASSWORD=postchain
-      --env POSTGRES_USER=postchain
-      --env PGDATA=/pgtmpfs
-      --tmpfs=/pgtmpfs:size=1000m
-      --publish 5432:5432
-      postgres:16.13-alpine3.23@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416
+    - |
+      PGDATA_ARGS="--env PGDATA=/pgtmpfs --tmpfs=/pgtmpfs:size=1000m"
+      if [ "${WEAK_RUNNER:-}" = "true" ]; then
+        PGDATA_ARGS=""
+      fi
+      docker run \
+        --detach \
+        --name postgres \
+        --env POSTGRES_PASSWORD=postchain \
+        --env POSTGRES_USER=postchain \
+        $PGDATA_ARGS \
+        --publish 5432:5432 \
+        postgres:16.13-alpine3.23@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416
     - chmod +x gradlew
     # When PUBLISH_BUILD_SCAN=true, append a Develocity plugin block to settings.gradle.kts in flight.
     # The plugin is intentionally NOT committed so that local devs neither pull the plugin dependency nor have ToU
