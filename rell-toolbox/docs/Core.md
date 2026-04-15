@@ -8,14 +8,13 @@ It contains:
 - [Rell Workspace Indexer](#rell-workspace-indexer)
 - [Rell Semantic Tokens Provider](#rell-semantic-tokens-provider)
 
-Reference documentation can be found [here](https://rell-lang-enhancers-chromaway-core-tools-f03d821ef44cc39334862e.gitlab.io/core/html/).
 
 ## Rell ANTLR4 Parser
 - Rell parser is generated using [ANTLR4](https://github.com/antlr/antlr4).
-- The grammar file is located in [Rell.g4](../src/main/antlr/net.postchain.rell.toolbox.core.parser/Rell.g4).
+- The grammar file is located in [Rell.g4](../ast/src/main/antlr/net.postchain.rell.toolbox.parser/Rell.g4).
 - The parser is recoverable, which means that it can parse the code even if there are some errors in it.
   This is very useful for IDEs/Language server, because they can provide all their features even if the code is not valid.
-- Used by [Rell Language Server](../language-server) and [Rell Formatter](../../formatter).
+- Used by [Rell Language Server](../language-server) and [Rell Code Quality](../code-quality).
 - Can be used by other projects that need to parse Rell code.
 
 ### Rell ANTLR4 Parser Usage
@@ -38,7 +37,7 @@ by `RellParser `
 which can be extended to create a visitor which only needs to handle a subset of the available methods.
 
 ### ANTLR parser classes generation
-- Rell ANTLR parser classes are generated from  [Rell.g4](../src/main/antlr/net.postchain.rell.toolbox.core.parser/Rell.g4) grammar using `generateGrammarSource` gradle task.
+- Rell ANTLR parser classes are generated from  [Rell.g4](../ast/src/main/antlr/net.postchain.rell.toolbox.parser/Rell.g4) grammar using `generateGrammarSource` gradle task.
 - Generated classes are located in `src/main/gen` directory.
 - Generated classes are committed to the repository
 - `generateGrammarSource` task is also executed before each build, so there is no need to run it manually.

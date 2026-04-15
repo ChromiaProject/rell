@@ -31,7 +31,7 @@
   resource, [SerializableResource](../language-server/src/main/kotlin/net/postchain/rell/toolbox/lsp/caching/SerializableResource.kt).
   The document resource is a data class that encapsulates essential data from the Rell file required to support our
   features and is defined in the core
-  module, [Resource](../../core/src/main/kotlin/net/postchain/rell/toolbox/core/indexer/Resource.kt).
+  module, [Resource](../common/src/main/kotlin/net/postchain/rell/toolbox/indexer/Resource.kt).
 
 #### IdeSymbolIdSerializer
 

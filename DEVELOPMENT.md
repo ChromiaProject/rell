@@ -6,15 +6,15 @@ This document provides guidelines and instructions for contributing to the Rell 
 
 ## Introduction
 
-### What are Postchain and Chromia?
+**What are Postchain and Chromia?**
 
 - **Postchain**: Postchain is a container that runs blockchain modules. It handles incoming requests to a node, delegates operations and queries to Rell, and builds blocks.
 - **Chromia**: A full blockchain network that consists of Postchain, Rell, and additional components.
 - **Rell**: A programming language, allowing developers to write applications.
 
 Rell's two key features are blockchain integration and SQL-like capabilities:
-- **Blockchain features**: Operations, queries, and library APIs (`chain_context`, `op_context`, etc.)
-- **SQL-like features**: Entity and object definitions, at-expressions, and database manipulation operations
+- Blockchain features: Operations, queries, and library APIs (`chain_context`, `op_context`, etc.)
+- Query features: Entity and object definitions, at-expressions, and database manipulation operations
 
 ## Required Tools
 
@@ -22,6 +22,7 @@ Rell's two key features are blockchain integration and SQL-like capabilities:
 2. **JDK 21** - The project requires Java Development Kit 21 (can be managed by IDEA)
 3. **[PostgreSQL](https://www.postgresql.org/download/)** (`psql`) - For setting up PostgreSQL for core module tests
 4. **[Docker](https://docs.docker.com/get-started/get-docker/)** - For running PostgreSQL in an isolated container and for Testcontainers-based integration tests
+5. **[Maven](https://maven.apache.org/)** (optional) - Required by `work/local-chr.sh` and `work/build-local-docs.sh` (see [scripts requiring maven](#scripts-requiring-maven))
 
 ## Project Structure
 
@@ -56,19 +57,17 @@ Other directories:
 - **pytests**: Python-based end-to-end tests
 - **work**: Scripts and configuration for running Rell
 
-## Building and Testing
+## Building
 
-### Building the Project
-
-To build of project distribution without running tests:
+To build the project distribution without running tests:
 
 ```shell
 ./gradlew assemble
 ```
 
-### Running Tests
+## Testing
 
-**Launch PostgreSQL for Testing**
+### PostgreSQL Setup
 
 The highly recommended and simple way to provide a Postgres instance for running tests is to use Docker container:
 
@@ -76,17 +75,19 @@ The highly recommended and simple way to provide a Postgres instance for running
 ./work/psql/psql-docker.sh
 ```
 
-**Run tests** (requires local PostgreSQL to be running):
+### Running Tests
+
+Requires local PostgreSQL to be running:
 
 ```shell
-./gradlew check
+./gradlew check                              # all modules
+./gradlew :rell-base:check                   # single module
+./gradlew :rell-base:test --tests '*.MyTest' # single test class
 ```
 
-**In IntelliJ IDEA**
+In IntelliJ IDEA, use the run configuration `All_tests` (Gradle `check`).
 
-Use the run configuration `All_tests` (Gradle `check`).
-
-### Testcontainers Configuration
+### Testcontainers
 
 Some integration tests use [Testcontainers](https://www.testcontainers.org/) to spin up disposable Docker containers. Testcontainers requires a working Docker daemon. On Linux with Docker Engine installed natively this works out of the box.
 
@@ -96,7 +97,7 @@ On macOS, [Colima](https://github.com/abiosoft/colima) is a lightweight alternat
 
 Because Colima exposes its Docker socket at a non-default path, you need to tell both Testcontainers and the Gradle build where to find it.
 
-**1. Configure Testcontainers globally** — create or edit `~/.testcontainers.properties`:
+**1. Configure Testcontainers globally** &mdash; create or edit `~/.testcontainers.properties`:
 
 ```properties
 docker.host=unix://${HOME}/.colima/default/docker.sock
@@ -105,7 +106,7 @@ ryuk.disabled=true
 
 `ryuk.disabled=true` avoids a common issue where the Ryuk resource-reaper container fails to start under Colima.
 
-**2. Forward Docker config to Gradle test JVMs** — create `local.properties` in the project root:
+**2. Forward Docker config to Gradle test JVMs** &mdash; add to `local.properties` in the project root:
 
 ```properties
 DOCKER_HOST=unix://${HOME}/.colima/default/docker.sock
@@ -113,23 +114,65 @@ TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 TESTCONTAINERS_RYUK_DISABLED=true
 ```
 
-The build script (`build.gradle.kts`) loads `local.properties` and forwards these variables as environment variables and system properties to every test JVM, so Testcontainers inside Gradle picks up the correct socket.
+### Locale Testing
 
-#### Supported Environment Variables
+Passing `-PwithLocales` to `check` runs the test suite under several non-default locales to verify that the implementation is locale-independent. This matters because Rell must be deterministic.
+
+Some Java/Kotlin functions are locale-sensitive by default. For example, on a machine configured for Turkish (`tr_TR`), `"i".toUpperCase()` produces `"İ"` (dotted capital I) rather than `'I'`, and `String.format` uses locale-specific decimal and grouping separators. Despite minimal probability, these differences can cause divergence of nodes in a blockchain network.
+
+```shell
+./gradlew check -PwithLocales
+```
+
+Tested locales: `tr_TR` (Turkish &mdash; the most common source of case-conversion bugs), `ar_SA`, `ja_JP`.
+
+## Configuration
+
+### `local.properties`
+
+The build script loads `local.properties` from the project root (git-ignored) and forwards its entries as environment variables and system properties to every test JVM. This is the recommended way to set machine-specific configuration without touching tracked files.
 
 The following variables are forwarded to test JVMs (via `local.properties` or the shell environment):
 
-| Variable | Purpose |
-|---|---|
-| `DOCKER_HOST` | Docker daemon socket URL |
-| `DOCKER_TLS_CERTDIR` | TLS certificate directory (if using TLS) |
-| `TESTCONTAINERS_HOST_OVERRIDE` | Override the host Testcontainers connects to |
-| `TESTCONTAINERS_RYUK_DISABLED` | Disable the Ryuk resource reaper (`true`/`false`) |
-| `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE` | Override the socket path inside the container |
+| Variable                                | Purpose                                           |
+|-----------------------------------------|---------------------------------------------------|
+| `DOCKER_HOST`                           | Docker daemon socket URL                          |
+| `DOCKER_TLS_CERTDIR`                    | TLS certificate directory (if using TLS)          |
+| `TESTCONTAINERS_HOST_OVERRIDE`          | Override the host Testcontainers connects to      |
+| `TESTCONTAINERS_RYUK_DISABLED`          | Disable the Ryuk resource reaper (`true`/`false`) |
+| `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE` | Override the socket path inside the container     |
 
-### Running Rell Shell (REPL)
+### Gradle Project Properties
 
-To start the interactive Rell shell:
+The following project properties control resource allocation and test behavior. They can be passed on the command line or set in `gradle.properties`.
+
+| Property                | Default                 | Purpose                                                   |
+|-------------------------|-------------------------|-----------------------------------------------------------|
+| `testJvmMaxHeap`        | `2g`                    | Max heap for each forked test JVM                         |
+| `junitParallelThreads`  | `availableProcessors()` | JUnit ForkJoinPool threads per test worker                |
+| `withLocales`           | unset                   | Run tests under extra locales (`tr_TR`, `ar_SA`, `ja_JP`) |
+| `generateTestCases`     | unset                   | Generate grammar test case files during build             |
+| `gitlabAuthHeaderValue` | unset                   | GitLab Package Registry auth token (CI only)              |
+
+Example for a memory-constrained laptop:
+
+```shell
+./gradlew check -PtestJvmMaxHeap=1g -PjunitParallelThreads=2 --max-workers=2
+```
+
+## IntelliJ IDEA Setup
+
+Shared run configurations are stored in `work/` as `.run.xml` files. Import them into your IDE via **File → Import Run Configuration** (or copy into `.idea/runConfigurations/`):
+
+| File                       | Purpose                              |
+|----------------------------|--------------------------------------|
+| `All_tests.run.xml`        | Gradle `check` across all modules    |
+| `Kotlin_ABI_Dump.run.xml`  | Gradle `apiDump` (binary compat)     |
+| `Test_snippets.run.xml`    | Generate grammar test snippets       |
+
+## Running Rell
+
+### Rell Shell (REPL)
 
 ```shell
 ./work/rell.sh
@@ -164,12 +207,8 @@ Run it:
 work/rell.sh -d <parent-directory> hello main
 ```
 
-### Running Other Tools
+### Running a Dapp via `chr`
 
-Generate grammar test snippets:
-- In IntelliJ, use the run configuration from `work/Test_snippets.run.xml`
-
-Running a simple dapp via the chr tool:
 ```shell
 # You may avoid installing chr by using Docker for it, too
 # https://docs.chromia.com/intro/getting-started/installation/cli-installation#start-the-docker-container-with-chromia-cli-pre-installed
@@ -179,27 +218,6 @@ chr node start
 chr query -brid <BRID> <QUERY_NAME> <ARGS_AS_GTV_DICT_STR>
 chr tx -brid <BRID> <OP_NAME> ARG_AS_GTV_STR*
 ```
-
-### Checking Tests With Different Locales
-
-Passing `-PwithLocales` to `check` runs the test suite under several non-default locales to verify that the implementation is locale-independent. This matters because Rell must be deterministic.
-
-Some Java/Kotlin functions are locale-sensitive by default. For example, on a machine configured for Turkish (`tr_TR`), `"i".toUpperCase()` produces `"İ"` (dotted capital I) rather than `'I'`, and `String.format` uses locale-specific decimal and grouping separators. Despite minimal probability, these differences can cause divergence of nodes in a blockchain network.
-
-```shell
-./gradlew check -PwithLocales
-```
-
-The following locales are tested:
-
-| Locale  | Description          |
-|---------|----------------------|
-| tr_TR   | Turkish (Turkey)     |
-| ar_SA   | Arabic (Saudi Arabia)|
-| ja_JP   | Japanese (Japan)     |
-
-Turkish is the most common source of case-conversion bugs in Java code. The remaining locales cover
-different numeric, date, and script conventions.
 
 ### Scripts Requiring Maven
 
@@ -230,7 +248,9 @@ Generates Rell documentation locally. This is useful for previewing changes to t
 ./work/build-local-docs.sh
 ```
 
-## Binary Compatibility Checker
+## Code Quality
+
+### Binary Compatibility Checker
 
 In case your build fails on the `apiCheck` task with an error like this:
 
@@ -252,22 +272,27 @@ Run configuration `Kotlin_ABI_Dump` in IntelliJ IDEA or the following command to
 
 Afterward, review the *.api files that were changed by this dump and ensure the changes are intended.
 
-## Test Coverage (JaCoCo)
+### Static Analysis (Qodana)
 
-The project uses [JaCoCo](https://www.jacoco.org/) for code coverage reporting. Coverage reports are generated automatically when tests run.
+CI runs [Qodana](https://www.jetbrains.com/qodana/) (Community edition). The SARIF report is saved as a pipeline artifact. Qodana produces a [GitLab Code Quality](https://docs.gitlab.com/ci/testing/code_quality/) report, so new findings appear inline in merge request. Locally, the same analysis can be performed by IntelliJ IDEA.
 
-Running tests for any module automatically generates a JaCoCo report. Reports are located at `{module}/build/reports/jacoco/test/html/index.html`.
+### Test Coverage (JaCoCo)
 
-**To generate a single coverage report across all modules:**
+The project uses [JaCoCo](https://www.jacoco.org/) for code coverage reporting.
+
+**Local reports.** Running tests for any module generates a per-module report at `{module}/build/reports/jacoco/test/html/index.html`. To generate a single aggregate report:
 
 ```shell
 ./gradlew testCodeCoverageReport # tCCR
 ```
+
 The aggregate report is located at `coverage-report-aggregate/build/reports/jacoco/testCodeCoverageReport/html/index.html`.
+
+**GitLab MR coverage.** CI pipelines upload per-module JaCoCo XML reports as a `coverage_report` artifact (format `jacoco`), so GitLab can display line-by-line coverage in merge request diffs. The pipeline also parses the aggregate CSV to extract an overall line-coverage percentage, which GitLab shows as the MR coverage badge.
 
 ## Coding Conventions
 
-### Naming Prefixes
+**Naming Prefixes**
 
 The project uses various prefixes for different types of classes:
 
@@ -279,14 +304,11 @@ The project uses various prefixes for different types of classes:
 - `R_` - Compiled objects
 - `Rt_` - Runtime
 
-### General Conventions
+**Basic Conventions:**
 
-1. Follow the existing code style when modifying files
-2. The project has .editorconfig, but auto-formatting is not used strictly. Don't commit changes that only consist of applying formatting
-3. All calculations in the implementation of Rell must be deterministic and reproducible (for blockchain). Expressions must produce the same results in both interpreted and database contexts
-
-### Miscellaneous Kotlin conventions
-1. Write statements (`if`, `for`...) with braces if they require a line break.
+1. The project has .editorconfig, but auto-formatting is not used strictly. Don't commit changes that only consist of applying formatting.
+2. All calculations in the implementation of Rell must be deterministic and reproducible. Expressions must produce the same results in both interpreted and database contexts.
+3. All dependency versions must be declared in `gradle/libs.versions.toml`. Do not hardcode version strings in `build.gradle.kts` files.
 
 ### Version Annotations for Library Declarations
 
@@ -301,95 +323,9 @@ function("my_new_function", result = "integer", since = RellVersions.SINCE_NOW) 
 }
 ```
 
-**Important:** Never hardcode version numbers like `since = "0.16.0"`. The `SINCE_NOW` constant is defined as the current development version and will be replaced with the actual version during the release process.
+The `SINCE_NOW` constant is defined as the current development version and will be replaced with the actual version during the release process.
 
-## Release Process
-
-This section describes how to publish a new Rell release `A.B.C`.
-
-### 1. Finalize Release Notes
-
-Before branching, prepare the release notes:
-
-1. Review and finalize `doc/release-notes/dev.txt`. Make sure all user-facing changes are documented and the content follows the formatting guidelines described in the [Release Notes](#release-notes) section below.
-2. Rename `dev.txt` to `doc/release-notes/A.B.C.txt`.
-3. In the renamed file, replace the `UNRELEASED NOTES` header with:
-   ```
-   RELEASE NOTES A.B.C (YYYY-MM-DD)
-   ```
-   Use today's actual release date.
-4. Double-check the file follows all review checklist items (see [Review Checklist](#review-checklist) below).
-5. Create a new blank `doc/release-notes/dev.txt` with just the header line:
-   ```
-   UNRELEASED NOTES
-   ```
-
-### 2. Create the Release Branch and Bump Version
-
-Create a branch named `version-A.B.C` from `dev`:
-
-```shell
-git checkout -b version-A.B.C
-```
-
-Update the version in two places:
-
-- **`build.gradle.kts`** &mdash; change `version = "..."` to the release version (without `-SNAPSHOT`):
-  ```kotlin
-  version = "A.B.C"
-  ```
-
-- **`rell-base/src/main/kotlin/net/postchain/rell/base/utils/RellVersions.kt`** &mdash; change `VERSION_STR` to the release version:
-  ```kotlin
-  const val VERSION_STR = "A.B.C"
-  ```
-
-- **Standard library source files** &mdash; replace all uses of `RellVersions.SINCE_NOW` with the literal version string `"A.B.C"` in `since` annotations throughout the standard library code. Replace each `(since =) RellVersions.SINCE_NOW` with `(since =) "A.B.C"`. This ensures that library declarations record the exact version in which they were introduced.
-
-Commit and push the branch. Pushing the `version-A.B.C` branch triggers the GitLab CI pipeline, which publishes the release automatically.
-
-### 3. Create the Release Tag
-
-After the CI pipeline completes successfully, create and push a Git tag on the release commit (the last commit on the `version-A.B.C` branch):
-
-```shell
-git tag A.B.C <commit-sha>
-git push origin A.B.C
-```
-
-### 4. Announce the Release
-
-After the CI pipeline completes successfully, report the new version on **Zulip**.
-
-### 5. Post-Release Cleanup on `dev`
-
-Switch back to the `dev` branch and perform these follow-up steps:
-
-1. **Update `doc/release-notes/all-releases.txt`** &mdash; add an entry for the new release at the top of the list:
-   ```
-   - A.B.C
-     Notes: A.B.C.txt
-     GitLab: https://gitlab.com/chromaway/rell/-/tree/<commit-sha>/
-   ```
-   Use the commit SHA of the release commit (the tagged commit).
-
-2. **Add the release notes file to `dev`** &mdash; copy `doc/release-notes/A.B.C.txt` (as finalized on the release branch) into the `dev` branch so that the full release notes history is available on `dev`.
-
-3. **Add the released version to `SUPPORTED_VERSIONS` on `dev`** &mdash; in `RellVersions.kt`, add `"A.B.C"` to the `SUPPORTED_VERSIONS` list. This is needed because the release branch removes the current dev version from the list, but `dev` must know about all released versions.
-
-4. **If this was a major release** (A or B changed), update `VERSION_STR` in `dev` to the next development snapshot:
-   ```kotlin
-   // In RellVersions.kt on dev branch:
-   const val VERSION_STR = "0.(B+1).0-SNAPSHOT"
-   ```
-   Also update `build.gradle.kts` accordingly:
-   ```kotlin
-   version = "0.(B+1).0-SNAPSHOT"
-   ```
-
-## Documentations
-
-It's recommended to read:
+## Further Reading
 
 1. The Language Guide
 
@@ -405,163 +341,12 @@ It's recommended to read:
 4. Chromia documentation
 
    https://docs.chromia.com/ and
-    https://docs.chromia.com/intro/getting-started/create-dapp/run-dapp-cli
+   https://docs.chromia.com/intro/getting-started/create-dapp/run-dapp-cli
+
+## Release Process
+
+See [doc/release-guide.md](doc/release-guide.md).
 
 ## Release Notes
 
-**Note**: The formatting conventions described below are guidelines, not strict rules. Use judgment to choose the most appropriate formatting for the content. The goal is clarity and consistency within each release notes file.
-
-### File Naming and Header Conventions
-
-#### File Naming
-
-Release notes files are stored in `doc/release-notes/` and follow this naming pattern:
-
-- **Major/Minor releases**: `{MAJOR}.{MINOR}.{PATCH}.txt` (e.g., `0.14.0.txt`, `0.13.5.txt`)
-- **Development version**: `dev.txt` (for unreleased changes)
-
-#### Header Format
-
-Every release notes file starts with a standard header:
-
-```
-RELEASE NOTES {VERSION} ({YYYY-MM-DD})
-UNRELEASED NOTES (for dev.txt)
-```
-
-### Section Organization and Categories
-
-Each section is separated by a line of @ symbols:
-
-```
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-```
-
-#### Standard Categories
-
-Sections are numbered and categorized with standard prefixes:
-
-- **Language**: Core language features, syntax changes, new constructs
-  - Example: `1. Language: Null analysis of complex expressions`
-
-- **Library**: Standard library additions, changes to built-in functions
-  - Example: `2. Library: function try_call()`
-
-- **Tools**: CLI tools, build system, development utilities
-  - Example: `3. Tools: multirun.sh --sqllog`
-
-- **Runtime**: Runtime behavior, execution engine changes
-  - Example: `4. Runtime: Default parameter values in operations`
-
-- **Compiler**: Compiler improvements, error messages, performance
-  - Example: `5. Compiler: Not stopping on first compilation error`
-
-- **Docs**: Documentation system, doc comments, help text
-  - Example: `6. Docs: New comment tags`
-
-- **Tests**: Unit testing framework, test utilities
-  - Example: `7. Tests: Function-level @test annotation`
-
-- **API**: Public API changes, integration points
-  - Example: `8. API: Functions to check the validity of Rell tokens`
-
-### Formatting Conventions
-
-#### Code Examples
-
-**Indentation**: Use 4 spaces for code blocks
-
-```
-    val v: my_type? = get_v();
-    if (v != null) {
-        // compiler knows that "v" is not nullable here
-    }
-```
-
-#### Tables
-
-Use Unicode box drawing for tables:
-
-```
-    ┌───────────┬───────────────────────────────┐
-    │ Specifier │ Meaning                       │
-    ├───────────┼───────────────────────────────┤
-    │ y         │ Year                          │
-    │ M         │ Month in the year             │
-    └───────────┴───────────────────────────────┘
-```
-
-#### Lists
-
-**Bulleted lists**: Use `-` for main points:
-
-```
-- A value can have up to 131072 decimal digits
-- Literals have suffix "L": 123L, 0x123L
-- Uses Java class java.math.BigInteger internally
-```
-
-**Numbered lists**: Use Arabic numerals for sequential points or detailed explanations:
-
-```
-1. If a new key is added and the values of its attributes in the database aren't unique, database initialization fails.
-2. Adding a key or index may be slow for big tables.
-3. Adding new key or index attributes to an entity is supported too.
-```
-
-**Sub-items**: Use letters for sub-categorization:
-
-```
-(a) Constants:
-
-    big_integer.PRECISION: integer
-
-        Maximum number of decimal digits (131072).
-
-(b) Constructors:
-
-    big_integer(integer): big_integer
-
-        Creates a big_integer from integer.
-```
-
-### Special Formatting for Critical Changes
-
-#### Breaking Changes
-
-Always include compatibility warnings:
-
-```
-Note. This is a breaking change - it may break compilation of existing code, because types of some expressions may change from nullable to not nullable. Applications deployed with older versions of Rell will not be affected (thanks to the backward compatibility mode).
-```
-
-#### Deprecation Notices
-
-Format deprecated features clearly:
-
-```
-New @return tag is to be used instead of the old @returns tag, which is now deprecated.
-```
-
-#### Bug Fixes
-
-For significant bug fixes, explain the impact:
-
-```
-14. Bug fixes
-
-(1) False "Wrong operand types..." compilation error on expression: T in list<T?>.
-(2) Conversion from gtv big integer value to decimal.
-```
-
-#### Review Checklist
-
-Before publishing new release's notes, verify:
-
-- [ ] Header format is correct with proper date
-- [ ] Categories are appropriate and consistently formatted
-- [ ] Code examples are properly indented with 4 spaces
-- [ ] Breaking changes include compatibility warnings
-- [ ] Examples are tested and work correctly
-- [ ] Grammar and spelling are correct
-- [ ] Cross-references to other sections are accurate
+See [doc/release-notes-guide.md](doc/release-notes-guide.md).

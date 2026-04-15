@@ -1,26 +1,17 @@
 # Rell Codegen
 
-Generates client stubs from rell sources.
-
-## Setup
-
-Create the distribution:
-
-```commandline
-./gradlew installDist
-```
-
-Unpack a distribution from `rellgen/build/distributions` and run `./rellgen/bin/rellgen`
+Generates client stubs from Rell sources.
 
 ## Usage
 
-Find usage instructions using
+Build and run:
 
-```commandline
-rellgen -h
+```shell
+./gradlew :rell-codegen:rellgen:installDist
+./rell-codegen/rellgen/build/install/rellgen/bin/rellgen -h
 ```
 
-## Mappings
+## GTV Type Mappings
 
 ### Query/Operation
 
@@ -42,77 +33,36 @@ rellgen -h
 
 ### Structures
 
-```commandline
+```
 entity -> Long
 ```
 
-## Contribute
+## Example
 
-Build and run unit tests:
+The following Rell code:
 
-```commandline
-./gradlew build
-```
-
-# Example
-
-The following rell code
-
-```
+```rell
 enum test_enum { a }
 operation input_parameter_enum(e: test_enum) {}
 ```
 
-generates this kotlin code:
+generates this Kotlin code:
 
 ```kotlin
-/*
-* Enum test_enum
-*/
-@Generated("net.postchain.rell.codegen.CodeGenerator", comments = "test_enum", date = "Tue Jul 12 08:51:21 CEST 2022")
 enum class TestEnum {
     a
 }
 
-/**
- * Operation operations:input_parameter_enum
- */
-@Generated(
-    "net.postchain.rell.codegen.CodeGenerator",
-    comments = "operations:input_parameter_enum",
-    date = "Tue Jul 12 08:51:21 CEST 2022"
-)
 fun GTXTransactionBuilder.inputParameterEnumOperation(e: TestEnum) =
     addOperation("input_parameter_enum", gtv(e.ordinal.toLong()))
 ```
 
-# Architecture
+## Architecture
 
-The architecture of this repo consists of three layers; one interface/logic layer, one implementation layer and one cli-layer.
+Three layers: interface/logic, implementation, and CLI.
 
-## Interface/Logic Layer (codegen)
+**codegen** — core business logic. `DocumentFactory` compiles a Rell application and produces a `DocumentSection` for each Rell component; sections are collected into `Document`s which can be saved to disk.
 
-This module consists of all the business logic of the inner workings of the code generator. 
-Ideally, any features should be implemented here using abstract patterns such as interfaces and factories. 
+**codegen-X** (codegen-kotlin, codegen-typescript, etc.) — each target implements `DocumentFactory` and its `DocumentSection`s. The `testResources` folder contains Rell files with definitions that must be covered by tests in each implementation.
 
-The data model consists of
-`DocumentFactory` - represents and abstract factory class for generating a "file"
-`Document` - Represents one file in the file system
-`DocumentSection` - An isolated portion of a `Document`
-
-All in all, the `DocumentFactory` will compile a rell application and produce a `DocumentSection` for each rell component.
-The sections are then collected into `Document`s which can be saved to disk.
-
-## Implementation Layer (codegen-X)
-
-Each code generation target gets implemented here. This could be a language or a flavor to be generated. 
-Each implementation module implements the abstract factory `DocumentFactory` and its `DocumentSection`s. This can also implement a special configuration class with their own properties if needed.
-
-### Testing
-
-The folder `testResources` contains a number of rell files with a set of rell definitions that must be covered by the tests in each implementation layer.
-
-## CLI-layer (rellgen)
-
-The final module consists of a simple cli which defines a simple cli. This is used for manual testing of the repo. 
-Here one can make sure that the implementations works and see how they will look like from a clients perspective (in terms of configuration etc).
+**rellgen** — CLI entry point for manual testing and client-facing usage.

@@ -66,9 +66,6 @@ We explain each concept from first principles, covering:
 
 ## Repository Information
 
-- **Git Remote**: `git@gitlab.com:chromaway/core-tools/rell-codegen.git`
-- **License**: Apache 2.0
 - **Primary Language**: Kotlin
-- **Build System**: Gradle 8.7
-- **Current Version**: dev (with Rell 0.15.0 support)
+- **Build System**: Gradle
 

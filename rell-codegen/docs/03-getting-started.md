@@ -1,55 +1,20 @@
 # Getting Started
 
-## Prerequisites
+For prerequisites and general build instructions, see the root [DEVELOPMENT.md](../../DEVELOPMENT.md).
 
-### Required Software
-- **Java Development Kit (JDK) 21** or higher
-- **Gradle 8.7** (included via Gradle wrapper)
-- **Git** (for cloning the repository)
-
-### Optional (for testing)
-- **Docker** (required for integration tests using TestContainers)
-- **Docker Compose** (for orchestrating test environments)
-
-### Knowledge Prerequisites
-- Basic command-line usage
-- Understanding of your target programming language (Kotlin/TypeScript/Python/etc.)
-- Familiarity with blockchain concepts (helpful but not required)
-
-## Installation
-
-### Option 1: Clone and Build from Source
+## Build and Install CLI
 
 ```bash
-# Clone the repository
-git clone git@gitlab.com:chromaway/core-tools/rell-codegen.git
-cd rell-codegen
-
-# Build the project
-./gradlew build
-
-# This will:
-# - Download dependencies
-# - Compile all modules
-# - Run unit tests
-# - Create JAR artifacts
+./gradlew :rell-codegen:rellgen:installDist
 ```
 
-**Output**: The CLI tool will be available as a ZIP at:
+The CLI tool will be available at:
 ```
-rellgen/build/distributions/rellgen-dev.zip
+rell-codegen/rellgen/build/install/rellgen/bin/rellgen
 ```
 
-## Verify Installation
-
-Extract the ZIP file:
+Verify it works:
 
 ```bash
-unzip rellgen/build/distributions/rellgen-dev.zip -d rellgen/build/distributions/
-```
-
-Run the help command to verify the CLI works:
-
-```bash
-./rellgen/build/distributions/rellgen-dev/bin/rellgen --help
+./rell-codegen/rellgen/build/install/rellgen/bin/rellgen --help
 ```

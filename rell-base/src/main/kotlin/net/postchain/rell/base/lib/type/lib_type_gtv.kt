@@ -26,7 +26,7 @@ object Lib_Type_Gtv {
     val NAMESPACE = Ld_NamespaceDsl.make {
         alias("GTXValue", "gtv", C_MessageType.ERROR, since = "0.6.1")
 
-        enum("gtv_type", since = RellVersions.SINCE_NOW) {
+        enum("gtv_type", since = "0.15.3") {
             comment("""
                 Represents the type of a GTV value.
 
@@ -235,7 +235,7 @@ object Lib_Type_Gtv {
                 }
             }
 
-            property("type", type = "gtv_type", pure = true, since = RellVersions.SINCE_NOW) {
+            property("type", type = "gtv_type", pure = true, since = "0.15.3") {
                 comment("""
                     Returns the type of this GTV value.
 

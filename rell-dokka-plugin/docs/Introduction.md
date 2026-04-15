@@ -2,8 +2,6 @@
 
 **Project Name:** Rell Dokka Plugin
 
-**Repository URL:** https://gitlab.com/chromaway/core-tools/rell-dokka-plugin
-
 ## Project Summary
 
 Rell Dokka Plugin is a **Dokka plugin** that generates HTML documentation for Rell programming language code. It extends Dokka's documentation generation framework to support Rell source code analysis, translation, and HTML rendering. The plugin can generate documentation for both user Rell projects and the Rell system library.
@@ -54,17 +52,11 @@ Rell Dokka Plugin enables developers to:
 
 **1. Chromia CLI**
 - **Role:** Command-line tool for Chromia development that includes documentation generation functionality
-- **Source:** https://gitlab.com/chromaway/core-tools/chromia-cli
 - **Relationship:** Chromia CLI uses `RellDokkaGenerator` and `RellDokkaPluginConfigurationBuilder` to generate documentation for Rell projects via the `generate docs-site` command
-- **Usage Pattern:** Plugin is invoked when users run documentation generation commands in Chromia CLI
-- **Critical Dependency:** Chromia CLI depends on rell-dokka-plugin for its documentation generation feature
 
 **2. Rell Gradle Plugin**
 - **Role:** Gradle plugin for Rell projects that provides build tasks including documentation generation
-- **Source:** https://gitlab.com/chromaway/core-tools/rell-gradle-plugin
 - **Relationship:** Rell Gradle Plugin uses `RellDokkaGenerator` and `RellDokkaPluginConfigurationBuilder` in its `RellDocsTask` to generate documentation as part of Gradle builds
-- **Usage Pattern:** Plugin is invoked when users run documentation generation tasks (e.g., `rellDocs`) in Gradle builds
-- **Critical Dependency:** Rell Gradle Plugin depends on rell-dokka-plugin for its documentation generation feature
 
 **3. Rell System Library Documentation**
 - **Role:** Official Rell system library API reference documentation
