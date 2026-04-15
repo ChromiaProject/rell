@@ -127,7 +127,9 @@ subprojects {
         }
 
         // When -PwithLocales is passed, register similar Test tasks per locale and wire them into `check`.
-        if (withLocales) {
+        // Skip non-blockchain modules — they have no determinism requirement.
+        val localeExcludedPrefixes = listOf("rell-dokka-plugin", "rell-codegen", "rell-toolbox")
+        if (withLocales && localeExcludedPrefixes.none { project.path.startsWith(":$it") }) {
             data class TestLocale(val language: String, val country: String, val name: String)
 
             val testLocales = listOf(
