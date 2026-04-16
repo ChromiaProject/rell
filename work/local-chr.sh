@@ -128,7 +128,7 @@ update_rell_version
 if [ "$SKIP_PUBLISH" != true ]; then
     # Clean first to guarantee a fresh build — Gradle's build cache can miss source changes
     echo "Publishing Rell artifacts to local Maven with Gradle..."
-    ./gradlew clean publishToMavenLocal
+    ./gradlew publishToMavenLocal
 else
     echo "Skipping publishToMavenLocal (requested)"
 fi

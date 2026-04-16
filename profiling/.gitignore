@@ -1,0 +1,19 @@
+# Auto-provisioned async-profiler
+async-profiler/
+
+# Generated reports and profiling artifacts
+reports/
+*.jfr
+*.html
+collapsed.txt
+
+# Node data
+dapp/.chromia/
+dapp/build/
+
+# Machine-specific config
+local.properties
+
+# Python
+__pycache__/
+*.pyc
