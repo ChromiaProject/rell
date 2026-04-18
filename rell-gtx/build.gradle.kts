@@ -5,13 +5,6 @@ plugins {
 
 description = "Rell integration with Postchain GTX: transaction handling, database init, and operation execution"
 
-// Include Java files in kotlin source directories (for mixed Java/Kotlin compilation)
-sourceSets.test {
-    java {
-        srcDir("src/test/kotlin")
-    }
-}
-
 // Configuration for sharing test code with other modules (similar to Maven's test-jar)
 val testJar by tasks.registering(Jar::class) {
     archiveClassifier = "tests"

@@ -71,13 +71,6 @@ tasks.named("generateGitProperties") {
     for ((k, v) in gitCustomProperties) inputs.property("customProperty.$k", v)
 }
 
-sourceSets.main {
-    // Include Java files in the Kotlin source directory (etherjar classes)
-    java {
-        srcDir("src/main/kotlin")
-    }
-}
-
 val generateDependencyList by tasks.registering {
     group = "build"
     description = "Generates dependency list file"
