@@ -1,4 +1,0 @@
-- try to use test setup/teardown instead of try-finally
-- or try to use with instead of try-finally
-- try to test a case when a directory name contains spaces (scripts directory, binaries directory, arguments directory)
-- tests for singlerun.sh (and singletest.sh?)

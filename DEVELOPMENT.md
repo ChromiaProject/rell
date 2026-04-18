@@ -54,7 +54,6 @@ The Rell project is organized into several modules:
 
 Other directories:
 - **doc**: Documentation, including language guide and release notes
-- **pytests**: Python-based end-to-end tests
 - **work**: Scripts and configuration for running Rell
 
 ## Building

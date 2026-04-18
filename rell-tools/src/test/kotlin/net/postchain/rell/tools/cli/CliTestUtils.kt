@@ -26,10 +26,10 @@ data class CliResult(
 /**
  * Utility for launching Rell CLI tools as subprocesses and validating their output.
  *
- * Equivalent of the Python `testlib.py` module — runs the tool's main class in a separate JVM
- * using the current test classpath, then checks stdout/stderr/exit code.
+ * Runs the tool's main class in a separate JVM using the current test classpath,
+ * then checks stdout/stderr/exit code.
  */
-object CliTestUtils {
+internal object CliTestUtils {
     val REPO_DIR = run {
         // Walk up from CWD or use known project structure
         var dir = Path(System.getProperty("user.dir"))
@@ -56,18 +56,53 @@ object CliTestUtils {
     )
 
     /**
-     * Run a CLI command string (same format as the Python tests, e.g. "rell.sh -d work/testproj/src calc sum_digits_integer 1000").
-     * The script name is resolved to the appropriate main class.
+     * Build the JVM command line for a CLI tool invocation.
+     * Resolves the script name to its main class and prepends JVM arguments.
      */
-    fun runCommand(command: String, timeoutSec: Long = 60): CliResult {
-        val parts = command.split(" ")
-        val script = parts[0]
-        val args = parts.drop(1)
-
+    internal fun buildCommandLine(script: String, args: List<String>): List<String> {
         val mainClass = MAIN_CLASSES[script]
             ?: error("Unknown script: $script (known: ${MAIN_CLASSES.keys})")
+        return listOf(JAVA_BIN, "-cp", CLASSPATH, mainClass) + args
+    }
 
-        val cmd = listOf(JAVA_BIN, "-cp", CLASSPATH, mainClass) + args
+    /**
+     * Build the JVM command line from a single command string.
+     * Arguments are split on spaces — use the (script, args) overload for paths that contain spaces.
+     */
+    internal fun buildCommandLine(command: String): List<String> {
+        val parts = command.split(" ")
+        return buildCommandLine(parts[0], parts.drop(1))
+    }
+
+    /**
+     * Run a CLI command with pre-split arguments (safe for paths containing spaces).
+     */
+    fun runCommand(script: String, args: List<String>, timeoutSec: Long = 60): CliResult {
+        val cmd = buildCommandLine(script, args)
+
+        val process = ProcessBuilder(cmd)
+            .directory(REPO_DIR.toFile())
+            .redirectErrorStream(false)
+            .start()
+
+        val stdout = process.inputStream.bufferedReader().readText()
+        val stderr = stripJvmStartupNoise(process.errorStream.bufferedReader().readText())
+        val finished = process.waitFor(timeoutSec, TimeUnit.SECONDS)
+        if (!finished) {
+            process.destroyForcibly()
+            fail("Command timed out after ${timeoutSec}s: $script ${args.joinToString(" ")}")
+        }
+
+        return CliResult(process.exitValue(), stdout, stderr)
+    }
+
+    /**
+     * Run a CLI command string (e.g. "rell.sh -d work/testproj/src calc sum_digits_integer 1000").
+     * The script name is resolved to the appropriate main class.
+     * Arguments are split on spaces — use the (script, args) overload for paths that contain spaces.
+     */
+    fun runCommand(command: String, timeoutSec: Long = 60): CliResult {
+        val cmd = buildCommandLine(command)
 
         val process = ProcessBuilder(cmd)
             .directory(REPO_DIR.toFile())
@@ -104,6 +139,26 @@ object CliTestUtils {
     }
 
     /**
+     * Run a command with pre-split arguments and assert exit code, stdout, and stderr.
+     * Use this overload when arguments contain spaces.
+     */
+    fun chkCommand(
+        script: String,
+        args: List<String>,
+        stdout: Any = "",
+        stderr: Any = "",
+        code: Int = 0,
+        stdoutIgnore: List<String> = emptyList(),
+        stderrIgnore: List<String> = emptyList(),
+    ) {
+        val result = runCommand(script, args)
+        val desc = "$script ${args.joinToString(" ")}"
+        assertEquals(code, result.exitCode, "Exit code mismatch for: $desc\nstdout: ${result.stdout}\nstderr: ${result.stderr}")
+        chkOutput(result.stdout, stdout, stdoutIgnore)
+        chkOutput(result.stderr, stderr, stderrIgnore)
+    }
+
+    /**
      * Run a command that produces test results and validate them.
      * Skips output lines until the first expected line is found, then matches the rest.
      */
@@ -118,7 +173,14 @@ object CliTestUtils {
         assertTrue(startIdx >= 0, "Could not find '$firstExpected' in output:\n${result.stdout}")
 
         val relevantLines = actLines.subList(startIdx, actLines.size)
-        chkOutputLines(relevantLines, expected)
+        try {
+            chkOutputLines(relevantLines, expected)
+        } catch (e: AssertionError) {
+            throw AssertionError(
+                "${e.message}\n\nFull actual test output:\n${relevantLines.joinToString("\n")}",
+                e,
+            )
+        }
     }
 
     private fun chkOutput(actual: String, expected: Any, ignored: List<String> = emptyList()) {
@@ -136,7 +198,9 @@ object CliTestUtils {
                     assertTrue(actual.endsWith("\n"), "Expected output to end with newline, got: $actual")
                     actual.trimEnd('\n').split('\n')
                 }
-                val filteredLines = if (ignored.isEmpty()) actLines else {
+                val filteredLines = if (ignored.isEmpty()) {
+                    actLines
+                } else {
                     val ignoreMatchers = ignored.map { createMatcher(it) }
                     actLines.filter { line -> ignoreMatchers.none { it.matches(line) } }
                 }
@@ -161,23 +225,7 @@ object CliTestUtils {
         )
     }
 
-    /**
-     * Lines the JDK prints to stderr at child-JVM startup that are not produced
-     * by the rell tools themselves. We scrub them centrally in [runCommand] so
-     * stderr assertions stay stable regardless of how the parent process's
-     * environment is configured.
-     *
-     * Currently filters:
-     *  - `[NOTE: ]Picked up JAVA_TOOL_OPTIONS / JDK_JAVA_OPTIONS / _JAVA_OPTIONS: ...`
-     *    emitted whenever those env vars are set (e.g. CI exports
-     *    `JAVA_TOOL_OPTIONS=-XX:+UseZGC -XX:+ZGenerational`).
-     *  - `OpenJDK ... warning: Ignoring option <name>; support was removed in <ver>`
-     *    emitted when an inherited JVM flag is no longer supported on the
-     *    running JDK (e.g. `-XX:+ZGenerational` on JDK 24+, where generational
-     *    ZGC is the only mode and the flag became obsolete). The option is, by
-     *    definition, ignored — it cannot affect runtime behavior — so it is
-     *    informational, not an error.
-     */
+    /** JVM stderr noise (env-var pickup notices, obsolete-flag warnings) stripped by [runCommand]. */
     private val JVM_STARTUP_NOISE_REGEXES = listOf(
         Regex("""^(?:NOTE: )?Picked up (?:JAVA_TOOL_OPTIONS|JDK_JAVA_OPTIONS|_JAVA_OPTIONS):.*$"""),
         Regex("""^OpenJDK .* warning: Ignoring option \w+; support was removed in [\d.]+$"""),

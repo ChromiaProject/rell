@@ -4,13 +4,19 @@
 
 package net.postchain.rell.tools.cli
 
+import net.postchain.rell.base.testutils.BaseResourcefulTest
 import net.postchain.rell.base.testutils.SqlTestUtils
 import net.postchain.rell.base.utils.RellVersions
 import org.junit.jupiter.api.Test
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.copyToRecursively
+import kotlin.io.path.createTempDirectory
+import kotlin.io.path.deleteRecursively
+import kotlin.io.path.div
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class RellCliTest {
+class RellCliTest : BaseResourcefulTest() {
     companion object {
         /** Log lines to ignore in stdout when database initialization output is mixed in. */
         private val STDOUT_IGNORE = listOf(
@@ -26,6 +32,13 @@ class RellCliTest {
         return "${parts[0]} --db-url $dbUrl ${parts[1]}"
     }
 
+    /** Allocates a test-scoped temporary DB schema and returns its JDBC URL. */
+    private fun tempDbUrl(): String {
+        val (handle, dbUrl) = SqlTestUtils.createTempDbUrl()
+        resource(handle)
+        return dbUrl
+    }
+
     /** Runs a DB-dependent CLI command with an isolated temporary schema. */
     private fun checkDbCommand(
         command: String,
@@ -35,25 +48,19 @@ class RellCliTest {
         stdoutIgnore: List<String> = emptyList(),
         stderrIgnore: List<String> = emptyList(),
     ) {
-        val (handle, dbUrl) = SqlTestUtils.createTempDbUrl()
-        handle.use {
-            CliTestUtils.chkCommand(
-                withDbUrl(command, dbUrl),
-                stdout = stdout,
-                stderr = stderr,
-                code = code,
-                stdoutIgnore = stdoutIgnore,
-                stderrIgnore = stderrIgnore,
-            )
-        }
+        CliTestUtils.chkCommand(
+            withDbUrl(command, tempDbUrl()),
+            stdout = stdout,
+            stderr = stderr,
+            code = code,
+            stdoutIgnore = stdoutIgnore,
+            stderrIgnore = stderrIgnore,
+        )
     }
 
     /** Runs a DB-dependent test runner command with an isolated temporary schema. */
     private fun checkDbTests(command: String, code: Int, expected: List<String>) {
-        val (handle, dbUrl) = SqlTestUtils.createTempDbUrl()
-        handle.use {
-            CliTestUtils.chkTests(withDbUrl(command, dbUrl), code = code, expected = expected)
-        }
+        CliTestUtils.chkTests(withDbUrl(command, tempDbUrl()), code = code, expected = expected)
     }
 
     @Test
@@ -431,5 +438,30 @@ class RellCliTest {
                 "\tat stack_trace.entities:ent_main(stack_trace/entities.rell:6)",
             ),
         )
+    }
+
+    // Spaces in path tests
+
+    /**
+     * Verifies that the CLI tools work correctly when the source directory path contains spaces.
+     * Copies the test project into a temporary directory whose name has spaces, then runs a command against it.
+     */
+    @OptIn(ExperimentalPathApi::class)
+    @Test
+    fun testSourceDirectoryWithSpaces() {
+        val tmpDir = createTempDirectory("rell test dir with spaces")
+        try {
+            val sourceDir = CliTestUtils.REPO_DIR / "work/testproj/src"
+            val targetSrc = tmpDir / "src"
+            sourceDir.copyToRecursively(targetSrc, followLinks = false)
+
+            CliTestUtils.chkCommand(
+                "rell.sh",
+                args = listOf("-d", targetSrc.toAbsolutePath().toString(), "calc", "sum_digits_integer", "1000"),
+                stdout = "73fb9a5de29b\n",
+            )
+        } finally {
+            tmpDir.deleteRecursively()
+        }
     }
 }
