@@ -177,6 +177,13 @@ qodana:
   tags: [ saas-linux-xlarge-amd64 ]
   variables:
     QODANA_MR_MODE: "false"
+  cache:
+    key: "qodana-$CI_COMMIT_REF_SLUG"
+    fallback_keys:
+      - qodana-dev
+    paths:
+      - .qodana/cache
+    policy: pull-push
   rules:
     - if: $CI_PIPELINE_SOURCE != "merge_request_event"
   artifacts:
