@@ -1,31 +1,43 @@
-## Language Info
+# Rell Programming Language
 
-Introduction: https://docs.chromia.com/rell/rell-intro
+[![pipeline status](https://gitlab.com/chromaway/rell/badges/dev/pipeline.svg)](https://gitlab.com/chromaway/rell/-/commits/dev)
+[![coverage report](https://gitlab.com/chromaway/rell/badges/dev/coverage.svg)](https://gitlab.com/chromaway/rell/-/commits/dev)
+[![latest tag](https://img.shields.io/gitlab/v/tag/chromaway%2Frell?sort=semver)](https://gitlab.com/chromaway/rell/-/tags)
+[![license: GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
-Library RellDoc (beta): https://docs.chromia.com/pages/rell/index.html
+Rell is the relational blockchain programming language for [Chromia](https://chromia.com/). It combines a SQL-like data model with a statically typed, imperative syntax, and compiles against a PostgreSQL-backed runtime.
 
-Release notes (detailed changelog): https://gitlab.com/chromaway/rell/-/tree/dev/doc/release-notes
+> **The canonical repository is hosted on GitLab: [gitlab.com/chromaway/rell](https://gitlab.com/chromaway/rell).**
+> The GitHub repository is a read-only mirror — please file issues and merge requests on GitLab.
 
-## Build and Run
+## Links
 
-Requirements:
+- Documentation: https://docs.chromia.com/rell/rell-intro
+- API reference: https://docs.chromia.com/pages/rell/index.html
+- Release notes: https://gitlab.com/chromaway/rell/-/tree/dev/doc/release-notes
+- Chromia documentation: https://docs.chromia.com/
+
+## Requirements
+
 - Java 21
-- [Docker](https://docs.docker.com/get-started/get-docker/) (for PostgreSQL and Testcontainers-based integration tests)
+- [Docker](https://docs.docker.com/get-started/get-docker/) — for PostgreSQL and Testcontainers-based integration tests
 
-| Command                     | Description                                                                    |
-|-----------------------------|--------------------------------------------------------------------------------|
-| `./gradlew assemble`        | Compile and package all JARs                                                   |
-| `./gradlew build`           | Same as above, plus run all tests (requires PostgreSQL and Docker)             |
-| `./gradlew clean`           | Clean the build outputs                                                        |
-| `./gradlew installRellDist` | Install Rell runtime to `rell-tools/build/install/rell-dist/`                  |
+## Build
 
-### Run the Rell shell (REPL):
+| Command                     | Description                                                        |
+|-----------------------------|--------------------------------------------------------------------|
+| `./gradlew assemble`        | Compile and package all JARs                                       |
+| `./gradlew build`           | Assemble and run all tests (requires PostgreSQL and Docker)        |
+| `./gradlew clean`           | Clean build outputs                                                |
+| `./gradlew installRellDist` | Install the Rell runtime to `rell-tools/build/install/rell-dist/`  |
+
+## Run
+
+### REPL
 
 ```shell
 ./work/rell.sh
 ```
-
-Example session:
 
 ```text
 Rell 0.16.0-SNAPSHOT
@@ -37,9 +49,9 @@ Type '\q' to quit or '\?' for help.
 >>>
 ```
 
-### Run a program:
+### Execute a program
 
-Create a file `hello.rell`:
+Create `hello.rell`:
 
 ```rell
 module;
@@ -49,13 +61,11 @@ function main() {
 }
 ```
 
-Run it (specify the parent directory of `hello.rell` via `-d`):
+Run it (pass the parent directory of `hello.rell` via `-d`):
 
 ```shell
 ./work/rell.sh -d . hello main
 ```
-
-Output:
 
 ```text
 Hello, world!
