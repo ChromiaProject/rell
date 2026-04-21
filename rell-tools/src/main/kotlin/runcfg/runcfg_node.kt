@@ -17,7 +17,7 @@ object RunConfigNodeConfigGen {
         return if (nodeConfig.src != null) {
             generateNodeConfigByPath(nodeConfig.src, configDir)
         } else {
-            check(nodeConfig.text != null)
+            checkNotNull(nodeConfig.text)
             generateNodeConfigByText(nodeConfig.text)
         }
     }
@@ -114,14 +114,13 @@ object RunConfigNodeConfigGen {
 
                 val value = props.getProperty(key)
                 val bytes = CommonUtils.calcOpt { Bytes33.parse(value) }
-                check(bytes != null) {
+
+                signersMap[id] = checkNotNull(bytes) {
                     var msg = "Invalid pubkey ($key)"
                     if (path != null) msg += " in file $path"
                     msg += ": '$value'"
                     msg
                 }
-
-                signersMap[id] = bytes
             }
         }
 

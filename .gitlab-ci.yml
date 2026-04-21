@@ -21,7 +21,7 @@ variables:
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
   # CI-specific Gradle args — all build tuning lives here.
   #   -Pkotlin.daemon.jvmargs  Kotlin compiler daemon heap (only reads project properties)
-  #   -PtestJvmMaxHeap         Forked test JVM heap (default 2g in build.gradle.kts)
+  #   -PtestJvmMaxHeap         Forked test JVM heap (default 4g in build.gradle.kts)
   #   -PjunitParallelThreads   JUnit ForkJoinPool threads per test worker (unset = availableProcessors())
   #   -PgitlabAuthHeaderValue  GitLab Package Registry auth token
   #

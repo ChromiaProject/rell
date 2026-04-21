@@ -115,14 +115,13 @@ private fun tokenize(text: String): List<TokenReplace> {
     val parserPath = C_ParserFilePath(sourcePath, idePath)
     val prod = RellTokenizer().tokenProducer(parserPath, text)
 
-    val res = mutableListOf<TokenReplace>()
-    while (true) {
-        val tk = prod.nextToken() ?: break
-        val dst = MIGRATION_MAP[tk.text]
-        if (dst != null) res.add(TokenReplace(tk.offset, tk.text, dst))
+    return buildList {
+        while (true) {
+            val tk = prod.nextToken() ?: break
+            val dst = MIGRATION_MAP[tk.text]
+            if (dst != null) add(TokenReplace(tk.offset, tk.text, dst))
+        }
     }
-
-    return res
 }
 
 private class TokenReplace(val pos: Int, val oldStr: String, val newStr: String)

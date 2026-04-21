@@ -9,8 +9,8 @@ import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.gtx.*
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.lib.test.Lib_RellTest
-import net.postchain.rell.base.model.R_App
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.repl.ReplInterpreterProjExt
 import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.sql.SqlInitProjExt
@@ -19,7 +19,7 @@ import net.postchain.rell.base.utils.Rt_UnitTestBlockRunner
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.gtx.PostchainBaseUtils
 
-internal object PostchainRellTestProjExt: RellTestProjExt() {
+internal object PostchainRellTestProjExt: RellTestProjExt {
     private val sqlInitProjExt: SqlInitProjExt = PostchainSqlInitProjExt
 
     override fun getSqlInitProjExt(): SqlInitProjExt = sqlInitProjExt
@@ -37,14 +37,14 @@ internal object PostchainRellTestProjExt: RellTestProjExt() {
     }
 
     override fun createUnitTestBlockRunner(
-        sourceDir: C_SourceDir,
-        app: R_App,
-        moduleArgs: Map<R_ModuleName, Gtv>,
+            sourceDir: C_SourceDir,
+            rrApp: RR_App,
+            moduleArgs: Map<ModuleName, Gtv>,
     ): Rt_UnitTestBlockRunner {
         val keyPair = Lib_RellTest.BLOCK_RUNNER_KEYPAIR
         val blkRunConfig = createBlockRunnerConfig()
 
-        val modules = app.modules.filter { !it.test && !it.abstract && !it.external }.mapToImmList { it.name }
+        val modules = rrApp.modules.filter { !it.test && !it.abstract && !it.external }.mapToImmList { it.name }
         val compileConfig = RellApiCompile.Config.Builder().moduleArgs0(moduleArgs).build()
         val blkRunStrategy = Rt_DynamicBlockRunnerStrategy(sourceDir, keyPair, modules, compileConfig)
 

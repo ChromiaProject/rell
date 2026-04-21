@@ -4,10 +4,17 @@
 
 package net.postchain.rell.toolbox.seeder.schema
 
-import assertk.Assert
 import assertk.assertThat
-import assertk.assertions.*
-import net.postchain.rell.base.model.R_EnumType
+import assertk.assertions.containsExactly
+import assertk.assertions.containsExactlyInAnyOrder
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isInstanceOf
+import assertk.assertions.isNotNull
+import net.postchain.rell.base.model.rr.RR_Type
+import net.postchain.rell.toolbox.seeder.schema.Entity
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
+import net.postchain.rell.toolbox.seeder.schema.SchemaReaderException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -55,7 +62,7 @@ class SchemaReaderTest {
         assertThat(entityWithAliases).isNotNull()
         assertThat(entityWithAliases!!.simpleName).isEqualTo("entity_typealiases")
 
-        val attributeTypes = entityWithAliases.attributes.associate { it.name to it.type.name }
+        val attributeTypes = entityWithAliases.attributes.associate { it.name to it.typeName() }
 
         assertThat(attributeTypes["my_pub_key"]).isEqualTo("byte_array")
         assertThat(attributeTypes["my_created_at"]).isEqualTo("integer")
@@ -142,7 +149,7 @@ class SchemaReaderTest {
 
         val entity = schema.entities.first { it.simpleName == "employee" }
 
-        val attributes = entity.attributes.map { it.name to it.type.name }
+        val attributes = entity.attributes.map { it.name to it.typeName() }
         assertThat(attributes).containsExactly(
             "age" to "integer",
             "active" to "boolean",
@@ -172,7 +179,10 @@ class SchemaReaderTest {
 
         val shirtSizeAttr = person.attributes.first { it.name == "shirt_size" }
         val enumType = shirtSizeAttr.type
-        assertThat(enumType).isInstanceOf(R_EnumType::class).hasValues(listOf("small", "medium", "large"))
+        assertThat(enumType).isInstanceOf(RR_Type.Enum::class.java)
+        val enumDef = shirtSizeAttr.enumDefinition
+        assertThat(enumDef).isNotNull()
+        assertThat(enumDef!!.attrs.map { it.name }).containsExactlyInAnyOrder("small", "medium", "large")
     }
 
     @Test
@@ -195,9 +205,5 @@ class SchemaReaderTest {
         assertThat(this.moduleName).isEqualTo(moduleName)
         assertThat(this.uniqueName).isEqualTo(uniqueName)
     }
-
-    private fun Assert<R_EnumType>.hasValues(values: List<String>) = prop("values", R_EnumType::values)
-        .transform { enumValues -> enumValues.map { it.str() } }
-        .containsExactlyInAnyOrder(*values.toTypedArray())
 
 }

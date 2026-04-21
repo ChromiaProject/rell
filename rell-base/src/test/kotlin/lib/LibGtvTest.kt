@@ -7,9 +7,9 @@ package net.postchain.rell.base.lib
 import net.postchain.common.toHex
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
-import net.postchain.rell.base.utils.PostchainGtvUtils
 import java.math.BigInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals

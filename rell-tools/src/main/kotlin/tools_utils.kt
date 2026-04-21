@@ -9,16 +9,19 @@ import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.option
 import mu.KLogging
 import net.postchain.rell.api.base.*
-import net.postchain.rell.base.compiler.base.core.C_CompilationResult
+import net.postchain.rell.api.base.RellApiBaseUtils
+import net.postchain.rell.api.base.RellCliExitException
 import net.postchain.rell.base.compiler.base.core.C_Compiler
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.model.R_App
-import net.postchain.rell.base.model.R_LangVersion
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.rr.*
+import net.postchain.rell.base.runtime.Rt_Interpreter
 import net.postchain.rell.base.runtime.Rt_RellVersion
+import net.postchain.rell.base.utils.UnitTestMatcher
+import net.postchain.rell.base.utils.UnitTestRunner
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.immListOfNotNull
@@ -48,14 +51,13 @@ object RellToolsUtils: KLogging() {
 
     fun compileApp(
         sourceDir: String?,
-        moduleName: R_ModuleName?,
+        moduleName: ModuleName?,
         quiet: Boolean = false,
         compilerOptions: C_CompilerOptions
-    ): R_App {
+    ): RellCompiledApp {
         val cSourceDir = RellApiBaseUtils.createSourceDir(sourceDir)
         val modSel = C_CompilerModuleSelection(immListOfNotNull(moduleName))
-        val res = compileApp(cSourceDir, modSel, quiet, compilerOptions)
-        return res
+        return compileApp(cSourceDir, modSel, quiet, compilerOptions)
     }
 
     fun compileApp(
@@ -63,36 +65,17 @@ object RellToolsUtils: KLogging() {
         modSel: C_CompilerModuleSelection,
         quiet: Boolean,
         compilerOptions: C_CompilerOptions
-    ): R_App {
-        val res = compile(RellCliEnv.DEFAULT, sourceDir, modSel, quiet, compilerOptions)
-        return res.app!!
-    }
-
-    private fun compile(
-        cliEnv: RellCliEnv,
-        sourceDir: C_SourceDir,
-        modSel: C_CompilerModuleSelection,
-        quiet: Boolean,
-        compilerOptions: C_CompilerOptions
-    ): C_CompilationResult {
-        val res = compile0(compilerOptions, cliEnv, sourceDir, modSel)
-        RellApiBaseUtils.handleCompilationResult(cliEnv, res, quiet)
-        return res
-    }
-
-    private fun compile0(
-        compilerOptions: C_CompilerOptions,
-        cliEnv: RellCliEnv,
-        sourceDir: C_SourceDir,
-        modSel: C_CompilerModuleSelection
-    ): C_CompilationResult {
-        try {
+    ): RellCompiledApp {
+        val result = try {
             val res = C_Compiler.compile(sourceDir, modSel, compilerOptions)
-            return res
+            res
         } catch (e: C_CommonError) {
-            cliEnv.error(RellApiBaseUtils.errMsg(e.msg))
+            RellCliEnv.DEFAULT.error(RellApiBaseUtils.errMsg(e.msg))
             throw RellCliExitException(1, e.msg)
         }
+
+        RellApiBaseUtils.handleCompilationResult(RellCliEnv.DEFAULT, result, quiet)
+        return RellCompiledApp(result.rrApp!!, result.compilationSysFns)
     }
 
     fun getTarget(sourceDir: String?, module: String): RellCliTarget {
@@ -121,18 +104,20 @@ object RellToolsUtils: KLogging() {
         return file
     }
 
-    fun checkModule(s: String): R_ModuleName {
-        val res = R_ModuleName.ofOpt(s)
+    fun checkModule(s: String): ModuleName {
+        val res = ModuleName.ofOpt(s)
         return res ?: throw RellCliBasicException("Invalid module name: '$s'")
     }
 
     fun checkVersion(s: String?): R_LangVersion {
         s ?: return RellVersions.VERSION
+
         val ver = try {
             R_LangVersion.of(s)
         } catch (_: IllegalArgumentException) {
             throw RellCliBasicException("Invalid source version: '$s'")
         }
+
         if (ver !in RellVersions.SUPPORTED_VERSIONS) {
             throw RellCliBasicException("Source version not supported: $ver")
         }
@@ -143,6 +128,26 @@ object RellToolsUtils: KLogging() {
         val ver = Rt_RellVersion.getInstance()?.buildDescriptor ?: "Rell version unknown"
         logger.info(ver)
     }
+}
+
+class RellCompiledApp(
+    val rrApp: RR_App,
+    /**
+     * Sys-function registrations produced by the compilation that yielded [rrApp]. Must be
+     * threaded into the interpreter — see `Rt_Interpreter.forCompilation` for why isolation
+     * across compilations matters (stdlib meta-bodies capture compile-specific state).
+     */
+    val compilationSysFns: Map<String, Any> = emptyMap(),
+) {
+    fun createInterpreter(): Rt_Interpreter = Rt_Interpreter.forCompilation(rrApp, compilationSysFns)
+
+    fun getRRTestFunctions(moduleName: ModuleName, matcher: UnitTestMatcher): List<RR_FunctionDefinition> {
+        val rrModule = rrApp.moduleMap[moduleName] ?: return emptyList()
+        return UnitTestRunner.getRRTestFunctions(rrModule, matcher)
+    }
+
+    fun getAllRRTestFunctions(matcher: UnitTestMatcher): List<RR_FunctionDefinition> =
+        UnitTestRunner.getRRTestFunctions(rrApp, matcher)
 }
 
 abstract class RellBaseCommand(name: String) : CliktCommand(name = name) {

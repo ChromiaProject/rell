@@ -7,8 +7,8 @@ package net.postchain.rell.base.compiler.lib
 import net.postchain.common.hexStringToByteArray
 import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
-import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.model.Name
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.testutils.RellTestUtils
 import java.math.BigInteger
@@ -49,8 +49,9 @@ class CLibDocTest: BaseCLibTest() {
         """
 
         val actual = RellTestUtils.processApp(rellCode) { tApp ->
-            val struct = tApp.rApp.moduleMap.getValue(R_ModuleName.EMPTY).structs.getValue("__s")
-            val attr = struct.struct.attributes.getValue(R_Name.of("x"))
+            val rApp = checkNotNull(tApp.rApp) { "R_App not available" }
+            val struct = rApp.moduleMap.getValue(ModuleName.EMPTY).structs.getValue("__s")
+            val attr = struct.struct.attributes.getValue(Name.of("x"))
             val docCode = attr.type.docType().toCode()
             docCode.strCode()
         }

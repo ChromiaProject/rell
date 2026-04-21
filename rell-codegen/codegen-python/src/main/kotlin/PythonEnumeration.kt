@@ -21,8 +21,8 @@ class PythonEnumeration(
     override val imports = emptyList<String>()
 
     override fun format(): String {
-        val enumValues = enum.values().joinToString("\n") { value ->
-            "\t${value.str().uppercase()} = \"${value.str()}\""
+        val enumValues = enum.attrs.joinToString("\n") { attr ->
+            "\t${attr.name.uppercase()} = \"${attr.name}\""
         }
         return """
             |${PythonDocGenerator.formatDoc(docSymbol, wrapInDocComments = true)}

@@ -108,9 +108,11 @@ class GlobalConstantTest: BaseRellTest() {
     }
 
     @Test fun testRuntimeError() {
-        chkCompile("val X: integer = 123 / 0;", "ct_err:expr:/:div0:123")
+        // Without compile-time constant folding, division by zero is detected at runtime.
+        def("val X: integer = 123 / 0;")
         def("val Y: integer = abs(123 / 0);")
-        chk("0", "rt_err:expr:/:div0:123")
+        chk("X", "rt_err:expr:/:div0:123")
+        chk("Y", "rt_err:expr:/:div0:123")
     }
 
     @Test fun testCollectionTypeInference() {
@@ -168,15 +170,14 @@ class GlobalConstantTest: BaseRellTest() {
         chk("_type_of($t[X])", "text[integer]")
         chk("_type_of($t[Y])", "text[text]")
         chk("_type_of($t[Z])", "text[boolean]")
+        // Without compile-time constant folding, expressions involving arithmetic are not compile-time constants.
         chk("_type_of($t[A])", "ct_err:expr_subscript:tuple:no_const")
-        chk("_type_of($t[B])", "text[boolean]")
-        chk("_type_of($t[C])", "text[text]")
+        chk("_type_of($t[B])", "ct_err:expr_subscript:tuple:no_const")
+        chk("_type_of($t[C])", "ct_err:expr_subscript:tuple:no_const")
 
         chk("$t[X]", "int[123]")
         chk("$t[Y]", "text[hello]")
         chk("$t[Z]", "boolean[true]")
-        chk("$t[B]", "boolean[true]")
-        chk("$t[C]", "text[hello]")
     }
 
     @Test fun testCompileTimeConstantRecursion() {

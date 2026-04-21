@@ -4,40 +4,41 @@ plugins {
     jacoco
 }
 
-description = "Rell core: compiler, runtime, type system, and standard library"
+description = "Rell core: umbrella re-exporting frontend + runtime"
 
-// Configuration for sharing test code with other modules (similar to Maven's test-jar)
-val testJar by tasks.registering(Jar::class) {
-    archiveClassifier = "tests"
-    from(sourceSets.test.get().output)
+sourceSets.main {
+    kotlin.setSrcDirs(emptyList<String>())
+    java.setSrcDirs(emptyList<String>())
 }
 
-configurations.create("testArtifacts") {
-    extendsFrom(configurations.testRuntimeClasspath.get())
+tasks.withType<Test> {
+    useJUnitPlatform()
+    systemProperty("rell.test.roundtrip", findProperty("rellTestRoundTrip") ?: "false")
 }
 
-artifacts {
-    add("testArtifacts", testJar)
+val testRoundTrip by tasks.registering(Test::class) {
+    description = "Runs tests with RR serialization round-trip enabled"
+    group = "verification"
+    useJUnitPlatform()
+    systemProperty("rell.test.roundtrip", "true")
+    shouldRunAfter(tasks.test)
+}
+
+tasks.check {
+    dependsOn(testRoundTrip)
 }
 
 dependencies {
-    api(libs.postchain.gtv)
+    api(projects.rellBase.frontend)
+    api(projects.rellBase.runtime)
 
-    api(kotlin("stdlib"))
-    api(kotlin("reflect"))
-
-    implementation(libs.kotlinLogging)
-    implementation(libs.guava)
-    api(libs.better.parse)
-    implementation(libs.jackson.databind)
-    implementation(libs.jooq)
-    implementation(libs.postgresql)
-    implementation(libs.bouncycastle)
-    api(libs.kotlinx.collections.immutable)
-
+    testImplementation(projects.rellBase.testUtils)
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.platform.launcher)
     testImplementation(kotlin("test-junit5"))
     testImplementation(libs.log4j.slf4j2.impl)
+    testImplementation(libs.jackson.databind)
+    testImplementation(libs.postgresql)
 }
 
 // The gradle-git-properties plugin does not declare customProperty values as task inputs,
@@ -64,11 +65,15 @@ gitProperties {
         "git.dirty",
         "git.build.version",
     )
-    for ((k, v) in gitCustomProperties) customProperty(k, v)
+    for ((k, v) in gitCustomProperties) {
+        customProperty(k, v)
+    }
 }
 
-tasks.named("generateGitProperties") {
-    for ((k, v) in gitCustomProperties) inputs.property("customProperty.$k", v)
+tasks.generateGitProperties {
+    for ((k, v) in gitCustomProperties) {
+        inputs.property("customProperty.$k", v)
+    }
 }
 
 val generateDependencyList by tasks.registering {
@@ -100,8 +105,4 @@ sourceSets.main {
 
 tasks.processResources {
     dependsOn(generateDependencyList)
-}
-
-publishing.publications.named<MavenPublication>("mavenJava") {
-    artifact(testJar)
 }

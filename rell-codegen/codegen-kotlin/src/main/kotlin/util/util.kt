@@ -4,7 +4,6 @@
 
 package net.postchain.rell.codegen.kotlin.util
 
-import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 

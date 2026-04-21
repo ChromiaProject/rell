@@ -17,11 +17,11 @@ import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.testutils.VirtualTestUtils
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
-import net.postchain.rell.base.utils.PostchainGtvUtils
 import kotlin.test.Test
 
 class CLibFunctionTypeExtTest: BaseCLibTest() {

@@ -4,7 +4,6 @@
 
 package net.postchain.rell.codegen.javascript
 
-import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.deps.ClassName
@@ -13,7 +12,7 @@ import net.postchain.rell.codegen.util.snakeToLowerCamelCase
 
 abstract class JavascriptFunction(
         protected val className: ClassName,
-        protected val mountName: R_MountName,
+        protected val mountName: MountName,
         protected val params: List<R_FunctionParam>,
         override val docSymbol: DocSymbol,
         private val async: Boolean,

@@ -4,10 +4,14 @@
 
 package net.postchain.rell.codegen.python
 
-import net.postchain.rell.base.lib.type.*
+import net.postchain.rell.base.model.R_CollectionType
 import net.postchain.rell.base.model.R_EnumType
+import net.postchain.rell.base.model.R_GtvType
+import net.postchain.rell.base.model.R_ListType
+import net.postchain.rell.base.model.R_MapType
 import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_QueryDefinition
+import net.postchain.rell.base.model.R_SetType
 import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Query

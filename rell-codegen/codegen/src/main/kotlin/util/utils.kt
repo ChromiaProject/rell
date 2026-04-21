@@ -5,7 +5,6 @@
 package net.postchain.rell.codegen.util
 
 import net.postchain.rell.api.base.RellCliEnv
-import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.deps.CamelCaseClassName

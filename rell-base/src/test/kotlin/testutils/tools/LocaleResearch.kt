@@ -10,7 +10,7 @@ package net.postchain.rell.base.testutils.tools
 
 import net.postchain.rell.base.lib.type.Rt_ByteArrayValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
-import net.postchain.rell.base.model.expr.ParameterizedSql
+import net.postchain.rell.base.runtime.ParameterizedSql
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.testutils.SqlTestUtils
 import net.postchain.rell.base.utils.*
@@ -155,17 +155,17 @@ private object SqlChecker_SortRanges: SqlChecker() {
 
     private fun calcRanges(codes: List<Int>): List<IntRange> {
         var tail = codes
-        val res = mutableListOf<IntRange>()
-        while (tail.isNotEmpty()) {
-            val x = tail.first()
-            val n = tail.withIndex().takeWhile { it.value == x + it.index }.size
-            for (i in 0 until n) {
-                checkEquals(tail[i], tail[0] + i)
+        return buildList {
+            while (tail.isNotEmpty()) {
+                val x = tail.first()
+                val n = tail.withIndex().takeWhile { it.value == x + it.index }.size
+                for (i in 0 until n) {
+                    checkEquals(tail[i], tail[0] + i)
+                }
+                add(x..tail[n - 1])
+                tail = tail.subList(n, tail.size)
             }
-            res.add(x .. tail[n - 1])
-            tail = tail.subList(n, tail.size)
         }
-        return res.toList()
     }
 }
 
@@ -259,7 +259,7 @@ private fun printStats(cs: List<CharInfo>) {
         val s = c.plainString
         val b = c.utf8
         val s2 = String(b.toByteArray(), Charsets.UTF_8)
-        check(s2 == s) { "[${strToCodes(s)}]" to "[${strToCodes(s2)}]" }
+        checkEquals(s2, s) { "[${strToCodes(s)}]" to "[${strToCodes(s2)}]" }
         lens[b.size()] += 1
     }
 

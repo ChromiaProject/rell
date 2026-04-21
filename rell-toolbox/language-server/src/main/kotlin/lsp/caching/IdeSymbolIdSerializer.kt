@@ -7,7 +7,7 @@ package net.postchain.rell.toolbox.lsp.caching
 import io.fury.Fury
 import io.fury.memory.MemoryBuffer
 import io.fury.serializer.Serializer
-import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.model.Name
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.toImmList
@@ -59,11 +59,11 @@ class IdeSymbolIdSerializer(fury: Fury?) : Serializer<IdeSymbolId>(fury, IdeSymb
         return Pair(category, name)
     }
 
-    private fun decodeMembers(parts: List<Pair<String, String>>): List<Pair<IdeSymbolCategory, R_Name>> {
+    private fun decodeMembers(parts: List<Pair<String, String>>): List<Pair<IdeSymbolCategory, Name>> {
         val members = parts.drop(1).map {
             val category = ideSymbolCategoryMap[it.first]!!
             val name = it.second
-            Pair(category, R_Name.of(name))
+            Pair(category, Name.of(name))
         }
         return members
     }

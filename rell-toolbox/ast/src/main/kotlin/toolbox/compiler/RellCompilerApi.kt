@@ -52,8 +52,7 @@ object RellCompilerApi {
     private fun validate(srcDir: C_SourceDir, modules: List<String>, options: C_CompilerOptions): List<C_Message> {
         val rModules = modules.map { s ->
             val rModule = IdeApi.parseModuleName(s)
-            check(rModule != null) { "Invalid module name: [$s]" }
-            rModule
+            checkNotNull(rModule) { "Invalid module name: [$s]" }
         }
         val res = IdeApi.compile(srcDir, rModules.toImmList(), options)
         return res.messages

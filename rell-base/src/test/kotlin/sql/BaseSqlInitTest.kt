@@ -28,7 +28,7 @@ abstract class BaseSqlInitTest: BaseContextTest(useSql = true) {
         val actual = RellTestUtils.processApp(code) { app ->
             RellTestUtils.catchRtErr {
                 tstCtx.sqlMgr().transaction { sqlExec ->
-                    val appCtx = tst.createExeCtx(globalCtx, sqlExec, app.rApp)
+                    val appCtx = tst.createExeCtx(globalCtx, sqlExec, app.rrApp)
                     val initLogging = SqlInitLogging.ofLevel(SqlInitLogging.LOG_ALL)
                     val warnings = SqlInit.init(appCtx, NullSqlInitProjExt, initLogging)
                     actualWarnings = warnings.joinToString(",")

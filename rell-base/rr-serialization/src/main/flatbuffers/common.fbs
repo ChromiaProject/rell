@@ -1,0 +1,39 @@
+// Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+
+namespace rell.ir;
+
+/// Module name (dot-separated path).
+table ModuleName {
+    parts: [string] (required);
+}
+
+/// Mount name used for SQL table mapping and operation/query routing.
+table MountName {
+    parts: [string] (required);
+}
+
+/// Definition name (used internally for error messages / identification).
+table DefinitionName {
+    module: string (required);
+    qualified_name: string (required);
+    simple_name: string (required);
+}
+
+/// Definition identity used in call frames.
+table DefinitionId {
+    module: string (required);
+    definition: string (required);
+}
+
+/// Source position (used for both compile-time file positions and runtime error positions).
+table SourcePos {
+    file: string;
+    line: int;
+    column: int;
+}
+
+/// External chain reference.
+table ExternalChainRef {
+    name: string (required);
+    index: uint;
+}

@@ -4,9 +4,10 @@
 
 package net.postchain.rell.base.lang.def
 
-import net.postchain.rell.base.model.R_Attribute
-import net.postchain.rell.base.model.R_EntityDefinition
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.model.rr.RR_Attribute
+import net.postchain.rell.base.model.rr.RR_EntityDefinition
+import net.postchain.rell.base.runtime.Rt_Interpreter
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import kotlin.test.Test
@@ -167,11 +168,11 @@ class EntityTest: BaseRellTest() {
         chkCompile("entity user (log, log) {}", "ct_err:entity_ann_dup:log")
 
         val a1 = tst.compileAppEx("entity user {}")
-        val c1 = a1.sqlDefs.entities.first { it.simpleName == "user" }
+        val c1 = a1.sqlDefs.entities.first { it.base.simpleName == "user" }
         assertEquals(false, c1.flags.log)
 
         val a2 = tst.compileAppEx("@log entity user {}")
-        val c2 = a2.sqlDefs.entities.first { it.simpleName == "user" }
+        val c2 = a2.sqlDefs.entities.first { it.base.simpleName == "user" }
         assertEquals(true, c2.flags.log)
     }
 
@@ -259,8 +260,8 @@ class EntityTest: BaseRellTest() {
                 }
             """.trimIndent()
         )
-        val entity = app.sqlDefs.entities.first { it.simpleName == "user" }
-        val attr = entity.attributes.values.first { it.name == "first_name" }
+        val entity = app.sqlDefs.entities.first { it.base.simpleName == "user" }
+        val attr = entity.strAttributes.values.first { it.name == "first_name" }
         assertEquals("fname", attr.sqlMapping)
     }
 
@@ -616,24 +617,26 @@ class EntityTest: BaseRellTest() {
 
     private fun chkEntity(code: String, exp: String) {
         val act = tst.processApp(code) { app ->
-            val e = app.rApp.moduleMap.getValue(R_ModuleName.EMPTY).entities.getValue("data")
-            entityToString(e)
+            val interp = Rt_Interpreter.forCompilation(app.rrApp, app.compilationSysFns)
+            val e = app.rrApp.moduleMap.getValue(ModuleName.EMPTY).entities.getValue("data")
+            entityToString(e, interp)
         }
         assertEquals(exp, act)
     }
 
-    private fun entityToString(e: R_EntityDefinition): String {
-        val attrs = e.attributes.values.map { attrToString(it) }
+    private fun entityToString(e: RR_EntityDefinition, interp: Rt_Interpreter): String {
+        val attrs = e.attributes.values.map { attrToString(it, interp) }
         val keys = e.keys.map { "key ${it.attribs.joinToString(",")}" }
         val idxs = e.indexes.map { "index ${it.attribs.joinToString(",")}" }
         val parts = attrs + keys + idxs
         return parts.joinToString("; ")
     }
 
-    private fun attrToString(a: R_Attribute): String {
+    private fun attrToString(a: RR_Attribute, interp: Rt_Interpreter): String {
         val mut = if (a.mutable) "mutable " else ""
-        val expr = if (a.expr != null) "=*" else ""
-        return "$mut${a.name}:${a.type.str()}$expr"
+        val expr = if (a.defaultExpr != null) "=*" else ""
+        val typeName = interp.resolveType(a.type).name
+        return "$mut${a.name}:${typeName}$expr"
     }
 
     private fun createTablePrefixTester(chainId: Long, rowid: Long, company: String, user: String): RellCodeTester {

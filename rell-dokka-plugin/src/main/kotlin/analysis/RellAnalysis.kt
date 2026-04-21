@@ -2,27 +2,32 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
+@file:OptIn(InternalRellApi::class)
+
 package com.chromia.rell.dokka.analysis
+
 
 import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.model.ExtensionFunction
-import com.chromia.rell.dokka.reflection.getFunctionExtensionsByReflection
-import com.chromia.rell.dokka.reflection.getNameByReflection
-import net.postchain.rell.api.base.RellApiCompile
+import net.postchain.rell.api.base.InternalRellApi
+import net.postchain.rell.api.base.RellApiBaseInternal
 import net.postchain.rell.api.base.RellApiCompile.Config
 import net.postchain.rell.api.base.RellCliEnv
-import net.postchain.rell.base.model.R_App
+import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_Definition
 import net.postchain.rell.base.model.R_FunctionDefinition
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.R_Module
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapToImmList
 import org.jetbrains.dokka.links.DRI
 import java.io.File
 
 class RellAnalysis(
-        sourceRoot: File,
-        val entryPointModules: List<String>?,
-        val additionalModules: List<String>? = null,
-        customCliEnv: RellCliEnv? = null
+    sourceRoot: File,
+    val entryPointModules: List<String>?,
+    val additionalModules: List<String>? = null,
+    customCliEnv: RellCliEnv? = null
 ) {
 
     private val allFunctions: List<R_FunctionDefinition>
@@ -34,37 +39,36 @@ class RellAnalysis(
     private val testModules: List<R_Module>
 
     init {
-        val config = Config.Builder()
-                .mountConflictError(false)
-                .includeTestSubModules(true)
-                .moduleArgsMissingError(false)
-                .docSymbolsEnabled(true)
-                .appModuleInTestsError(false)
-                .apply {
-                    customCliEnv?.let {
-                        cliEnv(customCliEnv)
-                    }
-                }
-                .build()
+        val config = Config.Builder().apply {
+            mountConflictError(false)
+            includeTestSubModules(true)
+            moduleArgsMissingError(false)
+            docSymbolsEnabled(true)
+            appModuleInTestsError(false)
+            customCliEnv?.let { cliEnv(customCliEnv) }
+        }.build()
 
         val modulesToCompile = (entryPointModules.orEmpty() + additionalModules.orEmpty()).distinct()
 
-        val app = RellApiCompile.compileApp(
-                config, sourceRoot,
-                modulesToCompile
-        )
+        val cSourceDir = C_SourceDir.diskDir(sourceRoot)
+        val rAppModules = modulesToCompile.mapToImmList { ModuleName.of(it) }
+        val options = RellApiBaseInternal.makeCompilerOptions(config)
+        val (apiRes, _) = RellApiBaseInternal.compileApp(config, options, cSourceDir, rAppModules, immListOf())
+        val app = apiRes.cRes.app ?: error("Compilation failed")
 
         modules = app.modules.filterNot { it.test }
         testModules = app.modules.filter { it.test }
 
         allFunctions = app.modules.flatMap { it.functions.values }
         functionsByAppLevelName = allFunctions.associateBy { it.defName.appLevelName }
-        val extensionFunctionsByTargetFunction = getFunctionExtensionsByReflection(app)
+
+        val extensionFunctionsByTargetFunction = app.functionExtensions.list
+            .associate { extension -> extension.uid.name to extension.extensions }
+
         val allExtensionFunctions = extensionFunctionsByTargetFunction
-                .flatMap { (target, list) -> list.map { f -> target to f } }
-                .map { (target, f) ->
-                    ExtensionFunction(target, f.fnBase)
-                }
+            .flatMap { (target, list) -> list.map { f -> target to f } }
+            .map { (target, f) -> ExtensionFunction(target, f.fnBase) }
+
         extensionFunctionsByAppLevelName = allExtensionFunctions.associateBy { it.defName.appLevelName }
         extensionFunctionsByModule = allExtensionFunctions.groupBy { it.defName.module }
         extendableFunctions = extensionFunctionsByTargetFunction.keys
@@ -85,42 +89,42 @@ class RellAnalysis(
     fun testModules() = testModules
 
     fun hiddenPackages(): List<String> =
-            (modules + testModules)
-                    .flatMap(::nonEntryPointQualifierFrom)
-                    .distinct()
+        (modules + testModules)
+            .flatMap(::nonEntryPointQualifierFrom)
+            .distinct()
 
     private fun nonEntryPointQualifierFrom(
-            module: R_Module,
+        module: R_Module,
     ): List<String> {
         val definitions = module.allDefinitions
 
         return definitions
-                .map { it.defName.appLevelName to it.defName.module }
-                .filterNot { (_, moduleName) -> shouldExclude(module, moduleName) }
-                .map { (appLevelName, moduleName) ->
-                    parseQualifiedName(appLevelName, moduleName)
-                }
+            .map { it.defName.appLevelName to it.defName.module }
+            .filterNot { (_, moduleName) -> shouldExclude(module, moduleName) }
+            .map { (appLevelName, moduleName) ->
+                parseQualifiedName(appLevelName, moduleName)
+            }
     }
 
     private fun shouldExclude(module: R_Module, moduleName: String) =
-        if (module.test || isLibraryModule(moduleName) ) {
+        if (module.test || isLibraryModule(moduleName)) {
             additionalModules?.any { moduleName == it } ?: true
         } else true
 
     private val R_Module.allDefinitions: List<R_Definition>
         get() = listOf(
-                functions.values,
-                constants.values,
-                objects.values,
-                enums.values,
-                operations.values,
-                queries.values
+            functions.values,
+            constants.values,
+            objects.values,
+            enums.values,
+            operations.values,
+            queries.values
         ).flatten()
 
-    private fun isLibraryModule(moduleName: String) : Boolean = moduleName.run {
+    private fun isLibraryModule(moduleName: String): Boolean = moduleName.run {
         startsWith("lib.") && entryPointModules
-                .orEmpty()
-                .none { startsWith(it) }
+            .orEmpty()
+            .none { startsWith(it) }
     }
 
     private fun parseQualifiedName(appLevelName: String, moduleName: String): String {
@@ -138,10 +142,4 @@ class RellAnalysis(
             moduleName
         }
     }
-
-    private fun getFunctionExtensionsByReflection(app: R_App) =
-            app.functionExtensions.getFunctionExtensionsByReflection().associate { extension ->
-                extension.uid.getNameByReflection() to extension.extensions
-            }
-
 }

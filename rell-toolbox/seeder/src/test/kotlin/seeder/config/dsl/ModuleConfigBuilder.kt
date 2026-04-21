@@ -21,8 +21,5 @@ class ModuleConfigBuilder {
         entityConfigs[name] = builder.build()
     }
 
-    fun build(): ModuleConfig {
-        check(moduleName != null) { "moduleName must be set" }
-        return ModuleConfig(moduleName!!, entityConfigs)
-    }
+    fun build(): ModuleConfig = ModuleConfig(checkNotNull(moduleName) { "moduleName must be set" }, entityConfigs)
 }

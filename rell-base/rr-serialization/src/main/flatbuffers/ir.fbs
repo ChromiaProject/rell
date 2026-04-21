@@ -1,0 +1,977 @@
+// Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+//
+// Combined expressions, statements, and database expressions.
+// These are in one file because they have mutual references
+// (Expr ↔ Stmt, Expr ↔ DbExpr) which FlatBuffers includes cannot handle.
+
+include "common.fbs";
+include "frame.fbs";
+include "op.fbs";
+include "type.fbs";
+include "value.fbs";
+
+namespace rell.ir;
+
+// ============================================================================
+// Type adapter
+// ============================================================================
+
+enum TypeAdapterKind : ubyte {
+    DIRECT,
+    INTEGER_TO_BIG_INTEGER,
+    INTEGER_TO_DECIMAL,
+    BIG_INTEGER_TO_DECIMAL,
+    NULLABLE,  // has inner adapter
+}
+
+table TypeAdapter {
+    kind: TypeAdapterKind;
+    inner: TypeAdapter;  // only for NULLABLE
+}
+
+// ============================================================================
+// When chooser
+// ============================================================================
+
+table WhenCondition {
+    index: int;       // original index into exprs array
+    expr: Expr;       // condition expression
+}
+
+table IterativeWhenChooser {
+    key_expr: Expr (required);
+    conditions: [WhenCondition] (required);
+    else_index: int = -1;  // -1 means no else
+}
+
+table LookupWhenChooser {
+    key_expr: Expr (required);
+    /// Parallel arrays: lookup_keys[i] → branch index lookup_values[i].
+    lookup_keys: [ConstantValue] (required);
+    lookup_values: [int] (required);
+    else_index: int = -1;
+}
+
+union WhenChooserUnion {
+    IterativeWhenChooser,
+    LookupWhenChooser,
+}
+
+table WhenChooser {
+    chooser: WhenChooserUnion (required);
+}
+
+// ============================================================================
+// Member calculator
+// ============================================================================
+
+table MemberCalculator_StructAttr {
+    type: Type (required);
+    attr_index: int;
+}
+
+table MemberCalculator_TupleAttr {
+    type: Type (required);
+    attr_index: int;
+}
+
+table MemberCalculator_VirtualTupleAttr {
+    type: Type (required);
+    field_index: int;
+}
+
+table MemberCalculator_VirtualStructAttr {
+    type: Type (required);
+    attr_def_index: uint;
+    attr_name: string (required);
+}
+
+table MemberCalculator_DataAttribute {
+    type: Type (required);
+    entity_def_index: int;
+    attr_name: string (required);
+}
+
+table MemberCalculator_DataAttributeExpr {
+    type: Type (required);
+    expr: Expr (required);
+    lambda_block: FrameBlock (required);
+    lambda_var_ptr: VarPtr (required);
+}
+
+table MemberCalculator_SysFunction {
+    type: Type (required);
+    fn_name: string (required);
+}
+
+table MemberCalculator_FunctionCall {
+    type: Type (required);
+    call: FunctionCall (required);
+}
+
+table MemberCalculator_ExprEval {
+    type: Type (required);
+    expr: Expr (required);
+}
+
+union MemberCalculatorUnion {
+    MemberCalculator_StructAttr,
+    MemberCalculator_TupleAttr,
+    MemberCalculator_VirtualTupleAttr,
+    MemberCalculator_VirtualStructAttr,
+    MemberCalculator_DataAttribute,
+    MemberCalculator_DataAttributeExpr,
+    MemberCalculator_SysFunction,
+    MemberCalculator_FunctionCall,
+    MemberCalculator_ExprEval,
+}
+
+table MemberCalculator {
+    calculator: MemberCalculatorUnion (required);
+}
+
+// ============================================================================
+// Function call target
+// ============================================================================
+
+table FnTarget_RegularUser   { fn_def_index: uint; }
+table FnTarget_AbstractUser  { fn_def_index: uint; }
+table FnTarget_NativeUser    { fn_name: string (required); }
+table FnTarget_Operation     { op_def_index: uint; }
+table FnTarget_FunctionValue {}
+table FnTarget_SysGlobal     { fn_name: string (required); }
+table FnTarget_SysMember     { fn_name: string (required); }
+table FnTarget_AbstractOverride { body: FunctionBody (required); }
+table FnTarget_RegularQuery  { query_def_index: uint; }
+
+enum ExtendableCombinerKind : ubyte { UNIT, BOOLEAN, NULLABLE, LIST, MAP }
+table FnTarget_Extendable    {
+    extendable_uid_id: int;
+    combiner_kind: ExtendableCombinerKind;
+    return_type: Type (required);
+}
+
+union FunctionCallTargetUnion {
+    FnTarget_RegularUser,
+    FnTarget_AbstractUser,
+    FnTarget_NativeUser,
+    FnTarget_Operation,
+    FnTarget_FunctionValue,
+    FnTarget_SysGlobal,
+    FnTarget_SysMember,
+    FnTarget_AbstractOverride,
+    FnTarget_Extendable,
+    FnTarget_RegularQuery,
+}
+
+table FunctionCallTarget {
+    target: FunctionCallTargetUnion (required);
+}
+
+// ============================================================================
+// Function call
+// ============================================================================
+
+table FullFunctionCall {
+    return_type: Type (required);
+    target: FunctionCallTarget (required);
+    call_pos: SourcePos (required);
+    args: [Expr] (required);
+    mapping: [int] (required);
+}
+
+table PartialFunctionCall {
+    return_type: Type (required);
+    target: FunctionCallTarget (required);
+    wild_arg_count: int;
+    mapping_values: [int] (required);  // -1 for wildcard positions
+    args: [Expr] (required);
+}
+
+union FunctionCallUnion {
+    FullFunctionCall,
+    PartialFunctionCall,
+}
+
+table FunctionCall {
+    call: FunctionCallUnion (required);
+}
+
+// ============================================================================
+// Create expression attribute
+// ============================================================================
+
+table CreateExprAttr {
+    attr_index: int;     // index within entity's attribute list
+    attr_name: string (required);
+    expr: Expr (required);
+}
+
+// ============================================================================
+// At-expression support
+// ============================================================================
+
+enum AtCardinality : ubyte {
+    ZERO_ONE,
+    ONE,
+    ZERO_MANY,
+    ONE_MANY,
+}
+
+table AtExprExtras {
+    limit: Expr;
+    offset: Expr;
+}
+
+/// Database at-entity reference.
+table DbAtEntity {
+    entity_def_index: uint;
+    id: uint;  // R_AtEntityId
+    join_where: DbExpr;
+    is_outer: bool;
+    join_block: FrameBlock;
+}
+
+/// What-field flags for at-expressions.
+table AtWhatFieldFlags {
+    omit: bool = false;
+    sort: int = 0;  // 0=none, 1=asc, -1=desc
+    group: bool = false;
+    aggregate: bool = false;
+}
+
+/// Database at-expression what-field.
+table DbAtWhatField {
+    flags: AtWhatFieldFlags (required);
+    expr: DbExpr (required);
+    result_type: Type;
+}
+
+/// Database at-expression "from" clause.
+table DbAtExprFrom {
+    entities: [DbAtEntity] (required);
+    block: FrameBlock;
+}
+
+/// Database at-expression internals.
+table DbAtExprInternals {
+    block: FrameBlock;
+}
+
+// ============================================================================
+// Column at-expression support
+// ============================================================================
+
+table ColAtParam {
+    type: Type (required);
+    ptr: VarPtr;
+}
+
+enum IterableAdapterKind : ubyte {
+    DIRECT,
+    LEGACY_MAP,
+}
+
+table ColAtFrom {
+    expr: Expr (required);
+    block: FrameBlock;
+    iterable_adapter: IterableAdapterKind;
+}
+
+table ColAtWhatField {
+    expr: Expr (required);
+    flags: AtWhatFieldFlags (required);
+}
+
+table ColAtWhat {
+    fields: [ColAtWhatField] (required);
+    field_count: int;
+    selected_fields: [int] (required);
+    group_fields: [int];
+}
+
+enum ColAtSummarizationKind : ubyte {
+    NONE,
+    GROUP,
+    ALL,
+}
+
+enum ColAtFieldSummarizationKind : ubyte {
+    NONE,
+    GROUP,
+    SUM,
+    MIN,
+    MAX,
+    LIST,
+    SET,
+    MAP,
+}
+
+table ColAtFieldSummarizationInfo {
+    kind: ColAtFieldSummarizationKind;
+    binary_op_key: string;
+    zero_value: ConstantValue;
+    is_min: bool;
+    collection_type: Type;
+    map_value_type: Type;
+}
+
+table ColAtSortEntry {
+    field_index: int;
+    ascending: bool;
+}
+
+// ============================================================================
+// Variable declarator (for statements)
+// ============================================================================
+
+table SimpleVarDeclarator {
+    ptr: VarPtr;
+    type: Type (required);
+    adapter: TypeAdapter;
+}
+
+table TupleVarDeclarator {
+    sub_declarators: [VarDeclarator] (required);
+}
+
+table WildcardVarDeclarator {}
+
+union VarDeclaratorUnion {
+    SimpleVarDeclarator,
+    TupleVarDeclarator,
+    WildcardVarDeclarator,
+}
+
+table VarDeclarator {
+    declarator: VarDeclaratorUnion (required);
+}
+
+// ============================================================================
+// Statement union members
+// ============================================================================
+
+table EmptyStatement {}
+
+table VarStatement {
+    declarator: VarDeclarator (required);
+    expr: Expr;  // nullable
+}
+
+table ReturnStatement {
+    expr: Expr;  // nullable
+}
+
+table BlockStatement {
+    stmts: [Stmt] (required);
+    frame_block: FrameBlock (required);
+}
+
+table ExprStatement {
+    expr: Expr (required);
+}
+
+table ReplExprStatement {
+    expr: Expr (required);
+}
+
+table AssignStatement {
+    dst_expr: Expr (required);
+    expr: Expr (required);
+    op: BinaryOp;        // assignment operator (e.g. += uses ADD_INTEGER)
+    has_op: bool = false; // false for plain =
+}
+
+table IfStatement {
+    cond: Expr (required);
+    true_stmt: Stmt (required);
+    false_stmt: Stmt (required);
+}
+
+table WhenStatement {
+    chooser: WhenChooser (required);
+    stmts: [Stmt] (required);
+}
+
+table WhileStatement {
+    cond: Expr (required);
+    body: Stmt (required);
+    frame_block: FrameBlock (required);
+}
+
+table ForStatement {
+    var_declarator: VarDeclarator (required);
+    expr: Expr (required);
+    iterable_adapter: IterableAdapterKind;
+    body: Stmt (required);
+    frame_block: FrameBlock (required);
+}
+
+table BreakStatement {}
+table ContinueStatement {}
+
+table GuardStatement {
+    body: Stmt (required);
+}
+
+table LambdaStatement {
+    arg_exprs: [Expr] (required);
+    arg_ptrs: [VarPtr] (required);
+    block: FrameBlock (required);
+    body: Stmt (required);
+}
+
+table UpdateStatementWhat {
+    attr_name: string (required);
+    attr_index: int;
+    expr: DbExpr (required);
+}
+
+table UpdateStatement {
+    entity: DbAtEntity (required);
+    extra_entities: [DbAtEntity];
+    where: DbExpr;
+    what: [UpdateStatementWhat] (required);
+    from_block: FrameBlock (required);
+    err_pos: SourcePos (required);
+    lambda_block: FrameBlock;
+    lambda_var_ptr: VarPtr;
+    lambda_expr: Expr;
+    target_kind: ubyte;   // RR_UpdateTargetKind ordinal
+    cardinality: AtCardinality;
+    has_cardinality: bool;
+    is_expr_set: bool;
+    expr_list_type: Type;
+}
+
+table DeleteStatement {
+    entity: DbAtEntity (required);
+    extra_entities: [DbAtEntity];
+    where: DbExpr;
+    from_block: FrameBlock (required);
+    err_pos: SourcePos (required);
+    lambda_block: FrameBlock;
+    lambda_var_ptr: VarPtr;
+    lambda_expr: Expr;
+    target_kind: ubyte;
+    cardinality: AtCardinality;
+    has_cardinality: bool;
+    is_expr_set: bool;
+    expr_list_type: Type;
+}
+
+/// The R_Statement union.
+union StmtUnion {
+    EmptyStatement,
+    VarStatement,
+    ReturnStatement,
+    BlockStatement,
+    ExprStatement,
+    ReplExprStatement,
+    AssignStatement,
+    IfStatement,
+    WhenStatement,
+    WhileStatement,
+    ForStatement,
+    BreakStatement,
+    ContinueStatement,
+    GuardStatement,
+    LambdaStatement,
+    UpdateStatement,
+    DeleteStatement,
+}
+
+/// Wrapper table for R_Statement.
+table Stmt {
+    stmt: StmtUnion (required);
+}
+
+// ============================================================================
+// Database expression union members
+// ============================================================================
+
+/// Wraps an R_Expr to be interpreted on the JVM side and injected as a parameter.
+table DbInterpretedExpr {
+    expr: Expr (required);
+}
+
+table DbBinaryExpr {
+    type: Type (required);
+    op: DbBinaryOp;
+    left: DbExpr (required);
+    right: DbExpr (required);
+    nullable_eq: bool;
+}
+
+table DbUnaryExpr {
+    type: Type (required);
+    op: DbUnaryOp;
+    expr: DbExpr (required);
+}
+
+/// Reference to an entity in the FROM clause.
+table DbEntityExpr {
+    entity_def_index: uint;
+    entity_id: uint;  // R_AtEntityId
+}
+
+/// Navigation through a relation (foreign key).
+table DbRelExpr {
+    base: DbExpr (required);
+    attr_name: string (required);
+    target_entity_def_index: uint;
+}
+
+/// Access to an entity attribute (column).
+table DbAttrExpr {
+    base: DbExpr (required);
+    attr_name: string (required);
+    type: Type (required);
+}
+
+/// Access to the rowid pseudo-column.
+table DbRowidExpr {
+    base: DbExpr (required);
+}
+
+/// Collection interpreted as SQL parameter.
+table DbCollectionInterpretedExpr {
+    expr: Expr (required);
+}
+
+/// IN expression: key IN (expr1, expr2, ...).
+table DbInExpr {
+    key_expr: DbExpr (required);
+    exprs: [DbExpr] (required);
+    not: bool = false;
+}
+
+/// COALESCE / elvis for DB expressions.
+table DbElvisExpr {
+    type: Type (required);
+    left: DbExpr (required);
+    right: DbExpr (required);
+}
+
+/// Database function call (e.g. abs, lower, ...).
+table DbCallExpr {
+    type: Type (required);
+    fn_name: string (required);  // Db_SysFunction name
+    args: [DbExpr] (required);
+}
+
+/// EXISTS / NOT EXISTS sub-query.
+table DbExistsExpr {
+    sub_expr: DbExpr (required);
+    not: bool = false;
+}
+
+/// key IN collection (where collection is an R_Expr yielding a JVM collection).
+table DbInCollectionExpr {
+    left: DbExpr (required);
+    right: Expr (required);
+    not: bool = false;
+}
+
+table DbWhenCase {
+    conds: [DbExpr] (required);
+    expr: DbExpr (required);
+}
+
+/// CASE/WHEN at the database level.
+table DbWhenExpr {
+    type: Type (required);
+    key_expr: DbExpr;
+    cases: [DbWhenCase] (required);
+    else_expr: DbExpr;
+    has_else: bool = false;
+}
+
+/// Nested at-expression (sub-select).
+table DbNestedAtExpr {
+    type: Type (required);
+    inner: DbExpr (required);
+}
+
+table DbSubQueryExpr {
+    from: DbAtExprFrom (required);
+    what: [DbAtWhatField] (required);
+    where: DbExpr;
+    extras: AtExprExtras;
+    is_many: bool;
+    internals: DbAtExprInternals;
+}
+
+/// The Db_Expr union.
+union DbExprUnion {
+    DbInterpretedExpr,
+    DbBinaryExpr,
+    DbUnaryExpr,
+    DbEntityExpr,
+    DbRelExpr,
+    DbAttrExpr,
+    DbRowidExpr,
+    DbCollectionInterpretedExpr,
+    DbInExpr,
+    DbElvisExpr,
+    DbCallExpr,
+    DbExistsExpr,
+    DbInCollectionExpr,
+    DbWhenExpr,
+    DbNestedAtExpr,
+    DbSubQueryExpr,
+}
+
+/// Wrapper table for Db_Expr.
+table DbExpr {
+    expr: DbExprUnion (required);
+}
+
+// ============================================================================
+// Expression union members
+// ============================================================================
+
+table VarExpr {
+    type: Type (required);
+    ptr: VarPtr;
+    name: string (required);
+}
+
+table ConstantValueExpr {
+    typed_value: TypedValue (required);
+}
+
+table BinaryExpr {
+    type: Type (required);
+    op: BinaryOp;
+    left: Expr (required);
+    right: Expr (required);
+    err_pos: SourcePos;
+    /// When true, this is a comparison expression dispatched via cmp_op / cmp_type.
+    has_cmp: bool;
+    cmp_op: CmpOp;
+    cmp_type: CmpType;
+}
+
+table UnaryExpr {
+    type: Type (required);
+    op: UnaryOp;
+    expr: Expr (required);
+    err_pos: SourcePos (required);
+}
+
+table IfExpr {
+    type: Type (required);
+    cond: Expr (required);
+    true_expr: Expr (required);
+    false_expr: Expr (required);
+}
+
+table WhenExpr {
+    type: Type (required);
+    chooser: WhenChooser (required);
+    exprs: [Expr] (required);
+}
+
+table ElvisExpr {
+    type: Type (required);
+    left: Expr (required);
+    right: Expr (required);
+}
+
+table NotNullExpr {
+    type: Type (required);
+    expr: Expr (required);
+    err_pos: SourcePos (required);
+}
+
+table TupleExpr {
+    type: Type (required);  // R_TupleType
+    exprs: [Expr] (required);
+}
+
+table ListLiteralExpr {
+    type: Type (required);  // R_ListType
+    exprs: [Expr] (required);
+}
+
+table MapLiteralExpr {
+    type: Type (required);  // R_MapType
+    keys: [Expr] (required);
+    values: [Expr] (required);
+    err_pos: SourcePos (required);
+}
+
+table StructExpr {
+    struct_def_index: uint;
+    attrs: [CreateExprAttr] (required);
+}
+
+table RegularCreateExpr {
+    entity_def_index: uint;
+    err_pos: SourcePos (required);
+    attrs: [CreateExprAttr] (required);
+}
+
+table StructCreateExpr {
+    entity_def_index: uint;
+    err_pos: SourcePos (required);
+    struct_def_index: uint;
+    struct_expr: Expr (required);
+}
+
+table StructListCreateExpr {
+    entity_def_index: uint;
+    err_pos: SourcePos (required);
+    struct_def_index: uint;
+    result_list_type: Type (required);
+    list_expr: Expr (required);
+}
+
+table FunctionCallExpr {
+    type: Type (required);
+    base: Expr;  // nullable
+    call: FunctionCall (required);
+    safe: bool = false;
+}
+
+table MemberExpr {
+    base: Expr (required);
+    calculator: MemberCalculator (required);
+    safe: bool = false;
+}
+
+table AssignExpr {
+    type: Type (required);
+    op: BinaryOp;
+    dst_expr: Expr (required);
+    src_expr: Expr (required);
+    post: bool = false;
+}
+
+table StatementExpr {
+    type: Type;
+    stmt: Stmt (required);
+}
+
+table GlobalConstantExpr {
+    type: Type (required);
+    const_def_index: uint;
+}
+
+table ChainHeightExpr {
+    chain: ExternalChainRef (required);
+}
+
+table TypeAdapterExpr {
+    type: Type (required);
+    expr: Expr (required);
+    adapter: TypeAdapter (required);
+}
+
+table ParameterDefaultValueExpr {
+    type: Type (required);
+    call_file_pos: SourcePos (required);
+    init_frame: CallFrame (required);
+    inner_expr: Expr (required);
+    def_id: DefinitionName;
+}
+
+table AttributeDefaultValueExpr {
+    attr_index: int;
+    attr_name: string (required);
+    attr_def_index: uint;  // parent entity/struct def
+    create_file_pos: SourcePos;
+    init_frame: CallFrame (required);
+    inner_expr: Expr (required);
+    def_id: DefinitionName;
+}
+
+// --- What-field group combiners ---
+
+table DbAtFieldCombiner_Single {}
+table DbAtFieldCombiner_Tuple { tuple_type: Type (required); }
+table DbAtFieldCombiner_Struct { struct_def_index: int; attr_mapping: [int]; }
+table DbAtFieldCombiner_FunctionCall { call: FunctionCall (required); }
+table DbAtFieldCombiner_ListLiteral { list_type: Type (required); }
+table DbAtFieldCombiner_MapLiteral { map_type: Type (required); }
+table DbAtFieldCombiner_MemberAccess { calculator: MemberCalculator (required); safe: bool; }
+table DbAtFieldCombiner_Lazy { type: Type (required); }
+
+union DbAtFieldCombinerUnion {
+    DbAtFieldCombiner_Single,
+    DbAtFieldCombiner_Tuple,
+    DbAtFieldCombiner_Struct,
+    DbAtFieldCombiner_FunctionCall,
+    DbAtFieldCombiner_ListLiteral,
+    DbAtFieldCombiner_MapLiteral,
+    DbAtFieldCombiner_MemberAccess,
+    DbAtFieldCombiner_Lazy,
+}
+
+table DbAtFieldCombiner {
+    combiner: DbAtFieldCombinerUnion (required);
+}
+
+table ItemOrderEntry {
+    is_db: bool;
+    index: int;
+}
+
+table DbAtWhatFieldGroup {
+    column_count: int;
+    combiner: DbAtFieldCombiner (required);
+    r_exprs: [Expr];
+    item_order: [ItemOrderEntry];
+    sub_groups: [DbAtWhatFieldGroup];
+}
+
+table DbAtExpr {
+    type: Type (required);
+    from: DbAtExprFrom (required);
+    what: [DbAtWhatField] (required);
+    where: DbExpr;
+    cardinality: AtCardinality;
+    extras: AtExprExtras;
+    internals: DbAtExprInternals (required);
+    err_pos: SourcePos (required);
+    what_field_groups: [DbAtWhatFieldGroup];
+    object_name: string;
+    object_def_index: int = -1;
+}
+
+table ColAtExpr {
+    type: Type (required);
+    block: FrameBlock (required);
+    param: ColAtParam (required);
+    from: ColAtFrom (required);
+    what: ColAtWhat (required);
+    where: Expr (required);
+    summarization: ColAtSummarizationKind;
+    err_pos: SourcePos (required);
+    cardinality: AtCardinality;
+    extras: AtExprExtras;
+    field_summarizations: [ColAtFieldSummarizationInfo];
+    sorting: [ColAtSortEntry];
+}
+
+table ErrorExpr {
+    type: Type (required);
+    message: string (required);
+}
+
+// Subscript expressions
+table ListSubscriptExpr {
+    type: Type (required);
+    base: Expr (required);
+    index: Expr (required);
+    err_pos: SourcePos (required);
+}
+
+table MapSubscriptExpr {
+    type: Type (required);
+    base: Expr (required);
+    key: Expr (required);
+    err_pos: SourcePos (required);
+}
+
+table TextSubscriptExpr {
+    base: Expr (required);
+    index: Expr (required);
+    err_pos: SourcePos (required);
+}
+
+table ByteArraySubscriptExpr {
+    base: Expr (required);
+    index: Expr (required);
+    err_pos: SourcePos (required);
+}
+
+table VirtualListSubscriptExpr {
+    type: Type (required);
+    base: Expr (required);
+    index: Expr (required);
+}
+
+table VirtualMapSubscriptExpr {
+    type: Type (required);
+    base: Expr (required);
+    key: Expr (required);
+    err_pos: SourcePos (required);
+}
+
+table JsonArraySubscriptExpr {
+    base: Expr (required);
+    index: Expr (required);
+    err_pos: SourcePos (required);
+}
+
+table JsonObjectSubscriptExpr {
+    base: Expr (required);
+    key: Expr (required);
+    err_pos: SourcePos (required);
+}
+
+table StructMemberExpr {
+    type: Type (required);
+    base: Expr (required);
+    attr_name: string (required);
+    attr_index: int;
+}
+
+table ObjectValueExpr {
+    type: Type (required);
+    object_def_index: uint;
+}
+
+table LazyExpr {
+    type: Type (required);
+    inner_expr: Expr (required);
+}
+
+/// The R_Expr union.
+union ExprUnion {
+    VarExpr,
+    ConstantValueExpr,
+    BinaryExpr,
+    UnaryExpr,
+    IfExpr,
+    WhenExpr,
+    ElvisExpr,
+    NotNullExpr,
+    TupleExpr,
+    ListLiteralExpr,
+    MapLiteralExpr,
+    StructExpr,
+    RegularCreateExpr,
+    StructCreateExpr,
+    StructListCreateExpr,
+    FunctionCallExpr,
+    MemberExpr,
+    AssignExpr,
+    StatementExpr,
+    GlobalConstantExpr,
+    ChainHeightExpr,
+    TypeAdapterExpr,
+    ParameterDefaultValueExpr,
+    AttributeDefaultValueExpr,
+    DbAtExpr,
+    ColAtExpr,
+    ErrorExpr,
+    ListSubscriptExpr,
+    MapSubscriptExpr,
+    TextSubscriptExpr,
+    ByteArraySubscriptExpr,
+    VirtualListSubscriptExpr,
+    VirtualMapSubscriptExpr,
+    JsonArraySubscriptExpr,
+    JsonObjectSubscriptExpr,
+    StructMemberExpr,
+    ObjectValueExpr,
+    LazyExpr,
+}
+
+/// Wrapper table for R_Expr.
+table Expr {
+    expr: ExprUnion (required);
+}

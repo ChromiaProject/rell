@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.lib
 
+import net.postchain.rell.base.model.R_RellErrorType
 import net.postchain.rell.base.testutils.BaseRellTest
 import kotlin.test.Test
 

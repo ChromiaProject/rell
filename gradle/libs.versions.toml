@@ -2,6 +2,8 @@
 kotlin = "2.3.0"
 postchain = "3.47.7"
 
+flatbuffers = "25.2.10"
+
 better-parse = "0.4.4"
 kotlinx-collections-immutable = "0.4.0"
 jline = "3.28.0"
@@ -44,6 +46,7 @@ dependency-check = "12.2.1"
 gradle-git-properties = "2.5.7"
 sentry = "6.4.0"
 shadow = "9.4.1"
+download = "5.7.0"
 
 [libraries]
 postchain-bom = { module = "net.postchain:postchain", version.ref = "postchain" }
@@ -73,6 +76,8 @@ kotlinLogging = { module = "io.github.microutils:kotlin-logging-jvm" }
 log4j-slf4j2-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl" }
 testcontainers = { module = "org.testcontainers:testcontainers" }
 testcontainers-junit-jupiter = { module = "org.testcontainers:testcontainers-junit-jupiter" }
+
+flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version.ref = "flatbuffers" }
 
 # versions from junit-bom
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
@@ -134,3 +139,4 @@ dependency-check = { id = "org.owasp.dependencycheck", version.ref = "dependency
 git-properties = { id = "com.gorylenko.gradle-git-properties", version.ref = "gradle-git-properties" }
 sentry = { id = "io.sentry.jvm.gradle", version.ref = "sentry" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+download = { id = "de.undercouch.download", version.ref = "download" }

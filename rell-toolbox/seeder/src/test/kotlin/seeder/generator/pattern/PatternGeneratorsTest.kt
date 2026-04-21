@@ -7,10 +7,10 @@ package net.postchain.rell.toolbox.seeder.generator.pattern
 import assertk.assertThat
 import assertk.assertions.isInstanceOf
 import io.github.serpro69.kfaker.Faker
-import net.postchain.rell.base.lib.type.R_BooleanType
-import net.postchain.rell.base.lib.type.R_DecimalType
-import net.postchain.rell.base.lib.type.R_IntegerType
-import net.postchain.rell.base.lib.type.R_TextType
+import net.postchain.rell.base.model.R_BooleanType
+import net.postchain.rell.base.model.R_DecimalType
+import net.postchain.rell.base.model.R_IntegerType
+import net.postchain.rell.base.model.R_TextType
 import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.generator.DataGeneratorContext

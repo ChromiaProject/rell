@@ -11,6 +11,7 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.base.runtime.utils.Rt_SqlManagerUtils
 import net.postchain.rell.base.sql.*
+import net.postchain.rell.base.utils.checkEquals
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -21,7 +22,7 @@ import java.util.*
 public object RellApiGtxUtils {
     public fun extractDatabaseSchema(url: String): String? {
         val uri = URI(url)
-        check(uri.scheme == "jdbc") { "Invalid scheme: '${uri.scheme}'" }
+        checkEquals(uri.scheme, "jdbc") { "Invalid scheme: '${uri.scheme}'" }
 
         val uri2 = URI(uri.schemeSpecificPart)
         val query = uri2.query ?: return null

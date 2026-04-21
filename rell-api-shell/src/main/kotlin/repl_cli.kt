@@ -5,9 +5,10 @@
 package net.postchain.rell.api.shell
 
 import net.postchain.gtv.Gtv
+import net.postchain.rell.api.base.InternalRellApi
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.repl.*
 import net.postchain.rell.base.runtime.Rt_GlobalContext
 import net.postchain.rell.base.runtime.Rt_GtvModuleArgsSource
@@ -17,23 +18,25 @@ import net.postchain.rell.base.sql.SqlManager
 import net.postchain.rell.base.utils.toImmMap
 import java.io.File
 
+@InternalRellApi
 public class ReplShellOptions(
-    public val compilerOptions: C_CompilerOptions,
-    public val inputChannelFactory: ReplInputChannelFactory,
-    public val outputChannelFactory: ReplOutputChannelFactory,
-    public val historyFile: File?,
-    public val printIntroMessage: Boolean,
-    public val moduleArgs: Map<R_ModuleName, Gtv>,
+        public val compilerOptions: C_CompilerOptions,
+        public val inputChannelFactory: ReplInputChannelFactory,
+        public val outputChannelFactory: ReplOutputChannelFactory,
+        public val historyFile: File?,
+        public val printIntroMessage: Boolean,
+        public val moduleArgs: Map<ModuleName, Gtv>,
 )
 
+@InternalRellApi
 public object ReplShell {
     public fun start(
-        sourceDir: C_SourceDir,
-        module: R_ModuleName?,
-        globalCtx: Rt_GlobalContext,
-        sqlMgr: SqlManager,
-        projExt: ReplInterpreterProjExt,
-        options: ReplShellOptions,
+            sourceDir: C_SourceDir,
+            module: ModuleName?,
+            globalCtx: Rt_GlobalContext,
+            sqlMgr: SqlManager,
+            projExt: ReplInterpreterProjExt,
+            options: ReplShellOptions,
     ) {
         val outChannel = options.outputChannelFactory.createOutputChannel()
 
@@ -66,7 +69,7 @@ public object ReplShell {
         }
     }
 
-    private fun printIntro(outChannel: ReplOutputChannel, repl: ReplInterpreter, moduleName: R_ModuleName?) {
+    private fun printIntro(outChannel: ReplOutputChannel, repl: ReplInterpreter, moduleName: ModuleName?) {
         val ver = getVersionInfo()
         outChannel.printInfo(ver)
 

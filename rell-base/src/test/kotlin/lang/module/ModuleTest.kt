@@ -8,7 +8,7 @@ import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestUtils
@@ -16,7 +16,6 @@ import net.postchain.rell.base.utils.mapToImmList
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 class ModuleTest: BaseRellTest() {
     @Test fun testForwardTypeReferenceFunction() {
@@ -519,8 +518,8 @@ class ModuleTest: BaseRellTest() {
     }
 
     private fun evalCompileAllModules(sourceDir: C_SourceDir, modules: List<String>, testModules: List<String>): String {
-        val modules2 = modules.mapToImmList { R_ModuleName.of(it) }
-        val testModules2 = testModules.mapToImmList { R_ModuleName.of(it) }
+        val modules2 = modules.mapToImmList { ModuleName.of(it) }
+        val testModules2 = testModules.mapToImmList { ModuleName.of(it) }
         val modSel = C_CompilerModuleSelection(modules2, testModules2)
 
         val res = try {
@@ -534,11 +533,10 @@ class ModuleTest: BaseRellTest() {
             return "ct_err:$s"
         }
 
-        val app = res.app
-        assertNotNull(app)
-        assertTrue(app.valid)
+        val rrApp = res.rrApp
+        assertNotNull(rrApp)
 
-        return app.modules.sortedBy { it.name } .joinToString(",", "[", "]") {
+        return rrApp.modules.sortedBy { it.name } .joinToString(",", "[", "]") {
             val sel = if (it.selected) "*" else ""
             "[$sel${it.name}]"
         }
@@ -641,8 +639,8 @@ class ModuleTest: BaseRellTest() {
     }
 
     private fun chkAppFns(vararg expected: String) {
-        val rApp = tst.compileAppEx("")
-        val fns = rApp.modules.flatMap { it.functions.values.map { it.simpleName } }.sorted()
+        val rrApp = tst.compileAppEx("")
+        val fns = rrApp.modules.flatMap { it.functions.values.map { it.base.simpleName } }.sorted()
         assertEquals(listOf(*expected), fns)
     }
 

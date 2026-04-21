@@ -74,7 +74,7 @@ fun DRI.Companion.from(m: L_TypeDefMember, parent: DRI): DRI {
     return parent.copy(callable = callable, extra = extra).let { if (className != null) it.withClass(className) else it }
 }
 
-fun R_QualifiedName.toDRI(): DRI {
+fun QualifiedName.toDRI(): DRI {
     val packageName = if (parts.size > 1) str().substringBeforeLast(".") else RellModule.MAIN.dri.packageName
     val className = last.str
     return DRI(packageName = packageName, classNames = className)
@@ -86,8 +86,8 @@ fun M_Type.toDRI(): DRI {
         is M_Type_Generic -> {
             val fullName = genericType.name
             when {
-                ":" in fullName -> R_QualifiedName.of(fullName.replace(":", "."))
-                else -> R_QualifiedName.of(fullName)
+                ":" in fullName -> QualifiedName.of(fullName.replace(":", "."))
+                else -> QualifiedName.of(fullName)
             }.toDRI()
         }
 

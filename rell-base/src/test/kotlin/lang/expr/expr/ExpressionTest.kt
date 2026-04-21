@@ -645,7 +645,8 @@ class ExpressionTest: BaseRellTest() {
         chkEx("{ val t = (123, 'Hello'); return t[2]; }", "ct_err:expr_subscript:tuple:index:2:2")
         chkEx("{ val t = (123, 'Hello'); return t[+1]; }", "text[Hello]")
         chkEx("{ val t = (123, 'Hello'); return t[-0]; }", "int[123]")
-        chkEx("{ val t = (123, 'Hello'); return t[0+1]; }", "text[Hello]")
+        // Binary arithmetic not folded at compile time:
+        chkEx("{ val t = (123, 'Hello'); return t[0+1]; }", "ct_err:expr_subscript:tuple:no_const")
         chkEx("{ val t = (123, 'Hello'); val i = 0; return t[i]; }", "ct_err:expr_subscript:tuple:no_const")
 
         chkEx("{ val t = (123, 'Hello'); return t[true]; }", "ct_err:expr_subscript_keytype:[integer]:[boolean]")
@@ -683,9 +684,11 @@ class ExpressionTest: BaseRellTest() {
 
     @Test fun testConstantValueEvaluationError() {
         chk("(123,'hello',true)[0]", "int[123]")
-        chk("(123,'hello',true)[1/0]", "ct_err:eval_fail:expr:/:div0:1")
+        // Without compile-time constant folding, 1/0 is not evaluated at compile time.
+        chk("(123,'hello',true)[1/0]", "ct_err:expr_subscript:tuple:no_const")
         chk("when(0) { 0 -> 123; else -> 456 }", "int[123]")
-        chk("when(0) { 1/0 -> 123; else -> 456 }", "ct_err:eval_fail:expr:/:div0:1")
+        // 1/0 is treated as a variable case expression, division by zero detected at runtime.
+        chk("when(0) { 1/0 -> 123; else -> 456 }", "rt_err:expr:/:div0:1")
     }
 
     @Test fun testNamespacePath() {

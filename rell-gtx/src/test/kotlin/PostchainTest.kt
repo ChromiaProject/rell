@@ -11,7 +11,7 @@ import net.postchain.common.hexStringToByteArray
 import net.postchain.core.EContext
 import net.postchain.gtx.StandardOpsGTXModule
 import net.postchain.rell.base.compiler.base.utils.C_ReservedMountNames
-import net.postchain.rell.base.model.R_MountName
+import net.postchain.rell.base.model.MountName
 import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.sql.SqlUtils
 import net.postchain.rell.base.testutils.BaseResourcefulTest
@@ -249,8 +249,8 @@ class PostchainTest: BaseResourcefulTest() {
         chkReservedMounts(C_ReservedMountNames.QUERIES, m.getQueries())
     }
 
-    private fun chkReservedMounts(actual: Set<R_MountName>, expected: Set<String>) {
-        val rExpected = expected.map { R_MountName.of(it) }.sorted()
+    private fun chkReservedMounts(actual: Set<MountName>, expected: Set<String>) {
+        val rExpected = expected.map { MountName.of(it) }.sorted()
         assertEquals(rExpected, actual.sorted())
     }
 

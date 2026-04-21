@@ -64,7 +64,7 @@ class CliProcessRunner(command: String) : AutoCloseable {
      * Blocking read of the next output line, with timeout.
      * If [skipIgnored], lines matching patterns added via [ignoreOutput] are silently skipped.
      */
-    fun readLineBlocking(timeoutMs: Long = 30_000, skipIgnored: Boolean = false): String {
+    fun readLineBlocking(timeoutMs: Long = 90_000, skipIgnored: Boolean = false): String {
         val deadline = System.currentTimeMillis() + timeoutMs
         while (true) {
             val remaining = deadline - System.currentTimeMillis()
@@ -112,17 +112,25 @@ class CliProcessRunner(command: String) : AutoCloseable {
 
     /**
      * Read lines until one fully matches [regex], returning the [MatchResult].
-     * Fails if the process exits or times out before a match.
+     * Fails if the process exits, or if no output arrives for [idleTimeoutMs].
+     *
+     * Uses an idle timeout (matches the original pytest semantics): progress is measured
+     * per-line, not against a total deadline. Under parallel test load Postchain startup
+     * can take well over a minute while still emitting log lines steadily; a total
+     * deadline would spuriously fail those cases even though the server is making progress.
      */
-    fun readUntilMatch(regex: Regex, timeoutMs: Long = 30_000): MatchResult {
+    fun readUntilMatch(regex: Regex, idleTimeoutMs: Long = 90_000): MatchResult {
         val seenLines = mutableListOf<String>()
-        val deadline = System.currentTimeMillis() + timeoutMs
+        var lastOutputTime = System.currentTimeMillis()
         while (true) {
-            val remaining = deadline - System.currentTimeMillis()
-            if (remaining <= 0) fail("Timeout (${timeoutMs}ms) waiting for pattern: $regex\nOutput seen:\n${seenLines.joinToString("\n")}")
+            val sinceOutput = System.currentTimeMillis() - lastOutputTime
+            if (sinceOutput >= idleTimeoutMs) {
+                fail("Idle timeout (${idleTimeoutMs}ms with no output) waiting for pattern: $regex\nOutput seen:\n${seenLines.joinToString("\n")}")
+            }
             // Cap each wait at 200 ms so we can notice a dead process without delaying the match.
-            val line = outputReader.pollBlocking(minOf(remaining, 200))
+            val line = outputReader.pollBlocking(minOf(idleTimeoutMs - sinceOutput, 200))
             if (line != null) {
+                lastOutputTime = System.currentTimeMillis()
                 seenLines.add(line)
                 val m = regex.matchEntire(line)
                 if (m != null) return m

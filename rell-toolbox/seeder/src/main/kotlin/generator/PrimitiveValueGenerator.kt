@@ -5,8 +5,8 @@
 package net.postchain.rell.toolbox.seeder.generator
 
 import net.postchain.common.types.WrappedByteArray
-import net.postchain.rell.base.lib.type.*
-import net.postchain.rell.base.model.R_EnumType
+import net.postchain.rell.base.model.rr.RR_PrimitiveKind
+import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGeneratorFactory
 import java.math.BigDecimal
@@ -27,36 +27,37 @@ class PrimitiveValueGenerator(
     }
 
     fun generateForType(ctx: DataGeneratorContext): Any {
-        return when (ctx.attribute.type) {
-            is R_IntegerType -> generatorFactory.callGenerator(
+        val type = ctx.attribute.type
+        return when {
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.INTEGER -> generatorFactory.callGenerator(
                 "random.integer",
                 ctx.copy(attributeConfig = AttributeConfig.Range(NUMBER_MIN_VALUE, NUMBER_MAX_VALUE))
             )
 
-            is R_BigIntegerType -> BigInteger.valueOf(
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BIG_INTEGER -> BigInteger.valueOf(
                 generatorFactory.callGenerator(
                     "random.integer",
                     ctx.copy(attributeConfig = AttributeConfig.Range(NUMBER_MIN_VALUE, NUMBER_MAX_VALUE))
                 ) as Long
             )
 
-            is R_DecimalType -> BigDecimal(
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.DECIMAL -> BigDecimal(
                 generatorFactory.callGenerator(
                     "random.decimal",
                     ctx.copy(attributeConfig = AttributeConfig.Range(NUMBER_MIN_VALUE, NUMBER_MAX_VALUE))
                 ) as Double
             )
 
-            is R_BooleanType -> generatorFactory.callGenerator("random.boolean", ctx)
-            is R_TextType -> generatorFactory.callGenerator("random.text", ctx)
-            is R_ByteArrayType -> generateRandomBytes(ctx)
-            is R_JsonType -> generatorFactory.callGenerator("random.json", ctx) // generateRandomJSON(ctx)
-            is R_RowidType -> generatorFactory.callGenerator(
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BOOLEAN -> generatorFactory.callGenerator("random.boolean", ctx)
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.TEXT -> generatorFactory.callGenerator("random.text", ctx)
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BYTE_ARRAY -> generateRandomBytes(ctx)
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.JSON -> generatorFactory.callGenerator("random.json", ctx)
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.ROWID -> generatorFactory.callGenerator(
                 "random.integer",
                 ctx.copy(attributeConfig = AttributeConfig.Range(ROWID_MIN_VALUE, ROWID_MAX_VALUE))
             )
 
-            is R_EnumType -> generatorFactory.callGenerator("random.enum", ctx)
+            type is RR_Type.Enum -> generatorFactory.callGenerator("random.enum", ctx)
 
             else -> throw IllegalArgumentException("Unsupported type: ${ctx.attribute.type}")
         }

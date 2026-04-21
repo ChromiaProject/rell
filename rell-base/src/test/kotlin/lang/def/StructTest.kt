@@ -276,8 +276,8 @@ class StructTest: BaseRellTest() {
     private fun chkFlags(code: String, expected: String) {
         val actual = tst.processApp(code) { app ->
             val lst = mutableListOf<String>()
-            val structDefs = app.rApp.modules.flatMap { it.structs.values }
-            for (structDef in structDefs.sortedBy { it.simpleName }) {
+            val structDefs = app.rrApp.modules.flatMap { it.structs.values }
+            for (structDef in structDefs.sortedBy { it.base.simpleName }) {
                 val struct = structDef.struct
 
                 val flags = mutableListOf<String>()
@@ -291,7 +291,7 @@ class StructTest: BaseRellTest() {
 
                 if (struct.flags.cyclic) flags.add("cyc")
                 if (struct.flags.infinite) flags.add("inf")
-                lst.add("${structDef.simpleName}[${flags.joinToString(",")}]")
+                lst.add("${structDef.base.simpleName}[${flags.joinToString(",")}]")
             }
             lst.joinToString(",")
         }

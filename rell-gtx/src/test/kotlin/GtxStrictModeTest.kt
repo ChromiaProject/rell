@@ -7,7 +7,7 @@ package net.postchain.rell.gtx
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvType
 import net.postchain.gtv.parse.GtvParser
-import net.postchain.rell.base.lang.type.VirtualTest.Companion.argToGtv
+import net.postchain.rell.base.testutils.VirtualTestUtils.argToGtv
 import net.postchain.rell.gtx.testutils.BaseGtxTest
 import kotlin.test.Test
 

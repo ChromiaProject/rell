@@ -12,6 +12,7 @@ import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_Module
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.L_ParamImplication
+import net.postchain.rell.base.runtime.R_SysFunction
 import java.math.BigInteger
 import kotlin.test.Test
 
@@ -154,7 +155,7 @@ class LDocTest: BaseLTest() {
             }
             function("pure_1", result = "text", pure = true) { body { -> Rt_UnitValue } }
             function("pure_2", result = "text") {
-                bodyRaw(C_SysFunctionBody(true, { _, _ -> Rt_UnitValue }, null))
+                bodyRaw(C_SysFunctionBody(true, R_SysFunction { _, _ -> Rt_UnitValue }, null))
             }
         }
         chkDoc(mod, "foo", "FUNCTION|mod:foo", "<function> foo(\n\ta: [integer],\n\tb: [decimal]\n): [text]")
@@ -287,7 +288,7 @@ class LDocTest: BaseLTest() {
                 }
                 constructor {
                     param(type = "integer", name = "z")
-                    bodyRaw(C_SysFunctionBody(true, { _, _ -> Rt_UnitValue }, null))
+                    bodyRaw(C_SysFunctionBody(true, R_SysFunction { _, _ -> Rt_UnitValue }, null))
                 }
                 constructor {
                     deprecated("...", error = false)
@@ -342,11 +343,11 @@ class LDocTest: BaseLTest() {
 
                 function("pure_1", result = "text", pure = true) { body { -> Rt_UnitValue } }
                 function("pure_2", result = "text") {
-                    bodyRaw(C_SysFunctionBody(true, { _, _ -> Rt_UnitValue }, null))
+                    bodyRaw(C_SysFunctionBody(true, R_SysFunction { _, _ -> Rt_UnitValue }, null))
                 }
                 staticFunction("stat_pure_1", result = "text", pure = true) { body { -> Rt_UnitValue } }
                 staticFunction("stat_pure_2", result = "text") {
-                    bodyRaw(C_SysFunctionBody(true, { _, _ -> Rt_UnitValue }, null))
+                    bodyRaw(C_SysFunctionBody(true, R_SysFunction { _, _ -> Rt_UnitValue }, null))
                 }
             }
         }
@@ -517,11 +518,11 @@ class LDocTest: BaseLTest() {
 
                 function("pure_1", result = "text", pure = true) { body { -> Rt_UnitValue } }
                 function("pure_2", result = "text") {
-                    bodyRaw(C_SysFunctionBody(true, { _, _ -> Rt_UnitValue }, null))
+                    bodyRaw(C_SysFunctionBody(true, R_SysFunction { _, _ -> Rt_UnitValue }, null))
                 }
                 staticFunction("stat_pure_1", result = "text", pure = true) { body { -> Rt_UnitValue } }
                 staticFunction("stat_pure_2", result = "text") {
-                    bodyRaw(C_SysFunctionBody(true, { _, _ -> Rt_UnitValue }, null))
+                    bodyRaw(C_SysFunctionBody(true, R_SysFunction { _, _ -> Rt_UnitValue }, null))
                 }
             }
         }

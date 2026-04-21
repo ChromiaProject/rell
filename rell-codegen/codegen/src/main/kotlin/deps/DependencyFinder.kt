@@ -4,8 +4,6 @@
 
 package net.postchain.rell.codegen.deps
 
-import net.postchain.rell.base.lib.type.R_CollectionType
-import net.postchain.rell.base.lib.type.R_MapType
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.mapToImmList
 

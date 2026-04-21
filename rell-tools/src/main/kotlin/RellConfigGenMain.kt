@@ -12,7 +12,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.rell.api.base.RellCliBasicException
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.api.base.RellConfigGen
-import net.postchain.rell.base.utils.PostchainGtvUtils
+import net.postchain.rell.base.runtime.PostchainGtvUtils
 import java.io.OutputStream
 import kotlin.io.path.*
 

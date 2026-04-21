@@ -7,15 +7,14 @@ package net.postchain.rell.base.testutils
 import net.postchain.rell.base.compiler.base.core.C_DefinitionName
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.lib.C_LibType
+import net.postchain.rell.base.lib.make
 import net.postchain.rell.base.lmodel.dsl.Ld_ModuleDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_TypeDefDsl
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_TypeMeta
-import net.postchain.rell.base.runtime.GtvRtConversion
-import net.postchain.rell.base.runtime.GtvRtConversion_None
-import net.postchain.rell.base.runtime.utils.toGtv
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.checkNull
 import net.postchain.rell.base.utils.toImmList
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
@@ -30,7 +29,7 @@ internal class LibModuleTester(
     private var curModRef: AtomicReference<C_LibModule>? = null
 
     fun libModule(block: Ld_ModuleDsl.() -> Unit) {
-        check(curModRef == null)
+        checkNull(curModRef)
         val modRefLoc = AtomicReference<C_LibModule>()
         curModRef = modRefLoc
         try {
@@ -73,22 +72,17 @@ internal class LibModuleTester(
         private val modGetter: () -> C_LibModule,
         private val typeArgs: ImmList<R_Type>,
     ): R_Type(typeName, C_DefinitionName("", typeName)) {
-        override fun equals0(other: R_Type): Boolean {
-            return other is R_TestType && typeTag === other.typeTag && typeArgs == other.typeArgs
-        }
+        override fun equals0(other: R_Type): Boolean =
+            other is R_TestType && typeTag === other.typeTag && typeArgs == other.typeArgs
 
-        override fun hashCode0(): Int {
-            return Objects.hash(typeTag, typeArgs)
-        }
+        override fun hashCode0(): Int = Objects.hash(typeTag, typeArgs)
 
         override fun strCode(): String {
             return if (typeArgs.isEmpty()) name else "$name<${typeArgs.joinToString(",") { it.strCode() }}>"
         }
 
-        override fun toMetaGtv() = name.toGtv()
         override fun isReference() = true
         override fun isDirectPure() = false
-        override fun createGtvConversion(): GtvRtConversion = GtvRtConversion_None
 
         override fun getTypeMeta0() = R_TypeMeta.mkSimple(this)
         override fun getTypeArgs() = typeArgs

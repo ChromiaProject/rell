@@ -7,14 +7,14 @@ package net.postchain.rell.base.compiler.lib
 import net.postchain.rell.base.compiler.base.core.C_DefinitionName
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.lib.Lib_Rell
+import net.postchain.rell.base.lib.make
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.model.R_LibUniqueType
-import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.runtime.GtvRtConversion_None
 import net.postchain.rell.base.runtime.Rt_LibValueType
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.makeStdlibLibType
 import kotlin.test.Test
 
 class CLibFunctionLazyParamTest: BaseCLibTest() {
@@ -151,11 +151,20 @@ class CLibFunctionLazyParamTest: BaseCLibTest() {
         chk("data @{ .rowid.to_integer() == 101 } ( ${expr.format("f(.v)", "g(.a)", "h(.b)")} )", "int[321]")
         chkOut("f:true", "g:321")
 
-        chk("data @*{} ( ${expr.format("f(.v)", "g(.a)", "h(.b)")} )", "list<integer>[int[456],int[321],int[987],int[654]]")
+        chk(
+            "data @*{} ( ${expr.format("f(.v)", "g(.a)", "h(.b)")} )",
+            "list<integer>[int[456],int[321],int[987],int[654]]"
+        )
         chkOut("f:false", "h:456", "f:true", "g:321", "f:false", "h:987", "f:true", "g:654")
-        chk("data @*{} ( ${expr.format("f(.v)", "g(555)", "h(.b)")} )", "list<integer>[int[456],int[555],int[987],int[555]]")
+        chk(
+            "data @*{} ( ${expr.format("f(.v)", "g(555)", "h(.b)")} )",
+            "list<integer>[int[456],int[555],int[987],int[555]]"
+        )
         chkOut("f:false", "h:456", "f:true", "g:555", "f:false", "h:987", "f:true")
-        chk("data @*{} ( ${expr.format("f(.v)", "g(.a)", "h(555)")} )", "list<integer>[int[555],int[321],int[555],int[654]]")
+        chk(
+            "data @*{} ( ${expr.format("f(.v)", "g(.a)", "h(555)")} )",
+            "list<integer>[int[555],int[321],int[555],int[654]]"
+        )
         chkOut("f:false", "h:555", "f:true", "g:321", "f:false", "f:true", "g:654")
     }
 
@@ -203,14 +212,19 @@ class CLibFunctionLazyParamTest: BaseCLibTest() {
             }
         }
 
-        private object R_TestType: R_LibUniqueType(TYPE_NAME, C_DefinitionName("rell", TYPE_NAME)) {
-            override fun createGtvConversion() = GtvRtConversion_None
-            override fun getLibTypeDef() = MODULE.getTypeDef("test_type")
+        private object R_TestType: R_LibUniqueType(TYPE_NAME, C_DefinitionName("rell", TYPE_NAME))
+
+        // Register R_TestType → type def AFTER MODULE is constructed (avoids circular init).
+        @Suppress("unused")
+        private val REGISTER = run {
+            R_LibUniqueType.registerLibTypeDef(R_TestType, MODULE.getTypeDef("test_type"))
         }
+
+        private val RT_TEST_TYPE = makeStdlibLibType(TYPE_NAME)
 
         private class Rt_TestTypeValue: Rt_Value() {
             override val valueType = Rt_LibValueType.of(TYPE_NAME)
-            override fun type(): R_Type = R_TestType
+            override fun type() = RT_TEST_TYPE
             override fun str(format: StrFormat): String = TYPE_NAME
             override fun strCode(showTupleFieldNames: Boolean) = TYPE_NAME
         }

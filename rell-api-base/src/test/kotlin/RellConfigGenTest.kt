@@ -7,10 +7,10 @@ package net.postchain.rell.api.base
 import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.compiler.base.core.C_Compiler
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.testutils.GtvTestUtils
 import net.postchain.rell.base.testutils.RellTestUtils
-import net.postchain.rell.base.utils.PostchainGtvUtils
+import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.utils.RellVersions
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -114,16 +114,16 @@ internal class RellConfigGenTest {
 
     private fun chkCfg0(files: Map<String, String>, templateXml: String?, expectedJson: String) {
         val sourceDir = C_SourceDir.mapDirOf(files)
-        val modules = listOf(R_ModuleName.EMPTY)
+        val modules = listOf(ModuleName.EMPTY)
         val cRes = C_Compiler.compile(sourceDir, modules)
 
         check(cRes.errors.isEmpty()) { "Errors: ${cRes.errors.map { it.code }}" }
 
-        val rApp = cRes.app
-        checkNotNull(rApp)
+        val rrApp = cRes.rrApp
+        checkNotNull(rrApp)
 
         val templateGtv = if (templateXml == null) GtvFactory.gtv(mapOf()) else PostchainGtvUtils.xmlToGtv(templateXml)
-        val configGen = RellConfigGen(sourceDir, RellVersions.VERSION, modules, cRes.files, rApp)
+        val configGen = RellConfigGen(sourceDir, RellVersions.VERSION, modules, cRes.files, rrApp)
 
         val actualGtv = configGen.makeConfig(templateGtv)
         val actualXml = RellConfigGen.configToText(actualGtv)

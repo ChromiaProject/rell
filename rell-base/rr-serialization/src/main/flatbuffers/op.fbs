@@ -1,0 +1,128 @@
+// Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+
+namespace rell.ir;
+
+/// Unary operators.
+enum UnaryOp : ubyte {
+    MINUS_INTEGER,
+    MINUS_BIG_INTEGER,
+    MINUS_DECIMAL,
+    NOT,
+}
+
+/// Binary operators.
+enum BinaryOp : ubyte {
+    // Equality & identity
+    EQ,
+    NE,
+    EQ_REF,
+    NE_REF,
+
+    // Logical
+    AND,
+    OR,
+
+    // Integer arithmetic
+    ADD_INTEGER,
+    SUB_INTEGER,
+    MUL_INTEGER,
+    DIV_INTEGER,
+    MOD_INTEGER,
+
+    // BigInteger arithmetic
+    ADD_BIG_INTEGER,
+    SUB_BIG_INTEGER,
+    MUL_BIG_INTEGER,
+    DIV_BIG_INTEGER,
+    MOD_BIG_INTEGER,
+
+    // Decimal arithmetic
+    ADD_DECIMAL,
+    SUB_DECIMAL,
+    MUL_DECIMAL,
+    DIV_DECIMAL,
+    MOD_DECIMAL,
+
+    // Concatenation
+    CONCAT_TEXT,
+    CONCAT_BYTE_ARRAY,
+
+    // Collection operations
+    CONCAT_LIST,
+
+    // Membership
+    IN_COLLECTION,
+    IN_VIRTUAL_LIST,
+    IN_VIRTUAL_SET,
+    IN_MAP,
+    IN_RANGE,
+
+    // Set/list/map operations
+    SUB_LIST,
+    SUB_SET,
+    UNION_SET,
+    INTERSECT_LIST,
+    INTERSECT_SET,
+    MERGE_MAP,
+}
+
+/// Comparison operators (used in cmpInfo on BinaryExpr).
+enum CmpOp : ubyte {
+    LT,
+    GT,
+    LE,
+    GE,
+}
+
+/// Comparison type discriminators (used in cmpInfo on BinaryExpr).
+enum CmpType : ubyte {
+    BOOLEAN,
+    INTEGER,
+    BIG_INTEGER,
+    DECIMAL,
+    TEXT,
+    BYTE_ARRAY,
+    ROWID,
+    ENTITY,
+    ENUM,
+}
+
+/// Database-level unary operators.
+enum DbUnaryOp : ubyte {
+    MINUS_INTEGER,
+    MINUS_BIG_INTEGER,
+    MINUS_DECIMAL,
+    NOT,
+}
+
+/// Database-level binary operators.
+enum DbBinaryOp : ubyte {
+    LT,
+    GT,
+    LE,
+    GE,
+    AND,
+    OR,
+    ADD_INTEGER,
+    ADD_BIG_INTEGER,
+    ADD_DECIMAL,
+    SUB_INTEGER,
+    SUB_BIG_INTEGER,
+    SUB_DECIMAL,
+    MUL_INTEGER,
+    MUL_BIG_INTEGER,
+    MUL_DECIMAL,
+    DIV_INTEGER,
+    DIV_BIG_INTEGER,
+    DIV_DECIMAL,
+    MOD_INTEGER,
+    MOD_BIG_INTEGER,
+    MOD_DECIMAL,
+    CONCAT,
+    IN,
+    NOT_IN,
+    EQ,
+    NE,
+    EQ_NULL,
+    NE_NULL,
+}

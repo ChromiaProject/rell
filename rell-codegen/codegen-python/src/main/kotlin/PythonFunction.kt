@@ -5,7 +5,7 @@
 package net.postchain.rell.codegen.python
 
 import net.postchain.rell.base.model.R_FunctionParam
-import net.postchain.rell.base.model.R_MountName
+import net.postchain.rell.base.model.MountName
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.deps.ClassName
@@ -16,7 +16,7 @@ import net.postchain.rell.codegen.util.rTypeToPythonType
 
 abstract class PythonFunction(
         protected val className: ClassName,
-        protected val mountName: R_MountName,
+        protected val mountName: MountName,
         protected val params: List<R_FunctionParam>,
         override val docSymbol: DocSymbol,
         protected val returnType: R_Type?,

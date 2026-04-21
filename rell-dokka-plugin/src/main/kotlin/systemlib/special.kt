@@ -11,7 +11,7 @@ import com.chromia.rell.dokka.model.IsFunction
 import com.chromia.rell.dokka.translators.RellSystemLibToDocumentableTranslator.NULL_DESCRIPTOR
 import net.postchain.rell.base.lmodel.L_NamespaceMember_SpecialFunction
 import net.postchain.rell.base.lmodel.L_TypeDefMember_SpecialConstructor
-import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.model.QualifiedName
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
@@ -41,7 +41,7 @@ fun existsAndEmptySpecialFunctions(f: L_NamespaceMember_SpecialFunction, sourceS
             visibility = mapOf(),
             receiver = null,
             isExpectActual = false,
-            type = TypeParameter(R_QualifiedName.of("boolean").toDRI(), "boolean"),
+            type = TypeParameter(QualifiedName.of("boolean").toDRI(), "boolean"),
             sourceSets = setOf(sourceSet),
             generics = listOf(DTypeParameter(
                     dri = dri,

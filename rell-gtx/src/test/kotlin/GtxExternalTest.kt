@@ -4,7 +4,7 @@
 
 package net.postchain.rell.gtx
 
-import net.postchain.rell.base.lib.LibBlockTransactionTest
+import net.postchain.rell.base.testutils.TestFixtures
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.gtx.testutils.BaseGtxTest
@@ -32,7 +32,7 @@ class GtxExternalTest: BaseGtxTest() {
         run {
             val t = RellCodeTester(tstCtx)
             t.chainId = 333
-            t.insert(LibBlockTransactionTest.BLOCK_INSERTS_333)
+            t.insert(TestFixtures.BLOCK_INSERTS_333)
             t.init()
         }
 
@@ -48,7 +48,7 @@ class GtxExternalTest: BaseGtxTest() {
         run {
             val t = RellCodeTester(tstCtx)
             t.chainId = 333
-            t.insert(LibBlockTransactionTest.BLOCK_INSERTS_333)
+            t.insert(TestFixtures.BLOCK_INSERTS_333)
             t.init()
         }
 
@@ -65,7 +65,7 @@ class GtxExternalTest: BaseGtxTest() {
             val t = RellCodeTester(tstCtx)
             t.def("@log entity user { name; }")
             t.chainId = 333
-            t.insert(LibBlockTransactionTest.BLOCK_INSERTS_333)
+            t.insert(TestFixtures.BLOCK_INSERTS_333)
             t.insert("c333.user", "name,transaction", "15,'Bob',444")
             t.init()
         }

@@ -14,7 +14,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvNull
 import net.postchain.gtx.GtxBuilder
-import net.postchain.rell.base.utils.PostchainGtvUtils
+import net.postchain.rell.base.runtime.PostchainGtvUtils
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 

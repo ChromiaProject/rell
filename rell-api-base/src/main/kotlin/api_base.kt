@@ -15,9 +15,11 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_LangVersion
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.R_StructDefinition
+import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.runtime.GtvToRtDefaultValueEvaluator
+import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_GtvModuleArgsSource
 import net.postchain.rell.base.utils.*
@@ -65,14 +67,14 @@ public object RellApiCompile {
         sourceDir: File,
         appModules: List<String>?,
         testModules: List<String> = immListOf(),
-    ): R_App {
+    ): RR_App {
         val cSourceDir = C_SourceDir.diskDir(sourceDir)
-        val rAppModules = appModules?.mapToImmList { R_ModuleName.of(it) }
-        val rTestModules = testModules.mapToImmList { R_ModuleName.of(it) }
+        val rAppModules = appModules?.mapToImmList { ModuleName.of(it) }
+        val rTestModules = testModules.mapToImmList { ModuleName.of(it) }
 
         val options = RellApiBaseInternal.makeCompilerOptions(config)
-        val (_, rApp) = RellApiBaseInternal.compileApp(config, options, cSourceDir, rAppModules, rTestModules)
-        return rApp
+        val (_, rrApp) = RellApiBaseInternal.compileApp(config, options, cSourceDir, rAppModules, rTestModules)
+        return rrApp
     }
 
     /**
@@ -85,7 +87,7 @@ public object RellApiCompile {
         mainModule: String?,
     ): Gtv {
         val cSourceDir = C_SourceDir.diskDir(sourceDir)
-        val rMainModule = mainModule?.let { listOf(R_ModuleName.of(it)) }
+        val rMainModule = mainModule?.let { listOf(ModuleName.of(it)) }
         return RellApiBaseInternal.compileGtv(config, cSourceDir, rMainModule)
     }
 
@@ -95,7 +97,7 @@ public object RellApiCompile {
         /** Language version for backward compatibility (may affect some aspects of compilation). */
         public val version: R_LangVersion,
         /** Module arguments. */
-        public val moduleArgs: ImmMap<R_ModuleName, Gtv>,
+        public val moduleArgs: ImmMap<ModuleName, Gtv>,
         /** Submodules of all test modules are compiled in addition to the explicitly specified test modules, when `true`. */
         public val includeTestSubModules: Boolean,
         /** Automatically includes all submodules in the compilation scope **/
@@ -155,14 +157,14 @@ public object RellApiCompile {
 
             /** @see [Config.moduleArgs] */
             public fun moduleArgs(v: Map<String, Map<String, Gtv>>): Builder = moduleArgs0(
-                v.map { R_ModuleName.of(it.key) to GtvFactory.gtv(it.value) }.toImmMap()
+                v.map { ModuleName.of(it.key) to GtvFactory.gtv(it.value) }.toImmMap()
             )
 
             /** @see [Config.moduleArgs] */
             public fun moduleArgs(vararg v: Pair<String, Map<String, Gtv>>): Builder = moduleArgs(v.toMap())
 
             /** @see [Config.moduleArgs] */
-            public fun moduleArgs0(v: Map<R_ModuleName, Gtv>): Builder = apply { moduleArgs = v.toImmMap() }
+            public fun moduleArgs0(v: Map<ModuleName, Gtv>): Builder = apply { moduleArgs = v.toImmMap() }
 
             /** @see [Config.includeTestSubModules] */
             public fun includeTestSubModules(v: Boolean): Builder = apply { includeTestSubModules = v }
@@ -218,9 +220,9 @@ public object RellApiBaseInternal {
         config: RellApiCompile.Config,
         options: C_CompilerOptions,
         sourceDir: C_SourceDir,
-        appModules: List<R_ModuleName>?,
-        testModules: List<R_ModuleName>,
-    ): Pair<RellApiCompilationResult, R_App> {
+        appModules: List<ModuleName>?,
+        testModules: List<ModuleName>,
+    ): Pair<RellApiCompilationResult, RR_App> {
         return wrapCompilation(config) {
             compileApp0(config, options, sourceDir, appModules, testModules)
         }
@@ -230,8 +232,8 @@ public object RellApiBaseInternal {
         config: RellApiCompile.Config,
         options: C_CompilerOptions,
         sourceDir: C_SourceDir,
-        appModules: List<R_ModuleName>?,
-        testModules: List<R_ModuleName>,
+        appModules: List<ModuleName>?,
+        testModules: List<ModuleName>,
     ): RellApiCompilationResult {
         val modSel = makeCompilerModuleSelection(config, appModules, testModules)
         val cRes = C_Compiler.compile(sourceDir, modSel, options)
@@ -247,7 +249,7 @@ public object RellApiBaseInternal {
     public fun compileGtv(
         config: RellApiCompile.Config,
         sourceDir: C_SourceDir,
-        modules: List<R_ModuleName>?,
+        modules: List<ModuleName>?,
     ): Gtv {
         val (gtv, _) = compileGtvEx(config, sourceDir, modules)
         return gtv
@@ -256,24 +258,24 @@ public object RellApiBaseInternal {
     public fun compileGtvEx(
         config: RellApiCompile.Config,
         sourceDir: C_SourceDir,
-        modules: List<R_ModuleName>?,
+        modules: List<ModuleName>?,
     ): Pair<Gtv, RellGtxModuleApp> {
         val options = makeCompilerOptions(config)
-        val (apiRes, rApp) = compileApp(config, options, sourceDir, modules, immListOf())
+        val (apiRes, rrApp) = compileApp(config, options, sourceDir, modules, immListOf())
 
-        val mainModules = modules ?: RellApiBaseUtils.getMainModules(rApp)
+        val mainModules = modules ?: RellApiBaseUtils.getMainModules(rrApp)
 
         val gtv = catchCommonError {
             compileGtv0(config, sourceDir, mainModules, apiRes.cRes.files)
         }
 
-        return gtv to RellGtxModuleApp(rApp, options)
+        return gtv to RellGtxModuleApp(rrApp, options, apiRes.cRes.compilationSysFns)
     }
 
     internal fun compileGtv0(
         config: RellApiCompile.Config,
         sourceDir: C_SourceDir,
-        modules: List<R_ModuleName>,
+        modules: List<ModuleName>,
         files: List<C_SourcePath>,
     ): Gtv {
         val sources = RellConfigGen.getNormalizedModuleFiles(sourceDir, files)
@@ -312,8 +314,8 @@ public object RellApiBaseInternal {
 
     public fun makeCompilerModuleSelection(
         config: RellApiCompile.Config,
-        appModules: List<R_ModuleName>?,
-        testModules: List<R_ModuleName>,
+        appModules: List<ModuleName>?,
+        testModules: List<ModuleName>,
     ): C_CompilerModuleSelection {
         return C_CompilerModuleSelection(
             appModules?.toImmList(),
@@ -326,7 +328,7 @@ public object RellApiBaseInternal {
     private fun validateAllModuleArgs(
         app: R_App,
         compilerOptions: C_CompilerOptions,
-        actualArgs: Map<R_ModuleName, Gtv>,
+        actualArgs: Map<ModuleName, Gtv>,
         missingError: Boolean,
     ) {
         val expectedArgs = app.moduleMap
@@ -355,7 +357,7 @@ public object RellApiBaseInternal {
     }
 
     private fun validateOneModuleArgs(
-        module: R_ModuleName,
+        module: ModuleName,
         expectedStruct: R_StructDefinition,
         actualGtv: Gtv,
         compilerOptions: C_CompilerOptions,
@@ -380,12 +382,12 @@ public object RellApiBaseInternal {
     private fun wrapCompilation(
         config: RellApiCompile.Config,
         code: () -> RellApiCompilationResult,
-    ): Pair<RellApiCompilationResult, R_App> {
+    ): Pair<RellApiCompilationResult, RR_App> {
         val res = catchCommonError {
             code()
         }
-        val rApp = RellApiBaseUtils.handleCompilationResult(config.cliEnv, res.cRes, config.quiet)
-        return res to rApp
+        val rrApp = RellApiBaseUtils.handleCompilationResult(config.cliEnv, res.cRes, config.quiet)
+        return res to rrApp
     }
 
     private fun checkVersion(config: RellApiCompile.Config) {

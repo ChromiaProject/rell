@@ -6,7 +6,7 @@ package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.type.Rt_UnitValue
-import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.model.Name
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.test.Test
@@ -23,8 +23,8 @@ class LTypeTest: BaseLTest() {
 
         val integerDef = mod.getTypeDef("integer")
         val textDef = mod.getTypeDef("text")
-        assertEquals(R_Name.of("integer"), integerDef.simpleName)
-        assertEquals(R_Name.of("text"), textDef.simpleName)
+        assertEquals(Name.of("integer"), integerDef.simpleName)
+        assertEquals(Name.of("text"), textDef.simpleName)
 
         val integerType = integerDef.getMType()
         val textType = textDef.getMType()

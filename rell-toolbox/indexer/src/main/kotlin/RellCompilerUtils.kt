@@ -23,8 +23,7 @@ class RellCompilerUtils {
         }
 
         val compilerSourcePath = IdeDirApi.parseSourcePath(relativePath)
-        check(compilerSourcePath != null) { "Could not create source path for file: $uri" }
-        return compilerSourcePath
+        return checkNotNull(compilerSourcePath) { "Could not create source path for file: $uri" }
     }
 
     fun createRellCompilerFilePath(compilerSourcePath: C_SourcePath): RellCompilerFilePath {

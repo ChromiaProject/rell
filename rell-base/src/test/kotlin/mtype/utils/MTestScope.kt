@@ -6,6 +6,7 @@ package net.postchain.rell.base.mtype.utils
 
 import net.postchain.rell.base.mtype.*
 import net.postchain.rell.base.utils.ImmMap
+import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmMap
 
@@ -239,7 +240,7 @@ private object MTestTypeDef_Cap: MTestTypeDef() {
     override fun genericType() = null
 
     override fun mType(args: List<M_TypeSet>): M_Type {
-        check(args.size == 1)
+        checkEquals(args.size, 1)
         return args[0].captureType()
     }
 

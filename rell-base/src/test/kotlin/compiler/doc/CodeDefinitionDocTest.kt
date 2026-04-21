@@ -217,7 +217,8 @@ class CodeDefinitionDocTest: BaseCodeDocTest() {
         chkDoc("val C = true;", ":C", "CONSTANT|:C", "<val> C: [boolean] = <true>")
         chkDoc("val C = 'Hello';", ":C", "CONSTANT|:C", "<val> C: [text] = \"Hello\"")
         chkDoc("val C: integer = 123;", ":C", "CONSTANT|:C", "<val> C: [integer] = 123")
-        chkDoc("val C = 123 + 456;", ":C", "CONSTANT|:C", "<val> C: [integer] = 579")
+        // Without compile-time constant folding, expression value is not shown in doc.
+        chkDoc("val C = 123 + 456;", ":C", "CONSTANT|:C", "<val> C: [integer]")
         chkDoc("val C = min(123, 456);", ":C", "CONSTANT|:C", "<val> C: [integer]")
     }
 

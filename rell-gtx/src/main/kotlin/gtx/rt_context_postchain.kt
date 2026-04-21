@@ -11,6 +11,7 @@ import net.postchain.gtx.SnapshotContext
 import net.postchain.gtx.data.OpData
 import net.postchain.rell.base.lib.Lib_OpContext
 import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.runtime.Rt_Interpreter
 import net.postchain.rell.base.runtime.Rt_OpContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.Bytes
@@ -55,7 +56,7 @@ class Rt_PostchainOpContext(
     private val eCtx: BlockEContext? = null,
     private val snapshotContext: SnapshotContext? = null,
     private val objectSnapshotIds: ImmMap<String, Long> = immMapOf(),
-): Rt_OpContext() {
+): Rt_OpContext {
     override fun exists() = true
     override fun lastBlockTime() = lastBlockTime
     override fun transactionIid() = transactionIid
@@ -64,18 +65,16 @@ class Rt_PostchainOpContext(
     override fun isSigner(pubKey: Bytes) = pubKey in signers
     override fun signers() = signers
 
-    override fun allOperations(): List<Rt_Value> {
-        return allOperations.map { op -> opToRtValue(op) }
-    }
+    override fun allOperations(interpreter: Rt_Interpreter): List<Rt_Value> =
+        allOperations.map { op -> opToRtValue(interpreter, op) }
 
-    override fun currentOperation(): Rt_Value {
+    override fun currentOperation(interpreter: Rt_Interpreter): Rt_Value {
         val op = allOperations[opIndex]
-        return opToRtValue(op)
+        return opToRtValue(interpreter, op)
     }
 
-    private fun opToRtValue(op: OpData): Rt_Value {
-        return Lib_OpContext.gtxTransactionStructValue(op.opName, op.args.asList())
-    }
+    private fun opToRtValue(interpreter: Rt_Interpreter, op: OpData): Rt_Value =
+        Lib_OpContext.gtxTransactionStructValue(interpreter, op.opName, op.args.asList())
 
     override fun emitEvent(type: String, data: Gtv) {
         txCtx.emitEvent(type, data)

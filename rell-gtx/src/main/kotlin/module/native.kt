@@ -7,9 +7,9 @@ package net.postchain.rell.module
 import net.postchain.common.BlockchainRid
 import net.postchain.gtv.Gtv
 import net.postchain.rell.api.nativ.RellNativeEnvironment
-import net.postchain.rell.base.model.R_FullName
-import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.model.FullName
+import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.model.QualifiedName
 import net.postchain.rell.base.runtime.Rt_NativeFunction
 import net.postchain.rell.base.runtime.Rt_NativeFunctionHeader
 import net.postchain.rell.base.runtime.Rt_NativeProvider
@@ -32,10 +32,10 @@ internal object PostchainNativeUtils {
         return PostchainNativeModuleProvider(funs)
     }
 
-    private fun getNativeFuns(env: RellNativeEnvironment, nativeConfig: Gtv?): ImmMap<R_FullName, Rt_NativeFunction> {
+    private fun getNativeFuns(env: RellNativeEnvironment, nativeConfig: Gtv?): ImmMap<FullName, Rt_NativeFunction> {
         nativeConfig ?: return immMapOf()
         return nativeConfig.asDict().map {
-                val moduleName = R_ModuleName.of(it.key)
+                val moduleName = ModuleName.of(it.key)
                 val className = it.value.asString()
                 getNativeModuleFuns(env, moduleName, className)
             }
@@ -45,15 +45,15 @@ internal object PostchainNativeUtils {
 
     private fun getNativeModuleFuns(
         env: RellNativeEnvironment,
-        moduleName: R_ModuleName,
+        moduleName: ModuleName,
         className: String,
-    ): ImmMap<R_FullName, Rt_NativeFunction> {
+    ): ImmMap<FullName, Rt_NativeFunction> {
         val cls = Class.forName(className).kotlin
         val obj = getNativeFunsForClass(env, cls)
         return cls.memberFunctions
             .filter { it.visibility == KVisibility.PUBLIC }
             .associateToImmMap {
-                val fullName = R_FullName(moduleName, R_QualifiedName.of(it.name))
+                val fullName = FullName(moduleName, QualifiedName.of(it.name))
                 fullName to getNativeFun(obj, it)
             }
     }
@@ -107,7 +107,7 @@ private class ReflectNativeFunction(
 }
 
 private class PostchainNativeModuleProvider(
-    private val funs: ImmMap<R_FullName, Rt_NativeFunction>,
+    private val funs: ImmMap<FullName, Rt_NativeFunction>,
 ): Rt_NativeProvider {
-    override fun getFunction(name: R_FullName) = funs[name]
+    override fun getFunction(name: FullName) = funs[name]
 }

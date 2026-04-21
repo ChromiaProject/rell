@@ -25,12 +25,12 @@ artifacts {
 }
 
 dependencies {
-    implementation(projects.rellBase)
+    api(projects.rellBase)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(kotlin("test-junit5"))
     testImplementation(libs.log4j.slf4j2.impl)
-    testImplementation(project(":rell-base", "testArtifacts"))
+    testImplementation(projects.rellBase.testUtils)
 }
 
 publishing.publications.named<MavenPublication>("mavenJava") {

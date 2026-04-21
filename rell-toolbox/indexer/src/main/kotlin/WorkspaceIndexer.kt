@@ -8,7 +8,7 @@ import com.chromia.cli.model.ChromiaModel
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.formatter.FormatterOptions
@@ -292,8 +292,8 @@ class WorkspaceIndexer(
         return filesToUpdate.toSet()
     }
 
-    private fun calculateImplicitImports(resourceMap: Map<URI, Resource>): Map<R_ModuleName, Collection<R_ModuleName>> {
-        val implicitImports: MutableMap<R_ModuleName, Collection<R_ModuleName>> = mutableMapOf()
+    private fun calculateImplicitImports(resourceMap: Map<URI, Resource>): Map<ModuleName, Collection<ModuleName>> {
+        val implicitImports: MutableMap<ModuleName, Collection<ModuleName>> = mutableMapOf()
         resourceMap.forEach { (fileUri, value) ->
             val moduleName = value.rName
             if (fileUri.toString().endsWith("/module.rell") && moduleName != null) {

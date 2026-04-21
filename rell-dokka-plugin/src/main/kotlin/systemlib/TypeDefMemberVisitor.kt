@@ -16,6 +16,7 @@ import com.chromia.rell.dokka.translators.RellSystemLibToDocumentableTranslator.
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.lmodel.*
 import net.postchain.rell.base.mtype.M_ParamArity
+import net.postchain.rell.base.runtime.Rt_Value
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
@@ -134,5 +135,5 @@ class TypeDefMemberVisitor(
         = makeDProperty(sourceSet, parent, docSymbol, simpleName.str, property.type)
 
     private fun L_TypeDefMember_Constant.visit(parent: DRI)
-        = makeDProperty(sourceSet, parent, docSymbol, constant.simpleName.str, constant.type, DefaultValue(mapOf(sourceSet to constant.value.toExpression())))
+        = makeDProperty(sourceSet, parent, docSymbol, constant.simpleName.str, constant.type, DefaultValue(mapOf(sourceSet to (constant.value as Rt_Value).toExpression())))
 }

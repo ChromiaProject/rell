@@ -77,77 +77,77 @@ class LibRangeTest: BaseRellTest() {
     }
 
     @Test fun testInBoundaryCases() {
-        val M = "9223372036854775807" // 2^63-1
+        val m = "9223372036854775807" // 2^63-1
 
-        var R = "range(-$M-1,$M)"
-        chk("(-$M-1) in $R", "boolean[true]")
-        chk("0 in $R", "boolean[true]")
-        chk("($M-1) in $R", "boolean[true]")
-        chk("$M in $R", "boolean[false]")
+        var r = "range(-$m-1,$m)"
+        chk("(-$m-1) in $r", "boolean[true]")
+        chk("0 in $r", "boolean[true]")
+        chk("($m-1) in $r", "boolean[true]")
+        chk("$m in $r", "boolean[false]")
 
-        R = "range(-$M,$M)"
-        chk("(-$M-1) in $R", "boolean[false]")
-        chk("-$M in $R", "boolean[true]")
-        chk("0 in $R", "boolean[true]")
-        chk("($M-1) in $R", "boolean[true]")
-        chk("$M in $R", "boolean[false]")
+        r = "range(-$m,$m)"
+        chk("(-$m-1) in $r", "boolean[false]")
+        chk("-$m in $r", "boolean[true]")
+        chk("0 in $r", "boolean[true]")
+        chk("($m-1) in $r", "boolean[true]")
+        chk("$m in $r", "boolean[false]")
 
-        R = "range($M,-$M-1,-1)"
-        chk("(-$M-1) in $R", "boolean[false]")
-        chk("-$M in $R", "boolean[true]")
-        chk("0 in $R", "boolean[true]")
-        chk("$M in $R", "boolean[true]")
+        r = "range($m,-$m-1,-1)"
+        chk("(-$m-1) in $r", "boolean[false]")
+        chk("-$m in $r", "boolean[true]")
+        chk("0 in $r", "boolean[true]")
+        chk("$m in $r", "boolean[true]")
 
-        R = "range($M-1,-$M-1,-1)"
-        chk("(-$M-1) in $R", "boolean[false]")
-        chk("-$M in $R", "boolean[true]")
-        chk("0 in $R", "boolean[true]")
-        chk("($M-1) in $R", "boolean[true]")
-        chk("$M in $R", "boolean[false]")
+        r = "range($m-1,-$m-1,-1)"
+        chk("(-$m-1) in $r", "boolean[false]")
+        chk("-$m in $r", "boolean[true]")
+        chk("0 in $r", "boolean[true]")
+        chk("($m-1) in $r", "boolean[true]")
+        chk("$m in $r", "boolean[false]")
 
-        R = "range(-$M-1,$M,$M)"
-        chk("(-$M-1) in $R", "boolean[true]")
-        chk("-$M in $R", "boolean[false]")
-        chk("-2 in $R", "boolean[false]")
-        chk("-1 in $R", "boolean[true]")
-        chk("0 in $R", "boolean[false]")
-        chk("1 in $R", "boolean[false]")
-        chk("($M-2) in $R", "boolean[false]")
-        chk("($M-1) in $R", "boolean[true]")
-        chk("$M in $R", "boolean[false]")
+        r = "range(-$m-1,$m,$m)"
+        chk("(-$m-1) in $r", "boolean[true]")
+        chk("-$m in $r", "boolean[false]")
+        chk("-2 in $r", "boolean[false]")
+        chk("-1 in $r", "boolean[true]")
+        chk("0 in $r", "boolean[false]")
+        chk("1 in $r", "boolean[false]")
+        chk("($m-2) in $r", "boolean[false]")
+        chk("($m-1) in $r", "boolean[true]")
+        chk("$m in $r", "boolean[false]")
 
-        R = "range(-$M,$M,$M-1)"
-        chk("(-$M-1) in $R", "boolean[false]")
-        chk("-$M in $R", "boolean[true]")
-        chk("-2 in $R", "boolean[false]")
-        chk("-1 in $R", "boolean[true]")
-        chk("0 in $R", "boolean[false]")
-        chk("1 in $R", "boolean[false]")
-        chk("($M-3) in $R", "boolean[false]")
-        chk("($M-2) in $R", "boolean[true]")
-        chk("($M-1) in $R", "boolean[false]")
-        chk("$M in $R", "boolean[false]")
+        r = "range(-$m,$m,$m-1)"
+        chk("(-$m-1) in $r", "boolean[false]")
+        chk("-$m in $r", "boolean[true]")
+        chk("-2 in $r", "boolean[false]")
+        chk("-1 in $r", "boolean[true]")
+        chk("0 in $r", "boolean[false]")
+        chk("1 in $r", "boolean[false]")
+        chk("($m-3) in $r", "boolean[false]")
+        chk("($m-2) in $r", "boolean[true]")
+        chk("($m-1) in $r", "boolean[false]")
+        chk("$m in $r", "boolean[false]")
 
-        R = "range($M,-$M-1,-$M-1)"
-        chk("(-$M-1) in $R", "boolean[false]")
-        chk("-$M in $R", "boolean[false]")
-        chk("-2 in $R", "boolean[false]")
-        chk("-1 in $R", "boolean[true]")
-        chk("0 in $R", "boolean[false]")
-        chk("1 in $R", "boolean[false]")
-        chk("($M-1) in $R", "boolean[false]")
-        chk("$M in $R", "boolean[true]")
+        r = "range($m,-$m-1,-$m-1)"
+        chk("(-$m-1) in $r", "boolean[false]")
+        chk("-$m in $r", "boolean[false]")
+        chk("-2 in $r", "boolean[false]")
+        chk("-1 in $r", "boolean[true]")
+        chk("0 in $r", "boolean[false]")
+        chk("1 in $r", "boolean[false]")
+        chk("($m-1) in $r", "boolean[false]")
+        chk("$m in $r", "boolean[true]")
 
-        R = "range($M,-$M-1,-$M)"
-        chk("(-$M-1) in $R", "boolean[false]")
-        chk("-$M in $R", "boolean[true]")
-        chk("(-$M+1) in $R", "boolean[false]")
-        chk("-1 in $R", "boolean[false]")
-        chk("0 in $R", "boolean[true]")
-        chk("1 in $R", "boolean[false]")
-        chk("($M-2) in $R", "boolean[false]")
-        chk("($M-1) in $R", "boolean[false]")
-        chk("$M in $R", "boolean[true]")
+        r = "range($m,-$m-1,-$m)"
+        chk("(-$m-1) in $r", "boolean[false]")
+        chk("-$m in $r", "boolean[true]")
+        chk("(-$m+1) in $r", "boolean[false]")
+        chk("-1 in $r", "boolean[false]")
+        chk("0 in $r", "boolean[true]")
+        chk("1 in $r", "boolean[false]")
+        chk("($m-2) in $r", "boolean[false]")
+        chk("($m-1) in $r", "boolean[false]")
+        chk("$m in $r", "boolean[true]")
     }
 
     /*@Test*/ fun testReversed() {

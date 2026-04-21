@@ -7,6 +7,7 @@ package net.postchain.rell.tools.runcfg
 import net.postchain.rell.api.base.RellCliBasicException
 import net.postchain.rell.base.utils.GeneralDir
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.checkNull
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -36,8 +37,8 @@ class RellXmlParser(private val preserveWhitespace: Boolean = false) {
         val docNode = makeDomNode(doc)
 
         check(docNode.attrs.isEmpty()) { "Document has attributes: ${docNode.attrs}" }
-        check(docNode.elems.size == 1) { "Document has ${docNode.elems.size} elements" }
-        check(docNode.text == null) { "Document has text" }
+        checkEquals(docNode.elems.size, 1) { "Document has ${docNode.elems.size} elements" }
+        checkNull(docNode.text) { "Document has text" }
 
         val res = convertElement(file, treePath, docNode.elems[0])
         return res
@@ -161,7 +162,7 @@ class RellXmlElement(
     val tag: String,
     val attrs: Map<String, String>,
     val elems: List<RellXmlElement>,
-    val text: String?
+    val text: String?,
 ) {
     fun parentTreePath() = treePath.subList(0, max(0, treePath.size - 1))
     fun attrs() = RellXmlAttrsParser(this)
@@ -190,15 +191,15 @@ class RellXmlElement(
         check(elems.isEmpty()) { "must have no nested elements" }
     }
 
-    fun check(b: Boolean, msgCode: () -> String) {
+    inline fun check(b: Boolean, msgCode: () -> String) {
         if (!b) {
             val msg = msgCode()
             throw error(msg)
         }
     }
 
-    fun <T> checkNotNull(v: T?, msgCode: () -> String): T {
-        check(v != null, msgCode)
+    inline fun <T> checkNotNull(v: T?, msgCode: () -> String): T {
+        this.check(v != null, msgCode)
         return v!!
     }
 
@@ -209,14 +210,6 @@ class RellXmlElement(
         val path = if (parentPath.isEmpty()) "document root" else "path: " + parentPath.joinToString(" -> ")
         val fullMsg = "$file: element '$tag': $msg [$path]"
         throw RellCliBasicException(fullMsg)
-    }
-
-    fun printTree(lev: Int = 0) {
-        val text = if (text == null) "" else "[${text.replace('\n', ' ')}]"
-        println("   ".repeat(lev) + tag + " " + attrs + " " + text)
-        for (sub in elems) {
-            sub.printTree(lev + 1)
-        }
     }
 }
 

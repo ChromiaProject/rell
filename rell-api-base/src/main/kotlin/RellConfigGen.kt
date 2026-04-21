@@ -12,17 +12,18 @@ import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
-import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_LangVersion
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.model.rr.RR_App
+import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.utils.*
 
 public class RellConfigGen(
-    private val sourceDir: C_SourceDir,
-    private val sourceVersion: R_LangVersion,
-    private val modules: List<R_ModuleName>,
-    private val moduleFiles: List<C_SourcePath>,
-    private val app: R_App,
+        private val sourceDir: C_SourceDir,
+        private val sourceVersion: R_LangVersion,
+        private val modules: List<ModuleName>,
+        private val moduleFiles: List<C_SourcePath>,
+        private val rrApp: RR_App,
 ) {
     public fun makeConfig(templateXml: String?): Gtv {
         val template = getConfigTemplate(templateXml)
@@ -88,10 +89,10 @@ public class RellConfigGen(
         }
 
         public fun create(
-            cliEnv: RellCliEnv,
-            sourceDir: C_SourceDir,
-            modules: List<R_ModuleName>,
-            sourceVersion: R_LangVersion = RellVersions.VERSION,
+                cliEnv: RellCliEnv,
+                sourceDir: C_SourceDir,
+                modules: List<ModuleName>,
+                sourceVersion: R_LangVersion = RellVersions.VERSION,
         ): RellConfigGen {
             val config = RellApiCompile.Config.Builder()
                 .cliEnv(cliEnv)
@@ -100,8 +101,8 @@ public class RellConfigGen(
                 .build()
 
             val options = RellApiBaseInternal.makeCompilerOptions(config)
-            val (apiRes, rApp) = RellApiBaseInternal.compileApp(config, options, sourceDir, modules, immListOf())
-            return RellConfigGen(sourceDir, sourceVersion, modules, apiRes.cRes.files, rApp)
+            val (apiRes, rrApp) = RellApiBaseInternal.compileApp(config, options, sourceDir, modules, immListOf())
+            return RellConfigGen(sourceDir, sourceVersion, modules, apiRes.cRes.files, rrApp)
         }
 
         public fun configToText(gtvConfig: Gtv): String {
@@ -162,18 +163,15 @@ public class RellConfigGen(
         }
 
         private fun asDictNode(node: GtvNode): DictGtvNode {
-            return node as? DictGtvNode ?: throw nodeTypeErr(node, GtvType.DICT)
+            return node as? DictGtvNode ?: nodeTypeErr(node, GtvType.DICT)
         }
 
         private fun asArrayNode(node: GtvNode): ArrayGtvNode {
-            return node as? ArrayGtvNode ?: throw nodeTypeErr(node, GtvType.ARRAY)
+            return node as? ArrayGtvNode ?: nodeTypeErr(node, GtvType.ARRAY)
         }
 
-        private fun nodeTypeErr(node: GtvNode, expected: GtvType): RuntimeException {
-            val pathStr = node.path ?: "<root>"
-            val type = node.type()
-            return RellCliBasicException("Found $type instead of $expected ($pathStr)")
-        }
+        private fun nodeTypeErr(node: GtvNode, expected: GtvType): Nothing =
+            throw RellCliBasicException("Found ${node.type()} instead of $expected (${node.path ?: "<root>"})")
     }
 }
 

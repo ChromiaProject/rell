@@ -16,12 +16,12 @@ import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_Module
 import net.postchain.rell.base.lmodel.L_TypeDefMembers
-import net.postchain.rell.base.model.R_CtErrorType
-import net.postchain.rell.base.model.R_QualifiedName
-import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_MemberCalculator
 import net.postchain.rell.base.model.expr.R_MemberCalculator_Error
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.rtValueToRRConstant
+import net.postchain.rell.base.runtime.simple
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.doc.DocException
@@ -52,7 +52,7 @@ abstract class BaseLTest {
     }
 
     private fun chkTypeMems0(mod: L_Module, typeName: String, all: Boolean, expected: List<String>) {
-        val rTypeName = R_QualifiedName.of(typeName)
+        val rTypeName = QualifiedName.of(typeName)
         val typeDef = mod.getTypeDefOrNull(rTypeName)
         val typeExt = mod.getTypeExtensionOrNull(rTypeName)
         val members: L_TypeDefMembers = when {
@@ -161,7 +161,9 @@ abstract class BaseLTest {
         }
 
         fun makeNsProp(value: Rt_Value = Rt_IntValue.get(123)): C_NamespaceProperty {
-            return C_NamespaceProperty_RtValue(value, value.type(), null)
+            val rType: R_Type = if (value === Rt_UnitValue) R_UnitType else R_IntegerType
+            val rrValue = lazy { rtValueToRRConstant(rType, value) }
+            return C_NamespaceProperty_RtValue(rrValue, rType, null)
         }
 
         fun makeTypeProp(pure: Boolean = false): C_SysFunctionBody {

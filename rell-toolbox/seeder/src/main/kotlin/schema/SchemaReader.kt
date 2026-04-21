@@ -5,8 +5,8 @@
 package net.postchain.rell.toolbox.seeder.schema
 
 import net.postchain.rell.api.base.RellApiCompile
-import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_LangVersion
+import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.utils.RellVersions
 import java.io.File
 
@@ -22,7 +22,7 @@ class SchemaReader {
     }
 
     private fun compileApp(sourceDir: File, appModules: List<String>?, rellVersion: R_LangVersion, isLibrary: Boolean):
-        R_App {
+        RR_App {
         val conf = RellApiCompile.Config.Builder()
             .moduleArgsMissingError(false)
             .mountConflictError(true)
@@ -41,8 +41,8 @@ class SchemaReader {
         }
     }
 
-    private fun buildSchema(app: R_App): RellSchema {
-        val entities = app.sqlDefs.topologicalEntities.map(::Entity)
+    private fun buildSchema(app: RR_App): RellSchema {
+        val entities = app.sqlDefs.topologicalEntities.map { Entity(it, app.allEntities, app.allEnums) }
         return RellSchema(entities)
     }
 }

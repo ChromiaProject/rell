@@ -14,7 +14,7 @@ import net.postchain.rell.codegen.util.GeneratedAnnotation
 class KotlinEnumeration(val className: ClassName, enum: R_EnumDefinition) : Enumeration {
     private val name = className.rellName
     override val moduleName = className.module
-    private val enumValues = enum.values()
+    private val enumAttrs = enum.attrs
     override val docSymbol = enum.docSymbol
 
     override val imports = listOf(
@@ -38,6 +38,6 @@ class KotlinEnumeration(val className: ClassName, enum: R_EnumDefinition) : Enum
     """.trimMargin()
 
     private fun formatEnumValues(): String {
-        return "\t${enumValues.joinToString(",\n\t") { it.asEnum().name }}"
+        return "\t${enumAttrs.joinToString(",\n\t") { it.name }}"
     }
 }

@@ -5,7 +5,7 @@
 package net.postchain.rell.toolbox.lsp.completion
 
 import com.google.common.collect.Multimap
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeCompletionParam
@@ -159,7 +159,7 @@ class CompletionItemFactory {
         }
     }
 
-    fun createAvailableModuleCompletion(moduleName: R_ModuleName?): List<CompletionItem> = listOf(
+    fun createAvailableModuleCompletion(moduleName: ModuleName?): List<CompletionItem> = listOf(
         CompletionItem().apply {
             label = "import $moduleName.*;"
             labelDetails = CompletionItemLabelDetails().apply {

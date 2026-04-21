@@ -120,12 +120,14 @@ internal class RellModuleVisitor(
                 isExpectActual = false,
                 sourceSets = setOf(sourceSet),
                 sources = RellDocumentableSource.create(this, sourceSet).toSourceSetDependent(),
-                type = getTypeByReflection().toBound(),
+                type = bodyGetter.get().type.toBound(),
                 expectPresentInSet = null,
                 documentation = docSymbol.toDocumentationNode().toSourceSetDependent(),
-                extra = PropertyContainer.withAll(
-                        DefaultValue(ComplexExpression(toMetaGtvByReflection()["value"].toString()).toSourceSetDependent())
-                )
+                extra = getValueGtv()?.let { valueGtv ->
+                    PropertyContainer.withAll(
+                        DefaultValue(ComplexExpression(valueGtv.toString()).toSourceSetDependent())
+                    )
+                } ?: PropertyContainer.empty()
         )
     }
 
@@ -225,12 +227,12 @@ internal class RellModuleVisitor(
                 receiver = null,
                 extra = PropertyContainer.withAll(
                         when (keyIndexKind) {
-                            R_KeyIndexKind.KEY -> IsKey
-                            R_KeyIndexKind.INDEX -> IsIndex
+                            KeyIndexKind.KEY -> IsKey
+                            KeyIndexKind.INDEX -> IsIndex
                             else -> null
                         },
                         IsVar.takeIf { mutable },
-                        expr?.getValueByReflection()
+                        expr?.getValue()
                                 ?.let { DefaultValue(it.toExpression().toSourceSetDependent()) }
                 )
         )
@@ -288,7 +290,7 @@ internal class RellModuleVisitor(
 
     private fun R_RoutineDefinition.visit(vararg extraProperty: ExtraProperty<DFunction>?): DFunction {
         val dri = DRI.from(this)
-        val params = (if (this is R_FunctionDefinition) getParamsByReflection() else params()) // Temporary hack due to bug in rell
+        val params = (if (this is R_FunctionDefinition) fnBase.getHeader().params else params()) // Temporary hack due to bug in rell
                 .mapIndexed { index, param -> param.visit(dri, index) }
         return DFunction(
                 dri = dri,
@@ -300,7 +302,7 @@ internal class RellModuleVisitor(
                 visibility = mapOf(),
                 receiver = null,
                 isExpectActual = false,
-                type = getTypeByReflection().toBound(),
+                type = getType().toBound(),
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
                 sources = RellDocumentableSource.create(this, sourceSet).toSourceSetDependent(),
@@ -314,12 +316,12 @@ internal class RellModuleVisitor(
                 packageName = defName.toPackageName(),
                 callable = Callable.from(
                         defName.simpleName,
-                        fnBase.getHeaderByReflection().params
+                    fnBase.getHeader().params
                 )
         )
         val targetDri = rellAnalysis.findFunctionReference(targetAppLevelName) ?: return null
         if (dri == targetDri) return null
-        val params = fnBase.getHeaderByReflection().params.mapIndexed { index, param -> param.visit(dri, index) }
+        val params = fnBase.getHeader().params.mapIndexed { index, param -> param.visit(dri, index) }
         return DFunction(
                 dri = dri,
                 name = defName.simpleName,
@@ -330,7 +332,7 @@ internal class RellModuleVisitor(
                 visibility = mapOf(),
                 receiver = null,
                 isExpectActual = false,
-                type = fnBase.getHeaderByReflection().type.toBound(),
+                type = fnBase.getHeader().type.toBound(),
                 sourceSets = setOf(sourceSet),
                 generics = listOf(),
                 sources = RellDocumentableSource.NULL.toSourceSetDependent(),

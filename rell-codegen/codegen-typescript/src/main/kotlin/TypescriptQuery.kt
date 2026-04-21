@@ -4,11 +4,7 @@
 
 package net.postchain.rell.codegen.typescript
 
-import net.postchain.rell.base.lib.type.R_CollectionType
-import net.postchain.rell.base.model.R_NullableType
-import net.postchain.rell.base.model.R_QueryDefinition
-import net.postchain.rell.base.model.R_TupleType
-import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Query
 import net.postchain.rell.codegen.typescript.util.parameterTransformer

@@ -1,0 +1,80 @@
+// Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+
+include "type.fbs";
+
+namespace rell.ir;
+
+// --- Constant value union members ---
+
+table BoolValue       { value: bool; }
+table IntValue        { value: long; }
+table TextValue       { value: string (required); }
+table ByteArrayValue  { value: [ubyte] (required); }
+table DecimalValue    { value: string (required); }  // string representation
+table BigIntegerValue { value: string (required); }  // string representation
+table NullValue       {}
+table EnumValue       { def_index: uint; attr_index: uint; }
+table GtvValue        { json: string (required); }   // GTV serialized as JSON
+table RowidValue      { value: long; }
+table UnitValue       {}
+
+table StructConstantValue {
+    struct_def_index: int;
+    field_values: [ConstantValue] (required);
+}
+
+table CollectionConstantValue {
+    element_type: Type (required);
+    element_values: [ConstantValue] (required);
+}
+
+table MapConstantValue {
+    key_type: Type (required);
+    value_type: Type (required);
+    keys: [ConstantValue] (required);
+    values: [ConstantValue] (required);
+}
+
+table TupleConstantValue {
+    tuple_type: Type (required);
+    field_values: [ConstantValue] (required);
+}
+
+table MetaConstantValue {
+    kind: string (required);
+    module_name: string (required);
+    full_name: string (required);
+    simple_name: string (required);
+    mount_name: string (required);
+}
+
+/// Union of all constant value types.
+union ValueUnion {
+    BoolValue,
+    IntValue,
+    TextValue,
+    ByteArrayValue,
+    DecimalValue,
+    BigIntegerValue,
+    NullValue,
+    EnumValue,
+    GtvValue,
+    RowidValue,
+    UnitValue,
+    StructConstantValue,
+    CollectionConstantValue,
+    MapConstantValue,
+    TupleConstantValue,
+    MetaConstantValue,
+}
+
+/// A typed constant value.
+table TypedValue {
+    type: Type (required);
+    value: ValueUnion (required);
+}
+
+/// An untyped constant value (used where the type is known from context).
+table ConstantValue {
+    value: ValueUnion (required);
+}

@@ -31,8 +31,8 @@ import net.postchain.rell.base.lib.test.RawTestTxValue
 import net.postchain.rell.base.lib.test.Rt_TestBlockValue
 import net.postchain.rell.base.lib.type.Rt_GtvValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
-import net.postchain.rell.base.model.R_ModuleName
-import net.postchain.rell.base.model.Rt_TupleValue
+import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.runtime.Rt_TupleValue
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.SqlInterceptor
 import net.postchain.rell.base.sql.SqlUtils.withSavepoint
@@ -165,10 +165,10 @@ public class Rt_StaticBlockRunnerStrategy(private val gtvConfig: Gtv): Rt_BlockR
 }
 
 public class Rt_DynamicBlockRunnerStrategy(
-    private val sourceDir: C_SourceDir,
-    private val keyPair: BytesKeyPair,
-    private val modules: ImmList<R_ModuleName>?,
-    private val compileConfig: RellApiCompile.Config,
+        private val sourceDir: C_SourceDir,
+        private val keyPair: BytesKeyPair,
+        private val modules: ImmList<ModuleName>?,
+        private val compileConfig: RellApiCompile.Config,
 ): Rt_BlockRunnerStrategy() {
     private val lazyConfig: Pair<Gtv, RellGtxModuleApp> by lazy {
         try {

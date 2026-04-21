@@ -86,7 +86,8 @@ class WhenTest: BaseRellTest() {
         chkWhen("integer", "= when(a) { 0 -> 'A'; 1 -> 'B'; 2, 0 -> 'C'; else -> 'D' };", "0" to "ct_err:when_expr_dupvalue:int[0]")
 
         chkWhen("integer", "= when(a) { -1 -> 'A'; -1 -> 'B'; else -> '?'; };", "0" to "ct_err:when_expr_dupvalue:int[-1]")
-        chkWhen("integer", "= when(a) { -1 -> 'A'; 5 -> 'B'; -1 -> 'C'; else -> '?'; };", "0" to "ct_err:when_expr_dupvalue:int[-1]")
+        chkWhen("integer", "= when(a) { -1 -> 'A'; 5 -> 'B'; -1 -> 'C'; else -> '?'; };",
+                "0" to "ct_err:when_expr_dupvalue:int[-1]")
         chkWhen("integer", "= when(a) { -1, -1 -> 'A'; else -> '?'; };", "0" to "ct_err:when_expr_dupvalue:int[-1]")
 
         chkWhen("boolean", "= when(a) { true -> 'A'; true -> 'B'; else -> 'C' };",

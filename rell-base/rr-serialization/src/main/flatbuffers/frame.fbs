@@ -1,0 +1,27 @@
+// Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+
+include "common.fbs";
+
+namespace rell.ir;
+
+/// Variable pointer within a call frame.
+struct VarPtr {
+    block_uid: uint;
+    offset: int;
+}
+
+/// A block within a call frame (scoping unit).
+table FrameBlock {
+    parent_uid: uint = 0;
+    has_parent: bool = false;
+    uid: uint;
+    offset: int;
+    size: int;
+}
+
+/// Call frame descriptor. def_id is on the owning definition, not here.
+table CallFrame {
+    size: int;
+    root_block: FrameBlock (required);
+    has_guard_block: bool = false;
+}

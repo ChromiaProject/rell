@@ -43,7 +43,7 @@ public final class net/postchain/rell/api/shell/RellApiRunShell$Config$Companion
 public final class net/postchain/rell/api/shell/RellApiShellInternal {
 	public static final field INSTANCE Lnet/postchain/rell/api/shell/RellApiShellInternal;
 	public final fun getDefaultReplHistoryFile ()Ljava/io/File;
-	public final fun runShell (Lnet/postchain/rell/api/shell/RellApiRunShell$Config;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Lnet/postchain/rell/base/model/R_ModuleName;)V
+	public final fun runShell (Lnet/postchain/rell/api/shell/RellApiRunShell$Config;Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Lnet/postchain/rell/base/model/ModuleName;)V
 }
 
 public final class net/postchain/rell/api/shell/ReplIo {
@@ -54,7 +54,7 @@ public final class net/postchain/rell/api/shell/ReplIo {
 
 public final class net/postchain/rell/api/shell/ReplShell {
 	public static final field INSTANCE Lnet/postchain/rell/api/shell/ReplShell;
-	public final fun start (Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Lnet/postchain/rell/base/model/R_ModuleName;Lnet/postchain/rell/base/runtime/Rt_GlobalContext;Lnet/postchain/rell/base/sql/SqlManager;Lnet/postchain/rell/base/repl/ReplInterpreterProjExt;Lnet/postchain/rell/api/shell/ReplShellOptions;)V
+	public final fun start (Lnet/postchain/rell/base/compiler/base/utils/C_SourceDir;Lnet/postchain/rell/base/model/ModuleName;Lnet/postchain/rell/base/runtime/Rt_GlobalContext;Lnet/postchain/rell/base/sql/SqlManager;Lnet/postchain/rell/base/repl/ReplInterpreterProjExt;Lnet/postchain/rell/api/shell/ReplShellOptions;)V
 }
 
 public final class net/postchain/rell/api/shell/ReplShellOptions {

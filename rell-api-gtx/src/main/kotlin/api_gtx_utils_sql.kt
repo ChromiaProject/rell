@@ -65,8 +65,7 @@ private class PreparatorWrapper(private val originalPreparator: SqlPreparator) {
         override fun prepare(params: PreparedStatementParams) {
             check(!prepared)
             prepared = true
-            val params2 = InterceptingPreparedStatementParams(params)
-            originalPreparator.prepare(params2)
+            originalPreparator.prepare(InterceptingPreparedStatementParams(params))
         }
     }
 

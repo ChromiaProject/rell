@@ -4,10 +4,10 @@
 
 package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
-import net.postchain.rell.base.lib.type.R_BooleanType
-import net.postchain.rell.base.lib.type.R_DecimalType
-import net.postchain.rell.base.lib.type.R_IntegerType
-import net.postchain.rell.base.model.R_EnumType
+import net.postchain.rell.base.model.R_BooleanType
+import net.postchain.rell.base.model.R_DecimalType
+import net.postchain.rell.base.model.R_IntegerType
+import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.generator.DataGenerationException
 import net.postchain.rell.toolbox.seeder.generator.DataGenerator
@@ -54,12 +54,14 @@ class RandomGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry
         register("random.enum", R_IntegerType) { ctx ->
             val randomProvider = if (ctx.isAttributeUnique()) ctx.faker.random.unique else ctx.faker.random
             val type = ctx.attribute.type
-            if (type !is R_EnumType) {
+            if (type !is RR_Type.Enum) {
                 throw DataGenerationException(
                     "Expected enum, but got ${type::class.simpleName} for `${ctx.attribute.name}` of entity `${ctx.entity.qualifiedName}`"
                 )
             }
-            randomProvider.randomValue(type.values.map { it.asEnum().value })
+            val enumDef = ctx.attribute.enumDefinition
+                ?: throw DataGenerationException("Enum definition not found for attribute `${ctx.attribute.name}`")
+            randomProvider.randomValue(enumDef.attrs.map { it.value })
         }
 
         register(

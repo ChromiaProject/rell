@@ -5,7 +5,6 @@
 package net.postchain.rell.codegen.kotlin
 
 import net.postchain.client.core.PostchainQuery
-import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.section.Query

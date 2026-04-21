@@ -4,14 +4,14 @@
 
 package net.postchain.rell.base.lmodel.dsl
 
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class LModuleTest: BaseLTest() {
     @Test fun testBasic() {
         val mod = makeModule("foo.bar") {}
-        assertEquals(R_ModuleName.of("foo.bar"), mod.moduleName)
+        assertEquals(ModuleName.of("foo.bar"), mod.moduleName)
     }
 
     @Test fun testImport() {

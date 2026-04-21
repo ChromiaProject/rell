@@ -9,7 +9,7 @@ import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.testutils.SqlTestUtils
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
@@ -49,8 +49,8 @@ internal abstract class BaseRellApiRunTestsTest: BaseRellApiTest() {
         appModules: List<String>?,
         testModules: List<String>,
     ): List<String> {
-        val appMods = appModules?.mapToImmList { R_ModuleName.of(it) }
-        val testMods = testModules.map { R_ModuleName.of(it) }
+        val appMods = appModules?.mapToImmList { ModuleName.of(it) }
+        val testMods = testModules.map { ModuleName.of(it) }
 
         val options: C_CompilerOptions
 
@@ -64,7 +64,7 @@ internal abstract class BaseRellApiRunTestsTest: BaseRellApiTest() {
         val cRes = apiRes.cRes
         val ctErr = handleCompilationError(cRes)
         if (ctErr != null) return listOf(ctErr)
-        val rApp = cRes.app!!
+        val rrApp = cRes.rrApp!!
 
         val actualList = mutableListOf<String>()
         val config2 = config.toBuilder()
@@ -74,7 +74,9 @@ internal abstract class BaseRellApiRunTestsTest: BaseRellApiTest() {
             }
             .build()
 
-        val res = RellApiGtxInternal.runTests(config2, options, sourceDir, rApp, appMods)
+        val res = RellApiGtxInternal.runTests(
+            config2, options, sourceDir, rrApp, appMods, cRes.compilationSysFns,
+        )
         val resList = res.getResults().map { "${it.case.name}:${it.res}" }
 
         assertEquals(actualList, resList)

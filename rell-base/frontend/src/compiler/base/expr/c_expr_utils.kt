@@ -1,0 +1,153 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
+package net.postchain.rell.base.compiler.base.expr
+
+import net.postchain.rell.base.compiler.ast.C_BinOp_Eq
+import net.postchain.rell.base.compiler.ast.S_Pos
+import net.postchain.rell.base.compiler.base.core.*
+import net.postchain.rell.base.compiler.base.utils.C_Error
+import net.postchain.rell.base.compiler.base.utils.C_Errors
+import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.compiler.vexpr.*
+import net.postchain.rell.base.model.Name
+import net.postchain.rell.base.model.R_BooleanType
+import net.postchain.rell.base.model.R_CtErrorType
+import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.model.expr.*
+import net.postchain.rell.base.model.stmt.R_ExprStatement
+import net.postchain.rell.base.utils.*
+
+object C_ExprUtils {
+    val ERROR_R_EXPR = errorRExpr()
+    val ERROR_STATEMENT = R_ExprStatement(ERROR_R_EXPR)
+
+    fun toDbExpr(msgCtx: C_MessageContext, errPos: S_Pos, rExpr: R_Expr): Db_Expr {
+        val type = rExpr.type
+        return if (!type.sqlInfo.isSqlCompatible(msgCtx.globalCtx.compilerOptions)) {
+            C_Errors.errExprNoDb(msgCtx, errPos, type)
+            errorDbExpr()
+        } else {
+            Db_InterpretedExpr(rExpr)
+        }
+    }
+
+    fun makeDbBinaryExpr(type: R_Type, rOp: R_BinaryOp, dbOp: Db_BinaryOp, left: Db_Expr, right: Db_Expr): Db_Expr {
+        return if (left is Db_InterpretedExpr && right is Db_InterpretedExpr) {
+            val rExpr = R_BinaryExpr(type, rOp, left.expr, right.expr, errPos = null)
+            Db_InterpretedExpr(rExpr)
+        } else {
+            Db_BinaryExpr(type, dbOp, left, right)
+        }
+    }
+
+    fun makeDbBinaryExprEq(left: Db_Expr, right: Db_Expr): Db_Expr {
+        val nullable = C_Types.isNullOrNullable(left.type) || C_Types.isNullOrNullable(right.type)
+        val dbOp = Db_BinaryOp_EqNe.get(true, nullable = nullable)
+        return makeDbBinaryExpr(R_BooleanType, R_BinaryOp_Eq, dbOp, left, right)
+    }
+
+    fun makeVBinaryExprEq(ctx: C_ExprContext, pos: S_Pos, left: V_Expr, right: V_Expr): V_Expr {
+        val vOp = C_BinOp_Eq.createVOp(left.type)
+        return V_BinaryExpr(ctx, pos, vOp, left, right, C_ExprVarStatesDelta.EMPTY)
+    }
+
+    fun createSysCallRExpr(type: R_Type, fn: Any, args: ImmList<R_Expr>, nameMsg: LazyPosString): R_Expr {
+        return createSysCallRExpr(type, fn, args, nameMsg.pos, nameMsg.lazyStr)
+    }
+
+    fun createSysCallRExpr(type: R_Type, fn: Any, args: ImmList<R_Expr>, pos: S_Pos, nameMsg: LazyString): R_Expr {
+        val rCallTarget: R_FunctionCallTarget = R_FunctionCallTarget_SysGlobalFunction(fn, nameMsg)
+        val filePos = pos.toFilePos()
+        val rCall: R_FunctionCall = R_FullFunctionCall(type, rCallTarget, filePos, args, args.indices.toImmList())
+        return R_FunctionCallExpr(type, null, rCall, false)
+    }
+
+    fun createSysGlobalPropExpr(
+        exprCtx: C_ExprContext,
+        type: R_Type,
+        fn: Any,
+        qName: C_QualifiedName,
+        pure: Boolean,
+        varId: C_VarId? = null,
+    ): V_Expr {
+        val nameStr = qName.str()
+        return createSysGlobalPropExpr(exprCtx, type, fn, qName.pos, nameStr, pure, varId = varId)
+    }
+
+    fun createSysGlobalPropExpr(
+        exprCtx: C_ExprContext,
+        type: R_Type,
+        fn: Any,
+        pos: S_Pos,
+        nameMsg: String,
+        pure: Boolean,
+        varId: C_VarId? = null,
+    ): V_Expr {
+        val nameMsgLazy = LazyString.of(nameMsg)
+        val desc = V_SysFunctionTargetDescriptor(type, fn, null, nameMsgLazy, pure = pure, synth = true)
+        val vCallTarget: V_FunctionCallTarget = V_FunctionCallTarget_SysGlobalFunction(desc)
+        val vCall = V_CommonFunctionCall_Full(pos, pos, type, vCallTarget, V_FunctionCallArgs.EMPTY)
+        val resVarId = if (pure) varId else null
+        val vExpr = V_FunctionCallExpr(exprCtx, pos, null, vCall, false, varId = resVarId)
+        return V_SmartNullableExpr.wrap(exprCtx, vExpr, "prop" toCodeMsg "property")
+    }
+
+    fun errorRExpr(type: R_Type = R_CtErrorType, msg: String = "Compilation error"): R_Expr {
+        return R_ErrorExpr(type, msg)
+    }
+
+    fun errorDbExpr(type: R_Type = R_CtErrorType, msg: String = "Compilation error"): Db_Expr {
+        val rExpr = errorRExpr(type, msg)
+        return Db_InterpretedExpr(rExpr)
+    }
+
+    fun errorVExpr(ctx: C_ExprContext, pos: S_Pos, type: R_Type = R_CtErrorType, msg: String = "Compilation error"): V_Expr {
+        return V_ErrorExpr(ctx, pos, type, msg)
+    }
+
+    fun errorExpr(ctx: C_ExprContext, pos: S_Pos, type: R_Type = R_CtErrorType, msg: String = "Compilation error"): C_Expr {
+        val value = errorVExpr(ctx, pos, type, msg)
+        return C_ValueExpr(value)
+    }
+
+    fun errorVGlobalCall(
+            ctx: C_ExprContext,
+            pos: S_Pos,
+            type: R_Type = R_CtErrorType,
+            msg: String = "Compilation error",
+            ideInfo: C_IdeSymbolInfo? = null,
+            argIdeInfos: ImmMap<Name, C_IdeSymbolInfo> = immMapOf(),
+    ): V_GlobalFunctionCall {
+        val vExpr = errorVExpr(ctx, pos, type, msg)
+        return V_GlobalFunctionCall(vExpr, ideInfo, argIdeInfos)
+    }
+
+    fun errorVMemberCall(
+        ctx: C_ExprContext,
+        type: R_Type = R_CtErrorType,
+        msg: String = "Compilation error",
+        ideInfo: C_IdeSymbolInfo = C_IdeSymbolInfo.UNKNOWN,
+    ): V_MemberFunctionCall {
+        return V_MemberFunctionCall_Error(ctx, ideInfo, type, msg)
+    }
+
+    fun errorVMember(
+        pos: S_Pos,
+        type: R_Type = R_CtErrorType,
+        msg: String = "Compilation error",
+        ideInfo: C_IdeSymbolInfo = C_IdeSymbolInfo.UNKNOWN,
+    ): V_TypeValueMember {
+        return V_TypeValueMember_Error(type, ideInfo, pos, msg)
+    }
+
+    fun <T> evaluate(pos: S_Pos, code: () -> T): T {
+        try {
+            return code()
+        } catch (e: Throwable) {
+            val msg = e.message ?: "Evaluation failed"
+            throw C_Error.stop(pos, "eval_fail:${e.javaClass.simpleName}", msg)
+        }
+    }
+}

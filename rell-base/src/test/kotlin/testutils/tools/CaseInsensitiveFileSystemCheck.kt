@@ -8,9 +8,10 @@ import com.google.common.io.Files
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.checkNull
 import net.postchain.rell.base.utils.immListOf
 import java.io.File
 
@@ -83,30 +84,30 @@ private fun testSourceDirFiles(cDir: C_SourceDir) {
 }
 
 private fun testSourceDirDir(cDir: C_SourceDir) {
-    checkEquals(cDir.dir(C_SourcePath.EMPTY), true)
-    checkEquals(cDir.dir(C_SourcePath.parse("Parent")), true)
-    checkEquals(cDir.dir(C_SourcePath.parse("parent")), false)
-    checkEquals(cDir.dir(C_SourcePath.parse("PARENT")), false)
-    checkEquals(cDir.dir(C_SourcePath.parse("PaReNt")), false)
-    checkEquals(cDir.dir(C_SourcePath.parse("Parent/Child")), true)
-    checkEquals(cDir.dir(C_SourcePath.parse("parent/child")), false)
-    checkEquals(cDir.dir(C_SourcePath.parse("Parent/child")), false)
-    checkEquals(cDir.dir(C_SourcePath.parse("parent/Child")), false)
-    checkEquals(cDir.dir(C_SourcePath.parse("PARENT/CHILD")), false)
-    checkEquals(cDir.dir(C_SourcePath.parse("pARENT/cHILD")), false)
+    check(cDir.dir(C_SourcePath.EMPTY))
+    check(cDir.dir(C_SourcePath.parse("Parent")))
+    check(!cDir.dir(C_SourcePath.parse("parent")))
+    check(!cDir.dir(C_SourcePath.parse("PARENT")))
+    check(!cDir.dir(C_SourcePath.parse("PaReNt")))
+    check(cDir.dir(C_SourcePath.parse("Parent/Child")))
+    check(!cDir.dir(C_SourcePath.parse("parent/child")))
+    check(!cDir.dir(C_SourcePath.parse("Parent/child")))
+    check(!cDir.dir(C_SourcePath.parse("parent/Child")))
+    check(!cDir.dir(C_SourcePath.parse("PARENT/CHILD")))
+    check(!cDir.dir(C_SourcePath.parse("pARENT/cHILD")))
 
     println("C_DiskSourceDir.dir() test: PASSED")
 }
 
 private fun testSourceDirFile(cDir: C_SourceDir) {
-    checkEquals(cDir.file(C_SourcePath.EMPTY), null)
-    checkEquals(cDir.file(C_SourcePath.parse("Parent")), null)
-    checkEquals(cDir.file(C_SourcePath.parse("Parent/Child")), null)
-    checkEquals(cDir.file(C_SourcePath.parse("Parent/Child/Library.RELL")), null)
-    checkEquals(cDir.file(C_SourcePath.parse("Parent/Child/Library.Rell")), null)
-    checkEquals(cDir.file(C_SourcePath.parse("Parent/Child/library.rell")), null)
-    checkEquals(cDir.file(C_SourcePath.parse("Parent/Child/LIBRARY.RELL")), null)
-    checkEquals(cDir.file(C_SourcePath.parse("Parent/Child/LiBrArY.ReLl")), null)
+    checkNull(cDir.file(C_SourcePath.EMPTY))
+    checkNull(cDir.file(C_SourcePath.parse("Parent")))
+    checkNull(cDir.file(C_SourcePath.parse("Parent/Child")))
+    checkNull(cDir.file(C_SourcePath.parse("Parent/Child/Library.RELL")))
+    checkNull(cDir.file(C_SourcePath.parse("Parent/Child/Library.Rell")))
+    checkNull(cDir.file(C_SourcePath.parse("Parent/Child/library.rell")))
+    checkNull(cDir.file(C_SourcePath.parse("Parent/Child/LIBRARY.RELL")))
+    checkNull(cDir.file(C_SourcePath.parse("Parent/Child/LiBrArY.ReLl")))
 
     val f = checkNotNull(cDir.file(C_SourcePath.parse("Parent/Child/Library.rell")))
     checkEquals(f.readText(), "module; //Library.rell")
@@ -128,7 +129,7 @@ private fun chkRellImport(srcDir: File, module: String, expected: String) {
     val cDir = C_SourceDir.uncachedDiskDir(srcDir)
     writeFile(File(srcDir, "main.rell"), "module; import $module;")
 
-    val modSel = C_CompilerModuleSelection(immListOf(R_ModuleName.of("main")))
+    val modSel = C_CompilerModuleSelection(immListOf(ModuleName.of("main")))
     val actual = RellTestUtils.processApp(cDir, modSel = modSel) { "OK" }
     checkEquals(actual, expected)
 }

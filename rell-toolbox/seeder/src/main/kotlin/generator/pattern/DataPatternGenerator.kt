@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.seeder.generator.pattern
 
-import net.postchain.rell.base.lib.type.R_TextType
+import net.postchain.rell.base.model.R_TextType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.toolbox.seeder.generator.DataGeneratorContext
 

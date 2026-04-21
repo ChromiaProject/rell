@@ -28,6 +28,11 @@ dependencyResolutionManagement {
 }
 
 include("rell-base")
+include("rell-base:utils")
+include("rell-base:rr-tree")
+include("rell-base:frontend")
+include("rell-base:runtime")
+include("rell-base:test-utils")
 include("rell-api-base")
 include("rell-api-gtx")
 include("rell-api-native")
@@ -52,3 +57,4 @@ include("rell-codegen:codegen-mermaid")
 include("rell-codegen:rellgen")
 
 include("rell-dokka-plugin")
+include("rell-base:rr-serialization")

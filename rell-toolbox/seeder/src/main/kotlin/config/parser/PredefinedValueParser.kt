@@ -5,26 +5,29 @@
 package net.postchain.rell.toolbox.seeder.config.parser
 
 import com.fasterxml.jackson.databind.JsonNode
-import net.postchain.rell.base.lib.type.*
-import net.postchain.rell.base.model.R_EnumType
+import net.postchain.rell.base.model.rr.RR_PrimitiveKind
+import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.toolbox.seeder.schema.Attribute
 import java.math.BigInteger
 
 object PredefinedValueParser {
 
-    fun parse(attribute: Attribute, nodes: JsonNode): List<Any> = when (attribute.type) {
-        is R_BooleanType -> parseBooleanValues(nodes)
-        is R_IntegerType -> parseIntegerValues(nodes)
-        is R_BigIntegerType -> parseBigIntegerValues(nodes)
-        is R_DecimalType -> parseDecimalValues(nodes)
-        is R_RowidType -> parseRowIdValues(nodes)
-        is R_TextType -> parseTextualValues(nodes)
-        is R_JsonType -> parseJsonValues(nodes)
-        is R_ByteArrayType -> parseByteArrayValues(nodes)
-        is R_EnumType -> parseEnumValues(attribute, nodes)
-        else -> throw ConfigurationValidationException(
-            "predefined values type is not supported for type ${attribute.type}"
-        )
+    fun parse(attribute: Attribute, nodes: JsonNode): List<Any> {
+        val type = attribute.type
+        return when {
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BOOLEAN -> parseBooleanValues(nodes)
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.INTEGER -> parseIntegerValues(nodes)
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BIG_INTEGER -> parseBigIntegerValues(nodes)
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.DECIMAL -> parseDecimalValues(nodes)
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.ROWID -> parseRowIdValues(nodes)
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.TEXT -> parseTextualValues(nodes)
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.JSON -> parseJsonValues(nodes)
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BYTE_ARRAY -> parseByteArrayValues(nodes)
+            type is RR_Type.Enum -> parseEnumValues(attribute, nodes)
+            else -> throw ConfigurationValidationException(
+                "predefined values type is not supported for type ${attribute.typeStr()}"
+            )
+        }
     }
 
     private fun parseBooleanValues(nodes: JsonNode): List<Boolean> = nodes.map {
@@ -141,16 +144,16 @@ object PredefinedValueParser {
         attribute: Attribute,
         nodes: JsonNode
     ) = nodes.map { node ->
-        val enumType = attribute.type as R_EnumType
+        val enumDef = attribute.enumDefinition
+            ?: throw ConfigurationValidationException("Expected enum type for attribute '${attribute.name}'")
         if (!node.isTextual) {
             throw ConfigurationValidationException(
                 "predefined values must be strings, but found: ${node.nodeType}"
             )
         }
-        enumType.valuesSet.find {
-            it.str() == node.asText()
-        } ?: run {
-            val validationErrorMessage = enumType.valuesSet.joinToString(prefix = "[", postfix = "]") { it.str() }
+        val enumAttrNames = enumDef.attrs.map { it.name }
+        if (node.asText() !in enumAttrNames) {
+            val validationErrorMessage = enumAttrNames.joinToString(prefix = "[", postfix = "]")
             throw ConfigurationValidationException(
                 "enum value '${node.asText()}' is not in enum set $validationErrorMessage"
             )

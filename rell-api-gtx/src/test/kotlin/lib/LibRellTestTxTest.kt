@@ -6,7 +6,7 @@ package net.postchain.rell.api.gtx.lib
 
 import net.postchain.common.exception.TransactionIncorrect
 import net.postchain.rell.api.gtx.testutils.PostchainRellTestProjExt
-import net.postchain.rell.base.lib.LibGtvTest
+import net.postchain.rell.base.testutils.chkFromGtv
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
@@ -559,7 +559,7 @@ internal class LibRellTestTxTest: BaseRellTest() {
         chkFromGtv("['987',[123,'Hello']]", "rell.test.op.from_gtv(g)", "rt_err:from_gtv")
     }
 
-    private fun chkFromGtv(gtv: String, expr: String, expected: String) = LibGtvTest.chkFromGtv(tst, gtv, expr, expected)
+    private fun chkFromGtv(gtv: String, expr: String, expected: String) = chkFromGtv(tst, gtv, expr, expected)
 
     companion object {
         fun initTxChain(tstCtx: RellTestContext, tst: RellCodeTester) {

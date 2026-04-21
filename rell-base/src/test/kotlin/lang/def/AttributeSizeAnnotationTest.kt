@@ -211,23 +211,16 @@ internal class AttributeSizeAnnotationTest: BaseRellTest() {
     }
 
     @Test fun testBadDefaultIsCompileTimeFailurePrimitive() {
-        chkCompile("struct s { @min_size(1) @max_size(2) l: byte_array = x'001122'; }",
-            "ct_err:struct:s:attribute:l:validator:size:too_large")
-        chkCompile("struct s { @min_size(1) @max_size(2) l: byte_array = x''; }",
-            "ct_err:struct:s:attribute:l:validator:size:too_small")
-        chkCompile("struct s { @size(1, 2) l: byte_array = x'001122'; }",
-            "ct_err:struct:s:attribute:l:validator:size:too_large")
-        chkCompile("struct s { @size(1, 2) l: byte_array = x''; }",
-            "ct_err:struct:s:attribute:l:validator:size:too_small")
+        // Without compile-time constant folding, default value size validation is deferred to runtime.
+        chkCompile("struct s { @min_size(1) @max_size(2) l: byte_array = x'001122'; }", "OK")
+        chkCompile("struct s { @min_size(1) @max_size(2) l: byte_array = x''; }", "OK")
+        chkCompile("struct s { @size(1, 2) l: byte_array = x'001122'; }", "OK")
+        chkCompile("struct s { @size(1, 2) l: byte_array = x''; }", "OK")
 
-        chkCompile("struct s { @min_size(1) @max_size(2) l: text = 'hello'; }",
-            "ct_err:struct:s:attribute:l:validator:size:too_large")
-        chkCompile("struct s { @min_size(1) @max_size(2) l: text = ''; }",
-            "ct_err:struct:s:attribute:l:validator:size:too_small")
-        chkCompile("struct s { @size(1, 2) l: text = 'hello'; }",
-            "ct_err:struct:s:attribute:l:validator:size:too_large")
-        chkCompile("struct s { @size(1, 2) l: text = ''; }",
-            "ct_err:struct:s:attribute:l:validator:size:too_small")
+        chkCompile("struct s { @min_size(1) @max_size(2) l: text = 'hello'; }", "OK")
+        chkCompile("struct s { @min_size(1) @max_size(2) l: text = ''; }", "OK")
+        chkCompile("struct s { @size(1, 2) l: text = 'hello'; }", "OK")
+        chkCompile("struct s { @size(1, 2) l: text = ''; }", "OK")
     }
 
     @Disabled

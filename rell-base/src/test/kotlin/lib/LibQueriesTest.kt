@@ -4,25 +4,32 @@
 
 package net.postchain.rell.base.lib
 
-import net.postchain.rell.base.lib.type.R_ListType
-import net.postchain.rell.base.lib.type.R_TextType
 import net.postchain.rell.base.lib.type.Rt_ListValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
+import net.postchain.rell.base.runtime.Rt_PrimitiveTypes
+import net.postchain.rell.base.runtime.rtListType
 import net.postchain.rell.base.testutils.BaseRellTest
 import kotlin.test.Test
 
 class LibQueriesTest: BaseRellTest() {
     @Test fun testGetMountNamesFilterKind() {
-        file("lib.rell", """
+        file(
+            "lib.rell", """
             module;
             entity user {}
             object state {}
             query q() = "";
             operation op() {}
-        """)
+        """
+        )
         def("import lib;")
 
-        chkMntNames("", listOf(), listOf(), """{"entities":["user"],"objects":["state"],"operations":["op"],"queries":["q"]}""")
+        chkMntNames(
+            "",
+            listOf(),
+            listOf(),
+            """{"entities":["user"],"objects":["state"],"operations":["op"],"queries":["q"]}"""
+        )
         chkMntNames("", listOf("query"), listOf(), """{"queries":["q"]}""")
         chkMntNames("", listOf("operation"), listOf(), """{"operations":["op"]}""")
         chkMntNames("", listOf("entity"), listOf(), """{"entities":["user"]}""")
@@ -37,14 +44,20 @@ class LibQueriesTest: BaseRellTest() {
         def("import a;import b;")
 
         chkMntNames("", listOf("operation"), listOf(), """{"operations":["op_a","op_b","op_c"]}""")
-        chkMntNames("query my_q() = 1;", listOf(), listOf(""), """{"entities":[],"objects":[],"operations":[],"queries":["my_q"]}""")
+        chkMntNames(
+            "query my_q() = 1;",
+            listOf(),
+            listOf(""),
+            """{"entities":[],"objects":[],"operations":[],"queries":["my_q"]}"""
+        )
         chkMntNames("", listOf("operation"), listOf("a"), """{"operations":["op_a"]}""")
         chkMntNames("", listOf("operation"), listOf("b"), """{"operations":["op_b"]}""")
         chkMntNames("", listOf("operation"), listOf("b.c"), """{"operations":["op_c"]}""")
     }
 
     @Test fun testGetMountNamesCustomMountNames() {
-        file( "lib.rell", """
+        file(
+            "lib.rell", """
             module;
             @mount("admin")
             entity user {}
@@ -54,10 +67,16 @@ class LibQueriesTest: BaseRellTest() {
             query q() = "";
             @mount("task")
             operation op() {}
-        """)
+        """
+        )
         def("import lib;")
 
-        chkMntNames( "", listOf(), listOf(), """{"entities":["admin"],"objects":["city"],"operations":["task"],"queries":["question"]}""")
+        chkMntNames(
+            "",
+            listOf(),
+            listOf(),
+            """{"entities":["admin"],"objects":["city"],"operations":["task"],"queries":["question"]}"""
+        )
     }
 
     @Test fun testGetMountNamesWrongInput() {
@@ -72,23 +91,27 @@ class LibQueriesTest: BaseRellTest() {
     }
 
     private fun List<String>.toRtValue() =
-        Rt_ListValue(R_ListType(R_TextType), map { Rt_TextValue.get(it) }.toMutableList())
+        Rt_ListValue(rtListType(Rt_PrimitiveTypes.TEXT), map { Rt_TextValue.get(it) }.toMutableList())
 
     @Test fun testGetModuleArgs() {
-        file("lib_a.rell", """
+        file(
+            "lib_a.rell", """
             module;
             struct module_args {
                 x: integer = 123;
                 y: text = 'hi';
             }
-        """)
-        file("lib_b.rell", """
+        """
+        )
+        file(
+            "lib_b.rell", """
             module;
             struct module_args {
                 a: integer = 456;
                 b: text = 'hello';
             }
-        """)
+        """
+        )
         def("import lib_a;import lib_b;")
 
         chkModuleArgs(listOf("lib_a"), """{"lib_a":{"x":123,"y":"hi"}}""")
@@ -98,13 +121,15 @@ class LibQueriesTest: BaseRellTest() {
     }
 
     @Test fun testGetModuleArgsWrongInput() {
-        file("lib_a.rell", """
+        file(
+            "lib_a.rell", """
             module;
             struct module_args {
                 x: integer = 123;
                 y: text = 'hi';
             }
-        """)
+        """
+        )
         def("import lib_a;")
 
         chkModuleArgs(listOf("unknown_module_is_ignored"), "{}")
@@ -120,13 +145,15 @@ class LibQueriesTest: BaseRellTest() {
     }
 
     @Test fun testGetModuleArgsNonDefault() {
-        file("lib_a.rell", """
+        file(
+            "lib_a.rell", """
             module;
             struct module_args {
                 x: integer;
                 y: text;
             }
-        """)
+        """
+        )
         tst.moduleArgs("lib_a" to "{'x':123, y:'hi'}")
         def("import lib_a;")
 

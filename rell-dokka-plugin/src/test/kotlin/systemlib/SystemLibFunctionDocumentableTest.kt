@@ -9,7 +9,7 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.L_NamespaceMember_Function
-import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.model.QualifiedName
 import org.jetbrains.dokka.DokkaSourceSetID
 import org.jetbrains.dokka.DokkaSourceSetImpl
 import org.jetbrains.dokka.links.DRI
@@ -23,7 +23,7 @@ class SystemLibFunctionDocumentableTest {
     val visitor = SystemLibVisitor(testSourceSet, TestLogger(DokkaConsoleLogger()))
     @Test
     fun test() {
-        val f = Lib_Rell.MODULE.lModule.namespace.getDef(R_QualifiedName.of("crypto.privkey_to_pubkey")) as L_NamespaceMember_Function
+        val f = Lib_Rell.MODULE.lModule.namespace.getDef(QualifiedName.of("crypto.privkey_to_pubkey")) as L_NamespaceMember_Function
         with (visitor) {
             val d = f.visit(DRI("crypto"))
             assertThat(d.isConstructor).isFalse()

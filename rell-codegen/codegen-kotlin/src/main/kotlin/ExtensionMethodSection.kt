@@ -15,7 +15,7 @@ import net.postchain.gtv.mapper.GtvObjectMapper
 import net.postchain.gtv.mapper.Name
 import net.postchain.gtv.mapper.Nullable
 import net.postchain.rell.base.model.R_FunctionParam
-import net.postchain.rell.base.model.R_MountName
+import net.postchain.rell.base.model.MountName
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.deps.ClassName
@@ -33,7 +33,7 @@ import kotlin.reflect.KClass
 abstract class ExtensionMethodSection(
         protected val kind: String,
         protected val className: ClassName,
-        protected val mountName: R_MountName,
+        protected val mountName: MountName,
         private val extendedClass: KClass<*>,
         private val extendenMethod: String,
         protected val params: List<R_FunctionParam>,

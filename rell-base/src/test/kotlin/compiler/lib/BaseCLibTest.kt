@@ -6,6 +6,7 @@ package net.postchain.rell.base.compiler.lib
 
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.lib.Lib_Rell
+import net.postchain.rell.base.lib.make
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceBodyDsl
 import net.postchain.rell.base.testutils.BaseRellTest
 

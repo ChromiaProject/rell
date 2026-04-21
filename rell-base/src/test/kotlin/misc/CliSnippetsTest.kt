@@ -7,7 +7,7 @@ package net.postchain.rell.base.misc
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.mapToImmList
@@ -54,21 +54,21 @@ class CliSnippetsTest {
     }
 
     private fun chkModule(module: String) {
-        val modules = immListOf(R_ModuleName.of(module))
+        val modules = immListOf(ModuleName.of(module))
         val modSel = C_CompilerModuleSelection(modules, immListOf())
         chkModules(modSel)
     }
 
     private fun chkTestModules(vararg modules: String) {
-        val modNames = modules.mapToImmList { R_ModuleName.of(it) }
+        val modNames = modules.mapToImmList { ModuleName.of(it) }
         val modSel = C_CompilerModuleSelection(immListOf(), modNames)
         chkModules(modSel)
     }
 
     private fun chkModules(modSel: C_CompilerModuleSelection) {
         // When run from IntelliJ as "All_tests", the working directory is the repository root, not the sub-project.
-        val dir = listOf(".", "..").map { File(it, "work/testproj/src") }.firstOrNull { it.isDirectory }
-        dir ?: throw IllegalStateException("Sources not found: ${File(".").absolutePath}")
+        val dir = listOf(".", "..", "../..").map { File(it, "work/testproj/src") }.find { it.isDirectory }
+        checkNotNull(dir) { "Sources not found: ${File(".").absolutePath}" }
         val sourceDir = C_SourceDir.diskDir(dir)
         val res = RellTestUtils.compileApp(sourceDir, modSel, C_CompilerOptions.DEFAULT)
         assertEquals(0, res.messages.size, res.messages.toString())

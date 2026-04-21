@@ -8,7 +8,6 @@ import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_CompilationResult
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
-import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
@@ -18,10 +17,8 @@ import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.compiler.parser.RellTokens
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.testutils.BaseRellTest
-import net.postchain.rell.base.testutils.RellCodeTester
-import net.postchain.rell.base.testutils.RellTestContext
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocSymbol
@@ -113,12 +110,12 @@ abstract class BaseIdeSymbolTest: BaseRellTest() {
         return cRes
     }
 
-    private fun getModuleName(sourceDir: C_SourceDir, file: C_SourcePath): R_ModuleName {
+    private fun getModuleName(sourceDir: C_SourceDir, file: C_SourcePath): ModuleName {
         val sourceFile = sourceDir.file(file)
-        sourceFile ?: throw IllegalArgumentException(file.str())
+        requireNotNull(sourceFile) { file.str() }
         val ast = sourceFile.readAstEx(tst.compatibilityVer)
         val res = IdeApi.getModuleName(file, ast)
-        return res ?: throw IllegalArgumentException(file.str())
+        return requireNotNull(res) { file.str() }
     }
 
     private fun getTestEntries(
@@ -205,35 +202,6 @@ abstract class BaseIdeSymbolTest: BaseRellTest() {
     internal companion object {
         private val MAIN_FILE_PATH = C_SourcePath.parse(RellTestUtils.MAIN_FILE)
 
-        fun getDocSymbols(code: String, extraMod: C_LibModule? = null, err: Boolean = false): Map<String, DocSymbol> {
-            val tst = RellCodeTester(RellTestContext(useSql = false))
-            tst.extraMod = extraMod
-            val sourceDir = tst.createSourceDir(code)
-            val file = RellTestUtils.MAIN_FILE_PATH
-            val modSel = C_CompilerModuleSelection(immListOf(R_ModuleName.EMPTY))
-
-            val cOpts = C_CompilerOptions.builder()
-                .symbolInfoFile(file)
-                .testLib(true)
-                .ide(true)
-                .ideDocSymbolsEnabled(true)
-                .build()
-
-            val cRes = RellTestUtils.compileApp(sourceDir, modSel, cOpts, tst.extraMod)
-
-            if (!err) {
-                check(cRes.errors.isEmpty()) { cRes.errors }
-            }
-
-            val entries = getActualEntries(sourceDir, file, cRes)
-            return entries
-                .mapNotNull {
-                    val doc = it.ideInfo.doc
-                    if (doc == null) null else (it.key to doc)
-                }
-                .toImmMap()
-        }
-
         fun chkMessages(cRes: C_CompilationResult, err: String? = null, warn: String? = null) {
             val actualErr = if (cRes.errors.isEmpty()) "n/a" else RellTestUtils.msgsToString(cRes.errors)
             assertEquals(err ?: "n/a", actualErr)
@@ -263,8 +231,7 @@ abstract class BaseIdeSymbolTest: BaseRellTest() {
         }
 
         private fun extractSymbols(sourceDir: C_SourceDir, file: C_SourcePath): Map<S_Pos, String> {
-            val sourceFile = sourceDir.file(file)
-            sourceFile ?: throw IllegalArgumentException(file.str())
+            val sourceFile = requireNotNull(sourceDir.file(file)) { file.str() }
 
             val parserPath = C_ParserFilePath(file, sourceFile.idePath())
             val code = sourceFile.readText()
@@ -292,17 +259,15 @@ abstract class BaseIdeSymbolTest: BaseRellTest() {
             return res.joinToString("|")
         }
 
-        private fun linkToStr(link: IdeSymbolLink?, syms: Map<S_Pos, String>): String {
-            return when (link) {
-                null -> "-"
-                is IdeModuleSymbolLink -> link.encode()
-                is IdeGlobalSymbolLink -> link.encode()
-                is IdeLocalSymbolLink -> {
-                    val pos = link.localPos()
-                    val name = syms.getValue(pos)
-                    val idx = syms.entries.filter { it.value == name }.indexOfFirst { it.key == pos }
-                    "local[$name:$idx]"
-                }
+        private fun linkToStr(link: IdeSymbolLink?, syms: Map<S_Pos, String>): String = when (link) {
+            null -> "-"
+            is IdeModuleSymbolLink -> link.encode()
+            is IdeGlobalSymbolLink -> link.encode()
+            is IdeLocalSymbolLink -> {
+                val pos = link.localPos()
+                val name = syms.getValue(pos)
+                val idx = syms.entries.filter { it.value == name }.indexOfFirst { it.key == pos }
+                "local[$name:$idx]"
             }
         }
 

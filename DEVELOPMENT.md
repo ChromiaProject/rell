@@ -28,7 +28,14 @@ Rell's two key features are blockchain integration and SQL-like capabilities:
 
 The Rell project is organized into several modules:
 
-- **rell-base**: Core language implementation (compiler, runtime, standard library)
+- **rell-base**: Core language implementation, split into sub-modules:
+  - `utils`: Shared utilities with no Rell-specific dependencies
+  - `rr-tree`: Serializable RR_ tree data classes (types, definitions, IR, frames)
+  - `rr-serialization`: FlatBuffers serializer/deserializer for the RR_ tree
+  - `frontend`: Compiler frontend (AST, compilation layer, R_ model, type system, library framework) and `R_ → RR_` resolver
+  - `runtime`: Rt_ interpreter, runtime values, SQL generation, standard library implementations
+  - `test-utils`: Shared test fixtures
+  - `tests`: Unit/integration tests for `rell-base`
 - **rell-api-base**: Base API definitions
 - **rell-api-gtx**: Generic Transaction Protocol (GTX) API implementation
 - **rell-api-native**: Native API
@@ -301,6 +308,7 @@ The project uses various prefixes for different types of classes:
 - `M_` - Type framework
 - `C_` - Compilation
 - `R_` - Compiled objects
+- `RR_` - Resolved runtime model (serializable IR consumed by the interpreter)
 - `Rt_` - Runtime
 
 **Basic Conventions:**

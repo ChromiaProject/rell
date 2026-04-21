@@ -48,7 +48,7 @@ internal class SqlSizeConstraintTest: BaseSqlInitTest() {
         chkInit("entity user { name; }")
         chkInit("entity user { @min_size(9) name; }")
 
-        chkOp("create user('Alex');", "rt_err:entity:user:attribute:name:validator:size:too_small");
+        chkOp("create user('Alex');", "rt_err:entity:user:attribute:name:validator:size:too_small")
         chkInsertViolatesCheckConstraint("c0.user", "name", "200,'Alex'")
     }
 
@@ -56,7 +56,7 @@ internal class SqlSizeConstraintTest: BaseSqlInitTest() {
         chkInit("entity user { name; }")
         chkInit("entity user { @max_size(9) name; }")
 
-        chkOp("create user('Wayne Rooney');", "rt_err:entity:user:attribute:name:validator:size:too_large");
+        chkOp("create user('Wayne Rooney');", "rt_err:entity:user:attribute:name:validator:size:too_large")
         chkInsertViolatesCheckConstraint("c0.user", "name", "200,'Wayne Rooney'")
     }
 
@@ -64,7 +64,7 @@ internal class SqlSizeConstraintTest: BaseSqlInitTest() {
         chkInit("entity user { name; }")
         chkInit("entity user { @size(9) name; }")
 
-        chkOp("create user('Michelangelo');", "rt_err:entity:user:attribute:name:validator:size:too_large");
+        chkOp("create user('Michelangelo');", "rt_err:entity:user:attribute:name:validator:size:too_large")
         chkInsertViolatesCheckConstraint("c0.user", "name", "200,'Michelangelo'")
     }
 
@@ -72,7 +72,7 @@ internal class SqlSizeConstraintTest: BaseSqlInitTest() {
         chkInit("entity user { name; }")
         chkInit("entity user { @min_size(9) @max_size(11) name; }")
 
-        chkOp("create user('Anton');", "rt_err:entity:user:attribute:name:validator:size:too_small");
+        chkOp("create user('Anton');", "rt_err:entity:user:attribute:name:validator:size:too_small")
         chkInsertViolatesCheckConstraint("c0.user", "name", "200,'Anton'")
     }
 
@@ -80,7 +80,7 @@ internal class SqlSizeConstraintTest: BaseSqlInitTest() {
         chkInit("entity user { @min_size(8) name; }")
         chkInit("entity user { @min_size(9) name; }")
 
-        chkOp("create user('Iaroslav');", "rt_err:entity:user:attribute:name:validator:size:too_small");
+        chkOp("create user('Iaroslav');", "rt_err:entity:user:attribute:name:validator:size:too_small")
         chkInsertViolatesCheckConstraint("c0.user", "name", "200,'Iaroslav'")
     }
 
@@ -88,7 +88,7 @@ internal class SqlSizeConstraintTest: BaseSqlInitTest() {
         chkInit("entity user { @max_size(10) name; }")
         chkInit("entity user { @max_size(9) name; }")
 
-        chkOp("create user('Mithrandir');", "rt_err:entity:user:attribute:name:validator:size:too_large");
+        chkOp("create user('Mithrandir');", "rt_err:entity:user:attribute:name:validator:size:too_large")
         chkInsertViolatesCheckConstraint("c0.user", "name", "200,'Mithrandir'")
     }
 
@@ -96,7 +96,7 @@ internal class SqlSizeConstraintTest: BaseSqlInitTest() {
         chkInit("entity user { @size(3) name; }")
         chkInit("entity user { @size(9) name; }")
 
-        chkOp("create user('Sam');", "rt_err:entity:user:attribute:name:validator:size:too_small");
+        chkOp("create user('Sam');", "rt_err:entity:user:attribute:name:validator:size:too_small")
         chkInsertViolatesCheckConstraint("c0.user", "name", "200,'Sam'")
     }
 
@@ -104,7 +104,7 @@ internal class SqlSizeConstraintTest: BaseSqlInitTest() {
         chkInit("entity user { @min_size(9) @max_size(11) name; }")
         chkInit("entity user { @min_size(10) @max_size(10) name; }")
 
-        chkOp("create user('Alexander');", "rt_err:entity:user:attribute:name:validator:size:too_small");
+        chkOp("create user('Alexander');", "rt_err:entity:user:attribute:name:validator:size:too_small")
         chkInsertViolatesCheckConstraint("c0.user", "name", "200,'Alexander'")
     }
 
@@ -196,7 +196,7 @@ internal class SqlSizeConstraintTest: BaseSqlInitTest() {
         chkInit("entity user { foo: byte_array; }")
         chkInit("entity user { @min_size(9) foo: byte_array; }")
 
-        chkOp("create user(x'1122');", "rt_err:entity:user:attribute:foo:validator:size:too_small");
+        chkOp("create user(x'1122');", "rt_err:entity:user:attribute:foo:validator:size:too_small")
         chkInsertViolatesCheckConstraint("c0.user", "foo", "200,'\\x1122'")
     }
 
@@ -204,7 +204,7 @@ internal class SqlSizeConstraintTest: BaseSqlInitTest() {
         chkInit("entity user { @max_size(10) foo: byte_array; }")
         chkInit("entity user { @max_size(9) foo: byte_array; }")
 
-        chkOp("create user(x'11223344556677889900');", "rt_err:entity:user:attribute:foo:validator:size:too_large");
+        chkOp("create user(x'11223344556677889900');", "rt_err:entity:user:attribute:foo:validator:size:too_large")
         chkInsertViolatesCheckConstraint("c0.user", "foo", "200,'\\x11223344556677889900'")
     }
 

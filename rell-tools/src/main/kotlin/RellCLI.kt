@@ -25,6 +25,7 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.lib.test.Lib_RellTest
 import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.SqlManager
@@ -115,18 +116,18 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
         val (entryModule, entryRoutine) = parseEntryPoint(this)
 
         if (batch || (entryModule != null && entryRoutine != null)) {
-            val app = RellToolsUtils.compileApp(sourceDir, entryModule, quiet, compilerOptions)
-            val module = if (entryModule == null) null else app.moduleMap[entryModule]
+            val compiled = RellToolsUtils.compileApp(sourceDir, entryModule, quiet, compilerOptions)
+            val module = if (entryModule == null) null else compiled.rrApp.moduleMap[entryModule]
             if (module != null && module.test) {
-                runSingleModuleTests(argsEx, app, module, entryRoutine)
+                runSingleModuleTests(argsEx, compiled, module, entryRoutine)
             } else {
-                runApp(globalCtx, this, dbSpecified, entryModule, entryRoutine, app)
+                runApp(globalCtx, this, dbSpecified, entryModule, entryRoutine, compiled)
             }
         } else if (entryModule != null) {
-            val app = RellToolsUtils.compileApp(sourceDir, entryModule, quiet, compilerOptions)
-            val module = app.moduleMap[entryModule]
+            val compiled = RellToolsUtils.compileApp(sourceDir, entryModule, quiet, compilerOptions)
+            val module = compiled.rrApp.moduleMap[entryModule]
             if (module != null && module.test) {
-                runSingleModuleTests(argsEx, app, module, entryRoutine)
+                runSingleModuleTests(argsEx, compiled, module, entryRoutine)
             } else {
                 runRepl(argsEx, entryModule)
             }
@@ -146,19 +147,19 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
         globalCtx: Rt_GlobalContext,
         args: RellInterpreterCommand,
         dbSpecified: Boolean,
-        entryModule: R_ModuleName?,
-        entryRoutine: R_QualifiedName?,
-        app: R_App
+        entryModule: ModuleName?,
+        entryRoutine: QualifiedName?,
+        compiled: RellCompiledApp,
     ) {
-        val launcher = getAppLauncher(args, app, entryModule, entryRoutine)
+        val interpreter = compiled.createInterpreter()
+        val appCtx = createRegularAppContext(globalCtx, interpreter)
+        val launcher = getAppLauncher(args, appCtx, entryModule, entryRoutine)
         if (launcher == null && !args.resetdb) {
             return
         }
 
-        val appCtx = createRegularAppContext(globalCtx, app)
-
         runWithSqlManager(args, true) { sqlMgr ->
-            val sqlCtx = RellApiBaseUtils.createSqlContext(app)
+            val sqlCtx = RellApiBaseUtils.createSqlContext(compiled.rrApp)
             if (dbSpecified) {
                 initDatabase(appCtx, args, sqlMgr, sqlCtx)
             }
@@ -168,49 +169,50 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
 
     private fun runSingleModuleTests(
         args: RellCliArgsEx,
-        app: R_App,
-        module: R_Module,
-        entryRoutine: R_QualifiedName?,
+        compiled: RellCompiledApp,
+        rrModule: RR_Module,
+        entryRoutine: QualifiedName?,
     ) {
-        val fns = UnitTestRunner.getTestFunctions(module, UnitTestMatcher.ANY)
-            .filter { entryRoutine == null || it.defName.qualifiedName == entryRoutine.str() }
-        runTests(args, app, fns)
+        val fns = compiled.getRRTestFunctions(rrModule.name, UnitTestMatcher.ANY)
+            .filter { entryRoutine == null || it.base.defName.qualifiedName == entryRoutine.str() }
+        runTests(args, compiled, fns)
     }
 
     private fun runMultiModuleTests(args: RellCliArgsEx, modules: List<String>) {
         val rModules = if (modules.isEmpty()) {
-            immListOf(R_ModuleName.EMPTY)
+            immListOf(ModuleName.EMPTY)
         } else {
-            modules.mapToImmList { R_ModuleName.ofOpt(it) ?: throw RellCliBasicException("Invalid module name: '$it'") }
+            modules.mapToImmList { ModuleName.ofOpt(it) ?: throw RellCliBasicException("Invalid module name: '$it'") }
         }
 
         val sourceDir = RellApiBaseUtils.createSourceDir(args.raw.sourceDir)
         val modSel = C_CompilerModuleSelection(immListOf(), rModules)
-        val app = RellToolsUtils.compileApp(sourceDir, modSel, args.raw.quiet, C_CompilerOptions.DEFAULT)
+        val compiled = RellToolsUtils.compileApp(sourceDir, modSel, args.raw.quiet, C_CompilerOptions.DEFAULT)
 
-        val testFns = UnitTestRunner.getTestFunctions(app, UnitTestMatcher.ANY)
-        runTests(args, app, testFns)
+        val testFns = compiled.getAllRRTestFunctions(UnitTestMatcher.ANY)
+        runTests(args, compiled, testFns)
     }
 
-    private fun runTests(args: RellCliArgsEx, app: R_App, fns: List<R_FunctionDefinition>) {
+    private fun runTests(args: RellCliArgsEx, compiled: RellCompiledApp, fns: List<RR_FunctionDefinition>) {
         val globalCtx = createGlobalCtx(args)
         val chainCtx = RellApiBaseUtils.createChainContext()
-        val sqlCtx = RellApiBaseUtils.createSqlContext(app)
+        val sqlCtx = RellApiBaseUtils.createSqlContext(compiled.rrApp)
 
         val sourceDir = RellApiBaseUtils.createSourceDir(args.raw.sourceDir)
-        val blockRunner = createBlockRunner(args, sourceDir, app)
+        val blockRunner = createBlockRunner(args, sourceDir, compiled.rrApp)
 
         val allOk = runWithSqlManager(args.raw, true) { sqlMgr ->
             val testCtx = UnitTestRunnerContext(
-                app,
-                Rt_OutPrinter,
-                sqlCtx,
-                sqlMgr,
-                PostchainSqlInitProjExt,
-                globalCtx,
-                chainCtx,
-                blockRunner,
+                app = compiled.rrApp,
+                printer = Rt_OutPrinter,
+                sqlCtx = sqlCtx,
+                sqlMgr = sqlMgr,
+                sqlInitProjExt = PostchainSqlInitProjExt,
+                globalCtx = globalCtx,
+                chainCtx = chainCtx,
+                blockRunner = blockRunner,
                 moduleArgsSource = Rt_ModuleArgsSource.NULL,
+                compilationSysFns = compiled.compilationSysFns,
             )
 
             val cases = fns.map { UnitTestCase(null, it) }
@@ -222,7 +224,7 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
         }
     }
 
-    private fun createBlockRunner(args: RellCliArgsEx, sourceDir: C_SourceDir, app: R_App): Rt_UnitTestBlockRunner {
+    private fun createBlockRunner(args: RellCliArgsEx, sourceDir: C_SourceDir, rrApp: RR_App): Rt_UnitTestBlockRunner {
         val keyPair = Lib_RellTest.BLOCK_RUNNER_KEYPAIR
 
         val blockRunnerConfig = Rt_BlockRunnerConfig(
@@ -231,7 +233,7 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
             dbInitLogLevel = RellPostchainModuleEnvironment.DEFAULT_DB_INIT_LOG_LEVEL,
         )
 
-        val blockRunnerModules = RellApiBaseUtils.getMainModules(app).toImmList()
+        val blockRunnerModules = RellApiBaseUtils.getMainModules(rrApp).toImmList()
         val compileConfig = RellApiCompile.Config.Builder()
             .cliEnv(RellCliEnv.NULL)
             .build()
@@ -240,7 +242,7 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
         return Rt_PostchainUnitTestBlockRunner(keyPair, blockRunnerConfig, blockRunnerStrategy)
     }
 
-    private fun runRepl(args: RellCliArgsEx, moduleName: R_ModuleName?) {
+    private fun runRepl(args: RellCliArgsEx, moduleName: ModuleName?) {
         runWithSqlManager(args.raw, false) { sqlMgr ->
             if (args.raw.resetdb) {
                 sqlMgr.transaction { sqlExec ->
@@ -293,7 +295,7 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
         SqlUtils.initDatabase(appCtx, sqlCtx, sqlMgr, PostchainSqlInitProjExt, args.resetdb, args.sqlInitLog)
     }
 
-    private fun parseEntryPoint(args: RellInterpreterCommand): Pair<R_ModuleName?, R_QualifiedName?> {
+    private fun parseEntryPoint(args: RellInterpreterCommand): Pair<ModuleName?, QualifiedName?> {
         val m = args.module
         val e = args.entry
 
@@ -301,11 +303,11 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
             return Pair(null, null)
         }
 
-        val moduleName = R_ModuleName.ofOpt(m) ?: throw RellCliBasicException("Invalid module name: '$m'")
+        val moduleName = ModuleName.ofOpt(m) ?: throw RellCliBasicException("Invalid module name: '$m'")
 
-        var routineName: R_QualifiedName? = null
+        var routineName: QualifiedName? = null
         if (e != null) {
-            routineName = R_QualifiedName.ofOpt(e)
+            routineName = QualifiedName.ofOpt(e)
             if (routineName == null || routineName.isEmpty()) throw RellCliBasicException("Invalid entry point name: '$e'")
         }
 
@@ -314,12 +316,12 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
 
     private fun getAppLauncher(
         args: RellInterpreterCommand,
-        app: R_App,
-        entryModule: R_ModuleName?,
-        entryRoutine: R_QualifiedName?
+        appCtx: Rt_AppContext,
+        entryModule: ModuleName?,
+        entryRoutine: QualifiedName?
     ): RellAppLauncher? {
         if (entryModule == null || entryRoutine == null) return null
-        val entryPoint = findEntryPoint(app, entryModule, entryRoutine)
+        val entryPoint = findEntryPoint(appCtx, entryModule, entryRoutine)
         return RellAppLauncher(args, entryPoint)
     }
 
@@ -355,18 +357,18 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
         return "$baseUrl?$query"
     }
 
-    private fun findEntryPoint(app: R_App, moduleName: R_ModuleName, routineName: R_QualifiedName): RellEntryPoint {
-        val module = app.modules.find { it.name == moduleName }
-        if (module == null) {
-            throw RellCliBasicException("Module not found: '$moduleName'")
-        }
+    private fun findEntryPoint(appCtx: Rt_AppContext, moduleName: ModuleName, routineName: QualifiedName): RellEntryPoint {
+        val rrApp = appCtx.rrApp
+        val interpreter = appCtx.interpreter
+        val rrModule = rrApp.moduleMap[moduleName]
+            ?: throw RellCliBasicException("Module not found: '$moduleName'")
 
         val name = routineName.str()
-        val mountName = R_MountName(routineName.parts)
+        val mountName = MountName(routineName.parts)
         val eps = mutableListOf<RellEntryPoint>()
 
-        val op = module.operations[name] ?: app.operations[mountName]
-        if (op != null) {
+        val rrOp = rrModule.operations[name] ?: rrApp.operations[mountName]
+        if (rrOp != null) {
             val time = System.currentTimeMillis() / 1000
             val opCtx = Rt_PostchainOpContext(
                 txCtx = Rt_CliPostchainTxContext,
@@ -377,14 +379,14 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
                 signers = immListOf(),
                 allOperations = immListOf()
             )
-            eps.add(RellEntryPoint_Operation(op, opCtx))
+            eps.add(RellEntryPoint_Operation(interpreter, rrOp, opCtx))
         }
 
-        val q = module.queries[name] ?: app.queries[mountName]
-        if (q != null) eps.add(RellEntryPoint_Query(q))
+        val rrQuery = rrModule.queries[name] ?: rrApp.queries[mountName]
+        if (rrQuery != null) eps.add(RellEntryPoint_Query(interpreter, rrQuery))
 
-        val f = module.functions[name]
-        if (f != null) eps.add(RellEntryPoint_Function(f))
+        val rrFn = rrModule.functions[name]
+        if (rrFn != null) eps.add(RellEntryPoint_Function(interpreter, rrFn))
 
         if (eps.isEmpty()) {
             throw RellCliBasicException("Found no operation, query or function with name '$name'")
@@ -392,13 +394,12 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
             throw RellCliBasicException("Found more than one definition with name '$name': ${eps.joinToString { it.kind }}")
         }
 
-        val ep = eps[0]
-        return ep
+        return eps[0]
     }
 
-    private fun createRegularAppContext(globalCtx: Rt_GlobalContext, app: R_App): Rt_AppContext {
+    private fun createRegularAppContext(globalCtx: Rt_GlobalContext, interpreter: Rt_Interpreter): Rt_AppContext {
         val chainCtx = RellApiBaseUtils.createChainContext()
-        return Rt_AppContext(globalCtx, chainCtx, app)
+        return Rt_AppContext(globalCtx, chainCtx, interpreter)
     }
 
     private fun createGlobalCtx(args: RellCliArgsEx): Rt_GlobalContext {
@@ -410,45 +411,44 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
 
     private fun parseArgs(
         entryPoint: RellEntryPoint,
+        interpreter: Rt_Interpreter,
         gtvCtx: GtvToRtContext,
         args: List<String>,
         json: Boolean,
     ): List<Rt_Value> {
-        val params = entryPoint.routine().params()
+        val params = entryPoint.params()
         if (args.size != params.size) {
             System.err.println("Wrong number of arguments: ${args.size} instead of ${params.size}")
             throw RellCliExitException(1)
         }
-        return args.withIndex().map { (idx, arg) -> parseArg(gtvCtx, params[idx], arg, json) }
+        return args.withIndex().map { (idx, arg) -> parseArg(interpreter, gtvCtx, params[idx], arg, json) }
     }
 
-    private fun parseArg(gtvCtx: GtvToRtContext, param: R_FunctionParam, arg: String, json: Boolean): Rt_Value {
-        val type = param.type
+    private fun parseArg(interpreter: Rt_Interpreter, gtvCtx: GtvToRtContext, param: RR_FunctionParam, arg: String, json: Boolean): Rt_Value {
+        val rtType = interpreter.resolveType(param.type)
 
         if (json) {
-            if (!type.completeFlags().gtv.fromGtv) {
-                throw RellCliBasicException("Parameter '${param.name}' of type ${type.strCode()} cannot be converted from Gtv")
-            }
+            val gtvConv = rtType.gtvConversion
+                ?: throw RellCliBasicException("Parameter '${param.name}' of type ${rtType.name} cannot be converted from Gtv")
             val gtv = PostchainGtvUtils.jsonToGtv(arg)
-            return type.gtvToRt(gtvCtx, gtv)
+            return gtvConv.gtvToRt(gtvCtx, gtv)
         }
 
         try {
-            return type.fromCli(arg)
+            return fromCliRR(interpreter, rtType, arg)
         } catch (_: UnsupportedOperationException) {
-            throw RellCliBasicException("Parameter '${param.name}' has unsupported type: ${type.strCode()}")
+            throw RellCliBasicException("Parameter '${param.name}' has unsupported type: ${rtType.name}")
         } catch (_: Exception) {
-            throw RellCliBasicException("Invalid value for type ${type.strCode()}: '$arg'")
+            throw RellCliBasicException("Invalid value for type ${rtType.name}: '$arg'")
         }
     }
 
     private fun resultToString(res: Rt_Value, json: Boolean): String {
         return if (json) {
-            val type = res.type()
-            if (!type.completeFlags().gtv.toGtv) {
-                throw RellCliBasicException("Result of type '${type.strCode()}' cannot be converted to Gtv")
-            }
-            val gtv = type.rtToGtv(res, true)
+            val rtType = res.type()
+            val gtvConv = rtType.gtvConversion
+                ?: throw RellCliBasicException("Result of type '${rtType.name}' cannot be converted to Gtv")
+            val gtv = gtvConv.rtToGtv(res, true)
             PostchainGtvUtils.gtvToJson(gtv)
         } else {
             res.toString()
@@ -513,7 +513,7 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
                 val exeCtx = Rt_ExecutionContext(appCtx, opCtx, sqlCtx, sqlExec)
 
                 val gtvCtx = GtvToRtContext.make(pretty = true, compilerOptions = exeCtx.globalCtx.compilerOptions)
-                val rtArgs = parseArgs(entryPoint, gtvCtx, args.entryArgs, args.json || args.jsonArgs)
+                val rtArgs = parseArgs(entryPoint, appCtx.interpreter, gtvCtx, args.entryArgs, args.json || args.jsonArgs)
                 gtvCtx.finish(exeCtx)
 
                 callEntryPoint(exeCtx, rtArgs)
@@ -546,45 +546,52 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
     private sealed class RellEntryPoint {
         abstract val kind: String
         abstract val transaction: Boolean
-        abstract fun routine(): R_RoutineDefinition
+        abstract fun params(): List<RR_FunctionParam>
         abstract fun opContext(): Rt_OpContext
         abstract fun call(exeCtx: Rt_ExecutionContext, args: List<Rt_Value>): Rt_Value?
     }
 
-    private class RellEntryPoint_Function(private val f: R_FunctionDefinition): RellEntryPoint() {
+    private class RellEntryPoint_Function(
+        private val interpreter: Rt_Interpreter,
+        private val f: RR_FunctionDefinition,
+    ): RellEntryPoint() {
         override val kind = "function"
         override val transaction = false
-        override fun routine() = f
+        override fun params() = f.fnBase.params
         override fun opContext() = Rt_NullOpContext
 
         override fun call(exeCtx: Rt_ExecutionContext, args: List<Rt_Value>): Rt_Value {
-            return f.callTop(exeCtx, args, true)
+            return interpreter.callFunction(f, exeCtx, args, dbUpdateAllowed = true)
         }
     }
 
     private class RellEntryPoint_Operation(
-        private val o: R_OperationDefinition,
+        private val interpreter: Rt_Interpreter,
+        private val o: RR_OperationDefinition,
         private val opCtx: Rt_OpContext,
     ): RellEntryPoint() {
         override val kind = "operation"
         override val transaction = true
-        override fun routine() = o
+        override fun params() = o.params
         override fun opContext() = opCtx
 
         override fun call(exeCtx: Rt_ExecutionContext, args: List<Rt_Value>): Rt_Value? {
-            o.call(exeCtx, args)
+            interpreter.callOperation(o, exeCtx, args)
             return null
         }
     }
 
-    private class RellEntryPoint_Query(private val q: R_QueryDefinition): RellEntryPoint() {
+    private class RellEntryPoint_Query(
+        private val interpreter: Rt_Interpreter,
+        private val q: RR_QueryDefinition,
+    ): RellEntryPoint() {
         override val kind = "query"
         override val transaction = false
-        override fun routine() = q
+        override fun params() = q.params()
         override fun opContext() = Rt_NullOpContext
 
         override fun call(exeCtx: Rt_ExecutionContext, args: List<Rt_Value>): Rt_Value {
-            return q.call(exeCtx, args)
+            return interpreter.callQuery(q, exeCtx, args)
         }
     }
 

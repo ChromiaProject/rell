@@ -161,7 +161,7 @@ class IdeSymbolExprAtTest: BaseIdeSymbolTest() {
     }
 
     private fun chkAtItemDbDollar1(stmt: String) {
-        chkAtItemDb1(stmt, "$=LOC_AT_ALIAS|-|local[user:0]", "?doc=AT_VAR_DB|$|$: [user]",)
+        chkAtItemDb1(stmt, "$=LOC_AT_ALIAS|-|local[user:0]", "?doc=AT_VAR_DB|$|$: [user]")
     }
 
     private fun chkAtItemDbDollar2(stmt: String) {

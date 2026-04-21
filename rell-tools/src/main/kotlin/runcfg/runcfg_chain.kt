@@ -10,7 +10,7 @@ import net.postchain.gtv.builder.GtvBuilder
 import net.postchain.rell.api.base.RellApiBaseInternal
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliEnv
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.gtx.PostchainBaseUtils
 
@@ -45,12 +45,12 @@ class RunConfigChainConfigGen private constructor(private val cliEnv: RellCliEnv
         chain: Rcfg_Chain,
         brids: Map<Rcfg_Chain, Bytes32>,
         replaceSigners: Collection<Bytes33>?,
-        commonTestModules: Set<R_ModuleName>
+        commonTestModules: Set<ModuleName>
     ): RellPostAppChain {
         val chainTestModules = (commonTestModules + chain.tests.map { it.module }.toSet()).toList()
 
         val resConfigs = mutableMapOf<Long, RellPostAppChainConfig>()
-        val modules = mutableSetOf<R_ModuleName>()
+        val modules = mutableSetOf<ModuleName>()
 
         for (config in chain.configs) {
             val resConfig = genChainConfig0(config, brids, replaceSigners, chainTestModules)
@@ -73,10 +73,10 @@ class RunConfigChainConfigGen private constructor(private val cliEnv: RellCliEnv
         config: Rcfg_ChainConfig,
         brids: Map<Rcfg_Chain, Bytes32>,
         replaceSigners: Collection<Bytes33>?,
-        testModules: List<R_ModuleName>
+        testModules: List<ModuleName>
     ): RellPostAppChainConfig {
         val b = GtvBuilder()
-        var module: R_ModuleName? = null
+        var module: ModuleName? = null
 
         if (config.app != null) {
             val (moduleGtv, appModule) = genAppConfig(config.app)
@@ -110,7 +110,7 @@ class RunConfigChainConfigGen private constructor(private val cliEnv: RellCliEnv
         return RellPostAppChainConfig(module, testModules, gtv)
     }
 
-    private fun genAppConfig(app: Rcfg_App): Pair<Gtv, R_ModuleName> {
+    private fun genAppConfig(app: Rcfg_App): Pair<Gtv, ModuleName> {
         val b = GtvBuilder()
 
         if (app.addDefaults) {

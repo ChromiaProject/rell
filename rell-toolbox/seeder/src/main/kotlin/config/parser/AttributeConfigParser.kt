@@ -5,8 +5,10 @@
 package net.postchain.rell.toolbox.seeder.config.parser
 
 import com.fasterxml.jackson.databind.JsonNode
-import net.postchain.rell.base.lib.type.*
-import net.postchain.rell.base.model.R_EnumType
+import net.postchain.rell.base.model.R_IntegerType
+import net.postchain.rell.base.model.R_TextType
+import net.postchain.rell.base.model.rr.RR_PrimitiveKind
+import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.toolbox.seeder.schema.Attribute
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.config.Distribution
@@ -41,22 +43,30 @@ class AttributeConfigParser {
         )
         if (!checkCompatibleTypes(attribute, generator)) {
             throw ConfigurationValidationException(
-                "is type '${attribute.type.str()}' but generator '${attribute.type.str()}' returns type '${generator.type.str()}'"
+                "is type '${attribute.typeStr()}' but generator '${attribute.typeStr()}' returns type '${generator.type.str()}'"
             )
         }
         return AttributeConfig.DataPatternConfig(generatorType)
     }
 
     private fun checkCompatibleTypes(attribute: Attribute, generator: DataPatternGenerator): Boolean {
-        if (attribute.type == generator.type) {
-            return true
-        }
+        val attrType = attribute.type
+        val genType = generator.type
 
-        return when (attribute.type) {
-            is R_BigIntegerType if generator.type is R_IntegerType -> true
-            is R_DecimalType if generator.type is R_IntegerType -> true
-            is R_JsonType if generator.identifier == "random.json" -> true
-            is R_EnumType if generator.identifier == "random.enum" -> true
+        // Check if the types match by comparing RR_Type kind against R_Type
+        if (attrType is RR_Type.Primitive && genType is R_TextType && attrType.kind == RR_PrimitiveKind.TEXT) return true
+        if (attrType is RR_Type.Primitive && genType is R_IntegerType && attrType.kind == RR_PrimitiveKind.INTEGER) return true
+
+        // Use typeStr() for structural matching: attribute.typeStr() gives a lowercase name
+        val attrTypeStr = attribute.typeStr()
+        val genTypeStr = genType.str()
+        if (attrTypeStr == genTypeStr) return true
+
+        return when {
+            attrType is RR_Type.Primitive && attrType.kind == RR_PrimitiveKind.BIG_INTEGER && genType is R_IntegerType -> true
+            attrType is RR_Type.Primitive && attrType.kind == RR_PrimitiveKind.DECIMAL && genType is R_IntegerType -> true
+            attrType is RR_Type.Primitive && attrType.kind == RR_PrimitiveKind.JSON && generator.identifier == "random.json" -> true
+            attrType is RR_Type.Enum && generator.identifier == "random.enum" -> true
             else -> false
         }
     }
@@ -110,7 +120,7 @@ class AttributeConfigParser {
     ): Pair<BigInteger, BigInteger> {
         if (!attribute.isNumberType()) {
             throw ConfigurationValidationException(
-                "type is '${attribute.type.str()}' but generator is configured as a numeric range type"
+                "type is '${attribute.typeStr()}' but generator is configured as a numeric range type"
             )
         }
         val min = attributeNode.get("min").bigIntegerValue()
@@ -124,11 +134,12 @@ class AttributeConfigParser {
     }
 
     private fun validateNumberRange(value: BigInteger, attribute: Attribute) {
-        when (attribute.type) {
-            is R_BigIntegerType -> inRange(value, BIG_INTEGER_MIN_VALUE, BIG_INTEGER_MAX_VALUE)
-            is R_IntegerType -> inRange(value, INTEGER_MIN_VALUE, INTEGER_MAX_VALUE)
-            is R_RowidType -> inRange(value, BigInteger.ONE, INTEGER_MAX_VALUE)
-            is R_DecimalType -> inRange(value, BIG_INTEGER_MIN_VALUE, BIG_INTEGER_MAX_VALUE)
+        val type = attribute.type
+        when {
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BIG_INTEGER -> inRange(value, BIG_INTEGER_MIN_VALUE, BIG_INTEGER_MAX_VALUE)
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.INTEGER -> inRange(value, INTEGER_MIN_VALUE, INTEGER_MAX_VALUE)
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.ROWID -> inRange(value, BigInteger.ONE, INTEGER_MAX_VALUE)
+            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.DECIMAL -> inRange(value, BIG_INTEGER_MIN_VALUE, BIG_INTEGER_MAX_VALUE)
             else -> throw ConfigurationValidationException(
                 "range generator requires min and max to be within the range of the type"
             )
@@ -154,7 +165,7 @@ class AttributeConfigParser {
     private fun validateTextType(attribute: Attribute) {
         if (!attribute.isTextType()) {
             throw ConfigurationValidationException(
-                "type is '${attribute.type.str()}' but generator is as configured as text type"
+                "type is '${attribute.typeName()}' but generator is as configured as text type"
             )
         }
     }

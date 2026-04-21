@@ -28,13 +28,13 @@ import net.postchain.rell.api.base.RellCliExitException
 import net.postchain.rell.api.gtx.*
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
-import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.SqlInitLogging
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.gtx.PostchainBaseUtils
 import net.postchain.rell.module.RellPostchainModuleEnvironment
+import net.postchain.rell.tools.RellCompiledApp
 import net.postchain.rell.tools.RellToolsLogUtils
 import net.postchain.rell.tools.RellToolsUtils
 import org.apache.commons.configuration2.PropertiesConfiguration
@@ -172,7 +172,7 @@ private class RellRunConfigLaunchCommand : RellRunConfigCommand("RellRunConfigLa
         val nodeAppConf = getNodeConfig(rellAppConf, testNodeConfig)
         val keyPair = BytesKeyPair(nodeAppConf.privKeyByteArray, nodeAppConf.pubKeyByteArray)
 
-        class TestChain(val chain: RellPostAppChain, val rApp: R_App, val gtvConfig: Gtv)
+        class TestChain(val chain: RellPostAppChain, val compiled: RellCompiledApp, val gtvConfig: Gtv)
 
         val sortedChains = rellAppConf.config.chains
             .filter { targetChains == null || it.name in targetChains }
@@ -184,8 +184,8 @@ private class RellRunConfigLaunchCommand : RellRunConfigCommand("RellRunConfigLa
                 val modules = immListOf(config.appModule)
                 val testModules = (modules.toSet() + config.testModules.toSet()).toImmList()
                 val modSel = C_CompilerModuleSelection(modules, testModules)
-                val rApp = RellToolsUtils.compileApp(rellAppConf.sourceDir, modSel, true, compilerOptions)
-                TestChain(chain, rApp, config.gtvConfig)
+                val compiled = RellToolsUtils.compileApp(rellAppConf.sourceDir, modSel, true, compilerOptions)
+                TestChain(chain, compiled, config.gtvConfig)
             }
         }
 
@@ -197,31 +197,32 @@ private class RellRunConfigLaunchCommand : RellRunConfigCommand("RellRunConfigLa
         RellApiGtxUtils.runWithSqlManager(dbUrl, args.sqlLog, false) { sqlMgr ->
             for (tChain in tChains) {
                 val globalCtx = RellApiBaseUtils.createGlobalContext(compilerOptions, typeCheck = true)
-                val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(tChain.rApp, Rt_ChainSqlMapping(tChain.chain.iid))
+                val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(tChain.compiled.rrApp, Rt_ChainSqlMapping(tChain.chain.iid))
                 val chainCtx = Rt_ChainContext(tChain.gtvConfig, tChain.chain.brid)
 
                 val moduleArgsSource = PostchainBaseUtils.createModuleArgsSource(
-                    tChain.rApp,
+                    tChain.compiled.rrApp,
                     tChain.gtvConfig,
                     compilerOptions,
                 )
 
                 val blockRunner = createBlockRunner(args, keyPair, tChain.gtvConfig)
 
-                val fns = UnitTestRunner.getTestFunctions(tChain.rApp, matcher)
+                val fns = tChain.compiled.getAllRRTestFunctions(matcher)
                 val tc = UnitTestRunnerChain(tChain.chain.name, tChain.chain.iid)
                 val cases = fns.map { UnitTestCase(tc, it) }
 
                 val testCtx = UnitTestRunnerContext(
-                    tChain.rApp,
-                    printer,
-                    sqlCtx,
-                    sqlMgr,
-                    PostchainSqlInitProjExt,
-                    globalCtx,
-                    chainCtx,
-                    blockRunner,
+                    app = tChain.compiled.rrApp,
+                    printer = printer,
+                    sqlCtx = sqlCtx,
+                    sqlMgr = sqlMgr,
+                    sqlInitProjExt = PostchainSqlInitProjExt,
+                    globalCtx = globalCtx,
+                    chainCtx = chainCtx,
+                    blockRunner = blockRunner,
                     moduleArgsSource = moduleArgsSource,
+                    compilationSysFns = tChain.compiled.compilationSysFns,
                 )
 
                 UnitTestRunner.runTests(testCtx, cases, testRes)

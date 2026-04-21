@@ -1,0 +1,95 @@
+/*
+ * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+ */
+
+package net.postchain.rell.base.compiler.ast
+
+import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
+import net.postchain.rell.base.compiler.base.core.C_MountContext
+import net.postchain.rell.base.compiler.base.core.C_Name
+import net.postchain.rell.base.compiler.base.core.C_NamespaceContext
+import net.postchain.rell.base.compiler.base.modifier.*
+import net.postchain.rell.base.compiler.parser.S_Keywords
+import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.doc.DocModifier
+import net.postchain.rell.base.utils.doc.DocModifiers
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapNotNullToImmList
+
+sealed class S_Modifier(val pos: S_Pos) {
+    abstract fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier?
+    open fun ideIsTestFile(): Boolean = false
+    abstract fun isKeywordModifier(kind: S_KeywordModifierKind): Boolean
+}
+
+internal class S_KeywordModifier(private val kw: C_Name, private val kind: S_KeywordModifierKind): S_Modifier(kw.pos) {
+    override fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier? {
+        return modValues.compileKeyword(ctx, kw, kind)
+    }
+
+    override fun isKeywordModifier(kind: S_KeywordModifierKind): Boolean = kind == this.kind
+}
+
+enum class S_KeywordModifierKind(val kw: String) {
+    ABSTRACT(S_Keywords.ABSTRACT),
+    MUTABLE(S_Keywords.MUTABLE),
+    OVERRIDE(S_Keywords.OVERRIDE),
+}
+
+internal sealed class S_AnnotationArg {
+    abstract fun compile(ctx: C_ModifierContext): C_AnnotationArg
+}
+
+internal class S_AnnotationArg_Value(val expr: S_LiteralExpr): S_AnnotationArg() {
+    override fun compile(ctx: C_ModifierContext): C_AnnotationArg {
+        val value = expr.constantValue()
+        return C_AnnotationArg_Value(expr.startPos, value)
+    }
+}
+
+internal class S_AnnotationArg_Name(val name: S_QualifiedName): S_AnnotationArg() {
+    override fun compile(ctx: C_ModifierContext): C_AnnotationArg {
+        val nameHand = name.compile(ctx.symCtx)
+        for (partHand in nameHand.parts) {
+            partHand.setDefaultIdeInfo(C_IdeSymbolInfo.UNKNOWN)
+        }
+        return C_AnnotationArg_Name(nameHand)
+    }
+}
+
+internal class S_Annotation(val name: S_Name, val args: ImmList<S_AnnotationArg>): S_Modifier(name.pos) {
+    override fun compile(ctx: C_ModifierContext, modValues: C_FixedModifierValues): DocModifier? {
+        val cArgs = args.map { it.compile(ctx) }
+        return modValues.compileAnnotation(ctx, name, cArgs)
+    }
+
+    override fun ideIsTestFile(): Boolean {
+        val rName = name.getRNameSpecial()
+        return rName.str == C_Annotations.TEST
+    }
+
+    override fun isKeywordModifier(kind: S_KeywordModifierKind): Boolean = false
+}
+
+class S_Modifiers(val modifiers: ImmList<S_Modifier> = immListOf()) {
+    val pos = modifiers.firstOrNull()?.pos
+
+    fun compile(modifierCtx: C_ModifierContext, modValues: C_ModifierValues): DocModifiers {
+        val fixModValues = modValues.fix()
+
+        val docMods = modifiers.mapNotNullToImmList {
+            it.compile(modifierCtx, fixModValues)
+        }
+
+        return DocModifiers.make(docMods)
+    }
+
+    fun compile(ctx: C_MountContext, modValues: C_ModifierValues): DocModifiers {
+        return compile(ctx.nsCtx, modValues)
+    }
+
+    fun compile(ctx: C_NamespaceContext, modValues: C_ModifierValues): DocModifiers {
+        val modifierCtx = C_ModifierContext(ctx.msgCtx, ctx.symCtx)
+        return compile(modifierCtx, modValues)
+    }
+}

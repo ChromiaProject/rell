@@ -4,13 +4,12 @@
 
 package net.postchain.rell.base.compiler.lib
 
-import net.postchain.rell.base.lib.type.R_IntegerType
-import net.postchain.rell.base.lib.type.R_TextType
 import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lmodel.L_ParamArity
-import net.postchain.rell.base.model.R_TupleType
-import net.postchain.rell.base.model.Rt_TupleValue
+import net.postchain.rell.base.runtime.Rt_PrimitiveTypes
+import net.postchain.rell.base.runtime.Rt_TupleValue
+import net.postchain.rell.base.runtime.rtTupleType
 import kotlin.test.Test
 
 class CLibFunctionPartCallTest: BaseCLibTest() {
@@ -169,8 +168,10 @@ class CLibFunctionPartCallTest: BaseCLibTest() {
         }
         chkEx("{ val f: (integer) -> text = _foo(*); return f; }", "fn[_foo(*)]")
         chkEx("{ val f: (integer) -> text = _foo(*); return f(123); }", "text[_foo:int[123]]")
-        chkEx("{ val f: (boolean) -> text = _foo(*); return f; }",
-            "ct_err:stmt_var_type:f:[(boolean)->text]:[(integer)->text]")
+        chkEx(
+            "{ val f: (boolean) -> text = _foo(*); return f; }",
+            "ct_err:stmt_var_type:f:[(boolean)->text]:[(integer)->text]"
+        )
     }
 
     @Test fun testPartCallExactMatchParams() {
@@ -190,8 +191,10 @@ class CLibFunctionPartCallTest: BaseCLibTest() {
         }
 
         chkEx("{ val f = _foo(*); return _type_of(f); }", "ct_err:expr:call:partial_ambiguous:[_foo]")
-        chkEx("{ val f: ((integer,text)) -> text = _foo(*); return _type_of(f); }",
-            "ct_err:expr:call:partial_ambiguous:[_foo]")
+        chkEx(
+            "{ val f: ((integer,text)) -> text = _foo(*); return _type_of(f); }",
+            "ct_err:expr:call:partial_ambiguous:[_foo]"
+        )
 
         chkEx("{ val f: ((integer?,text)) -> text = _foo(*); return _type_of(f); }", "text[((integer?,text))->text]")
         chkEx("{ val f: ((integer?,text)) -> text = _foo(*); return f((1,'A')); }", "text[_foo_0:(int[1],text[A])]")
@@ -205,21 +208,23 @@ class CLibFunctionPartCallTest: BaseCLibTest() {
 
     @Test fun testPartCallExactMatchResult() {
         tst.extraMod = makeModule {
-            val tupleType = R_TupleType.make(R_IntegerType, R_TextType)
+            val tupleRtType = rtTupleType(Rt_PrimitiveTypes.INTEGER, Rt_PrimitiveTypes.TEXT)
             function("_foo", "(integer?,text)") {
-                body { -> Rt_TupleValue.make(tupleType, Rt_IntValue.get(1), Rt_TextValue.get("_foo_0")) }
+                body { -> Rt_TupleValue.make(tupleRtType, Rt_IntValue.get(1), Rt_TextValue.get("_foo_0")) }
             }
             function("_foo", "(integer,text?)") {
-                body { -> Rt_TupleValue.make(tupleType, Rt_IntValue.get(1), Rt_TextValue.get("_foo_1")) }
+                body { -> Rt_TupleValue.make(tupleRtType, Rt_IntValue.get(1), Rt_TextValue.get("_foo_1")) }
             }
             function("_foo", "(integer?,text?)") {
-                body { -> Rt_TupleValue.make(tupleType, Rt_IntValue.get(1), Rt_TextValue.get("_foo_2")) }
+                body { -> Rt_TupleValue.make(tupleRtType, Rt_IntValue.get(1), Rt_TextValue.get("_foo_2")) }
             }
         }
 
         chkEx("{ val f = _foo(*); return _type_of(f); }", "ct_err:expr:call:partial_ambiguous:[_foo]")
-        chkEx("{ val f: () -> (integer,text) = _foo(*); return _type_of(f); }",
-            "ct_err:expr:call:partial_ambiguous:[_foo]")
+        chkEx(
+            "{ val f: () -> (integer,text) = _foo(*); return _type_of(f); }",
+            "ct_err:expr:call:partial_ambiguous:[_foo]"
+        )
 
         chkEx("{ val f: () -> (integer?,text) = _foo(*); return _type_of(f); }", "text[()->(integer?,text)]")
         chkEx("{ val f: () -> (integer?,text) = _foo(*); return f(); }", "(int[1],text[_foo_0])")
@@ -230,7 +235,9 @@ class CLibFunctionPartCallTest: BaseCLibTest() {
         chkEx("{ val f: () -> (integer?,text?) = _foo(*); return _type_of(f); }", "text[()->(integer?,text?)]")
         chkEx("{ val f: () -> (integer?,text?) = _foo(*); return f(); }", "(int[1],text[_foo_2])")
 
-        chkEx("{ val f: () -> (integer?,text?)? = _foo(*); return _type_of(f); }",
-            "ct_err:expr:call:partial_ambiguous:[_foo]")
+        chkEx(
+            "{ val f: () -> (integer?,text?)? = _foo(*); return _type_of(f); }",
+            "ct_err:expr:call:partial_ambiguous:[_foo]"
+        )
     }
 }

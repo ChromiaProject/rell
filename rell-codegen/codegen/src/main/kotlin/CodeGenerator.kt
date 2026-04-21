@@ -2,13 +2,19 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
+@file:OptIn(InternalRellApi::class)
+
 package net.postchain.rell.codegen
 
+
+import net.postchain.rell.api.base.InternalRellApi
+import net.postchain.rell.api.base.RellApiBaseInternal
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliEnv
-import net.postchain.rell.base.lib.type.R_CollectionType
-import net.postchain.rell.base.lib.type.R_MapType
+import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.section.DocumentSection
@@ -28,7 +34,11 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
                 .docSymbolsEnabled(true)
                 .cliEnv(rellCliEnv)
                 .build()
-        val app = RellApiCompile.compileApp(conf, source, modules)
+        val cSourceDir = C_SourceDir.diskDir(source)
+        val rAppModules = modules?.mapToImmList { ModuleName.of(it) }
+        val options = RellApiBaseInternal.makeCompilerOptions(conf)
+        val (apiRes, _) = RellApiBaseInternal.compileApp(conf, options, cSourceDir, rAppModules, immListOf())
+        val app = apiRes.cRes.app ?: error("Compilation failed")
         return createSections(app)
     }
 

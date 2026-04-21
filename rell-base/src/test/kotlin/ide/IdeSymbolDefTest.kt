@@ -432,11 +432,12 @@ class IdeSymbolDefTest: BaseIdeSymbolTest() {
 
         chkSymsFile("def.rell",
             "op=DEF_OPERATION|operation[op]|-",
-            "?doc=OPERATION|:op|op|<operation> op(\n\tx: [integer],\n\ty: [decimal] = 123.0,\n\tz: [text]\n)",
+            // Type-adapted default values (integer 123 -> decimal) cannot be resolved as compile-time constants.
+            "?doc=OPERATION|:op|op|<operation> op(\n\tx: [integer],\n\ty: [decimal] = <...>,\n\tz: [text]\n)",
             "x=LOC_PARAMETER|operation[op].param[x]|-",
             "?doc=PARAMETER|x|x: [integer]",
             "y=LOC_PARAMETER|operation[op].param[y]|-",
-            "?doc=PARAMETER|y|y: [decimal] = 123.0",
+            "?doc=PARAMETER|y|y: [decimal] = <...>",
             "z=LOC_PARAMETER|operation[op].param[z]|-",
             "?doc=PARAMETER|z|z: [text]",
             "x=LOC_PARAMETER|-|def.rell/operation[op].param[x]",

@@ -4,7 +4,6 @@ plugins {
 
 dependencies {
     implementation(projects.rellCodegen.codegen)
-    implementation(projects.rellBase)
     implementation(projects.rellApiBase)
 
     implementation(libs.postchain.client)

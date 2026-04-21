@@ -24,7 +24,7 @@ import net.postchain.gtv.GtvType
 import net.postchain.gtx.GTXModule
 import net.postchain.gtx.GTXSchemaManager
 import net.postchain.gtx.data.ExtOpData
-import net.postchain.rell.base.model.R_App
+import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.testutils.*
 import net.postchain.rell.base.utils.CommonUtils
@@ -51,7 +51,7 @@ class RellGtxTester(
         super.chainId = chainId
     }
 
-    override fun initSqlReset(sqlExec: SqlExecutor, moduleCode: String, app: R_App) {
+    override fun initSqlReset(sqlExec: SqlExecutor, moduleCode: String, rrApp: RR_App) {
         val bRid = BlockchainRid(blockchainRid.hexStringToByteArray())
 
         val gtxModule = createGtxModule(moduleCode)
@@ -111,20 +111,18 @@ class RellGtxTester(
         return gtv.asDict()
     }
 
-    private fun callQuery0(moduleCode: String, name: String, args: Map<String, Gtv>): String {
-        return eval.eval {
-            eval.wrapRt { init() }
+    private fun callQuery0(moduleCode: String, name: String, args: Map<String, Gtv>): String = eval.eval {
+        eval.wrapRt { init() }
 
-            val queryGtv = GtvFactory.gtv(args)
+        val queryGtv = GtvFactory.gtv(args)
 
-            val module = eval.wrapAll { createGtxModule(moduleCode) }
+        val module = eval.wrapAll { createGtxModule(moduleCode) }
 
-            withEContext(false) { ctx ->
-                val res = eval.wrapRt {
-                    module.query(ctx, name, queryGtv)
-                }
-                GtvTestUtils.gtvToStr(res)
+        withEContext(false) { ctx ->
+            val res = eval.wrapRt {
+                module.query(ctx, name, queryGtv)
             }
+            GtvTestUtils.gtvToStr(res)
         }
     }
 
@@ -135,9 +133,7 @@ class RellGtxTester(
         assertEquals(expected, actual)
     }
 
-    fun normalizeQuotes(str: String): String {
-        return str.replace('\'', '"')
-    }
+    private fun normalizeQuotes(str: String): String = str.replace('\'', '"')
 
     fun chkOpEx(code: String, args: List<Gtv>, expected: String = "OK") {
         val moduleCode = moduleCode(code)

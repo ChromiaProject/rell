@@ -5,7 +5,7 @@
 package com.chromia.rell.dokka.doc
 
 import com.chromia.rell.dokka.dri.toDRI
-import net.postchain.rell.base.model.R_QualifiedName
+import net.postchain.rell.base.model.QualifiedName
 import org.jetbrains.dokka.analysis.markdown.jb.MarkdownParser
 import org.jetbrains.dokka.model.doc.See
 import org.jetbrains.dokka.model.doc.Throws
@@ -13,7 +13,7 @@ import org.jetbrains.dokka.model.doc.Throws
 class RellMarkdownParser(sourceLocation: String? = null) : MarkdownParser(
         {
             try {
-                R_QualifiedName.of(it).toDRI()
+                QualifiedName.of(it).toDRI()
             } catch (e: Exception) {
                 null
             }

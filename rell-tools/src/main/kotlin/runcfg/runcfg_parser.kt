@@ -6,7 +6,7 @@ package net.postchain.rell.tools.runcfg
 
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.utils.*
 
 class RunConfigParserOptions(
@@ -233,7 +233,7 @@ object RunConfigParser {
         val addDefaults = attrs.getBooleanOpt("add-defaults") ?: true
         attrs.checkNoMore()
 
-        val args = mutableMapOf<R_ModuleName, Gtv>()
+        val args = mutableMapOf<ModuleName, Gtv>()
 
         for (elem in app.elems) {
             when (elem.tag) {
@@ -249,7 +249,7 @@ object RunConfigParser {
         return Rcfg_App(module, args.toImmMap(), addDefaults)
     }
 
-    private fun parseModuleArgs(args: RellXmlElement): Pair<R_ModuleName, Gtv> {
+    private fun parseModuleArgs(args: RellXmlElement): Pair<ModuleName, Gtv> {
         args.checkNoText()
 
         val attrs = args.attrs()
@@ -356,9 +356,9 @@ object RunConfigParser {
         return Rcfg_Dependency(depChain, null)
     }
 
-    private fun getModuleNameAttr(elem: RellXmlElement, attrs: RellXmlAttrsParser, attr: String): R_ModuleName {
+    private fun getModuleNameAttr(elem: RellXmlElement, attrs: RellXmlAttrsParser, attr: String): ModuleName {
         val moduleStr = attrs.get(attr)
-        val module = R_ModuleName.ofOpt(moduleStr)
+        val module = ModuleName.ofOpt(moduleStr)
         return module ?: throw elem.error("Invalid module name: '${moduleStr}'")
     }
 

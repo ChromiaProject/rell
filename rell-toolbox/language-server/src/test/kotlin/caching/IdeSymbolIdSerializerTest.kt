@@ -8,7 +8,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
 import assertk.assertions.isNotNull
-import net.postchain.rell.base.model.R_Name
+import net.postchain.rell.base.model.Name
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.toImmList
@@ -23,8 +23,8 @@ class IdeSymbolIdSerializerTest {
             IdeSymbolCategory.FUNCTION,
             "dummyFunction",
             listOf(
-                Pair(IdeSymbolCategory.PARAMETER, R_Name.of("dummyParameter")),
-                Pair(IdeSymbolCategory.ATTRIBUTE, R_Name.of("dummyAttribute"))
+                Pair(IdeSymbolCategory.PARAMETER, Name.of("dummyParameter")),
+                Pair(IdeSymbolCategory.ATTRIBUTE, Name.of("dummyAttribute"))
             ).toImmList()
         )
 

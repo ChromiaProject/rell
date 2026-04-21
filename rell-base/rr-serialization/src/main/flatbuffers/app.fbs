@@ -1,0 +1,64 @@
+// Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+
+include "common.fbs";
+include "def.fbs";
+
+namespace rell.ir;
+
+/// A module in the Rell application.
+table Module {
+    name: ModuleName (required);
+    directory: bool = false;
+    abstract: bool = false;
+    external: bool = false;
+    external_chain: string;
+    test: bool = false;
+    disabled: bool = false;
+    selected: bool = true;
+
+    /// Indices into the App-level flat arrays.
+    entity_indices: [uint] (required);
+    object_indices: [uint] (required);
+    struct_indices: [uint] (required);
+    enum_indices: [uint] (required);
+    operation_indices: [uint] (required);
+    query_indices: [uint] (required);
+    function_indices: [uint] (required);
+    constant_indices: [uint] (required);
+
+    imports: [ModuleName];
+    module_args_struct_index: int = -1;  // -1 if none
+}
+
+/// Root table for a serialized Rell application.
+table App {
+    /// Schema version. Bumped on breaking changes.
+    version: uint32 = 1;
+
+    /// Flat arrays of all definitions (cross-referenced by index).
+    entities: [EntityDefinition] (required);
+    objects: [ObjectDefinition] (required);
+    structs: [StructDefinition] (required);
+    enums: [EnumDefinition] (required);
+    operations: [OperationDefinition] (required);
+    queries: [QueryDefinition] (required);
+    functions: [FunctionDefinition] (required);
+    constants: [GlobalConstantDefinition] (required);
+
+    modules: [Module] (required);
+
+    external_chains: [ExternalChainRef];
+
+    /// System queries not in any module (rell.get_app_structure, etc.).
+    sys_queries: [QueryDefinition];
+
+    /// Extendable function extension bodies, indexed by extendableUidId.
+    function_extensions: [FunctionExtensions];
+}
+
+table FunctionExtensions {
+    uid: int;
+    extensions: [FunctionBody] (required);
+}
+
+root_type App;

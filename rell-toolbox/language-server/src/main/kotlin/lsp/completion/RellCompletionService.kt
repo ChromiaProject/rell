@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.lsp.completion
 
 import com.google.gson.JsonObject
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeDirApi
 import net.postchain.rell.toolbox.indexer.RellCompilerUtils
@@ -108,10 +108,10 @@ class RellCompletionService(
     }
 
     private fun isModuleValidCandidate(
-        resource: Resource,
-        fileResource: Resource,
-        moduleName: R_ModuleName?,
-        activeModule: R_ModuleName
+            resource: Resource,
+            fileResource: Resource,
+            moduleName: ModuleName?,
+            activeModule: ModuleName
     ) = (resource.isTest() && !fileResource.isTest()) || (moduleName == null || moduleName == activeModule)
 
     fun getReplacementText(document: Document, offset: Int, completion: String): String {

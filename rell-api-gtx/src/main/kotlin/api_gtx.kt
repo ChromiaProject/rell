@@ -11,12 +11,18 @@ import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.lib.test.Lib_RellTest
-import net.postchain.rell.base.model.R_App
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.runtime.Rt_GtvModuleArgsSource
 import net.postchain.rell.base.runtime.Rt_LogPrinter
 import net.postchain.rell.base.runtime.Rt_OutPrinter
 import net.postchain.rell.base.runtime.Rt_Printer
+import net.postchain.rell.base.utils.UnitTestCase
+import net.postchain.rell.base.utils.UnitTestCaseResult
+import net.postchain.rell.base.utils.UnitTestMatcher
+import net.postchain.rell.base.utils.UnitTestRunner
+import net.postchain.rell.base.utils.UnitTestRunnerContext
+import net.postchain.rell.base.utils.UnitTestRunnerResults
 import net.postchain.rell.base.sql.SqlInitLogging
 import net.postchain.rell.base.sql.SqlInterceptor
 import net.postchain.rell.base.utils.*
@@ -63,47 +69,49 @@ public object RellApiRunTests {
         testModules: List<String>,
     ): UnitTestRunnerResults {
         val cSourceDir = C_SourceDir.diskDir(sourceDir)
-        val rAppModules = appModules?.mapToImmList { R_ModuleName.of(it) }
-        val rTestModules = testModules.mapToImmList { R_ModuleName.of(it) }
+        val rAppModules = appModules?.mapToImmList { ModuleName.of(it) }
+        val rTestModules = testModules.mapToImmList { ModuleName.of(it) }
 
         val compileConfig = config.compileConfig
         val options = RellApiGtxInternal.makeRunTestsCompilerOptions(config)
-        val (_, app) = RellApiBaseInternal.compileApp(compileConfig, options, cSourceDir, rAppModules, rTestModules)
+        val (apiRes, app) = RellApiBaseInternal.compileApp(compileConfig, options, cSourceDir, rAppModules, rTestModules)
 
-        return RellApiGtxInternal.runTests(config, options, cSourceDir, app, rAppModules)
+        return RellApiGtxInternal.runTests(
+            config, options, cSourceDir, app, rAppModules, apiRes.cRes.compilationSysFns,
+        )
     }
 
     public class Config(
-        /** Compilation config. */
+            /** Compilation config. */
         public val compileConfig: RellApiCompile.Config,
-        /** CLI environment used to print tests execution progress (test cases) and results. */
+            /** CLI environment used to print tests execution progress (test cases) and results. */
         public val cliEnv: RellCliEnv,
-        /** Stop tests after the first error. */
+            /** Stop tests after the first error. */
         public val stopOnError: Boolean,
-        /** Database URL. */
+            /** Database URL. */
         public val databaseUrl: String?,
-        /** Enable SQL logging. */
+            /** Enable SQL logging. */
         public val sqlLog: Boolean,
-        /** Enable SQL error logging. */
+            /** Enable SQL error logging. */
         public val sqlErrorLog: Boolean,
-        /** List of glob patterns to filter test cases: when not `null`, only tests matching one of the patterns will be executed. */
+            /** List of glob patterns to filter test cases: when not `null`, only tests matching one of the patterns will be executed. */
         public val testPatterns: ImmList<String>?,
-        /** Printer used for Rell `print()` calls. */
+            /** Printer used for Rell `print()` calls. */
         public val outPrinter: Rt_Printer,
-        /** Printer used for Rell `log()` calls. */
+            /** Printer used for Rell `log()` calls. */
         public val logPrinter: Rt_Printer,
-        /** Print test case names and results during the execution. */
+            /** Print test case names and results during the execution. */
         public val printTestCases: Boolean,
-        /** Print large values pretty-formatted (e.g. when a test fails because of assert_equals). */
+            /** Print large values pretty-formatted (e.g. when a test fails because of assert_equals). */
         public val printPrettyLargeValues: Boolean,
-        /** Add dependencies of test modules to the set of active modules of the app (default: `true`).
+            /** Add dependencies of test modules to the set of active modules of the app (default: `true`).
          * Affects available operations and function extensions. */
         public val activateTestDependencies: Boolean,
-        /** Test case start callback. */
+            /** Test case start callback. */
         public val onTestCaseStart: (UnitTestCase) -> Unit,
-        /** Test case finished callback. */
+            /** Test case finished callback. */
         public val onTestCaseFinished: (UnitTestCaseResult) -> Unit,
-        /** SQL execution finished callback. */
+            /** SQL execution finished callback. */
         public val onSqlExecutionFinished: ((SqlExecutionEvent) -> Unit)?,
     ) {
         public fun toBuilder(): Builder = Builder(this)
@@ -218,8 +226,9 @@ internal object RellApiGtxInternal {
         config: RellApiRunTests.Config,
         options: C_CompilerOptions,
         sourceDir: C_SourceDir,
-        app: R_App,
-        appModules: ImmList<R_ModuleName>?,
+        rrApp: RR_App,
+        appModules: ImmList<ModuleName>?,
+        compilationSysFns: Map<String, Any> = emptyMap(),
     ): UnitTestRunnerResults {
         val globalCtx = RellApiBaseUtils.createGlobalContext(
             options,
@@ -229,13 +238,13 @@ internal object RellApiGtxInternal {
         )
 
         val sqlInterceptor = config.onSqlExecutionFinished?.let { ListeningSqlInterceptor(it) }
-        val blockRunner = createBlockRunner(config, sourceDir, app, appModules, sqlInterceptor)
+        val blockRunner = createBlockRunner(config, sourceDir, rrApp, appModules, sqlInterceptor)
 
-        val sqlCtx = RellApiBaseUtils.createSqlContext(app)
+        val sqlCtx = RellApiBaseUtils.createSqlContext(rrApp)
         val chainCtx = RellApiBaseUtils.createChainContext()
 
         val testMatcher = if (config.testPatterns == null) UnitTestMatcher.ANY else UnitTestMatcher.make(config.testPatterns)
-        val testFns = UnitTestRunner.getTestFunctions(app, testMatcher)
+        val testFns = UnitTestRunner.getRRTestFunctions(rrApp, testMatcher)
         val testCases = testFns.map { UnitTestCase(null, it) }
 
         return RellApiGtxUtils.runWithSqlManager(
@@ -245,20 +254,21 @@ internal object RellApiGtxInternal {
             sqlInterceptor = sqlInterceptor,
         ) { sqlMgr ->
             val testCtx = UnitTestRunnerContext(
-                app = app,
-                printer = config.cliEnv::print,
-                sqlCtx = sqlCtx,
-                sqlMgr = sqlMgr,
-                sqlInitProjExt = PostchainSqlInitProjExt,
-                globalCtx = globalCtx,
-                chainCtx = chainCtx,
-                blockRunner = blockRunner,
-                moduleArgsSource = Rt_GtvModuleArgsSource(config.compileConfig.moduleArgs, options),
-                printTestCases = config.printTestCases,
-                printPrettyLargeValues = config.printPrettyLargeValues,
-                stopOnError = config.stopOnError,
-                onTestCaseStart = config.onTestCaseStart,
-                onTestCaseFinished = config.onTestCaseFinished,
+                    app = rrApp,
+                    printer = config.cliEnv::print,
+                    sqlCtx = sqlCtx,
+                    sqlMgr = sqlMgr,
+                    sqlInitProjExt = PostchainSqlInitProjExt,
+                    globalCtx = globalCtx,
+                    chainCtx = chainCtx,
+                    blockRunner = blockRunner,
+                    moduleArgsSource = Rt_GtvModuleArgsSource(config.compileConfig.moduleArgs, options),
+                    compilationSysFns = compilationSysFns,
+                    printTestCases = config.printTestCases,
+                    printPrettyLargeValues = config.printPrettyLargeValues,
+                    stopOnError = config.stopOnError,
+                    onTestCaseStart = config.onTestCaseStart,
+                    onTestCaseFinished = config.onTestCaseFinished,
             )
 
             val testRes = UnitTestRunnerResults(testCtx.printPrettyLargeValues)
@@ -270,8 +280,8 @@ internal object RellApiGtxInternal {
     private fun createBlockRunner(
         config: RellApiRunTests.Config,
         sourceDir: C_SourceDir,
-        app: R_App,
-        appModules: ImmList<R_ModuleName>?,
+        rrApp: RR_App,
+        appModules: ImmList<ModuleName>?,
         sqlInterceptor: SqlInterceptor?,
     ): Rt_UnitTestBlockRunner {
         val keyPair = Lib_RellTest.BLOCK_RUNNER_KEYPAIR
@@ -285,7 +295,7 @@ internal object RellApiGtxInternal {
 
         val mainModules = when {
             appModules == null -> null
-            config.activateTestDependencies -> (appModules + RellApiBaseUtils.getMainModules(app)).toSet().toImmList()
+            config.activateTestDependencies -> (appModules + RellApiBaseUtils.getMainModules(rrApp)).toSet().toImmList()
             else -> appModules
         }
 

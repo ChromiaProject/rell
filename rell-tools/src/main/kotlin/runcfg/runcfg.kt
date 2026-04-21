@@ -10,7 +10,8 @@ import net.postchain.gtv.builder.GtvBuilder
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.R_LangVersion
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.utils.*
 import java.nio.file.Path
 import kotlin.io.path.absolute
@@ -38,12 +39,12 @@ class RellPostAppChain(
         val iid: Long,
         val brid: Bytes32,
         val configs: Map<Long, RellPostAppChainConfig>,
-        val modules: Set<R_ModuleName>
+        val modules: Set<ModuleName>
 )
 
 class RellPostAppChainConfig(
-        val appModule: R_ModuleName?,
-        val testModules: List<R_ModuleName>,
+        val appModule: ModuleName?,
+        val testModules: List<ModuleName>,
         val gtvConfig: Gtv
 )
 
@@ -69,11 +70,11 @@ class Rcfg_ChainConfig(
         val dependencies: Map<String, Rcfg_Dependency>
 )
 
-class Rcfg_TestModule(val module: R_ModuleName)
+class Rcfg_TestModule(val module: ModuleName)
 
 class Rcfg_App(
-        val module: R_ModuleName,
-        val args: Map<R_ModuleName, Gtv>,
+        val module: ModuleName,
+        val args: Map<ModuleName, Gtv>,
         val addDefaults: Boolean
 )
 
@@ -115,7 +116,7 @@ object RellRunConfigGenerator {
         val rcfg = readConfig(params.configDir, confPath, confText, parserOpts)
 
         val rawNodeConfig = if (params.unitTest) rcfg.testNodeConfig else rcfg.nodeConfig
-        check(rawNodeConfig != null) { "Node config not defined!" }
+        checkNotNull(rawNodeConfig) { "Node config not defined!" }
 
         val nodeConfig = RunConfigNodeConfigGen.generateNodeConfig(rawNodeConfig, params.configDir)
 

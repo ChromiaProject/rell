@@ -13,7 +13,7 @@ import net.postchain.rell.api.gtx.PostchainSqlInitProjExt
 import net.postchain.rell.api.gtx.RellApiGtxUtils
 import net.postchain.rell.api.gtx.Rt_BlockRunnerConfig
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.repl.ReplInputChannelFactory
 import net.postchain.rell.base.repl.ReplOutputChannelFactory
 import net.postchain.rell.base.runtime.Rt_LogPrinter
@@ -37,7 +37,7 @@ public object RellApiRunShell {
         module: String?,
     ) {
         val cSourceDir = C_SourceDir.diskDir(sourceDir)
-        val rModule = module?.let { R_ModuleName.of(it) }
+        val rModule = module?.let { ModuleName.of(it) }
         RellApiBaseInternal.catchCommonError {
             RellApiShellInternal.runShell(config, cSourceDir, rModule)
         }
@@ -147,7 +147,7 @@ public object RellApiShellInternal {
     public fun runShell(
         config: RellApiRunShell.Config,
         sourceDir: C_SourceDir,
-        module: R_ModuleName?,
+        module: ModuleName?,
     ) {
         val compilerOptions = RellApiBaseInternal.makeCompilerOptions0(config.compileConfig)
 

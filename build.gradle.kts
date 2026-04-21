@@ -22,7 +22,8 @@ val localProperties = Properties().apply {
 
 apiValidation {
     ignoredProjects += listOf(
-        "rell-base", "rell-gtx", "rell-tools",
+        "rell-base", "rr-tree", "rr-serialization", "utils", "test-utils", "rell-gtx", "rell-tools",
+        "frontend", "runtime",
         // Imported projects — no API stability guarantees yet
         "rell-toolbox", "common", "ast", "indexer", "code-quality", "language-server", "seeder",
         "rell-codegen", "codegen", "codegen-kotlin", "codegen-typescript", "codegen-javascript",
@@ -88,7 +89,8 @@ subprojects {
             }
 
             // Test JVM heap. Default suits 16 GiB dev machines; CI overrides via -PtestJvmMaxHeap.
-            maxHeapSize = providers.gradleProperty("testJvmMaxHeap").orElse("2g").get()
+            // Bumped from 2g to 4g after rell-base sub-module split added RR tree + FlatBuffers to the classpath.
+            maxHeapSize = providers.gradleProperty("testJvmMaxHeap").orElse("4g").get()
 
             systemProperty("junit.jupiter.execution.parallel.enabled", "true")
             systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")

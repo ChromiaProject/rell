@@ -5,6 +5,7 @@
 
 package com.chromia.rell.dokka.moduledocs
 
+import net.postchain.rell.base.utils.checkEquals
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.analysis.kotlin.internal.ModuleAndPackageDocumentationReader
 import org.jetbrains.dokka.model.DModule
@@ -54,7 +55,7 @@ class RellModuleAndPackageDocumentationReader(
 
     private val ModuleAndPackageDocumentationFragment.canonicalPackageName: String
         get() {
-            check(classifier == ModuleAndPackageDocumentation.Classifier.Package)
+            checkEquals(classifier, ModuleAndPackageDocumentation.Classifier.Package)
             if (name == "[root]") return ""
             return name
         }

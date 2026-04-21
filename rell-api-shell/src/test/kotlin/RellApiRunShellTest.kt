@@ -9,7 +9,7 @@ import net.postchain.rell.api.base.BaseRellApiTest
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.sql.SqlUtils
 import net.postchain.rell.base.testutils.RellReplTester
 import net.postchain.rell.base.testutils.RellTestUtils
@@ -123,7 +123,7 @@ internal class RellApiRunShellTest: BaseRellApiTest() {
             }
         }
 
-        val moduleName = if (module == null) null else R_ModuleName.of(module)
+        val moduleName = if (module == null) null else ModuleName.of(module)
 
         try {
             RellApiShellInternal.runShell(runConfig.build(), sourceDir, moduleName)

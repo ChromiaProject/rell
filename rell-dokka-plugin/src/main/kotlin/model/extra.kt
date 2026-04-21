@@ -4,7 +4,7 @@
 
 package com.chromia.rell.dokka.model
 
-import net.postchain.rell.base.model.R_MountName
+import net.postchain.rell.base.model.MountName
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.*
 import org.jetbrains.dokka.model.properties.ExtraProperty
@@ -134,7 +134,7 @@ object IsQuery: ExtraProperty<DFunction>, ExtraProperty.Key<DFunction, IsQuery> 
 
 fun DFunction.isQuery() = this.extra[IsQuery] != null
 
-class MountNameExtra(val mountName: R_MountName): ExtraProperty<DFunction> {
+class MountNameExtra(val mountName: MountName): ExtraProperty<DFunction> {
     override val key: ExtraProperty.Key<DFunction, *> = Companion
     companion object : ExtraProperty.Key<DFunction, MountNameExtra> {
         override fun mergeStrategyFor(left: MountNameExtra, right: MountNameExtra) =

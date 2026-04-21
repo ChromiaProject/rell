@@ -1,0 +1,90 @@
+// Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+
+namespace rell.ir;
+
+/// Primitive type kinds (singleton types).
+enum PrimitiveTypeKind : ubyte {
+    BOOLEAN,
+    INTEGER,
+    BIG_INTEGER,
+    DECIMAL,
+    TEXT,
+    BYTE_ARRAY,
+    ROWID,
+    GUID,
+    SIGNER,
+    JSON,
+    GTV,
+    RANGE,
+    UNIT,
+}
+
+/// Tuple field: optional name + type.
+table TupleField {
+    name: string;  // null if unnamed
+    type: Type (required);
+}
+
+// --- Type union members ---
+
+table PrimitiveType   { kind: PrimitiveTypeKind; }
+table NullType        {}
+table EntityType      { def_index: uint; }
+table StructType      { def_index: uint; }
+table EnumType        { def_index: uint; }
+table ObjectType      { def_index: uint; }
+
+table ListType        { element: Type (required); }
+table SetType         { element: Type (required); }
+table MapType         { key: Type (required); value: Type (required); }
+
+table TupleType       { fields: [TupleField] (required); }
+table NullableType    { value: Type (required); }
+table FunctionType    { params: [Type] (required); result: Type (required); }
+
+table VirtualListType   { element: Type (required); }
+table VirtualSetType    { element: Type (required); }
+table VirtualMapType    { key: Type (required); value: Type (required); }
+table VirtualStructType { def_index: uint; }
+table VirtualTupleType  { fields: [TupleField] (required); }
+
+/// Generic type (catch-all for library-defined generic types).
+table GenericType {
+    name: string (required);
+    args: [Type];
+}
+
+/// Operation type (mirrors struct for operations).
+table OperationType    { def_index: uint; }
+
+/// Error type — should not appear in valid resolved models.
+table ErrorType        {}
+
+/// The RR_Type union.
+union TypeUnion {
+    PrimitiveType,
+    NullType,
+    EntityType,
+    StructType,
+    EnumType,
+    ObjectType,
+    ListType,
+    SetType,
+    MapType,
+    TupleType,
+    NullableType,
+    FunctionType,
+    VirtualListType,
+    VirtualSetType,
+    VirtualMapType,
+    VirtualStructType,
+    VirtualTupleType,
+    GenericType,
+    OperationType,
+    ErrorType,
+}
+
+/// Wrapper so types can be used in vectors and nested tables.
+table Type {
+    type: TypeUnion (required);
+}

@@ -9,10 +9,10 @@ import net.postchain.rell.api.base.testutils.TestRellCliEnv
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.unwrap
-import net.postchain.rell.base.utils.PostchainGtvUtils
+import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.utils.immListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -224,8 +224,8 @@ internal class RellApiCompileTest: BaseRellApiTest() {
         val env = TestRellCliEnv()
         val config2 = config.toBuilder().cliEnv(env).build()
 
-        val appMods = appModules?.map { R_ModuleName.of(it) }
-        val testMods = testModules.map { R_ModuleName.of(it) }
+        val appMods = appModules?.map { ModuleName.of(it) }
+        val testMods = testModules.map { ModuleName.of(it) }
         val actualList = compileApp(config2, sourceDir, appMods, testMods)
 
         assertEquals(expected.toList(), actualList)
@@ -234,8 +234,8 @@ internal class RellApiCompileTest: BaseRellApiTest() {
     private fun compileApp(
         config: RellApiCompile.Config,
         sourceDir: C_SourceDir,
-        appModules: List<R_ModuleName>?,
-        testModules: List<R_ModuleName> = immListOf(),
+        appModules: List<ModuleName>?,
+        testModules: List<ModuleName> = immListOf(),
     ): List<String> {
         val apiRes = try {
             val options = RellApiBaseInternal.makeCompilerOptions0(config)
@@ -246,7 +246,7 @@ internal class RellApiCompileTest: BaseRellApiTest() {
 
         val res = apiRes.cRes
         val ctErr = handleCompilationError(res)
-        return if (ctErr != null) listOf(ctErr) else res.app!!.moduleMap.keys.map { it.str() }.sorted()
+        return if (ctErr != null) listOf(ctErr) else res.rrApp!!.moduleMap.keys.map { it.str() }.sorted()
     }
 
     @Test fun testCompileGtv() {
@@ -469,7 +469,7 @@ internal class RellApiCompileTest: BaseRellApiTest() {
         mainModule: String?,
     ): String {
         val options = RellApiBaseInternal.makeCompilerOptions0(config)
-        val rModules = mainModule?.let { listOf(R_ModuleName.of(it)) }
+        val rModules = mainModule?.let { listOf(ModuleName.of(it)) }
         val apiRes = compileApp0(config, options, sourceDir, rModules)
 
         val cRes = apiRes.cRes

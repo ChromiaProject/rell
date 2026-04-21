@@ -1,0 +1,239 @@
+// Copyright (C) 2025 ChromaWay AB. See LICENSE for license information.
+
+include "ir.fbs";
+
+namespace rell.ir;
+
+// --- Key/Index kind ---
+
+enum KeyIndexKind : ubyte {
+    KEY,
+    INDEX,
+}
+
+// --- Attribute ---
+
+enum SizeConstraintKind : ubyte {
+    BYTE_ARRAY,
+    TEXT,
+}
+
+table SizeConstraint {
+    has_min: bool;
+    min: long;
+    has_max: bool;
+    max: long;
+    kind: SizeConstraintKind;
+    code_prefix: string (required);
+}
+
+table Attribute {
+    index: int;
+    name: string (required);
+    type: Type (required);
+    mutable: bool = false;
+    key_index_kind: KeyIndexKind = KEY;
+    has_key_index_kind: bool = false;
+    sql_mapping: string (required);
+    has_default_value: bool = false;
+    can_set_in_create: bool = true;
+    default_expr: Expr;
+    is_db_modification: bool = false;
+    size_constraint: SizeConstraint;
+}
+
+// --- Enum attribute ---
+
+table EnumAttr {
+    name: string (required);
+    value: int;
+}
+
+// --- Entity SQL mapping ---
+
+enum EntitySqlMappingKind : ubyte {
+    REGULAR,
+    EXTERNAL,
+    TRANSACTION,
+    BLOCK,
+}
+
+table EntitySqlMapping {
+    kind: EntitySqlMappingKind;
+    mount_name: MountName (required);
+    chain_index: int = -1;
+    meta_name: string;
+    rowid_column: string;
+    auto_create_table: bool = true;
+    is_system_entity: bool = false;
+}
+
+// --- Entity flags ---
+
+table EntityFlags {
+    is_object: bool = false;
+    can_create: bool = true;
+    can_update: bool = true;
+    can_delete: bool = true;
+    gtv: bool = true;
+    log: bool = false;
+}
+
+// --- External entity ---
+
+table ExternalEntity {
+    chain_index: uint;  // ExternalChainRef index
+    meta_check: bool = true;
+    chain_name: string;
+}
+
+// --- Entity definition ---
+
+table EntityDefinition {
+    def_name: DefinitionName (required);
+    flags: EntityFlags (required);
+    sql_mapping: EntitySqlMapping (required);
+    attributes: [Attribute] (required);
+    keys: [KeyIndex] (required);
+    indices: [KeyIndex] (required);
+    external: ExternalEntity;
+    init_frame: CallFrame;
+}
+
+/// Key or index constraint.
+table KeyIndex {
+    attr_names: [string] (required);
+}
+
+// --- Struct definition ---
+
+table StructFlags {
+    pure: bool = true;
+    mutable: bool = false;
+    gtv_from: bool = true;
+    gtv_to: bool = true;
+    virtualable: bool = true;
+    mixed_tuple: bool = false;
+    has_type_variable: bool = false;
+    cyclic: bool = false;
+    infinite: bool = false;
+}
+
+table MirrorStructInfo {
+    definition_type: string (required);
+    definition: string (required);
+    mutable: bool = false;
+}
+
+table StructDefinition {
+    def_name: DefinitionName (required);
+    name: string (required);
+    attributes: [Attribute] (required);
+    flags: StructFlags;
+    mirror_info: MirrorStructInfo;
+    has_default_constructor: bool = true;
+}
+
+// --- Enum definition ---
+
+table EnumDefinition {
+    def_name: DefinitionName (required);
+    attrs: [EnumAttr] (required);
+}
+
+// --- Object definition ---
+
+table ObjectDefinition {
+    def_name: DefinitionName (required);
+    entity_def_index: uint;  // points to EntityDefinition in App
+}
+
+// --- Function parameter ---
+
+table FunctionParam {
+    name: string (required);
+    type: Type (required);
+    init_frame: CallFrame;
+    default_expr: Expr;
+    size_constraint: SizeConstraint;
+}
+
+// --- Function body ---
+
+table FunctionBody {
+    type: Type (required);
+    params: [FunctionParam] (required);
+    param_ptrs: [VarPtr] (required);
+    body: Stmt (required);
+    frame: CallFrame (required);
+    def_name: DefinitionName;
+}
+
+// --- Query body ---
+
+table UserQueryBody {
+    ret_type: Type (required);
+    params: [FunctionParam] (required);
+    param_ptrs: [VarPtr] (required);
+    body: Stmt (required);
+    frame: CallFrame (required);
+}
+
+table SysQueryBody {
+    ret_type: Type (required);
+    params: [FunctionParam] (required);
+    fn_name: string (required);  // R_SysFunction name
+}
+
+union QueryBodyUnion {
+    UserQueryBody,
+    SysQueryBody,
+}
+
+table QueryBody {
+    body: QueryBodyUnion (required);
+}
+
+// --- Operation modifiers ---
+
+table OperationModifiers {
+    is_compound: bool = false;
+    is_singular: bool = false;
+}
+
+// --- Function definition ---
+
+table FunctionDefinition {
+    def_name: DefinitionName (required);
+    body: FunctionBody;  // may be absent for abstract functions
+    is_test: bool = false;
+}
+
+// --- Operation definition ---
+
+table OperationDefinition {
+    def_name: DefinitionName (required);
+    mount_name: MountName (required);
+    modifiers: OperationModifiers (required);
+    body: FunctionBody;
+    guard_body: Stmt;  // optional guard statement
+}
+
+// --- Query definition ---
+
+table QueryDefinition {
+    def_name: DefinitionName (required);
+    mount_name: MountName (required);
+    body: QueryBody;
+}
+
+// --- Global constant definition ---
+
+table GlobalConstantDefinition {
+    def_name: DefinitionName (required);
+    const_index: uint;  // R_GlobalConstantId.index
+    type: Type (required);
+    value: Expr;  // the initializer expression
+    frame: CallFrame;
+    meta_gtv_json: string;  // pre-computed GTV value (Base64 JSON) for get_app_structure meta
+}

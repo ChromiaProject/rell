@@ -25,7 +25,7 @@ dependencies {
 
     testImplementation(libs.junit.jupiter)
     testImplementation(kotlin("test-junit5"))
-    testImplementation(project(":rell-base", "testArtifacts"))
+    testImplementation(projects.rellBase.testUtils)
     testImplementation(project(":rell-gtx", "testArtifacts"))
     testImplementation(project(":rell-api-base", "testArtifacts"))
 }
@@ -55,7 +55,7 @@ gitProperties {
     for ((k, v) in gitCustomProperties) customProperty(k, v)
 }
 
-tasks.named("generateGitProperties") {
+tasks.generateGitProperties {
     for ((k, v) in gitCustomProperties) inputs.property("customProperty.$k", v)
 }
 
@@ -88,6 +88,14 @@ sourceSets.main {
 
 tasks.processResources {
     dependsOn(generateDependencyList)
+}
+
+// CLI integration tests spawn postchain subprocesses and connect to PostgreSQL.
+// Under parallel class execution (the project default) they contend for CPU, ports,
+// and DB connections, leading to subprocess startup timeouts. Force classes in this
+// module's test task onto a single thread.
+tasks.test {
+    systemProperty("junit.jupiter.execution.parallel.mode.classes.default", "same_thread")
 }
 
 // Shared copy spec for Rell distribution layout

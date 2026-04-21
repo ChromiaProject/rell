@@ -6,8 +6,7 @@ package net.postchain.rell.gtx
 
 import net.postchain.gtv.GtvBigInteger
 import net.postchain.gtv.GtvFactory.gtv
-import net.postchain.rell.base.lang.type.DecimalTest
-import net.postchain.rell.base.lib.LibBlockTransactionTest
+import net.postchain.rell.base.testutils.TestFixtures
 import net.postchain.rell.gtx.testutils.BaseGtxTest
 import java.math.BigInteger
 import kotlin.test.Test
@@ -45,7 +44,7 @@ class GtxTest: BaseGtxTest() {
 
     @Test fun testBlockTransactionOut() {
         tst.chainId = 333
-        tst.inserts = LibBlockTransactionTest.BLOCK_INSERTS_CURRENT
+        tst.inserts = TestFixtures.BLOCK_INSERTS_CURRENT
         tst.gtv = true
 
         chkCompile("query q(): block? = null;", "OK")
@@ -61,7 +60,7 @@ class GtxTest: BaseGtxTest() {
 
     @Test fun testBlockTransactionIn() {
         tst.chainId = 333
-        tst.inserts = LibBlockTransactionTest.BLOCK_INSERTS_CURRENT
+        tst.inserts = TestFixtures.BLOCK_INSERTS_CURRENT
         tst.gtv = true
         tst.wrapRtErrors = false
 
@@ -160,9 +159,9 @@ class GtxTest: BaseGtxTest() {
         chkCallQuery("qdec", mapOf("x" to GtvBigInteger(BigInteger(two63))), "'$two63'")
         chkCallQuery("qdec", mapOf("x" to GtvBigInteger(BigInteger(ten25))), "'$ten25'")
 
-        val decMax = DecimalTest.LIMIT.subtract(BigInteger.ONE)
+        val decMax = TestFixtures.DECIMAL_LIMIT.subtract(BigInteger.ONE)
         chkCallQuery("qdec", mapOf("x" to GtvBigInteger(decMax)), "'$decMax'")
-        chkCallQuery("qdec", mapOf("x" to GtvBigInteger(DecimalTest.LIMIT)), "rt_err:decimal:overflow")
+        chkCallQuery("qdec", mapOf("x" to GtvBigInteger(TestFixtures.DECIMAL_LIMIT)), "rt_err:decimal:overflow")
     }
 
     @Test fun testOptionalParamsOperation() {

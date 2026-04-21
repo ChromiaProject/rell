@@ -9,8 +9,8 @@ import net.postchain.rell.base.compiler.base.core.C_CompilationResult
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.model.R_App
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.mapToImmList
 import java.io.File
@@ -22,11 +22,11 @@ public object RellApiBaseUtils {
         return C_SourceDir.diskDir(file.absoluteFile)
     }
 
-    public fun handleCompilationResult(cliEnv: RellCliEnv, res: C_CompilationResult, quiet: Boolean): R_App {
+    public fun handleCompilationResult(cliEnv: RellCliEnv, res: C_CompilationResult, quiet: Boolean): RR_App {
         val warnCnt = res.warnings.size
         val errCnt = res.errors.size
 
-        val haveImportantMessages = res.app == null || res.messages.any { !it.type.ignorable }
+        val haveImportantMessages = res.rrApp == null || res.messages.any { !it.type.ignorable }
 
         if (haveImportantMessages || (!quiet && res.messages.isNotEmpty())) {
             // Print all messages only if not quiet or if compilation failed, so warnings are not suppressed by the
@@ -39,17 +39,17 @@ public object RellApiBaseUtils {
             }
         }
 
-        val app = res.app
-        if (app == null) {
+        val rrApp = res.rrApp
+        return if (rrApp == null) {
             if (errCnt == 0) {
                 cliEnv.error(errMsg("Compilation failed"))
             }
             throw RellCliExitException(1, "Compilation failed")
         } else if (errCnt > 0) {
             throw RellCliExitException(1, "Compilation failed")
+        } else {
+            rrApp
         }
-
-        return app
     }
 
     public fun errMsg(msg: String): String = "${C_MessageType.ERROR.text}: $msg"
@@ -59,34 +59,29 @@ public object RellApiBaseUtils {
         typeCheck: Boolean,
         outPrinter: Rt_Printer = Rt_OutPrinter,
         logPrinter: Rt_Printer = Rt_LogPrinter(),
-    ): Rt_GlobalContext {
-        return Rt_GlobalContext(
-                compilerOptions = compilerOptions,
-                outPrinter = outPrinter,
-                logPrinter = logPrinter,
-                typeCheck = typeCheck,
-        )
-    }
+    ): Rt_GlobalContext = Rt_GlobalContext(
+            compilerOptions = compilerOptions,
+            outPrinter = outPrinter,
+            logPrinter = logPrinter,
+            typeCheck = typeCheck,
+    )
 
-    public fun createChainContext(): Rt_ChainContext {
-        return Rt_ChainContext(GtvNull, Rt_ChainContext.ZERO_BLOCKCHAIN_RID)
-    }
+    public fun createChainContext(): Rt_ChainContext = Rt_ChainContext(GtvNull, Rt_ChainContext.ZERO_BLOCKCHAIN_RID)
 
-    public fun createSqlContext(app: R_App): Rt_SqlContext {
+    public fun createSqlContext(rrApp: RR_App): Rt_SqlContext {
         val mapping = Rt_ChainSqlMapping(0)
-        return Rt_RegularSqlContext.createNoExternalChains(app, mapping)
+        return Rt_RegularSqlContext.createNoExternalChains(rrApp, mapping)
     }
 
-    public fun getMainModules(app: R_App): List<R_ModuleName> {
-        return app.modules.filter { !it.test && !it.abstract && !it.external }.mapToImmList { it.name }
-    }
+    public fun getMainModules(rrApp: RR_App): List<ModuleName> =
+        rrApp.modules.filter { !it.test && !it.abstract && !it.external }.mapToImmList { it.name }
 }
 
 public abstract class RellCliException(msg: String): RuntimeException(msg)
 public class RellCliBasicException(msg: String): RellCliException(msg)
 public class RellCliExitException(public val code: Int, msg: String = "exit $code"): RellCliException(msg)
 
-public class RellCliTarget(public val sourcePath: File, public val sourceDir: C_SourceDir, public val modules: List<R_ModuleName>)
+public class RellCliTarget(public val sourcePath: File, public val sourceDir: C_SourceDir, public val modules: List<ModuleName>)
 
 public interface RellCliEnv {
     public fun print(msg: String)
@@ -103,10 +98,6 @@ internal object NullRellCliEnv: RellCliEnv by PrinterRellCliEnv({}, {})
 internal object MainRellCliEnv: RellCliEnv by PrinterRellCliEnv(::println, System.err::println)
 
 public class PrinterRellCliEnv(private val printer: Rt_Printer, private val errorPrinter: Rt_Printer = printer): RellCliEnv {
-    override fun print(msg: String) {
-        printer.print(msg)
-    }
-    override fun error(msg: String) {
-        errorPrinter.print(msg)
-    }
+    override fun print(msg: String): Unit = printer.print(msg)
+    override fun error(msg: String): Unit = errorPrinter.print(msg)
 }

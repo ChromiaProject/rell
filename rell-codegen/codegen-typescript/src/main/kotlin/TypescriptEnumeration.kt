@@ -10,7 +10,7 @@ import net.postchain.rell.codegen.section.Enumeration
 
 class TypescriptEnumeration(private val className: ClassName, enum: R_EnumDefinition) : Enumeration {
     override val moduleName = className.module
-    private val enumValues = enum.values()
+    private val enumAttrs = enum.attrs
 
     override val docSymbol = enum.docSymbol
 
@@ -24,5 +24,5 @@ class TypescriptEnumeration(private val className: ClassName, enum: R_EnumDefini
     """.trimMargin()
 
     private fun formatEnumValues() : String {
-        return "\t${enumValues.joinToString(",\n\t") { it.asEnum().name }}" }
+        return "\t${enumAttrs.joinToString(",\n\t") { it.name }}" }
 }
