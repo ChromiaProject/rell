@@ -73,7 +73,7 @@ abstract class NavigationDataProvider(private val filterModules: List<String>? =
     private fun chooseNavigationIcon(contentPage: ContentPage): NavigationNodeIcon? =
             if (contentPage is WithDocumentables) {
                 val documentable = contentPage.documentables.firstOrNull()
-                val isJava = hasAnyJavaSources() ?: false
+                val isJava = hasAnyJavaSources()
 
                 when (documentable) {
                     is DTypeAlias -> NavigationNodeIcon.TYPEALIAS_KT

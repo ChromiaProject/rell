@@ -44,12 +44,12 @@ fun deserializeRellApp(bytes: ByteArray): RR_App {
     // 3. Deserialize external chains.
     val externalChains = (0 until fb.externalChainsLength).mapToImmList { i ->
         val ec = fb.externalChains(i)!!
-        RR_ExternalChainRef(name = ec.name ?: "", index = ec.index.toInt())
+        RR_ExternalChainRef(name = ec.name, index = ec.index.toInt())
     }
 
     // 4. Deserialize modules (reconstruct from per-module index vectors).
     val modules = (0 until fb.modulesLength).mapToImmList { i ->
-        val m = fb.modules(i)!!
+        val m = fb.modules(i)
         val moduleName = deserializeModuleName(m.name)
 
         fun <T> resolveIndexed(count: Int, accessor: (Int) -> UInt, allDefs: List<T>): List<T> {
@@ -118,11 +118,10 @@ fun deserializeRellApp(bytes: ByteArray): RR_App {
 
     // 8. Build SQL defs.
     val sqlEntities = patchedEntities.filter { !it.flags.isObject }.toImmList()
-    val sqlObjects = patchedObjects.toImmList()
     val topologicalEntities = topologicalSortEntities(sqlEntities)
     val sqlDefs = RR_AppSqlDefs(
         entities = sqlEntities,
-        objects = sqlObjects,
+        objects = patchedObjects,
         topologicalEntities = topologicalEntities,
     )
 
@@ -153,7 +152,7 @@ fun deserializeRellApp(bytes: ByteArray): RR_App {
         functionExtensions = (0 until fb.functionExtensionsLength).mapToImmList { i ->
             val ext = fb.functionExtensions(i)!!
             val bodies = (0 until ext.extensionsLength).mapToImmList { j ->
-                val extFb = ext.extensions(j)!!
+                val extFb = ext.extensions(j)
                 val defName = checkNotNull(extFb.defName?.let { deserializeDefinitionName(it) }) {
                     "RR_FunctionExtensions[$i].extensions[$j]: missing defName in serialized data"
                 }

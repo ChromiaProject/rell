@@ -119,7 +119,7 @@ fun deserializeStmt(fb: FbStmt?): RR_Statement = when (fb?.stmtType) {
         } else null
         val where = s.where?.let { deserializeDbExpr(it) }
         val what = (0 until s.whatLength).mapToImmList { i ->
-            val w = s.what(i)!!
+            val w = s.what(i)
             RR_UpdateWhat(w.attrName, w.attrIndex, deserializeDbExpr(w.expr))
         }
         val lambdaVarPtr = s.lambdaVarPtr?.let { RR_VarPtr(it.blockUid.toLong(), it.offset) }

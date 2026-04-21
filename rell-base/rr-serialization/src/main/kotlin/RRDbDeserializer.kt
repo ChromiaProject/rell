@@ -92,7 +92,7 @@ fun deserializeDbExpr(fb: DbExpr?): RR_DbExpr = when (fb?.exprType) {
         val e = DbWhenExpr().also { fb.expr(it) }
         val keyExpr = e.keyExpr?.let { deserializeDbExpr(it) }
         val cases = (0 until e.casesLength).mapToImmList { i ->
-            val c = e.cases(i)!!
+            val c = e.cases(i)
             val conds = (0 until c.condsLength).mapToImmList { j -> deserializeDbExpr(c.conds(j)) }
             RR_DbWhenCase(conds, deserializeDbExpr(c.expr))
         }
@@ -213,7 +213,7 @@ fun deserializeColAtFieldSummarizationKind(fb: UByte): RR_ColAtFieldSummarizatio
 // --- WhatFieldGroup deserialization ---
 
 fun deserializeWhatFieldGroup(fb: rell.ir.DbAtWhatFieldGroup): RR_DbAtWhatFieldGroup {
-    val combiner = deserializeDbAtFieldCombiner(fb.combiner!!)
+    val combiner = deserializeDbAtFieldCombiner(fb.combiner)
     val rExprs =
         if (fb.rExprsLength > 0) (0 until fb.rExprsLength).mapToImmList { deserializeExpr(fb.rExprs(it)!!) } else null
     val itemOrder = if (fb.itemOrderLength > 0) {
