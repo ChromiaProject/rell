@@ -2,7 +2,7 @@
 
 [![pipeline status](https://gitlab.com/chromaway/rell/badges/dev/pipeline.svg)](https://gitlab.com/chromaway/rell/-/commits/dev)
 [![coverage report](https://gitlab.com/chromaway/rell/badges/dev/coverage.svg)](https://gitlab.com/chromaway/rell/-/commits/dev)
-[![latest tag](https://img.shields.io/gitlab/v/tag/chromaway%2Frell?sort=semver)](https://gitlab.com/chromaway/rell/-/tags)
+[![latest tag](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgitlab.com%2Fapi%2Fv4%2Fprojects%2F32802097%2Frepository%2Ftags&query=%24%5B0%5D.name&label=latest%20tag&color=blue&cacheSeconds=3600)](https://gitlab.com/chromaway/rell/-/tags)
 [![license: GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
 Rell is the relational blockchain programming language for [Chromia](https://chromia.com/). It combines a SQL-like data model with a statically typed, imperative syntax, and compiles against a PostgreSQL-backed runtime.
