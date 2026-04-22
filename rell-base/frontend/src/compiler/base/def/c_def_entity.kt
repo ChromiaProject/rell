@@ -34,7 +34,7 @@ private class C_EntityAttributeClause(
         defs.add(def)
     }
 
-    fun compile(index: Int, keys: Collection<R_Key>, indices: Collection<R_Index>): C_CompiledAttribute {
+    fun compile(index: Int, keys: Collection<Key>, indices: Collection<Index>): C_CompiledAttribute {
         val keyIndexKind = when {
             keys.isNotEmpty() -> KeyIndexKind.KEY
             indices.isNotEmpty() -> KeyIndexKind.INDEX
@@ -104,8 +104,8 @@ private class C_EntityAttributeClause(
         type: R_Type,
         mutable: Boolean,
         vDocExpr: V_Expr?,
-        keys: Collection<R_Key>,
-        indices: Collection<R_Index>,
+        keys: Collection<Key>,
+        indices: Collection<Index>,
     ): DocDeclarationProto {
         var keyIndexKind: KeyIndexKind? = null
         var docKeys = keys
@@ -275,8 +275,8 @@ class C_EntityContext(
 
     private val attrMap = mutableMapOf<Name, C_EntityAttributeClause>()
 
-    private val keys = mutableListOf<R_Key>()
-    private val indices = mutableListOf<R_Index>()
+    private val keys = mutableListOf<Key>()
+    private val indices = mutableListOf<Index>()
     private val uniqueKeys = mutableSetOf<Set<Name>>()
     private val uniqueIndices = mutableSetOf<Set<Name>>()
 
@@ -321,12 +321,12 @@ class C_EntityContext(
 
     fun addKey(pos: S_Pos, attrs: ImmList<Name>) {
         addUniqueKeyIndex(pos, uniqueKeys, attrs, KeyIndexKind.KEY)
-        keys.add(R_Key(attrs))
+        keys.add(Key(attrs))
     }
 
     fun addIndex(pos: S_Pos, attrs: ImmList<Name>) {
         addUniqueKeyIndex(pos, uniqueIndices, attrs, KeyIndexKind.INDEX)
-        indices.add(R_Index(attrs))
+        indices.add(Index(attrs))
     }
 
     fun createEntityBody(): R_EntityBody {
@@ -363,7 +363,7 @@ class C_EntityContext(
         return cAttrs.associateByToImmMap { it.rAttr.rName }
     }
 
-    private fun <T: R_KeyIndex> keyIndexMap(list: List<T>): ImmMultimap<Name, T> {
+    private fun <T: KeyIndex> keyIndexMap(list: List<T>): ImmMultimap<Name, T> {
         return list.flatMap { r -> r.attribs.map { attr -> attr to r } }.toImmMultimap()
     }
 

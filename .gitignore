@@ -44,7 +44,7 @@ venv/
 *.hprof
 bin/
 
-CLAUDE.md
+CLAUDE.local.md
 .mcp.json
 .claude/
 .junie/

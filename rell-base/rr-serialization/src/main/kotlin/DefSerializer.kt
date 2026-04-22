@@ -4,7 +4,7 @@
 
 package net.postchain.rell.serialization
 
-import net.postchain.rell.base.model.R_KeyIndex
+import net.postchain.rell.base.model.KeyIndex
 import net.postchain.rell.base.model.rr.*
 import rell.ir.*
 import rell.ir.Attribute as FbAttribute
@@ -16,6 +16,7 @@ import rell.ir.FunctionBody as FbFunctionBody
 import rell.ir.FunctionDefinition as FbFunctionDefinition
 import rell.ir.FunctionParam as FbFunctionParam
 import rell.ir.GlobalConstantDefinition as FbGlobalConstantDefinition
+import rell.ir.KeyIndex as FbKeyIndex
 import rell.ir.KeyIndexKind as FbKeyIndexKind
 import rell.ir.ObjectDefinition as FbObjectDefinition
 import rell.ir.OperationDefinition as FbOperationDefinition
@@ -262,10 +263,10 @@ private fun SerializerContext.serializeExternalEntity(ext: RR_ExternalEntity): I
     return ExternalEntity.endExternalEntity(builder)
 }
 
-private fun SerializerContext.serializeKeyIndices(keyIndices: List<R_KeyIndex>): Int {
+private fun SerializerContext.serializeKeyIndices(keyIndices: List<KeyIndex>): Int {
     val offsets = keyIndices.map { key ->
         val attrNames = createStringVector(key.attribs.map { it.str })
-        KeyIndex.createKeyIndex(builder, attrNames)
+        FbKeyIndex.createKeyIndex(builder, attrNames)
     }.toIntArray()
     return builder.createVectorOfTables(offsets)
 }

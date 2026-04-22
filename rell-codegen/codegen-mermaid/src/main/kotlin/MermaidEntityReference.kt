@@ -6,7 +6,7 @@ package net.postchain.rell.codegen
 
 import net.postchain.rell.base.model.R_Attribute
 import net.postchain.rell.base.model.R_EntityDefinition
-import net.postchain.rell.base.model.R_Key
+import net.postchain.rell.base.model.Key
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.section.Entity
@@ -37,7 +37,7 @@ class MermaidEntityReference(private val rellEntity: R_EntityDefinition) : Entit
         private fun nameFromType(type: R_Type) = type.defName.qualifiedName.toString().replace(".", "_")
     }
 
-    private class AttributeProps(val name: String, val indexed: Boolean, val mutable: Boolean, val isReference: Boolean, val type: R_Type, val keys: List<R_Key>) {
+    private class AttributeProps(val name: String, val indexed: Boolean, val mutable: Boolean, val isReference: Boolean, val type: R_Type, val keys: List<Key>) {
 
         fun formatRelation(fromEntity: String): String {
             val relation = findRelation()
@@ -61,7 +61,7 @@ class MermaidEntityReference(private val rellEntity: R_EntityDefinition) : Entit
         fun formatIndexed() = if (indexed) "\"index\"" else ""
 
         companion object {
-            fun fromAttribue(attribute: R_Attribute, keys: List<R_Key>): AttributeProps {
+            fun fromAttribue(attribute: R_Attribute, keys: List<Key>): AttributeProps {
                 return AttributeProps(
                         name = attribute.name,
                         mutable = attribute.mutable,

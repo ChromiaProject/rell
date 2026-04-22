@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
-import java.util.Properties
+import java.util.*
 
 plugins {
     alias(libs.plugins.kotlin.jvm) apply false
@@ -37,7 +37,7 @@ dependencyCheck {
     failBuildOnCVSS = 0f
     suppressionFiles = listOf(
         "https://gitlab.com/chromaway/chromia-parent/-/raw/dev/common-dependencies-suppression.xml?ref_type=heads",
-        "dependencies-suppression.xml"
+        "dependencies-suppression.xml",
     )
     analyzers.assemblyEnabled = false
 }
@@ -47,6 +47,7 @@ val withLocales by extra(providers.gradleProperty("withLocales").isPresent)
 subprojects {
     group = rootProject.group
     version = rootProject.version
+
     plugins.withId("org.jetbrains.kotlin.jvm") {
         apply(plugin = "jacoco")
         apply(plugin = "maven-publish")
@@ -84,9 +85,11 @@ subprojects {
                 val value = localProperties.getProperty(key) ?: providers.environmentVariable(key).orNull
                 if (value != null) environment(key, value)
             }
-            (localProperties.getProperty("DOCKER_HOST") ?: providers.environmentVariable("DOCKER_HOST").orNull)?.let { dockerHost ->
-                systemProperty("docker.host", dockerHost)
-            }
+
+            val dockerHost = localProperties.getProperty("DOCKER_HOST")
+                ?: providers.environmentVariable("DOCKER_HOST").orNull
+
+            if (dockerHost != null) systemProperty("docker.host", dockerHost)
 
             // Test JVM heap. Default suits 16 GiB dev machines; CI overrides via -PtestJvmMaxHeap.
             // Bumped from 2g to 4g after rell-base sub-module split added RR tree + FlatBuffers to the classpath.
@@ -114,7 +117,7 @@ subprojects {
                 systemProperty("test.snippets.recorder.enabled", "true")
                 systemProperty(
                     "test.snippets.recorder.target",
-                    layout.buildDirectory.dir("rell-test-cases").get().asFile.absolutePath
+                    layout.buildDirectory.dir("rell-test-cases").get().asFile.absolutePath,
                 )
                 systemProperty("test.snippets.recorder.zipfile", "false")
             }
@@ -176,7 +179,7 @@ subprojects {
                     "Implementation-Title" to project.name,
                     "Implementation-Version" to project.version,
                     "Specification-Title" to project.name,
-                    "Specification-Version" to project.version
+                    "Specification-Version" to project.version,
                 )
             }
         }
@@ -205,13 +208,10 @@ subprojects {
                 // Relocated artifacts: new names under net.postchain.rell to avoid
                 // version conflicts with independently-versioned legacy registries.
                 when {
-                    project.path.startsWith(":rell-toolbox:") -> {
-                        artifactId = "rell-toolbox-${project.name}"
-                    }
-                    project.path.startsWith(":rell-codegen:") -> {
-                        artifactId = "rell-${project.name}"
-                    }
+                    project.path.startsWith(":rell-toolbox:") -> artifactId = "rell-toolbox-${project.name}"
+                    project.path.startsWith(":rell-codegen:") -> artifactId = "rell-${project.name}"
                 }
+
                 versionMapping {
                     usage("java-api") {
                         fromResolutionOf("runtimeClasspath")
@@ -220,15 +220,18 @@ subprojects {
                         fromResolutionResult()
                     }
                 }
+
                 pom {
                     description = project.description
                     url = "https://rell.chromia.com"
                     inceptionYear = "2018"
+
                     licenses {
                         license {
                             name = "GNU General Public License v3.0 with additional linking exceptions"
                         }
                     }
+
                     developers {
                         developer {
                             id = "iaroslav.postovalov"
@@ -240,6 +243,7 @@ subprojects {
                             timezone = "Europe/Berlin"
                         }
                     }
+
                     scm {
                         connection = "scm:git:git://gitlab.com/chromaway/rell.git"
                         developerConnection = "scm:git:ssh://gitlab.com:chromaway/rell.git"
@@ -250,4 +254,3 @@ subprojects {
         }
     }
 }
-

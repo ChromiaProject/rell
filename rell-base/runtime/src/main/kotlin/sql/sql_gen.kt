@@ -4,8 +4,8 @@
 
 package net.postchain.rell.base.sql
 
-import net.postchain.rell.base.model.R_Index
-import net.postchain.rell.base.model.R_Key
+import net.postchain.rell.base.model.Index
+import net.postchain.rell.base.model.Key
 import net.postchain.rell.base.model.R_SizeAttrValidator
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
@@ -389,11 +389,11 @@ object SqlGen {
         return SqlNameGen("K_${table}_%d", existingNames)
     }
 
-    fun genCreateKeySql(entity: RR_EntityDefinition, table: String, rKey: R_Key, nameGen: SqlNameGen): String {
+    fun genCreateKeySql(entity: RR_EntityDefinition, table: String, rKey: Key, nameGen: SqlNameGen): String {
         val c = makeConstraint(entity, rKey, nameGen)
         return DSL_CTX.alterTable(table).add(c).toString()
     }
-    private fun makeConstraint(entity: RR_EntityDefinition, rKey: R_Key, nameGen: SqlNameGen): Constraint {
+    private fun makeConstraint(entity: RR_EntityDefinition, rKey: Key, nameGen: SqlNameGen): Constraint {
         val keyName = nameGen.nextName()
         val attribs = rKey.attribs.map { attrName ->
             entity.attributes[attrName]?.sqlMapping ?: attrName.str
@@ -405,7 +405,7 @@ object SqlGen {
         return SqlNameGen("IDX_${table}_%d", existingNames)
     }
 
-    fun genCreateIndexSql(entity: RR_EntityDefinition, table: String, index: R_Index, nameGen: SqlNameGen): String {
+    fun genCreateIndexSql(entity: RR_EntityDefinition, table: String, index: Index, nameGen: SqlNameGen): String {
         val indexName = nameGen.nextName()
         return if (index.attribs.size == 1 && isJsonAttr(entity, index.attribs[0].str)) {
             val attrName = index.attribs[0]

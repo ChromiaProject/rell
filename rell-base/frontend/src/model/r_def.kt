@@ -19,8 +19,8 @@ import net.postchain.rell.base.utils.doc.DocSourcePos
 import net.postchain.rell.base.utils.doc.DocSymbol
 
 class R_EntityBody(
-        val keys: ImmList<R_Key>,
-        val indexes: ImmList<R_Index>,
+        val keys: ImmList<Key>,
+        val indexes: ImmList<Index>,
         val attributes: ImmMap<Name, R_Attribute>,
 )
 
@@ -47,8 +47,8 @@ class R_EntityDefinition(
 
     private val bodyLate = executor.lateInit(C_CompilerPass.MEMBERS, ERROR_BODY)
 
-    val keys: ImmList<R_Key> get() = bodyLate.get().keys
-    val indexes: ImmList<R_Index> get() = bodyLate.get().indexes
+    val keys: ImmList<Key> get() = bodyLate.get().keys
+    val indexes: ImmList<Index> get() = bodyLate.get().indexes
     val attributes: ImmMap<Name, R_Attribute> get() = bodyLate.get().attributes
 
     val strAttributes: ImmMap<String, R_Attribute> by lazy {

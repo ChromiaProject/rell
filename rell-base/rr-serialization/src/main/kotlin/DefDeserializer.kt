@@ -25,6 +25,7 @@ import rell.ir.EnumDefinition as FbEnumDefinition
 import rell.ir.FunctionBody as FbFunctionBody
 import rell.ir.FunctionDefinition as FbFunctionDefinition
 import rell.ir.GlobalConstantDefinition as FbGlobalConstantDefinition
+import rell.ir.KeyIndex as FbKeyIndex
 import rell.ir.KeyIndexKind as FbKeyIndexKind
 import rell.ir.ObjectDefinition as FbObjectDefinition
 import rell.ir.OperationDefinition as FbOperationDefinition
@@ -76,8 +77,8 @@ fun deserializeEntityDefinition(fb: FbEntityDefinition): RR_EntityDefinition {
         sqlMapping = sqlMapping,
         external = external,
         type = RR_Type.Error, // Will be set to Entity(defIndex) by the app deserializer.
-        keys = keys.map { R_Key(it.toImmList()) }.toImmList(),
-        indexes = indexes.map { R_Index(it.toImmList()) }.toImmList(),
+        keys = keys.map { Key(it.toImmList()) }.toImmList(),
+        indexes = indexes.map { Index(it.toImmList()) }.toImmList(),
         attributes = attrMap,
     )
 }
@@ -372,7 +373,7 @@ private fun deserializeSizeConstraint(fb: SizeConstraint): RR_SizeConstraint {
     )
 }
 
-private fun deserializeKeyIndices(count: Int, accessor: (Int) -> KeyIndex): List<List<Name>> {
+private fun deserializeKeyIndices(count: Int, accessor: (Int) -> FbKeyIndex): List<List<Name>> {
     return (0 until count).map { i ->
         val ki = accessor(i)
         (0 until ki.attrNamesLength).map { j -> Name.of(ki.attrNames(j)) }

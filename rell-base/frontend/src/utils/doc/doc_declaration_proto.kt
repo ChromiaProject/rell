@@ -292,13 +292,13 @@ class DocDeclarationProto_Entity(
 }
 
 class DocDeclarationProto_EntityAttribute(
-    private val simpleName: Name,
-    private val type: DocType,
-    private val isMutable: Boolean,
-    private val keyIndexKind: KeyIndexKind?,
-    private val expr: DocExpr? = null,
-    private val keys: Collection<R_Key> = immListOf(),
-    private val indices: Collection<R_Index> = immListOf(),
+        private val simpleName: Name,
+        private val type: DocType,
+        private val isMutable: Boolean,
+        private val keyIndexKind: KeyIndexKind?,
+        private val expr: DocExpr? = null,
+        private val keys: Collection<Key> = immListOf(),
+        private val indices: Collection<Index> = immListOf(),
 ): DocDeclarationProto_Base() {
     override fun getCompletion0() = DocDecUtils.completion(type)
 
@@ -334,7 +334,7 @@ class DocDeclarationProto_EntityAttribute(
         return b.build()
     }
 
-    private fun appendKeysIndices(b: DocCode.Builder, col: Collection<R_KeyIndex>, kw: String) {
+    private fun appendKeysIndices(b: DocCode.Builder, col: Collection<KeyIndex>, kw: String) {
         for (ki in col) {
             b.newline()
             b.keyword(kw)

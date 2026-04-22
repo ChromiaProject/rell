@@ -4,8 +4,8 @@
 
 package net.postchain.rell.toolbox.seeder.schema
 
-import net.postchain.rell.base.model.R_Index
-import net.postchain.rell.base.model.R_Key
+import net.postchain.rell.base.model.Index
+import net.postchain.rell.base.model.Key
 import net.postchain.rell.base.model.rr.RR_Attribute
 import net.postchain.rell.base.model.rr.RR_EnumDefinition
 import net.postchain.rell.base.model.rr.RR_EntityDefinition
@@ -29,8 +29,8 @@ class Entity(
     val qualifiedName: String get() = entityDef.base.defName.qualifiedName
     val moduleName: String get() = entityDef.base.defName.module
     val uniqueName: String get() = entityDef.base.appLevelName
-    val keys: List<R_Key> get() = entityDef.keys
-    val indices: List<R_Index> get() = entityDef.indexes
+    val keys: List<Key> get() = entityDef.keys
+    val indices: List<Index> get() = entityDef.indexes
     val attributes: List<Attribute> = entityDef.attributes.map {
         Attribute(it.value, allEntities, allEnums)
     }

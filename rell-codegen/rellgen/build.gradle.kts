@@ -20,7 +20,4 @@ dependencies {
     testImplementation(libs.log4j.slf4j2.impl)
 }
 
-application {
-    mainClass.set("net.postchain.rell.codegen.app.AppKt")
-}
-
+application.mainClass = "net.postchain.rell.codegen.app.AppKt"

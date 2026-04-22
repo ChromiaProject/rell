@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.3.0"
-postchain = "3.47.7"
+postchain = "3.49.4"
 
 flatbuffers = "25.2.10"
 
@@ -8,7 +8,7 @@ better-parse = "0.4.4"
 kotlinx-collections-immutable = "0.4.0"
 jline = "3.28.0"
 clikt = "5.1.0"
-jackson = "2.15.3"
+jackson = "2.21.2"
 slf4j = "1.7.36"
 
 assertk = "0.28.1"
@@ -17,7 +17,7 @@ junit = "6.0.2"
 # rell-toolbox dependencies
 antlr = "4.13.1"
 commons-collections4 = "4.3"
-chromia-build-tools = "0.5.17"
+chromia-build-tools = "0.11.3"
 ec4j = "0.3.0"
 fury-core = "0.4.1"
 java-diff-utils = "4.12"
@@ -32,13 +32,13 @@ serpro69-faker = "1.16.0"
 system-stubs-jupiter = "2.1.7"
 
 # rell-codegen dependencies
-commons-text = "1.9"
+commons-text = "1.15.0"
 
 # rell-dokka-plugin dependencies
 dokka = "2.1.0"
 kotlinx-html = "0.8.0"
 kotlinx-serialization-json = "1.6.0"
-jsoup = "1.17.2"
+jsoup = "1.22.2"
 
 # Plugins
 binary-compatibility-validator = "0.18.1"
@@ -46,7 +46,6 @@ dependency-check = "12.2.1"
 gradle-git-properties = "2.5.7"
 sentry = "6.4.0"
 shadow = "9.4.1"
-download = "5.7.0"
 
 [libraries]
 postchain-bom = { module = "net.postchain:postchain", version.ref = "postchain" }
@@ -139,4 +138,3 @@ dependency-check = { id = "org.owasp.dependencycheck", version.ref = "dependency
 git-properties = { id = "com.gorylenko.gradle-git-properties", version.ref = "gradle-git-properties" }
 sentry = { id = "io.sentry.jvm.gradle", version.ref = "sentry" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
-download = { id = "de.undercouch.download", version.ref = "download" }

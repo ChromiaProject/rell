@@ -8,7 +8,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDecoder
 import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.GtvNull
-import net.postchain.rell.base.model.R_KeyIndex
+import net.postchain.rell.base.model.KeyIndex
 import net.postchain.rell.base.model.rr.RR_Attribute
 import net.postchain.rell.base.model.rr.RR_EntityDefinition
 import net.postchain.rell.base.model.rr.RR_FunctionParam
@@ -107,7 +107,7 @@ fun Rt_Interpreter.buildMetaGtv(): Gtv {
     fun attrMeta(a: RR_Attribute) =
         mapOf("name" to a.name.g(), "type" to typeGtv(a.type), "mutable" to a.mutable.g()).g()
 
-    fun keyMeta(k: R_KeyIndex) = mapOf("attributes" to k.attribs.map { it.str }.map { it.g() }.g()).g()
+    fun keyMeta(k: KeyIndex) = mapOf("attributes" to k.attribs.map { it.str }.map { it.g() }.g()).g()
     fun entityMeta(e: RR_EntityDefinition, full: Boolean): Gtv {
         val m =
             mutableMapOf("mount" to e.mountName.str().g(), "attributes" to e.attributes.values.map { attrMeta(it) }.g())

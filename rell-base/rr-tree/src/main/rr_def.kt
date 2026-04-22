@@ -11,15 +11,15 @@ import net.postchain.rell.base.utils.mapKeysToImmMap
 import net.postchain.rell.base.utils.toImmList
 
 data class RR_EntityDefinition(
-    val base: RR_DefinitionBase,
-    val rName: Name,
-    val flags: EntityFlags,
-    val sqlMapping: RR_EntitySqlMapping,
-    val external: RR_ExternalEntity?,
-    val type: RR_Type,
-    val keys: ImmList<R_Key>,
-    val indexes: ImmList<R_Index>,
-    val attributes: ImmMap<Name, RR_Attribute>,
+        val base: RR_DefinitionBase,
+        val rName: Name,
+        val flags: EntityFlags,
+        val sqlMapping: RR_EntitySqlMapping,
+        val external: RR_ExternalEntity?,
+        val type: RR_Type,
+        val keys: ImmList<Key>,
+        val indexes: ImmList<Index>,
+        val attributes: ImmMap<Name, RR_Attribute>,
 ) {
     val mountName: MountName get() = sqlMapping.mountName
 

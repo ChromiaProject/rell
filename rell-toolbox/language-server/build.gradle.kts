@@ -61,9 +61,7 @@ tasks.sourcesJar {
     dependsOn(tasks.generateSentryDebugMetaPropertiesjava, tasks.collectExternalDependenciesForSentry)
 }
 
-application {
-    mainClass.set("net.postchain.rell.toolbox.lsp.StdioMainKt")
-}
+application.mainClass = "net.postchain.rell.toolbox.lsp.StdioMainKt"
 
 tasks.jar {
     manifest.attributes["Multi-Release"] = true
