@@ -63,7 +63,12 @@ subprojects {
         }
 
         extensions.configure<KotlinJvmProjectExtension> {
-            compilerOptions.jvmTarget = JvmTarget.JVM_21
+            compilerOptions.jvmTarget = JvmTarget.JVM_17
+        }
+
+        // Emit Java 17 bytecode so CheerpJ 4 (max JRE 17) can load the classes.
+        tasks.withType<JavaCompile>().configureEach {
+            options.release.set(17)
         }
 
         tasks.withType<Test> {
