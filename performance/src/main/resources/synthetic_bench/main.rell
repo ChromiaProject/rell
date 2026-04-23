@@ -42,3 +42,16 @@ query bench(cap: integer): integer {
     }
     return acc + fib(20);
 }
+
+// Fully LLVM-JITable workload: integer while-loop over locals with add + compare only.
+// No `%`, no `/`, no stdlib, no cross-function calls — so the LLVM backend compiles it end to
+// end (jitHits>0, jitMisses==0) and the report can show a real one-time compile-overhead bar.
+query loopsum(n: integer): integer {
+    var s = 0;
+    var i = 0;
+    while (i < n) {
+        s = s + i;
+        i = i + 1;
+    }
+    return s;
+}

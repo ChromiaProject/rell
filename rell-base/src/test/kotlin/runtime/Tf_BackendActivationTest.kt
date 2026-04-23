@@ -5,6 +5,7 @@
 package net.postchain.rell.base.runtime
 
 import net.postchain.rell.base.runtime.truffle.Tf_Backend
+import net.postchain.rell.llvm.Llvm_Backend
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellTestUtils
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -47,9 +48,13 @@ class Tf_BackendActivationTest : BaseRellTest(useSql = false) {
                 interpreter is Tf_Backend,
                 "rell.test.backend=truffle but factory returned ${interpreter::class.qualifiedName}",
             )
+            "llvm" -> assertTrue(
+                interpreter is Llvm_Backend,
+                "rell.test.backend=llvm but factory returned ${interpreter::class.qualifiedName}",
+            )
             else -> assertTrue(
-                interpreter !is Tf_Backend,
-                "rell.test.backend=${RellTestUtils.BACKEND} but factory returned a Tf_Backend",
+                interpreter !is Tf_Backend && interpreter !is Llvm_Backend,
+                "rell.test.backend=${RellTestUtils.BACKEND} but factory returned ${interpreter::class.qualifiedName}",
             )
         }
     }
@@ -67,6 +72,6 @@ class Tf_BackendActivationTest : BaseRellTest(useSql = false) {
     }
 
     @Test fun testBackendValueIsRecognised() {
-        assertEquals(true, RellTestUtils.BACKEND in setOf("interpreter", "truffle"))
+        assertEquals(true, RellTestUtils.BACKEND in setOf("interpreter", "truffle", "llvm"))
     }
 }

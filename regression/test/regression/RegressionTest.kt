@@ -51,7 +51,7 @@ class RegressionTest {
             optional = listOfNotNull(privateConfig?.takeIf { it.exists() }),
         )
 
-        val backends = listOf(ExecutionBackend.INTERPRETER, ExecutionBackend.TRUFFLE)
+        val backends = listOf(ExecutionBackend.INTERPRETER, ExecutionBackend.TRUFFLE, ExecutionBackend.LLVM)
         return projects.flatMap { project ->
             backends.map { backend ->
                 dynamicTest("${project.name} [${backend.name.lowercase()}]") {

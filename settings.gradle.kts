@@ -42,6 +42,7 @@ include("rell-api-shell")
 include("rell-gtx")
 include("rell-tools")
 include("coverage-report-aggregate")
+include("rell-base:llvm")
 
 include("rell-toolbox:common")
 include("rell-toolbox:ast")

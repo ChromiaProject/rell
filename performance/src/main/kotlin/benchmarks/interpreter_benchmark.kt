@@ -41,32 +41,55 @@ import org.openjdk.jmh.annotations.Fork
 )
 class InterpreterBenchmark : RellBackendBenchmark() {
 
-    @Param("interpreter", "truffle", "kotlin")
+    @Param("interpreter", "truffle", "kotlin", "llvm")
     lateinit var backend: String
 
-    @Param("collatz_primes_fib")
+    @Param("collatz_primes_fib", "loopsum")
     lateinit var sample: String
 
     companion object {
         const val LIMIT_INT = 100_000L
-        val LIMIT: List<Rt_Value> = listOf(Rt_IntValue.get(LIMIT_INT))
+        // `loopsum` is a pure integer add/compare loop (no `%`, `/`, stdlib, or cross-calls) so the
+        // LLVM backend JITs it end to end. The trip count is sized to keep the steady-state score in
+        // the same ms/op ballpark as collatz_primes_fib.
+        const val LOOPSUM_N = 50_000_000L
     }
 
-    lateinit var query: RR_QueryDefinition
+    /** The Rell query backing the active [sample]. */
+    private lateinit var query: RR_QueryDefinition
+
+    /** The single integer argument for the active [sample]'s query. */
+    private lateinit var args: List<Rt_Value>
+
+    private fun queryName(): String = when (sample) {
+        "loopsum" -> "loopsum"
+        else -> "bench"
+    }
+
+    private fun argInt(): Long = when (sample) {
+        "loopsum" -> LOOPSUM_N
+        else -> LIMIT_INT
+    }
 
     @Setup
     fun setUp() {
+        args = listOf(Rt_IntValue.get(argInt()))
         if (backend == "kotlin") return
         val rrApp = setUpBackend(backend, "synthetic_bench/main.rell")
-        query = rrApp.module(ModuleName.EMPTY)!!.queries.getValue("bench")
+        query = rrApp.module(ModuleName.EMPTY)!!.queries.getValue(queryName())
     }
 
     @Benchmark
     fun runQuery(blackhole: Blackhole) {
         if (backend == "kotlin") {
-            blackhole.consume(KotlinBenchmark.bench(LIMIT_INT))
+            blackhole.consume(
+                when (sample) {
+                    "loopsum" -> KotlinBenchmark.loopsum(argInt())
+                    else -> KotlinBenchmark.bench(argInt())
+                },
+            )
         } else {
-            blackhole.consume(interpreter.callQuery(query, exeCtx, LIMIT))
+            blackhole.consume(interpreter.callQuery(query, exeCtx, args))
         }
     }
 
@@ -106,6 +129,16 @@ class InterpreterBenchmark : RellBackendBenchmark() {
                 i += 1
             }
             return acc + fib(20)
+        }
+
+        fun loopsum(n: Long): Long {
+            var s = 0L
+            var i = 0L
+            while (i < n) {
+                s += i
+                i += 1
+            }
+            return s
         }
     }
 }

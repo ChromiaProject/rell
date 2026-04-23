@@ -31,6 +31,8 @@ dependencies {
     // by RellApiInterpreterBackend); `runtimeOnly` puts it on the runtime classpath of every API
     // consumer, so the `-Drell.execution.backend=truffle` dev switch works without consumer changes.
     runtimeOnly(projects.rellBase.runtimeTruffle)
+    // LLVM peer backend, reflectively loaded by RellApiInterpreterBackend for -Drell.execution.backend=llvm.
+    runtimeOnly(projects.rellBase.llvm)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(kotlin("test-junit5"))

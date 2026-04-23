@@ -118,6 +118,13 @@ fun Test.configureRegressionRun(includePrivate: Boolean) {
     workingDir = rootProject.projectDir
 
     systemProperty("regression.workdir", workdir.absolutePath)
+    // LLVM arm: build the JIT shared lib and tell the test JVM (and via extraEnv, chr) where it is.
+    dependsOn(":rell-base:llvm:buildNativeLibrary")
+    run {
+        val llvmLib = project(":rell-base:llvm").layout.buildDirectory
+            .file(if (System.getProperty("os.name").startsWith("Mac")) "native/librell-llvm.dylib" else "native/librell-llvm.so")
+        systemProperty("rell.llvm.libpath", llvmLib.map { it.asFile.absolutePath }.get())
+    }
     systemProperty("regression.reportsDir", reportsDir.absolutePath)
     systemProperty("regression.config.public", publicConfig.absolutePath)
 

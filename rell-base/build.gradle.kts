@@ -74,9 +74,26 @@ val testTruffle by tasks.registering(Test::class) {
     shouldRunAfter(tasks.test)
 }
 
+val llvmNativeLib = project(":rell-base:llvm").layout.buildDirectory
+    .file(if (System.getProperty("os.name").startsWith("Mac")) "native/librell-llvm.dylib" else "native/librell-llvm.so")
+
+val testLlvm by tasks.registering(Test::class) {
+    description = "Runs tests through the LLVM JIT peer backend (Llvm_Backend)"
+    group = "verification"
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    systemProperty("rell.test.roundtrip", "false")
+    systemProperty("rell.test.backend", "llvm")
+    dependsOn(":rell-base:llvm:buildNativeLibrary")
+    systemProperty("rell.llvm.libpath", llvmNativeLib.map { it.asFile.absolutePath }.get())
+    shouldRunAfter(tasks.test)
+}
+
 tasks.check {
     dependsOn(testRoundTrip)
     dependsOn(testTruffle)
+    dependsOn(testLlvm)
 }
 
 dependencies {
@@ -87,6 +104,8 @@ dependencies {
     // Truffle peer backend is only referenced by Tf_BackendActivationTest; keep the dep in
     // testImplementation rather than exposing it on the production classpath.
     testImplementation(projects.rellBase.runtimeTruffle)
+    // LLVM peer backend, referenced by the testLlvm run. Test classpath only.
+    testImplementation(projects.rellBase.llvm)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.platform.launcher)
     testImplementation(kotlin("test-junit5"))

@@ -14,6 +14,8 @@ dependencies {
     // utilities don't transitively depend on Truffle. The backend is only activated via the
     // `rell.test.backend=truffle` system property; otherwise it lies dormant on the classpath.
     implementation(projects.rellBase.runtimeTruffle)
+    // LLVM peer backend; engaged via `rell.test.backend=llvm`, otherwise dormant on the classpath.
+    implementation(projects.rellBase.llvm)
     implementation(libs.log4j.slf4j2.impl)
     implementation(libs.postgresql)
 }

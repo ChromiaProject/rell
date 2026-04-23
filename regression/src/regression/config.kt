@@ -79,7 +79,8 @@ enum class Status {
  */
 enum class ExecutionBackend {
     INTERPRETER,
-    TRUFFLE;
+    TRUFFLE,
+    LLVM;
 
     fun label(): String = name.lowercase().replaceFirstChar(Char::uppercase)
 }

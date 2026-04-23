@@ -43,6 +43,29 @@ private data class JmhResult(
     val jmhVersion: String? = null,
 )
 
+/**
+ * One-time LLVM JIT compile overhead for a (benchmark, sample), read from the `llvm-compile.jsonl`
+ * side file the LLVM benchmark arm writes in its [TearDown]. JMH's score is steady-state execution
+ * only; this captures the compile cost that the score hides.
+ */
+private data class LlvmCompile(val compileNanos: Long, val jitHits: Int, val jitMisses: Int) {
+    val compileMs: Double get() = compileNanos / 1_000_000.0
+}
+
+private data class LlvmCompileRecord(
+    val benchmark: String = "",
+    val sample: String = "",
+    val compileNanos: Long = 0,
+    val jitHits: Int = 0,
+    val jitMisses: Int = 0,
+)
+
+/** Synthetic bar label for the steady-state LLVM execution score (real JMH ms/op). */
+private const val LLVM_EXEC = "llvm-exec"
+
+/** Synthetic bar label for the one-time LLVM JIT compile overhead (ms, NOT ms/op). */
+private const val LLVM_COMPILE = "llvm-compile"
+
 private data class SampleSource(val label: String, val url: String)
 
 private data class SampleInfo(
@@ -214,6 +237,11 @@ private val METHOD_COLOR = mapOf(
     "runQuery[interpreter]" to ACCENT_HEX,
     "runQuery[truffle]" to "#2E5E8A",
     "runQuery[kotlin]" to "#1F6B4A",
+    "llvm" to "#8A5E2E",
+    // Execution shares the llvm hue; compile-overhead is a lighter, distinct tone so the two
+    // llvm bars read as "same backend, two costs".
+    "llvm-exec" to "#8A5E2E",
+    "llvm-compile" to "#C79A5E",
 )
 
 private val PALETTE = listOf(ACCENT_HEX, "#2E5E8A", "#1F6B4A", "#8A5E2E", "#5E2E8A", "#B07A1E")
@@ -239,10 +267,18 @@ fun main(args: Array<String>) {
     )
     require(results.isNotEmpty()) { "No benchmark results found in $input" }
 
+    // kotlinx-benchmark writes the JSON into a per-run `main/<timestamp>/` subdir, but the LLVM
+    // TearDown appends llvm-compile.jsonl to the stable `main/` dir — so look in the JSON's parent
+    // and grandparent.
+    val llvmCompile = sequenceOf(input.parent, input.parent?.parent)
+        .map { it?.resolve("llvm-compile.jsonl") }
+        .firstOrNull { it != null && it.isRegularFile() }
+        .let { loadLlvmCompile(it, mapper) }
+
     val html = buildString {
         appendLine("<!DOCTYPE html>")
         appendHTML().html {
-            renderReport(results, input, Instant.now())
+            renderReport(results, llvmCompile, input, Instant.now())
         }
     }
     output.writeText(html)
@@ -274,7 +310,42 @@ private fun parseArgs(args: Array<String>): Args {
     )
 }
 
-private fun HTML.renderReport(results: List<JmhResult>, source: Path, generatedAt: Instant) {
+/**
+ * Reads the LLVM compile-overhead side file (one JSON object per line) into a map keyed by
+ * (benchmarkClass, sample). Multiple lines for the same key (e.g. one per @Fork) are reduced to
+ * the max compileNanos — the first-call compile happens once per fork, and we want the real
+ * one-time cost, not a sum across forks. Missing/empty file → empty map (the report degrades to
+ * the single llvm bar).
+ */
+private fun loadLlvmCompile(
+    path: Path?,
+    mapper: com.fasterxml.jackson.databind.ObjectMapper,
+): Map<Pair<String, String>, LlvmCompile> {
+    if (path == null || !path.isRegularFile()) return emptyMap()
+    val out = HashMap<Pair<String, String>, LlvmCompile>()
+    path.readLines().forEach { raw ->
+        val line = raw.trim()
+        if (line.isEmpty()) return@forEach
+        val rec = runCatching { mapper.readValue(line, LlvmCompileRecord::class.java) }.getOrNull() ?: return@forEach
+        // The TearDown records the runtime class, which under JMH is the generated `*_jmhType`
+        // subclass in a `jmh_generated` package — strip both so the key matches the JSON's
+        // benchmarkClass() (the user-facing simple class name).
+        val cls = rec.benchmark.substringBeforeLast('.').substringAfterLast('.').removeSuffix("_jmhType")
+        val key = cls to rec.sample
+        val cur = out[key]
+        if (cur == null || rec.compileNanos > cur.compileNanos) {
+            out[key] = LlvmCompile(rec.compileNanos, rec.jitHits, rec.jitMisses)
+        }
+    }
+    return out
+}
+
+private fun HTML.renderReport(
+    results: List<JmhResult>,
+    llvmCompile: Map<Pair<String, String>, LlvmCompile>,
+    source: Path,
+    generatedAt: Instant,
+) {
     val head = results.first()
     val byClass: Map<String, List<JmhResult>> = results.groupBy { it.benchmarkClass() }
         .toSortedMap()
@@ -294,14 +365,18 @@ private fun HTML.renderReport(results: List<JmhResult>, source: Path, generatedA
         main {
             renderEnvironment(head)
             renderMetrics(results, totalSamples, totalMethods, byClass.size)
-            byClass.forEach { (cls, group) -> renderGroup(cls, group) }
+            byClass.forEach { (cls, group) -> renderGroup(cls, group, llvmCompile) }
             renderMethodology(head)
         }
         renderColophon(source.name, generatedAt)
     }
 }
 
-private fun FlowContent.renderGroup(benchmarkClass: String, results: List<JmhResult>) {
+private fun FlowContent.renderGroup(
+    benchmarkClass: String,
+    results: List<JmhResult>,
+    llvmCompile: Map<Pair<String, String>, LlvmCompile>,
+) {
     val distinctMethods = results.map { it.method() }.distinct()
 
     val variantOf: (JmhResult) -> String = { r ->
@@ -324,7 +399,7 @@ private fun FlowContent.renderGroup(benchmarkClass: String, results: List<JmhRes
     if (benchmarkClass == "AocBenchmark") {
         renderAocResults(benchmarkClass, pivot, variants, results)
     } else {
-        renderResults(benchmarkClass, pivot, variants, results)
+        renderResults(benchmarkClass, pivot, variants, results, llvmCompile)
     }
 }
 
@@ -366,11 +441,42 @@ private fun FlowContent.renderMetrics(
     }
 }
 
+/**
+ * Per-sample bar inputs for the chart. Identical to [byMethod] except that, when an `llvm` result
+ * exists and compile overhead was recorded for this (class, sample), the single `llvm` entry is
+ * replaced by two synthetic results: [LLVM_EXEC] carrying the real JMH score, and [LLVM_COMPILE]
+ * carrying the one-time compile cost in ms. Other backends pass through untouched.
+ */
+private fun barByMethodFor(
+    benchmarkClass: String,
+    sample: String,
+    byMethod: Map<String, JmhResult>,
+    llvmCompile: Map<Pair<String, String>, LlvmCompile>,
+): Map<String, JmhResult> {
+    val llvm = byMethod["llvm"]
+    val compile = llvmCompile[benchmarkClass to sample]
+    if (llvm == null || compile == null) return byMethod
+
+    val out = LinkedHashMap<String, JmhResult>()
+    byMethod.forEach { (method, r) ->
+        if (method == "llvm") {
+            out[LLVM_EXEC] = r
+            out[LLVM_COMPILE] = r.copy(
+                primaryMetric = JmhMetric(score = compile.compileMs, scoreError = 0.0, scoreUnit = "ms"),
+            )
+        } else {
+            out[method] = r
+        }
+    }
+    return out
+}
+
 private fun FlowContent.renderResults(
     benchmarkClass: String,
     pivot: Map<String, Map<String, JmhResult>>,
     methods: List<String>,
     allResults: List<JmhResult>,
+    llvmCompile: Map<Pair<String, String>, LlvmCompile>,
 ) {
     val unit = pivot.values.flatMap { it.values }
         .map { it.primaryMetric.scoreUnit }
@@ -382,6 +488,20 @@ private fun FlowContent.renderResults(
     val timing = "warmup ${head.warmupIterations}× ${head.warmupTime ?: "—"} · " +
         "measurement ${head.measurementIterations}× ${head.measurementTime ?: "—"}"
 
+    // Does any sample in this group carry an llvm result with recorded compile overhead? If so the
+    // chart splits the single `llvm` bar into `llvm-exec` (steady-state ms/op) and `llvm-compile`
+    // (one-time JIT cost, in ms — distinct units, annotated as such).
+    val hasLlvmSplit = pivot.any { (sample, byMethod) ->
+        byMethod.containsKey("llvm") && llvmCompile.containsKey(benchmarkClass to sample)
+    }
+
+    // Bar axis for the chart: replace `llvm` with the two synthetic bars where a split applies.
+    val barMethods: List<String> = if (hasLlvmSplit) {
+        methods.flatMap { if (it == "llvm") listOf(LLVM_EXEC, LLVM_COMPILE) else listOf(it) }
+    } else {
+        methods
+    }
+
     val strap = buildList {
         if (unit.isNotEmpty()) add("$unit · lower is better")
         add(timing)
@@ -390,7 +510,9 @@ private fun FlowContent.renderResults(
     renderSection(benchmarkClass.lowercase(), strap) {
         div(classes = "bars-grid") {
             pivot.forEach { (sample, byMethod) ->
-                val svg = renderSamplePanel(byMethod, methods)
+                // Single `llvm` column rendered as a stacked bar (exec base + compile top).
+                val compileMs = llvmCompile[benchmarkClass to sample]?.compileMs
+                val svg = renderSamplePanel(byMethod, methods, compileMs)
                 if (svg.isNotEmpty()) {
                     val info = sampleInfo(sample)
                     div(classes = "bars-panel") {
@@ -406,13 +528,26 @@ private fun FlowContent.renderResults(
                 }
             }
         }
+        if (hasLlvmSplit) {
+            div(classes = "bars-panel-desc") {
+                +("The LLVM column is stacked: the lower ")
+                span(classes = "ratio") { +LLVM_EXEC }
+                +(" segment is the steady-state execution score (ms/op); the upper ")
+                span(classes = "ratio") { +LLVM_COMPILE }
+                +(" segment is the one-time JIT compile overhead in ms (paid once on the first " +
+                    "call, not per op — different units, stacked for compactness).")
+            }
+        }
         div(classes = "legend") {
-            methods.forEachIndexed { i, method ->
+            barMethods.forEachIndexed { i, method ->
                 div(classes = "legend-item") {
                     span(classes = "swatch") {
                         attributes["style"] = "background:${colorFor(method, i)}"
                     }
-                    span(classes = "legend-label") { +method }
+                    span(classes = "legend-label") {
+                        +method
+                        if (method == LLVM_COMPILE) +" (one-time, ms)"
+                    }
                 }
             }
         }
@@ -446,7 +581,7 @@ private fun FlowContent.renderResults(
                                     if (r != null) {
                                         val m = r.primaryMetric
                                         +formatScoreBench(m.score)
-                                        span(classes = "err") { +" ± ${formatScoreBench(m.scoreError)}" }
+                                        if (m.scoreError.isFinite() && m.scoreError > 0.0) span(classes = "err") { +" ± ${formatScoreBench(m.scoreError)}" }
                                         if (bestScore != null && winner != null && method != winner && m.score > 0) {
                                             span(classes = "ratio-note") {
                                                 +" "
@@ -599,7 +734,7 @@ private fun FlowContent.renderAocResults(
                                     if (r != null) {
                                         val m = r.primaryMetric
                                         +formatScoreBench(m.score)
-                                        span(classes = "err") { +" ± ${formatScoreBench(m.scoreError)}" }
+                                        if (m.scoreError.isFinite() && m.scoreError > 0.0) span(classes = "err") { +" ± ${formatScoreBench(m.scoreError)}" }
                                         if (bestScore != null && winner != null && method != winner && m.score > 0) {
                                             span(classes = "ratio-note") {
                                                 +" "
@@ -751,28 +886,40 @@ private fun FlowContent.renderMethodology(head: JmhResult) = renderSection("meth
 private fun renderSamplePanel(
     byMethod: Map<String, JmhResult>,
     methods: List<String>,
+    llvmCompileMs: Double?,
 ): String {
     val present = methods.filter { byMethod[it] != null }
     if (present.isEmpty()) return ""
     val scores = present.map { byMethod.getValue(it).primaryMetric.score }
     val errors = present.map { byMethod.getValue(it).primaryMetric.scoreError }
-    return barsSvgPerMethod(present, scores, errors, methods, width = 280, height = 200)
+    // The llvm bar is stacked: base = steady-state execution (ms/op), top = one-time compile (ms).
+    val tops = present.map { m ->
+        if (m == "llvm" && llvmCompileMs != null && llvmCompileMs > 0.0) llvmCompileMs else null
+    }
+    return barsSvgPerMethod(present, scores, errors, tops, methods, width = 360, height = 230)
 }
 
 private fun barsSvgPerMethod(
     labels: List<String>,
     values: List<Double>,
     errors: List<Double>,
+    tops: List<Double?>,
     allMethods: List<String>,
     width: Int,
     height: Int,
 ): String {
     if (labels.isEmpty()) return ""
-    val padL = 36; val padR = 12; val padT = 14; val padB = 28
+    val padL = 36; val padR = 12; val padT = 14; val padB = 48
     val plotW = width - padL - padR
     val plotH = height - padT - padB
-    val maxV = values.indices.maxOf { values[it] + (errors.getOrNull(it) ?: 0.0).coerceAtLeast(0.0) }
-        .coerceAtLeast(1e-9)
+    // NaN-safe axis max, including any stacked top segment (the one-time llvm compile overhead).
+    // A single-iteration run reports scoreError = NaN, which must not poison the scale.
+    val maxV = values.indices.maxOf {
+        val s = values[it].takeIf { v -> v.isFinite() } ?: 0.0
+        val e = errors.getOrNull(it)?.takeIf { v -> v.isFinite() && v > 0 } ?: 0.0
+        val t = tops.getOrNull(it)?.takeIf { v -> v.isFinite() && v > 0 } ?: 0.0
+        s + t + e
+    }.coerceAtLeast(1e-9)
     val niceMax = niceCeilingBench(maxV)
     val barGap = 0.30
     val nBars = labels.size
@@ -791,14 +938,24 @@ private fun barsSvgPerMethod(
     }
     sb.append("""<line class="baseline" x1="$padL" y1="${padT + plotH}" x2="${padL + plotW}" y2="${padT + plotH}"/>""")
     for (i in labels.indices) {
-        val v = values[i]
+        val v = values[i].takeIf { it.isFinite() } ?: 0.0
         val err = errors.getOrNull(i)?.takeIf { it.isFinite() && it > 0 } ?: 0.0
+        val top = tops.getOrNull(i)?.takeIf { it.isFinite() && it > 0 }
         val h = plotH * (v / niceMax)
         val x = padL + slot * i + (slot - barW) / 2
         val y = padT + plotH - h
-        val color = colorFor(labels[i], allMethods.indexOf(labels[i]).coerceAtLeast(0))
+        // A stacked bar (llvm) uses the exec hue for the base and the compile hue for the top
+        // segment; other backends use their own colour.
+        val baseColor = if (top != null) colorFor(LLVM_EXEC, 0)
+            else colorFor(labels[i], allMethods.indexOf(labels[i]).coerceAtLeast(0))
         sb.append("""<rect x="${"%.2f".formatRoot(x)}" y="${"%.2f".formatRoot(y)}" """)
-        sb.append("""width="${"%.2f".formatRoot(barW)}" height="${"%.2f".formatRoot(h)}" fill="$color"/>""")
+        sb.append("""width="${"%.2f".formatRoot(barW)}" height="${"%.2f".formatRoot(h)}" fill="$baseColor"/>""")
+        if (top != null) {
+            val hTop = plotH * (top / niceMax)
+            val yTop = y - hTop
+            sb.append("""<rect x="${"%.2f".formatRoot(x)}" y="${"%.2f".formatRoot(yTop)}" """)
+            sb.append("""width="${"%.2f".formatRoot(barW)}" height="${"%.2f".formatRoot(hTop)}" fill="${colorFor(LLVM_COMPILE, 0)}"/>""")
+        }
         if (err > 0) {
             val cxBar = x + barW / 2
             val yHi = padT + plotH - plotH * ((v + err) / niceMax)
@@ -812,7 +969,11 @@ private fun barsSvgPerMethod(
             sb.append("""x2="${"%.2f".formatRoot(cxBar + cap)}" y2="${"%.2f".formatRoot(yLo)}"/>""")
         }
         val cx = padL + slot * i + slot / 2
-        sb.append("""<text class="bar-axis" x="${"%.2f".formatRoot(cx)}" y="${padT + plotH + 16}" text-anchor="middle">${labels[i].xmlEscapeBench()}</text>""")
+        // Rotate the x-axis labels so long names (llvm-compile, llvm-exec) don't overlap in the
+        // narrow per-bar slots.
+        val lx = "%.2f".formatRoot(cx)
+        val ly = padT + plotH + 11
+        sb.append("""<text class="bar-axis" x="$lx" y="$ly" text-anchor="end" transform="rotate(-30 $lx $ly)">${labels[i].xmlEscapeBench()}</text>""")
     }
     sb.append("</svg>")
     return sb.toString()

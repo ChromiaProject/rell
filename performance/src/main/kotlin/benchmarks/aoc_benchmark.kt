@@ -50,7 +50,7 @@ import kotlin.math.abs
 )
 class AocBenchmark : RellBackendBenchmark() {
 
-    @Param("interpreter", "truffle", "kotlin")
+    @Param("interpreter", "truffle", "kotlin", "llvm")
     lateinit var backend: String
 
     @Param(

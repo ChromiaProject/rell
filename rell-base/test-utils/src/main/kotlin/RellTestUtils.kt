@@ -21,6 +21,7 @@ import net.postchain.rell.base.model.R_StackPos
 import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.truffle.Tf_Backend
+import net.postchain.rell.llvm.Llvm_Backend
 import net.postchain.rell.base.sql.SqlManager
 import net.postchain.rell.base.testutils.RellTestUtils.BACKEND
 import net.postchain.rell.base.utils.*
@@ -75,6 +76,7 @@ object RellTestUtils {
     fun forCompilation(rrApp: RR_App, compilationSysFns: Map<String, Any>): Rt_Interpreter =
         when (BACKEND) {
             "truffle" -> Tf_Backend.forCompilation(rrApp, compilationSysFns)
+            "llvm" -> Llvm_Backend.forCompilation(rrApp, compilationSysFns)
             else -> Rt_InterpreterImpl.forCompilation(rrApp, compilationSysFns)
         }
 

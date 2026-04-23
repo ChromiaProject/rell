@@ -59,6 +59,11 @@ private const val POSTGRES_PORT = 5432
 private fun ExecutionBackend.extraEnv(): Map<String, String> = when (this) {
     ExecutionBackend.INTERPRETER -> emptyMap()
     ExecutionBackend.TRUFFLE -> mapOf("JAVA_ARGS" to "-Drell.execution.backend=truffle")
+    ExecutionBackend.LLVM -> {
+        val libPath = System.getProperty("rell.llvm.libpath")
+            ?: error("LLVM regression arm needs -Drell.llvm.libpath (set by the regression Gradle task)")
+        mapOf("JAVA_ARGS" to "-Drell.execution.backend=llvm -Drell.llvm.libpath=$libPath")
+    }
 }
 
 // ─── Filesystem layout for fragments and logs ─────────────────────────────────────────────────

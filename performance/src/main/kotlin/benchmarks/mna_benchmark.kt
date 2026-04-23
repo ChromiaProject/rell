@@ -46,7 +46,7 @@ import org.openjdk.jmh.annotations.Fork
 )
 class MnaBenchmark : RellBackendBenchmark() {
 
-    @Param("interpreter", "truffle")
+    @Param("interpreter", "truffle", "llvm")
     lateinit var backend: String
 
     @Param("decimal_pow", "perlin_noise", "locations")

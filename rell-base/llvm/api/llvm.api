@@ -1,0 +1,34 @@
+public final class net/postchain/rell/llvm/Llvm_Backend : net/postchain/rell/base/runtime/Rt_Interpreter {
+	public static final field Companion Lnet/postchain/rell/llvm/Llvm_Backend$Companion;
+	public fun <init> (Lnet/postchain/rell/base/model/rr/RR_App;Lnet/postchain/rell/base/runtime/Rt_StdlibEnv;)V
+	public synthetic fun <init> (Lnet/postchain/rell/base/model/rr/RR_App;Lnet/postchain/rell/base/runtime/Rt_StdlibEnv;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun callFunction (Lnet/postchain/rell/base/model/rr/RR_FunctionDefinition;Lnet/postchain/rell/base/runtime/Rt_ExecutionContext;Ljava/util/List;Z)Lnet/postchain/rell/base/runtime/Rt_Value;
+	public fun callOperation (Lnet/postchain/rell/base/model/rr/RR_OperationDefinition;Lnet/postchain/rell/base/runtime/Rt_ExecutionContext;Ljava/util/List;)V
+	public fun callQuery (Lnet/postchain/rell/base/model/rr/RR_QueryDefinition;Lnet/postchain/rell/base/runtime/Rt_ExecutionContext;Ljava/util/List;)Lnet/postchain/rell/base/runtime/Rt_Value;
+	public fun callTarget (Lnet/postchain/rell/base/model/rr/RR_FunctionCallTarget;Lnet/postchain/rell/base/runtime/Rt_Value;Ljava/util/List;Lnet/postchain/rell/base/runtime/Rt_Frame;Lnet/postchain/rell/base/model/FilePos;)Lnet/postchain/rell/base/runtime/Rt_Value;
+	public fun evaluateAttributeDefault (Lnet/postchain/rell/base/model/DefinitionId;ILnet/postchain/rell/base/runtime/Rt_ExecutionContext;Z)Lnet/postchain/rell/base/runtime/Rt_Value;
+	public fun evaluateConstant (Lnet/postchain/rell/base/model/rr/RR_GlobalConstantDefinition;Lnet/postchain/rell/base/runtime/Rt_ExecutionContext;)Lnet/postchain/rell/base/runtime/Rt_Value;
+	public fun evaluateExpr (Lnet/postchain/rell/base/model/rr/RR_Expr;Lnet/postchain/rell/base/runtime/Rt_Frame;)Lnet/postchain/rell/base/runtime/Rt_Value;
+	public fun evaluateParamDefault (Lnet/postchain/rell/base/model/rr/RR_FunctionParam;Lnet/postchain/rell/base/runtime/Rt_DefinitionContext;)Lnet/postchain/rell/base/runtime/Rt_Value;
+	public fun executeOperationGuard (Lnet/postchain/rell/base/model/rr/RR_OperationDefinition;Lnet/postchain/rell/base/runtime/Rt_ExecutionContext;Ljava/util/List;)V
+	public final fun getJitHits ()I
+	public final fun getJitMisses ()I
+	public fun getMetaGtv ()Lnet/postchain/gtv/Gtv;
+	public fun getRrApp ()Lnet/postchain/rell/base/model/rr/RR_App;
+	public fun getStdlib ()Lnet/postchain/rell/base/runtime/Rt_StdlibEnv;
+	public fun resolveRType (Lnet/postchain/rell/base/model/R_Type;)Lnet/postchain/rell/base/runtime/Rt_ValueClass;
+	public fun resolveType (Lnet/postchain/rell/base/model/rr/RR_Type;)Lnet/postchain/rell/base/runtime/Rt_ValueClass;
+	public fun unwrapInterpreterImpl ()Ljava/lang/Object;
+}
+
+public final class net/postchain/rell/llvm/Llvm_Backend$Companion {
+	public final fun forCompilation (Lnet/postchain/rell/base/model/rr/RR_App;Ljava/util/Map;)Lnet/postchain/rell/llvm/Llvm_Backend;
+}
+
+public final class net/postchain/rell/llvm/RellLlvmNative {
+	public static final field INSTANCE Lnet/postchain/rell/llvm/RellLlvmNative;
+	public final fun callI64Function (J[J)J
+	public final fun compileFunctionByIndex ([BI)J
+	public final fun summarizeApp ([B)Ljava/lang/String;
+}
+

@@ -42,7 +42,7 @@ import org.openjdk.jmh.annotations.Fork
 )
 class Ft4Benchmark : RellBackendBenchmark() {
 
-    @Param("interpreter", "truffle")
+    @Param("interpreter", "truffle", "llvm")
     lateinit var backend: String
 
     @Param("gtv_text", "rule_serde", "rule_eval")

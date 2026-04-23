@@ -40,21 +40,28 @@ public object RellApiInterpreterBackend {
     public fun create(rrApp: RR_App, compilationSysFns: Map<String, Any>): Rt_Interpreter =
         when (val backend = System.getProperty(SYSTEM_PROPERTY).orEmpty().trim().lowercase()) {
             "", "interpreter" -> Rt_InterpreterImpl.forCompilation(rrApp, compilationSysFns)
-            "truffle" -> {
-                val backendClass = try {
-                    Class.forName("net.postchain.rell.base.runtime.truffle.Tf_Backend")
-                } catch (e: ClassNotFoundException) {
-                    throw IllegalStateException(
-                        "Truffle backend selected via -D${SYSTEM_PROPERTY}=truffle, but class is not found",
-                        e,
-                    )
-                }
-                val factory = backendClass.getMethod("forCompilation", RR_App::class.java, Map::class.java)
-                factory.invoke(null, rrApp, compilationSysFns) as Rt_Interpreter
-            }
+            "truffle" -> reflectiveBackend("net.postchain.rell.base.runtime.truffle.Tf_Backend", "truffle", rrApp, compilationSysFns)
+            "llvm" -> reflectiveBackend("net.postchain.rell.llvm.Llvm_Backend", "llvm", rrApp, compilationSysFns)
             else -> throw IllegalArgumentException(
-                "Unsupported $SYSTEM_PROPERTY value: '$backend' (expected 'interpreter' or 'truffle')",
+                "Unsupported $SYSTEM_PROPERTY value: '$backend' (expected 'interpreter', 'truffle' or 'llvm')",
             )
         }
 
+    private fun reflectiveBackend(
+        className: String,
+        backendName: String,
+        rrApp: RR_App,
+        compilationSysFns: Map<String, Any>,
+    ): Rt_Interpreter {
+        val backendClass = try {
+            Class.forName(className)
+        } catch (e: ClassNotFoundException) {
+            throw IllegalStateException(
+                "$backendName backend selected via -D$SYSTEM_PROPERTY=$backendName, but class $className is not found",
+                e,
+            )
+        }
+        val factory = backendClass.getMethod("forCompilation", RR_App::class.java, Map::class.java)
+        return factory.invoke(null, rrApp, compilationSysFns) as Rt_Interpreter
+    }
 }

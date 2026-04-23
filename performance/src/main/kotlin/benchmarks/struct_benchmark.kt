@@ -38,7 +38,7 @@ import org.openjdk.jmh.annotations.Fork
 )
 class StructBenchmark : RellBackendBenchmark() {
 
-    @Param("interpreter", "truffle")
+    @Param("interpreter", "truffle", "llvm")
     lateinit var backend: String
 
     @Param("dto_mapping", "cursor_codec", "multi_sig")

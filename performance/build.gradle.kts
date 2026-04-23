@@ -24,6 +24,10 @@ dependencies {
     // Truffle peer backend so InterpreterBenchmark can exercise both backends behind a JMH
     // @Param. Without this dep the bench would only see the tree-walker.
     implementation(projects.rellBase.runtimeTruffle)
+    // LLVM peer backend so the suite can exercise the JIT behind the `llvm` @Param. Brings
+    // Llvm_Backend (+ its RellLlvmNative loader) onto the classpath; the native dylib is built by
+    // :rell-base:llvm:buildNativeLibrary and located at runtime via the rell.llvm.libpath resource.
+    implementation(projects.rellBase.llvm)
     implementation(libs.truffle.api)
     implementation(projects.rellBase.testUtils)
     implementation(projects.rellToolbox.ast)
@@ -77,6 +81,31 @@ sourceSets.main {
     resources.srcDir(prepareSamples.map { it.destinationDir.parentFile })
 }
 
+// LLVM backend native lib: built by :rell-base:llvm:buildNativeLibrary. JMH forks a clean JVM with
+// no inherited -D props, so rather than plumbing rell.llvm.libpath through fork args we stage the
+// built dylib's absolute path as a classpath resource (rell-llvm-libpath.txt). RellBackendBenchmark's
+// `llvm` arm reads it from the fork's classpath and sets the property before the first JIT call.
+val llvmLibPathResourceDir = layout.buildDirectory.dir("generated-llvm-resources")
+// Reference the dylib by its known output location (not via tasks.getByPath, which would force
+// cross-project realization at configuration time and trip a ClassLoaderScope lock).
+val llvmNativeLibFile = project(":rell-base:llvm").layout.buildDirectory
+    .file(if (System.getProperty("os.name").startsWith("Mac")) "native/librell-llvm.dylib" else "native/librell-llvm.so")
+val writeLlvmLibPath by tasks.registering {
+    description = "Stages the built librell-llvm absolute path as a classpath resource for the llvm benchmark backend."
+    dependsOn(":rell-base:llvm:buildNativeLibrary")
+    val libFile = llvmNativeLibFile
+    val outDir = llvmLibPathResourceDir
+    outputs.dir(outDir)
+    doLast {
+        val out = outDir.get().file("rell-llvm-libpath.txt").asFile
+        out.parentFile.mkdirs()
+        out.writeText(libFile.get().asFile.absolutePath)
+    }
+}
+sourceSets.main {
+    resources.srcDir(writeLlvmLibPath)
+}
+
 benchmark {
     configurations {
         named("main") {
@@ -91,6 +120,19 @@ benchmark {
             // -PbenchmarkInclude="MnaBenchmark"` to scope a run to one suite. The kotlinx-benchmark
             // plugin lacks a -P override, so the filter is wired here as a project property.
             (project.findProperty("benchmarkInclude") as? String)?.let { include(it) }
+            // Optional @Param override — e.g. `-PbenchmarkBackend=llvm` restricts the run to one
+            // backend arm (mirrors benchmarkInclude). Handy for exercising the LLVM JIT path without
+            // paying for the full interpreter/truffle/kotlin/llvm cross-product.
+            (project.findProperty("benchmarkBackend") as? String)?.let { param("backend", it) }
+            // Optional `sample` @Param filter — e.g. `-PbenchmarkSample=loopsum` to exercise a
+            // single workload without the full sample cross-product.
+            (project.findProperty("benchmarkSample") as? String)?.let { param("sample", it) }
+            // Fast-profile overrides for smoke/CI runs that only need a renderable report, not
+            // publishable numbers: `-PbenchmarkWarmups=1 -PbenchmarkIterations=1
+            // -PbenchmarkIterationTime=1`. Left null → the per-class annotation defaults apply.
+            (project.findProperty("benchmarkWarmups") as? String)?.let { warmups = it.toInt() }
+            (project.findProperty("benchmarkIterations") as? String)?.let { iterations = it.toInt() }
+            (project.findProperty("benchmarkIterationTime") as? String)?.let { iterationTime = it.toLong() }
         }
     }
 
@@ -115,9 +157,9 @@ val traceTruffle by tasks.registering(JavaExec::class) {
     classpath = sourceSets["main"].runtimeClasspath
     mainClass = "net.postchain.rell.performance.benchmarks.TruffleTraceRunnerKt"
 
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+    // No toolchain launcher: this task forks a JVM with JVMCI/libgraal flags, so it must run on
+    // the GraalVM JDK that invokes Gradle (which ships libgraal). Pinning a toolchain-21 launcher
+    // could resolve to a JVMCI-but-no-libgraal JDK (e.g. Homebrew openjdk@21) and SIGABRT at init.
 
     // - UnlockExperimentalVMOptions: needed before flipping JVMCI flags.
     // - EnableJVMCI / UseJVMCICompiler: turn on Graal as the JIT (replaces C2). Required
@@ -204,10 +246,12 @@ val benchmarkHtmlReport by tasks.registering(JavaExec::class) {
 
 afterEvaluate {
     tasks.getByName("mainBenchmark") {
+        dependsOn(writeLlvmLibPath)
         finalizedBy(benchmarkHtmlReport)
-        (this as JavaExec).javaLauncher = javaToolchains.launcherFor {
-            languageVersion = JavaLanguageVersion.of(21)
-        }
+        // No toolchain launcher: the JMH parent (and thus its @Fork children, which prepend
+        // -XX:+UseJVMCINativeLibrary for the Truffle backend) must run on the GraalVM JDK that
+        // invokes Gradle, which ships libgraal. Pinning a toolchain-21 launcher could resolve to a
+        // JVMCI-but-no-libgraal JDK (e.g. Homebrew openjdk@21) → fatal SIGABRT at Truffle init.
     }
 }
 
