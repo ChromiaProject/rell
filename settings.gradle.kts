@@ -58,3 +58,5 @@ include("rell-codegen:rellgen")
 
 include("rell-dokka-plugin")
 include("rell-base:rr-serialization")
+
+include("benchmarks")

@@ -13,7 +13,7 @@ dependencies {
     implementation(projects.rellBase)
     implementation(libs.guava)
     implementation(libs.commons.collections4)
-    implementation(projects.rellToolbox.common)
+    api(projects.rellToolbox.common)
 
     rellTestCasesConfiguration("net.postchain.rell:rell-api-gtx:${project.version}:rell-test-cases@zip")
 

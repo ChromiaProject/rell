@@ -29,6 +29,7 @@ apiValidation {
         "rell-codegen", "codegen", "codegen-kotlin", "codegen-typescript", "codegen-javascript",
         "codegen-python", "codegen-mermaid", "rellgen",
         "rell-dokka-plugin",
+        "benchmarks",
     )
 }
 

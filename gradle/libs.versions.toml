@@ -1,6 +1,8 @@
 [versions]
 kotlin = "2.3.0"
 postchain = "3.49.4"
+kotlinx-benchmark = "0.4.16"
+kandy = "0.8.3"
 
 flatbuffers = "25.2.10"
 
@@ -9,7 +11,7 @@ kotlinx-collections-immutable = "0.4.0"
 jline = "3.28.0"
 clikt = "5.1.0"
 jackson = "2.21.2"
-slf4j = "1.7.36"
+slf4j = "2.0.13"
 
 assertk = "0.28.1"
 junit = "6.0.2"
@@ -123,6 +125,10 @@ kotlinx-html = { module = "org.jetbrains.kotlinx:kotlinx-html-jvm", version.ref 
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
+# benchmarks
+kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinx-benchmark" }
+kandy-lets-plot = { module = "org.jetbrains.kotlinx:kandy-lets-plot", version.ref = "kandy" }
+
 [bundles]
 lsp4j = ["lsp4j", "lsp4j-debug", "lsp4j-websocket"]
 koin = ["koin-core", "koin-logger"]
@@ -138,3 +144,5 @@ dependency-check = { id = "org.owasp.dependencycheck", version.ref = "dependency
 git-properties = { id = "com.gorylenko.gradle-git-properties", version.ref = "gradle-git-properties" }
 sentry = { id = "io.sentry.jvm.gradle", version.ref = "sentry" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+kotlinx-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinx-benchmark" }
+kotlin-allopen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin" }
