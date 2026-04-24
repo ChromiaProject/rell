@@ -13,6 +13,18 @@ include "value.fbs";
 namespace rell.ir;
 
 // ============================================================================
+// Update/delete target kind
+// ============================================================================
+
+/// Target kind for UPDATE/DELETE statements.
+enum UpdateTargetKind : ubyte {
+    SIMPLE,
+    EXPR_ONE,
+    EXPR_MANY,
+    OBJECT,
+}
+
+// ============================================================================
 // Type adapter
 // ============================================================================
 
@@ -41,7 +53,7 @@ table WhenCondition {
 table IterativeWhenChooser {
     key_expr: Expr (required);
     conditions: [WhenCondition] (required);
-    else_index: int = -1;  // -1 means no else
+    else_index: int = null;  // null when there is no else branch
 }
 
 table LookupWhenChooser {
@@ -49,7 +61,7 @@ table LookupWhenChooser {
     /// Parallel arrays: lookup_keys[i] → branch index lookup_values[i].
     lookup_keys: [ConstantValue] (required);
     lookup_values: [int] (required);
-    else_index: int = -1;
+    else_index: int = null;  // null when there is no else branch
 }
 
 union WhenChooserUnion {
@@ -309,7 +321,7 @@ enum ColAtFieldSummarizationKind : ubyte {
 
 table ColAtFieldSummarizationInfo {
     kind: ColAtFieldSummarizationKind;
-    binary_op_key: string;
+    binary_op: BinaryOp = null;  // present only for SUM; the accumulator op
     zero_value: ConstantValue;
     is_min: bool;
     collection_type: Type;
@@ -348,6 +360,19 @@ table VarDeclarator {
 }
 
 // ============================================================================
+// Comparison info for BinaryExpr
+// ============================================================================
+
+/// Comparison metadata on a BinaryExpr. When present, the outer `op` field
+/// is unused and the binary expression is dispatched as a comparison.
+/// The C++ LLVM codegen visitor switches on nullability of this sub-table
+/// instead of a `has_cmp` boolean paired with silently-default cmp_op/cmp_type.
+table CmpInfo {
+    op: CmpOp;
+    cmp_type: CmpType;
+}
+
+// ============================================================================
 // Statement union members
 // ============================================================================
 
@@ -378,8 +403,7 @@ table ReplExprStatement {
 table AssignStatement {
     dst_expr: Expr (required);
     expr: Expr (required);
-    op: BinaryOp;        // assignment operator (e.g. += uses ADD_INTEGER)
-    has_op: bool = false; // false for plain =
+    op: BinaryOp = null;  // present only for compound assignment (e.g. +=); null for plain =
 }
 
 table IfStatement {
@@ -437,9 +461,8 @@ table UpdateStatement {
     lambda_block: FrameBlock;
     lambda_var_ptr: VarPtr;
     lambda_expr: Expr;
-    target_kind: ubyte;   // RR_UpdateTargetKind ordinal
-    cardinality: AtCardinality;
-    has_cardinality: bool;
+    target_kind: UpdateTargetKind;
+    cardinality: AtCardinality = null;  // null when the Kotlin side has no cardinality
     is_expr_set: bool;
     expr_list_type: Type;
 }
@@ -453,9 +476,8 @@ table DeleteStatement {
     lambda_block: FrameBlock;
     lambda_var_ptr: VarPtr;
     lambda_expr: Expr;
-    target_kind: ubyte;
-    cardinality: AtCardinality;
-    has_cardinality: bool;
+    target_kind: UpdateTargetKind;
+    cardinality: AtCardinality = null;
     is_expr_set: bool;
     expr_list_type: Type;
 }
@@ -556,7 +578,7 @@ table DbElvisExpr {
 /// Database function call (e.g. abs, lower, ...).
 table DbCallExpr {
     type: Type (required);
-    fn_name: string (required);  // Db_SysFunction name
+    fn_name: string (required);  // Db_SysFunction encoded form: raw SQL for Simple, "text#{i}text" for Template
     args: [DbExpr] (required);
 }
 
@@ -578,13 +600,12 @@ table DbWhenCase {
     expr: DbExpr (required);
 }
 
-/// CASE/WHEN at the database level.
+/// CASE/WHEN at the database level. `else_expr` is null iff there is no else.
 table DbWhenExpr {
     type: Type (required);
     key_expr: DbExpr;
     cases: [DbWhenCase] (required);
     else_expr: DbExpr;
-    has_else: bool = false;
 }
 
 /// Nested at-expression (sub-select).
@@ -647,10 +668,9 @@ table BinaryExpr {
     left: Expr (required);
     right: Expr (required);
     err_pos: SourcePos;
-    /// When true, this is a comparison expression dispatched via cmp_op / cmp_type.
-    has_cmp: bool;
-    cmp_op: CmpOp;
-    cmp_type: CmpType;
+    /// Null for arithmetic/logical/concat/membership/set ops; non-null when
+    /// this is a comparison dispatched via the comparator pair in CmpInfo.
+    cmp: CmpInfo;
 }
 
 table UnaryExpr {
@@ -837,7 +857,7 @@ table DbAtExpr {
     err_pos: SourcePos (required);
     what_field_groups: [DbAtWhatFieldGroup];
     object_name: string;
-    object_def_index: int = -1;
+    object_def_index: int = null;  // null when this DbAt is not derived from an `object` definition
 }
 
 table ColAtExpr {

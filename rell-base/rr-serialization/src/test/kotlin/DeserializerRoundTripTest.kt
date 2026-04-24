@@ -103,6 +103,22 @@ class DeserializerRoundTripTest: BaseSerializerTest() {
         // Definition ID index maps must match.
         assertEquals(original.entityDefIdIndex, deserialized.entityDefIdIndex, "entityDefIdIndex")
         assertEquals(original.enumDefIdIndex, deserialized.enumDefIdIndex, "enumDefIdIndex")
+
+        assertEquals(
+            original.nativeFunctions.keys,
+            deserialized.nativeFunctions.keys,
+            "nativeFunctions.keys",
+        )
+        for (name in original.nativeFunctions.keys) {
+            val oh = original.nativeFunctions.getValue(name)
+            val dh = deserialized.nativeFunctions.getValue(name)
+            assertEquals(oh.type, dh.type, "nativeFunctions[$name].type")
+            assertEquals(oh.params.size, dh.params.size, "nativeFunctions[$name].params.size")
+            for (i in oh.params.indices) {
+                assertEquals(oh.params[i].name, dh.params[i].name, "nativeFunctions[$name].params[$i].name")
+                assertEquals(oh.params[i].type, dh.params[i].type, "nativeFunctions[$name].params[$i].type")
+            }
+        }
     }
 
     // --- Tests ---
@@ -227,6 +243,14 @@ class DeserializerRoundTripTest: BaseSerializerTest() {
         """
         struct point { x: integer; y: integer; }
         function origin() = point(x = 0, y = 0);
+    """,
+    )
+
+    @Test fun testNativeFunctions() = roundTrip(
+        """
+        @native function my_add(x: integer, y: integer): integer;
+        @native function my_greet(name: text): text;
+        @native function my_notify(message: text);
     """,
     )
 }

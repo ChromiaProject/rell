@@ -11,9 +11,9 @@ import net.postchain.rell.base.utils.toImmList
 import rell.ir.*
 import rell.ir.Expr as FbExpr
 
-fun deserializeExpr(fb: FbExpr?): RR_Expr {
-    if (fb == null) return RR_Expr.Error(RR_Type.Error, "null expression")
-    return deserializeExprUnion(fb)
+fun deserializeExpr(fb: FbExpr?): RR_Expr = withDeserializerDepth {
+    if (fb == null) return@withDeserializerDepth RR_Expr.Error(RR_Type.Error, "null expression")
+    deserializeExprUnion(fb)
 }
 
 private fun deserializeExprUnion(fb: FbExpr): RR_Expr = when (fb.exprType) {
@@ -33,8 +33,9 @@ private fun deserializeExprUnion(fb: FbExpr): RR_Expr = when (fb.exprType) {
 
     ExprUnion.BinaryExpr -> {
         val e = BinaryExpr().also { fb.expr(it) }
-        val cmpInfo =
-            if (e.hasCmp) RR_CmpBinaryOp(deserializeCmpOp(e.cmpOp), deserializeCmpType(e.cmpType)) else null
+        val cmpInfo = e.cmp?.let { c ->
+            RR_CmpBinaryOp(deserializeCmpOp(c.op), deserializeCmpType(c.cmpType))
+        }
         val op = if (cmpInfo != null) "Cmp_${cmpInfo.cmpOp}_${cmpInfo.cmpType}" else deserializeRRBinaryOp(e.op)
         RR_Expr.Binary(
             type = deserializeType(e.type),
@@ -158,6 +159,8 @@ private fun deserializeExprUnion(fb: FbExpr): RR_Expr = when (fb.exprType) {
 
     ExprUnion.AssignExpr -> {
         val e = AssignExpr().also { fb.expr(it) }
+        // The schema's AssignExpr.op is non-optional; EQ is the don't-care value
+        // for plain `=`. Compound operators round-trip through any other BinaryOp value.
         RR_Expr.Assign(
             type = deserializeType(e.type),
             op = if (e.op != BinaryOp.EQ) deserializeRRBinaryOp(e.op) else null,
@@ -301,7 +304,10 @@ private fun deserializeExprUnion(fb: FbExpr): RR_Expr = when (fb.exprType) {
 
     ExprUnion.ObjectValueExpr -> {
         val e = ObjectValueExpr().also { fb.expr(it) }
-        RR_Expr.ObjectValue(deserializeType(e.type), e.objectDefIndex.toInt())
+        RR_Expr.ObjectValue(
+            deserializeType(e.type),
+            checkedObjectDefIndex(e.objectDefIndex, "ObjectValueExpr.object_def_index"),
+        )
     }
 
     ExprUnion.DbAtExpr -> {
@@ -314,7 +320,7 @@ private fun deserializeExprUnion(fb: FbExpr): RR_Expr = when (fb.exprType) {
         val whatFieldGroups = if (e.whatFieldGroupsLength > 0) {
             (0 until e.whatFieldGroupsLength).mapToImmList { deserializeWhatFieldGroup(e.whatFieldGroups(it)!!) }
         } else null
-        val objectDefIndex = if (e.objectDefIndex >= 0) e.objectDefIndex else null
+        val objectDefIndex = e.objectDefIndex?.let { checkedObjectDefIndex(it, "DbAtExpr.object_def_index") }
         RR_Expr.DbAt(
             type = deserializeType(e.type),
             from = from,
@@ -348,7 +354,7 @@ private fun deserializeExprUnion(fb: FbExpr): RR_Expr = when (fb.exprType) {
                 val kind = deserializeColAtFieldSummarizationKind(info.kind)
                 RR_ColAtFieldSummarizationInfo(
                     kind = kind,
-                    binaryOpKey = info.binaryOpKey,
+                    binaryOpKey = info.binaryOp?.let { deserializeRRBinaryOp(it) },
                     zeroValue = info.zeroValue?.let { deserializeUntypedConstantValue(it) },
                     isMin = if (kind == RR_ColAtFieldSummarizationKind.MIN || kind == RR_ColAtFieldSummarizationKind.MAX) info.isMin else null,
                     collectionType = info.collectionType?.let { deserializeType(it) },
@@ -392,7 +398,8 @@ private fun deserializeConstantValue(fb: TypedValue): RR_ConstantValue = when (f
 
     ValueUnion.ByteArrayValue -> {
         val v = ByteArrayValue().also { fb.value(it) }
-        val bytes = ByteArray(v.valueLength) { v.value(it).toByte() }
+        val len = checkedByteArrayLength(v.valueLength, "ByteArrayValue.value")
+        val bytes = ByteArray(len) { v.value(it).toByte() }
         RR_ConstantValue.ByteArray(bytes)
     }
 
@@ -418,7 +425,14 @@ private fun deserializeConstantValue(fb: TypedValue): RR_ConstantValue = when (f
 
     ValueUnion.GtvValue -> {
         val v = GtvValue().also { fb.value(it) }
-        RR_ConstantValue.Gtv(v.json)
+        val len = checkedByteArrayLength(v.valueLength, "GtvValue.value")
+        if (len > DeserLimits.MAX_GTV_SIZE) {
+            throw RRDeserializationException(
+                "GtvValue.value: length $len exceeds MAX_GTV_SIZE=${DeserLimits.MAX_GTV_SIZE}",
+            )
+        }
+        val bytes = ByteArray(len) { v.value(it).toByte() }
+        RR_ConstantValue.Gtv(GtvBinaryHelper.binaryToJson(bytes))
     }
 
     ValueUnion.StructConstantValue -> {
@@ -451,10 +465,25 @@ private fun deserializeConstantValue(fb: TypedValue): RR_ConstantValue = when (f
 
     ValueUnion.MetaConstantValue -> {
         val v = MetaConstantValue().also { fb.value(it) }
-        RR_ConstantValue.Meta(v.kind, v.moduleName, v.fullName, v.simpleName, v.mountName)
+        RR_ConstantValue.Meta(
+            deserializeMetaDefinitionKind(v.kind),
+            v.moduleName,
+            v.fullName,
+            v.simpleName,
+            v.mountName,
+        )
     }
 
     else -> RR_ConstantValue.Null
+}
+
+private fun deserializeMetaDefinitionKind(kind: UByte): String = when (kind) {
+    MetaDefinitionKind.ENTITY -> "entity"
+    MetaDefinitionKind.MODULE -> "module"
+    MetaDefinitionKind.OBJECT -> "object"
+    MetaDefinitionKind.OPERATION -> "operation"
+    MetaDefinitionKind.QUERY -> "query"
+    else -> error("Unknown meta definition kind: $kind")
 }
 
 private fun deserializeUntypedConstantValue(fb: ConstantValue?): RR_ConstantValue = when (fb?.valueType) {
@@ -475,7 +504,8 @@ private fun deserializeUntypedConstantValue(fb: ConstantValue?): RR_ConstantValu
 
     ValueUnion.ByteArrayValue -> {
         val v = ByteArrayValue().also { fb.value(it) }
-        val bytes = ByteArray(v.valueLength) { v.value(it).toByte() }
+        val len = checkedByteArrayLength(v.valueLength, "ByteArrayValue.value")
+        val bytes = ByteArray(len) { v.value(it).toByte() }
         RR_ConstantValue.ByteArray(bytes)
     }
 
@@ -496,7 +526,15 @@ private fun deserializeUntypedConstantValue(fb: ConstantValue?): RR_ConstantValu
     }
 
     ValueUnion.GtvValue -> {
-        val v = GtvValue().also { fb.value(it) }; RR_ConstantValue.Gtv(v.json)
+        val v = GtvValue().also { fb.value(it) }
+        val len = checkedByteArrayLength(v.valueLength, "GtvValue.value")
+        if (len > DeserLimits.MAX_GTV_SIZE) {
+            throw RRDeserializationException(
+                "GtvValue.value: length $len exceeds MAX_GTV_SIZE=${DeserLimits.MAX_GTV_SIZE}",
+            )
+        }
+        val bytes = ByteArray(len) { v.value(it).toByte() }
+        RR_ConstantValue.Gtv(GtvBinaryHelper.binaryToJson(bytes))
     }
 
     ValueUnion.StructConstantValue -> {
@@ -529,7 +567,13 @@ private fun deserializeUntypedConstantValue(fb: ConstantValue?): RR_ConstantValu
 
     ValueUnion.MetaConstantValue -> {
         val v = MetaConstantValue().also { fb.value(it) }
-        RR_ConstantValue.Meta(v.kind, v.moduleName, v.fullName, v.simpleName, v.mountName)
+        RR_ConstantValue.Meta(
+            deserializeMetaDefinitionKind(v.kind),
+            v.moduleName,
+            v.fullName,
+            v.simpleName,
+            v.mountName,
+        )
     }
 
     else -> RR_ConstantValue.Null
@@ -699,7 +743,7 @@ internal fun deserializeWhenChooser(fb: WhenChooser?): RR_WhenChooser = when (fb
             val cond = c.conditions(i)
             RR_WhenCondition(cond.index, deserializeExpr(cond.expr))
         }
-        RR_WhenChooser.Iterative(keyExpr, conditions, c.elseIndex)
+        RR_WhenChooser.Iterative(keyExpr, conditions, c.elseIndex ?: -1)
     }
 
     WhenChooserUnion.LookupWhenChooser -> {
@@ -707,7 +751,7 @@ internal fun deserializeWhenChooser(fb: WhenChooser?): RR_WhenChooser = when (fb
         val keyExpr = deserializeExpr(c.keyExpr)
         val keys = (0 until c.lookupKeysLength).mapToImmList { deserializeUntypedConstantValue(c.lookupKeys(it)) }
         val values = (0 until c.lookupValuesLength).mapToImmList { c.lookupValues(it) }
-        RR_WhenChooser.Lookup(keyExpr, keys, values, c.elseIndex)
+        RR_WhenChooser.Lookup(keyExpr, keys, values, c.elseIndex ?: -1)
     }
 
     else -> error("Unknown when chooser type: ${fb.chooserType}")

@@ -8,12 +8,10 @@ import net.postchain.rell.base.model.rr.RR_App
 import rell.ir.App
 import rell.ir.ExternalChainRef
 import rell.ir.Module
+import rell.ir.NativeFunctionEntry
 
 /**
  * Serializes an [RR_App] to a FlatBuffers byte array.
- *
- * The RR_ model is fully resolved — no `C_LateGetter`, no lazy fields, no error sentinels.
- * Serialization is a straightforward tree walk with no special cases.
  */
 fun serializeRellApp(app: RR_App): ByteArray {
     val ctx = SerializerContext(app)
@@ -47,7 +45,7 @@ fun serializeRellApp(app: RR_App): ByteArray {
         val imports = module.imports.map { ctx.serializeModuleName(it) }.toIntArray()
         val importsVec = if (imports.isNotEmpty()) builder.createVectorOfTables(imports) else 0
 
-        val moduleArgsIdx = module.moduleArgs?.let { ctx.resolveStructIndex(it) } ?: -1
+        val moduleArgsIdx = module.moduleArgs?.let { ctx.resolveStructIndex(it) }
 
         val externalChain = module.externalChain?.let { ctx.createString(it) }
 
@@ -69,7 +67,7 @@ fun serializeRellApp(app: RR_App): ByteArray {
         Module.addFunctionIndices(builder, fnIdxVec)
         Module.addConstantIndices(builder, constIdxVec)
         if (importsVec != 0) Module.addImports(builder, importsVec)
-        Module.addModuleArgsStructIndex(builder, moduleArgsIdx)
+        if (moduleArgsIdx != null) builder.forcedScalar { Module.addModuleArgsStructIndex(builder, moduleArgsIdx) }
         Module.endModule(builder)
     }.toIntArray()
 
@@ -95,6 +93,18 @@ fun serializeRellApp(app: RR_App): ByteArray {
         val bodies = ext.extensions.map { ctx.serializeFunctionBody(it) }.toIntArray()
         val bodiesVec = builder.createVectorOfTables(bodies)
         rell.ir.FunctionExtensions.createFunctionExtensions(builder, ext.uid, bodiesVec)
+    }.toIntArray()
+
+    // 2d. Serialize native function headers.
+    val nativeFnOffsets = app.nativeFunctions.entries.map { (name, header) ->
+        val nameOff = ctx.createString(name.str())
+        val typeOff = ctx.serializeType(header.type)
+        val paramsOff = ctx.serializeFunctionParams(header.params)
+        NativeFunctionEntry.startNativeFunctionEntry(builder)
+        NativeFunctionEntry.addName(builder, nameOff)
+        NativeFunctionEntry.addType(builder, typeOff)
+        NativeFunctionEntry.addParams(builder, paramsOff)
+        NativeFunctionEntry.endNativeFunctionEntry(builder)
     }.toIntArray()
 
     // 3. Serialize external chains.
@@ -125,10 +135,14 @@ fun serializeRellApp(app: RR_App): ByteArray {
     val fnExtVec = if (fnExtOffsets.isNotEmpty()) {
         App.createFunctionExtensionsVector(builder, fnExtOffsets)
     } else 0
+    val nativeFnVec = if (nativeFnOffsets.isNotEmpty()) {
+        App.createNativeFunctionsVector(builder, nativeFnOffsets)
+    } else 0
 
     // 5. Build root App table.
+    val schemaHashVec = App.createSchemaHashVector(builder, FBS_SCHEMA_HASH.toUByteArray())
     App.startApp(builder)
-    App.addVersion(builder, 1u)
+    App.addSchemaHash(builder, schemaHashVec)
     App.addEntities(builder, entitiesVec)
     App.addObjects(builder, objectsVec)
     App.addStructs(builder, structsVec)
@@ -141,6 +155,7 @@ fun serializeRellApp(app: RR_App): ByteArray {
     if (externalChainsVec != 0) App.addExternalChains(builder, externalChainsVec)
     if (sysQueriesVec != 0) App.addSysQueries(builder, sysQueriesVec)
     if (fnExtVec != 0) App.addFunctionExtensions(builder, fnExtVec)
+    if (nativeFnVec != 0) App.addNativeFunctions(builder, nativeFnVec)
     val appOffset = App.endApp(builder)
 
     App.finishAppBuffer(builder, appOffset)

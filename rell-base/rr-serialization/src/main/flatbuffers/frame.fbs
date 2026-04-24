@@ -12,8 +12,7 @@ struct VarPtr {
 
 /// A block within a call frame (scoping unit).
 table FrameBlock {
-    parent_uid: uint = 0;
-    has_parent: bool = false;
+    parent_uid: uint = null;  // null when this is a root block
     uid: uint;
     offset: int;
     size: int;

@@ -53,22 +53,22 @@ fun SerializerContext.serializeStructDefinition(struct: RR_StructDefinition): In
     val attrs = serializeAttributes(struct.struct.attributesList.toList())
     val tf = struct.struct.flags.typeFlags
     val flags = run {
-        rell.ir.StructFlags.startStructFlags(builder)
-        rell.ir.StructFlags.addPure(builder, tf.pure)
-        rell.ir.StructFlags.addMutable(builder, tf.mutable)
-        rell.ir.StructFlags.addGtvFrom(builder, tf.gtv.fromGtv)
-        rell.ir.StructFlags.addGtvTo(builder, tf.gtv.toGtv)
-        rell.ir.StructFlags.addVirtualable(builder, tf.virtualable)
-        rell.ir.StructFlags.addMixedTuple(builder, tf.mixedTuple)
-        rell.ir.StructFlags.addHasTypeVariable(builder, tf.hasTypeVariable)
-        rell.ir.StructFlags.addCyclic(builder, struct.struct.flags.cyclic)
-        rell.ir.StructFlags.addInfinite(builder, struct.struct.flags.infinite)
-        rell.ir.StructFlags.endStructFlags(builder)
+        StructFlags.startStructFlags(builder)
+        StructFlags.addPure(builder, tf.pure)
+        StructFlags.addMutable(builder, tf.mutable)
+        StructFlags.addGtvFrom(builder, tf.gtv.fromGtv)
+        StructFlags.addGtvTo(builder, tf.gtv.toGtv)
+        StructFlags.addVirtualable(builder, tf.virtualable)
+        StructFlags.addMixedTuple(builder, tf.mixedTuple)
+        StructFlags.addHasTypeVariable(builder, tf.hasTypeVariable)
+        StructFlags.addCyclic(builder, struct.struct.flags.cyclic)
+        StructFlags.addInfinite(builder, struct.struct.flags.infinite)
+        StructFlags.endStructFlags(builder)
     }
     val mirrorInfo = struct.struct.mirrorInfo?.let { mi ->
-        val defType = createString(mi.definitionType)
+        val defKind = serializeMirrorStructDefKind(mi.definitionType)
         val defStr = createString(mi.definition)
-        rell.ir.MirrorStructInfo.createMirrorStructInfo(builder, defType, defStr, mi.mutable)
+        MirrorStructInfo.createMirrorStructInfo(builder, defKind, defStr, mi.mutable)
     }
 
     FbStructDefinition.startStructDefinition(builder)
@@ -151,7 +151,9 @@ fun SerializerContext.serializeGlobalConstantDefinition(const: RR_GlobalConstant
     val type = serializeType(const.type)
     val value = serializeExpr(const.expr)
     val frame = serializeFrameDescriptor(const.base.initFrame)
-    val metaGtvJson = const.metaGtvJson?.let { createString(it) }
+    val metaGtvOff = const.metaGtvJson?.let { b64 ->
+        FbGlobalConstantDefinition.createMetaGtvVector(builder, GtvBinaryHelper.base64ToBinary(b64).toUByteArray())
+    }
 
     FbGlobalConstantDefinition.startGlobalConstantDefinition(builder)
     FbGlobalConstantDefinition.addDefName(builder, defName)
@@ -159,7 +161,7 @@ fun SerializerContext.serializeGlobalConstantDefinition(const: RR_GlobalConstant
     FbGlobalConstantDefinition.addType(builder, type)
     FbGlobalConstantDefinition.addValue(builder, value)
     FbGlobalConstantDefinition.addFrame(builder, frame)
-    if (metaGtvJson != null) FbGlobalConstantDefinition.addMetaGtvJson(builder, metaGtvJson)
+    if (metaGtvOff != null) FbGlobalConstantDefinition.addMetaGtv(builder, metaGtvOff)
     return FbGlobalConstantDefinition.endGlobalConstantDefinition(builder)
 }
 
@@ -178,19 +180,14 @@ private fun SerializerContext.serializeAttributes(attrs: List<RR_Attribute>): In
         FbAttribute.addName(builder, name)
         FbAttribute.addType(builder, type)
         FbAttribute.addMutable(builder, attr.mutable)
-        val kik = attr.keyIndexKind
-        if (kik != null) {
-            FbAttribute.addHasKeyIndexKind(builder, true)
-            FbAttribute.addKeyIndexKind(
-                builder,
-                when (kik) {
-                    net.postchain.rell.base.model.KeyIndexKind.KEY -> FbKeyIndexKind.KEY
-                    net.postchain.rell.base.model.KeyIndexKind.INDEX -> FbKeyIndexKind.INDEX
-                },
-            )
+        attr.keyIndexKind?.let { kik ->
+            val fbKind = when (kik) {
+                net.postchain.rell.base.model.KeyIndexKind.KEY -> FbKeyIndexKind.KEY
+                net.postchain.rell.base.model.KeyIndexKind.INDEX -> FbKeyIndexKind.INDEX
+            }
+            builder.forcedScalar { FbAttribute.addKeyIndexKind(builder, fbKind) }
         }
         FbAttribute.addSqlMapping(builder, sqlMapping)
-        FbAttribute.addHasDefaultValue(builder, attr.hasDefaultValue)
         FbAttribute.addCanSetInCreate(builder, attr.canSetInCreate)
         if (defaultExprOff != null) FbAttribute.addDefaultExpr(builder, defaultExprOff)
         FbAttribute.addIsDbModification(builder, attr.isDbModification)
@@ -206,17 +203,9 @@ private fun SerializerContext.serializeSizeConstraint(sc: RR_SizeConstraint): In
         RR_SizeConstraintKind.BYTE_ARRAY -> SizeConstraintKind.BYTE_ARRAY
         RR_SizeConstraintKind.TEXT -> SizeConstraintKind.TEXT
     }
-    val min = sc.min
-    val max = sc.max
     SizeConstraint.startSizeConstraint(builder)
-    if (min != null) {
-        SizeConstraint.addHasMin(builder, true)
-        SizeConstraint.addMin(builder, min)
-    }
-    if (max != null) {
-        SizeConstraint.addHasMax(builder, true)
-        SizeConstraint.addMax(builder, max)
-    }
+    sc.min?.let { builder.forcedScalar { SizeConstraint.addMin(builder, it) } }
+    sc.max?.let { builder.forcedScalar { SizeConstraint.addMax(builder, it) } }
     SizeConstraint.addKind(builder, kind)
     SizeConstraint.addCodePrefix(builder, codePrefix)
     return SizeConstraint.endSizeConstraint(builder)
@@ -247,7 +236,9 @@ private fun SerializerContext.serializeEntitySqlMapping(mapping: RR_EntitySqlMap
     EntitySqlMapping.startEntitySqlMapping(builder)
     EntitySqlMapping.addKind(builder, kind)
     EntitySqlMapping.addMountName(builder, mountName)
-    EntitySqlMapping.addChainIndex(builder, mapping.externalChainIndex)
+    if (mapping.externalChainIndex >= 0) {
+        builder.forcedScalar { EntitySqlMapping.addChainIndex(builder, mapping.externalChainIndex) }
+    }
     EntitySqlMapping.addMetaName(builder, metaName)
     EntitySqlMapping.addRowidColumn(builder, rowidColumn)
     EntitySqlMapping.addAutoCreateTable(builder, mapping.autoCreateTable)
@@ -261,6 +252,13 @@ private fun SerializerContext.serializeExternalEntity(ext: RR_ExternalEntity): I
     ExternalEntity.addMetaCheck(builder, ext.metaCheck)
     ExternalEntity.addChainName(builder, chainName)
     return ExternalEntity.endExternalEntity(builder)
+}
+
+private fun serializeMirrorStructDefKind(defTypeName: String): UByte = when (defTypeName) {
+    "ENTITY" -> MirrorStructDefKind.ENTITY
+    "OBJECT" -> MirrorStructDefKind.OBJECT
+    "OPERATION" -> MirrorStructDefKind.OPERATION
+    else -> error("Unknown mirror struct def type: $defTypeName")
 }
 
 private fun SerializerContext.serializeKeyIndices(keyIndices: List<KeyIndex>): Int {
@@ -315,7 +313,7 @@ private fun SerializerContext.serializeOperationBody(op: RR_OperationDefinition)
     return FbFunctionBody.endFunctionBody(builder)
 }
 
-private fun SerializerContext.serializeFunctionParams(params: List<RR_FunctionParam>): Int {
+internal fun SerializerContext.serializeFunctionParams(params: List<RR_FunctionParam>): Int {
     val offsets = params.map { param ->
         val name = createString(param.name.str)
         val type = serializeType(param.type)

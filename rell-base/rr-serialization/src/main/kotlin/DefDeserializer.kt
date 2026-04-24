@@ -121,7 +121,7 @@ private fun deserializeEntitySqlMapping(fb: EntitySqlMapping?): RR_EntitySqlMapp
         autoCreateTable = fb.autoCreateTable,
         isSystemEntity = fb.isSystemEntity,
         kind = kind,
-        externalChainIndex = fb.chainIndex,
+        externalChainIndex = fb.chainIndex ?: -1,
     )
 }
 
@@ -150,13 +150,20 @@ fun deserializeStructDefinition(fb: FbStructDefinition): RR_StructDefinition {
         )
     } else {
         RR_StructFlags(
-            typeFlags = TypeFlags(true, false, GtvCompatibility(true, true), true, false, false),
+            typeFlags = TypeFlags(
+                pure = true,
+                mutable = false,
+                gtv = GtvCompatibility(fromGtv = true, toGtv = true),
+                virtualable = true,
+                mixedTuple = false,
+                hasTypeVariable = false
+            ),
             cyclic = false,
             infinite = false,
         )
     }
     val mirrorInfo = fb.mirrorInfo?.let {
-        RR_MirrorStructInfo(it.definitionType, it.definition, it.mutable)
+        RR_MirrorStructInfo(deserializeMirrorStructDefKind(it.definitionType), it.definition, it.mutable)
     }
 
     val struct = RR_Struct(
@@ -186,9 +193,8 @@ fun deserializeEnumDefinition(fb: FbEnumDefinition): RR_EnumDefinition {
 fun deserializeObjectDefinition(fb: FbObjectDefinition, entities: List<RR_EntityDefinition>): RR_ObjectDefinition {
     val defName = deserializeDefinitionName(fb.defName)
     val base = deserializeDefinitionBase(defName)
-    val entityIdx = fb.entityDefIndex.toInt()
-    val entity = checkNotNull(entities.getOrNull(entityIdx)) { "Entity index out of range: $entityIdx" }
-    return RR_ObjectDefinition(base = base, rEntity = entity)
+    val entityIdx = checkedUIntAsIndex(fb.entityDefIndex, entities.size, "ObjectDefinition.entity_def_index")
+    return RR_ObjectDefinition(base = base, rEntity = entities[entityIdx])
 }
 
 // --- Functions ---
@@ -305,12 +311,21 @@ fun deserializeGlobalConstantDefinition(fb: FbGlobalConstantDefinition): RR_Glob
     val constIndex = fb.constIndex.toInt()
     val appUid = AppUid(0)
     val moduleKey = ModuleKey(ModuleName.of(defName.module), null)
+    val metaGtvJson = if (fb.metaGtvLength > 0) {
+        val len = checkedByteArrayLength(fb.metaGtvLength, "GlobalConstantDefinition.meta_gtv")
+        if (len > DeserLimits.MAX_GTV_SIZE) {
+            throw RRDeserializationException(
+                "GlobalConstantDefinition.meta_gtv: length $len exceeds MAX_GTV_SIZE=${DeserLimits.MAX_GTV_SIZE}",
+            )
+        }
+        GtvBinaryHelper.binaryToBase64(ByteArray(len) { fb.metaGtv(it).toByte() })
+    } else null
     return RR_GlobalConstantDefinition(
         base = base,
         constId = GlobalConstantId(constIndex, appUid, moduleKey, defName.qualifiedName, defName.simpleName),
         type = deserializeType(fb.type),
         expr = deserializeExpr(fb.value),
-        metaGtvJson = fb.metaGtvJson,
+        metaGtvJson = metaGtvJson,
     )
 }
 
@@ -323,13 +338,11 @@ private fun deserializeAttributes(fb: FbStructDefinition): List<RR_Attribute> =
     (0 until fb.attributesLength).map { i -> deserializeAttribute(fb.attributes(i)) }
 
 private fun deserializeAttribute(fb: FbAttribute): RR_Attribute {
-    val kik = if (fb.hasKeyIndexKind) {
-        when (fb.keyIndexKind) {
-            FbKeyIndexKind.KEY -> KeyIndexKind.KEY
-            FbKeyIndexKind.INDEX -> KeyIndexKind.INDEX
-            else -> null
-        }
-    } else null
+    val kik = when (fb.keyIndexKind) {
+        FbKeyIndexKind.KEY -> KeyIndexKind.KEY
+        FbKeyIndexKind.INDEX -> KeyIndexKind.INDEX
+        else -> null
+    }
 
     return RR_Attribute(
         index = fb.index,
@@ -345,7 +358,7 @@ private fun deserializeAttribute(fb: FbAttribute): RR_Attribute {
     )
 }
 
-private fun deserializeFunctionParam(p: FunctionParam): RR_FunctionParam = RR_FunctionParam(
+internal fun deserializeFunctionParam(p: FunctionParam): RR_FunctionParam = RR_FunctionParam(
     name = Name.of(p.name),
     type = deserializeType(p.type),
     initFrame = p.initFrame?.let { deserializeFrameDescriptor(it) }
@@ -366,11 +379,18 @@ private fun deserializeSizeConstraint(fb: SizeConstraint): RR_SizeConstraint {
         else -> RR_SizeConstraintKind.BYTE_ARRAY
     }
     return RR_SizeConstraint(
-        min = if (fb.hasMin) fb.min else null,
-        max = if (fb.hasMax) fb.max else null,
+        min = fb.min,
+        max = fb.max,
         kind = kind,
         codePrefix = fb.codePrefix,
     )
+}
+
+private fun deserializeMirrorStructDefKind(kind: UByte): String = when (kind) {
+    MirrorStructDefKind.ENTITY -> "ENTITY"
+    MirrorStructDefKind.OBJECT -> "OBJECT"
+    MirrorStructDefKind.OPERATION -> "OPERATION"
+    else -> error("Unknown mirror struct def kind: $kind")
 }
 
 private fun deserializeKeyIndices(count: Int, accessor: (Int) -> FbKeyIndex): List<List<Name>> {

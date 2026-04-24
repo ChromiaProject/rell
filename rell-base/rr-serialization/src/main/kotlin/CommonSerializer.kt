@@ -46,10 +46,7 @@ internal fun SerializerContext.serializeErrorPos(pos: ErrorPos): Int = serialize
 
 internal fun SerializerContext.serializeFrameBlock(block: RR_FrameBlock): Int {
     FbFrameBlock.startFrameBlock(builder)
-    if (block.parentUid != null) {
-        FbFrameBlock.addHasParent(builder, true)
-        FbFrameBlock.addParentUid(builder, block.parentUid!!.toUInt())
-    }
+    block.parentUid?.let { builder.forcedScalar { FbFrameBlock.addParentUid(builder, it.toUInt()) } }
     FbFrameBlock.addUid(builder, block.uid.toUInt())
     FbFrameBlock.addOffset(builder, block.offset)
     FbFrameBlock.addSize(builder, block.size)

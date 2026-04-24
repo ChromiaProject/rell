@@ -16,11 +16,9 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 abstract class BaseSerializerTest {
-    protected fun compileApp(code: String): RR_App {
-        return compileAppWithSysFns(code).first
-    }
+    protected fun compileApp(code: String): RR_App = compileAppWithSysFns(code).first
 
-    /** Returns (rrApp, compilationSysFns) — use when the test needs the per-compilation stdlib. */
+    /** Returns (rrApp, compilationSysFns) - use when the test needs the per-compilation stdlib. */
     protected fun compileAppWithSysFns(code: String): Pair<RR_App, Map<String, Any>> {
         val sourceDir = C_SourceDir.mapDirOf(RellTestUtils.MAIN_FILE to code)
         val modSel = C_CompilerModuleSelection(immListOf(ModuleName.EMPTY), immListOf())

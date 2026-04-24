@@ -4,6 +4,16 @@ include "type.fbs";
 
 namespace rell.ir;
 
+/// Kind of `rell.meta` definition. Closed set; adding a value here requires
+/// a corresponding update to the R_DefinitionMeta producers in the frontend.
+enum MetaDefinitionKind : ubyte {
+    ENTITY,
+    MODULE,
+    OBJECT,
+    OPERATION,
+    QUERY,
+}
+
 // --- Constant value union members ---
 
 table BoolValue       { value: bool; }
@@ -14,7 +24,7 @@ table DecimalValue    { value: string (required); }  // string representation
 table BigIntegerValue { value: string (required); }  // string representation
 table NullValue       {}
 table EnumValue       { def_index: uint; attr_index: uint; }
-table GtvValue        { json: string (required); }   // GTV serialized as JSON
+table GtvValue        { value: [ubyte] (required); }   // ASN.1 DER binary (canonical Postchain wire format)
 table RowidValue      { value: long; }
 table UnitValue       {}
 
@@ -41,7 +51,7 @@ table TupleConstantValue {
 }
 
 table MetaConstantValue {
-    kind: string (required);
+    kind: MetaDefinitionKind;
     module_name: string (required);
     full_name: string (required);
     simple_name: string (required);

@@ -27,7 +27,9 @@ private val FB_TO_PRIMITIVE_KIND = mapOf(
     PrimitiveTypeKind.UNIT to RR_PrimitiveKind.UNIT,
 )
 
-fun deserializeType(fb: FbType?): RR_Type = when (fb?.typeType) {
+fun deserializeType(fb: FbType?): RR_Type = withDeserializerDepth { deserializeTypeInner(fb) }
+
+private fun deserializeTypeInner(fb: FbType?): RR_Type = when (fb?.typeType) {
     null -> RR_Type.Error
     TypeUnion.PrimitiveType -> {
         val prim = PrimitiveType().also { fb.type(it) }

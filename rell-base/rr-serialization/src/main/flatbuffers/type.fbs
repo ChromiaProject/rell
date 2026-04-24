@@ -57,7 +57,7 @@ table GenericType {
 /// Operation type (mirrors struct for operations).
 table OperationType    { def_index: uint; }
 
-/// Error type — should not appear in valid resolved models.
+/// Error type that should not appear in valid resolved models.
 table ErrorType        {}
 
 /// The RR_Type union.

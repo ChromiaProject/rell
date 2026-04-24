@@ -152,7 +152,6 @@ private fun SerializerContext.serializeDbExprUnion(expr: RR_DbExpr): Pair<UByte,
         if (keyExpr != null) DbWhenExpr.addKeyExpr(builder, keyExpr)
         DbWhenExpr.addCases(builder, casesVec)
         if (elseExpr != null) DbWhenExpr.addElseExpr(builder, elseExpr)
-        DbWhenExpr.addHasElse(builder, expr.hasElse)
         DbExprUnion.DbWhenExpr to DbWhenExpr.endDbWhenExpr(builder)
     }
 

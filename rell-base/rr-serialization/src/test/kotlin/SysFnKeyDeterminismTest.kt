@@ -8,15 +8,9 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
 
 /**
- * Asserts that sys-function keys written into the RR_App are content-derived, not JVM-identity
- * based. An identityHashCode-suffixed key (e.g. `"abs@1824736549"`) is only stable within the
- * JVM that ran the compiler: two separate processes produce different identity hashes for
- * equivalent stdlib function instances, so serialized bytes cannot round-trip across process
- * boundaries — directly contradicting the module's advertised goal of cross-process IR
- * transport.
+ * Tests that sys-function keys written into the RR_App are content-derived, not JVM-identity based.
  */
-class SysFnKeyDeterminismTest : BaseSerializerTest() {
-
+class SysFnKeyDeterminismTest: BaseSerializerTest() {
     @Test fun testSerializedBytesContainNoIdentityHashKeys() {
         // Exercises global sys fns (abs), member sys fns on primitives (text.size, integer.to_text),
         // and a second integer member fn to surface potential overload collisions.
@@ -39,14 +33,14 @@ class SysFnKeyDeterminismTest : BaseSerializerTest() {
         assertTrue(
             hits.isEmpty(),
             "Serialized RR_App contains identity-hash-like sys-fn name suffixes ($hits). " +
-                "Sys-fn names must be content-derived so the bytes are stable across processes.",
+                    "Sys-fn names must be content-derived so the bytes are stable across processes.",
         )
     }
 
     @Test fun testStdlibRegistryKeysAreDeterministic() {
         // Inspect the compilation-local sys-fn registry directly (the keys flow into the
         // serialized RR tree). Catches the same anti-pattern on the resolver side, independent
-        // of the serializer — in case a key is emitted to the registry but never reaches the
+        // of the serializer - in case a key is emitted to the registry but never reaches the
         // binary, or a future refactor changes how the binary encodes names.
         val (_, sysFns) = compileAppWithSysFns(
             """

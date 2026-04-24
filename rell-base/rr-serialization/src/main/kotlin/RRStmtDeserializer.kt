@@ -9,7 +9,17 @@ import net.postchain.rell.base.utils.mapToImmList
 import rell.ir.*
 import rell.ir.Stmt as FbStmt
 
-fun deserializeStmt(fb: FbStmt?): RR_Statement = when (fb?.stmtType) {
+private fun deserializeUpdateTargetKind(k: UByte): RR_UpdateTargetKind = when (k) {
+    UpdateTargetKind.SIMPLE -> RR_UpdateTargetKind.SIMPLE
+    UpdateTargetKind.EXPR_ONE -> RR_UpdateTargetKind.EXPR_ONE
+    UpdateTargetKind.EXPR_MANY -> RR_UpdateTargetKind.EXPR_MANY
+    UpdateTargetKind.OBJECT -> RR_UpdateTargetKind.OBJECT
+    else -> error("Unknown update target kind: $k")
+}
+
+fun deserializeStmt(fb: FbStmt?): RR_Statement = withDeserializerDepth { deserializeStmtInner(fb) }
+
+private fun deserializeStmtInner(fb: FbStmt?): RR_Statement = when (fb?.stmtType) {
     null -> RR_Statement.Empty
     StmtUnion.EmptyStatement -> RR_Statement.Empty
 
@@ -47,7 +57,7 @@ fun deserializeStmt(fb: FbStmt?): RR_Statement = when (fb?.stmtType) {
         val s = AssignStatement().also { fb.stmt(it) }
         val dst = deserializeExpr(s.dstExpr)
         val expr = deserializeExpr(s.expr)
-        val op = if (s.hasOp) deserializeRRBinaryOp(s.op) else null
+        val op = s.op?.let { deserializeRRBinaryOp(it) }
         RR_Statement.Assign(dst, expr, op)
     }
 
@@ -123,8 +133,8 @@ fun deserializeStmt(fb: FbStmt?): RR_Statement = when (fb?.stmtType) {
             RR_UpdateWhat(w.attrName, w.attrIndex, deserializeDbExpr(w.expr))
         }
         val lambdaVarPtr = s.lambdaVarPtr?.let { RR_VarPtr(it.blockUid.toLong(), it.offset) }
-        val targetKind = RR_UpdateTargetKind.entries.getOrElse(s.targetKind.toInt()) { RR_UpdateTargetKind.SIMPLE }
-        val cardinality = if (s.hasCardinality) deserializeAtCardinality(s.cardinality) else null
+        val targetKind = deserializeUpdateTargetKind(s.targetKind)
+        val cardinality = s.cardinality?.let { deserializeAtCardinality(it) }
         RR_Statement.Update(
             entity = entity,
             extraEntities = extraEntities,
@@ -150,8 +160,8 @@ fun deserializeStmt(fb: FbStmt?): RR_Statement = when (fb?.stmtType) {
         } else null
         val where = s.where?.let { deserializeDbExpr(it) }
         val lambdaVarPtr = s.lambdaVarPtr?.let { RR_VarPtr(it.blockUid.toLong(), it.offset) }
-        val targetKind = RR_UpdateTargetKind.entries.getOrElse(s.targetKind.toInt()) { RR_UpdateTargetKind.SIMPLE }
-        val cardinality = if (s.hasCardinality) deserializeAtCardinality(s.cardinality) else null
+        val targetKind = deserializeUpdateTargetKind(s.targetKind)
+        val cardinality = s.cardinality?.let { deserializeAtCardinality(it) }
         RR_Statement.Delete(
             entity = entity,
             extraEntities = extraEntities,

@@ -12,7 +12,6 @@ import java.util.*
  * Context for serializing an [RR_App] to FlatBuffers.
  *
  * Uses [RR_App]'s pre-built flat definition arrays and index maps.
- * Zero `R_Type`/`R_Expr`/`R_Statement` references — fully RR_-based.
  */
 class SerializerContext(val app: RR_App) {
     val builder = FlatBufferBuilder(4096)

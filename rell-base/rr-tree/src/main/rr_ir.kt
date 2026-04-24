@@ -294,7 +294,6 @@ sealed interface RR_DbExpr {
         val keyExpr: RR_DbExpr?,
         val cases: ImmList<RR_DbWhenCase>,
         val elseExpr: RR_DbExpr?,
-        val hasElse: Boolean,
     ): RR_DbExpr
 
     data class NestedAt(val type: RR_Type, val inner: RR_DbExpr): RR_DbExpr

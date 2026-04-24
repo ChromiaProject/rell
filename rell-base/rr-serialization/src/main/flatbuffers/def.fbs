@@ -19,10 +19,8 @@ enum SizeConstraintKind : ubyte {
 }
 
 table SizeConstraint {
-    has_min: bool;
-    min: long;
-    has_max: bool;
-    max: long;
+    min: long = null;          // null when unconstrained
+    max: long = null;          // null when unconstrained
     kind: SizeConstraintKind;
     code_prefix: string (required);
 }
@@ -32,12 +30,10 @@ table Attribute {
     name: string (required);
     type: Type (required);
     mutable: bool = false;
-    key_index_kind: KeyIndexKind = KEY;
-    has_key_index_kind: bool = false;
+    key_index_kind: KeyIndexKind = null;  // null when not part of a key/index constraint
     sql_mapping: string (required);
-    has_default_value: bool = false;
     can_set_in_create: bool = true;
-    default_expr: Expr;
+    default_expr: Expr;                   // null when the attribute has no default
     is_db_modification: bool = false;
     size_constraint: SizeConstraint;
 }
@@ -61,7 +57,7 @@ enum EntitySqlMappingKind : ubyte {
 table EntitySqlMapping {
     kind: EntitySqlMappingKind;
     mount_name: MountName (required);
-    chain_index: int = -1;
+    chain_index: int = null;   // null when not an external chain
     meta_name: string;
     rowid_column: string;
     auto_create_table: bool = true;
@@ -119,8 +115,15 @@ table StructFlags {
     infinite: bool = false;
 }
 
+/// Kind of definition a mirror struct mirrors.
+enum MirrorStructDefKind : ubyte {
+    ENTITY,
+    OBJECT,
+    OPERATION,
+}
+
 table MirrorStructInfo {
-    definition_type: string (required);
+    definition_type: MirrorStructDefKind;
     definition: string (required);
     mutable: bool = false;
 }
@@ -235,5 +238,5 @@ table GlobalConstantDefinition {
     type: Type (required);
     value: Expr;  // the initializer expression
     frame: CallFrame;
-    meta_gtv_json: string;  // pre-computed GTV value (Base64 JSON) for get_app_structure meta
+    meta_gtv: [ubyte];  // pre-computed GTV value (ASN.1 DER binary) for get_app_structure meta
 }

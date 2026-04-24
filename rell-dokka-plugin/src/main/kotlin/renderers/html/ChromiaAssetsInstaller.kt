@@ -37,8 +37,13 @@ class ChromiaAssetsInstaller(private val dokkaContext: DokkaContext) : PageTrans
         if (dokkaContext.configuration.delayTemplateSubstitution)
             return withEmbeddedResources
         val (currentResources, otherPages) = withEmbeddedResources.children.partition { it is RendererSpecificResourcePage }
+        // Drop any existing resource page whose output name collides with ours. Without this, Dokka's parallel
+        // renderer copies two sources (ours + the default) into the same destination file, and
+        // File.copyRecursively(overwrite = true) races — the post-copy length() check intermittently observes
+        // a truncated destination and throws "Source file wasn't copied completely, length of destination file differs."
+        val overriddenNames = (chromiaPages + chromiaStyles).mapTo(mutableSetOf()) { it.name }
         return input.modified(
-                children = otherPages + currentResources.filterNot { it.name in styles } + chromiaPages + chromiaStyles
+                children = otherPages + currentResources.filterNot { it.name in overriddenNames } + chromiaPages + chromiaStyles
         )
     }
 

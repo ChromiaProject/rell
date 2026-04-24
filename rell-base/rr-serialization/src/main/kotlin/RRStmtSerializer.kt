@@ -6,9 +6,17 @@ package net.postchain.rell.serialization
 
 import net.postchain.rell.base.model.rr.RR_IterableAdapterKind
 import net.postchain.rell.base.model.rr.RR_Statement
+import net.postchain.rell.base.model.rr.RR_UpdateTargetKind
 import net.postchain.rell.base.model.rr.RR_VarDeclarator
 import rell.ir.*
 import rell.ir.Stmt as FbStmt
+
+private fun serializeUpdateTargetKind(k: RR_UpdateTargetKind): UByte = when (k) {
+    RR_UpdateTargetKind.SIMPLE -> UpdateTargetKind.SIMPLE
+    RR_UpdateTargetKind.EXPR_ONE -> UpdateTargetKind.EXPR_ONE
+    RR_UpdateTargetKind.EXPR_MANY -> UpdateTargetKind.EXPR_MANY
+    RR_UpdateTargetKind.OBJECT -> UpdateTargetKind.OBJECT
+}
 
 fun SerializerContext.serializeStmt(stmt: RR_Statement): Int {
     val (unionType, unionOffset) = serializeRRStmtUnion(stmt)
@@ -70,11 +78,7 @@ private fun SerializerContext.serializeRRStmtUnion(stmt: RR_Statement): Pair<UBy
         AssignStatement.startAssignStatement(builder)
         AssignStatement.addDstExpr(builder, dst)
         AssignStatement.addExpr(builder, expr)
-        val assignOp = stmt.op
-        if (assignOp != null) {
-            AssignStatement.addHasOp(builder, true)
-            AssignStatement.addOp(builder, serializeRRBinaryOp(assignOp))
-        }
+        stmt.op?.let { builder.forcedScalar { AssignStatement.addOp(builder, serializeRRBinaryOp(it)) } }
         StmtUnion.AssignStatement to AssignStatement.endAssignStatement(builder)
     }
 
@@ -196,10 +200,9 @@ private fun SerializerContext.serializeRRStmtUnion(stmt: RR_Statement): Pair<UBy
             VarPtr.createVarPtr(builder, stmt.lambdaVarPtr!!.blockUid.toUInt(), stmt.lambdaVarPtr!!.offset),
         )
         if (lambdaExpr != null) UpdateStatement.addLambdaExpr(builder, lambdaExpr)
-        UpdateStatement.addTargetKind(builder, stmt.targetKind.ordinal.toUByte())
-        if (stmt.cardinality != null) {
-            UpdateStatement.addHasCardinality(builder, true)
-            UpdateStatement.addCardinality(builder, serializeAtCardinality(stmt.cardinality!!))
+        builder.forcedScalar { UpdateStatement.addTargetKind(builder, serializeUpdateTargetKind(stmt.targetKind)) }
+        stmt.cardinality?.let {
+            builder.forcedScalar { UpdateStatement.addCardinality(builder, serializeAtCardinality(it)) }
         }
         UpdateStatement.addIsExprSet(builder, stmt.isExprSet)
         if (exprListType != null) UpdateStatement.addExprListType(builder, exprListType)
@@ -228,10 +231,9 @@ private fun SerializerContext.serializeRRStmtUnion(stmt: RR_Statement): Pair<UBy
             VarPtr.createVarPtr(builder, stmt.lambdaVarPtr!!.blockUid.toUInt(), stmt.lambdaVarPtr!!.offset),
         )
         if (lambdaExpr != null) DeleteStatement.addLambdaExpr(builder, lambdaExpr)
-        DeleteStatement.addTargetKind(builder, stmt.targetKind.ordinal.toUByte())
-        if (stmt.cardinality != null) {
-            DeleteStatement.addHasCardinality(builder, true)
-            DeleteStatement.addCardinality(builder, serializeAtCardinality(stmt.cardinality!!))
+        builder.forcedScalar { DeleteStatement.addTargetKind(builder, serializeUpdateTargetKind(stmt.targetKind)) }
+        stmt.cardinality?.let {
+            builder.forcedScalar { DeleteStatement.addCardinality(builder, serializeAtCardinality(it)) }
         }
         DeleteStatement.addIsExprSet(builder, stmt.isExprSet)
         if (exprListType != null) DeleteStatement.addExprListType(builder, exprListType)

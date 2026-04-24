@@ -27,13 +27,14 @@ table Module {
     constant_indices: [uint] (required);
 
     imports: [ModuleName];
-    module_args_struct_index: int = -1;  // -1 if none
+    module_args_struct_index: int = null;  // null when this module has no module_args struct
 }
 
 /// Root table for a serialized Rell application.
 table App {
-    /// Schema version. Bumped on breaking changes.
-    version: uint32 = 1;
+    /// SHA-256 of all `.fbs` schema files, computed at build time.
+    /// Serves as the canonical drift detector (replaces an explicit version field).
+    schema_hash: [ubyte] (required);
 
     /// Flat arrays of all definitions (cross-referenced by index).
     entities: [EntityDefinition] (required);
@@ -54,11 +55,19 @@ table App {
 
     /// Extendable function extension bodies, indexed by extendableUidId.
     function_extensions: [FunctionExtensions];
+
+    native_functions: [NativeFunctionEntry];
 }
 
 table FunctionExtensions {
     uid: int;
     extensions: [FunctionBody] (required);
+}
+
+table NativeFunctionEntry {
+    name: string (required);
+    type: Type (required);
+    params: [FunctionParam] (required);
 }
 
 root_type App;

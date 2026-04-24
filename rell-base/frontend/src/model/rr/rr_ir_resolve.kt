@@ -389,7 +389,7 @@ internal class RR_IrResolver(
                 RR_DbWhenCase(c.conds.mapToImmList { resolveDbExpr(it) }, resolveDbExpr(c.expr))
             }
             val elseExpr = resolveDbExpr(expr.elseExpr)
-            RR_DbExpr.When(resolveType(expr.type), expr.keyExpr?.let { resolveDbExpr(it) }, rrCases, elseExpr, true)
+            RR_DbExpr.When(resolveType(expr.type), expr.keyExpr?.let { resolveDbExpr(it) }, rrCases, elseExpr)
         }
 
         is Db_NestedAtExpr -> {

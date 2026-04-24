@@ -48,7 +48,7 @@ fun deserializeErrorPos(fb: SourcePos?): ErrorPos {
 fun deserializeFrameBlock(fb: FrameBlock?): RR_FrameBlock {
     if (fb == null) return RR_FrameBlock(parentUid = null, uid = 0, offset = 0, size = 0)
     return RR_FrameBlock(
-        parentUid = if (fb.hasParent) fb.parentUid.toLong() else null,
+        parentUid = fb.parentUid?.toLong(),
         uid = fb.uid.toLong(),
         offset = fb.offset,
         size = fb.size,

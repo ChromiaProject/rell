@@ -12,7 +12,9 @@ import rell.ir.*
 
 // --- DbExpr deserialization ---
 
-fun deserializeDbExpr(fb: DbExpr?): RR_DbExpr = when (fb?.exprType) {
+fun deserializeDbExpr(fb: DbExpr?): RR_DbExpr = withDeserializerDepth { deserializeDbExprInner(fb) }
+
+private fun deserializeDbExprInner(fb: DbExpr?): RR_DbExpr = when (fb?.exprType) {
     null -> RR_DbExpr.Interpreted(RR_Expr.Error(RR_Type.Error, "null db expr"))
     DbExprUnion.DbInterpretedExpr -> {
         val e = DbInterpretedExpr().also { fb.expr(it) }
@@ -97,7 +99,7 @@ fun deserializeDbExpr(fb: DbExpr?): RR_DbExpr = when (fb?.exprType) {
             RR_DbWhenCase(conds, deserializeDbExpr(c.expr))
         }
         val elseExpr = e.elseExpr?.let { deserializeDbExpr(it) }
-        RR_DbExpr.When(deserializeType(e.type), keyExpr, cases, elseExpr, e.hasElse)
+        RR_DbExpr.When(deserializeType(e.type), keyExpr, cases, elseExpr)
     }
 
     DbExprUnion.DbNestedAtExpr -> {
@@ -212,7 +214,7 @@ fun deserializeColAtFieldSummarizationKind(fb: UByte): RR_ColAtFieldSummarizatio
 
 // --- WhatFieldGroup deserialization ---
 
-fun deserializeWhatFieldGroup(fb: rell.ir.DbAtWhatFieldGroup): RR_DbAtWhatFieldGroup {
+fun deserializeWhatFieldGroup(fb: DbAtWhatFieldGroup): RR_DbAtWhatFieldGroup {
     val combiner = deserializeDbAtFieldCombiner(fb.combiner)
     val rExprs =
         if (fb.rExprsLength > 0) (0 until fb.rExprsLength).mapToImmList { deserializeExpr(fb.rExprs(it)!!) } else null
@@ -230,7 +232,7 @@ fun deserializeWhatFieldGroup(fb: rell.ir.DbAtWhatFieldGroup): RR_DbAtWhatFieldG
     return RR_DbAtWhatFieldGroup(fb.columnCount, combiner, rExprs, itemOrder, subGroups)
 }
 
-private fun deserializeDbAtFieldCombiner(fb: rell.ir.DbAtFieldCombiner): RR_DbAtFieldCombiner = when (fb.combinerType) {
+private fun deserializeDbAtFieldCombiner(fb: DbAtFieldCombiner): RR_DbAtFieldCombiner = when (fb.combinerType) {
     DbAtFieldCombinerUnion.DbAtFieldCombiner_Single -> RR_DbAtFieldCombiner.Single
     DbAtFieldCombinerUnion.DbAtFieldCombiner_Tuple -> {
         val c = DbAtFieldCombiner_Tuple().also { fb.combiner(it) }

@@ -43,18 +43,16 @@ private fun SerializerContext.serializeRRExprUnion(expr: RR_Expr): Pair<UByte, I
             val left = serializeExpr(expr.left)
             val right = serializeExpr(expr.right)
             val errPos = expr.errPos?.let { serializeErrorPos(it) }
+            val cmpOff = expr.cmpInfo?.let { ci ->
+                CmpInfo.createCmpInfo(builder, serializeCmpOp(ci.cmpOp), serializeCmpType(ci.cmpType))
+            }
             BinaryExpr.startBinaryExpr(builder)
             BinaryExpr.addType(builder, type)
             BinaryExpr.addOp(builder, serializeRRBinaryOp(expr.op))
             BinaryExpr.addLeft(builder, left)
             BinaryExpr.addRight(builder, right)
             if (errPos != null) BinaryExpr.addErrPos(builder, errPos)
-            val cmpInfo = expr.cmpInfo
-            if (cmpInfo != null) {
-                BinaryExpr.addHasCmp(builder, true)
-                BinaryExpr.addCmpOp(builder, serializeCmpOp(cmpInfo.cmpOp))
-                BinaryExpr.addCmpType(builder, serializeCmpType(cmpInfo.cmpType))
-            }
+            if (cmpOff != null) BinaryExpr.addCmp(builder, cmpOff)
             ExprUnion.BinaryExpr to BinaryExpr.endBinaryExpr(builder)
         }
 
@@ -417,8 +415,7 @@ private fun SerializerContext.serializeRRExprUnion(expr: RR_Expr): Pair<UByte, I
             DbAtExpr.addErrPos(builder, errPos)
             if (whatFieldGroups != null) DbAtExpr.addWhatFieldGroups(builder, whatFieldGroups)
             if (objectName != null) DbAtExpr.addObjectName(builder, objectName)
-            val odi = expr.objectDefIndex
-            if (odi != null) DbAtExpr.addObjectDefIndex(builder, odi)
+            expr.objectDefIndex?.let { builder.forcedScalar { DbAtExpr.addObjectDefIndex(builder, it) } }
             ExprUnion.DbAtExpr to DbAtExpr.endDbAtExpr(builder)
         }
 
@@ -432,14 +429,17 @@ private fun SerializerContext.serializeRRExprUnion(expr: RR_Expr): Pair<UByte, I
             val extras = expr.extras?.let { serializeAtExtras(it) }
             val fieldSumVec = if (expr.fieldSummarizations.isNotEmpty()) {
                 val sumInfos = expr.fieldSummarizations.map { info ->
-                    val opKey = info.binaryOpKey?.let { createString(it) }
                     val zeroVal = info.zeroValue?.let { serializeRRUntypedConstantValue(it) }
                     val colType = info.collectionType?.let { serializeType(it) }
                     val mapValType = info.mapValueType?.let { serializeType(it) }
                     val kind = serializeColAtFieldSummarizationKind(info.kind)
                     ColAtFieldSummarizationInfo.startColAtFieldSummarizationInfo(builder)
                     ColAtFieldSummarizationInfo.addKind(builder, kind)
-                    if (opKey != null) ColAtFieldSummarizationInfo.addBinaryOpKey(builder, opKey)
+                    info.binaryOpKey?.let {
+                        builder.forcedScalar {
+                            ColAtFieldSummarizationInfo.addBinaryOp(builder, serializeRRBinaryOp(it))
+                        }
+                    }
                     if (zeroVal != null) ColAtFieldSummarizationInfo.addZeroValue(builder, zeroVal)
                     if (info.isMin != null) ColAtFieldSummarizationInfo.addIsMin(builder, info.isMin!!)
                     if (colType != null) ColAtFieldSummarizationInfo.addCollectionType(builder, colType)
@@ -533,8 +533,9 @@ private fun SerializerContext.serializeValueUnion(value: RR_ConstantValue): Pair
     )
 
     is RR_ConstantValue.Gtv -> {
-        val s = createString(value.json)
-        ValueUnion.GtvValue to GtvValue.createGtvValue(builder, s)
+        val binary = GtvBinaryHelper.jsonToBinary(value.json)
+        val v = GtvValue.createValueVector(builder, binary.toUByteArray())
+        ValueUnion.GtvValue to GtvValue.createGtvValue(builder, v)
     }
 
     is RR_ConstantValue.Struct -> {
@@ -581,7 +582,7 @@ private fun SerializerContext.serializeValueUnion(value: RR_ConstantValue): Pair
     }
 
     is RR_ConstantValue.Meta -> {
-        val kind = createString(value.kind)
+        val kind = serializeMetaDefinitionKind(value.kind)
         val moduleName = createString(value.moduleName)
         val fullName = createString(value.fullName)
         val simpleName = createString(value.simpleName)
@@ -843,7 +844,9 @@ internal fun SerializerContext.serializeRRWhenChooser(chooser: RR_WhenChooser): 
             IterativeWhenChooser.startIterativeWhenChooser(builder)
             IterativeWhenChooser.addKeyExpr(builder, keyExpr)
             IterativeWhenChooser.addConditions(builder, condsVec)
-            IterativeWhenChooser.addElseIndex(builder, chooser.elseIndex)
+            if (chooser.elseIndex >= 0) {
+                builder.forcedScalar { IterativeWhenChooser.addElseIndex(builder, chooser.elseIndex) }
+            }
             WhenChooserUnion.IterativeWhenChooser to IterativeWhenChooser.endIterativeWhenChooser(builder)
         }
 
@@ -856,7 +859,9 @@ internal fun SerializerContext.serializeRRWhenChooser(chooser: RR_WhenChooser): 
             LookupWhenChooser.addKeyExpr(builder, keyExpr)
             LookupWhenChooser.addLookupKeys(builder, keysVec)
             LookupWhenChooser.addLookupValues(builder, valuesVec)
-            LookupWhenChooser.addElseIndex(builder, chooser.elseIndex)
+            if (chooser.elseIndex >= 0) {
+                builder.forcedScalar { LookupWhenChooser.addElseIndex(builder, chooser.elseIndex) }
+            }
             WhenChooserUnion.LookupWhenChooser to LookupWhenChooser.endLookupWhenChooser(builder)
         }
     }
@@ -888,5 +893,14 @@ private fun SerializerContext.serializeExternalChainRef(chainIndex: Int): Int {
     ExternalChainRef.addName(builder, name)
     ExternalChainRef.addIndex(builder, chainIndex.toUInt())
     return ExternalChainRef.endExternalChainRef(builder)
+}
+
+private fun serializeMetaDefinitionKind(kind: String): UByte = when (kind) {
+    "entity" -> MetaDefinitionKind.ENTITY
+    "module" -> MetaDefinitionKind.MODULE
+    "object" -> MetaDefinitionKind.OBJECT
+    "operation" -> MetaDefinitionKind.OPERATION
+    "query" -> MetaDefinitionKind.QUERY
+    else -> error("Unknown meta definition kind: $kind")
 }
 
