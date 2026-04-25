@@ -19,16 +19,12 @@ import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.checkNull
 import net.postchain.rell.base.utils.mapIndexedToImmList
 import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.toImmMap
 
 /**
- * Interprets [RR_Expr] and [RR_Statement] trees via exhaustive `when` matching.
- *
- * Reuses the existing runtime infrastructure: [Rt_CallFrame], [Rt_Value], [Rt_StatementResult].
+ * Tree-walk interprets [RR_Expr] and [RR_Statement] via pattern matching.
  */
-class Rt_Interpreter(
-    val rrApp: RR_App,
-    val stdlib: Rt_StdlibEnv = Rt_StdlibEnv.global(),
-) {
+class Rt_Interpreter(val rrApp: RR_App, val stdlib: Rt_StdlibEnv = Rt_StdlibEnv.global()) {
     companion object {
         /**
          * Factory that pairs an [RR_App] with its compilation-local sys-function registry. The
@@ -40,7 +36,7 @@ class Rt_Interpreter(
         fun forCompilation(rrApp: RR_App, compilationSysFns: Map<String, Any>): Rt_Interpreter {
             @Suppress("UNCHECKED_CAST")
             val sysFnMap = compilationSysFns as Map<String, R_SysFunction>
-            return Rt_Interpreter(rrApp, Rt_StdlibEnv.forCompilation(sysFnMap))
+            return Rt_Interpreter(rrApp, Rt_StdlibEnv(sysFnMap.toImmMap()))
         }
     }
 

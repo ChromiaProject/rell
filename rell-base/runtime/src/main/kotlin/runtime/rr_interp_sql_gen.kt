@@ -232,8 +232,7 @@ class DbSqlGen private constructor(
             }
 
             is RR_DbExpr.Unary -> {
-                val dbOp = interpreter.stdlib.dbUnaryOps[expr.op]
-                val sql = dbOp?.sql ?: interpreter.dbUnaryOpSql(expr.op)
+                val sql = interpreter.dbUnaryOpSql(expr.op)
                 if (enclose) b.append("(")
                 b.append(sql)
                 b.append(" ")
