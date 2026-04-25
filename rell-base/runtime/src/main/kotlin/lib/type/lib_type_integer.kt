@@ -18,7 +18,6 @@ import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.immSetOf
-import net.postchain.rell.base.utils.mapToImmList
 import org.jooq.impl.SQLDataType
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -357,18 +356,17 @@ class Rt_IntValue private constructor(val value: Long): Rt_Value() {
         const val MIN_VALUE = Long.MIN_VALUE
         val MAX_VALUE_AS_BIGINT: BigInteger = BigInteger.valueOf(MAX_VALUE)
         val MIN_VALUE_AS_BIGINT: BigInteger = BigInteger.valueOf(MIN_VALUE)
-        private const val NVALUES = 1000
 
-        private val VALUES = (-NVALUES .. NVALUES).mapToImmList { Rt_IntValue(it.toLong()) }
+        private const val CACHE_RANGE = 1000
+        private val CACHE: Array<Rt_Value> = Array(2 * CACHE_RANGE + 1) { Rt_IntValue((it - CACHE_RANGE).toLong()) }
 
-        val ZERO: Rt_Value = get(0)
+        val ZERO: Rt_Value = CACHE[CACHE_RANGE]
 
-        fun get(v: Long): Rt_Value {
-            return if (v >= -NVALUES && v <= NVALUES) {
-                VALUES[(v + NVALUES).toInt()]
-            } else {
-                Rt_IntValue(v)
-            }
+        @JvmStatic
+        fun get(v: Long): Rt_Value = if (v >= -CACHE_RANGE && v <= CACHE_RANGE) {
+            CACHE[(v + CACHE_RANGE).toInt()]
+        } else {
+            Rt_IntValue(v)
         }
     }
 }

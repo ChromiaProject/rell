@@ -14,6 +14,19 @@ import net.postchain.rell.base.model.expr.R_PartialCallMapping
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.utils.mapToImmList
 
+private fun isIdentityMapping(mapping: List<Int>, argCount: Int): Boolean {
+    when {
+        mapping.isEmpty() -> return true
+        mapping.size != argCount -> return false
+        else -> {
+            for (i in mapping.indices) {
+                if (mapping[i] != i) return false
+            }
+            return true
+        }
+    }
+}
+
 fun Rt_Interpreter.evaluateBinary(expr: RR_Expr.Binary, frame: Rt_CallFrame): Rt_Value {
     val left = evaluateExpr(expr.left, frame)
     // Short-circuit for logical operators.
@@ -89,7 +102,7 @@ fun Rt_Interpreter.evaluateFunctionCall(expr: RR_Expr.FunctionCall, frame: Rt_Ca
             } else {
                 val args = call.args.map { evaluateExpr(it, frame) }
 
-                val mappedArgs = if (call.mapping.isEmpty() || call.mapping == args.indices.toList())
+                val mappedArgs = if (isIdentityMapping(call.mapping, args.size))
                     args
                 else
                     call.mapping.map { args[it] }

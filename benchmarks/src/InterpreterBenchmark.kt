@@ -120,9 +120,3 @@ class InterpreterBenchmark {
         blackhole.consume(interpreter.callQuery(query, exeCtx, limit))
     }
 }
-
-fun main() {
-    val b = InterpreterBenchmark()
-    b.setUp()
-    b.runQuery(Blackhole("Today's password is swordfish. I understand instantiating Blackholes directly is dangerous."))
-}
