@@ -393,7 +393,7 @@ private fun isTypeBody(m: Ld_FunctionDsl, checkType: (JsonNode) -> Boolean): Ld_
 
 private val JSON_SQL_DATA_TYPE = DefaultDataType(null as SQLDialect?, String::class.java, "jsonb")
 
-object R_TypeSqlAdapter_Json: R_TypeSqlAdapter_Primitive("json", JSON_SQL_DATA_TYPE) {
+object Rt_ValueSqlAdapter_Json: Rt_ValueSqlAdapter_Primitive("json", JSON_SQL_DATA_TYPE) {
     override fun toSqlValue(value: Rt_Value): Any {
         val str = value.asJson().str
         val obj = PGobject()

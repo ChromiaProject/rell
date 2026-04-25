@@ -102,7 +102,7 @@ object Rt_NativeConversion_Rowid: Rt_TypeNativeConversion {
     override fun nativeToRt(value: Any?) = Rt_RowidValue.get(value as Long)
 }
 
-object R_TypeSqlAdapter_Rowid: R_TypeSqlAdapter_Primitive("rowid", SQLDataType.BIGINT) {
+object Rt_ValueSqlAdapter_Rowid: Rt_ValueSqlAdapter_Primitive("rowid", SQLDataType.BIGINT) {
     override fun toSqlValue(value: Rt_Value) = value.asRowid()
 
     override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {

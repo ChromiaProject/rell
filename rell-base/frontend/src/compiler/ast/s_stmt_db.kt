@@ -39,7 +39,7 @@ internal class S_UpdateFromItem(
 )
 
 internal class S_UpdateTarget_Simple(
-    private val cardinality: R_AtCardinality,
+    private val cardinality: AtCardinality,
     private val from: ImmList<S_UpdateFromItem>,
     private val where: S_AtExprWhere,
 ): S_UpdateTarget() {

@@ -154,7 +154,7 @@ class C_AtFrom_Entities(
         }
 
         val dependent = isOuterDependent(cBase)
-        return if (dependent || details.cardinality.value == R_AtCardinality.ZERO_MANY) {
+        return if (dependent || details.cardinality.value == AtCardinality.ZERO_MANY) {
             compileNested(details, cBase)
         } else {
             compileTop(details, cBase)
@@ -231,7 +231,7 @@ class C_AtFrom_Entities(
             resultType = R_ListType(itemType),
             base = cBase.update(what = what, isMany = true).toVBase(),
             extras = V_AtExprExtras(null, null),
-            cardinality = R_AtCardinality.ZERO_MANY,
+            cardinality = AtCardinality.ZERO_MANY,
             internals = R_DbAtExprInternals(cBlock.rBlock),
             resVarStates = details.varStatesDelta,
         )
@@ -274,11 +274,11 @@ class C_AtFrom_Entities(
     private fun compileNested(details: C_AtDetails, cBase: C_AtExprBase): V_Expr {
         var resultType = details.res.resultType
 
-        if (details.cardinality.value != R_AtCardinality.ZERO_MANY) {
+        if (details.cardinality.value != AtCardinality.ZERO_MANY) {
             msgCtx.error(details.cardinality.pos, "at_expr:nested:cardinality:${details.cardinality.value}",
                     "Only '@*' can be used in a nested at-expression")
             // Fix result type to prevent exists() also firing a "wrong argument type" CTE.
-            resultType = C_AtExprResult.calcResultType(details.res.recordType, R_AtCardinality.ZERO_MANY)
+            resultType = C_AtExprResult.calcResultType(details.res.recordType, AtCardinality.ZERO_MANY)
         }
 
         val cBlock = innerBlkCtx.buildBlock()

@@ -9,10 +9,10 @@ import com.github.h0tk3y.betterParse.grammar.parser
 import com.github.h0tk3y.betterParse.parser.Parser
 import net.postchain.rell.base.compiler.ast.*
 import net.postchain.rell.base.compiler.base.core.C_Name
+import net.postchain.rell.base.model.AtCardinality
 import net.postchain.rell.base.model.KeyIndexKind
 import net.postchain.rell.base.model.Name
 import net.postchain.rell.base.model.R_LangVersion
-import net.postchain.rell.base.model.expr.R_AtCardinality
 import net.postchain.rell.base.model.expr.R_AtWhatSort
 import net.postchain.rell.base.utils.*
 import kotlin.properties.PropertyDelegateProvider
@@ -424,10 +424,10 @@ internal object S_Grammar {
     }
 
     private val atExprAt by (
-            ( AT * QUESTION map { S_PosValue(it.t1.pos, R_AtCardinality.ZERO_ONE) } )
-            or ( AT * MUL map { S_PosValue(it.t1.pos, R_AtCardinality.ZERO_MANY) } )
-            or ( AT * PLUS map { S_PosValue(it.t1.pos, R_AtCardinality.ONE_MANY) } )
-            or ( AT map { S_PosValue(it.pos, R_AtCardinality.ONE) } )
+            ( AT * QUESTION map { S_PosValue(it.t1.pos, AtCardinality.ZERO_ONE) } )
+            or ( AT * MUL map { S_PosValue(it.t1.pos, AtCardinality.ZERO_MANY) } )
+            or ( AT * PLUS map { S_PosValue(it.t1.pos, AtCardinality.ONE_MANY) } )
+            or ( AT map { S_PosValue(it.pos, AtCardinality.ONE) } )
     )
 
     private val atExprWhatSimple by DOT * separatedTerms(name, DOT) map { (dot, path) ->

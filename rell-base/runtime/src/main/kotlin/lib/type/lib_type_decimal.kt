@@ -592,7 +592,7 @@ object Rt_NativeConversion_Decimal: Rt_TypeNativeConversion {
     override fun nativeToRt(value: Any?) = Rt_DecimalValue.get(value as BigDecimal)
 }
 
-object R_TypeSqlAdapter_Decimal: R_TypeSqlAdapter_Primitive("decimal", Lib_DecimalMath.DECIMAL_SQL_TYPE) {
+object Rt_ValueSqlAdapter_Decimal: Rt_ValueSqlAdapter_Primitive("decimal", Lib_DecimalMath.DECIMAL_SQL_TYPE) {
     override fun toSqlValue(value: Rt_Value) = value.asDecimal()
 
     override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {

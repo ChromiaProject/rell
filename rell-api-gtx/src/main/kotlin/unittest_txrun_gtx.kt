@@ -46,7 +46,7 @@ public class Rt_PostchainUnitTestBlockRunner(
     private val keyPair: BytesKeyPair,
     private val runnerConfig: Rt_BlockRunnerConfig,
     private val runnerStrategy: Rt_BlockRunnerStrategy,
-): Rt_UnitTestBlockRunner() {
+): Rt_UnitTestBlockRunner {
     override fun runBlock(ctx: Rt_CallContext, block: Rt_TestBlockValue) {
         val blockClock = ctx.exeCtx.testBlockClock
         val nextBlockTime = blockClock.getNextBlockTime()

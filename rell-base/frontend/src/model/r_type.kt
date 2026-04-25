@@ -25,7 +25,7 @@ import net.postchain.rell.base.utils.doc.DocType
 import net.postchain.rell.base.utils.doc.DocUtils
 import java.util.*
 
-/** Compile-time SQL metadata — no Rt_Value references or R_TypeSqlAdapter reference. */
+/** Compile-time SQL metadata — no Rt_Value references or Rt_ValueSqlAdapter reference. */
 class R_TypeSqlInfo(
     private val sqlCompatible: (C_CompilerOptions) -> Boolean,
     private val allowedForEntityAttributes: (C_CompilerOptions) -> Boolean,

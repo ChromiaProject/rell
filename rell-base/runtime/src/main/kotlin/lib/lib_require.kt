@@ -29,7 +29,7 @@ internal object Lib_Require {
             param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
                 comment("the message for the exception to be thrown if the condition is false")
             }
-            makeRequireBody(this, R_RequireCondition_Boolean)
+            makeRequireBody(this, Rt_RequireCondition_Boolean)
         }
 
         function("require", pure = true, since = "0.6.0") {
@@ -46,7 +46,7 @@ internal object Lib_Require {
             param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
                 comment("the error message to be thrown if the value is `null`")
             }
-            makeRequireBody(this, R_RequireCondition_Nullable)
+            makeRequireBody(this, Rt_RequireCondition_Nullable)
         }
 
         function("require_not_empty", pure = true, since = "0.9.0") {
@@ -64,7 +64,7 @@ internal object Lib_Require {
             param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
                 comment("the message for the exception to be thrown if the list is `null` or empty")
             }
-            makeRequireBody(this, R_RequireCondition_Collection)
+            makeRequireBody(this, Rt_RequireCondition_Collection)
         }
 
         function("require_not_empty", pure = true, since = "0.9.0") {
@@ -80,7 +80,7 @@ internal object Lib_Require {
             param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
                 comment("the message for the exception to be thrown if the set is `null` or empty")
             }
-            makeRequireBody(this, R_RequireCondition_Collection)
+            makeRequireBody(this, Rt_RequireCondition_Collection)
         }
 
         function("require_not_empty", pure = true, since = "0.9.0") {
@@ -99,7 +99,7 @@ internal object Lib_Require {
             param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
                 comment("the message for the exception to be thrown if the map is `null` or empty")
             }
-            makeRequireBody(this, R_RequireCondition_Map)
+            makeRequireBody(this, Rt_RequireCondition_Map)
         }
 
         function("require_not_empty", pure = true, since = "0.9.0") {
@@ -117,7 +117,7 @@ internal object Lib_Require {
             param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
                 comment("the message for the exception to be thrown if the value is `null`")
             }
-            makeRequireBody(this, R_RequireCondition_Nullable)
+            makeRequireBody(this, Rt_RequireCondition_Nullable)
         }
 
 
@@ -157,7 +157,7 @@ internal object Lib_Require {
         }
     }
 
-    private fun makeRequireBody(m: Ld_FunctionDsl, condition: R_RequireCondition) = with(m) {
+    private fun makeRequireBody(m: Ld_FunctionDsl, condition: Rt_RequireCondition) = with(m) {
         bodyOpt1 { arg1, arg2 ->
             val res = condition.calculate(arg1)
             if (res == null) {
@@ -169,24 +169,22 @@ internal object Lib_Require {
     }
 }
 
-internal sealed class R_RequireCondition {
-    abstract fun calculate(v: Rt_Value): Rt_Value?
+internal sealed interface Rt_RequireCondition {
+    fun calculate(v: Rt_Value): Rt_Value?
 }
 
-private object R_RequireCondition_Boolean: R_RequireCondition() {
+private object Rt_RequireCondition_Boolean: Rt_RequireCondition {
     override fun calculate(v: Rt_Value) = if (v.asBoolean()) Rt_UnitValue else null
 }
 
-internal object R_RequireCondition_Nullable: R_RequireCondition() {
+internal object Rt_RequireCondition_Nullable: Rt_RequireCondition {
     override fun calculate(v: Rt_Value) = if (v != Rt_NullValue) v else null
 }
 
-internal object R_RequireCondition_Collection: R_RequireCondition() {
+internal object Rt_RequireCondition_Collection: Rt_RequireCondition {
     override fun calculate(v: Rt_Value) = if (v != Rt_NullValue && v.asCollection().isNotEmpty()) v else null
 }
 
-internal object R_RequireCondition_Map: R_RequireCondition() {
+internal object Rt_RequireCondition_Map: Rt_RequireCondition {
     override fun calculate(v: Rt_Value) = if (v != Rt_NullValue && v.asMap().isNotEmpty()) v else null
 }
-
-// R_RellErrorType moved to model/r_builtin_types.kt

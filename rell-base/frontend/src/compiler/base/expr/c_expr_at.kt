@@ -241,7 +241,7 @@ class C_AtExprResult(
     val hasAggregateFields: Boolean,
 ) {
     companion object {
-        fun calcResultType(recordType: R_Type, cardinality: R_AtCardinality): R_Type {
+        fun calcResultType(recordType: R_Type, cardinality: AtCardinality): R_Type {
             return if (cardinality.many) {
                 R_ListType(recordType)
             } else if (cardinality.zero) {
@@ -255,7 +255,7 @@ class C_AtExprResult(
 
 class C_AtDetails(
     val startPos: S_Pos,
-    val cardinality: S_PosValue<R_AtCardinality>,
+    val cardinality: S_PosValue<AtCardinality>,
     val base: C_AtExprBase,
     val limit: V_Expr?,
     val offset: V_Expr?,
@@ -265,9 +265,9 @@ class C_AtDetails(
     fun compileJoin(msgCtx: C_MessageContext): V_Expr? {
         val where = base.compileJoin(msgCtx)
 
-        if (cardinality.value != R_AtCardinality.ZERO_MANY) {
+        if (cardinality.value != AtCardinality.ZERO_MANY) {
             msgCtx.error(cardinality.pos, "expr:at:join:cardinality:${cardinality.value}",
-                "Join at-expression must use operator '${R_AtCardinality.ZERO_MANY.code}'")
+                "Join at-expression must use operator '${AtCardinality.ZERO_MANY.code}'")
         }
 
         checkExtra(msgCtx, limit, "limit")

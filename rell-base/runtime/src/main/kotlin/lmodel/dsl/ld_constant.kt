@@ -4,14 +4,7 @@
 
 package net.postchain.rell.base.lmodel.dsl
 
-import net.postchain.rell.base.lib.type.Rt_BigIntegerValue
-import net.postchain.rell.base.lib.type.Rt_BooleanValue
-import net.postchain.rell.base.lib.type.Rt_ByteArrayValue
-import net.postchain.rell.base.lib.type.Rt_DecimalValue
-import net.postchain.rell.base.lib.type.Rt_IntValue
-import net.postchain.rell.base.lib.type.Rt_RowidValue
-import net.postchain.rell.base.lib.type.Rt_TextValue
-import net.postchain.rell.base.lib.type.Rt_UnitValue
+import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.L_Constant
 import net.postchain.rell.base.lmodel.L_ConstantDocSource
 import net.postchain.rell.base.model.Name

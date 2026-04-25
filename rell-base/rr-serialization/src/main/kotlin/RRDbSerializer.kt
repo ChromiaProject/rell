@@ -4,6 +4,7 @@
 
 package net.postchain.rell.serialization
 
+import net.postchain.rell.base.model.AtCardinality
 import net.postchain.rell.base.model.rr.*
 import rell.ir.*
 
@@ -348,11 +349,11 @@ fun SerializerContext.serializeAtExtras(extras: RR_AtExtras): Int {
     return AtExprExtras.endAtExprExtras(builder)
 }
 
-fun serializeAtCardinality(cardinality: RR_AtCardinality): UByte = when (cardinality) {
-    RR_AtCardinality.ZERO_ONE -> AtCardinality.ZERO_ONE
-    RR_AtCardinality.ONE -> AtCardinality.ONE
-    RR_AtCardinality.ZERO_MANY -> AtCardinality.ZERO_MANY
-    RR_AtCardinality.ONE_MANY -> AtCardinality.ONE_MANY
+fun serializeAtCardinality(cardinality: AtCardinality): UByte = when (cardinality) {
+    AtCardinality.ZERO_ONE -> rell.ir.AtCardinality.ZERO_ONE
+    AtCardinality.ONE -> rell.ir.AtCardinality.ONE
+    AtCardinality.ZERO_MANY -> rell.ir.AtCardinality.ZERO_MANY
+    AtCardinality.ONE_MANY -> rell.ir.AtCardinality.ONE_MANY
 }
 
 // --- ColAt support ---

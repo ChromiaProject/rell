@@ -13,7 +13,6 @@ import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
-import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.immSetOf
 import org.jooq.impl.SQLDataType
 import kotlin.reflect.full.createType
@@ -108,7 +107,7 @@ object Rt_NativeConversion_Boolean: Rt_TypeNativeConversion {
     override fun nativeToRt(value: Any?) = Rt_BooleanValue.get(value as Boolean)
 }
 
-object R_TypeSqlAdapter_Boolean: R_TypeSqlAdapter_Primitive("boolean", SQLDataType.BOOLEAN) {
+object Rt_ValueSqlAdapter_Boolean: Rt_ValueSqlAdapter_Primitive("boolean", SQLDataType.BOOLEAN) {
     override fun toSqlValue(value: Rt_Value) = value.asBoolean()
 
     override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
@@ -137,8 +136,6 @@ class Rt_BooleanValue private constructor(val value: Boolean): Rt_Value() {
     companion object {
         val TRUE: Rt_Value = Rt_BooleanValue(true)
         val FALSE: Rt_Value = Rt_BooleanValue(false)
-
-        val ALL_VALUES: ImmSet<Rt_Value> = immSetOf(FALSE, TRUE)
 
         fun get(value: Boolean): Rt_Value = if (value) TRUE else FALSE
     }

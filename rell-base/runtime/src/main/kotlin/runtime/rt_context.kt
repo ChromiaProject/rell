@@ -431,17 +431,12 @@ class Rt_ExecutionContext(
     }
 }
 
-class Rt_CallContext(
-    val defCtx: Rt_DefinitionContext,
-    private val dbUpdateAllowed: Boolean,
-) {
+class Rt_CallContext(val defCtx: Rt_DefinitionContext) {
     val exeCtx = defCtx.exeCtx
     val appCtx = exeCtx.appCtx
     val sqlCtx = exeCtx.sqlCtx
     val globalCtx = appCtx.globalCtx
     val chainCtx = appCtx.chainCtx
-
-    fun dbUpdateAllowed() = dbUpdateAllowed && defCtx.dbUpdateAllowed
 }
 
 class Rt_DefinitionContext(val exeCtx: Rt_ExecutionContext, val dbUpdateAllowed: Boolean, val defId: DefinitionId) {

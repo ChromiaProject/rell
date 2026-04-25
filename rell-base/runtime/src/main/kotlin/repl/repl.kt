@@ -4,12 +4,16 @@
 
 package net.postchain.rell.base.repl
 
+import net.postchain.rell.base.compiler.ast.S_PosRange
+import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.core.*
-import net.postchain.rell.base.compiler.base.utils.C_CommonError
-import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.compiler.base.utils.lateInit
+import net.postchain.rell.base.compiler.base.expr.C_StmtContext
+import net.postchain.rell.base.compiler.base.module.C_ExtModuleCompiler
+import net.postchain.rell.base.compiler.base.module.C_ModuleKey
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.DefinitionId
 import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.model.MountName
 import net.postchain.rell.base.model.R_CallFrame
 import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.model.rr.RR_AppSqlDefs
@@ -19,42 +23,51 @@ import net.postchain.rell.base.model.stmt.R_Statement
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
-class C_ReplCodeState(
+private const val REPL_NAME = "<REPL>"
+
+private val REPL_POS_RANGE = S_PosRange(C_Parser.REPL_NULL_POS, C_Parser.REPL_NULL_POS)
+
+class ReplCodeState(
     val frameProto: C_CallFrameProto,
     val blockCodeProto: C_BlockCodeProto,
-) {
-    companion object { val EMPTY = C_ReplCodeState(C_CallFrameProto.EMPTY, C_BlockCodeProto.EMPTY) }
-}
-
-class Rt_ReplCodeState(
     val frameState: Rt_CallFrameState,
     val globalConstants: Rt_GlobalConstants.State,
 ) {
-    companion object { val EMPTY = Rt_ReplCodeState(Rt_CallFrameState.EMPTY, Rt_GlobalConstants.State()) }
-}
-
-class ReplCodeState(val cState: C_ReplCodeState, val rtState: Rt_ReplCodeState) {
-    companion object { val EMPTY = ReplCodeState(C_ReplCodeState.EMPTY, Rt_ReplCodeState.EMPTY) }
+    companion object {
+        val EMPTY = ReplCodeState(
+            C_CallFrameProto.EMPTY,
+            C_BlockCodeProto.EMPTY,
+            Rt_CallFrameState.EMPTY,
+            Rt_GlobalConstants.State(),
+        )
+    }
 }
 
 class ReplCode(
-    val rCode: R_ReplCode,
-    private val newCtState: C_ReplCodeState,
-    private val oldRtState: Rt_ReplCodeState,
+    val frame: R_CallFrame,
+    val stmts: ImmList<R_Statement>,
+    private val state: ReplCodeState,
 ) {
     fun execute(exeCtx: Rt_ExecutionContext, rrReplCode: RR_ReplCode): ReplCodeState {
-        val interpreter = exeCtx.appCtx.interpreter
-        val newRtState = R_ReplCode.executeViaInterpreter(interpreter, rrReplCode, exeCtx, oldRtState)
-        return ReplCodeState(newCtState, newRtState)
+        val rtDefCtx = Rt_DefinitionContext(exeCtx, false, DefinitionId("", "<console>"))
+        val rtFrame = Rt_CallFrame(rtDefCtx, rrReplCode.frame, state.frameState)
+        exeCtx.appCtx.interpreter.executeStatements(rrReplCode.stmts, rtFrame)
+        return ReplCodeState(
+            frameProto = state.frameProto,
+            blockCodeProto = state.blockCodeProto,
+            frameState = rtFrame.dumpState(),
+            globalConstants = exeCtx.appCtx.dumpGlobalConstants(),
+        )
     }
 
     companion object {
-        val ERROR = ReplCode(R_ReplCode(R_CallFrame.ERROR, immListOf()), C_ReplCodeState.EMPTY, Rt_ReplCodeState.EMPTY)
+        val ERROR = ReplCode(R_CallFrame.ERROR, immListOf(), ReplCodeState.EMPTY)
     }
 }
 
-class C_ReplCommandContext(
+class ReplCommandContext(
     val frameCtx: C_FrameContext,
     val codeState: ReplCodeState,
 ) {
@@ -74,28 +87,199 @@ class C_ReplCommandContext(
     fun setCommand(code: ReplCode) = commandLate.set(code)
 }
 
-class R_ReplCode(
-    val frame: R_CallFrame,
-    val stmts: ImmList<R_Statement>,
-) {
-    companion object {
-        fun executeViaInterpreter(
-            interpreter: Rt_Interpreter,
-            rrCode: RR_ReplCode,
-            exeCtx: Rt_ExecutionContext,
-            oldState: Rt_ReplCodeState,
-        ): Rt_ReplCodeState {
-            val rtDefCtx = Rt_DefinitionContext(exeCtx, false, DefinitionId("", "<console>"))
-            val rtFrame = Rt_CallFrame(rtDefCtx, rrCode.frame, oldState.frameState)
+private fun C_ExtReplCommand.compile(appCtx: C_AppContext, codeState: ReplCodeState): C_LateGetter<ReplCode> {
+    return ExtReplCommandCompiler(this).compile(appCtx, codeState)
+}
 
-            interpreter.executeStatements(rrCode.stmts, rtFrame)
+private class ExtReplCommandCompiler(private val cmd: C_ExtReplCommand) {
+    fun compile(appCtx: C_AppContext, codeState: ReplCodeState): C_LateGetter<ReplCode> {
+        val extCompiler = C_ExtModuleCompiler(appCtx, cmd.extModules, cmd.preModules)
+        extCompiler.compileModules()
 
-            val newFrameState = rtFrame.dumpState()
-            val newConstantsState = exeCtx.appCtx.dumpGlobalConstants()
-            return Rt_ReplCodeState(newFrameState, newConstantsState)
+        val curModName = cmd.currentModuleName
+        if (curModName != null) {
+            val md = extCompiler.modProvider.getModule(curModName, null)
+            md ?: throw C_CommonError(C_Errors.msgModuleNotFound(curModName))
+        }
+
+        val mntCtx = createMountContext(appCtx, extCompiler.modProvider)
+        cmd.extMembers.forEach { it.compile(mntCtx) }
+
+        val replCtx = createReplContext(mntCtx, codeState)
+        compileStatements(replCtx)
+
+        return replCtx.commandGetter
+    }
+
+    private fun createMountContext(appCtx: C_AppContext, modProvider: C_ModuleProvider): C_MountContext {
+        val currentModuleKey = cmd.currentModuleName?.let { C_ModuleKey(it, null) }
+        val replNsAssembler = appCtx.createReplNsAssembler(currentModuleKey)
+        val componentNsAssembler = replNsAssembler.addComponent()
+
+        val modCtx = C_ReplModuleContext(
+            appCtx,
+            modProvider,
+            cmd.currentModuleName ?: ModuleName.EMPTY,
+            replNsAssembler.futureNs(),
+            componentNsAssembler.futureNs(),
+        )
+
+        val symCtx = appCtx.symCtxProvider.getNopSymbolContext()
+        val fileCtx = C_FileContext(modCtx, symCtx, C_SourcePath.EMPTY)
+
+        appCtx.executor.onPass(C_CompilerPass.MODULES) {
+            val fileFinish = fileCtx.finish()
+            appCtx.addExtraMountTables(fileFinish.mountTables)
+        }
+
+        return S_RellFile.createMountContext(fileCtx, MountName.EMPTY, componentNsAssembler)
+    }
+
+    private fun createReplContext(mntCtx: C_MountContext, codeState: ReplCodeState): ReplCommandContext {
+        val stmtVars = discoverStatementVars()
+        val qName = C_StringQualifiedName.of(REPL_NAME)
+
+        val cDefBase = mntCtx.defBaseCommon(
+            C_DefinitionType.REPL,
+            IdeSymbolKind.UNKNOWN,
+            qName,
+            mountName = null,
+            extChain = null,
+            commentProvider = C_SymbolContext.CommentProvider.NULL,
+        )
+
+        val defCtx = cDefBase.defCtx(mntCtx)
+        val fnCtx = C_FunctionContext(defCtx, REPL_NAME, null, stmtVars)
+        val frameCtx = C_FrameContext.create(fnCtx, codeState.frameProto)
+        return ReplCommandContext(frameCtx, codeState)
+    }
+
+    private fun discoverStatementVars(): ImmTypedKeyMap {
+        val map = MutableTypedKeyMap()
+        for (stmt in cmd.statements) {
+            stmt.discoverVars(map)
+        }
+        return map.toImmTypedKeyMap()
+    }
+
+    private fun compileStatements(ctx: ReplCommandContext) {
+        val stmtCtx = C_StmtContext.createRoot(ctx.frameCtx.rootBlkCtx)
+
+        ctx.executor.onPass(C_CompilerPass.EXPRESSIONS) {
+            val builder = C_BlockCodeBuilder(
+                stmtCtx,
+                repl = true,
+                hasGuardBlock = false,
+                posRange = REPL_POS_RANGE,
+                ctx.codeState.blockCodeProto,
+            )
+
+            for (stmt in cmd.statements) {
+                builder.add(stmt)
+            }
+
+            val blockCode = builder.build()
+            val replCode = createReplCode(ctx, blockCode)
+            ctx.setCommand(replCode)
         }
     }
+
+    private fun createReplCode(ctx: ReplCommandContext, blockCode: C_BlockCode): ReplCode {
+        val callFrame = ctx.frameCtx.makeCallFrame(false)
+        val newState = ReplCodeState(
+            frameProto = callFrame.proto,
+            blockCodeProto = blockCode.createProto(),
+            frameState = ctx.codeState.frameState,
+            globalConstants = ctx.codeState.globalConstants,
+        )
+        return ReplCode(callFrame.rFrame, blockCode.rStmts, newState)
+    }
 }
+
+object ReplCompiler {
+    fun compile(
+        sourceDir: C_SourceDir,
+        currentModuleName: ModuleName?,
+        code: String,
+        globalCtx: C_GlobalContext,
+        oldDefsState: C_ReplDefsState,
+        oldCodeState: ReplCodeState,
+    ): ReplResult {
+        C_LibBridge.ensureInitialized()
+        val msgCtx = C_MessageContext.create(globalCtx)
+        val symCtxProvider = C_SymbolContextManager(msgCtx, globalCtx.compilerOptions).provider
+        val controller = C_CompilerController(msgCtx)
+
+        val extCommand = msgCtx.consumeError {
+            val ast = C_Parser.parseRepl(code)
+            ast.compile(
+                msgCtx,
+                symCtxProvider,
+                controller,
+                sourceDir,
+                currentModuleName,
+                oldDefsState.appState,
+            )
+        }
+
+        return if (extCommand == null) {
+            ReplResult(null, msgCtx.messages())
+        } else {
+            compileExt(msgCtx, symCtxProvider, controller, extCommand, oldDefsState, oldCodeState)
+        }
+    }
+
+    private fun compileExt(
+        msgCtx: C_MessageContext,
+        symCtxProvider: C_SymbolContextProvider,
+        controller: C_CompilerController,
+        extCommand: C_ExtReplCommand,
+        oldDefsState: C_ReplDefsState,
+        oldCodeState: ReplCodeState,
+    ): ReplResult {
+        val appCtx = C_AppContext(
+            msgCtx,
+            symCtxProvider,
+            controller,
+            true,
+            oldDefsState.appState,
+            extCommand.newModuleHeaders,
+            extraLibMod = null,
+        )
+
+        val codeGetter = msgCtx.consumeError {
+            extCommand.compile(appCtx, oldCodeState)
+        }
+
+        controller.run()
+
+        val appFinish = appCtx.finish()
+        val messages = CommonUtils.sortedByCopy(msgCtx.messages()) { C_ComparablePos(it.pos) }
+        val errors = messages.filter { it.type == C_MessageType.ERROR }
+
+        val success = if (appFinish == null || codeGetter == null || errors.isNotEmpty()) null else {
+            val cCode = codeGetter.get()
+            val newState = C_ReplDefsState(appFinish.replState)
+            val resolverRuntime = Rt_ResolverRuntime()
+            val (rrApp, rrReplCode) = resolveWithReplStatements(
+                appFinish.rApp, resolverRuntime, cCode.stmts, cCode.frame,
+            )
+            ReplSuccess(rrApp, rrReplCode, resolverRuntime.collectedSysFns(), newState, cCode)
+        }
+
+        return ReplResult(success, messages)
+    }
+}
+
+class ReplSuccess(
+    val app: RR_App,
+    val replCode: RR_ReplCode,
+    val sysFns: Map<String, Any>,
+    val defsState: C_ReplDefsState,
+    val code: ReplCode,
+)
+
+class ReplResult(val success: ReplSuccess?, messages: ImmList<C_Message>): C_AbstractResult(messages)
 
 interface ReplInterpreterProjExt: ProjExt {
     fun getSqlInitProjExt(): SqlInitProjExt
@@ -160,26 +344,22 @@ class ReplInterpreter private constructor(
         val success = compile(code) ?: return false
 
         return executeCatch {
-            val rCode = success.code.rCode
-            val resolverRuntime = Rt_ResolverRuntime()
-            val (rrApp, rrReplCode) = resolveWithReplStatements(success.app, resolverRuntime, rCode.stmts, rCode.frame)
-            val compilationSysFns = resolverRuntime.collectedSysFns()
-            val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(rrApp, Rt_ChainSqlMapping(0))
-            val rtAppCtx = createRtAppContext(config.rtGlobalCtx, rrApp, compilationSysFns)
+            val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(success.app, Rt_ChainSqlMapping(0))
+            val rtAppCtx = createRtAppContext(config.rtGlobalCtx, success.app, success.sysFns)
             sqlUpdate(rtAppCtx, sqlCtx, forceSqlUpdate)
 
             sqlMgr.access { sqlExec ->
                 val exeCtx = Rt_ExecutionContext(rtAppCtx, Rt_NullOpContext, sqlCtx, sqlExec, dbReadOnly = false, exeState)
-                codeState = success.code.execute(exeCtx, rrReplCode)
+                codeState = success.code.execute(exeCtx, success.replCode)
                 defsState = success.defsState
                 exeState = exeCtx.toState()
             }
         }
     }
 
-    private fun compile(code: String): C_ReplSuccess? {
+    private fun compile(code: String): ReplSuccess? {
         val cRes = try {
-            C_ReplCompiler.compile(config.sourceDir, config.module, code, cGlobalCtx, defsState, codeState)
+            ReplCompiler.compile(config.sourceDir, config.module, code, cGlobalCtx, defsState, codeState)
         } catch (e: C_CommonError) {
             outChannel.printCompilerError(e.code, e.msg)
             return null
@@ -220,7 +400,7 @@ class ReplInterpreter private constructor(
             replOut = outChannel,
             blockRunner = config.projExt.createBlockRunner(config.sourceDir, modules),
             moduleArgsSource = config.moduleArgsSource,
-            globalConstantsState = codeState.rtState.globalConstants,
+            globalConstantsState = codeState.globalConstants,
         )
     }
 

@@ -11,10 +11,10 @@ import net.postchain.rell.base.model.rr.RR_VarPtr
 import net.postchain.rell.base.utils.*
 import java.util.*
 
-sealed class R_StatementResult
-class R_StatementResult_Return(val value: Rt_Value?): R_StatementResult()
-data object R_StatementResult_Break: R_StatementResult()
-data object R_StatementResult_Continue: R_StatementResult()
+sealed interface Rt_StatementResult
+class Rt_StatementResult_Return(val value: Rt_Value?): Rt_StatementResult
+data object Rt_StatementResult_Break: Rt_StatementResult
+data object Rt_StatementResult_Continue: Rt_StatementResult
 
 class Rt_CallFrame(
     val defCtx: Rt_DefinitionContext,
@@ -74,9 +74,6 @@ class Rt_CallFrame(
         }
     }
 
-    /** Legacy overload for R_ model code. */
-    fun <T> block(block: R_FrameBlock, code: () -> T): T = block(block.toRR(), code)
-
     fun <T> blockOpt(block: RR_FrameBlock?, code: () -> T): T {
         return if (block == null) {
             code()
@@ -108,7 +105,7 @@ class Rt_CallFrame(
         return ptrOffset
     }
 
-    fun callCtx() = Rt_CallContext(defCtx, dbUpdateAllowed())
+    fun callCtx() = Rt_CallContext(defCtx)
 
     fun dumpState(): Rt_CallFrameState {
         checkEquals(curBlockUid, rrFrame.rootBlock.uid)

@@ -9,7 +9,10 @@ import net.postchain.gtv.*
 import net.postchain.gtv.merkle.proof.GtvMerkleProofTreeFactory
 import net.postchain.gtv.merkle.proof.toGtvVirtual
 import net.postchain.rell.base.lib.type.*
-import net.postchain.rell.base.model.rr.*
+import net.postchain.rell.base.model.rr.RR_PrimitiveKind
+import net.postchain.rell.base.model.rr.RR_StructDefinition
+import net.postchain.rell.base.model.rr.RR_TupleField
+import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.utils.immListOf
 
 /**

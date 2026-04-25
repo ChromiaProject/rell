@@ -106,8 +106,8 @@ private class C_SysFn_Exists(private val not: Boolean): C_SpecialLibGlobalFuncti
         val resVarStates = C_ExprVarStatesDelta.forNullCheck(vArg, not)
 
         val condition = when (C_Types.removeNullable(vArg.type)) {
-            is R_CollectionType -> R_RequireCondition_Collection
-            is R_MapType -> R_RequireCondition_Map
+            is R_CollectionType -> Rt_RequireCondition_Collection
+            is R_MapType -> Rt_RequireCondition_Map
             else -> null
         }
 
@@ -129,7 +129,7 @@ private class V_ExistsExpr(
     exprCtx: C_ExprContext,
     private val name: LazyPosString,
     private val subExpr: V_Expr,
-    private val condition: R_RequireCondition,
+    private val condition: Rt_RequireCondition,
     private val not: Boolean,
     private val resVarStates: C_ExprVarStatesDelta,
 ): V_Expr(exprCtx, name.pos) {
@@ -148,7 +148,7 @@ private class V_ExistsExpr(
     }
 }
 
-private class R_SysFn_Exists(private val condition: R_RequireCondition, private val not: Boolean): R_SysFunction_1() {
+private class R_SysFn_Exists(private val condition: Rt_RequireCondition, private val not: Boolean): R_SysFunction_1() {
     override fun call(arg: Rt_Value): Rt_Value {
         val value = condition.calculate(arg)
         val exists = value != null

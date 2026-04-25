@@ -327,7 +327,7 @@ object Rt_NativeConversion_Integer: Rt_TypeNativeConversion {
     override fun nativeToRt(value: Any?) = Rt_IntValue.get(value as Long)
 }
 
-object R_TypeSqlAdapter_Integer: R_TypeSqlAdapter_Primitive("integer", SQLDataType.BIGINT) {
+object Rt_ValueSqlAdapter_Integer: Rt_ValueSqlAdapter_Primitive("integer", SQLDataType.BIGINT) {
     override fun toSqlValue(value: Rt_Value) = value.asInteger()
 
     override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {

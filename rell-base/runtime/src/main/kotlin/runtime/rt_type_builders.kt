@@ -179,45 +179,6 @@ private fun mapGtvConversion(key: Rt_Type, value: Rt_Type, typeName: String): Rt
     }
 }
 
-private fun nullableGtvConversion(inner: Rt_TypeGtvConversion): Rt_TypeGtvConversion =
-    object: Rt_TypeGtvConversion {
-        override fun rtToGtv(value: Rt_Value, pretty: Boolean): Gtv =
-            if (value == Rt_NullValue) GtvNull else inner.rtToGtv(value, pretty)
-
-        override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value =
-            if (gtv.type == GtvType.NULL) Rt_NullValue else inner.gtvToRt(ctx, gtv)
-    }
-
-private fun nullableSqlAdapter(inner: Rt_TypeSqlAdapter): Rt_TypeSqlAdapter =
-    object: Rt_TypeSqlAdapter {
-        override fun toSql(
-            params: net.postchain.rell.base.sql.PreparedStatementParams,
-            idx: Int,
-            value: Rt_Value,
-        ) {
-            if (value == Rt_NullValue) params.setObject(idx, null)
-            else inner.toSql(params, idx, value)
-        }
-
-        override fun fromSql(
-            row: net.postchain.rell.base.sql.ResultSetRow,
-            idx: Int,
-            nullable: Boolean,
-        ): Rt_Value = inner.fromSql(row, idx, true)
-
-        override fun metaName(sqlCtx: Rt_SqlContext): String = inner.metaName(sqlCtx)
-    }
-
-private fun nullableComparator(inner: Comparator<Rt_Value>): Comparator<Rt_Value> =
-    Comparator { a, b ->
-        when {
-            a == Rt_NullValue && b == Rt_NullValue -> 0
-            a == Rt_NullValue -> -1
-            b == Rt_NullValue -> 1
-            else -> inner.compare(a, b)
-        }
-    }
-
 // =============================================================================
 // Ld_FunctionMetaBodyDsl extensions — let bodyMeta blocks work with Rt_Type directly
 // =============================================================================

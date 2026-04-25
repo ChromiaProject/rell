@@ -6,7 +6,6 @@ package net.postchain.rell.base.model.stmt
 
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.Db_Expr
-import net.postchain.rell.base.model.expr.R_AtCardinality
 import net.postchain.rell.base.model.expr.R_DbAtEntity
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.utils.ImmList
@@ -22,7 +21,7 @@ sealed class R_UpdateTarget {
 class R_UpdateTarget_Simple(
     val entity: R_DbAtEntity,
     val extraEntities: ImmList<R_DbAtEntity>,
-    val cardinality: R_AtCardinality,
+    val cardinality: AtCardinality,
     val where: Db_Expr?,
 ): R_UpdateTarget() {
     init {

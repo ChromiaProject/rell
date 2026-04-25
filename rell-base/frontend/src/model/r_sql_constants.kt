@@ -6,10 +6,6 @@ package net.postchain.rell.base.model
 
 import net.postchain.rell.base.utils.immSetOf
 
-/**
- * SQL constant strings shared between frontend (model/) and runtime (sql/).
- * Originally in `SqlConstants` (sql/sql.kt); moved here to break the frontend→sql dependency.
- */
 object R_SqlConstants {
     const val ROWID_COLUMN = "rowid"
     const val ROWID_GEN = "rowid_gen"

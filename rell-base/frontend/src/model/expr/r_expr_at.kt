@@ -7,16 +7,6 @@ package net.postchain.rell.base.model.expr
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.checkEquals
 
-enum class R_AtCardinality(val code: String, val zero: Boolean, val many: Boolean) {
-    ZERO_ONE("@?", true, false),
-    ONE("@", false, false),
-    ZERO_MANY("@*", true, true),
-    ONE_MANY("@+", false, true),
-    ;
-
-    fun matches(count: Int): Boolean = !(count < 0 || count == 0 && !zero || count > 1 && !many)
-}
-
 class R_DbAtEntity(val rEntity: R_EntityDefinition, val id: R_AtEntityId) {
     override fun toString() = "$rEntity:$id"
 
@@ -57,15 +47,15 @@ class R_DbAtExprInternals(
 
 abstract class R_AtExpr(
     type: R_Type,
-    val cardinality: R_AtCardinality,
+    val cardinality: AtCardinality,
     val extras: R_AtExprExtras,
 ): R_BaseExpr(type)
 
 class R_DbAtExpr(
-        type: R_Type,
-        val base: Db_AtExprBase,
-        cardinality: R_AtCardinality,
-        extras: R_AtExprExtras,
-        val internals: R_DbAtExprInternals,
-        val errPos: ErrorPos,
+    type: R_Type,
+    val base: Db_AtExprBase,
+    cardinality: AtCardinality,
+    extras: R_AtExprExtras,
+    val internals: R_DbAtExprInternals,
+    val errPos: ErrorPos,
 ): R_AtExpr(type, cardinality, extras)

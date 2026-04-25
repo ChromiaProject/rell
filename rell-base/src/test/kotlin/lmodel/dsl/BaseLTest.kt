@@ -31,6 +31,13 @@ import net.postchain.rell.base.utils.toImmList
 import kotlin.test.assertEquals
 
 abstract class BaseLTest {
+    init {
+        // Touch Lib_Rell to trigger its init block which registers builtin R_LibUniqueType → C_LibTypeDef bindings.
+        // Without this, tests that use stdlib types (e.g. "integer") via L_FunctionHeader.strCode hit
+        // R_LibUniqueType.getLibType0 with an empty registry.
+        Lib_Rell.MODULE
+    }
+
     protected fun makeModule(name: String, block: Ld_ModuleDsl.() -> Unit): L_Module {
         val modCfg = Ld_ModuleConfig(requireSince = false)
         return Ld_ModuleDsl.make(name, modCfg, block)

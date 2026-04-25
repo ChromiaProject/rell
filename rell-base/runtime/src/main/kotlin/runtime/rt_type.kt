@@ -100,7 +100,7 @@ fun rrTypeToRtType(rrType: RR_Type): Rt_Type {
     return Rt_Type(
         rrType = rrType,
         name = name,
-        sqlAdapter = R_TypeSqlAdapterBridge(createSqlAdapter(rrType, name)),
+        sqlAdapter = Rt_ValueSqlAdapterBridge(createSqlAdapter(rrType, name)),
         gtvConversion = createPureRrGtvConversion(rrType, name),
         comparator = createComparator(rrType),
         nativeConversion = createNativeConversion(rrType),
@@ -210,18 +210,18 @@ fun rtValueToGtv(rType: R_Type, value: Rt_Value, pretty: Boolean): Gtv? {
     }
 }
 
-/** Bridges [R_TypeSqlAdapter] → [Rt_TypeSqlAdapter] so that JVM-path values carry a SQL adapter. */
-internal class R_TypeSqlAdapterBridge(internal val rAdapter: R_TypeSqlAdapter): Rt_TypeSqlAdapter {
-    override val sqlType: DataType<*>? get() = rAdapter.sqlType
+/** Bridges [Rt_ValueSqlAdapter] → [Rt_TypeSqlAdapter] so that JVM-path values carry a SQL adapter. */
+internal class Rt_ValueSqlAdapterBridge(internal val valueAdapter: Rt_ValueSqlAdapter): Rt_TypeSqlAdapter {
+    override val sqlType: DataType<*>? get() = valueAdapter.sqlType
 
     override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) =
-        rAdapter.toSql(params, idx, value)
+        valueAdapter.toSql(params, idx, value)
 
     override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value =
-        rAdapter.fromSql(row, idx, nullable)
+        valueAdapter.fromSql(row, idx, nullable)
 
     override fun metaName(sqlCtx: Rt_SqlContext): String =
-        rAdapter.metaName(sqlCtx)
+        valueAdapter.metaName(sqlCtx)
 }
 
 // =============================================================================
@@ -249,11 +249,11 @@ fun R_EnumDefinition.rtGetValueOrNull(index: Int): Rt_Value? = rtValues().getOrN
  * Definition-backed types (entity/enum) and nullable are handled inline with [rType] data.
  * Primitives delegate to the pure-RR [createSqlAdapter].
  */
-private fun buildBridgeSqlAdapter(rType: R_Type, rrType: RR_Type): R_TypeSqlAdapterBridge = R_TypeSqlAdapterBridge(
+private fun buildBridgeSqlAdapter(rType: R_Type, rrType: RR_Type): Rt_ValueSqlAdapterBridge = Rt_ValueSqlAdapterBridge(
     when (rType) {
         is R_EntityType -> {
             val entity = rType.rEntity
-            R_TypeSqlAdapter_Entity(
+            Rt_ValueSqlAdapter_Entity(
                 lazy { rTypeToRtType(rType) },
                 rType.strCode(),
                 entity.sqlMapping.metaName,
@@ -263,11 +263,11 @@ private fun buildBridgeSqlAdapter(rType: R_Type, rrType: RR_Type): R_TypeSqlAdap
 
         is R_EnumType -> {
             val rrAttrs = rType.enum.attrs.mapToImmList { RR_EnumAttr(it.rName, it.value) }
-            R_TypeSqlAdapter_Enum(lazy { rTypeToRtType(rType) }, rType.strCode(), rrAttrs)
+            Rt_ValueSqlAdapter_Enum(lazy { rTypeToRtType(rType) }, rType.strCode(), rrAttrs)
         }
 
-        is R_NullableType -> R_TypeSqlAdapter_Nullable(
-            buildBridgeSqlAdapter(rType.valueType, (rrType as RR_Type.Nullable).value).rAdapter,
+        is R_NullableType -> Rt_ValueSqlAdapter_Nullable(
+            buildBridgeSqlAdapter(rType.valueType, (rrType as RR_Type.Nullable).value).valueAdapter,
         )
         // Primitives and fallback: pure-RR dispatch
         else -> createSqlAdapter(rrType, rType.strCode())
@@ -276,23 +276,23 @@ private fun buildBridgeSqlAdapter(rType: R_Type, rrType: RR_Type): R_TypeSqlAdap
 
 /**
  * Create SQL adapter purely from [RR_Type] — handles primitives only.
- * Falls back to [R_TypeSqlAdapter_None] for unsupported types.
+ * Falls back to [Rt_ValueSqlAdapter_None] for unsupported types.
  * The interpreter has its own pure-RR equivalent.
  */
-internal fun createSqlAdapter(rrType: RR_Type, typeName: String): R_TypeSqlAdapter = when (rrType) {
+internal fun createSqlAdapter(rrType: RR_Type, typeName: String): Rt_ValueSqlAdapter = when (rrType) {
     is RR_Type.Primitive -> when (rrType.kind) {
-        RR_PrimitiveKind.BOOLEAN -> R_TypeSqlAdapter_Boolean
-        RR_PrimitiveKind.INTEGER -> R_TypeSqlAdapter_Integer
-        RR_PrimitiveKind.BIG_INTEGER -> R_TypeSqlAdapter_BigInteger
-        RR_PrimitiveKind.DECIMAL -> R_TypeSqlAdapter_Decimal
-        RR_PrimitiveKind.TEXT -> R_TypeSqlAdapter_Text
-        RR_PrimitiveKind.BYTE_ARRAY -> R_TypeSqlAdapter_ByteArray
-        RR_PrimitiveKind.ROWID -> R_TypeSqlAdapter_Rowid
-        RR_PrimitiveKind.JSON -> R_TypeSqlAdapter_Json
-        else -> R_TypeSqlAdapter_None.create(typeName)
+        RR_PrimitiveKind.BOOLEAN -> Rt_ValueSqlAdapter_Boolean
+        RR_PrimitiveKind.INTEGER -> Rt_ValueSqlAdapter_Integer
+        RR_PrimitiveKind.BIG_INTEGER -> Rt_ValueSqlAdapter_BigInteger
+        RR_PrimitiveKind.DECIMAL -> Rt_ValueSqlAdapter_Decimal
+        RR_PrimitiveKind.TEXT -> Rt_ValueSqlAdapter_Text
+        RR_PrimitiveKind.BYTE_ARRAY -> Rt_ValueSqlAdapter_ByteArray
+        RR_PrimitiveKind.ROWID -> Rt_ValueSqlAdapter_Rowid
+        RR_PrimitiveKind.JSON -> Rt_ValueSqlAdapter_Json
+        else -> Rt_ValueSqlAdapter_None.create(typeName)
     }
 
-    else -> R_TypeSqlAdapter_None.create(typeName)
+    else -> Rt_ValueSqlAdapter_None.create(typeName)
 }
 
 /** Create comparator purely from [RR_Type] — no R_Type needed. */

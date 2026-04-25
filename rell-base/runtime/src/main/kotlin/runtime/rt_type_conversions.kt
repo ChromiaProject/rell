@@ -21,11 +21,7 @@ import net.postchain.rell.base.utils.checkEquals
 import org.jooq.DataType
 import org.jooq.impl.SQLDataType
 
-// =============================================================================
-// R_TypeSqlAdapter hierarchy — moved from model/r_type.kt to runtime/
-// =============================================================================
-
-sealed class R_TypeSqlAdapter(val sqlType: DataType<*>?) {
+sealed class Rt_ValueSqlAdapter(val sqlType: DataType<*>?) {
     abstract fun isSqlCompatible(compilerOptions: C_CompilerOptions): Boolean
 
     open fun isAllowedForEntityAttributes(compilerOptions: C_CompilerOptions): Boolean {
@@ -38,10 +34,10 @@ sealed class R_TypeSqlAdapter(val sqlType: DataType<*>?) {
     abstract fun metaName(sqlCtx: Rt_SqlContext): String
 }
 
-object R_TypeSqlAdapter_None {
-    fun create(typeName: String): R_TypeSqlAdapter = Impl(typeName)
+object Rt_ValueSqlAdapter_None {
+    fun create(typeName: String): Rt_ValueSqlAdapter = Impl(typeName)
 
-    private class Impl(private val typeName: String): R_TypeSqlAdapter(null) {
+    private class Impl(private val typeName: String): Rt_ValueSqlAdapter(null) {
         override fun isSqlCompatible(compilerOptions: C_CompilerOptions): Boolean = false
 
         override fun toSqlValue(value: Rt_Value): Any {
@@ -62,7 +58,7 @@ object R_TypeSqlAdapter_None {
     }
 }
 
-abstract class R_TypeSqlAdapter_Some(sqlType: DataType<*>?): R_TypeSqlAdapter(sqlType) {
+abstract class Rt_ValueSqlAdapter_Some(sqlType: DataType<*>?): Rt_ValueSqlAdapter(sqlType) {
     override fun isSqlCompatible(compilerOptions: C_CompilerOptions) = true
 
     protected fun checkSqlNull(suspect: Boolean, row: ResultSetRow, typeName: String, nullable: Boolean): Rt_Value? {
@@ -85,10 +81,10 @@ abstract class R_TypeSqlAdapter_Some(sqlType: DataType<*>?): R_TypeSqlAdapter(sq
         throw Rt_Exception.common("sql_null:$typeName", "SQL value is NULL for type $typeName")
 }
 
-abstract class R_TypeSqlAdapter_Primitive(
+abstract class Rt_ValueSqlAdapter_Primitive(
     protected val name: String,
     sqlType: DataType<*>
-): R_TypeSqlAdapter_Some(sqlType) {
+): Rt_ValueSqlAdapter_Some(sqlType) {
     final override fun metaName(sqlCtx: Rt_SqlContext): String = "sys:$name"
 }
 
@@ -96,12 +92,12 @@ abstract class R_TypeSqlAdapter_Primitive(
 // SQL adapters for model types (entity, enum, nullable)
 // =============================================================================
 
-class R_TypeSqlAdapter_Entity(
+class Rt_ValueSqlAdapter_Entity(
     private val lazyRtType: Lazy<Rt_Type>,
     private val typeName: String,
     private val metaName: String,
     private val externalChainIndex: Int,
-): R_TypeSqlAdapter_Some(SQLDataType.BIGINT) {
+): Rt_ValueSqlAdapter_Some(SQLDataType.BIGINT) {
     override fun toSqlValue(value: Rt_Value) = value.asObjectId()
 
     override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
@@ -120,11 +116,11 @@ class R_TypeSqlAdapter_Entity(
     }
 }
 
-class R_TypeSqlAdapter_Enum(
+class Rt_ValueSqlAdapter_Enum(
     private val lazyRtType: Lazy<Rt_Type>,
     private val typeName: String,
     private val attrs: ImmList<RR_EnumAttr>,
-): R_TypeSqlAdapter_Some(SQLDataType.INTEGER) {
+): Rt_ValueSqlAdapter_Some(SQLDataType.INTEGER) {
     override fun toSqlValue(value: Rt_Value) = value.asEnum().value
 
     override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
@@ -146,7 +142,7 @@ class R_TypeSqlAdapter_Enum(
     }
 }
 
-class R_TypeSqlAdapter_Nullable(private val valueAdapter: R_TypeSqlAdapter): R_TypeSqlAdapter_Some(null) {
+class Rt_ValueSqlAdapter_Nullable(private val valueAdapter: Rt_ValueSqlAdapter): Rt_ValueSqlAdapter_Some(null) {
     override fun isSqlCompatible(compilerOptions: C_CompilerOptions): Boolean {
         val enabled = SQL_COMPATIBILITY_SWITCH.isActive(compilerOptions)
         return enabled && valueAdapter.isSqlCompatible(compilerOptions)

@@ -55,20 +55,18 @@ object SqlGen {
         genFunctionJsonSize(SqlConstants.FN_JSON_SIZE),
     )
 
-    private fun genFunctionJsonSize(name: String): Pair<String, String> {
-        return name to """
-            CREATE FUNCTION "$name"(value JSONB) RETURNS BIGINT AS $$
-            DECLARE type TEXT;
-            BEGIN
-                type := JSONB_TYPEOF(value);
-                IF type = 'array' THEN RETURN JSONB_ARRAY_LENGTH(value);
-                ELSIF type = 'object' THEN RETURN (SELECT COUNT(*) FROM JSONB_OBJECT_KEYS(value)) :: BIGINT;
-                ELSE RAISE EXCEPTION 'not a json array or object: %', value;
-                END IF;
-            END;
-            $$ LANGUAGE PLPGSQL IMMUTABLE;
-        """.trimIndent()
-    }
+    private fun genFunctionJsonSize(name: String): Pair<String, String> = name to """
+        CREATE FUNCTION "$name"(value JSONB) RETURNS BIGINT AS $$
+        DECLARE type TEXT;
+        BEGIN
+            type := JSONB_TYPEOF(value);
+            IF type = 'array' THEN RETURN JSONB_ARRAY_LENGTH(value);
+            ELSIF type = 'object' THEN RETURN (SELECT COUNT(*) FROM JSONB_OBJECT_KEYS(value)) :: BIGINT;
+            ELSE RAISE EXCEPTION 'not a json array or object: %', value;
+            END IF;
+        END;
+        $$ LANGUAGE PLPGSQL IMMUTABLE;
+    """.trimIndent()
 
     private fun genFunctionJsonAsType(
         name: String,
@@ -112,18 +110,16 @@ object SqlGen {
             """.trimIndent()
     }
 
-    private fun genFunctionJsonObjectGet(name: String): Pair<String, String> {
-        return name to """
-                CREATE FUNCTION "$name"(value JSONB, key TEXT) RETURNS JSONB AS $$
-                DECLARE res JSONB;
-                BEGIN
-                    res := (value -> key) :: JSONB;
-                    IF res IS NULL THEN RAISE EXCEPTION 'key not found: %', key; END IF;
-                    RETURN res;
-                END;
-                $$ LANGUAGE PLPGSQL IMMUTABLE;
-            """.trimIndent()
-    }
+    private fun genFunctionJsonObjectGet(name: String): Pair<String, String> = name to """
+            CREATE FUNCTION "$name"(value JSONB, key TEXT) RETURNS JSONB AS $$
+            DECLARE res JSONB;
+            BEGIN
+                res := (value -> key) :: JSONB;
+                IF res IS NULL THEN RAISE EXCEPTION 'key not found: %', key; END IF;
+                RETURN res;
+            END;
+            $$ LANGUAGE PLPGSQL IMMUTABLE;
+        """.trimIndent()
 
     private fun genFunctionIntegerPower(): Pair<String, String> {
         val name = SqlConstants.FN_INTEGER_POWER

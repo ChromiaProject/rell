@@ -77,18 +77,18 @@ internal fun primitiveName(kind: RR_PrimitiveKind): String = when (kind) {
 
 /** SQL adapter for a primitive — bridged from the existing legacy primitive adapter classes. */
 internal fun primitiveSqlAdapter(kind: RR_PrimitiveKind): Rt_TypeSqlAdapter? {
-    val rAdapter: R_TypeSqlAdapter = when (kind) {
-        RR_PrimitiveKind.INTEGER -> R_TypeSqlAdapter_Integer
-        RR_PrimitiveKind.BOOLEAN -> R_TypeSqlAdapter_Boolean
-        RR_PrimitiveKind.TEXT -> R_TypeSqlAdapter_Text
-        RR_PrimitiveKind.BYTE_ARRAY -> R_TypeSqlAdapter_ByteArray
-        RR_PrimitiveKind.DECIMAL -> R_TypeSqlAdapter_Decimal
-        RR_PrimitiveKind.BIG_INTEGER -> R_TypeSqlAdapter_BigInteger
-        RR_PrimitiveKind.ROWID -> R_TypeSqlAdapter_Rowid
-        RR_PrimitiveKind.JSON -> R_TypeSqlAdapter_Json
+    val valueAdapter: Rt_ValueSqlAdapter = when (kind) {
+        RR_PrimitiveKind.INTEGER -> Rt_ValueSqlAdapter_Integer
+        RR_PrimitiveKind.BOOLEAN -> Rt_ValueSqlAdapter_Boolean
+        RR_PrimitiveKind.TEXT -> Rt_ValueSqlAdapter_Text
+        RR_PrimitiveKind.BYTE_ARRAY -> Rt_ValueSqlAdapter_ByteArray
+        RR_PrimitiveKind.DECIMAL -> Rt_ValueSqlAdapter_Decimal
+        RR_PrimitiveKind.BIG_INTEGER -> Rt_ValueSqlAdapter_BigInteger
+        RR_PrimitiveKind.ROWID -> Rt_ValueSqlAdapter_Rowid
+        RR_PrimitiveKind.JSON -> Rt_ValueSqlAdapter_Json
         else -> return null
     }
-    return R_TypeSqlAdapterBridge(rAdapter)
+    return Rt_ValueSqlAdapterBridge(valueAdapter)
 }
 
 /** GTV conversion for a primitive. */

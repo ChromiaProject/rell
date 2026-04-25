@@ -214,11 +214,6 @@ class RellTestContext(
                 exec.execute(sql, preparator)
             }
 
-            override fun executeUpdate(sql: String, preparator: SqlPreparator): Int {
-                stats.sqls.add(sql)
-                return exec.executeUpdate(sql, preparator)
-            }
-
             override fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit) {
                 stats.sqls.add(sql)
                 exec.executeQuery(sql, preparator, consumer)

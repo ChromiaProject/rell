@@ -534,7 +534,7 @@ object Rt_NativeConversion_BigInteger: Rt_TypeNativeConversion {
     override fun nativeToRt(value: Any?) = Rt_BigIntegerValue.get(value as BigInteger)
 }
 
-object R_TypeSqlAdapter_BigInteger: R_TypeSqlAdapter_Primitive("big_integer", Lib_BigIntegerMath.SQL_TYPE) {
+object Rt_ValueSqlAdapter_BigInteger: Rt_ValueSqlAdapter_Primitive("big_integer", Lib_BigIntegerMath.SQL_TYPE) {
     override fun toSqlValue(value: Rt_Value) = value.asBigInteger()
 
     override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {

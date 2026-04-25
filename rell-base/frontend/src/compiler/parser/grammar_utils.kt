@@ -8,8 +8,8 @@ import com.github.h0tk3y.betterParse.lexer.*
 import com.github.h0tk3y.betterParse.parser.*
 import com.github.h0tk3y.betterParse.utils.Tuple2
 import net.postchain.rell.base.compiler.ast.*
+import net.postchain.rell.base.model.AtCardinality
 import net.postchain.rell.base.model.R_LangVersion
-import net.postchain.rell.base.model.expr.R_AtCardinality
 import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.plus
 
@@ -67,7 +67,7 @@ internal class G_BaseExprTail_UnaryPostfixOp(val pos: S_Pos, val op: S_UnaryOp):
 
 internal class G_BaseExprTail_At(
     val pos: S_Pos,
-    val cardinality: R_AtCardinality,
+    val cardinality: AtCardinality,
     val where: S_AtExprWhere,
     val what: S_AtExprWhat,
     val limit: S_Expr?,

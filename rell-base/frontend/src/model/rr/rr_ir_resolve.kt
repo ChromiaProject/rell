@@ -262,7 +262,7 @@ internal class RR_IrResolver(
                     from,
                     flatWhat,
                     where,
-                    RR_AtCardinality.ONE,
+                    AtCardinality.ONE,
                     null,
                     internals,
                     ErrorPos("", 0),
@@ -619,7 +619,7 @@ internal class RR_IrResolver(
                 val internals = RR_DbAtInternals(null)
                 val dbAtExpr = RR_Expr.DbAt(
                     resolveType(calc.type), from, flatWhat, where,
-                    RR_AtCardinality.ONE, null, internals, ErrorPos("", 0),
+                    AtCardinality.ONE, null, internals, ErrorPos("", 0),
                     whatFieldGroups = whatFieldGroups,
                 )
                 RR_MemberCalculator.DataAttributeExpr(
@@ -705,7 +705,7 @@ internal class RR_IrResolver(
         val from = RR_DbAtFrom(base.from.from.mapToImmList { resolveDbAtFromItem(it) }, base.from.block?.toRR())
         val (what, whatFieldGroups) = resolveAtWhatFieldsWithGroups(base.what)
         val where = resolveDbAtWhere(base)
-        val cardinality = resolveCardinality(expr.cardinality)
+        val cardinality = expr.cardinality
         val extras = expr.extras.let {
             RR_AtExtras(
                 it.limit?.let { l -> resolveExpr(l) },
@@ -981,7 +981,7 @@ internal class RR_IrResolver(
             is R_ColAtSummarization_None -> RR_ColAtSummarizationKind.NONE
             else -> if (expr.what.extras.groupFields.isNotEmpty()) RR_ColAtSummarizationKind.GROUP else RR_ColAtSummarizationKind.ALL
         }
-        val cardinality = resolveCardinality(expr.cardinality)
+        val cardinality = expr.cardinality
         val extras =
             RR_AtExtras(expr.extras.limit?.let { resolveExpr(it) }, expr.extras.offset?.let { resolveExpr(it) })
 
@@ -1063,13 +1063,6 @@ internal class RR_IrResolver(
             }
         }
 
-    private fun resolveCardinality(card: R_AtCardinality): RR_AtCardinality = when (card) {
-        R_AtCardinality.ZERO_ONE -> RR_AtCardinality.ZERO_ONE
-        R_AtCardinality.ONE -> RR_AtCardinality.ONE
-        R_AtCardinality.ZERO_MANY -> RR_AtCardinality.ZERO_MANY
-        R_AtCardinality.ONE_MANY -> RR_AtCardinality.ONE_MANY
-    }
-
     // --- Update/Delete helpers ---
 
     private fun resolveUpdateTargetKind(target: R_UpdateTarget): RR_UpdateTargetKind = when (target) {
@@ -1079,9 +1072,9 @@ internal class RR_IrResolver(
         is R_UpdateTarget_Object -> RR_UpdateTargetKind.OBJECT
     }
 
-    private fun resolveUpdateTargetCardinality(target: R_UpdateTarget): RR_AtCardinality? = when (target) {
-        is R_UpdateTarget_Simple -> resolveCardinality(target.cardinality)
-        is R_UpdateTarget_Object -> RR_AtCardinality.ONE
+    private fun resolveUpdateTargetCardinality(target: R_UpdateTarget): AtCardinality? = when (target) {
+        is R_UpdateTarget_Simple -> target.cardinality
+        is R_UpdateTarget_Object -> AtCardinality.ONE
         else -> null
     }
 

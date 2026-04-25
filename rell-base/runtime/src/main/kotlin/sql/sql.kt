@@ -18,7 +18,6 @@ import java.sql.Connection
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
-@Suppress("unused") // Keep the SqlConstants name for compatibility — delegates to R_SqlConstants.
 object SqlConstants {
     const val ROWID_COLUMN = R_SqlConstants.ROWID_COLUMN
     const val ROWID_GEN = R_SqlConstants.ROWID_GEN
@@ -133,11 +132,6 @@ abstract class AbstractSqlManager: SqlManager {
             sqlExec.execute(sql, preparator)
         }
 
-        override fun executeUpdate(sql: String, preparator: SqlPreparator): Int {
-            check(valid.get())
-            return sqlExec.executeUpdate(sql, preparator)
-        }
-
         override fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit) {
             check(valid.get())
             sqlExec.executeQuery(sql, preparator, consumer)
@@ -188,8 +182,7 @@ abstract class SqlExecutor {
     abstract fun <T> connection(code: (Connection) -> T): T
     abstract fun execute(@Language("SQL") sql: String)
     abstract fun execute(@Language("SQL") sql: String, preparator: SqlPreparator)
-    abstract fun executeUpdate(sql: String, preparator: SqlPreparator): Int
-    abstract fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit)
+    abstract fun executeQuery(@Language("SQL") sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit)
 
     /**
      * A way to pass some context information to a logging layer (wrapper) without adding a new parameter to every
@@ -202,10 +195,7 @@ abstract class SqlExecutor {
 class NoConnSqlManager: AbstractSqlManager() {
     override val hasConnection = false
 
-    override fun <T> execute0(tx: Boolean, code: (SqlExecutor) -> T): T {
-        val res = code(NoConnSqlExecutor)
-        return res
-    }
+    override fun <T> execute0(tx: Boolean, code: (SqlExecutor) -> T): T = code(NoConnSqlExecutor)
 }
 
 object NoConnSqlExecutor: SqlExecutor() {
@@ -218,7 +208,6 @@ object NoConnSqlExecutor: SqlExecutor() {
     override fun hasRealConnection() = false
     override fun execute(sql: String) = err()
     override fun execute(sql: String, preparator: SqlPreparator) = err()
-    override fun executeUpdate(sql: String, preparator: SqlPreparator) = err()
     override fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit) = err()
 
     private fun err(): Nothing = throw Rt_Exception.common("no_sql", "No database connection")
@@ -407,17 +396,6 @@ private class ConnectionSqlExecutor(private val con: Connection): SqlExecutor() 
         }
     }
 
-    override fun executeUpdate(sql: String, preparator: SqlPreparator): Int {
-        val res = execute0 { con ->
-            con.prepareStatement(sql).use { stmt ->
-                val params = PreparedStatementParams.of(stmt)
-                preparator.prepare(params)
-                stmt.executeUpdate()
-            }
-        }
-        return res
-    }
-
     override fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit) {
         execute0 { con ->
             con.prepareStatement(sql).use { stmt ->
@@ -507,12 +485,6 @@ class InterceptingSqlExecutor(
         }
     }
 
-    override fun executeUpdate(sql: String, preparator: SqlPreparator): Int {
-        return interceptor.invoke(sql, attributes, preparator) { preparator2 ->
-            sqlExec.executeUpdate(sql, preparator2!!)
-        }!!
-    }
-
     override fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit) {
         invoke(sql, preparator) { preparator2 ->
             var rowCount = 0
@@ -532,12 +504,6 @@ class InterceptingSqlExecutor(
         val sqlExec2 = sqlExec.withAttributes(attributes)
         return if (sqlExec2 === sqlExec && attributes == this.attributes) this else {
             InterceptingSqlExecutor(sqlExec2, interceptor, attributes)
-        }
-    }
-
-    companion object {
-        fun wrap(sqlExec: SqlExecutor, interceptor: SqlInterceptor?): SqlExecutor {
-            return if (interceptor == null) sqlExec else InterceptingSqlExecutor(sqlExec, interceptor)
         }
     }
 }

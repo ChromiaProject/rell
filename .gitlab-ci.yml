@@ -12,6 +12,11 @@ stages:
   - dependency-check
   - qodana
 
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH =~ /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
+
 variables:
   # Opt-in build scan publication. Defaults to "false" so regular pipelines don't publish;
   # override to "true" via the manual pipeline UI ("Run pipeline" → variables) when investigating a slow or flaky build.
@@ -140,10 +145,8 @@ cache:
 build:
   extends: .setup
   stage: build
-  except:
-    - master
-    - dev
-    - /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   script:
     - ./gradlew $GRADLE_FLAGS check :coverage-report-aggregate:testCodeCoverageReport
     - "awk -F, 'NR>1 { missed += $4; covered += $5 } END { printf \"Line coverage: %.2f%%\\n\", 100 * covered / (missed + covered) }' $JACOCO_REPORT_DIR/testCodeCoverageReport.csv"
@@ -152,10 +155,8 @@ build:
 deploy:
   extends: .setup
   stage: deploy
-  only:
-    - master
-    - dev
-    - /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH =~ /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
   script:
     - ./gradlew $GRADLE_FLAGS check :coverage-report-aggregate:testCodeCoverageReport publish -PgenerateTestCases
     - "awk -F, 'NR>1 { missed += $4; covered += $5 } END { printf \"Line coverage: %.2f%%\\n\", 100 * covered / (missed + covered) }' $JACOCO_REPORT_DIR/testCodeCoverageReport.csv"
@@ -165,9 +166,8 @@ dependency-check:
   extends: .setup
   stage: dependency-check
   interruptible: true
-  only:
-    variables:
-      - $RUN_DEPENDENCY_CHECK == "true"
+  rules:
+    - if: $RUN_DEPENDENCY_CHECK == "true"
   script: [ "./gradlew $GRADLE_FLAGS --no-configuration-cache dependencyCheckAggregate" ]
   artifacts:
     when: always
@@ -176,7 +176,7 @@ dependency-check:
 qodana:
   tags: [ saas-linux-xlarge-amd64 ]
   variables:
-    QODANA_MR_MODE: "false"
+    QODANA_MR_MODE: "true"
   cache:
     key: "qodana-$CI_COMMIT_REF_SLUG"
     fallback_keys:
@@ -185,7 +185,7 @@ qodana:
       - .qodana/cache
     policy: pull-push
   rules:
-    - if: $CI_PIPELINE_SOURCE != "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   artifacts:
     paths:
       - .qodana/results/qodana.sarif.json

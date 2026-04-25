@@ -632,7 +632,7 @@ internal class S_AtExprWhere(
 
 internal class S_AtExpr(
     val from: S_AtExprFrom,
-    val cardinality: S_PosValue<R_AtCardinality>,
+    val cardinality: S_PosValue<AtCardinality>,
     val where: S_AtExprWhere,
     val what: S_AtExprWhat,
     val limit: S_Expr?,

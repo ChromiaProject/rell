@@ -81,14 +81,14 @@ class R_ColAtFrom(
 )
 
 class R_ColAtExpr(
-        type: R_Type,
-        val block: R_FrameBlock,
-        val param: R_ColAtParam,
-        val from: R_ColAtFrom,
-        val what: R_ColAtWhat,
-        val where: R_Expr,
-        val summarization: R_ColAtSummarization,
-        val errPos: ErrorPos,
-        cardinality: R_AtCardinality,
-        extras: R_AtExprExtras,
+    type: R_Type,
+    val block: R_FrameBlock,
+    val param: R_ColAtParam,
+    val from: R_ColAtFrom,
+    val what: R_ColAtWhat,
+    val where: R_Expr,
+    val summarization: R_ColAtSummarization,
+    val errPos: ErrorPos,
+    cardinality: AtCardinality,
+    extras: R_AtExprExtras,
 ): R_AtExpr(type, cardinality, extras)

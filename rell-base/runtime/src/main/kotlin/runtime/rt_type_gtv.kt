@@ -7,7 +7,8 @@ package net.postchain.rell.base.runtime
 import net.postchain.gtv.Gtv
 import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.model.rr.*
+import net.postchain.rell.base.model.rr.RR_PrimitiveKind
+import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.utils.mapToImmList
 
 internal class Rt_TypeGtvConversionLazy(provider: () -> GtvRtConversion): Rt_TypeGtvConversion {

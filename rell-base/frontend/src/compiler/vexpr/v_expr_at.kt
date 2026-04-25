@@ -177,7 +177,7 @@ class V_TopDbAtExpr constructor(
     private val resultType: R_Type,
     private val base: V_AtExprBase,
     private val extras: V_AtExprExtras,
-    private val cardinality: R_AtCardinality,
+    private val cardinality: AtCardinality,
     private val internals: R_DbAtExprInternals,
     private val resVarStates: C_ExprVarStatesDelta,
 ): V_Expr(exprCtx, pos) {
@@ -275,7 +275,7 @@ class V_ColAtExpr(
     private val from: V_ColAtFrom,
     private val what: V_ColAtWhat,
     private val where: V_Expr?,
-    private val cardinality: R_AtCardinality,
+    private val cardinality: AtCardinality,
     private val extras: V_AtExprExtras,
     private val block: R_FrameBlock,
     private val param: R_ColAtParam,

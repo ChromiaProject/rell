@@ -4,10 +4,7 @@
 
 package net.postchain.rell.base.model.rr
 
-import net.postchain.rell.base.model.DefinitionId
-import net.postchain.rell.base.model.ErrorPos
-import net.postchain.rell.base.model.FilePos
-import net.postchain.rell.base.model.FullName
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.immListOf
 
@@ -122,7 +119,7 @@ sealed interface RR_Expr {
         val from: RR_DbAtFrom,
         val what: ImmList<RR_DbAtWhatField>,
         val where: RR_DbExpr?,
-        val cardinality: RR_AtCardinality,
+        val cardinality: AtCardinality,
         val extras: RR_AtExtras?,
         val internals: RR_DbAtInternals,
         val errPos: ErrorPos,
@@ -140,7 +137,7 @@ sealed interface RR_Expr {
         val where: RR_Expr,
         val summarization: RR_ColAtSummarizationKind,
         val errPos: ErrorPos,
-        val cardinality: RR_AtCardinality,
+        val cardinality: AtCardinality,
         val extras: RR_AtExtras?,
         val fieldSummarizations: ImmList<RR_ColAtFieldSummarizationInfo>,
         val sorting: ImmList<RR_ColAtSortEntry>,
@@ -241,7 +238,7 @@ sealed interface RR_Statement {
         val lambdaVarPtr: RR_VarPtr? = null,
         val lambdaExpr: RR_Expr? = null,
         val targetKind: RR_UpdateTargetKind = RR_UpdateTargetKind.SIMPLE,
-        val cardinality: RR_AtCardinality? = null,
+        val cardinality: AtCardinality? = null,
         val isExprSet: Boolean = false,
         val exprListType: RR_Type? = null
     ): RR_Statement
@@ -256,7 +253,7 @@ sealed interface RR_Statement {
         val lambdaVarPtr: RR_VarPtr? = null,
         val lambdaExpr: RR_Expr? = null,
         val targetKind: RR_UpdateTargetKind = RR_UpdateTargetKind.SIMPLE,
-        val cardinality: RR_AtCardinality? = null,
+        val cardinality: AtCardinality? = null,
         val isExprSet: Boolean = false,
         val exprListType: RR_Type? = null
     ): RR_Statement
@@ -527,7 +524,6 @@ data class RR_CreateAttr(val attrIndex: Int, val attrName: String, val expr: RR_
 
 // --- At-expression support ---
 
-enum class RR_AtCardinality { ZERO_ONE, ONE, ZERO_MANY, ONE_MANY }
 
 data class RR_AtExtras(val limit: RR_Expr?, val offset: RR_Expr?)
 

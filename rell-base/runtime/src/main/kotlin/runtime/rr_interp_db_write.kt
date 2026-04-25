@@ -8,7 +8,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.lib.type.Rt_ListValue
 import net.postchain.rell.base.lib.type.Rt_RowidValue
-import net.postchain.rell.base.model.expr.R_AtCardinality
+import net.postchain.rell.base.model.AtCardinality
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.toImmList
@@ -232,14 +232,14 @@ fun Rt_Interpreter.executeUpdate(stmt: RR_Statement.Update, frame: Rt_CallFrame)
             val count = executeUpdateSqlCount(stmt, frame)
             val cardinality = stmt.cardinality
             if (cardinality != null) {
-                checkAtCount(frame, stmt.errPos, toRCardinality(cardinality), count, "records")
+                checkAtCount(frame, stmt.errPos, cardinality, count, "records")
             }
             return
         }
 
         RR_UpdateTargetKind.OBJECT -> {
             val count = executeUpdateSqlCount(stmt, frame)
-            checkAtCount(frame, stmt.errPos, R_AtCardinality.ONE, count, "records")
+            checkAtCount(frame, stmt.errPos, AtCardinality.ONE, count, "records")
             return
         }
     }
@@ -468,14 +468,14 @@ fun Rt_Interpreter.executeDelete(stmt: RR_Statement.Delete, frame: Rt_CallFrame)
             val count = executeDeleteSqlCount(stmt, frame)
             val cardinality = stmt.cardinality
             if (cardinality != null) {
-                checkAtCount(frame, stmt.errPos, toRCardinality(cardinality), count, "records")
+                checkAtCount(frame, stmt.errPos, cardinality, count, "records")
             }
             return
         }
 
         RR_UpdateTargetKind.OBJECT -> {
             val count = executeDeleteSqlCount(stmt, frame)
-            checkAtCount(frame, stmt.errPos, R_AtCardinality.ONE, count, "records")
+            checkAtCount(frame, stmt.errPos, AtCardinality.ONE, count, "records")
             return
         }
     }

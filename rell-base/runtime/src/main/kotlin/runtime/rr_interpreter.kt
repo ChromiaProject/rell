@@ -12,7 +12,6 @@ import net.postchain.rell.base.lib.Rt_RellMetaValue
 import net.postchain.rell.base.lib.test.Rt_TestOpValue
 import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.model.expr.R_AtCardinality
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
@@ -24,7 +23,7 @@ import net.postchain.rell.base.utils.toImmList
 /**
  * Interprets [RR_Expr] and [RR_Statement] trees via exhaustive `when` matching.
  *
- * Reuses the existing runtime infrastructure: [Rt_CallFrame], [Rt_Value], [R_StatementResult].
+ * Reuses the existing runtime infrastructure: [Rt_CallFrame], [Rt_Value], [Rt_StatementResult].
  */
 class Rt_Interpreter(
     val rrApp: RR_App,
@@ -61,7 +60,7 @@ class Rt_Interpreter(
         val frame = createFrame(exeCtx, base.frame, dbUpdateAllowed, fn.base.defId)
         setParams(frame, base.paramVars, args, base.defName.appLevelName)
         val result = executeStmt(base.body, frame)
-        return if (result is R_StatementResult_Return) result.value ?: Rt_UnitValue else Rt_UnitValue
+        return if (result is Rt_StatementResult_Return) result.value ?: Rt_UnitValue else Rt_UnitValue
     }
 
     fun callOperation(op: RR_OperationDefinition, exeCtx: Rt_ExecutionContext, args: List<Rt_Value>) {
@@ -87,14 +86,14 @@ class Rt_Interpreter(
                 val frame = createFrame(exeCtx, body.frame, dbUpdateAllowed = false, query.base.defId)
                 setParams(frame, body.paramVars, args, query.base.appLevelName)
                 val result = executeStmt(body.body, frame)
-                if (result is R_StatementResult_Return) result.value ?: Rt_UnitValue else Rt_UnitValue
+                if (result is Rt_StatementResult_Return) result.value ?: Rt_UnitValue else Rt_UnitValue
             }
 
             is RR_SysQueryBody -> {
                 val fn = checkNotNull(stdlib.sysFunctions[body.fnName]) {
                     "Sys query function not found: ${body.fnName}"
                 }
-                val callCtx = Rt_CallContext(Rt_DefinitionContext(exeCtx, false, query.base.defId), false)
+                val callCtx = Rt_CallContext(Rt_DefinitionContext(exeCtx, false, query.base.defId))
                 fn.call(callCtx, args)
             }
         }
@@ -345,7 +344,7 @@ class Rt_Interpreter(
 
     // --- Statement interpreter ---
 
-    fun executeStmt(stmt: RR_Statement, frame: Rt_CallFrame): R_StatementResult? = when (stmt) {
+    fun executeStmt(stmt: RR_Statement, frame: Rt_CallFrame): Rt_StatementResult? = when (stmt) {
         is RR_Statement.Empty -> null
         is RR_Statement.Var -> {
             val value = stmt.expr?.let { evaluateExpr(it, frame) }
@@ -355,7 +354,7 @@ class Rt_Interpreter(
 
         is RR_Statement.Return -> {
             val value = stmt.expr?.let { evaluateExpr(it, frame) }
-            R_StatementResult_Return(value)
+            Rt_StatementResult_Return(value)
         }
 
         is RR_Statement.Block -> frame.block(stmt.frameBlock) {
@@ -390,8 +389,8 @@ class Rt_Interpreter(
                 val cond = evaluateExpr(stmt.cond, frame).asBoolean()
                 if (!cond) break
                 val res = frame.block(stmt.frameBlock) { executeStmt(stmt.body, frame) }
-                if (res is R_StatementResult_Break) break
-                if (res is R_StatementResult_Continue) continue
+                if (res is Rt_StatementResult_Break) break
+                if (res is Rt_StatementResult_Continue) continue
                 if (res != null) return res
             }
             null
@@ -416,15 +415,15 @@ class Rt_Interpreter(
                     initializeDeclarator(stmt.varDeclarator, frame, element)
                     executeStmt(stmt.body, frame)
                 }
-                if (res is R_StatementResult_Break) break
-                if (res is R_StatementResult_Continue) continue
+                if (res is Rt_StatementResult_Break) break
+                if (res is Rt_StatementResult_Continue) continue
                 if (res != null) return res
             }
             null
         }
 
-        is RR_Statement.Break -> R_StatementResult_Break
-        is RR_Statement.Continue -> R_StatementResult_Continue
+        is RR_Statement.Break -> Rt_StatementResult_Break
+        is RR_Statement.Continue -> Rt_StatementResult_Continue
         is RR_Statement.Guard -> {
             executeStmt(stmt.body, frame)
             frame.guardCompleted()
@@ -1019,7 +1018,7 @@ class Rt_Interpreter(
                 overrideFrame.setUnchecked(fnBase.paramVars[i].ptr, args[i], false)
             }
             val result = executeStmt(fnBase.body, overrideFrame)
-            if (result is R_StatementResult_Return) result.value ?: Rt_UnitValue else Rt_UnitValue
+            if (result is Rt_StatementResult_Return) result.value ?: Rt_UnitValue else Rt_UnitValue
         }
 
         is RR_FunctionCallTarget.Extendable -> {
@@ -1030,7 +1029,7 @@ class Rt_Interpreter(
                     createFrame(frame.exeCtx, rrFnBase.frame, dbUpdateAllowed = frame.dbUpdateAllowed(), rrFnBase.defId)
                 setParams(extFrame, rrFnBase.paramVars, args, rrFnBase.defName.appLevelName)
                 val result = executeStmt(rrFnBase.body, extFrame)
-                val value = if (result is R_StatementResult_Return) result.value ?: Rt_UnitValue else Rt_UnitValue
+                val value = if (result is Rt_StatementResult_Return) result.value ?: Rt_UnitValue else Rt_UnitValue
                 if (combiner.addExtensionResult(value)) break
             }
             combiner.getCombinedResult()
@@ -1113,7 +1112,7 @@ class Rt_Interpreter(
     fun checkAtCount(
         frame: Rt_CallFrame,
         errPos: ErrorPos,
-        cardinality: R_AtCardinality,
+        cardinality: AtCardinality,
         count: Int,
         itemMsg: String,
     ) {
@@ -1124,14 +1123,7 @@ class Rt_Interpreter(
         }
     }
 
-    fun toRCardinality(card: RR_AtCardinality): R_AtCardinality = when (card) {
-        RR_AtCardinality.ZERO_ONE -> R_AtCardinality.ZERO_ONE
-        RR_AtCardinality.ONE -> R_AtCardinality.ONE
-        RR_AtCardinality.ZERO_MANY -> R_AtCardinality.ZERO_MANY
-        RR_AtCardinality.ONE_MANY -> R_AtCardinality.ONE_MANY
-    }
-
-    val RR_AtCardinality.isMany: Boolean get() = this == RR_AtCardinality.ZERO_MANY || this == RR_AtCardinality.ONE_MANY
+    val AtCardinality.isMany: Boolean get() = this == AtCardinality.ZERO_MANY || this == AtCardinality.ONE_MANY
 
     fun RR_Type.elementType(): RR_Type = when (this) {
         is RR_Type.List -> element

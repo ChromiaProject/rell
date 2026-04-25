@@ -4,6 +4,7 @@
 
 package net.postchain.rell.serialization
 
+import net.postchain.rell.base.model.AtCardinality
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.mapToImmList
@@ -157,12 +158,12 @@ fun deserializeAtExtras(fb: AtExprExtras?): RR_AtExtras? {
     )
 }
 
-fun deserializeAtCardinality(fb: UByte): RR_AtCardinality = when (fb) {
-    AtCardinality.ZERO_ONE -> RR_AtCardinality.ZERO_ONE
-    AtCardinality.ONE -> RR_AtCardinality.ONE
-    AtCardinality.ZERO_MANY -> RR_AtCardinality.ZERO_MANY
-    AtCardinality.ONE_MANY -> RR_AtCardinality.ONE_MANY
-    else -> RR_AtCardinality.ZERO_MANY
+fun deserializeAtCardinality(fb: UByte): AtCardinality = when (fb) {
+    rell.ir.AtCardinality.ZERO_ONE -> AtCardinality.ZERO_ONE
+    rell.ir.AtCardinality.ONE -> AtCardinality.ONE
+    rell.ir.AtCardinality.ZERO_MANY -> AtCardinality.ZERO_MANY
+    rell.ir.AtCardinality.ONE_MANY -> AtCardinality.ONE_MANY
+    else -> AtCardinality.ZERO_MANY
 }
 
 // --- ColAt support ---

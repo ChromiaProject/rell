@@ -6,12 +6,12 @@ package net.postchain.rell.base.runtime
 
 import net.postchain.rell.base.model.rr.*
 
-fun Rt_Interpreter.executeWhenStmt(stmt: RR_Statement.When, frame: Rt_CallFrame): R_StatementResult? {
+fun Rt_Interpreter.executeWhenStmt(stmt: RR_Statement.When, frame: Rt_CallFrame): Rt_StatementResult? {
     val idx = evaluateWhenChooser(stmt.chooser, frame)
     return if (idx >= 0) executeStmt(stmt.stmts[idx], frame) else null
 }
 
-fun Rt_Interpreter.executeStatements(stmts: List<RR_Statement>, frame: Rt_CallFrame): R_StatementResult? {
+fun Rt_Interpreter.executeStatements(stmts: List<RR_Statement>, frame: Rt_CallFrame): Rt_StatementResult? {
     for (stmt in stmts) {
         val res = executeStmt(stmt, frame)
         if (res != null) return res

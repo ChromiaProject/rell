@@ -290,7 +290,7 @@ object Rt_NativeConversion_ByteArray: Rt_TypeNativeConversion {
     override fun nativeToRt(value: Any?) = Rt_ByteArrayValue.get((value as ByteArray).copyOf())
 }
 
-object R_TypeSqlAdapter_ByteArray: R_TypeSqlAdapter_Primitive("byte_array", SQLDataType.BLOB) {
+object Rt_ValueSqlAdapter_ByteArray: Rt_ValueSqlAdapter_Primitive("byte_array", SQLDataType.BLOB) {
     override fun toSqlValue(value: Rt_Value) = value.asByteArray()
 
     override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {

@@ -7,7 +7,7 @@ package net.postchain.rell.base.runtime
 import net.postchain.rell.base.lib.type.Rt_ListValue
 import net.postchain.rell.base.lib.type.Rt_MapValue
 import net.postchain.rell.base.lib.type.Rt_SetValue
-import net.postchain.rell.base.model.expr.R_AtCardinality
+import net.postchain.rell.base.model.AtCardinality
 import net.postchain.rell.base.model.expr.R_PartialArgMapping
 import net.postchain.rell.base.model.expr.R_PartialCallMapping
 import net.postchain.rell.base.model.expr.Rt_AtExprExtras
@@ -86,7 +86,7 @@ fun Rt_Interpreter.evaluateDbAt(expr: RR_Expr.DbAt, frame: Rt_CallFrame): Rt_Val
             }
 
             // Check cardinality — for object attribute access, use object-specific error codes
-            val rCardinality = toRCardinality(expr.cardinality)
+            val rCardinality = expr.cardinality
             if (expr.objectName != null && !rCardinality.matches(records.size)) {
                 val name = expr.objectName
                 val count = records.size
@@ -494,7 +494,7 @@ fun Rt_Interpreter.evaluateAtExtras(extras: RR_AtExtras, frame: Rt_CallFrame): R
 
 fun Rt_Interpreter.evaluateColAt(expr: RR_Expr.ColAt, frame: Rt_CallFrame): Rt_Value {
     val extras = expr.extras?.let { evaluateAtExtras(it, frame) } ?: Rt_AtExprExtras.NULL
-    val rCardinality = toRCardinality(expr.cardinality)
+    val rCardinality = expr.cardinality
     val extrasLimit = extras.limit
     if (extrasLimit != null && extrasLimit <= 0L) {
         checkAtCount(frame, expr.errPos, rCardinality, 0, "values")
@@ -527,7 +527,7 @@ private fun Rt_Interpreter.evaluateColAtWithNativeSummarization(
     frame: Rt_CallFrame,
     iterable: Iterable<Rt_Value>,
     extras: Rt_AtExprExtras,
-    rCardinality: R_AtCardinality,
+    rCardinality: AtCardinality,
 ): Rt_Value {
     val fieldCount = expr.what.fieldCount
     val hasSorting = expr.sorting.isNotEmpty()

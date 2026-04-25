@@ -718,7 +718,7 @@ object Rt_NativeConversion_Text: Rt_TypeNativeConversion {
     override fun nativeToRt(value: Any?) = Rt_TextValue.get(value as String)
 }
 
-object R_TypeSqlAdapter_Text: R_TypeSqlAdapter_Primitive("text", SQLDataType.CLOB) {
+object Rt_ValueSqlAdapter_Text: Rt_ValueSqlAdapter_Primitive("text", SQLDataType.CLOB) {
     override fun toSqlValue(value: Rt_Value) = value.asString()
 
     override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {

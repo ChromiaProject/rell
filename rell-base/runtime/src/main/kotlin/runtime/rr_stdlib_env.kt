@@ -6,6 +6,7 @@ package net.postchain.rell.base.runtime
 
 import net.postchain.rell.base.model.expr.Db_BinaryOp
 import net.postchain.rell.base.model.expr.Db_UnaryOp
+import net.postchain.rell.base.runtime.Rt_StdlibEnv.Companion.forCompilation
 import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.toImmMap
 
