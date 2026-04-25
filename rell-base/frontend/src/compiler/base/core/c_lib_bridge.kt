@@ -17,7 +17,6 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.Db_Expr
 import net.postchain.rell.base.model.expr.R_DbAtEntity
 import net.postchain.rell.base.model.expr.R_Expr
-import net.postchain.rell.base.model.rr.RR_ConstantValue
 import net.postchain.rell.base.model.rr.RR_ResolverRuntime
 import net.postchain.rell.base.mtype.M_GenericType
 import net.postchain.rell.base.utils.ImmList
@@ -60,9 +59,6 @@ interface C_LibBridge {
     fun newResolverRuntime(): RR_ResolverRuntime
 
     fun getRellVersionInfo(): Map<*, String>?
-
-    /** Convert an opaque runtime value to an RR_ConstantValue. [rType] is the R_Type, [value] is Rt_Value. */
-    fun rtValueToRRConstant(rType: R_Type, value: Any): RR_ConstantValue
 
     companion object {
         @Volatile

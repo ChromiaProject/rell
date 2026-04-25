@@ -16,12 +16,10 @@ import net.postchain.rell.base.compiler.base.namespace.C_NamespacePropertyContex
 import net.postchain.rell.base.lib.test.R_TestOpType
 import net.postchain.rell.base.lib.type.Lib_Type_Any
 import net.postchain.rell.base.lib.type.Lib_Type_Entity
-import net.postchain.rell.base.lmodel.L_ConstantStrCode
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.Db_Expr
 import net.postchain.rell.base.model.expr.R_DbAtEntity
 import net.postchain.rell.base.model.expr.R_Expr
-import net.postchain.rell.base.model.rr.RR_ConstantValue
 import net.postchain.rell.base.model.rr.RR_ResolverRuntime
 import net.postchain.rell.base.mtype.M_GenericType
 import net.postchain.rell.base.runtime.*
@@ -33,8 +31,6 @@ internal object C_LibBridgeImpl : C_LibBridge {
         // Register runtime size extractors used by model/r_attr_validator.kt
         R_SizeExtractors.BYTE_ARRAY = { (it as Rt_Value).asByteArray().size }
         R_SizeExtractors.TEXT = { (it as Rt_Value).asString().length }
-        // Provide Rt_Value-aware formatter for L_Constant.strCode()
-        L_ConstantStrCode.format = { (it as Rt_Value).strCode() }
         // Register SQL context bridge: untyped Any → Rt_SqlContext / Rt_ChainSqlMapping access
         registerSqlBridge()
     }
@@ -96,9 +92,6 @@ internal object C_LibBridgeImpl : C_LibBridge {
         get() = R_TestOpType
 
     override fun newResolverRuntime(): RR_ResolverRuntime = Rt_ResolverRuntime()
-
-    override fun rtValueToRRConstant(rType: R_Type, value: Any): RR_ConstantValue =
-        net.postchain.rell.base.runtime.rtValueToRRConstant(rType, value as Rt_Value)
 
     override fun getRellVersionInfo(): Map<*, String>? = Rt_RellVersion.getInstance()?.properties
 }

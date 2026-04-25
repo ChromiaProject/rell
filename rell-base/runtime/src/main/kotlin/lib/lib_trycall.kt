@@ -275,7 +275,7 @@ internal object Lib_TryCall: KLogging() {
         ctx: Rt_CallContext,
         onSuccess: (Rt_Value) -> Rt_Value = { it },
     ): Rt_Value {
-        val v = fn.asFunction().call(ctx, immListOf())
+        val v = fn.asFunction().call(immListOf())
         return onSuccess(v)
     }
 

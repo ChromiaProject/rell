@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.rell.base.model.expr.R_FunctionCallTarget
 import net.postchain.rell.base.model.expr.R_PartialArgMapping
 import net.postchain.rell.base.model.expr.R_PartialCallMapping
 import net.postchain.rell.base.runtime.utils.Rt_ValueRecursionDetector
@@ -15,7 +14,7 @@ import net.postchain.rell.base.utils.toImmList
 class Rt_FunctionValue(
     private val rtType: Rt_Type,
     private val mapping: R_PartialCallMapping,
-    private val target: R_FunctionCallTarget,
+    private val target: Rt_FunctionCallTarget,
     private val baseValue: Rt_Value?,
     exprValues: List<Rt_Value>,
 ): Rt_Value() {
@@ -32,16 +31,16 @@ class Rt_FunctionValue(
     override fun strCode(showTupleFieldNames: Boolean): String {
         return STR_RECURSION_DETECTOR.calculate(this) {
             val argsStr = mapping.args.joinToString(",") { if (it.wild) "*" else exprValues[it.index].strCode() }
-            "fn[${functionTargetStrCode(target, baseValue)}($argsStr)]"
+            "fn[${target.targetStrCode(baseValue)}($argsStr)]"
         } ?: "fn[...]"
     }
 
-    override fun str(format: StrFormat) = "${functionTargetStr(target, baseValue, format)}(*)"
+    override fun str(format: StrFormat) = "${target.targetStr(baseValue, format)}(*)"
 
-    fun call(callCtx: Rt_CallContext, args: List<Rt_Value>): Rt_Value {
+    fun call(args: List<Rt_Value>): Rt_Value {
         checkEquals(args.size, mapping.wildCount)
         val combinedArgs = mapping.args.map { if (it.wild) args[it.index] else exprValues[it.index] }
-        return callFunctionTarget(target, callCtx, baseValue, combinedArgs)
+        return target.interpreter.callTarget(target.rrTarget, baseValue, combinedArgs, target.outerFrame)
     }
 
     fun combine(newType: Rt_Type, newMapping: R_PartialCallMapping, newArgs: List<Rt_Value>): Rt_Value {

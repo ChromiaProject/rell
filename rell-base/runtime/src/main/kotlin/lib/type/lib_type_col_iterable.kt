@@ -74,9 +74,9 @@ object Lib_Type_Iterable {
                         a transformation function to apply to each element before joining, defaults to `to_text()`
                     """)
                 }
-                bodyContextN { ctx, args ->
+                bodyContextN { _, args ->
                     Rt_Utils.checkRange(args.size, 1, 7)
-                    val joinedString = joinToTextCall(ctx, args[0].asIterable(), args)
+                    val joinedString = joinToTextCall(args[0].asIterable(), args)
                     Rt_TextValue.get(joinedString)
                 }
             }
@@ -84,7 +84,6 @@ object Lib_Type_Iterable {
     }
 
     private fun joinToTextCall(
-        ctx: Rt_CallContext,
         self: Iterable<Rt_Value>,
         args: List<Rt_Value>
     ): String {
@@ -95,7 +94,7 @@ object Lib_Type_Iterable {
         val truncated = args.getOrNull(5)?.asString() ?: "..."
         val fnValue = args.getOrNull(6)?.asFunction()
         val transform = if (fnValue != null) {
-            rtValue -> callTransformFunction(ctx, fnValue, rtValue)
+            rtValue -> callTransformFunction(fnValue, rtValue)
         } else {
             ::defaultTransform
         }
@@ -106,8 +105,8 @@ object Lib_Type_Iterable {
         return value.str()
     }
 
-    private fun callTransformFunction(ctx: Rt_CallContext, transform: Rt_FunctionValue, rtValue: Rt_Value): String {
-        return transform.call(ctx, listOf(rtValue)).asString()
+    private fun callTransformFunction(transform: Rt_FunctionValue, rtValue: Rt_Value): String {
+        return transform.call(listOf(rtValue)).asString()
     }
 
     private fun extractLimit(value: Rt_Value?): Int {

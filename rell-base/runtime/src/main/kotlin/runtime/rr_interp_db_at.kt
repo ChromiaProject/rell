@@ -244,7 +244,7 @@ private fun Rt_Interpreter.applyGroup(
         // the side-effect ordering: values are evaluated in itemOrder access order,
         // matching the original R_ model's lazy Rt_AtWhatItem semantics.
         val lazyDbValues: List<Rt_Value> = if (subGroups != null) {
-            val subSlices = buildSubSlices(subGroups, dbValues)
+            val subSlices = buildSubSlices(subGroups)
             LazyValueList(subGroups.size) { i ->
                 val (subGroup, from, to) = subSlices[i]
                 val subCache = cache.subGroupCaches?.getOrNull(i) ?: EMPTY_GROUP_CACHE
@@ -297,7 +297,6 @@ private fun Rt_Interpreter.applyGroup(
 
 private fun buildSubSlices(
     subGroups: List<RR_DbAtWhatFieldGroup>,
-    dbValues: List<Rt_Value>,
 ): List<Triple<RR_DbAtWhatFieldGroup, Int, Int>> {
     var pos = 0
     return subGroups.map { subGroup ->
@@ -392,7 +391,7 @@ private fun Rt_Interpreter.applyCombiner(
                     else R_PartialArgMapping(false, idx)
                 }
                 val mapping = R_PartialCallMapping(rawArgs.size, call.wildArgCount, mappingArgs)
-                val rTarget = Rt_FunctionCallTargetAdapter(this, call.target, frame)
+                val rTarget = Rt_FunctionCallTarget(this, call.target, frame)
                 createFunctionValueFromTarget(rTarget, rtType, mapping, base, rawArgs)
             }
         } else {

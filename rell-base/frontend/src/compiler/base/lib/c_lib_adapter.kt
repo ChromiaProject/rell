@@ -6,7 +6,6 @@ package net.postchain.rell.base.compiler.base.lib
 
 import net.postchain.rell.base.compiler.base.core.C_DefinitionName
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
-import net.postchain.rell.base.compiler.base.core.C_LibBridge
 import net.postchain.rell.base.compiler.base.namespace.*
 import net.postchain.rell.base.compiler.base.utils.C_IdeCompletionsUtils
 import net.postchain.rell.base.compiler.base.utils.C_RFullNamePath
@@ -196,7 +195,7 @@ private class C_LibNamespaceConverter {
     }
 
     private fun convertMemberConstant(mf: C_LibNsMemberFactory, lMember: L_NamespaceMember_Constant): C_NamespaceMember {
-        val rrValue = lazy { C_LibBridge.instance.rtValueToRRConstant(lMember.constant.rType, lMember.constant.value) }
+        val rrValue = lMember.constant.rrValueLazy
         val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_CONSTANT, doc = lMember.docSymbol)
         val restrictions = C_MemberRestrictions.makeLib(lMember, C_DeclarationType.CONSTANT, null)
         val varId = C_LibConstantVarId(lMember.fullName, lMember.constant)

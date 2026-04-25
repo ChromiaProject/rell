@@ -63,21 +63,6 @@ fun rtMapType(key: Rt_Type, value: Rt_Type): Rt_Type {
     )
 }
 
-/** Runtime type `elem?`. */
-fun rtNullableType(elem: Rt_Type): Rt_Type {
-    val name = "${elem.name}?"
-    val innerGtv = elem.gtvConversion
-    val innerCmp = elem.comparator
-    return Rt_Type(
-        rrType = RR_Type.Nullable(elem.rrType!!),
-        name = name,
-        sqlAdapter = elem.sqlAdapter?.let { nullableSqlAdapter(it) },
-        gtvConversion = if (innerGtv == null) null else nullableGtvConversion(innerGtv),
-        comparator = innerCmp?.let { nullableComparator(it) },
-        nativeConversion = null,
-    )
-}
-
 /** Runtime type for a tuple with the given element types (unnamed fields). */
 fun rtTupleType(vararg elements: Rt_Type): Rt_Type {
     val fields = elements.map { RR_TupleField(null, it.rrType!!) }.toImmList()

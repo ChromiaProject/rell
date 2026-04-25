@@ -15,10 +15,9 @@ import net.postchain.rell.base.lib.type.Rt_ByteArrayValue
 import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_BigIntegerType
-import net.postchain.rell.base.model.R_ByteArrayType
-import net.postchain.rell.base.model.R_IntegerType
-import net.postchain.rell.base.model.R_TupleType
+import net.postchain.rell.base.model.rr.RR_PrimitiveKind
+import net.postchain.rell.base.model.rr.RR_TupleField
+import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.checkEquals
@@ -37,7 +36,14 @@ internal object Lib_Crypto {
         Rt_ByteArrayValue.get(md.digest(ba))
     }
 
-    private val POINT_TYPE: Rt_Type = rTypeToRtType(R_TupleType.make(R_BigIntegerType, R_BigIntegerType))
+    private val POINT_TYPE: Rt_Type = rrTypeToRtType(
+        RR_Type.Tuple(
+            immListOf(
+                RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.BIG_INTEGER)),
+                RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.BIG_INTEGER)),
+            ),
+        ),
+    )
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         alias(target = "crypto.verify_signature", since = "0.9.0")
@@ -285,7 +291,15 @@ internal object Lib_Crypto {
                 }
             }
 
-            val signatureType: Rt_Type = rTypeToRtType(R_TupleType.make(R_ByteArrayType, R_ByteArrayType, R_IntegerType))
+            val signatureType: Rt_Type = rrTypeToRtType(
+                RR_Type.Tuple(
+                    immListOf(
+                        RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.BYTE_ARRAY)),
+                        RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.BYTE_ARRAY)),
+                        RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.INTEGER)),
+                    ),
+                ),
+            )
             val signatureTypeStr = "(byte_array,byte_array,integer)"
 
             function("eth_sign", result = signatureTypeStr, pure = true, since = "0.10.6") {

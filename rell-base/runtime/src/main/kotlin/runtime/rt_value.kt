@@ -9,7 +9,7 @@ import net.postchain.rell.base.lib.Rt_TimeFormatValue
 import net.postchain.rell.base.lib.type.Rt_JsonValue
 import net.postchain.rell.base.lib.type.Rt_MapValue
 import net.postchain.rell.base.lib.type.Rt_RangeValue
-import net.postchain.rell.base.model.R_EnumAttr
+import net.postchain.rell.base.model.rr.RR_EnumAttr
 import net.postchain.rell.base.utils.CommonUtils
 import net.postchain.rell.base.utils.checkNull
 import java.math.BigDecimal
@@ -110,7 +110,7 @@ abstract class Rt_Value {
     open fun asStruct(): Rt_StructValue = throw errType(Rt_CoreValueTypes.STRUCT)
     open fun asVirtual(): Rt_VirtualValue = throw errType(Rt_CoreValueTypes.VIRTUAL)
     open fun asVirtualStruct(): Rt_VirtualStructValue = throw errType(Rt_CoreValueTypes.VIRTUAL_STRUCT)
-    open fun asEnum(): R_EnumAttr = throw errType(Rt_CoreValueTypes.ENUM)
+    open fun asEnum(): RR_EnumAttr = throw errType(Rt_CoreValueTypes.ENUM)
     open fun asRange(): Rt_RangeValue = throw errType(Rt_CoreValueTypes.RANGE)
     open fun asObjectId(): Long = throw errType(Rt_CoreValueTypes.ENTITY)
     open fun asGtv(): Gtv = throw errType(Rt_CoreValueTypes.GTV)

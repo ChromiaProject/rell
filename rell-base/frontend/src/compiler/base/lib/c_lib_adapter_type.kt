@@ -6,7 +6,6 @@ package net.postchain.rell.base.compiler.base.lib
 
 import net.postchain.rell.base.compiler.base.core.C_DefinitionPath
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
-import net.postchain.rell.base.compiler.base.core.C_LibBridge
 import net.postchain.rell.base.compiler.base.def.C_GlobalFunction
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
@@ -293,7 +292,7 @@ private class C_LibTypeBodyBuilder(
         val defName = defPath.subName(header.simpleName)
         val rType = constant.rType
         val varId = C_LibConstantVarId(typeName.append(header.simpleName), constant)
-        val rrValue = lazy { C_LibBridge.instance.rtValueToRRConstant(rType, constant.value) }
+        val rrValue = constant.rrValueLazy
         val prop = C_NamespaceProperty_RtValue(rrValue, rType, varId)
         val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_CONSTANT, doc = header.docSymbol)
         val cMember = C_TypeStaticMember.makeProperty(defName, header.simpleName, prop, rType, ideInfo, header.restrictions)

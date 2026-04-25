@@ -6,13 +6,11 @@ package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.utils.C_DocUtils
-import net.postchain.rell.base.lib.type.*
+import net.postchain.rell.base.lmodel.L_ConstantDocSource
 import net.postchain.rell.base.lmodel.L_FunctionFlags
 import net.postchain.rell.base.lmodel.L_FunctionHeader
 import net.postchain.rell.base.lmodel.L_TypeUtils
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.runtime.Rt_NullValue
-import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.mapToImmList
 
@@ -41,9 +39,9 @@ object Ld_DocSymbols {
         return hdr.docSymbol(docDecProto.toLazyDeclaration())
     }
 
-    fun constant(hdr: Ld_MemberHeader.Finish, rType: R_Type, rValue: Rt_Value): DocSymbol {
+    fun constant(hdr: Ld_MemberHeader.Finish, rType: R_Type, docSource: L_ConstantDocSource): DocSymbol {
         val docType = rType.docType()
-        val docValue = rtValueToDocValue(rValue)
+        val docValue = docSourceToDocValue(docSource)
         val docDecProto = DocDeclarationProto_Constant(DocModifiers.NONE, hdr.simpleName, docType, docValue)
         return hdr.docSymbol(docDecProto.toLazyDeclaration())
     }
@@ -71,17 +69,15 @@ object Ld_DocSymbols {
     }
 }
 
-private fun rtValueToDocValue(value: Rt_Value): DocValue? {
-    return when (value) {
-        Rt_NullValue -> DocValue.NULL
-        Rt_UnitValue -> DocValue.UNIT
-        is Rt_BooleanValue -> DocValue.boolean(value.value)
-        is Rt_IntValue -> DocValue.integer(value.value)
-        is Rt_BigIntegerValue -> DocValue.bigInteger(value.value)
-        is Rt_DecimalValue -> DocValue.decimal(value.value)
-        is Rt_TextValue -> DocValue.text(value.value)
-        is Rt_ByteArrayValue -> DocValue.byteArray(value.asByteArray())
-        is Rt_RowidValue -> DocValue.rowid(value.value)
-        else -> null
-    }
+private fun docSourceToDocValue(source: L_ConstantDocSource): DocValue? = when (source) {
+    L_ConstantDocSource.Null -> DocValue.NULL
+    L_ConstantDocSource.Unit -> DocValue.UNIT
+    is L_ConstantDocSource.Bool -> DocValue.boolean(source.value)
+    is L_ConstantDocSource.Int -> DocValue.integer(source.value)
+    is L_ConstantDocSource.BigInt -> DocValue.bigInteger(source.value)
+    is L_ConstantDocSource.Decimal -> DocValue.decimal(source.value)
+    is L_ConstantDocSource.Text -> DocValue.text(source.value)
+    is L_ConstantDocSource.Bytes -> DocValue.byteArray(source.value)
+    is L_ConstantDocSource.Rowid -> DocValue.rowid(source.value)
+    is L_ConstantDocSource.Complex -> null
 }

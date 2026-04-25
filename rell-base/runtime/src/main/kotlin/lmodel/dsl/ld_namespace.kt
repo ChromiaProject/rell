@@ -788,7 +788,7 @@ private class Ld_NamespaceMember_Constant(
     override fun process0(ctx: Ld_NamespaceContext, hdr: Ld_MemberHeader.Finish): FcFuture<List<L_NamespaceMember>> {
         val future = constant.process(ctx, simpleName)
         return ctx.fcExec.future().after(future).compute { lConstant ->
-            val doc = Ld_DocSymbols.constant(hdr, lConstant.rType, lConstant.value as Rt_Value)
+            val doc = Ld_DocSymbols.constant(hdr, lConstant.rType, lConstant.docSource)
             val member = L_NamespaceMember_Constant(hdr.fullName, hdr.lHeader, doc, lConstant)
             immListOf(member)
         }

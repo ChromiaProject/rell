@@ -23,9 +23,9 @@ class R_FullFunctionCall(
     }
 }
 
-class R_PartialArgMapping(val wild: Boolean, val index: Int)
+data class R_PartialArgMapping(val wild: Boolean, val index: Int)
 
-class R_PartialCallMapping(val exprCount: Int, val wildCount: Int, val args: ImmList<R_PartialArgMapping>) {
+data class R_PartialCallMapping(val exprCount: Int, val wildCount: Int, val args: ImmList<R_PartialArgMapping>) {
     init {
         check(exprCount >= 0)
         check(wildCount >= 0)

@@ -84,6 +84,119 @@ internal fun rTypeToRtType(rType: R_Type): Rt_Type {
 }
 
 /**
+ * Build [Rt_Type] purely from an [RR_Type].
+ *
+ * Handles primitives, [RR_Type.Null], [RR_Type.Nullable], [RR_Type.List], [RR_Type.Set],
+ * [RR_Type.Map] and [RR_Type.Tuple] (and any composition of those). Throws
+ * [IllegalArgumentException] for definition-backed types (entity, struct, enum, object,
+ * operation, virtual-struct) or virtual collections — those need interpreter context
+ * (`rrApp`) to be resolved.
+ *
+ * Use this instead of [rTypeToRtType] in stdlib initialization where the type is built
+ * from primitives only and no [R_Type] would otherwise exist.
+ */
+fun rrTypeToRtType(rrType: RR_Type): Rt_Type {
+    val name = staticRrTypeName(rrType)
+    return Rt_Type(
+        rrType = rrType,
+        name = name,
+        sqlAdapter = R_TypeSqlAdapterBridge(createSqlAdapter(rrType, name)),
+        gtvConversion = createPureRrGtvConversion(rrType, name),
+        comparator = createComparator(rrType),
+        nativeConversion = createNativeConversion(rrType),
+    )
+}
+
+/** Static type-name for [rrTypeToRtType] — covers the same shapes as that function. */
+private fun staticRrTypeName(rrType: RR_Type): String = when (rrType) {
+    is RR_Type.Primitive -> rrType.kind.name.lowercase()
+    is RR_Type.Null -> "null"
+    is RR_Type.Nullable -> "${staticRrTypeName(rrType.value)}?"
+    is RR_Type.List -> "list<${staticRrTypeName(rrType.element)}>"
+    is RR_Type.Set -> "set<${staticRrTypeName(rrType.element)}>"
+    is RR_Type.Map -> "map<${staticRrTypeName(rrType.key)},${staticRrTypeName(rrType.value)}>"
+    is RR_Type.Tuple -> "(${
+        rrType.fields.joinToString(",") { f ->
+            if (f.name != null) "${f.name}:${staticRrTypeName(f.type)}" else staticRrTypeName(f.type)
+        }
+    })"
+    else -> throw IllegalArgumentException(
+        "rrTypeToRtType requires interpreter context for type: ${rrType::class.simpleName}",
+    )
+}
+
+/** Pure-RR GTV conversion for primitives + composites of primitives. */
+private fun createPureRrGtvConversion(rrType: RR_Type, name: String): Rt_TypeGtvConversion? = when (rrType) {
+    is RR_Type.Primitive, is RR_Type.Null -> {
+        val conv = createGtvConversion(rrType) ?: return null
+        Rt_TypeGtvConversionLazy { conv }
+    }
+
+    is RR_Type.Nullable -> {
+        val inner = rrTypeToRtType(rrType.value)
+        Rt_TypeGtvConversionLazy {
+            GtvRtConversion_Nullable(lazy { inner.gtvConversion!! })
+        }
+    }
+
+    is RR_Type.List -> {
+        val element = rrTypeToRtType(rrType.element)
+        val self = lazy { rrTypeToRtType(rrType) }
+        Rt_TypeGtvConversionLazy {
+            GtvRtConversion_List(
+                typeName = name,
+                elementConversion = lazy { element.gtvConversion!! },
+                rtType = self,
+            )
+        }
+    }
+
+    is RR_Type.Set -> {
+        val element = rrTypeToRtType(rrType.element)
+        val self = lazy { rrTypeToRtType(rrType) }
+        Rt_TypeGtvConversionLazy {
+            GtvRtConversion_Set(
+                typeName = name,
+                elementConversion = lazy { element.gtvConversion!! },
+                rtType = self,
+            )
+        }
+    }
+
+    is RR_Type.Map -> {
+        val key = rrTypeToRtType(rrType.key)
+        val value = rrTypeToRtType(rrType.value)
+        val self = lazy { rrTypeToRtType(rrType) }
+        val isTextKey = rrType.key is RR_Type.Primitive
+                && (rrType.key as RR_Type.Primitive).kind == RR_PrimitiveKind.TEXT
+        Rt_TypeGtvConversionLazy {
+            GtvRtConversion_Map(
+                typeName = name,
+                isTextKey = isTextKey,
+                keyConversion = lazy { key.gtvConversion!! },
+                valueConversion = lazy { value.gtvConversion!! },
+                rtType = self,
+            )
+        }
+    }
+
+    is RR_Type.Tuple -> {
+        val fieldRtTypes = rrType.fields.mapToImmList { rrTypeToRtType(it.type) }
+        val self = lazy { rrTypeToRtType(rrType) }
+        Rt_TypeGtvConversionLazy {
+            GtvRtConversion_Tuple(
+                typeName = name,
+                fieldNames = rrType.fields.mapToImmList { it.name },
+                fieldConversions = lazy { fieldRtTypes.mapToImmList { it.gtvConversion!! } },
+                rtType = self,
+            )
+        }
+    }
+
+    else -> null
+}
+
+/**
  * Convert an [Rt_Value] to [Gtv] using the given [R_Type]'s GTV conversion.
  * Public bridge for external modules (e.g., dokka) that need GTV serialization
  * but should not construct [Rt_Type] directly.
@@ -130,113 +243,6 @@ fun R_EnumDefinition.rtGetValue(attr: R_EnumAttr): Rt_Value {
 
 fun R_EnumDefinition.rtGetValueOrNull(index: Int): Rt_Value? = rtValues().getOrNull(index)
 
-// =============================================================================
-
-internal class Rt_TypeGtvConversionLazy(provider: () -> GtvRtConversion): Rt_TypeGtvConversion {
-    private val conv by lazy(provider)
-    override fun rtToGtv(value: Rt_Value, pretty: Boolean): Gtv = conv.rtToGtv(value, pretty)
-    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value = conv.gtvToRt(ctx, gtv)
-}
-
-// =============================================================================
-// RR_Type-based dispatch functions
-// =============================================================================
-
-/**
- * Build GTV conversion for the [rTypeToRtType] bridge.
- * Definition-backed types (entity/struct/enum/virtual) are handled inline with [rType] data.
- * Primitives, null, and composites delegate to the pure-RR [createGtvConversion].
- */
-private fun buildBridgeGtvConversion(rType: R_Type, rrType: RR_Type): Rt_TypeGtvConversion? {
-    return when (rType) {
-        is R_EntityType -> {
-            val entity = rType.rEntity
-            Rt_TypeGtvConversionLazy {
-                GtvRtConversion_Entity(
-                    rtType = lazy { rTypeToRtType(rType) },
-                    typeName = rType.strCode(),
-                    gtvCompatible = entity.flags.gtv,
-                    rEntity = entity,
-                )
-            }
-        }
-
-        is R_EnumType -> Rt_TypeGtvConversionLazy { GtvRtConversion_Enum(rType.enum) }
-        is R_StructType -> Rt_TypeGtvConversionLazy { GtvRtConversion_Struct(rType.struct) }
-        is R_VirtualStructType -> Rt_TypeGtvConversionLazy { GtvRtConversion_VirtualStruct(rType) }
-        is R_VirtualTupleType -> Rt_TypeGtvConversionLazy { GtvRtConversion_VirtualTuple(rType) }
-        is R_VirtualListType -> Rt_TypeGtvConversionLazy { GtvRtConversion_VirtualList(rType) }
-        is R_VirtualSetType -> Rt_TypeGtvConversionLazy { GtvRtConversion_VirtualSet(rType) }
-        is R_VirtualMapType -> Rt_TypeGtvConversionLazy { GtvRtConversion_VirtualMap(rType) }
-        is R_NullableType -> Rt_TypeGtvConversionLazy {
-            GtvRtConversion_Nullable(lazy { rTypeToRtType(rType.valueType).gtvConversion!! })
-        }
-
-        is R_TupleType -> Rt_TypeGtvConversionLazy {
-            GtvRtConversion_Tuple(
-                typeName = rType.strCode(),
-                fieldNames = rType.fields.mapToImmList { it.name?.str },
-                fieldConversions = lazy { rType.fields.mapToImmList { rTypeToRtType(it.type).gtvConversion!! } },
-                rtType = lazy { rTypeToRtType(rType) },
-            )
-        }
-
-        is R_ListType -> Rt_TypeGtvConversionLazy {
-            GtvRtConversion_List(
-                typeName = rType.strCode(),
-                elementConversion = lazy { rTypeToRtType(rType.elementType).gtvConversion!! },
-                rtType = lazy { rTypeToRtType(rType) },
-            )
-        }
-
-        is R_SetType -> Rt_TypeGtvConversionLazy {
-            GtvRtConversion_Set(
-                typeName = rType.strCode(),
-                elementConversion = lazy { rTypeToRtType(rType.elementType).gtvConversion!! },
-                rtType = lazy { rTypeToRtType(rType) },
-            )
-        }
-
-        is R_MapType -> Rt_TypeGtvConversionLazy {
-            GtvRtConversion_Map(
-                typeName = rType.strCode(),
-                isTextKey = rType.keyType is R_TextType,
-                keyConversion = lazy { rTypeToRtType(rType.keyType).gtvConversion!! },
-                valueConversion = lazy { rTypeToRtType(rType.valueType).gtvConversion!! },
-                rtType = lazy { rTypeToRtType(rType) },
-            )
-        }
-        // Primitives, null, and fallback: pure-RR dispatch
-        else -> {
-            val conv = createGtvConversion(rrType) ?: return null
-            Rt_TypeGtvConversionLazy { conv }
-        }
-    }
-}
-
-/**
- * Create GTV conversion purely from [RR_Type] — handles primitives and null only.
- * Returns null for types that require definition data (entity/struct/enum/virtual)
- * or composite recursion through R_Type (nullable/tuple/list/set/map).
- * The interpreter has its own full pure-RR equivalent.
- */
-internal fun createGtvConversion(rrType: RR_Type): GtvRtConversion? = when (rrType) {
-    is RR_Type.Primitive -> when (rrType.kind) {
-        RR_PrimitiveKind.BOOLEAN -> GtvRtConversion_Boolean
-        RR_PrimitiveKind.INTEGER -> GtvRtConversion_Integer
-        RR_PrimitiveKind.BIG_INTEGER -> GtvRtConversion_BigInteger
-        RR_PrimitiveKind.DECIMAL -> GtvRtConversion_Decimal
-        RR_PrimitiveKind.TEXT -> GtvRtConversion_Text
-        RR_PrimitiveKind.BYTE_ARRAY -> GtvRtConversion_ByteArray
-        RR_PrimitiveKind.ROWID -> GtvRtConversion_Rowid
-        RR_PrimitiveKind.JSON -> GtvRtConversion_Json
-        RR_PrimitiveKind.GTV -> GtvRtConversion_Gtv
-        else -> GtvRtConversion_None
-    }
-
-    is RR_Type.Null -> GtvRtConversion_Null
-    else -> null
-}
 
 /**
  * Build SQL adapter for the [rTypeToRtType] bridge.
@@ -462,11 +468,11 @@ private fun rTypeToRRType(rType: R_Type): RR_Type = when (rType) {
 }
 
 /** Convert an Rt_Value to RR_ConstantValue for compile-time constant storage. */
-fun rtValueToRRConstant(rType: R_Type, value: Rt_Value): RR_ConstantValue {
-    val rrType = rTypeToRRType(rType)
-    val gtvConversion = lazy { rTypeToRtType(rType).gtvConversion }
-    return rtValueToRRConstant(rrType, value, gtvConversion)
-}
+fun rtValueToRRConstant(rType: R_Type, value: Rt_Value): RR_ConstantValue = rtValueToRRConstant(
+    rrType = rTypeToRRType(rType),
+    value = value,
+    gtvConversion = lazy { rTypeToRtType(rType).gtvConversion },
+)
 
 /** Pure-RR overload — dispatches on [RR_Type], uses [gtvConversion] for complex types. */
 fun rtValueToRRConstant(

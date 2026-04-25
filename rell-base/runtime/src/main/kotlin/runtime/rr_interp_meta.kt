@@ -121,6 +121,7 @@ fun Rt_Interpreter.buildMetaGtv(): Gtv {
     fun <T> addDefs(m: MutableMap<String, Gtv>, key: String, defs: Map<String, T>, fn: (T) -> Gtv) {
         if (defs.isNotEmpty()) m[key] = defs.keys.sorted().associateWith { fn(defs.getValue(it)) }.g()
     }
+
     return mapOf(
         "modules" to rrApp.modules.associate { mod ->
             val name = mod.name.str()

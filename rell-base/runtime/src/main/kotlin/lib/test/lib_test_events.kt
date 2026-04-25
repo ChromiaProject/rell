@@ -7,29 +7,26 @@ package net.postchain.rell.base.lib.test
 import net.postchain.rell.base.lib.type.Rt_ListValue
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.R_GtvType
-import net.postchain.rell.base.model.R_TextType
-import net.postchain.rell.base.model.R_TupleType
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_TupleField
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.Rt_Type
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.runtime.rTypeToRtType
+import net.postchain.rell.base.runtime.rrTypeToRtType
 import net.postchain.rell.base.utils.toImmList
 
-/** RR_Type equivalent of `list<(text, gtv)>`. */
-private val EVENT_LIST_RR_TYPE: RR_Type = RR_Type.List(
-    RR_Type.Tuple(
-        listOf(
-            RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.TEXT)),
-            RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.GTV)),
-        ).toImmList()
-    )
+private val EVENT_TUPLE_RR_TYPE: RR_Type = RR_Type.Tuple(
+    listOf(
+        RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.TEXT)),
+        RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.GTV)),
+    ).toImmList()
 )
 
+/** RR_Type equivalent of `list<(text, gtv)>`. */
+private val EVENT_LIST_RR_TYPE: RR_Type = RR_Type.List(EVENT_TUPLE_RR_TYPE)
+
 object Lib_Test_Events {
-    val EVENT_TUPLE_TYPE: Rt_Type = rTypeToRtType(R_TupleType.make(R_TextType, R_GtvType))
+    val EVENT_TUPLE_TYPE: Rt_Type = rrTypeToRtType(EVENT_TUPLE_RR_TYPE)
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         alias(target = "rell.test.assert_events", since = "0.13.0")

@@ -4,20 +4,15 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.rell.base.lib.test.Rt_TestOpValue
 import net.postchain.rell.base.lib.type.Rt_BooleanValue
 import net.postchain.rell.base.lib.type.Rt_ListValue
 import net.postchain.rell.base.lib.type.Rt_MapValue
 import net.postchain.rell.base.lib.type.Rt_UnitValue
-import net.postchain.rell.base.model.*
-import net.postchain.rell.base.model.expr.*
-import net.postchain.rell.base.model.rr.RR_FunctionBase
+import net.postchain.rell.base.model.expr.R_PartialCallMapping
 import net.postchain.rell.base.model.rr.RR_FunctionCallTarget
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
 import net.postchain.rell.base.utils.LazyString
-import net.postchain.rell.base.utils.checkNull
-import net.postchain.rell.base.utils.mapIndexedToImmList
 
 /**
  * Recovers the display name from an RR_ sys-function key.
@@ -31,148 +26,44 @@ internal fun sysFnDisplayName(fnName: String): String {
     return fnName.substringBefore('#').substringBefore('@')
 }
 
-/**
- * Runtime dispatch for R_FunctionCallTarget — pattern-matching replacement
- * for the old virtual call() method on R_FunctionCallTarget subclasses.
- */
-fun callFunctionTarget(
-    target: R_FunctionCallTarget,
-    callCtx: Rt_CallContext,
-    baseValue: Rt_Value?,
-    values: List<Rt_Value>,
-): Rt_Value = when (target) {
-    is R_FunctionCallTarget_RegularUserFunction -> {
-        checkNull(baseValue)
-        callRoutineDefinition(target.fn, callCtx, values)
-    }
-
-    is R_FunctionCallTarget_AbstractUserFunction -> {
-        error("R_FunctionCallTarget_AbstractUserFunction dispatch removed")
-    }
-
-    is R_FunctionCallTarget_NativeUserFunction -> {
-        checkNull(baseValue)
-        val fn = callCtx.appCtx.nativeFunctions.getValue(target.fnName)
-        val nativeArgs = values.mapIndexedToImmList { i, value ->
-            rTypeToRtType(target.argTypes[i]).nativeConversion!!.rtToNative(value)
-        }
-        val nativeRes = fn.call(nativeArgs)
-        rTypeToRtType(target.resultType).nativeConversion!!.nativeToRt(nativeRes)
-    }
-
-    is R_FunctionCallTarget_Operation -> {
-        checkNull(baseValue)
-        val params = target.op.params()
-        val gtvArgs = values.mapIndexedToImmList { i, arg ->
-            params[i].validator?.check(arg)?.raise()
-            checkNotNull(arg.type().gtvConversion) { "No GTV conversion for ${arg.type().name}" }
-                .rtToGtv(arg, false)
-        }
-        Rt_TestOpValue(target.op.mountName, gtvArgs)
-    }
-
-    is R_FunctionCallTarget_FunctionValue -> {
-        val fnValue = getFnValueFromBase(baseValue)
-        fnValue.call(callCtx, values)
-    }
-
-    is R_FunctionCallTarget_SysGlobalFunction -> {
-        checkNull(baseValue)
-        val fn = target.fn as R_SysFunction
-        R_SysFunctionUtils.call(callCtx, fn, target.fullName, values)
-    }
-
-    is R_FunctionCallTarget_SysMemberFunction -> {
-        checkNotNull(baseValue)
-        val fn = target.fn as R_SysFunction
-        val values2 = listOf(baseValue) + values
-        R_SysFunctionUtils.call(callCtx, fn, target.fullName, values2)
-    }
-
-    is R_FunctionCallTarget_ExtendableUserFunction -> {
-        checkNull(baseValue)
-        val interpreter = callCtx.appCtx.interpreter
-        val extensions = interpreter.rrApp.functionExtensions[target.descriptor.uid.id].extensions
-        val rtCombiner = createExtendableCombiner(target.descriptor.combiner)
-        for (rrFnBase in extensions) {
-            val value = interpreter.callFunctionBase(rrFnBase, callCtx, values)
-            if (rtCombiner.addExtensionResult(value)) break
-        }
-        rtCombiner.getCombinedResult()
-    }
-
-    is Rt_FunctionCallTargetAdapter -> {
-        target.interpreter.callTarget(target.rrTarget, baseValue, values, target.outerFrame)
-    }
-
-    else -> throw IllegalArgumentException("Unknown R_FunctionCallTarget: ${target::class.simpleName}")
-}
-
 fun createFunctionValueFromTarget(
-    target: R_FunctionCallTarget,
+    target: Rt_FunctionCallTarget,
     resType: Rt_Type,
     mapping: R_PartialCallMapping,
     baseValue: Rt_Value?,
     args: List<Rt_Value>,
 ): Rt_Value {
-    // FunctionValue targets combine with existing function values
-    if (target is R_FunctionCallTarget_FunctionValue && baseValue != null && baseValue != Rt_NullValue) {
-        return baseValue.asFunction().combine(resType, mapping, args)
-    }
-    // RR adapter: check for FunctionValue variant
-    if (target is Rt_FunctionCallTargetAdapter && target.rrTarget is RR_FunctionCallTarget.FunctionValue
-        && baseValue != null && baseValue != Rt_NullValue
-    ) {
+    if (target.rrTarget is RR_FunctionCallTarget.FunctionValue && baseValue != null && baseValue != Rt_NullValue) {
         return baseValue.asFunction().combine(resType, mapping, args)
     }
     return Rt_FunctionValue(resType, mapping, target, baseValue, args)
 }
 
-fun functionTargetStr(target: R_FunctionCallTarget, baseValue: Rt_Value?, format: Rt_Value.StrFormat): String =
-    when (target) {
-        is R_FunctionCallTarget_RegularUserFunction -> target.fn.appLevelName
-        is R_FunctionCallTarget_AbstractUserFunction -> target.baseFn.appLevelName
-        is R_FunctionCallTarget_NativeUserFunction -> target.fnName.str()
-        is R_FunctionCallTarget_Operation -> target.op.appLevelName
-        is R_FunctionCallTarget_FunctionValue -> getFnValueFromBase(baseValue).str(format)
-        is R_FunctionCallTarget_SysGlobalFunction -> target.fullName.value
-        is R_FunctionCallTarget_SysMemberFunction -> target.fullName.value
-        is R_FunctionCallTarget_ExtendableUserFunction -> target.baseFn.appLevelName
-        is Rt_FunctionCallTargetAdapter -> {
-            if (target.rrTarget is RR_FunctionCallTarget.FunctionValue && baseValue != null && baseValue != Rt_NullValue) {
-                baseValue.asFunction().str(format)
-            } else {
-                rrFunctionCallTargetStr(target)
-            }
-        }
-
-        else -> target::class.simpleName ?: "unknown"
+fun Rt_FunctionCallTarget.targetStr(baseValue: Rt_Value?, format: Rt_Value.StrFormat): String {
+    if (rrTarget is RR_FunctionCallTarget.FunctionValue && baseValue != null && baseValue != Rt_NullValue) {
+        return baseValue.asFunction().str(format)
     }
+    return rrTargetName()
+}
 
-private fun rrFunctionCallTargetStr(target: Rt_FunctionCallTargetAdapter): String = when (val rr = target.rrTarget) {
-    is RR_FunctionCallTarget.RegularUser -> target.interpreter.rrApp.allFunctions[rr.fnDefIndex].base.appLevelName
-    is RR_FunctionCallTarget.RegularQuery -> target.interpreter.rrApp.allQueries[rr.queryDefIndex].base.appLevelName
-    is RR_FunctionCallTarget.AbstractUser -> target.interpreter.rrApp.allFunctions[rr.fnDefIndex].base.appLevelName
+fun Rt_FunctionCallTarget.targetStrCode(baseValue: Rt_Value?): String {
+    if (rrTarget is RR_FunctionCallTarget.FunctionValue && baseValue != null && baseValue != Rt_NullValue) {
+        return baseValue.asFunction().strCode()
+    }
+    return targetStr(baseValue, Rt_Value.StrFormat.V1)
+}
+
+private fun Rt_FunctionCallTarget.rrTargetName(): String = when (val rr = rrTarget) {
+    is RR_FunctionCallTarget.RegularUser -> interpreter.rrApp.allFunctions[rr.fnDefIndex].base.appLevelName
+    is RR_FunctionCallTarget.RegularQuery -> interpreter.rrApp.allQueries[rr.queryDefIndex].base.appLevelName
+    is RR_FunctionCallTarget.AbstractUser -> interpreter.rrApp.allFunctions[rr.fnDefIndex].base.appLevelName
     is RR_FunctionCallTarget.AbstractOverride -> "abstract_override"
     is RR_FunctionCallTarget.Extendable -> "extendable[${rr.extendableUidId}]"
     is RR_FunctionCallTarget.SysGlobal -> sysFnDisplayName(rr.fnName)
     is RR_FunctionCallTarget.SysMember -> sysFnDisplayName(rr.fnName)
-    is RR_FunctionCallTarget.Operation -> target.interpreter.rrApp.allOperations[rr.opDefIndex].base.appLevelName
+    is RR_FunctionCallTarget.Operation -> interpreter.rrApp.allOperations[rr.opDefIndex].base.appLevelName
     is RR_FunctionCallTarget.NativeUser -> rr.fullName.str()
     is RR_FunctionCallTarget.FunctionValue -> "function_value"
-}
-
-fun functionTargetStrCode(target: R_FunctionCallTarget, baseValue: Rt_Value?): String = when (target) {
-    is R_FunctionCallTarget_FunctionValue -> getFnValueFromBase(baseValue).strCode()
-    is Rt_FunctionCallTargetAdapter -> {
-        if (target.rrTarget is RR_FunctionCallTarget.FunctionValue && baseValue != null && baseValue != Rt_NullValue) {
-            baseValue.asFunction().strCode()
-        } else {
-            functionTargetStr(target, baseValue, Rt_Value.StrFormat.V1)
-        }
-    }
-
-    else -> functionTargetStr(target, baseValue, Rt_Value.StrFormat.V1)
 }
 
 // =============================================================================
@@ -223,14 +114,6 @@ object R_SysFunctionUtils {
             }
         }
     }
-}
-
-// =============================================================================
-
-private fun getFnValueFromBase(baseValue: Rt_Value?): Rt_FunctionValue {
-    checkNotNull(baseValue)
-    check(baseValue != Rt_NullValue)
-    return baseValue.asFunction()
 }
 
 // =============================================================================
@@ -313,64 +196,3 @@ class Rt_ExtendableFunctionCombiner_Map(private val mapType: Rt_Type): Rt_Extend
     }
 }
 
-fun createExtendableCombiner(combiner: R_ExtendableFunctionCombiner): Rt_ExtendableFunctionCombiner = when (combiner) {
-    is R_ExtendableFunctionCombiner_Unit -> Rt_ExtendableFunctionCombiner_Unit
-    is R_ExtendableFunctionCombiner_Boolean -> Rt_ExtendableFunctionCombiner_Boolean()
-    is R_ExtendableFunctionCombiner_Nullable -> Rt_ExtendableFunctionCombiner_Nullable()
-    is R_ExtendableFunctionCombiner_List -> Rt_ExtendableFunctionCombiner_List(rTypeToRtType(combiner.type))
-    is R_ExtendableFunctionCombiner_Map -> Rt_ExtendableFunctionCombiner_Map(rTypeToRtType(combiner.mapType))
-}
-
-// =============================================================================
-// Runtime dispatch for R_ model call() methods — moved from model/r_def_fn.kt
-// =============================================================================
-
-/** Dispatches a call on [R_RoutineDefinition] by concrete type. */
-fun callRoutineDefinition(routine: R_RoutineDefinition, callCtx: Rt_CallContext, args: List<Rt_Value>): Rt_Value =
-    when (routine) {
-        is R_FunctionDefinition -> error("R_FunctionDefinition dispatch removed: ${routine.appLevelName}")
-        is R_OperationDefinition -> throw Rt_Exception.common("call:operation", "Calling operation is not allowed")
-        is R_QueryDefinition -> callQueryDefinition(routine, callCtx, args)
-    }
-
-/** Calls an [RR_FunctionBase] via the RR interpreter. */
-fun Rt_Interpreter.callFunctionBase(fnBase: RR_FunctionBase, callCtx: Rt_CallContext, args: List<Rt_Value>): Rt_Value {
-    val frame = createFrame(
-        callCtx.defCtx.exeCtx,
-        fnBase.frame,
-        dbUpdateAllowed = callCtx.dbUpdateAllowed(),
-        fnBase.defId,
-    )
-    for (i in fnBase.paramVars.indices) {
-        frame.setUnchecked(fnBase.paramVars[i].ptr, args[i], false)
-    }
-    val result = executeStmt(fnBase.body, frame)
-    return if (result is R_StatementResult_Return) result.value ?: Rt_UnitValue else Rt_UnitValue
-}
-
-/** Calls an [R_QueryDefinition] via its body. */
-private fun callQueryDefinition(query: R_QueryDefinition, callCtx: Rt_CallContext, args: List<Rt_Value>): Rt_Value {
-    val body = query.bodyLate.get()
-    checkCallArgs(query.appLevelName, body.params, args)
-    val subDefCtx = Rt_DefinitionContext(callCtx.defCtx.exeCtx, false, query.defId)
-    return callQueryBody(body, subDefCtx, args)
-}
-
-/** Calls an [R_QueryBody] by concrete type. */
-private fun callQueryBody(body: R_QueryBody, defCtx: Rt_DefinitionContext, args: List<Rt_Value>): Rt_Value =
-    when (body) {
-        is R_UserQueryBody -> throw UnsupportedOperationException("Use RR interpreter; R_Statement.execute() removed")
-        is R_SysQueryBody -> {
-            val callCtx = Rt_CallContext(defCtx, dbUpdateAllowed = false)
-            (body.fn as R_SysFunction).call(callCtx, args)
-        }
-    }
-
-private fun checkCallArgs(name: String, params: List<R_FunctionParam>, args: List<Rt_Value>) {
-    if (args.size != params.size) {
-        throw Rt_Exception.common(
-            "fn_wrong_arg_count:$name:${params.size}:${args.size}",
-            "Wrong number of arguments for '$name': ${args.size} instead of ${params.size}",
-        )
-    }
-}

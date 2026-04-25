@@ -141,9 +141,9 @@ internal object Lib_Test_Assert {
                 """)
                 generic("T")
                 param("fn", type = "() -> T", comment = "the function value to invoke")
-                bodyContext { ctx, arg ->
+                bodyContext { _, arg ->
                     val fn = arg.asFunction()
-                    calcAssertFails(ctx, fn, null)
+                    calcAssertFails(fn, null)
                 }
             }
 
@@ -175,10 +175,10 @@ internal object Lib_Test_Assert {
                     comment("the expected substring of the error message")
                 }
                 param("fn", type = "() -> T", comment = "the function value to invoke")
-                bodyContext { ctx, arg1, arg2 ->
+                bodyContext { _, arg1, arg2 ->
                     val expected = arg1.asString()
                     val fn = arg2.asFunction()
-                    calcAssertFails(ctx, fn, expected)
+                    calcAssertFails(fn, expected)
                 }
             }
 
@@ -291,10 +291,10 @@ internal object Lib_Test_Assert {
         return Rt_UnitValue
     }
 
-    private fun calcAssertFails(ctx: Rt_CallContext, fn: Rt_FunctionValue, expected: String?): Rt_Value {
+    private fun calcAssertFails(fn: Rt_FunctionValue, expected: String?): Rt_Value {
         var err: Rt_Error? = null
         try {
-            fn.call(ctx, immListOf())
+            fn.call(immListOf())
         } catch (e: Rt_Exception) {
             if (e.err is Rt_AssertError) {
                 throw e

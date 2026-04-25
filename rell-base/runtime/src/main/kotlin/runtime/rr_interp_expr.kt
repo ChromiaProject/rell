@@ -127,7 +127,7 @@ fun Rt_Interpreter.evaluateFunctionCall(expr: RR_Expr.FunctionCall, frame: Rt_Ca
                     }
                 }
                 val mapping = R_PartialCallMapping(values.size, call.wildArgCount, mappingArgs)
-                val rTarget = Rt_FunctionCallTargetAdapter(this, call.target, frame)
+                val rTarget = Rt_FunctionCallTarget(this, call.target, frame)
                 createFunctionValueFromTarget(rTarget, rtType, mapping, base, values)
             }
         }
@@ -189,7 +189,7 @@ fun Rt_Interpreter.evaluateMemberCalculator(
                     }
                 }
                 val mapping = R_PartialCallMapping(values.size, call.wildArgCount, mappingArgs)
-                val rTarget = Rt_FunctionCallTargetAdapter(this, call.target, frame)
+                val rTarget = Rt_FunctionCallTarget(this, call.target, frame)
                 createFunctionValueFromTarget(rTarget, rtType, mapping, base, values)
             }
         }

@@ -12,7 +12,6 @@ import net.postchain.rell.base.lmodel.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.mtype.*
-import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.futures.FcFuture
@@ -86,7 +85,7 @@ private class Ld_TypeDefMember_Constant(
 ): Ld_TypeDefMember(DocSymbolKind.CONSTANT, simpleName, memberHeader) {
     override fun finish0(ctx: Ld_TypeFinishContext, hdr: Ld_MemberHeader.Finish): List<L_TypeDefMember> {
         val lConstant = constant.finish(ctx, simpleName)
-        val doc = Ld_DocSymbols.constant(hdr, lConstant.rType, lConstant.value as Rt_Value)
+        val doc = Ld_DocSymbols.constant(hdr, lConstant.rType, lConstant.docSource)
         return immListOf(L_TypeDefMember_Constant(hdr.fullName, hdr.lHeader, doc, lConstant))
     }
 }
