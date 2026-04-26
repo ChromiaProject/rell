@@ -88,7 +88,7 @@ private class GtvToRtState(
         val tableName = rrEntity.sqlMapping.table(sqlCtx)
         val sql = "SELECT \"${rrEntity.sqlMapping.rowidColumn}\" FROM \"$tableName\" WHERE $whereSql;"
         val existingIds = mutableSetOf<Long>()
-        sqlExec.executeQuery(sql, {}) { existingIds.add(it.getLong(1)) }
+        sqlExec.executeQuery(ParameterizedSql(sql, immListOf())) { existingIds.add(it.getLong(1)) }
         val missingIds = rowids.toSet() - existingIds
         if (missingIds.isNotEmpty()) {
             val name = rrEntity.base.appLevelName
@@ -127,7 +127,7 @@ private class GtvToRtState(
 
         val sql = rEntity.sqlMapping.selectExistingObjects(sqlCtx, whereSql)
         val existingIds = mutableSetOf<Long>()
-        sqlExec.executeQuery(sql, {}) { existingIds.add(it.getLong(1)) }
+        sqlExec.executeQuery(ParameterizedSql(sql, immListOf())) { existingIds.add(it.getLong(1)) }
         return existingIds
     }
 }

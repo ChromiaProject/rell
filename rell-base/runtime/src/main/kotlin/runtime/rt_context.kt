@@ -141,7 +141,12 @@ class Rt_RegularSqlContext private constructor(
 
         private fun loadDatabaseBlockchains(sqlExec: SqlExecutor): Map<Long, ByteArray> {
             val res = mutableMapOf<Long, ByteArray>()
-            sqlExec.executeQuery("SELECT chain_iid, blockchain_rid FROM blockchains ORDER BY chain_iid;", {}) { rs ->
+            sqlExec.executeQuery(
+                ParameterizedSql(
+                    "SELECT chain_iid, blockchain_rid FROM blockchains ORDER BY chain_iid;",
+                    immListOf(),
+                ),
+            ) { rs ->
                 val chainId = rs.getLong(1)
                 val rid = rs.getBytes(2)!!
                 check(chainId !in res)

@@ -1,13 +1,16 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
+@file:OptIn(RawSqlAccess::class)
 
 package net.postchain.rell.base.testutils
 
 import com.google.common.collect.HashMultimap
 import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.model.rr.RR_EntityDefinition
+import net.postchain.rell.base.runtime.RawSqlBoundQuery
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
+import net.postchain.rell.base.runtime.RawSqlStatement
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.*
 import org.postgresql.util.PGobject
@@ -37,6 +40,7 @@ object SqlTestUtils {
      *
      * Also, guarantees that all previous test schemas are dropped, and the database is vacuumed.
      */
+    @Suppress("ConvertTryFinallyToUseCall")
     @Throws(SQLException::class)
     fun createIsolatedSchemaConnection(): Connection {
         val schema = SqlSchemaUtils.generateSchemaName()
@@ -142,22 +146,24 @@ object SqlTestUtils {
 
     fun resetRowid(sqlExec: SqlExecutor, chainMapping: Rt_ChainSqlMapping) {
         val table = chainMapping.rowidTable
-        sqlExec.execute("""UPDATE "$table" SET last_value = 0;""")
+
+        @Suppress("SqlWithoutWhere")
+        sqlExec.execute(RawSqlStatement("""UPDATE "$table" SET last_value = 0;"""))
     }
 
     fun clearTables(sqlExec: SqlExecutor) {
         val tables = SqlUtils.getExistingTables(sqlExec)
         val sql = tables.joinToString("\n") { "TRUNCATE \"$it\" CASCADE;" }
-        sqlExec.execute(sql)
+        sqlExec.execute(RawSqlStatement(sql))
     }
 
     fun createSysAppTables(sqlExec: SqlExecutor) {
-        sqlExec.execute("""
+        sqlExec.execute(RawSqlStatement("""
             CREATE TABLE IF NOT EXISTS "blockchains"(
                 chain_iid BIGINT PRIMARY KEY,
                 blockchain_rid BYTEA NOT NULL
             );
-        """)
+        """))
     }
 
     /** Creates tables that normally shall be created by Postchain, but this project can't call it, so creating
@@ -166,7 +172,7 @@ object SqlTestUtils {
         val blocksTable = "c$chainId.blocks"
         val transactionsTable = "c$chainId.transactions"
 
-        sqlExec.execute("""
+        sqlExec.execute(RawSqlStatement("""
             CREATE TABLE IF NOT EXISTS "$blocksTable"(
                 block_iid BIGSERIAL PRIMARY KEY,
                 block_height BIGINT NOT NULL,
@@ -175,9 +181,9 @@ object SqlTestUtils {
                 UNIQUE (block_rid),
                 UNIQUE (block_height)
             );
-        """)
+        """))
 
-        sqlExec.execute("""
+        sqlExec.execute(RawSqlStatement("""
             CREATE TABLE IF NOT EXISTS "$transactionsTable"(
                 tx_iid BIGSERIAL PRIMARY KEY,
                 tx_rid BYTEA NOT NULL,
@@ -187,7 +193,7 @@ object SqlTestUtils {
                 block_iid bigint NOT NULL REFERENCES "$blocksTable"(block_iid),
                 UNIQUE (tx_rid)
             );
-        """)
+        """))
     }
 
     fun mkins(table: String, columns: String, values: String): String {
@@ -226,7 +232,7 @@ object SqlTestUtils {
 
     fun dumpSql(sqlExec: SqlExecutor, sql: String): List<String> {
         val list = mutableListOf<String>()
-        sqlExec.executeQuery(sql, {}) { rs -> list.add(dumpSqlRecord(rs)) }
+        sqlExec.executeQuery(RawSqlBoundQuery(sql)) { rs -> list.add(dumpSqlRecord(rs)) }
         return list
     }
 
@@ -244,8 +250,7 @@ object SqlTestUtils {
         val values = mutableListOf<String>()
 
         for (idx in 1..row.metaData.columnCount) {
-            val value = row.getObject(idx)
-            val str = when (value) {
+            val str = when (val value = row.getObject(idx)) {
                 is String -> value
                 is ByteArray -> "0x" + CommonUtils.bytesToHex(row.getBytes(idx)!!)
                 is PGobject -> value.value

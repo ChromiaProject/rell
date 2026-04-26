@@ -19,6 +19,8 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.SqlUtils.getExistingSizeConstraints
 import net.postchain.rell.base.sql.SqlUtils.recordsExist
 import net.postchain.rell.base.utils.*
+import org.jooq.Field
+import org.jooq.impl.DSL
 import java.security.MessageDigest
 
 private val ORD_TABLES = SqlInitStepOrder.TABLES
@@ -111,12 +113,15 @@ class SqlInit private constructor(
 
         for (entity in allEntities) {
             val tableName = entity.sqlMapping.table(sqlCtx)
-            exeCtx.sysSqlExec.execute("""DROP TABLE IF EXISTS "$tableName" CASCADE;""")
+            val drop = JOOQ_CTX.dropTableIfExists(DSL.name(tableName)).cascade()
+            exeCtx.sysSqlExec.execute(JooqDdlStatement(drop))
         }
 
         val mapping = sqlCtx.mainChainMapping()
-        exeCtx.sysSqlExec.execute("""DELETE FROM "${mapping.metaEntitiesTable}";""")
-        exeCtx.sysSqlExec.execute("""DELETE FROM "${mapping.metaAttributesTable}";""")
+        for (metaTable in listOf(mapping.metaEntitiesTable, mapping.metaAttributesTable)) {
+            val del = JOOQ_CTX.deleteFrom(DSL.table(DSL.name(metaTable)))
+            exeCtx.sysSqlExec.execute(JooqDdlStatement(del))
+        }
     }
 
     private fun executePlan(dbEmpty: Boolean) {
@@ -186,7 +191,7 @@ private class SqlInitPlanner private constructor(
 
     private fun processMeta(metaExists: Boolean, tables: Map<String, SqlTable>): ImmMap<String, MetaEntity> {
         if (!metaExists) {
-            initCtx.step(ORD_TABLES, "Create ROWID table and function", SqlStepAction_ExecSql(SqlGen.genRowidSql(mapping)))
+            initCtx.step(ORD_TABLES, "Create ROWID table and function", SqlStepAction_ExecSql(SqlGen.genRowidSql(mapping).toImmList()))
             initCtx.step(ORD_TABLES, "Create meta tables", SqlStepAction_ExecSql(SqlMeta.genMetaTablesCreate(sqlCtx)))
         }
 
@@ -271,7 +276,7 @@ private class SqlEntityIniter private constructor(
     }
 
     private fun processNewEntity(entity: RR_EntityDefinition, type: MetaEntityType) {
-        val sqls = mutableListOf<String>()
+        val sqls = mutableListOf<ExecutableSql>()
         sqls += SqlGen.genEntity(sqlCtx, entity, interpreter, !initCtx.isSnapshot)
 
         val id = nextMetaEntityId++
@@ -431,14 +436,14 @@ private class SqlEntityIniter private constructor(
         val sqlEntityName = "c0.$metaName"
         val msgEntityName = msgEntityName(entity)
         val rrAttr = entity.strAttributes[attrName]!!
-        val constraintSql = SqlGen.genSizeCheckConstraint(
+        val constraintObj = SqlGen.genSizeCheckConstraint(
             sqlConstraintName(entity.mountName.str(), attrName),
             rrAttr.sqlMapping,
             sizeConstraint,
         )
-        val addNewConstraintSql = "ALTER TABLE \"$sqlEntityName\" ADD $constraintSql;"
+        val stmt = JooqDdlStatement(JOOQ_CTX.alterTable(DSL.name(sqlEntityName)).add(constraintObj))
         initCtx.step(ORD_RECORDS, "Add attribute size constraint for $msgEntityName: $attrName",
-            SqlStepAction_ExecSql(addNewConstraintSql))
+            SqlStepAction_ExecSql(stmt))
     }
 
     private fun dropDbConstraint(entity: RR_EntityDefinition, attrName: String) {
@@ -446,9 +451,11 @@ private class SqlEntityIniter private constructor(
         val sqlEntityName = "c0.$metaName"
         val msgEntityName = msgEntityName(entity)
         val constraintName = sqlConstraintName(entity.mountName.str(), attrName)
-        val dropOldConstraintSql = "ALTER TABLE \"$sqlEntityName\" DROP CONSTRAINT \"$constraintName\";"
+        val stmt = JooqDdlStatement(
+            JOOQ_CTX.alterTable(DSL.name(sqlEntityName)).dropConstraint(DSL.name(constraintName))
+        )
         initCtx.step(ORD_RECORDS, "Drop attribute size constraint for $msgEntityName: $attrName",
-            SqlStepAction_ExecSql(dropOldConstraintSql))
+            SqlStepAction_ExecSql(stmt))
     }
 
     private fun processNewAttrs(entity: RR_EntityDefinition, metaEntityId: Int, newAttrs: List<String>) {
@@ -541,18 +548,20 @@ private class SqlEntityIniter private constructor(
 
         for (sqlKey in sqlKeys) {
             if (SqlIndexId(sqlKey) !in codeIndexIds) {
-                val sql = "ALTER TABLE \"${tableName}\" DROP CONSTRAINT \"${sqlKey.name}\";"
+                val stmt = JooqDdlStatement(
+                    JOOQ_CTX.alterTable(DSL.name(tableName)).dropConstraint(DSL.name(sqlKey.name))
+                )
                 val msg = "Drop key of entity $entityName: ${sqlKey.name} ${sqlKey.cols}"
-                initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(sql))
+                initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(stmt))
                 processIndexDiff(entity, sqlKey.cols, "key", "database", "code")
             }
         }
 
         for (sqlIndex in sqlIndexes) {
             if (SqlIndexId(sqlIndex) !in codeIndexIds) {
-                val sql = "DROP INDEX \"${sqlIndex.name}\";"
+                val stmt = JooqDdlStatement(JOOQ_CTX.dropIndex(DSL.name(sqlIndex.name)))
                 val msg = "Drop index of entity $entityName: ${sqlIndex.name} ${sqlIndex.cols}"
-                initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(sql))
+                initCtx.step(ORD_RECORDS, msg, SqlStepAction_ExecSql(stmt))
                 processIndexDiff(entity, sqlIndex.cols, "index", "database", "code")
             }
         }
@@ -685,12 +694,11 @@ private sealed class SqlStepAction {
     abstract fun run(ctx: SqlStepCtx)
 }
 
-private class SqlStepAction_ExecSql(private val sqls: ImmList<String>): SqlStepAction() {
-    constructor(sql: String): this(immListOf(sql))
+private class SqlStepAction_ExecSql(private val sqls: ImmList<ExecutableSql>): SqlStepAction() {
+    constructor(sql: ExecutableSql): this(immListOf(sql))
 
     override fun run(ctx: SqlStepCtx) {
-        val sql = SqlGen.joinSqls(sqls)
-        ctx.sqlExec.execute(sql)
+        for (s in sqls) ctx.sqlExec.execute(s)
     }
 }
 
@@ -721,69 +729,71 @@ private class SqlStepAction_AddColumns_AlterTable(
     override fun run(ctx: SqlStepCtx) {
         val defCtx = Rt_DefinitionContext(ctx.exeCtx, true, entity.base.defId)
         val frame = Rt_CallFrame(defCtx, entity.base.initFrame, null)
-        val sql = buildAddColumnsSql(frame, entity, attrs, existingRecs, isSnapshot, interpreter)
-        sql.execute(frame.sysSqlExec)
+        val statements = buildAddColumnsStatements(frame, entity, attrs, existingRecs, isSnapshot, interpreter)
+        for (s in statements) frame.sysSqlExec.execute(s)
     }
 }
 
 /**
- * Builds SQL for adding columns to an existing entity table.
+ * Builds the sequence of statements for adding columns to an existing entity table:
+ * one ALTER TABLE … ADD COLUMN per attr; if rows exist, an UPDATE that fills defaults followed by
+ * one ALTER TABLE … SET NOT NULL per attr; finally a single ALTER TABLE … ADD CONSTRAINT … for
+ * any constraints attached to the new attrs. Each statement runs on its own round-trip.
  */
-private fun buildAddColumnsSql(
+private fun buildAddColumnsStatements(
     frame: Rt_CallFrame,
     entity: RR_EntityDefinition,
     attrs: List<RR_CreateExprAttr>,
     existingRecs: Boolean,
     isSnapshot: Boolean,
     interpreter: Rt_Interpreter,
-): ParameterizedSql {
+): List<ExecutableSql> {
     val sqlCtx = frame.defCtx.sqlCtx
     val table = entity.sqlMapping.table(sqlCtx)
 
-    val b = SqlBuilder()
-
+    val statements = mutableListOf<ExecutableSql>()
     for (exprAttr in attrs) {
-        val columnSql = SqlGen.genAddColumnSql(table, exprAttr.attr, interpreter, existingRecs)
-        b.append(columnSql)
-        b.append(";\n")
+        statements += SqlGen.genAddColumnSql(table, exprAttr.attr, interpreter, existingRecs)
     }
 
     if (existingRecs) {
-        b.append("UPDATE ")
-        b.appendName(table)
-        b.append(" SET ")
-        b.append(attrs, ", ") { exprAttr ->
+        val tableRef = DSL.table(DSL.name(table))
+        val updateMap = LinkedHashMap<Field<*>, Field<*>>()
+        // Plain-SQL `?` field: jOOQ treats it as opaque text (not a tracked Param), so the literal
+        // `?` flows through `renderJooq` (INDEXED ParamType) into the rendered SQL where the
+        // runtime's parallel `binds` list is bound positionally via JDBC. Same convention is used
+        // in sql_init_obj.kt and rt_utils_sql.kt.
+        val placeholder: Field<Any> = DSL.field("?", Any::class.java)
+        val binds = mutableListOf<Rt_Value>()
+        for (exprAttr in attrs) {
             val attr = exprAttr.attr
             val defaultExpr = checkNotNull(attr.defaultExpr) {
                 "Attribute '${attr.name}' has no default value but records exist"
             }
             val defCtx = Rt_DefinitionContext(frame.defCtx.exeCtx, frame.defCtx.dbUpdateAllowed, entity.base.defId)
             val initFrame = Rt_CallFrame(defCtx, entity.base.initFrame, null)
-            val value = interpreter.evaluateExpr(defaultExpr, initFrame)
-            b.appendName(attr.sqlMapping)
-            b.append(" = ")
-            b.append(value)
+            binds.add(interpreter.evaluateExpr(defaultExpr, initFrame))
+            updateMap[DSL.field(DSL.name(attr.sqlMapping))] = placeholder
         }
-        b.append(";\n")
+        val updateQ = JOOQ_CTX.updateQuery(tableRef)
+        updateQ.addValues(updateMap)
+        statements += ParameterizedSql(renderJooq(updateQ), binds.toImmList())
 
         if (!isSnapshot) {
             for (exprAttr in attrs) {
-                b.append("ALTER TABLE ")
-                b.appendName(table)
-                b.append(" ALTER COLUMN ")
-                b.appendName(exprAttr.attr.sqlMapping)
-                b.append(" SET NOT NULL;\n")
+                statements += JooqDdlStatement(
+                    JOOQ_CTX.alterTable(DSL.name(table))
+                        .alter(DSL.field(DSL.name(exprAttr.attr.sqlMapping)))
+                        .setNotNull()
+                )
             }
         }
     }
 
     val constraintsSql = SqlGen.genAddAttrConstraintsSql(sqlCtx, entity, interpreter, attrs.map { it.attr }, !isSnapshot)
-    if (constraintsSql.isNotEmpty()) {
-        b.append(constraintsSql)
-        b.append(";\n")
-    }
+    if (constraintsSql != null) statements += constraintsSql
 
-    return b.build()
+    return statements
 }
 
 private class SqlStepAction_DropColumns(
@@ -792,8 +802,7 @@ private class SqlStepAction_DropColumns(
 ): SqlStepAction() {
     override fun run(ctx: SqlStepCtx) {
         val tableName = entity.sqlMapping.table(ctx.sqlCtx)
-        val sql = SqlGen.genDropColumnsSql(tableName, attrNames)
-        ctx.sqlExec.execute(sql)
+        ctx.sqlExec.execute(SqlGen.genDropColumnsSql(tableName, attrNames))
     }
 }
 

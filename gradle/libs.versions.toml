@@ -5,6 +5,7 @@ kotlinx-benchmark = "0.4.16"
 kandy = "0.8.3"
 
 flatbuffers = "25.2.10"
+jooq = "3.19.15"
 
 better-parse = "0.4.4"
 kotlinx-collections-immutable = "0.4.0"
@@ -70,7 +71,7 @@ postchain-base = { module = "net.postchain:postchain-base" }
 postchain-devtools = { module = "net.postchain:postchain-devtools" }
 guava = { module = "com.google.guava:guava" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
-jooq = { module = "org.jooq:jooq" }
+jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
 postgresql = { module = "org.postgresql:postgresql" }
 bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on" }
 kotlinLogging = { module = "io.github.microutils:kotlin-logging-jvm" }

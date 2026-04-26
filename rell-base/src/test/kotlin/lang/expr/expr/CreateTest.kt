@@ -386,12 +386,12 @@ class CreateTest: BaseRellTest(useSql = true) {
 
     companion object {
         private val SLOW_ROWID_REGEX = arrayOf(
-            """\QINSERT INTO "c0.data"("rowid", "x") VALUES ("c0.make_rowid"(), ?)\E.*""",
+            """\QINSERT INTO "c0.data" ("rowid", "x") VALUES ("c0.make_rowid"(), ?)\E.*""",
         )
 
         private val FAST_ROWID_REGEX = arrayOf(
             """\QSELECT "c0.make_rowids"(?)\E""",
-            """\QINSERT INTO "c0.data"("rowid", "x") VALUES (?, ?), (?, ?), (?, ?)\E.*""",
+            """\QINSERT INTO "c0.data" ("rowid", "x") VALUES (?, ?), (?, ?), (?, ?)\E.*""",
         )
     }
 }

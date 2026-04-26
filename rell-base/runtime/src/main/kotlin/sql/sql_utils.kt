@@ -8,6 +8,7 @@ import com.google.common.collect.HashMultimap
 import net.postchain.rell.base.model.rr.RR_EntityDefinition
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.*
+import org.jooq.impl.DSL
 import java.sql.Connection
 import java.util.regex.Pattern
 
@@ -32,15 +33,21 @@ object SqlUtils {
         val delTables = tables
             .filter { sysTables || it !in SqlConstants.SYSTEM_APP_TABLES }
             .filter { !it.startsWith("pg_") }
-        val sql = delTables.joinToString("\n") { "DROP TABLE IF EXISTS \"$it\" CASCADE;" }
-        sqlExec.execute(sql)
+        for (t in delTables) {
+            val drop = JOOQ_CTX.dropTableIfExists(DSL.name(t)).cascade()
+            sqlExec.execute(JooqDdlStatement(drop))
+        }
     }
 
     private fun dropFunctions(sqlExec: SqlExecutor) {
         val functions = getExistingFunctions(sqlExec)
         val delFunctions = functions.filter { !it.startsWith("pg_") }
-        val sql = delFunctions.joinToString("\n") { "DROP FUNCTION \"$it\";" }
-        sqlExec.execute(sql)
+        // jOOQ has no first-class `DROP FUNCTION <name>` (without a signature) builder for PG,
+        // so build via parameterised template — `{0}` substitutes a quoted identifier.
+        for (fn in delFunctions) {
+            val drop = DSL.query("DROP FUNCTION {0}", DSL.name(fn))
+            sqlExec.execute(JooqDdlStatement(drop))
+        }
     }
 
     fun getExistingTables(sqlExec: SqlExecutor): List<String> {
@@ -48,7 +55,7 @@ object SqlUtils {
         val sql = "SELECT table_name FROM information_schema.tables WHERE $where;"
 
         return buildList {
-            sqlExec.executeQuery(sql, {}) { rs -> add(rs.getString(1)!!) }
+            sqlExec.executeQuery(ParameterizedSql(sql, immListOf())) { rs -> add(rs.getString(1)!!) }
         }
     }
 
@@ -63,7 +70,7 @@ object SqlUtils {
             WHERE nsp.nspname = '$schemaName' AND rel.relname = '$tableName' AND con.conname LIKE '%:size';
         """
         val out = buildList {
-            sqlExec.executeQuery(sql, {}) { rs ->
+            sqlExec.executeQuery(ParameterizedSql(sql, immListOf())) { rs ->
                 val constraint = rs.getString(1)!!
                 val attr = rs.getString(2)!!
                 val (min, max) = extractSizeConstraint(rs.getString(3)!!)
@@ -87,7 +94,7 @@ object SqlUtils {
         val where = "routine_catalog = CURRENT_DATABASE() AND routine_schema = CURRENT_SCHEMA()"
         val sql = "SELECT routine_name FROM information_schema.routines WHERE $where;"
         return buildList {
-            sqlExec.executeQuery(sql, {}) { rs -> add(rs.getString(1)!!) }
+            sqlExec.executeQuery(ParameterizedSql(sql, immListOf())) { rs -> add(rs.getString(1)!!) }
         }
     }
 
@@ -164,7 +171,7 @@ object SqlUtils {
         val table = entity.sqlMapping.table(sqlCtx)
         val sql = """SELECT "${SqlConstants.ROWID_COLUMN}" FROM "$table" LIMIT 1;"""
         var res = false
-        sqlExec.executeQuery(sql, {}) { res = true }
+        sqlExec.executeQuery(ParameterizedSql(sql, immListOf())) { res = true }
         return res
     }
 

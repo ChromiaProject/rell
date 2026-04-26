@@ -1,17 +1,14 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
+@file:OptIn(RawSqlAccess::class)
 
 package net.postchain.rell.base.sql
 
 import net.postchain.rell.base.model.Index
 import net.postchain.rell.base.model.Key
-import net.postchain.rell.base.model.R_SizeAttrValidator
 import net.postchain.rell.base.model.rr.*
-import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
-import net.postchain.rell.base.runtime.Rt_Interpreter
-import net.postchain.rell.base.runtime.Rt_SqlContext
-import net.postchain.rell.base.runtime.table
+import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.immMapOf
 import org.jooq.*
 import org.jooq.impl.DSL
@@ -19,14 +16,10 @@ import org.jooq.impl.DSL.constraint
 import org.jooq.impl.SQLDataType
 
 object SqlGen {
-    // Needed to disable jooq output.
-    @Suppress("unused")
-    private val disableLogo = run {
+    init {
         System.setProperty("org.jooq.no-logo", "true")
         System.setProperty("org.jooq.no-tips", "true")
     }
-
-    val DSL_CTX: DSLContext = DSL.using(SQLDialect.POSTGRES)
 
     // (!) When changing a function, change its name e.g. to fn_v2. Functions in the database are not upgraded - a function is created
     // only once, if there is no function with the same name in the database.
@@ -55,7 +48,7 @@ object SqlGen {
         genFunctionJsonSize(SqlConstants.FN_JSON_SIZE),
     )
 
-    private fun genFunctionJsonSize(name: String): Pair<String, String> = name to """
+    private fun genFunctionJsonSize(name: String): Pair<String, ExecutableSql> = name to RawSqlStatement("""
         CREATE FUNCTION "$name"(value JSONB) RETURNS BIGINT AS $$
         DECLARE type TEXT;
         BEGIN
@@ -66,7 +59,7 @@ object SqlGen {
             END IF;
         END;
         $$ LANGUAGE PLPGSQL IMMUTABLE;
-    """.trimIndent()
+    """.trimIndent())
 
     private fun genFunctionJsonAsType(
         name: String,
@@ -74,16 +67,16 @@ object SqlGen {
         testCode: String,
         errMsgOrNull: String?,
         valueExtractor: (String) -> String = { "($it :: $sqlType)" },
-    ): Pair<String, String> {
+    ): Pair<String, ExecutableSql> {
         val badValueStmt = if (errMsgOrNull == null) "RETURN NULL" else "RAISE EXCEPTION '$errMsgOrNull: %', value"
-        return name to """
+        return name to RawSqlStatement("""
             CREATE FUNCTION "$name"(value JSONB) RETURNS $sqlType AS $$
             BEGIN
                 IF NOT ($testCode) THEN $badValueStmt; END IF;
                 RETURN ${valueExtractor("value")};
             END;
             $$ LANGUAGE PLPGSQL IMMUTABLE;
-        """.trimIndent()
+        """.trimIndent())
     }
 
     private const val INTEGRAL_TEST = "(value :: TEXT) ~ '^-?\\d+$'"
@@ -91,13 +84,13 @@ object SqlGen {
     private const val TEXT_TEST = "JSONB_TYPEOF(value) = 'string'"
     private fun textExtractor(value: String): String = "($value #>> '{}')"
 
-    private fun genFunctionJsonArrayGet(name: String, isNullableVariant: Boolean = false): Pair<String, String> {
+    private fun genFunctionJsonArrayGet(name: String, isNullableVariant: Boolean = false): Pair<String, ExecutableSql> {
         val badIndexStmt = if (isNullableVariant) "RETURN NULL" else "RAISE EXCEPTION 'bad index: %', index"
         val outOfBoundsStmt = if (isNullableVariant) "RETURN NULL" else "RAISE EXCEPTION 'out of bounds: %', index"
         // We need to check if the index is within the bounds of PostgreSQL's INT (as opposed to BIGINT which is
         // equivalent to Rell's integer type), because the cast to INT will raise an exception otherwise. That's fine
         // for the throwing variant, but not what we want for the nullable variant.
-        return name to """
+        return name to RawSqlStatement("""
                 CREATE FUNCTION "$name"(value JSONB, index BIGINT) RETURNS JSONB AS $$
                 DECLARE res JSONB;
                 BEGIN
@@ -107,10 +100,10 @@ object SqlGen {
                     RETURN res;
                 END;
                 $$ LANGUAGE PLPGSQL IMMUTABLE;
-            """.trimIndent()
+            """.trimIndent())
     }
 
-    private fun genFunctionJsonObjectGet(name: String): Pair<String, String> = name to """
+    private fun genFunctionJsonObjectGet(name: String): Pair<String, ExecutableSql> = name to RawSqlStatement("""
             CREATE FUNCTION "$name"(value JSONB, key TEXT) RETURNS JSONB AS $$
             DECLARE res JSONB;
             BEGIN
@@ -119,72 +112,72 @@ object SqlGen {
                 RETURN res;
             END;
             $$ LANGUAGE PLPGSQL IMMUTABLE;
-        """.trimIndent()
+        """.trimIndent())
 
-    private fun genFunctionIntegerPower(): Pair<String, String> {
+    private fun genFunctionIntegerPower(): Pair<String, ExecutableSql> {
         val name = SqlConstants.FN_INTEGER_POWER
-        return name to """
+        return name to RawSqlStatement("""
                 CREATE FUNCTION "$name"(base BIGINT, exp BIGINT) RETURNS BIGINT AS $$
                 BEGIN
                     IF exp < 0 THEN RAISE EXCEPTION 'negative exponent: %', exp; END IF;
                     RETURN POWER(base :: NUMERIC, exp) :: BIGINT;
                 END;
                 $$ LANGUAGE PLPGSQL IMMUTABLE;
-            """.trimIndent()
+            """.trimIndent())
     }
 
-    private fun genFunctionBigIntegerPower(): Pair<String, String> {
+    private fun genFunctionBigIntegerPower(): Pair<String, ExecutableSql> {
         // ROUND() is needed, because by default POWER() returns a non-integer value ending with ".0000000000000000".
         val name = SqlConstants.FN_BIGINTEGER_POWER
-        return name to """
+        return name to RawSqlStatement("""
                 CREATE FUNCTION "$name"(base NUMERIC, exp BIGINT) RETURNS NUMERIC AS $$
                 BEGIN
                     IF exp < 0 THEN RAISE EXCEPTION 'negative exponent: %', exp; END IF;
                     RETURN ROUND(POWER(base, exp));
                 END;
                 $$ LANGUAGE PLPGSQL IMMUTABLE;
-            """.trimIndent()
+            """.trimIndent())
     }
 
-    private fun genFunctionBigNumberFromText(name: String, type: String, regex: String): Pair<String, String> {
-        return name to """
+    private fun genFunctionBigNumberFromText(name: String, type: String, regex: String): Pair<String, ExecutableSql> {
+        return name to RawSqlStatement("""
                 CREATE FUNCTION "$name"(s TEXT) RETURNS NUMERIC AS $$
                 BEGIN
                     IF s !~ '$regex' THEN RAISE EXCEPTION 'bad $type value: "%"', s; END IF;
                     RETURN s :: NUMERIC;
                 END;
                 $$ LANGUAGE PLPGSQL IMMUTABLE;
-            """.trimIndent()
+            """.trimIndent())
     }
 
-    private fun genFunctionDecimalToText(): Pair<String, String> {
+    private fun genFunctionDecimalToText(): Pair<String, ExecutableSql> {
         // Using regexp to remove trailing zeros.
         // Clever regexp: can handle special cases like "0.0", "0.000000", etc.
         val name = SqlConstants.FN_DECIMAL_TO_TEXT
-        return name to """
+        return name to RawSqlStatement("""
                 CREATE FUNCTION "$name"(v NUMERIC) RETURNS TEXT AS $$
                 BEGIN
                     RETURN REGEXP_REPLACE(v::TEXT, '(([.][0-9]*[1-9])(0+)$)|([.]0+$)', '\2');
                 END;
                 $$ LANGUAGE PLPGSQL IMMUTABLE;
-            """.trimIndent()
+            """.trimIndent())
     }
 
-    private fun genFunctionRepeat(): Pair<String, String> {
+    private fun genFunctionRepeat(): Pair<String, ExecutableSql> {
         val name = SqlConstants.FN_TEXT_REPEAT
         val type = "TEXT"
-        return name to """
+        return name to RawSqlStatement("""
                 CREATE FUNCTION "$name"(v $type, i INT) RETURNS $type AS $$
                 BEGIN
                     IF i < 0 THEN RAISE EXCEPTION '$name: i = %', i; END IF;
                     RETURN REPEAT(v, i);
                 END;
                 $$ LANGUAGE PLPGSQL IMMUTABLE;
-            """.trimIndent()
+            """.trimIndent())
     }
 
-    private fun genFunctionSubstr1(name: String, type: String): Pair<String, String> {
-        return name to """
+    private fun genFunctionSubstr1(name: String, type: String): Pair<String, ExecutableSql> {
+        return name to RawSqlStatement("""
                 CREATE FUNCTION "$name"(v $type, i INT) RETURNS $type AS $$
                 DECLARE n INT;
                 BEGIN
@@ -194,11 +187,11 @@ object SqlGen {
                     RETURN SUBSTR(v, i + 1);
                 END;
                 $$ LANGUAGE PLPGSQL IMMUTABLE;
-            """.trimIndent()
+            """.trimIndent())
     }
 
-    private fun genFunctionSubstr2(name: String, type: String): Pair<String, String> {
-        return name to """
+    private fun genFunctionSubstr2(name: String, type: String): Pair<String, ExecutableSql> {
+        return name to RawSqlStatement("""
                 CREATE FUNCTION "$name"(v $type, i INT, j INT) RETURNS $type AS $$
                 DECLARE n INT;
                 BEGIN
@@ -208,12 +201,12 @@ object SqlGen {
                     RETURN SUBSTR(v, i + 1, j - i);
                 END;
                 $$ LANGUAGE PLPGSQL IMMUTABLE;
-            """.trimIndent()
+            """.trimIndent())
     }
 
-    private fun genFunctionTextGetChar(): Pair<String, String> {
+    private fun genFunctionTextGetChar(): Pair<String, ExecutableSql> {
         val name = SqlConstants.FN_TEXT_GETCHAR
-        return name to """
+        return name to RawSqlStatement("""
                 CREATE FUNCTION "$name"(v TEXT, i INT) RETURNS TEXT AS $$
                 DECLARE n INT;
                 BEGIN
@@ -223,25 +216,34 @@ object SqlGen {
                     RETURN SUBSTR(v, i + 1, 1);
                 END;
                 $$ LANGUAGE PLPGSQL IMMUTABLE;
-            """.trimIndent()
+            """.trimIndent())
     }
 
-    fun genRowidSql(chainMapping: Rt_ChainSqlMapping): String {
+    fun genRowidSql(chainMapping: Rt_ChainSqlMapping): List<ExecutableSql> {
         val table = chainMapping.rowidTable
         val func = chainMapping.rowidFunction
-        return """
-            CREATE TABLE "$table"( last_value bigint not null);
-            INSERT INTO "$table"(last_value) VALUES (0);
-            CREATE FUNCTION "$func"() RETURNS BIGINT AS
-            'UPDATE "$table" SET last_value = last_value + 1 RETURNING last_value'
-            LANGUAGE SQL;
-        """.trimIndent()
+        return listOf(
+            JooqDdlStatement(
+                JOOQ_CTX.createTable(DSL.name(table))
+                    .column("last_value", SQLDataType.BIGINT.nullable(false))
+            ),
+            JooqDdlStatement(
+                JOOQ_CTX.insertInto(DSL.table(DSL.name(table)), DSL.field(DSL.name("last_value"), SQLDataType.BIGINT))
+                    .values(0L)
+            ),
+            // PL/pgSQL function bodies have no jOOQ DSL — keep as raw text.
+            RawSqlStatement("""
+                CREATE FUNCTION "$func"() RETURNS BIGINT AS
+                'UPDATE "$table" SET last_value = last_value + 1 RETURNING last_value'
+                LANGUAGE SQL;
+            """.trimIndent()),
+        )
     }
 
-    fun genFunctionMakeRowids(chainMapping: Rt_ChainSqlMapping): Pair<String, String> {
+    fun genFunctionMakeRowids(chainMapping: Rt_ChainSqlMapping): Pair<String, ExecutableSql> {
         val table = chainMapping.rowidTable
         val name = chainMapping.rowidsFunction
-        return name to """
+        return name to RawSqlStatement("""
             CREATE FUNCTION "$name"(n BIGINT) RETURNS BIGINT AS $$
             DECLARE v BIGINT;
             BEGIN
@@ -250,31 +252,29 @@ object SqlGen {
                 RETURN v - n + 1;
             END;
             $$ LANGUAGE PLPGSQL;
-        """.trimIndent()
+        """.trimIndent())
     }
 
-    fun genEntity(sqlCtx: Rt_SqlContext, entity: RR_EntityDefinition, interpreter: Rt_Interpreter, addFkConstraints: Boolean): String {
+    fun genEntity(sqlCtx: Rt_SqlContext, entity: RR_EntityDefinition, interpreter: Rt_Interpreter, addFkConstraints: Boolean): List<ExecutableSql> {
         val tableName = entity.sqlMapping.table(sqlCtx)
         return genEntity(sqlCtx, entity, interpreter, tableName, addFkConstraints)
     }
 
-    fun genEntityConstraintsAndIndexes(sqlCtx: Rt_SqlContext, entity: RR_EntityDefinition, interpreter: Rt_Interpreter): List<String> {
+    fun genEntityConstraintsAndIndexes(sqlCtx: Rt_SqlContext, entity: RR_EntityDefinition, interpreter: Rt_Interpreter): List<ExecutableSql> {
         val tableName = entity.sqlMapping.table(sqlCtx)
-        val sqls = mutableListOf<String>()
+        val sqls = mutableListOf<ExecutableSql>()
 
-        val fkSql = genAddAttrConstraintsSql(sqlCtx, entity, interpreter, entity.attributes.values.toList(), true)
-        if (fkSql.isNotEmpty()) {
-            sqls.add("$fkSql;")
-        }
+        val fk = genAddAttrConstraintsSql(sqlCtx, entity, interpreter, entity.attributes.values.toList(), true)
+        if (fk != null) sqls.add(fk)
 
         val keyNameGen = keyNameGen(tableName, listOf())
         for (rKey in entity.keys) {
-            sqls.add("${genCreateKeySql(entity, tableName, rKey, keyNameGen)};")
+            sqls.add(genCreateKeySql(entity, tableName, rKey, keyNameGen))
         }
 
         val indexNameGen = indexNameGen(tableName, listOf())
         for (rIndex in entity.indexes) {
-            sqls.add("${genCreateIndexSql(entity, tableName, rIndex, indexNameGen)};")
+            sqls.add(genCreateIndexSql(entity, tableName, rIndex, indexNameGen))
         }
 
         return sqls
@@ -286,12 +286,12 @@ object SqlGen {
         interpreter: Rt_Interpreter,
         tableName: String,
         addFkConstraints: Boolean,
-    ): String {
+    ): List<ExecutableSql> {
         val mapping = entity.sqlMapping
         val rowid = mapping.rowidColumn
         val attrs = entity.attributes.values
 
-        val t = DSL_CTX.createTable(tableName)
+        val t = JOOQ_CTX.createTable(DSL.name(tableName))
 
         val constraints = mutableListOf<Constraint>()
         constraints.add(constraint("PK_$tableName").primaryKey(rowid))
@@ -308,17 +308,17 @@ object SqlGen {
             }
         }
 
-        var ddl = q.constraints(*constraints.toTypedArray()).toString() + ";\n"
+        val out = mutableListOf<ExecutableSql>()
+        out.add(JooqDdlStatement(q.constraints(*constraints.toTypedArray())))
 
         if (addFkConstraints) {
             val indexNameGen = indexNameGen(tableName, listOf())
             for (rIndex in entity.indexes) {
-                val indexSql = genCreateIndexSql(entity, tableName, rIndex, indexNameGen)
-                ddl += "$indexSql;\n"
+                out.add(genCreateIndexSql(entity, tableName, rIndex, indexNameGen))
             }
         }
 
-        return ddl
+        return out
     }
 
     private fun genAttrColumns(
@@ -371,13 +371,20 @@ object SqlGen {
         sqlMapping: String,
     ): Condition {
         val field = DSL.field(DSL.name(sqlMapping), String::class.java)
-        val lengthExpr = when (sizeConstraint.kind) {
+        // PG's length()/octet_length() return int4; cast to bigint so the comparison happens at
+        // Long width. The previous code did `.ge(it.toInt())` / `.le(it.toInt())` which silently
+        // truncated the user-declared `Long` size bound, inverting the predicate for any size
+        // > 2^31 (e.g. @max_size(3_000_000_000) → CHECK (length(col) <= -1294967296), always
+        // false, blocking every insert). Comparing as bigint either passes (when the column never
+        // exceeds 2^31) or raises a type-honest out-of-range error.
+        val lengthInt = when (sizeConstraint.kind) {
             RR_SizeConstraintKind.BYTE_ARRAY -> DSL.octetLength(field)
             RR_SizeConstraintKind.TEXT -> DSL.length(field)
         }
+        val lengthExpr: Field<Long> = lengthInt.cast(SQLDataType.BIGINT)
         val conditions = mutableListOf<Condition>()
-        sizeConstraint.min?.let { conditions.add(lengthExpr.ge(it.toInt())) }
-        sizeConstraint.max?.let { conditions.add(lengthExpr.le(it.toInt())) }
+        sizeConstraint.min?.let { conditions.add(lengthExpr.ge(it)) }
+        sizeConstraint.max?.let { conditions.add(lengthExpr.le(it)) }
         return conditions.reduce { a, b -> a.and(b) }
     }
 
@@ -385,9 +392,9 @@ object SqlGen {
         return SqlNameGen("K_${table}_%d", existingNames)
     }
 
-    fun genCreateKeySql(entity: RR_EntityDefinition, table: String, rKey: Key, nameGen: SqlNameGen): String {
+    fun genCreateKeySql(entity: RR_EntityDefinition, table: String, rKey: Key, nameGen: SqlNameGen): ExecutableSql {
         val c = makeConstraint(entity, rKey, nameGen)
-        return DSL_CTX.alterTable(table).add(c).toString()
+        return JooqDdlStatement(JOOQ_CTX.alterTable(DSL.name(table)).add(c))
     }
     private fun makeConstraint(entity: RR_EntityDefinition, rKey: Key, nameGen: SqlNameGen): Constraint {
         val keyName = nameGen.nextName()
@@ -401,17 +408,31 @@ object SqlGen {
         return SqlNameGen("IDX_${table}_%d", existingNames)
     }
 
-    fun genCreateIndexSql(entity: RR_EntityDefinition, table: String, index: Index, nameGen: SqlNameGen): String {
+    fun genCreateIndexSql(entity: RR_EntityDefinition, table: String, index: Index, nameGen: SqlNameGen): ExecutableSql {
         val indexName = nameGen.nextName()
         return if (index.attribs.size == 1 && isJsonAttr(entity, index.attribs[0].str)) {
+            // PG-specific GIN index with jsonb_path_ops opclass — jOOQ has no first-class API
+            // for opclass, so the SQL is built via a parameterised template with all identifiers
+            // wrapped in DSL.name (escape-safe) and only the keywords `USING gin` and the opclass
+            // name as literal text.
             val attrName = index.attribs[0]
             val col = entity.attributes[attrName]?.sqlMapping ?: attrName.str
-            """CREATE INDEX "$indexName" ON "$table" USING gin ("$col" jsonb_path_ops)"""
+            JooqDdlStatement(
+                DSL.query(
+                    "CREATE INDEX {0} ON {1} USING gin ({2} jsonb_path_ops)",
+                    DSL.name(indexName),
+                    DSL.table(DSL.name(table)),
+                    DSL.field(DSL.name(col)),
+                )
+            )
         } else {
             val attribs = index.attribs.map { attrName ->
                 entity.attributes[attrName]?.sqlMapping ?: attrName.str
             }
-            DSL_CTX.createIndex(indexName).on(table, *attribs.toTypedArray()).toString()
+            JooqDdlStatement(
+                JOOQ_CTX.createIndex(DSL.name(indexName))
+                    .on(DSL.name(table), *attribs.map { DSL.name(it) }.toTypedArray())
+            )
         }
     }
 
@@ -420,10 +441,9 @@ object SqlGen {
         return attr?.type == RR_Type.Primitive(RR_PrimitiveKind.JSON)
     }
 
-    fun genAddColumnSql(table: String, attr: RR_Attribute, interpreter: Rt_Interpreter, nullable: Boolean): String {
+    fun genAddColumnSql(table: String, attr: RR_Attribute, interpreter: Rt_Interpreter, nullable: Boolean): ExecutableSql {
         val type = getSqlType(attr.type, interpreter).nullable(nullable)
-        val b = DSL_CTX.alterTable(table).addColumn(attr.sqlMapping, type)
-        return b.toString()
+        return JooqDdlStatement(JOOQ_CTX.alterTable(DSL.name(table)).addColumn(attr.sqlMapping, type))
     }
 
     fun genAddAttrConstraintsSql(
@@ -432,45 +452,30 @@ object SqlGen {
         interpreter: Rt_Interpreter,
         attrs: List<RR_Attribute>,
         addFkConstraints: Boolean,
-    ): String {
+    ): ExecutableSql? {
         val constraints = genAttrConstraints(sqlCtx, entity, interpreter, attrs, addFkConstraints)
         if (constraints.isEmpty()) {
-            return ""
+            return null
         }
 
         val table = entity.sqlMapping.table(sqlCtx)
-        val b = DSL_CTX.alterTable(table)
-        for (c in constraints) {
-            b.add(c)
-        }
-
-        return b.toString()
+        return JooqDdlStatement(JOOQ_CTX.alterTable(DSL.name(table)).add(constraints))
     }
 
-    fun genDropColumnsSql(table: String, attrNames: List<String>): String =
-        DSL_CTX.alterTable(table).drop(*attrNames.toTypedArray()).toString()
+    fun genDropColumnsSql(table: String, attrNames: List<String>): ExecutableSql =
+        JooqDdlStatement(JOOQ_CTX.alterTable(DSL.name(table)).drop(*attrNames.toTypedArray()))
 
     /**
-     * Generates a SQL CHECK constraint for a size constraint on an attribute.
-     * Replaces the former [R_SizeAttrValidator.genSqlCheckConstraint] for the RR model.
+     * Builds a SQL CHECK constraint for a size constraint on an attribute. Returns the
+     * jOOQ [Constraint] AST node so callers can compose it into `ALTER TABLE … ADD …`
+     * via [DSL.alterTable].add(...) without round-tripping through a SQL string.
      */
     fun genSizeCheckConstraint(
         constraintName: String,
         sqlMapping: String,
         sizeConstraint: RR_SizeConstraint,
-    ): String {
-        val field = DSL.field(DSL.name(sqlMapping), String::class.java)
-        val lengthExpr = when (sizeConstraint.kind) {
-            RR_SizeConstraintKind.BYTE_ARRAY -> DSL.octetLength(field)
-            RR_SizeConstraintKind.TEXT -> DSL.length(field)
-        }
-        val conditions = mutableListOf<Condition>()
-        sizeConstraint.min?.let { conditions.add(lengthExpr.ge(it.toInt())) }
-        sizeConstraint.max?.let { conditions.add(lengthExpr.le(it.toInt())) }
-        return constraint(constraintName).check(conditions.reduce { a, b -> a.and(b) }).toString()
-    }
+    ): Constraint = constraint(constraintName).check(genSizeCheckCondition(sizeConstraint, sqlMapping))
 
-    fun joinSqls(sqls: List<String>) = sqls.joinToString("\n") + "\n"
 }
 
 class SqlNameGen(private val pattern: String, existingNames: Collection<String>) {

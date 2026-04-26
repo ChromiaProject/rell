@@ -8,6 +8,11 @@ import net.postchain.rell.base.model.DefinitionId
 import net.postchain.rell.base.model.rr.RR_EntityDefinition
 import net.postchain.rell.base.model.rr.RR_ObjectDefinition
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.utils.toImmList
+import org.jooq.Field
+import org.jooq.Record
+import org.jooq.Table
+import org.jooq.impl.DSL
 import java.util.*
 
 class SqlObjectsInit(private val exeCtx: Rt_ExecutionContext) {
@@ -92,26 +97,22 @@ class SqlObjectsInit(private val exeCtx: Rt_ExecutionContext) {
                 interpreter.evaluateExpr(defaultExpr, initFrame)
             }
 
-            val b = SqlBuilder()
-            b.append("INSERT INTO ")
-            b.appendName(table)
-            b.append("(")
-            b.appendName(rowid)
-            for (attr in attrs) {
-                b.append(", ")
-                b.appendName(attr.sqlMapping)
-            }
-            b.append(") VALUES (")
-            b.append(0L)
-            for (value in values) {
-                b.append(", ")
-                b.append(value)
-            }
-            b.append(") RETURNING ")
-            b.appendName(rowid)
+            val tableRef: Table<Record> = DSL.table(DSL.name(table))
+            val rowidField: Field<Any> = DSL.field(DSL.name(rowid))
+            val placeholder: Field<Any> = DSL.field("?", Any::class.java)
+            val zeroLiteral: Field<Any> = DSL.field("0", Any::class.java)
 
-            val sql = b.build()
-            sql.execute(frame.sysSqlExec)
+            val row = LinkedHashMap<Field<*>, Field<*>>()
+            row[rowidField] = zeroLiteral
+            for (attr in attrs) {
+                row[DSL.field(DSL.name(attr.sqlMapping))] = placeholder
+            }
+            val q = JOOQ_CTX.insertQuery(tableRef)
+            q.addValues(row)
+            q.setReturning(rowidField)
+
+            val sql = ParameterizedSql(renderJooq(q), values.toImmList())
+            frame.sysSqlExec.execute(sql)
         }
 
         private fun cycleError(): Rt_Error {

@@ -137,9 +137,7 @@ class Rt_ValueSqlAdapter_Enum(
         }
     }
 
-    override fun metaName(sqlCtx: Rt_SqlContext): String {
-        return "enum:$typeName"
-    }
+    override fun metaName(sqlCtx: Rt_SqlContext): String = "enum:$typeName"
 }
 
 class Rt_ValueSqlAdapter_Nullable(private val valueAdapter: Rt_ValueSqlAdapter): Rt_ValueSqlAdapter_Some(null) {

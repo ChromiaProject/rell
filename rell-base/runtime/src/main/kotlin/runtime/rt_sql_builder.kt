@@ -4,85 +4,71 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.PreparedStatementParams
-import net.postchain.rell.base.sql.ResultSetRow
+import net.postchain.rell.base.sql.RawSqlAccess
 import net.postchain.rell.base.sql.SqlExecutor
+import net.postchain.rell.base.sql.SqlPreparator
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
+import org.intellij.lang.annotations.Language
+import org.jooq.Query
 
-class SqlBuilder {
-    private val sqlBuf = StringBuilder()
-    private val paramsBuf = mutableListOf<Rt_Value>()
+/**
+ * Anything that can run a single SQL statement against a [SqlExecutor]. Pure data — dispatch lives
+ * in [SqlExecutor.execute], which exhaustively pattern-matches the sealed hierarchy and is the
+ * only place that touches raw JDBC. Variants:
+ *  - [RawSqlStatement.dangerouslyRaw]: hand-written SQL string (PL/pgSQL bodies, dialect-specific
+ *    shapes jOOQ can't express).
+ *  - [JooqDdlStatement]: jOOQ-built DDL whose structural origin is audit-trustworthy.
+ *  - [ParameterizedSql]: SELECT/DML with `Rt_Value` binds.
+ *  - [RawSqlBoundStatement.dangerouslyRaw]: hand-written SQL with a free [SqlPreparator] (test escape hatch).
+ */
+sealed interface ExecutableSql
 
-    fun isEmpty(): Boolean = sqlBuf.isEmpty() && paramsBuf.isEmpty()
-
-    fun <T> append(list: Iterable<T>, sep: String, block: (T) -> Unit) {
-        var s = ""
-        for (t in list) {
-            append(s)
-            block(t)
-            s = sep
-        }
-    }
-
-    fun appendName(name: String) {
-        append("\"")
-        append(name)
-        append("\"")
-    }
-
-    fun appendColumn(alias: String, column: String) {
-        append(alias)
-        append(".")
-        appendName(column)
-    }
-
-    fun append(sql: String) {
-        sqlBuf.append(sql)
-    }
-
-    fun append(param: Long) {
-        sqlBuf.append("?")
-        paramsBuf.add(Rt_IntValue.get(param))
-    }
-
-    fun append(value: Rt_Value) {
-        sqlBuf.append("?")
-        paramsBuf.add(value)
-    }
-
-    fun append(buf: SqlBuilder) {
-        sqlBuf.append(buf.sqlBuf)
-        paramsBuf.addAll(buf.paramsBuf)
-    }
-
-    fun append(sql: ParameterizedSql) {
-        sqlBuf.append(sql.sql)
-        paramsBuf.addAll(sql.params)
-    }
-
-    fun build(): ParameterizedSql = ParameterizedSql(sqlBuf.toString(), paramsBuf.toImmList())
+/**
+ * A no-bind hand-written SQL statement (DDL, DML, SET, anything jOOQ can't express). The
+ * constructor is [RawSqlAccess]-gated so every caller building one from string concatenation
+ * has to opt in explicitly — production paths should prefer [JooqDdlStatement].
+ */
+class RawSqlStatement @RawSqlAccess constructor(@param:Language("SQL") val sql: String) : ExecutableSql {
+    override fun toString() = sql
 }
 
-data class ParameterizedSql(val sql: String, val params: ImmList<Rt_Value>) {
+/**
+ * A jOOQ-built DDL statement (CREATE TABLE, ALTER TABLE, DROP INDEX, …). Renders the jOOQ
+ * [Query] AST inline (PostgreSQL forbids bind parameters in DDL). The structural origin — every
+ * identifier escaped by jOOQ's PG renderer, every keyword from the dialect — is what distinguishes
+ * this from [RawSqlStatement], whose SQL string was hand-written and audit-required.
+ */
+class JooqDdlStatement(internal val query: Query) : ExecutableSql
+
+/**
+ * Hand-written SQL with a free [SqlPreparator] for setting binds via raw JDBC types. Intended for
+ * test code that doesn't have an `Rt_Value` representation handy; production paths should build a
+ * [ParameterizedSql] from typed values instead. [RawSqlAccess]-gated.
+ */
+class RawSqlBoundStatement @RawSqlAccess constructor(
+    @param:Language("SQL") val sql: String,
+    internal val preparator: SqlPreparator,
+) : ExecutableSql
+
+/**
+ * Hand-written query with a free [SqlPreparator] for binds and row-by-row consumption. Test escape
+ * hatch parallel to [RawSqlBoundStatement]. [RawSqlAccess]-gated.
+ */
+class RawSqlBoundQuery @RawSqlAccess constructor(
+    @param:Language("SQL") val sql: String,
+    internal val preparator: SqlPreparator = SqlPreparator.NULL,
+)
+
+data class ParameterizedSql(val sql: String, val params: ImmList<Rt_Value>) : ExecutableSql {
     override fun toString() = sql
 
     fun isEmpty() = sql.isEmpty() && params.isEmpty()
 
-    fun execute(sqlExec: SqlExecutor) {
-        val args = calcArgs()
-        sqlExec.execute(sql, args::bind)
-    }
-
-    fun executeQuery(sqlExec: SqlExecutor, consumer: (ResultSetRow) -> Unit) {
-        val args = calcArgs()
-        sqlExec.executeQuery(sql, args::bind, consumer)
-    }
-
-    private fun calcArgs(): SqlArgs {
+    internal fun calcArgs(): SqlArgs {
         // Was experimentally discovered that passing more than 32767 parameters causes PSQL driver to fail and the
         // connection becomes invalid afterwards. Not allowing this to happen.
         val maxParams = 32767
@@ -94,12 +80,6 @@ data class ParameterizedSql(val sql: String, val params: ImmList<Rt_Value>) {
 
     companion object {
         val TRUE = ParameterizedSql("TRUE", immListOf())
-
-        fun generate(generator: (SqlBuilder) -> Unit): ParameterizedSql {
-            val b = SqlBuilder()
-            generator(b)
-            return b.build()
-        }
     }
 }
 
@@ -115,7 +95,7 @@ class SqlArgs(private val values: ImmList<Rt_Value>) {
 
 class SqlSelectRt(val pSql: ParameterizedSql, val resultTypes: ImmList<Rt_Type>) {
     fun execute(sqlExec: SqlExecutor): List<List<Rt_Value>> = buildList {
-        pSql.executeQuery(sqlExec) { rsRow ->
+        sqlExec.executeQuery(pSql) { rsRow ->
             val list = mutableListOf<Rt_Value>()
             for ((i, type) in resultTypes.withIndex()) {
                 val adapter = checkNotNull(type.sqlAdapter) {

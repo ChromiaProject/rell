@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
+@file:OptIn(net.postchain.rell.base.sql.RawSqlAccess::class)
 
 package net.postchain.rell.base.testutils
 
@@ -16,6 +17,7 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.runtime.Rt_Printer
+import net.postchain.rell.base.runtime.RawSqlStatement
 import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.utils.*
 import kotlin.test.assertEquals
@@ -257,7 +259,7 @@ abstract class RellBaseTester(
     private fun initSqlInserts(sqlExec: SqlExecutor) {
         if (inserts.isNotEmpty()) {
             val insertSql = inserts.joinToString("\n") { it }
-            sqlExec.execute(insertSql)
+            sqlExec.execute(RawSqlStatement(insertSql))
         }
         lastInserts = inserts
     }

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
+@file:OptIn(RawSqlAccess::class)
 
 // Detecting discrepancies between Java and Postgres locales.
 //
@@ -11,6 +12,9 @@ package net.postchain.rell.base.testutils.tools
 import net.postchain.rell.base.lib.type.Rt_ByteArrayValue
 import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.runtime.ParameterizedSql
+import net.postchain.rell.base.runtime.RawSqlBoundQuery
+import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.RawSqlStatement
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.testutils.SqlTestUtils
 import net.postchain.rell.base.utils.*
@@ -49,7 +53,7 @@ private class SqlCheckerCtx(
     private val messages = mutableListOf<String>()
 
     fun <T> select(sql: String, getter: (ResultSetRow) -> T): List<T> = buildList {
-        sqlExec.executeQuery(sql, {}) { row ->
+        sqlExec.executeQuery(RawSqlBoundQuery(sql)) { row ->
             add(getter(row))
         }
     }
@@ -197,13 +201,13 @@ private fun sqlInit(sqlMgr: SqlManager, cs: List<CharInfo>) {
     fun isTableExisting(sqlExec: SqlExecutor): Boolean {
         val sql = "SELECT * FROM information_schema.tables WHERE table_name = 'chars' AND table_schema = 'public';"
         var exists = false
-        sqlExec.executeQuery(sql, {}) {
+        sqlExec.executeQuery(RawSqlBoundQuery(sql)) {
             exists = true
         }
         exists || return false
 
         var index = 0
-        sqlExec.executeQuery("SELECT code, b, s FROM chars ORDER BY code;", {}) { row ->
+        sqlExec.executeQuery(RawSqlBoundQuery("SELECT code, b, s FROM chars ORDER BY code;")) { row ->
             val ci = cs[index]
             exists = exists && row.getInt(1) == ci.codePoint
             exists = exists && row.getBytes(2)!!.toBytes() == ci.utf8
@@ -215,30 +219,26 @@ private fun sqlInit(sqlMgr: SqlManager, cs: List<CharInfo>) {
     }
 
     fun createTable(sqlExec: SqlExecutor) {
-        sqlExec.execute("DROP TABLE IF EXISTS chars;")
-        sqlExec.execute("""
+        sqlExec.execute(RawSqlStatement("DROP TABLE IF EXISTS chars;"))
+        sqlExec.execute(RawSqlStatement("""
             CREATE TABLE chars(
                 code INT NOT NULL PRIMARY KEY,
                 b BYTEA NOT NULL,
                 s TEXT NOT NULL
             );
-        """
-        )
+        """))
 
         for (part in cs.chunked(5_000)) {
-            val sql = ParameterizedSql.generate { b ->
-                b.append("INSERT INTO chars(code, b, s) VALUES ")
-                b.append(part, ", ") { ci ->
-                    b.append("(")
-                    b.append(ci.codePoint.toLong())
-                    b.append(", ")
-                    b.append(Rt_ByteArrayValue.get(ci.utf8.toByteArray()))
-                    b.append(", ")
-                    b.append(Rt_TextValue.get(ci.plainString))
-                    b.append(")")
-                }
+            val sb = StringBuilder("INSERT INTO chars(code, b, s) VALUES ")
+            val binds = mutableListOf<Rt_Value>()
+            for ((i, ci) in part.withIndex()) {
+                if (i > 0) sb.append(", ")
+                sb.append("(").append(ci.codePoint.toLong()).append(", ?, ?)")
+                binds.add(Rt_ByteArrayValue.get(ci.utf8.toByteArray()))
+                binds.add(Rt_TextValue.get(ci.plainString))
             }
-            sql.execute(sqlExec)
+            val sql = ParameterizedSql(sb.toString(), binds.toImmList())
+            sqlExec.execute(sql)
         }
     }
 

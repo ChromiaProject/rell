@@ -66,7 +66,7 @@ internal class RellApiRunTestsOnSqlTest: BaseRellApiRunTestsTest() {
 
         val map = runTestsOnSqlExec(sourceDir)
 
-        val ins0 = """INSERT INTO "c0.data"("rowid", "k", "v") VALUES ("c0.make_rowid"(), ?, ?) RETURNING "rowid""""
+        val ins0 = """INSERT INTO "c0.data" ("rowid", "k", "v") VALUES ("c0.make_rowid"(), ?, ?) RETURNING "rowid""""
         val ins = """user|1|$ins0|[1,123]"""
         chkSqls(map, "test_1", ins, """user|1|SELECT A00."rowid" FROM "c0.data" A00 ORDER BY A00."rowid"|[]""", commit)
         chkSqls(map, "test_2", ins, """user|1|UPDATE "c0.data" A00 SET "v" = ? WHERE A00."k" = ? RETURNING A00."rowid"|[456,1]""", commit)
@@ -94,7 +94,7 @@ internal class RellApiRunTestsOnSqlTest: BaseRellApiRunTestsTest() {
 
         val map = runTestsOnSqlExec(sourceDir)
 
-        val ins0 = """user|1|INSERT INTO "c0.data"("rowid", "k") VALUES ("c0.make_rowid"(), ?) RETURNING "rowid""""
+        val ins0 = """user|1|INSERT INTO "c0.data" ("rowid", "k") VALUES ("c0.make_rowid"(), ?) RETURNING "rowid""""
         val ins = arrayOf("$ins0|[0]", "$ins0|[100]", "$ins0|[200]", "$ins0|[300]", "$ins0|[400]")
         val sel = """SELECT A00."rowid" FROM "c0.data" A00 WHERE A00."k" <= ? ORDER BY A00."rowid""""
         chkSqls(map, "test_1", *ins, """user|1|$sel|[0]""", commit)
@@ -125,7 +125,7 @@ internal class RellApiRunTestsOnSqlTest: BaseRellApiRunTestsTest() {
 
         val map = runTestsOnSqlExec(sourceDir)
 
-        val (ins, vals) = arrayOf("""INSERT INTO "c0.data"("rowid", "k") VALUES""", """("c0.make_rowid"(), ?)""")
+        val (ins, vals) = arrayOf("""INSERT INTO "c0.data" ("rowid", "k") VALUES""", """("c0.make_rowid"(), ?)""")
         chkSqls(map, "test_1", commit)
         chkSqls(map, "test_2", """user|1|$ins $vals RETURNING "rowid"|[0]""", commit)
         chkSqls(map, "test_3", """user|2|$ins $vals, $vals RETURNING "rowid"|[0,100]""", commit)
@@ -152,7 +152,7 @@ internal class RellApiRunTestsOnSqlTest: BaseRellApiRunTestsTest() {
 
         val map = runTestsOnSqlExec(sourceDir)
 
-        val ins0 = """INSERT INTO "c0.data"("rowid", "k", "v") VALUES ("c0.make_rowid"(), ?, ?) RETURNING "rowid""""
+        val ins0 = """INSERT INTO "c0.data" ("rowid", "k", "v") VALUES ("c0.make_rowid"(), ?, ?) RETURNING "rowid""""
         val ins = arrayOf("user|1|$ins0|[0,123]", "user|1|$ins0|[1,124]", "user|1|$ins0|[2,125]")
         chkSqls(map, "test_1", *ins, """user|3|UPDATE "c0.data" A00 SET "v" = ? RETURNING A00."rowid"|[456]""", commit)
         chkSqls(map, "test_2", *ins, """user|3|DELETE FROM "c0.data" A00 RETURNING A00."rowid"|[]""", commit)
@@ -174,8 +174,8 @@ internal class RellApiRunTestsOnSqlTest: BaseRellApiRunTestsTest() {
 
         val map = runTestsOnSqlExec(sourceDir)
         chkSqls(map, "test", commit)
-        chkInitSql(map.getValue("test:test"), """sys|-|create table "c0.data" (""")
-        chkInitSql(map.getValue("test:test"), """sys|-|create table "c0.state" (""")
+        chkInitSql(map.getValue("test:test"), """sys|-|CREATE TABLE "c0.data" (""")
+        chkInitSql(map.getValue("test:test"), """sys|-|CREATE TABLE "c0.state" (""")
     }
 
     @Test fun testEntityFromGtv() {
@@ -236,7 +236,7 @@ internal class RellApiRunTestsOnSqlTest: BaseRellApiRunTestsTest() {
 
         val map = runTestsOnSqlExec(sourceDir, expectedRes = listOf("test:test_1:OK", "test:test_2:FAILED"))
 
-        val ins = """INSERT INTO "c0.data"("rowid", "k", "v") VALUES ("c0.make_rowid"(), ?, ?) RETURNING "rowid""""
+        val ins = """INSERT INTO "c0.data" ("rowid", "k", "v") VALUES ("c0.make_rowid"(), ?, ?) RETURNING "rowid""""
         chkSqls(map, "test_1", "user|1|$ins|[1,123]", commit)
         chkSqls(map, "test_2", "user|1|$ins|[1,123]", "user|-|$ins|[1,456]|org.postgresql.util.PSQLException", commit)
     }
@@ -290,7 +290,7 @@ internal class RellApiRunTestsOnSqlTest: BaseRellApiRunTestsTest() {
 
     private fun chkInitSqls(test: TestInfo) {
         // Checking some common init SQL statements to make sure they are intercepted.
-        chkInitSql(test, """sys|-|CREATE TABLE "c0.rowid_gen"(""")
+        chkInitSql(test, """sys|-|CREATE TABLE "c0.rowid_gen" (""")
         chkInitSql(test, """sys|-|CREATE TABLE "c0.sys.classes"(""")
         chkInitSql(test, """sys|-|CREATE FUNCTION "rell_""", 5, 1000)
     }

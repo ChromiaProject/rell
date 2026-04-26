@@ -34,6 +34,8 @@ dependencies {
 
     api(libs.postchain.spi)
 
+    implementation(libs.jooq)
+
     testImplementation(libs.junit.jupiter)
     testImplementation(kotlin("test-junit5"))
     testImplementation(libs.log4j.slf4j2.impl)

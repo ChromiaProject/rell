@@ -2,11 +2,13 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
+@file:OptIn(RawSqlAccess::class)
+
 package net.postchain.rell.base.sql
 
 import mu.KLogging
 import net.postchain.rell.base.model.R_SqlConstants
-import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.One
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immSetOf
@@ -124,17 +126,21 @@ abstract class AbstractSqlManager: SqlManager {
 
         override fun execute(sql: String) {
             check(valid.get())
-            sqlExec.execute(sql)
+            sqlExec.execute(RawSqlStatement(sql))
         }
 
         override fun execute(sql: String, preparator: SqlPreparator) {
             check(valid.get())
-            sqlExec.execute(sql, preparator)
+            sqlExec.execute(RawSqlBoundStatement(sql, preparator))
         }
 
-        override fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit) {
+        override fun executeQuery(
+            sql: String,
+            preparator: SqlPreparator,
+            consumer: (ResultSetRow) -> Unit,
+        ) {
             check(valid.get())
-            sqlExec.executeQuery(sql, preparator, consumer)
+            sqlExec.executeQuery(RawSqlBoundQuery(sql, preparator), consumer)
         }
 
         override fun withAttributes(attributes: Attributes): SqlExecutor {
@@ -164,6 +170,20 @@ private object NullSqlPreparator: SqlPreparator {
     }
 }
 
+/**
+ * Opt-in poison gate for hand-written SQL strings. Production code should build SQL via the jOOQ DSL
+ * ([JooqDdlStatement]) or `Rt_Value`-typed binds ([ParameterizedSql]); anything that constructs a
+ * [RawSqlStatement] / [RawSqlBoundStatement] / [RawSqlBoundQuery] from string concatenation has to
+ * declare `@OptIn(RawSqlAccess::class)` so each unsafe site is greppable and reviewable.
+ */
+@RequiresOptIn(
+    message = "Hand-written SQL string. Prefer jOOQ DSL (JooqDdlStatement) or ParameterizedSql with " +
+        "Rt_Value binds; opt in only when neither is feasible.",
+    level = RequiresOptIn.Level.ERROR,
+)
+@Retention(AnnotationRetention.BINARY)
+annotation class RawSqlAccess
+
 abstract class SqlExecutor {
     enum class Category {
         SYS,
@@ -180,9 +200,38 @@ abstract class SqlExecutor {
 
     abstract fun hasRealConnection(): Boolean
     abstract fun <T> connection(code: (Connection) -> T): T
-    abstract fun execute(@Language("SQL") sql: String)
-    abstract fun execute(@Language("SQL") sql: String, preparator: SqlPreparator)
-    abstract fun executeQuery(@Language("SQL") sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit)
+
+    /**
+     * The single typed entry point: exhaustively pattern-matches the sealed [ExecutableSql] hierarchy
+     * and is the only place that touches the raw-string overrides below. Production call sites build
+     * an [ExecutableSql] (via jOOQ DSL or `@OptIn(RawSqlAccess::class) RawSqlStatement(...)`) and dispatch through here.
+     */
+    fun execute(stmt: ExecutableSql) = when (stmt) {
+        is RawSqlStatement -> execute(stmt.sql)
+        is JooqDdlStatement -> execute(JOOQ_CTX.renderInlined(stmt.query))
+        is ParameterizedSql -> {
+            val args = stmt.calcArgs()
+            execute(stmt.sql, args::bind)
+        }
+        is RawSqlBoundStatement -> execute(stmt.sql, stmt.preparator)
+    }
+
+    fun executeQuery(stmt: ParameterizedSql, consumer: (ResultSetRow) -> Unit) {
+        val args = stmt.calcArgs()
+        executeQuery(stmt.sql, args::bind, consumer)
+    }
+
+    fun executeQuery(stmt: RawSqlBoundQuery, consumer: (ResultSetRow) -> Unit) {
+        executeQuery(stmt.sql, stmt.preparator, consumer)
+    }
+
+    protected abstract fun execute(@Language("SQL") sql: String)
+    protected abstract fun execute(@Language("SQL") sql: String, preparator: SqlPreparator)
+    protected abstract fun executeQuery(
+        @Language("SQL") sql: String,
+        preparator: SqlPreparator,
+        consumer: (ResultSetRow) -> Unit,
+    )
 
     /**
      * A way to pass some context information to a logging layer (wrapper) without adding a new parameter to every
@@ -364,6 +413,7 @@ class ConnectionSqlManager(private val con: SqlManagerConnection): AbstractSqlMa
     }
 }
 
+@Suppress("SqlSourceToSinkFlow")
 private class ConnectionSqlExecutor(private val con: Connection): SqlExecutor() {
     override fun <T> connection(code: (Connection) -> T): T {
         if (Thread.currentThread().isInterrupted) {
@@ -473,14 +523,14 @@ class InterceptingSqlExecutor(
 
     override fun execute(sql: String) {
         invoke(sql, null) {
-            sqlExec.execute(sql)
+            sqlExec.execute(RawSqlStatement(sql))
             null
         }
     }
 
     override fun execute(sql: String, preparator: SqlPreparator) {
         invoke(sql, preparator) { preparator2 ->
-            sqlExec.execute(sql, preparator2!!)
+            sqlExec.execute(RawSqlBoundStatement(sql, preparator2!!))
             null
         }
     }
@@ -488,7 +538,7 @@ class InterceptingSqlExecutor(
     override fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit) {
         invoke(sql, preparator) { preparator2 ->
             var rowCount = 0
-            sqlExec.executeQuery(sql, preparator2!!) { row ->
+            sqlExec.executeQuery(RawSqlBoundQuery(sql, preparator2!!)) { row ->
                 rowCount++
                 consumer(row)
             }

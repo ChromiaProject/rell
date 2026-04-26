@@ -13,6 +13,7 @@ import net.postchain.rell.base.model.expr.R_PartialArgMapping
 import net.postchain.rell.base.model.expr.R_PartialCallMapping
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.utils.mapToImmList
+import net.postchain.rell.base.utils.toImmList
 
 private fun isIdentityMapping(mapping: List<Int>, argCount: Int): Boolean {
     when {
@@ -219,21 +220,15 @@ fun Rt_Interpreter.evaluateDataAttributeAccess(
     val table = entityDef.sqlMapping.table(frame.sqlCtx)
     val alias = "A00"
 
-    val pSql = SqlBuilder().apply {
-        append("SELECT ")
-        appendColumn(alias, attr.sqlMapping)
-        append(" FROM ")
-        appendName(table)
-        append(" ")
-        append(alias)
-        append(" WHERE ")
-        appendColumn(alias, entityDef.sqlMapping.rowidColumn)
-        append(" = ")
-        append(Rt_IntValue.get(rowid))
-    }.build()
+    val pSql = ParameterizedSql(
+        "SELECT ${renderJooq(DbSqlGen.columnFieldExt(alias, attr.sqlMapping))}" +
+            " FROM ${renderName(table)} $alias" +
+            " WHERE ${renderJooq(DbSqlGen.columnFieldExt(alias, entityDef.sqlMapping.rowidColumn))} = ?",
+        listOf(Rt_IntValue.get(rowid)).toImmList(),
+    )
 
     val results = buildList {
-        pSql.executeQuery(frame.userSqlExec) { row ->
+        frame.userSqlExec.executeQuery(pSql) { row ->
             this += checkNotNull(rtResultType.sqlAdapter) { "No SQL adapter for type: ${rtResultType.name}" }
                 .fromSql(row, 1, false)
         }

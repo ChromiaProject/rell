@@ -26,9 +26,13 @@ import net.postchain.rell.base.compiler.base.core.C_Compiler
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.runtime.ParameterizedSql
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.renderJooq
+import org.jooq.impl.DSL
+import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.runtime.utils.Rt_SnapshotSqlUtils
 import net.postchain.rell.base.runtime.utils.Rt_SqlManagerUtils
 import net.postchain.rell.base.runtime.utils.Rt_Utils
@@ -510,23 +514,23 @@ private class RellPostchainModule(
 
         addEntityConstraints(sqlCtx, sqlExec)
 
-        val sql = ParameterizedSql.generate {
-            it.append("UPDATE ")
-            it.appendName(sqlCtx.mainChainMapping().rowidTable)
-            it.append(" SET last_value = ")
-            it.append(snapshotMaxRowid)
-            it.append(";")
-        }
+        val rowidTable = DSL.table(DSL.name(sqlCtx.mainChainMapping().rowidTable))
+        val update = DSL.update(rowidTable)
+            .set(DSL.field(DSL.name("last_value"), Long::class.java), DSL.field("?", Long::class.java))
+        val sql = ParameterizedSql(
+            renderJooq(update),
+            listOf(Rt_IntValue.get(snapshotMaxRowid)).toImmList(),
+        )
 
-        sql.execute(sqlExec)
+        sqlExec.execute(sql)
     }
 
     private fun addEntityConstraints(sqlCtx: Rt_SqlContext, sqlExec: SqlExecutor) {
         val allEntities = rrApp.sqlDefs.entities + rrApp.sqlDefs.objects.map { it.rEntity }
 
         for (entity in allEntities) {
-            for (sql in SqlGen.genEntityConstraintsAndIndexes(sqlCtx, entity, interpreter)) {
-                sqlExec.execute(sql)
+            for (stmt in SqlGen.genEntityConstraintsAndIndexes(sqlCtx, entity, interpreter)) {
+                sqlExec.execute(stmt)
             }
         }
     }
@@ -583,11 +587,11 @@ private class RellPostchainModule(
 
         if (isObject) {
             val sql = Rt_SnapshotSqlUtils.delete(sqlCtx, entity)
-            sql.execute(sqlExec)
+            sqlExec.execute(sql)
         }
 
         val sql = Rt_SnapshotSqlUtils.insert(sqlCtx, entity, rowid, rtValues)
-        sql.execute(sqlExec)
+        sqlExec.execute(sql)
     }
 }
 

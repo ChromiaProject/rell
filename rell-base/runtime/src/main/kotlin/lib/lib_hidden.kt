@@ -17,11 +17,15 @@ import net.postchain.rell.base.lmodel.L_ParamImplication
 import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_TextType
 import net.postchain.rell.base.model.rr.RR_ConstantValue
+import net.postchain.rell.base.runtime.JOOQ_CTX
+import net.postchain.rell.base.runtime.ParameterizedSql
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.immListOf
+import org.jooq.impl.DSL
 
 internal object Lib_RellHidden {
     val MODULE = C_LibModule.make("rell.hidden", Lib_Rell.MODULE) {
@@ -66,9 +70,9 @@ internal object Lib_RellHidden {
                     val millis = ms.asInteger()
                     val seconds = millis.toDouble() / 1000.0
 
-                    ctx.exeCtx.userSqlExec.execute("SELECT pg_sleep(?)") { params ->
-                        params.setObject(1, seconds)
-                    }
+                    val pgSleep = DSL.function("pg_sleep", Any::class.java, DSL.value(seconds))
+                    val sql = JOOQ_CTX.renderInlined(DSL.select(pgSleep))
+                    ctx.exeCtx.userSqlExec.execute(ParameterizedSql(sql, immListOf()))
 
                     Rt_UnitValue
                 }

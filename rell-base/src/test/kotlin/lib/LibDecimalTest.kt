@@ -1,10 +1,12 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
+@file:OptIn(net.postchain.rell.base.sql.RawSqlAccess::class)
 
 package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
+import net.postchain.rell.base.runtime.RawSqlBoundStatement
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import java.math.BigDecimal
@@ -246,11 +248,11 @@ class LibDecimalTest: BaseRellTest() {
             t.def("entity data { a: decimal; b: decimal; }")
             t.init()
             t.tstCtx.sqlMgr().transaction { sqlExec ->
-                sqlExec.execute("INSERT INTO \"c0.data\"(rowid,a,b) VALUES (?,?,?);") { stmt ->
+                sqlExec.execute(RawSqlBoundStatement("INSERT INTO \"c0.data\"(rowid,a,b) VALUES (?,?,?);") { stmt ->
                     stmt.setInt(1, 1)
                     stmt.setBigDecimal(2, BigDecimal(a))
                     stmt.setBigDecimal(3, BigDecimal(b))
-                }
+                })
             }
             chkEqualsDb0(t, expr)
         }

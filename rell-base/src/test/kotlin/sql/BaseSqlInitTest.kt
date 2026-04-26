@@ -1,9 +1,11 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
+@file:OptIn(RawSqlAccess::class)
 
 package net.postchain.rell.base.sql
 
+import net.postchain.rell.base.runtime.RawSqlStatement
 import net.postchain.rell.base.testutils.BaseContextTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestUtils
@@ -172,7 +174,7 @@ abstract class BaseSqlInitTest: BaseContextTest(useSql = true) {
 
     protected fun execSql(sql: String) {
         tstCtx.sqlMgr().transaction { sqlExec ->
-            sqlExec.execute(sql)
+            sqlExec.execute(RawSqlStatement(sql))
         }
     }
 

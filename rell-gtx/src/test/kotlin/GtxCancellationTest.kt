@@ -1,9 +1,11 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
+@file:OptIn(net.postchain.rell.base.sql.RawSqlAccess::class)
 
 package net.postchain.rell.gtx
 
+import net.postchain.rell.base.runtime.RawSqlStatement
 import net.postchain.rell.gtx.testutils.BaseGtxTest
 import org.junit.jupiter.api.parallel.Isolated
 import java.sql.SQLException
@@ -31,7 +33,7 @@ class GtxCancellationTest: BaseGtxTest() {
         """.trimIndent())
 
         tstCtx.sqlMgr().access { sqlExec ->
-            sqlExec.execute("SET statement_timeout = 1000")
+            sqlExec.execute(RawSqlStatement("SET statement_timeout = 1000"))
         }
 
         try {
@@ -50,7 +52,7 @@ class GtxCancellationTest: BaseGtxTest() {
             }
         } finally {
             tstCtx.sqlMgr().access { sqlExec ->
-                sqlExec.execute("SET statement_timeout = 0")
+                sqlExec.execute(RawSqlStatement("SET statement_timeout = 0"))
             }
         }
     }

@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
+@file:OptIn(RawSqlAccess::class)
 
 package net.postchain.rell.base.sql
 
 import net.postchain.rell.base.model.rr.RR_Attribute
 import net.postchain.rell.base.model.rr.RR_EntityDefinition
-import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
-import net.postchain.rell.base.runtime.Rt_Interpreter
-import net.postchain.rell.base.runtime.Rt_SqlContext
+import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Messages
 import net.postchain.rell.base.utils.*
-import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 
 private const val MSG_BROKEN_META = "Broken metadata"
@@ -114,7 +112,7 @@ object SqlMeta {
         val res = mutableListOf<RecMetaEntity>()
 
         val sql = """SELECT T."id", T."name", T."type", T."log" FROM "$table" T ORDER BY T."id";"""
-        sqlExec.executeQuery(sql, {}) { rs ->
+        sqlExec.executeQuery(ParameterizedSql(sql, immListOf())) { rs ->
             val id = rs.getInt(1)
             val name = rs.getString(2)!!
             val type = rs.getString(3)!!
@@ -137,7 +135,7 @@ object SqlMeta {
         val res = mutableListOf<RecMetaAttr>()
 
         val sql = """SELECT T."class_id", T."name", T."type" FROM "$table" T ORDER BY T."class_id", T."name";"""
-        sqlExec.executeQuery(sql, {}) { rs ->
+        sqlExec.executeQuery(ParameterizedSql(sql, immListOf())) { rs ->
             val classId = rs.getInt(1)
             val name = rs.getString(2)!!
             val type = rs.getString(3)!!
@@ -197,12 +195,14 @@ object SqlMeta {
                 "Missing meta attributes for existing columns in table $table")
     }
 
-    fun genMetaTablesCreate(sqlCtx: Rt_SqlContext): ImmList<String> {
-        val sqls = mutableListOf<String>()
+    fun genMetaTablesCreate(sqlCtx: Rt_SqlContext): ImmList<ExecutableSql> {
+        // CREATE TABLE for the meta-entity / meta-attribute schema. The DDL is fixed-shape — only
+        // the table name varies — so it stays as templated text wrapped in RawSqlStatement.
         val mainChainMapping = sqlCtx.mainChainMapping()
-        sqls += CREATE_TABLE_META_ENTITIES.formatEx(mainChainMapping.metaEntitiesTable)
-        sqls += CREATE_TABLE_META_ATTRIBUTES.formatEx(mainChainMapping.metaAttributesTable)
-        return sqls.toImmList()
+        return immListOf(
+            RawSqlStatement(CREATE_TABLE_META_ENTITIES.formatEx(mainChainMapping.metaEntitiesTable)),
+            RawSqlStatement(CREATE_TABLE_META_ATTRIBUTES.formatEx(mainChainMapping.metaAttributesTable)),
+        )
     }
 
     fun genMetaEntityInserts(
@@ -211,23 +211,25 @@ object SqlMeta {
         entity: RR_EntityDefinition,
         interpreter: Rt_Interpreter,
         entityType: MetaEntityType,
-    ): List<String> {
-        val sqls = mutableListOf<String>()
+    ): List<ExecutableSql> {
+        val sqls = mutableListOf<ExecutableSql>()
 
         val entityTable = DSL.table(DSL.name(sqlCtx.mainChainMapping().metaEntitiesTable))
 
-        sqls += SqlGen.DSL_CTX.insertInto(
-            entityTable,
-            DSL.field("id"),
-            DSL.field("name"),
-            DSL.field("type"),
-            DSL.field("log"),
-        ).values(
-            classId,
-            entity.sqlMapping.metaName,
-            entityType.code,
-            entity.flags.log,
-        ).getSQL(ParamType.INLINED) + ";"
+        sqls += JooqDdlStatement(
+            JOOQ_CTX.insertInto(
+                entityTable,
+                DSL.field("id"),
+                DSL.field("name"),
+                DSL.field("type"),
+                DSL.field("log"),
+            ).values(
+                classId,
+                entity.sqlMapping.metaName,
+                entityType.code,
+                entity.flags.log,
+            )
+        )
 
         sqls += genMetaAttrsInserts(sqlCtx, classId, entity.attributes.values, interpreter)
 
@@ -239,41 +241,41 @@ object SqlMeta {
         classId: Int,
         attrs: Collection<RR_Attribute>,
         interpreter: Rt_Interpreter,
-    ): ImmList<String> {
-        val sqls = mutableListOf<String>()
-
+    ): ImmList<ExecutableSql> {
         val attrTable = DSL.table(DSL.name(sqlCtx.mainChainMapping().metaAttributesTable))
 
+        val sqls = mutableListOf<ExecutableSql>()
         for (attr in attrs) {
-            sqls += SqlGen.DSL_CTX.insertInto(
-                attrTable,
-                DSL.field("class_id"),
-                DSL.field("name"),
-                DSL.field("type"),
-            ).values(
-                classId,
-                attr.sqlMapping,
-                interpreter.resolveType(attr.type).sqlAdapter!!.metaName(sqlCtx),
-            ).getSQL(ParamType.INLINED) + ";"
+            sqls += JooqDdlStatement(
+                JOOQ_CTX.insertInto(
+                    attrTable,
+                    DSL.field("class_id"),
+                    DSL.field("name"),
+                    DSL.field("type"),
+                ).values(
+                    classId,
+                    attr.sqlMapping,
+                    interpreter.resolveType(attr.type).sqlAdapter!!.metaName(sqlCtx),
+                )
+            )
         }
-
         return sqls.toImmList()
     }
 
-    fun genMetaAttrsDeletes(sqlCtx: Rt_SqlContext, classId: Int, attrNames: List<String>): ImmList<String> {
-        val sqls = mutableListOf<String>()
-
+    fun genMetaAttrsDeletes(sqlCtx: Rt_SqlContext, classId: Int, attrNames: List<String>): ImmList<ExecutableSql> {
         val attrTable = DSL.table(DSL.name(sqlCtx.mainChainMapping().metaAttributesTable))
 
+        val sqls = mutableListOf<ExecutableSql>()
         for (attrName in attrNames) {
-            sqls += SqlGen.DSL_CTX
-                .deleteFrom(attrTable)
-                .where(
-                    DSL.field("class_id").eq(classId)
-                        .and(DSL.field("name").eq(attrName))
-                ).getSQL(ParamType.INLINED) + ";"
+            sqls += JooqDdlStatement(
+                JOOQ_CTX
+                    .deleteFrom(attrTable)
+                    .where(
+                        DSL.field("class_id").eq(classId)
+                            .and(DSL.field("name").eq(attrName))
+                    )
+            )
         }
-
         return sqls.toImmList()
     }
 }

@@ -1,10 +1,12 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
+@file:OptIn(RawSqlAccess::class)
 
 package net.postchain.rell.base.testutils
 
 import net.postchain.common.BlockchainRid
+import net.postchain.rell.base.runtime.RawSqlStatement
 import net.postchain.rell.base.runtime.utils.Rt_SqlManagerUtils
 import net.postchain.rell.base.sql.*
 import java.sql.Connection
@@ -48,6 +50,16 @@ class RellTestContext(
 
     var sqlLogging = false
 
+    /**
+     * Optional user-supplied [SqlInterceptor] composed onto the outer SqlManager. Used by tests that need to inspect
+     * every SQL string and binding sent to the database.
+     */
+    var customSqlInterceptor: SqlInterceptor? = null
+        set(value) {
+            checkNotInited()
+            field = value
+        }
+
     var useSql: Boolean = useSql
         set(value) {
             checkNotInited()
@@ -65,6 +77,7 @@ class RellTestContext(
         inited = true
     }
 
+    @Suppress("ConvertTryFinallyToUseCall")
     private fun initSql() {
         val conn = SqlTestUtils.createIsolatedSchemaConnection()
         var closeable: Connection? = conn
@@ -82,7 +95,7 @@ class RellTestContext(
 
                 if (inserts.isNotEmpty()) {
                     val insertsSql = inserts.joinToString("\n")
-                    sqlExec.execute(insertsSql)
+                    sqlExec.execute(RawSqlStatement(insertsSql))
                 }
             }
 
@@ -97,10 +110,11 @@ class RellTestContext(
     private fun createSqlManager(con: Connection): SqlMgrHolder {
         var sqlCon = SqlManagerConnection.create(con, sqlLogging)
         val innerMgr = ConnectionSqlManager(sqlCon)
-        sqlCon = TestSqlConnection(sqlCon, sqlStats)
+        sqlCon = InterceptingSqlManagerConnection.wrap(sqlCon, StatsSqlInterceptor(sqlStats))
 
         val interceptor = Rt_SqlManagerUtils.wrapSqlInterceptor(null, logErrors = false)
         sqlCon = InterceptingSqlManagerConnection.wrap(sqlCon, interceptor)
+        sqlCon = InterceptingSqlManagerConnection.wrap(sqlCon, customSqlInterceptor)
         val outerMgr = ConnectionSqlManager(sqlCon)
 
         return SqlMgrHolder(innerMgr, outerMgr)
@@ -115,7 +129,7 @@ class RellTestContext(
         }
 
         val insertSql = inserts.joinToString("\n") { it }
-        sqlExecLoc.execute(insertSql)
+        sqlExecLoc.execute(RawSqlStatement(insertSql))
     }
 
     private fun checkNotInited() {
@@ -189,35 +203,19 @@ class RellTestContext(
         val sqls: Queue<String> = ArrayDeque()
     }
 
-    private class TestSqlConnection(private val con: SqlManagerConnection, private val stats: TestSqlStats): SqlManagerConnection {
-        override fun createExecutor(): SqlExecutor {
-            val exec = con.createExecutor()
-            return TestSqlExecutor(exec)
+    private class StatsSqlInterceptor(private val stats: TestSqlStats): SqlInterceptor {
+        override fun invoke(
+            sql: String?,
+            attributes: SqlExecutor.Attributes,
+            preparator: SqlPreparator?,
+            code: (SqlPreparator?) -> Int?,
+        ): Int? {
+            if (sql != null && sql !in TRANSACTION_CONTROL_SQLS) stats.sqls.add(sql)
+            return code(preparator)
         }
 
-        override fun <T> transactionBody(code: () -> T): T = con.transactionBody(code)
-        override fun commit() = con.commit()
-        override fun rollback() = con.rollback()
-        override fun checkNoTx() = con.checkNoTx()
-
-        private inner class TestSqlExecutor(private val exec: SqlExecutor): SqlExecutor() {
-            override fun <T> connection(code: (Connection) -> T): T = exec.connection(code)
-            override fun hasRealConnection() = exec.hasRealConnection()
-
-            override fun execute(sql: String) {
-                stats.sqls.add(sql)
-                exec.execute(sql)
-            }
-
-            override fun execute(sql: String, preparator: SqlPreparator) {
-                stats.sqls.add(sql)
-                exec.execute(sql, preparator)
-            }
-
-            override fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit) {
-                stats.sqls.add(sql)
-                exec.executeQuery(sql, preparator, consumer)
-            }
+        companion object {
+            private val TRANSACTION_CONTROL_SQLS = setOf("BEGIN TRANSACTION", "COMMIT TRANSACTION", "ROLLBACK TRANSACTION")
         }
     }
 

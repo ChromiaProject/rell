@@ -14,6 +14,9 @@ import net.postchain.rell.base.model.expr.Rt_AtExprExtras
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
+import org.jooq.Field
+import org.jooq.SortField
+import org.jooq.impl.DSL
 
 fun Rt_Interpreter.evaluateDbAt(expr: RR_Expr.DbAt, frame: Rt_CallFrame): Rt_Value {
     val extras = expr.extras?.let { evaluateAtExtras(it, frame) } ?: Rt_AtExprExtras.NULL
@@ -21,16 +24,20 @@ fun Rt_Interpreter.evaluateDbAt(expr: RR_Expr.DbAt, frame: Rt_CallFrame): Rt_Val
     val nonOmitWhat = expr.what.filter { !it.flags.omit }
 
     // Pre-evaluate entity join WHERE expressions outside internals.block, inside from.block.
+    // Their binds go into a separate side-list; the global `bindList` is appended in render
+    // order (SELECT → FROM/JOIN ON → WHERE → ...) by [DbSqlGen.buildSelectQuery] using these
+    // pre-captured side-binds, so the parallel `?` order is correct even though Field
+    // construction here happens before SELECT/WHERE Field construction.
     val sqlGen = DbSqlGen(this, frame.sqlCtx, expr.from.entities)
-    val entityJoinWheres = mutableMapOf<Int, ParameterizedSql>()
+    val entityJoinWhereSpecs = mutableMapOf<Int, DbSqlGen.JoinWhereSpec>()
     frame.blockOpt(expr.from.block) {
         for (entity in expr.from.entities) {
             val joinWhere = entity.joinWhere
             if (joinWhere != null) {
-                val joinSql = frame.blockOpt(entity.joinBlock) {
-                    ParameterizedSql.generate { b -> sqlGen.dbExprToSql(joinWhere, b, frame, false) }
+                val spec = frame.blockOpt(entity.joinBlock) {
+                    sqlGen.captureJoinWhere(joinWhere, frame)
                 }
-                entityJoinWheres[entity.entityId] = joinSql
+                entityJoinWhereSpecs[entity.entityId] = spec
             }
         }
     }
@@ -44,32 +51,30 @@ fun Rt_Interpreter.evaluateDbAt(expr: RR_Expr.DbAt, frame: Rt_CallFrame): Rt_Val
     val (rCardinality, values) = frame.blockOpt(if (needsFromBlock) fromBlock else null) {
         frame.blockOpt(internalsBlock) {
             // Generate SELECT columns
-            val selectSqls = nonOmitWhat.map { field ->
-                ParameterizedSql.generate { b -> sqlGen.dbExprToSql(field.expr, b, frame, false) }
-            }
+            val selectFields = nonOmitWhat.map { field -> sqlGen.dbExprToField(field.expr, frame) }
+            // Position in bindList where join-where binds need to splice (between SELECT and WHERE
+            // binds, matching jOOQ's render order: SELECT → FROM/JOIN ON → WHERE → ...).
+            val joinWhereBindPosition = sqlGen.bindCount()
 
             // Generate WHERE clause
-            val whereSql = expr.where?.let { w ->
-                ParameterizedSql.generate { b -> sqlGen.dbExprToSql(w, b, frame, false) }
-            }
+            val whereField = expr.where?.let { w -> sqlGen.dbExprToField(w, frame) }
 
             // Generate GROUP BY
-            val groupBySqls = expr.what.filter { it.flags.group }.map { field ->
-                ParameterizedSql.generate { b -> sqlGen.dbExprToSql(field.expr, b, frame, false) }
-            }
+            val groupByFields = expr.what.filter { it.flags.group }
+                .map { field -> sqlGen.dbExprToField(field.expr, frame) }
 
             // Generate ORDER BY
-            val orderBySqls = generateDbAtOrderBy(expr, sqlGen, frame)
+            val orderByEntries = generateDbAtOrderBy(expr, sqlGen, frame)
 
             // Build full SELECT
             val sql = sqlGen.buildSelectQuery(
-                selectSqls,
-                whereSql,
-                groupBySqls,
-                orderBySqls,
+                selectFields,
+                whereField,
+                groupByFields,
+                orderByEntries,
                 extras,
-                expr.cardinality.isMany,
-                entityJoinWheres,
+                entityJoinWhereSpecs,
+                joinWhereBindPosition,
             )
             val resultTypes = nonOmitWhat.map { resolveType(it.resultType) }.toImmList()
             val select = SqlSelectRt(sql, resultTypes)
@@ -430,51 +435,70 @@ private fun Rt_Interpreter.applyCombiner(
     }
 }
 
-private data class OrderByElement(val baseSql: ParameterizedSql, val desc: Boolean)
+private data class OrderByElement(val baseField: Field<Any?>, val desc: Boolean)
 
 fun Rt_Interpreter.generateDbAtOrderBy(
     expr: RR_Expr.DbAt,
     sqlGen: DbSqlGen,
     frame: Rt_CallFrame
-): List<ParameterizedSql> {
+): List<SortField<*>> {
+    // Build entries while deduplicating in-place by rendered base SQL — matches the R_ model's
+    // translateOrderBy de-dup. A duplicate entry that has already been built must roll its binds
+    // back so the parallel bind list lines up with the `?` placeholders in the rendered SQL.
+    val seen = mutableSetOf<Pair<String, List<Rt_Value>>>()
     val elements = mutableListOf<OrderByElement>()
 
-    // Add explicit sort fields
+    fun tryAdd(field: Field<Any?>, desc: Boolean, savedBinds: Int) {
+        val rendered = renderJooq(field)
+        val newBinds = sqlGen.binds().subList(savedBinds, sqlGen.bindCount()).toList()
+        // Dedup by rendered SQL AND by the bind values added during this Field's construction.
+        // Mirrors the R_ model's `distinctBy { it.baseSql }` where `baseSql` was a (sql, params)
+        // ParameterizedSql — two `.firstName[0]` and `.firstName[1]` look identical in the rendered
+        // template but differ by their bound `0`/`1` values, so they must remain distinct.
+        if (seen.add(rendered to newBinds)) {
+            elements.add(OrderByElement(field, desc))
+        } else {
+            sqlGen.truncateBinds(savedBinds)
+        }
+    }
+
+    // Explicit sort fields
     for (field in expr.what) {
         if (field.flags.sort != 0) {
-            val sql = ParameterizedSql.generate { b -> sqlGen.dbExprToSql(field.expr, b, frame, false) }
-            elements.add(OrderByElement(sql, field.flags.sort < 0))
+            val saved = sqlGen.bindCount()
+            val f = sqlGen.dbExprToField(field.expr, frame)
+            tryAdd(f, field.flags.sort < 0, saved)
         }
     }
 
     val hasGroup = expr.what.any { it.flags.group }
     val hasAggregate = expr.what.any { it.flags.aggregate }
     if (hasGroup) {
-        // When grouping, auto-add group fields to ORDER BY (ascending) for deterministic results.
         for (field in expr.what) {
             if (field.flags.group && field.flags.sort == 0) {
-                val sql = ParameterizedSql.generate { b -> sqlGen.dbExprToSql(field.expr, b, frame, false) }
-                elements.add(OrderByElement(sql, false))
+                val saved = sqlGen.bindCount()
+                val f = sqlGen.dbExprToField(field.expr, frame)
+                tryAdd(f, false, saved)
             }
         }
     } else if (!hasAggregate && (expr.cardinality.isMany || expr.extras?.limit != null || expr.extras?.offset != null)) {
-        // Add default ordering by entity rowids for many-cardinality queries.
         for (entity in expr.from.entities) {
             val entityDef = rrApp.allEntities[entity.entityDefIndex]
             val alias = sqlGen.getEntityAlias(entity.entityId)
             if (alias != null) {
-                val sql = ParameterizedSql.generate { b ->
-                    b.appendColumn(alias, entityDef.sqlMapping.rowidColumn)
-                }
-                elements.add(OrderByElement(sql, false))
+                val saved = sqlGen.bindCount()
+                val f = DbSqlGen.columnFieldExt(alias, entityDef.sqlMapping.rowidColumn)
+                tryAdd(f, false, saved)
             }
         }
     }
 
-    // Deduplicate ORDER BY entries by base SQL including params (mirrors R_ model behavior in translateOrderBy)
-    return elements.distinctBy { it.baseSql }.map { element ->
-        if (element.desc) ParameterizedSql("${element.baseSql.sql} DESC", element.baseSql.params)
-        else element.baseSql
+    // Emit ascending sort as the bare field (no `ASC`) and descending as `field DESC` to match
+    // the legacy hand-rolled emitter's byte output. `Field.sortDefault()` renders without any
+    // direction keyword; descending sorts wrap the rendered field with a trailing ` DESC`.
+    return elements.map { e ->
+        if (e.desc) DSL.field(renderJooq(e.baseField) + " DESC", Any::class.java).sortDefault()
+        else e.baseField.sortDefault()
     }
 }
 

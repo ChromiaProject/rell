@@ -1,9 +1,13 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
+@file:OptIn(net.postchain.rell.base.sql.RawSqlAccess::class)
 
 package net.postchain.rell.base.lang.type
 
+import net.postchain.rell.base.runtime.RawSqlBoundQuery
+import net.postchain.rell.base.runtime.RawSqlBoundStatement
+import net.postchain.rell.base.runtime.RawSqlStatement
 import net.postchain.rell.base.testutils.BaseRellTest
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -31,16 +35,16 @@ class DecimalSqlTest: BaseRellTest(useSql = true) {
         val sqlMgr = tstCtx.sqlMgr()
 
         sqlMgr.transaction { sqlExec ->
-            sqlExec.execute("DELETE FROM $table;")
-            sqlExec.execute("INSERT INTO $table(k, v) VALUES (?, ?);") { stmt ->
+            sqlExec.execute(RawSqlStatement("DELETE FROM $table;"))
+            sqlExec.execute(RawSqlBoundStatement("INSERT INTO $table(k, v) VALUES (?, ?);") { stmt ->
                 stmt.setInt(1, 100)
                 stmt.setBigDecimal(2, value)
-            }
+            })
         }
 
         val list = mutableListOf<Pair<Int, BigDecimal>>()
         sqlMgr.access { sqlExec ->
-            sqlExec.executeQuery("SELECT k, v FROM $table ORDER BY k;", {}) { rs ->
+            sqlExec.executeQuery(RawSqlBoundQuery("SELECT k, v FROM $table ORDER BY k;")) { rs ->
                 list.add(rs.getInt(1) to rs.getBigDecimal(2)!!)
             }
         }
@@ -75,25 +79,25 @@ class DecimalSqlTest: BaseRellTest(useSql = true) {
         val sqlMgr = tstCtx.sqlMgr()
 
         sqlMgr.transaction { sqlExec ->
-            sqlExec.execute("DELETE FROM $table;")
-            sqlExec.execute("INSERT INTO $table(k, v) VALUES (?, ?);") { stmt ->
+            sqlExec.execute(RawSqlStatement("DELETE FROM $table;"))
+            sqlExec.execute(RawSqlBoundStatement("INSERT INTO $table(k, v) VALUES (?, ?);") { stmt ->
                 stmt.setInt(1, 100)
                 stmt.setBigDecimal(2, value1)
-            }
+            })
         }
 
         val list = mutableListOf<Int>()
         sqlMgr.access { sqlExec ->
-            sqlExec.executeQuery("SELECT k FROM $table WHERE v <> ?;", { s -> s.setBigDecimal(1, value2) }) { rs ->
-                list.add(rs.getInt(1))
-            }
+            sqlExec.executeQuery(
+                RawSqlBoundQuery("SELECT k FROM $table WHERE v <> ?;") { s -> s.setBigDecimal(1, value2) },
+            ) { rs -> list.add(rs.getInt(1)) }
         }
         assertEquals(listOf(), list)
 
         sqlMgr.access { sqlExec ->
-            sqlExec.executeQuery("SELECT k FROM $table WHERE v = ?;", { s -> s.setBigDecimal(1, value2) }) { rs ->
-                list.add(rs.getInt(1))
-            }
+            sqlExec.executeQuery(
+                RawSqlBoundQuery("SELECT k FROM $table WHERE v = ?;") { s -> s.setBigDecimal(1, value2) },
+            ) { rs -> list.add(rs.getInt(1)) }
         }
         assertEquals(listOf(100), list)
     }
@@ -102,7 +106,7 @@ class DecimalSqlTest: BaseRellTest(useSql = true) {
         val table = "decimal_pure_sql_test"
         val sqlMgr = tstCtx.sqlMgr()
         sqlMgr.transaction { sqlExec ->
-            sqlExec.execute("CREATE TABLE $table(k INT NOT NULL PRIMARY KEY, v NUMERIC NOT NULL);")
+            sqlExec.execute(RawSqlStatement("CREATE TABLE $table(k INT NOT NULL PRIMARY KEY, v NUMERIC NOT NULL);"))
         }
     }
 

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
+@file:OptIn(net.postchain.rell.base.sql.RawSqlAccess::class)
 
 package net.postchain.rell.gtx.it
 
@@ -12,6 +13,7 @@ import net.postchain.base.snapshot.SnapshotDatumRepository
 import net.postchain.devtools.PostchainTestNode
 import net.postchain.devtools.getModules
 import net.postchain.gtx.SnapshotAware
+import net.postchain.rell.base.runtime.RawSqlStatement
 import net.postchain.rell.base.sql.ConnectionSqlManager
 import net.postchain.rell.base.sql.SqlManagerConnection
 import net.postchain.rell.base.testutils.SqlTestUtils
@@ -204,11 +206,11 @@ class SnapshotModuleTest: BaseGtxIntegrationTest() {
 
     private fun restore(node: PostchainTestNode) {
         sqlMgr.transaction {
-            it.execute("""UPDATE "c1.rowid_gen" SET last_value = 0;""")
-            it.execute("""UPDATE "c1.state" SET a = 111, b = 'foo';""")
-            it.execute("""DELETE FROM "c1.data";""")
-            it.execute("""DELETE FROM "c1.user";""")
-            it.execute("""DELETE FROM "c1.company";""")
+            it.execute(RawSqlStatement("""UPDATE "c1.rowid_gen" SET last_value = 0;"""))
+            it.execute(RawSqlStatement("""UPDATE "c1.state" SET a = 111, b = 'foo';"""))
+            it.execute(RawSqlStatement("""DELETE FROM "c1.data";"""))
+            it.execute(RawSqlStatement("""DELETE FROM "c1.user";"""))
+            it.execute(RawSqlStatement("""DELETE FROM "c1.company";"""))
         }
 
         val module = node.getModules(1).filterIsInstance<SnapshotAware>().single()

@@ -66,3 +66,21 @@ A crafted RR_App binary cannot make the interpreter do anything that valid Rell 
 data, not executable code: it can only express operations the compiler itself emits, and no others. A malformed binary
 may crash the interpreter or cause denial-of-service at the app level, but cannot escalate privileges or bypass the
 standard library. In the Postchain deployment model, that impact is confined to the app that shipped the bad binary.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+6. Runtime: SQL generation rebuilt on jOOQ
+
+Every PostgreSQL statement the runtime emits — entity reads, INSERT/UPDATE/DELETE, schema initialisation
+(CREATE TABLE, ALTER TABLE, CREATE INDEX), snapshots, meta-data updates — is now built from a structured
+jOOQ query AST instead of concatenated strings. Identifiers go through jOOQ's PostgreSQL renderer, which
+removes a class of identifier-quoting risks the previous emitter relied on convention to avoid.
+
+Two latent schema-init bugs surfaced and were fixed by the rewrite. Adding an attribute that had both a
+foreign-key and a size-check constraint silently dropped one of the two. `@max_size(N)` with `N` above
+2,147,483,647 was truncated to a negative value, producing a CHECK that rejected every INSERT. Both
+behaviours now work as documented.
+
+The exact SQL text written to PostgreSQL logs and pg_dump differs in whitespace, parenthesisation, and
+keyword casing — the queries are semantically equivalent and produce identical result sets. A new
+regression test (rell-base/src/test/kotlin/sql/SqlEmissionTest.kt) pins the emitted SQL for a
+representative corpus so any future drift is caught at CI time.

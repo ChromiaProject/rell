@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
@@ -13,7 +13,13 @@ import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.sql.SqlInterceptor
 import net.postchain.rell.base.sql.SqlPreparator
 import net.postchain.rell.base.utils.ImmMap
+import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
+import org.jooq.Field
+import org.jooq.Record
+import org.jooq.Table
+import org.jooq.impl.DSL
 import java.sql.SQLException
 
 private const val POSTGRES_SQLSTATE_QUERY_CANCELED = "57014"
@@ -84,11 +90,19 @@ object Rt_SnapshotSqlUtils {
         val table = entity.sqlMapping.table(sqlCtx)
         val attrs = entity.strAttributes.values.toList()
 
-        val columns = attrs.joinToString(", ") { "\"${it.sqlMapping}\"" }
-        val sql = """SELECT $columns FROM "$table" LIMIT 1"""
+        // No bind values: use jOOQ's typed `selectQuery()` with an inline LIMIT and renderInlined
+        // so the literal 1 is embedded. jOOQ's PG dialect renders this as the SQL-standard
+        // `OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY` rather than `LIMIT 1` — functionally equivalent
+        // on PG, and this is a SYS-category init read that no test pins on byte format.
+        val tableRef: Table<Record> = DSL.table(DSL.name(table))
+        val q = JOOQ_CTX.selectQuery()
+        for (attr in attrs) q.addSelect(DSL.field(DSL.name(attr.sqlMapping)))
+        q.addFrom(tableRef)
+        q.addLimit(1)
+        val sql = JOOQ_CTX.renderInlined(q)
 
         val attrValues = mutableMapOf<String, Gtv>()
-        sqlExec.executeQuery(sql, SqlPreparator.NULL) { row ->
+        sqlExec.executeQuery(ParameterizedSql(sql, immListOf())) { row ->
             for ((i, attr) in attrs.withIndex()) {
                 val rtType = interpreter.resolveType(attr.type)
                 val sqlAdapter = checkNotNull(rtType.sqlAdapter) { "No SQL adapter for type: ${rtType.name}" }
@@ -112,40 +126,26 @@ object Rt_SnapshotSqlUtils {
         rowid: Long,
         values: List<Rt_Value>,
     ): ParameterizedSql {
-        val b = SqlBuilder()
-
-        b.append("INSERT INTO ")
-        b.appendName(entity.sqlMapping.table(sqlCtx))
-
-        b.append("(")
-        b.appendName(entity.sqlMapping.rowidColumn)
-        b.append(entity.attributes.values, "") { attr ->
-            b.append(", ")
-            b.appendName(attr.sqlMapping)
+        val table: Table<Record> = DSL.table(DSL.name(entity.sqlMapping.table(sqlCtx)))
+        val rowidLiteral = DSL.field("$rowid", Any::class.java)
+        val placeholder: Field<Any> = DSL.field("?", Any::class.java)
+        val row = LinkedHashMap<Field<*>, Field<*>>()
+        row[DSL.field(DSL.name(entity.sqlMapping.rowidColumn))] = rowidLiteral
+        for (attr in entity.attributes.values) {
+            row[DSL.field(DSL.name(attr.sqlMapping))] = placeholder
         }
-        b.append(")")
-
-        b.append(" VALUES (")
-        b.append(rowid)
-
-        for (value in values) {
-            b.append(", ")
-            b.append(value)
-        }
-
-        b.append(");")
-        return b.build()
+        val q = JOOQ_CTX.insertQuery(table)
+        q.addValues(row)
+        return ParameterizedSql("${renderJooq(q)};", values.toImmList())
     }
 
     fun delete(
         sqlCtx: Rt_SqlContext,
         entity: RR_EntityDefinition,
     ): ParameterizedSql {
-        val b = SqlBuilder()
-        b.append("DELETE FROM ")
-        b.appendName(entity.sqlMapping.table(sqlCtx))
-        b.append(";")
-        return b.build()
+        val table: Table<Record> = DSL.table(DSL.name(entity.sqlMapping.table(sqlCtx)))
+        val q = JOOQ_CTX.deleteQuery(table)
+        return ParameterizedSql("${renderJooq(q)};", immListOf())
     }
 
     @Suppress("SqlWithoutWhere") fun initObjectSnapshotIds(
@@ -163,19 +163,39 @@ object Rt_SnapshotSqlUtils {
             val table = entity.sqlMapping.table(sqlCtx)
             val rowidCol = entity.sqlMapping.rowidColumn
 
+            // SELECT "rowid" FROM "<table>" LIMIT 1
+            val tableRef: Table<Record> = DSL.table(DSL.name(table))
+            val rowidField: Field<Any> = DSL.field(DSL.name(rowidCol))
+            val selectQ = JOOQ_CTX.selectQuery()
+            selectQ.addSelect(rowidField)
+            selectQ.addFrom(tableRef)
+            selectQ.addLimit(1)
+
             var rowid = 0L
-            sqlExec.executeQuery(
-                """SELECT "$rowidCol" FROM "$table" LIMIT 1""",
-                SqlPreparator.NULL,
-            ) { row ->
+            sqlExec.executeQuery(ParameterizedSql(JOOQ_CTX.renderInlined(selectQ), immListOf())) { row ->
                 rowid = row.getLong(1)
             }
 
             if (rowid == 0L) {
-                sqlExec.executeQuery("""SELECT "$rowidFunction"()""", SqlPreparator.NULL) { row ->
+                // SELECT "<chain>.make_rowid"() — the function call is built via DSL.field with a
+                // {0}-substituted Name so the chain-qualified identifier is escaped correctly.
+                val rowidFnCall = DSL.field("{0}()", Any::class.java, DSL.name(rowidFunction))
+                sqlExec.executeQuery(
+                    ParameterizedSql(
+                        "SELECT ${renderJooq(rowidFnCall)}",
+                        immListOf(),
+                    ),
+                ) { row ->
                     rowid = row.getLong(1)
                 }
-                sqlExec.execute("""UPDATE "$table" SET "$rowidCol" = $rowid""")
+                // UPDATE "<table>" SET "rowid" = <rowid-literal>
+                val updateQ = JOOQ_CTX.updateQuery(tableRef)
+                updateQ.addValues(
+                    LinkedHashMap<Field<*>, Field<*>>().also { m ->
+                        m[rowidField] = DSL.field("$rowid", Any::class.java)
+                    },
+                )
+                sqlExec.execute(JooqDdlStatement(updateQ))
             }
 
             result[entity.sqlMapping.metaName] = rowid
