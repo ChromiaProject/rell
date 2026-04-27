@@ -8,7 +8,7 @@ tables, and database analysis.
 
 ## Prerequisites
 
-- JDK 21 and Maven; the project targets JDK 21 and async-profiler 4.3, see [local.properties](#localproperties) below
+- JDK 21; the project targets JDK 21 and async-profiler 4.3, see [local.properties](#localproperties) below
 - Docker, for PostgreSQL via `work/psql/psql-docker.sh`
 - Python 3.10+, standard library only
 - PostgreSQL client tools (`psql`, `pg_isready`) for DB statistics

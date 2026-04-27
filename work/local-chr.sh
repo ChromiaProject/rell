@@ -53,8 +53,8 @@ update_rell_version() {
 
     # Update chromia-cli with the correct Rell version (core + dokka plugin)
     cd "$CHR_REPO_DIR"
-    mvn versions:set-property -Dproperty=rell.version -DnewVersion="$RELL_VERSION"
-    mvn versions:set-property -Dproperty=rell.dokka.version -DnewVersion="$RELL_VERSION"
+    ./mvnw versions:set-property -Dproperty=rell.version -DnewVersion="$RELL_VERSION"
+    ./mvnw versions:set-property -Dproperty=rell.dokka.version -DnewVersion="$RELL_VERSION"
     cd "$REPO_ROOT"
 }
 
@@ -62,7 +62,7 @@ build_chromia_cli() {
     echo "Building chromia-cli distribution..."
     REPO_ROOT=$(pwd)
     cd "$CHR_REPO_DIR"
-    mvn -DskipTests -DskipITs install
+    ./mvnw -DskipTests -DskipITs install
     cd "$REPO_ROOT"
 }
 
@@ -103,11 +103,6 @@ fi
 
 if ! command -v java &> /dev/null; then
     echo "Error: Java is not installed. Please install Java and try again."
-    exit 1
-fi
-
-if ! command -v mvn &> /dev/null; then
-    echo "Error: Maven is not installed. Please install Maven and try again."
     exit 1
 fi
 

@@ -22,7 +22,6 @@ Rell's two key features are blockchain integration and SQL-like capabilities:
 2. **JDK 21** - The project requires Java Development Kit 21 (can be managed by IDEA)
 3. **[PostgreSQL](https://www.postgresql.org/download/)** (`psql`) - For setting up PostgreSQL for core module tests
 4. **[Docker](https://docs.docker.com/get-started/get-docker/)** - For running PostgreSQL in an isolated container and for Testcontainers-based integration tests
-5. **[Maven](https://maven.apache.org/)** (optional) - Required by `work/local-chr.sh` and `work/build-local-docs.sh` (see [scripts requiring maven](#scripts-requiring-maven))
 
 ## Project Structure
 
@@ -225,9 +224,7 @@ chr query -brid <BRID> <QUERY_NAME> <ARGS_AS_GTV_DICT_STR>
 chr tx -brid <BRID> <OP_NAME> ARG_AS_GTV_STR*
 ```
 
-### Scripts Requiring Maven
-
-The following scripts require [Maven](https://maven.apache.org/) to be installed, as they interact with the Chromia CLI which uses a Maven-based build.
+### Chromia CLI Scripts
 
 #### local-chr.sh
 
