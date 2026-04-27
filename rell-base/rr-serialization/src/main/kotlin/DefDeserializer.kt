@@ -140,7 +140,7 @@ fun deserializeStructDefinition(fb: FbStructDefinition): RR_StructDefinition {
             typeFlags = TypeFlags(
                 pure = fbFlags.pure,
                 mutable = fbFlags.mutable,
-                gtv = GtvCompatibility(fromGtv = fbFlags.gtvFrom, toGtv = fbFlags.gtvTo),
+                gtv = GtvCompatibility.of(fromGtv = fbFlags.gtvFrom, toGtv = fbFlags.gtvTo),
                 virtualable = fbFlags.virtualable,
                 mixedTuple = fbFlags.mixedTuple,
                 hasTypeVariable = fbFlags.hasTypeVariable,
@@ -153,7 +153,7 @@ fun deserializeStructDefinition(fb: FbStructDefinition): RR_StructDefinition {
             typeFlags = TypeFlags(
                 pure = true,
                 mutable = false,
-                gtv = GtvCompatibility(fromGtv = true, toGtv = true),
+                gtv = GtvCompatibility.FULL,
                 virtualable = true,
                 mixedTuple = false,
                 hasTypeVariable = false

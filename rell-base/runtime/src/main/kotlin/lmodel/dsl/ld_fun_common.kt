@@ -23,7 +23,8 @@ abstract class Ld_CommonFunctionDslImpl(
     private val commonMaker: Ld_CommonFunctionMaker,
     private val bodyDsl: Ld_FunctionBodyDsl,
 ): Ld_CommonFunctionDsl, Ld_FunctionBodyDsl by bodyDsl, Ld_MemberDsl by Ld_MemberDslImpl(commonMaker) {
-    override val fnSimpleName: String get() = bodyDsl.fnSimpleName
+    override val fnSimpleName: String
+        get() = bodyDsl.fnSimpleName
 
     override fun deprecated(newName: String, error: Boolean) {
         commonMaker.deprecated(C_Deprecated(useInstead = newName, error = error))

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.node.IntNode
 import com.fasterxml.jackson.databind.node.LongNode
 import com.fasterxml.jackson.databind.node.ShortNode
 import net.postchain.rell.base.lib.type.JsonUtils.canBeRellInteger
-import net.postchain.rell.base.lib.type.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.testutils.BaseRellTest
 import java.math.BigInteger
 import kotlin.test.Test

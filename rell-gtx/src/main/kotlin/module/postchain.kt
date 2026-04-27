@@ -26,7 +26,6 @@ import net.postchain.rell.base.compiler.base.core.C_Compiler
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.runtime.ParameterizedSql
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.*
@@ -150,7 +149,7 @@ private class RellGTXOperation(
     override fun checkCorrectness(ctxt: EContext) {
         handleError {
             val exeCtx = makeCheckCorrectnessExeCtx(ctxt)
-            val gtvCtx = makeGtvToRtContext(GtvToRtDefaultValueEvaluator.getError(), validateOnly = true)
+            val gtvCtx = makeGtvToRtContext(null, validateOnly = true)
             val rtArgs = makeArgs(exeCtx, gtvCtx)
             gtvCtx.finish(exeCtx)
             module.appCtx.interpreter.executeOperationGuard(rrOperation, exeCtx, rtArgs)
@@ -241,7 +240,7 @@ private class RellGTXOperation(
     }
 
     private fun makeGtvToRtContext(
-        defaultValueEvaluator: GtvToRtDefaultValueEvaluator,
+        defaultValueEvaluator: GtvToRtDefaultValueEvaluator?,
         validateOnly: Boolean = false,
     ): GtvToRtContext {
         return GtvToRtContext.make(
@@ -373,8 +372,8 @@ private class RellPostchainModule(
         val rtArgs = translateQueryArgs(defCtx, rrQuery, args)
         val rtResult = interpreter.callQuery(rrQuery, exeCtx, rtArgs)
 
-        val rtType = interpreter.resolveType(rrQuery.type())
-        val gtvResult = rtType.gtvConversion!!.rtToGtv(rtResult, GTV_QUERY_PRETTY)
+        val resultType = interpreter.resolveType(rrQuery.type())
+        val gtvResult = resultType.gtvConversion!!.rtToGtv(rtResult, GTV_QUERY_PRETTY)
         return gtvResult
     }
 

@@ -4,8 +4,6 @@
 
 package net.postchain.rell.base.lib.test
 
-import net.postchain.rell.base.lib.type.Rt_TextValue
-import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_ParamImplication
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionMetaBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
@@ -64,7 +62,7 @@ internal object Lib_Test_Assert {
                     val equalsValue = evaluateBinaryOp("R_BinaryOp_Eq", actualValue, expectedValue)
                     if (equalsValue.asBoolean()) {
                         val code = "assert_not_equals:${actualValue.strCode()}"
-                        throw Rt_AssertError.exception(code, "expected not <${actualValue.str(Rt_Value.StrFormat.V2)}>")
+                        throw Rt_AssertError.exception(code, "expected not <${actualValue.str(Rt_StrFormat.V2)}>")
                     }
                     Rt_UnitValue
                 }
@@ -321,8 +319,8 @@ internal object Lib_Test_Assert {
         val diff = comparator.compare(actualValue, expectedValue)
         if (!op.check(diff)) {
             val code = "assert_compare:${op.code}:${actualValue.strCode()}:${expectedValue.strCode()}"
-            val expectedStr = expectedValue.str(Rt_Value.StrFormat.V2)
-            val actualStr = actualValue.str(Rt_Value.StrFormat.V2)
+            val expectedStr = expectedValue.str(Rt_StrFormat.V2)
+            val actualStr = actualValue.str(Rt_StrFormat.V2)
             throw Rt_AssertError.exception(code, "comparison failed: $actualStr ${op.code} $expectedStr")
         }
     }
@@ -369,7 +367,7 @@ internal class Rt_AssertEqualsError private constructor(
         }
 
         fun valueToStr(v: Rt_Value, truncate: Int): String {
-            val s = v.str(Rt_Value.StrFormat.V2)
+            val s = v.str(Rt_StrFormat.V2)
             return if (s.length <= truncate) s else (s.substring(0, truncate) + "...")
         }
     }
@@ -380,17 +378,4 @@ internal object R_TestFailureType: R_LibUniqueType(FAILURE_QNAME.str(), Lib_Rell
     override fun isDirectPure() = false
 }
 
-private val TEST_FAILURE_RT_TYPE: Rt_Type = makeStdlibLibType(FAILURE_QNAME.str())
 
-private class Rt_TestFailureValue(val message: String): Rt_Value() {
-    val messageValue = Rt_TextValue.get(message)
-
-    override val valueType = VALUE_TYPE
-    override fun type() = TEST_FAILURE_RT_TYPE
-    override fun str(format: StrFormat): String = message
-    override fun strCode(showTupleFieldNames: Boolean) = "${R_TestFailureType.name}[$message]"
-
-    companion object {
-        private val VALUE_TYPE = Rt_LibValueType.of("TEST_FAILURE")
-    }
-}

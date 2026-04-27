@@ -329,7 +329,8 @@ class Rt_AppContext(
     nativeProvider: Rt_NativeProvider = Rt_NullNativeProvider,
     globalConstantsState: Rt_GlobalConstants.State = Rt_GlobalConstants.State(),
 ) {
-    val rrApp: RR_App get() = interpreter.rrApp
+    val rrApp: RR_App
+        get() = interpreter.rrApp
 
     constructor(
         globalCtx: Rt_GlobalContext,
@@ -511,7 +512,7 @@ class Rt_NativeFunctionHeader(
     val resultType: KType,
     val paramTypes: ImmList<KType>,
 ) {
-    fun check(name: FullName, rrHeader: RR_FunctionHeader, typeResolver: (RR_Type) -> Rt_Type) {
+    fun check(name: FullName, rrHeader: RR_FunctionHeader, typeResolver: (RR_Type) -> Rt_ValueClass<*>) {
         checkParamCount(name, rrHeader.params.size)
         matchNativeType(typeResolver(rrHeader.type), resultType, name) { "result" to "wrong return type" }
         for ((i, rrParam) in rrHeader.params.withIndex()) {
@@ -529,7 +530,7 @@ class Rt_NativeFunctionHeader(
     }
 
     private fun matchNativeType(
-        rtType: Rt_Type,
+        rtType: Rt_ValueClass<*>,
         nativeType: KType,
         name: FullName,
         msgGetter: () -> Pair<String, String>,

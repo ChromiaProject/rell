@@ -5,30 +5,21 @@
 package net.postchain.rell.base.lib.type
 
 import com.google.common.math.LongMath
-import mu.KLogging
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.lib.Lib_Math
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.GtvCompatibility
 import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
-import net.postchain.rell.base.sql.PreparedStatementParams
-import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.immSetOf
 import org.jooq.DataType
 import org.jooq.impl.SQLDataType
-import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.MathContext
 import java.math.RoundingMode
-import kotlin.reflect.full.createType
 
 object Lib_Type_BigInteger {
     val FromInteger_Db = Db_SysFunction.cast("big_integer(integer)", Lib_BigIntegerMath.SQL_TYPE_STR)
@@ -408,7 +399,7 @@ object Lib_Type_BigInteger {
     private fun calcFromText(s: String, radix: Int, fnName: String): Rt_Value {
         val r = try {
             BigInteger(s, radix)
-        } catch (e: NumberFormatException) {
+        } catch (_: NumberFormatException) {
             throw Rt_Exception.common("fn:big_integer.$fnName:$s", "Invalid number: '$s'")
         }
         return Rt_BigIntegerValue.get(r)
@@ -426,6 +417,13 @@ object Lib_BigIntegerMath {
     val MAX_VALUE: BigInteger = BigInteger.TEN.pow(PRECISION).subtract(BigInteger.ONE)
     val MIN_VALUE: BigInteger = -MAX_VALUE
 
+    /**
+     * Pinned to [SQLDataType.DECIMAL] (unbounded `NUMERIC`) rather than the semantically tighter
+     * [SQLDataType.DECIMAL_INTEGER] (`NUMERIC(p, 0)`) for on-disk compatibility: every existing
+     * `big_integer` column was created as plain `NUMERIC`, and the column type is consensus-visible
+     *
+     * Fixing  would require a schema migration on every deployed chain plus an ABI bump.
+     */
     val SQL_TYPE: DataType<*> = SQLDataType.DECIMAL
 
     const val SQL_TYPE_STR = "NUMERIC"
@@ -466,7 +464,7 @@ object Lib_BigIntegerMath {
                 try {
                     val exp0 = Math.toIntExact(exp)
                     type.pow(base, exp0)
-                } catch (e: ArithmeticException) {
+                } catch (_: ArithmeticException) {
                     val baseStr = type.errStr(base)
                     val msg = "Power overflow: $baseStr ^ $exp"
                     throw Rt_Exception.common("$fnName:overflow:$baseStr:$exp", msg)
@@ -525,93 +523,5 @@ object Lib_BigIntegerMath {
             }
             return if (value.signum() >= 0) s0 else "-$s0"
         }
-    }
-}
-
-object Rt_NativeConversion_BigInteger: Rt_TypeNativeConversion {
-    override val nativeTypes = immSetOf(BigInteger::class.createType())
-    override fun rtToNative(value: Rt_Value) = value.asBigInteger()
-    override fun nativeToRt(value: Any?) = Rt_BigIntegerValue.get(value as BigInteger)
-}
-
-object Rt_ValueSqlAdapter_BigInteger: Rt_ValueSqlAdapter_Primitive("big_integer", Lib_BigIntegerMath.SQL_TYPE) {
-    override fun toSqlValue(value: Rt_Value) = value.asBigInteger()
-
-    override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
-        val v = value.asBigInteger()
-        params.setBigDecimal(idx, BigDecimal(v))
-    }
-
-    override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
-        val v = row.getBigDecimal(idx)
-        return if (v != null) Rt_BigIntegerValue.get(v) else checkSqlNull(name, nullable)
-    }
-}
-
-class Rt_BigIntegerValue private constructor(val value: BigInteger): Rt_Value() {
-    override val valueType = Rt_CoreValueTypes.BIG_INTEGER.type()
-
-    override fun type() = Rt_PrimitiveTypes.BIG_INTEGER
-    override fun asBigInteger() = value
-    override fun toFormatArg() = value
-    override fun strCode(showTupleFieldNames: Boolean) = "bigint[${str()}]"
-    override fun str(format: StrFormat): String = value.toString()
-    override fun equals(other: Any?) = other === this || (other is Rt_BigIntegerValue && value == other.value)
-    override fun hashCode() = value.hashCode()
-
-    companion object : KLogging() {
-        val ZERO = Rt_BigIntegerValue(BigInteger.ZERO)
-
-        fun get(v: BigInteger): Rt_Value {
-            if (v.signum() == 0) {
-                return ZERO
-            }
-
-            val res = getTry(v)
-            if (res != null) {
-                return res
-            }
-
-            val p = Lib_BigIntegerMath.PRECISION
-            val msg = "Big integer value out of range (allowed range is -10^$p..10^$p, exclusive)"
-            throw Rt_Exception.common("bigint:overflow", msg)
-        }
-
-        fun getTry(v: BigInteger): Rt_Value? {
-            return if (v < Lib_BigIntegerMath.MIN_VALUE || v > Lib_BigIntegerMath.MAX_VALUE) null else Rt_BigIntegerValue(v)
-        }
-
-        fun get(v: BigDecimal): Rt_Value {
-            val bigInt = try {
-                v.toBigIntegerExact()
-            } catch (e: ArithmeticException) {
-                throw Rt_Exception.common("bigint:nonint:$v", "Value is not an integer: '$v'")
-            }
-            return get(bigInt)
-        }
-
-        fun get(s: String): Rt_Value {
-            val v = try {
-                BigInteger(s)
-            } catch (e: NumberFormatException) {
-                throw Rt_Exception.common("bigint:invalid:$s", "Invalid big integer value: '$s'")
-            }
-            return get(v)
-        }
-
-        fun get(v: Long): Rt_Value {
-            val bi = BigInteger.valueOf(v)
-            return get(bi)
-        }
-    }
-}
-
-object GtvRtConversion_BigInteger: GtvRtConversion {
-    override val directCompatibility = GtvCompatibility(fromGtv = true, toGtv = true)
-    override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvFactory.gtv(rt.asBigInteger())
-
-    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-        val v = GtvRtUtils.gtvToBigInteger(ctx, gtv, "big_integer")
-        return Rt_BigIntegerValue.get(v)
     }
 }

@@ -9,14 +9,14 @@ import net.postchain.rell.base.compiler.base.namespace.C_Deprecated
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty
 import net.postchain.rell.base.compiler.base.utils.C_DocUtils
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.base.lib.type.Rt_BigIntegerValue
-import net.postchain.rell.base.lib.type.Rt_DecimalValue
-import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lmodel.*
 import net.postchain.rell.base.model.Name
 import net.postchain.rell.base.model.QualifiedName
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.rr.RR_Type
+import net.postchain.rell.base.runtime.Rt_BigIntegerValue
+import net.postchain.rell.base.runtime.Rt_DecimalValue
+import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*

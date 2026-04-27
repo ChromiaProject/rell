@@ -21,7 +21,7 @@ interface RR_ResolverRuntime {
     /**
      * Snapshot the sys-function registrations collected during this compilation. The map is
      * compilation-local: meta-bodies in the stdlib capture compile-specific state
-     * (`Rt_Type`/`FilePos`) that must not leak across unrelated compilations. Called after
+     * (`Rt_ValueClass`/`FilePos`) that must not leak across unrelated compilations. Called after
      * `resolve()` completes; the returned map pairs with the produced `RR_App`.
      */
     fun collectedSysFns(): Map<String, Any>

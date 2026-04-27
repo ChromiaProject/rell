@@ -16,11 +16,6 @@ import org.jooq.impl.DSL.constraint
 import org.jooq.impl.SQLDataType
 
 object SqlGen {
-    init {
-        System.setProperty("org.jooq.no-logo", "true")
-        System.setProperty("org.jooq.no-tips", "true")
-    }
-
     // (!) When changing a function, change its name e.g. to fn_v2. Functions in the database are not upgraded - a function is created
     // only once, if there is no function with the same name in the database.
     val RELL_SYS_FUNCTIONS = immMapOf(
@@ -495,7 +490,10 @@ class SqlNameGen(private val pattern: String, existingNames: Collection<String>)
 
 private fun getSqlType(type: RR_Type, interpreter: Rt_Interpreter): DataType<*> {
     val rtType = interpreter.resolveType(type)
-    val sqlType = rtType.sqlAdapter?.sqlType
-        ?: throw Exception("Type ${rtType.name} is not SQL-compatible")
+
+    val sqlType = requireNotNull(rtType.sqlAdapter?.sqlType) {
+        "Type ${rtType.name} is not SQL-compatible"
+    }
+
     return sqlType.nullable(false)
 }

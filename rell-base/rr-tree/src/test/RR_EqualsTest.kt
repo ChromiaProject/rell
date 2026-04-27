@@ -89,10 +89,7 @@ class RR_EqualsTest {
                 flags = RR_StructFlags(
                     typeFlags = TypeFlags(
                         pure = true, mutable = false,
-                        gtv = GtvCompatibility(
-                            fromGtv = true,
-                            toGtv = true,
-                        ),
+                        gtv = GtvCompatibility.FULL,
                         virtualable = false, mixedTuple = false, hasTypeVariable = false,
                     ),
                     cyclic = false,

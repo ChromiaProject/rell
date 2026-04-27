@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.lib.type
 
-import net.postchain.gtv.Gtv
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_SetType
 import net.postchain.rell.base.runtime.*
@@ -27,7 +26,7 @@ object Lib_Type_Set {
             constructor(pure = true, since = SINCE0) {
                 comment("Construct a new empty set.")
                 bodyMeta {
-                    val setType = rtSetType(typeArgRt("T"))
+                    val setType = Rt_SetType(typeArgRt("T"))
                     body { ->
                         Rt_SetValue(setType, mutableSetOf())
                     }
@@ -40,7 +39,7 @@ object Lib_Type_Set {
                     comment("an iterable containing values with which to initialize this set")
                 }
                 bodyMeta {
-                    val setType = rtSetType(typeArgRt("T"))
+                    val setType = Rt_SetType(typeArgRt("T"))
                     body { arg ->
                         val iterable = arg.asIterable()
                         val set = mutableSetOf<Rt_Value>()
@@ -95,64 +94,6 @@ object Lib_Type_Set {
                 param("values", type = "collection<-T>", comment = "the other collection")
                 body(::evalIntersectSet)
             }
-        }
-    }
-}
-
-class Rt_SetValue(private val rtType: Rt_Type, private val elements: MutableSet<Rt_Value>): Rt_Value() {
-    override val valueType = Rt_CoreValueTypes.SET.type()
-
-    override fun type() = rtType
-    override fun asIterable(): Iterable<Rt_Value> = elements
-    override fun asCollection() = elements
-    override fun asSet() = elements
-
-    override fun equals(other: Any?) = other === this || (other is Rt_SetValue && elements == other.elements)
-    override fun hashCode() = elements.hashCode()
-
-    override fun strCode(showTupleFieldNames: Boolean) = strCode(rtType, elements, showTupleFieldNames)
-    override fun str(format: StrFormat) = elements.joinToString(", ", "[", "]") { it.str(format) }
-
-    override fun strPretty(indent: Int): String {
-        if (elements.isEmpty()) {
-            return str(StrFormat.V2)
-        }
-        val indentStr = "    ".repeat(indent)
-        return elements.joinToString(",", "[", "\n$indentStr]") {
-            val s = it.strPretty(indent + 1)
-            "\n$indentStr    $s"
-        }
-    }
-
-    companion object {
-        fun strCode(type: Rt_Type, elements: Set<Rt_Value>, showTupleFieldNames: Boolean): String =
-                "${type.name}[${elements.joinToString(",") { it.strCode(false) }}]"
-    }
-}
-
-class GtvRtConversion_Set(
-    typeName: String,
-    elementConversion: Lazy<Rt_TypeGtvConversion>,
-    rtType: Lazy<Rt_Type>,
-): GtvRtConversion_Collection(typeName, elementConversion, rtType) {
-    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-        val array = GtvRtUtils.gtvToArrayAny(ctx, gtv, typeName)
-        val list = array.map { elementConversion.gtvToRt(ctx, it) }
-        val set = listToSet(ctx, list)
-        return ctx.rtValue {
-            Rt_SetValue(rtType, set)
-        }
-    }
-
-    companion object {
-        fun listToSet(ctx: GtvToRtContext, elements: Iterable<Rt_Value>): MutableSet<Rt_Value> {
-            val set = mutableSetOf<Rt_Value>()
-            for (elem in elements) {
-                if (!set.add(elem)) {
-                    throw GtvRtUtils.errGtv(ctx, "set_dup:${elem.strCode()}", "Duplicate set element: ${elem.str()}")
-                }
-            }
-            return set
         }
     }
 }

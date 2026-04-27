@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.testutils
 
-import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.NoConnSqlExecutor

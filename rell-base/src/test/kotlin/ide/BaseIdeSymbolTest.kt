@@ -15,7 +15,7 @@ import net.postchain.rell.base.compiler.base.utils.readAstEx
 import net.postchain.rell.base.compiler.parser.RellTokenInput
 import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.compiler.parser.RellTokens
-import net.postchain.rell.base.lib.type.Rt_TextValue
+import net.postchain.rell.base.runtime.Rt_TextValue
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.testutils.BaseRellTest

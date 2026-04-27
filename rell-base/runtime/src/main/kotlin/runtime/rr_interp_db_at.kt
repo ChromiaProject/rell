@@ -4,9 +4,6 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.rell.base.lib.type.Rt_ListValue
-import net.postchain.rell.base.lib.type.Rt_MapValue
-import net.postchain.rell.base.lib.type.Rt_SetValue
 import net.postchain.rell.base.model.AtCardinality
 import net.postchain.rell.base.model.expr.R_PartialArgMapping
 import net.postchain.rell.base.model.expr.R_PartialCallMapping
@@ -639,7 +636,7 @@ private fun Rt_Interpreter.evaluateColAtWithNativeSummarization(
                     val vb = b[sortEntry.fieldIndex]
                     // Use the runtime value's type for comparison (handles aggregated types correctly).
                     val rtType = try {
-                        va.type()
+                        va.type
                     } catch (_: Exception) {
                         null
                     }
@@ -706,7 +703,7 @@ private fun Rt_Interpreter.aggregateValue(
 
     RR_ColAtFieldSummarizationKind.MIN -> {
         if (existing == null) newValue else {
-            val comparator = existing.type().comparator ?: Comparator { a, b ->
+            val comparator = existing.type.comparator ?: Comparator { a, b ->
                 @Suppress("UNCHECKED_CAST")
                 (a as Comparable<Any>).compareTo(b as Comparable<Any>)
             }
@@ -717,7 +714,7 @@ private fun Rt_Interpreter.aggregateValue(
 
     RR_ColAtFieldSummarizationKind.MAX -> {
         if (existing == null) newValue else {
-            val comparator = existing.type().comparator ?: Comparator { a, b ->
+            val comparator = existing.type.comparator ?: Comparator { a, b ->
                 @Suppress("UNCHECKED_CAST")
                 (a as Comparable<Any>).compareTo(b as Comparable<Any>)
             }

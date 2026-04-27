@@ -11,17 +11,13 @@ import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.vexpr.V_ConstantValueExpr
 import net.postchain.rell.base.compiler.vexpr.V_Expr
-import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_BooleanType
 import net.postchain.rell.base.model.R_DefinitionMeta
 import net.postchain.rell.base.model.R_LibUniqueType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.rr.RR_ConstantValue
-import net.postchain.rell.base.runtime.Rt_LibValueType
-import net.postchain.rell.base.runtime.Rt_Type
-import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.runtime.makeStdlibLibType
+import net.postchain.rell.base.runtime.Rt_RellMetaValue
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString
 import net.postchain.rell.base.utils.checkEquals
@@ -229,25 +225,5 @@ internal object R_RellMetaType: R_LibUniqueType("rell.meta", C_DefinitionName("r
     override fun isDirectPure() = true
 }
 
-private val RELL_META_RT_TYPE: Rt_Type = makeStdlibLibType("rell.meta")
 
-internal class Rt_RellMetaValue(private val meta: R_DefinitionMeta): Rt_Value() {
-    val kindText: Rt_Value by lazy { Rt_TextValue.get(meta.kind) }
-    val simpleName: Rt_Value by lazy { Rt_TextValue.get(meta.simpleName) }
-    val moduleName: Rt_Value by lazy { Rt_TextValue.get(meta.moduleName) }
-    val fullName: Rt_Value by lazy { Rt_TextValue.get(meta.fullName) }
-    val mountName: Rt_Value by lazy { Rt_TextValue.get(meta.mountName.str()) }
 
-    override val valueType = VALUE_TYPE
-    override fun type() = RELL_META_RT_TYPE
-    override fun str(format: StrFormat) = "meta[${meta.fullName}]"
-    override fun strCode(showTupleFieldNames: Boolean) = "${R_RellMetaType.name}[${meta.fullName}]"
-
-    companion object {
-        private val VALUE_TYPE = Rt_LibValueType.of("RELL_META")
-
-        fun get(v: Rt_Value): Rt_RellMetaValue {
-            return v.asType(Rt_RellMetaValue::class, VALUE_TYPE)
-        }
-    }
-}

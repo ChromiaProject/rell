@@ -11,7 +11,6 @@ import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_Constants
 import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
-import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.model.DefinitionName
 import net.postchain.rell.base.model.GlobalConstantId
 import net.postchain.rell.base.model.ModuleName

@@ -5,7 +5,6 @@
 package net.postchain.rell.base.runtime
 
 import com.google.common.io.Resources
-import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.RellVersions
@@ -52,7 +51,7 @@ class Rt_RellVersion private constructor(
 
             val properties = getRtProperties(raw)
 
-            val rtProperties = properties
+            val rtProperties: ImmMap<Rt_Value, Rt_Value> = properties
                 .map { Rt_TextValue.get(it.key.key) to Rt_TextValue.get(it.value) }
                 .toImmMap()
 
@@ -74,10 +73,8 @@ class Rt_RellVersion private constructor(
             }
         }
 
-        private fun parseBuildVersion(s: String): String {
-            // Remove "-SNAPSHOT", etc.
-            return s.substringBefore("-")
-        }
+        // Remove "-SNAPSHOT", etc.
+        private fun parseBuildVersion(s: String): String = s.substringBefore("-")
 
         private fun getBuildDescriptor(props: Map<Rt_RellVersionProperty, String>): String = listOf(
             "rell" to "${props[Rt_RellVersionProperty.RELL_VERSION]}",

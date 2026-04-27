@@ -9,10 +9,6 @@ import net.postchain.crypto.KeyPair
 import net.postchain.crypto.PrivKey
 import net.postchain.crypto.Signature
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
-import net.postchain.rell.base.lib.type.Rt_BigIntegerValue
-import net.postchain.rell.base.lib.type.Rt_BooleanValue
-import net.postchain.rell.base.lib.type.Rt_ByteArrayValue
-import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
@@ -36,13 +32,12 @@ internal object Lib_Crypto {
         Rt_ByteArrayValue.get(md.digest(ba))
     }
 
-    private val POINT_TYPE: Rt_Type = rrTypeToRtType(
-        RR_Type.Tuple(
-            immListOf(
-                RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.BIG_INTEGER)),
-                RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.BIG_INTEGER)),
-            ),
+    private val POINT_TYPE = Rt_TupleType(
+        fields = immListOf(
+            RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.BIG_INTEGER)),
+            RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.BIG_INTEGER)),
         ),
+        fieldClasses = immListOf(Rt_PrimitiveTypes.BIG_INTEGER, Rt_PrimitiveTypes.BIG_INTEGER),
     )
 
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -291,13 +286,16 @@ internal object Lib_Crypto {
                 }
             }
 
-            val signatureType: Rt_Type = rrTypeToRtType(
-                RR_Type.Tuple(
-                    immListOf(
-                        RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.BYTE_ARRAY)),
-                        RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.BYTE_ARRAY)),
-                        RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.INTEGER)),
-                    ),
+            val signatureType = Rt_TupleType(
+                fields = immListOf(
+                    RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.BYTE_ARRAY)),
+                    RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.BYTE_ARRAY)),
+                    RR_TupleField(null, RR_Type.Primitive(RR_PrimitiveKind.INTEGER)),
+                ),
+                fieldClasses = immListOf(
+                    Rt_PrimitiveTypes.BYTE_ARRAY,
+                    Rt_PrimitiveTypes.BYTE_ARRAY,
+                    Rt_PrimitiveTypes.INTEGER,
                 ),
             )
             val signatureTypeStr = "(byte_array,byte_array,integer)"

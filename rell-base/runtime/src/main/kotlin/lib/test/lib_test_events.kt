@@ -4,15 +4,13 @@
 
 package net.postchain.rell.base.lib.test
 
-import net.postchain.rell.base.lib.type.Rt_ListValue
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_TupleField
 import net.postchain.rell.base.model.rr.RR_Type
-import net.postchain.rell.base.runtime.Rt_Type
-import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.runtime.rrTypeToRtType
+import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmList
 
 private val EVENT_TUPLE_RR_TYPE: RR_Type = RR_Type.Tuple(
@@ -26,7 +24,10 @@ private val EVENT_TUPLE_RR_TYPE: RR_Type = RR_Type.Tuple(
 private val EVENT_LIST_RR_TYPE: RR_Type = RR_Type.List(EVENT_TUPLE_RR_TYPE)
 
 object Lib_Test_Events {
-    val EVENT_TUPLE_TYPE: Rt_Type = rrTypeToRtType(EVENT_TUPLE_RR_TYPE)
+    val EVENT_TUPLE_TYPE: Rt_ValueClass<*> = Rt_TupleType(
+        fields = (EVENT_TUPLE_RR_TYPE as RR_Type.Tuple).fields,
+        fieldClasses = immListOf(Rt_PrimitiveTypes.TEXT, Rt_PrimitiveTypes.GTV),
+    )
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         alias(target = "rell.test.assert_events", since = "0.13.0")

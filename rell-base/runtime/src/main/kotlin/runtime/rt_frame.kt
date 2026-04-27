@@ -90,12 +90,9 @@ class Rt_CallFrame(
         values[offset] = value
     }
 
-    fun get(ptr: RR_VarPtr): Rt_Value = checkNotNull(getOpt(ptr)) { "Variable not initialized: $ptr" }
-
-    private fun getOpt(ptr: RR_VarPtr): Rt_Value? {
+    fun get(ptr: RR_VarPtr): Rt_Value {
         val offset = checkPtr(ptr.blockUid, ptr.offset)
-        val value = values[offset]
-        return value
+        return checkNotNull(values[offset]) { "Variable not initialized: $ptr" }
     }
 
     private fun checkPtr(blockUid: Long, ptrOffset: Int): Int {

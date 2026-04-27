@@ -6,6 +6,7 @@ package net.postchain.rell.base.lib.type
 
 import net.postchain.rell.base.compiler.base.lib.C_SysFunction
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
+import net.postchain.rell.base.runtime.Rt_TextValue
 import net.postchain.rell.base.runtime.rSimple
 
 object Lib_Type_Any {

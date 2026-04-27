@@ -23,7 +23,7 @@ import net.postchain.rell.base.model.rr.RR_QueryDefinition
 import net.postchain.rell.base.runtime.Rt_AppContext
 import net.postchain.rell.base.runtime.Rt_ChainContext
 import net.postchain.rell.base.runtime.Rt_ExecutionContext
-import net.postchain.rell.base.lib.type.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_GlobalContext
 import net.postchain.rell.base.runtime.Rt_Interpreter
 import net.postchain.rell.base.runtime.Rt_NopPrinter

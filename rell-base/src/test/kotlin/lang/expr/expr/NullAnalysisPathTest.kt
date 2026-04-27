@@ -5,7 +5,7 @@
 package net.postchain.rell.base.lang.expr.expr
 
 import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.lib.type.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceBodyDsl
 import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_StructType

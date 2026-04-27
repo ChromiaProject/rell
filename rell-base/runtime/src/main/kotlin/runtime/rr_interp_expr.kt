@@ -4,10 +4,6 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.rell.base.lib.type.Rt_BigIntegerValue
-import net.postchain.rell.base.lib.type.Rt_DecimalValue
-import net.postchain.rell.base.lib.type.Rt_IntValue
-import net.postchain.rell.base.lib.type.Rt_RowidValue
 import net.postchain.rell.base.model.ErrorPos
 import net.postchain.rell.base.model.expr.R_PartialArgMapping
 import net.postchain.rell.base.model.expr.R_PartialCallMapping

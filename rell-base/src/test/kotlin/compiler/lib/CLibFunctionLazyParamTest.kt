@@ -4,17 +4,14 @@
 
 package net.postchain.rell.base.compiler.lib
 
-import net.postchain.rell.base.compiler.base.core.C_DefinitionName
+import net.postchain.rell.base.runtime.*
+
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.make
-import net.postchain.rell.base.lib.type.Rt_TextValue
-import net.postchain.rell.base.lib.type.Rt_UnitValue
+import net.postchain.rell.base.runtime.Rt_TextValue
+import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_ParamArity
-import net.postchain.rell.base.model.R_LibUniqueType
-import net.postchain.rell.base.runtime.Rt_LibValueType
-import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.runtime.makeStdlibLibType
 import kotlin.test.Test
 
 class CLibFunctionLazyParamTest: BaseCLibTest() {
@@ -169,32 +166,12 @@ class CLibFunctionLazyParamTest: BaseCLibTest() {
     }
 
     private object IfIntDefs {
-        private const val TYPE_NAME = "test_type"
-
         val MODULE: C_LibModule = C_LibModule.make("test", Lib_Rell.MODULE, requireSince = false) {
             extension("boolean_ext", type = "boolean") {
                 function("if_int", result = "integer") {
                     param("a", type = "integer", lazy = true)
                     param("b", type = "integer", lazy = true)
                     body { arg1, arg2, arg3 ->
-                        val resValue = if (arg1.asBoolean()) arg2 else arg3
-                        resValue.asLazyValue()
-                    }
-                }
-            }
-
-            type(TYPE_NAME, rType = R_TestType) {
-                constructor {
-                    body { ->
-                        Rt_TestTypeValue()
-                    }
-                }
-
-                function("if_int", result = "integer") {
-                    param("a", type = "boolean")
-                    param("b", type = "integer", lazy = true)
-                    param("c", type = "integer", lazy = true)
-                    body { _, arg1, arg2, arg3 ->
                         val resValue = if (arg1.asBoolean()) arg2 else arg3
                         resValue.asLazyValue()
                     }
@@ -212,21 +189,5 @@ class CLibFunctionLazyParamTest: BaseCLibTest() {
             }
         }
 
-        private object R_TestType: R_LibUniqueType(TYPE_NAME, C_DefinitionName("rell", TYPE_NAME))
-
-        // Register R_TestType → type def AFTER MODULE is constructed (avoids circular init).
-        @Suppress("unused")
-        private val REGISTER = run {
-            R_LibUniqueType.registerLibTypeDef(R_TestType, MODULE.getTypeDef("test_type"))
-        }
-
-        private val RT_TEST_TYPE = makeStdlibLibType(TYPE_NAME)
-
-        private class Rt_TestTypeValue: Rt_Value() {
-            override val valueType = Rt_LibValueType.of(TYPE_NAME)
-            override fun type() = RT_TEST_TYPE
-            override fun str(format: StrFormat): String = TYPE_NAME
-            override fun strCode(showTupleFieldNames: Boolean) = TYPE_NAME
-        }
     }
 }

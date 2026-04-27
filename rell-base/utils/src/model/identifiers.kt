@@ -326,7 +326,22 @@ data class OperationModifiers(val isCompound: Boolean, val isSingular: Boolean) 
 
 // ---- Type flags ----
 
-data class GtvCompatibility(val fromGtv: Boolean, val toGtv: Boolean)
+enum class GtvCompatibility(val fromGtv: Boolean, val toGtv: Boolean) {
+    NONE(fromGtv = false, toGtv = false),
+    FROM_ONLY(fromGtv = true, toGtv = false),
+    TO_ONLY(fromGtv = false, toGtv = true),
+    FULL(fromGtv = true, toGtv = true),
+    ;
+
+    companion object {
+        fun of(fromGtv: Boolean, toGtv: Boolean): GtvCompatibility = when {
+            fromGtv && toGtv -> FULL
+            fromGtv -> FROM_ONLY
+            toGtv -> TO_ONLY
+            else -> NONE
+        }
+    }
+}
 
 data class TypeFlags(
     val pure: Boolean,
@@ -359,7 +374,7 @@ data class TypeFlags(
             return TypeFlags(
                 pure = pure,
                 mutable = mutable,
-                gtv = GtvCompatibility(fromGtv, toGtv),
+                gtv = GtvCompatibility.of(fromGtv, toGtv),
                 virtualable = virtualable,
                 mixedTuple = mixedTuple,
                 hasTypeVariable = hasTypeVariable,

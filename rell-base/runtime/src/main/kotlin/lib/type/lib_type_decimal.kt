@@ -4,23 +4,15 @@
 
 package net.postchain.rell.base.lib.type
 
-import mu.KLogging
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
-import net.postchain.gtv.GtvType
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Math
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.GtvCompatibility
 import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.sql.PreparedStatementParams
-import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
-import net.postchain.rell.base.utils.immSetOf
 import org.jooq.DataType
 import org.jooq.impl.SQLDataType
 import java.math.BigDecimal
@@ -29,7 +21,6 @@ import java.math.MathContext
 import java.math.RoundingMode
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.reflect.full.createType
 
 object Lib_Type_Decimal {
     val ToInteger = DecFns.ToInteger
@@ -321,7 +312,7 @@ object Lib_DecimalMath {
     const val DECIMAL_FRAC_DIGITS = 20
     const val DECIMAL_SQL_TYPE_STR = "NUMERIC"
 
-    val DECIMAL_SQL_TYPE: DataType<*> = SQLDataType.DECIMAL
+    val DECIMAL_SQL_TYPE: DataType<BigDecimal> = SQLDataType.DECIMAL
 
     const val DECIMAL_PRECISION = DECIMAL_INT_DIGITS + DECIMAL_FRAC_DIGITS
 
@@ -583,93 +574,5 @@ private object DecFns {
     ) { a ->
         val s = a.asString()
         Rt_DecimalValue.get(s)
-    }
-}
-
-object Rt_NativeConversion_Decimal: Rt_TypeNativeConversion {
-    override val nativeTypes = immSetOf(BigDecimal::class.createType())
-    override fun rtToNative(value: Rt_Value) = value.asDecimal()
-    override fun nativeToRt(value: Any?) = Rt_DecimalValue.get(value as BigDecimal)
-}
-
-object Rt_ValueSqlAdapter_Decimal: Rt_ValueSqlAdapter_Primitive("decimal", Lib_DecimalMath.DECIMAL_SQL_TYPE) {
-    override fun toSqlValue(value: Rt_Value) = value.asDecimal()
-
-    override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
-        params.setBigDecimal(idx, value.asDecimal())
-    }
-
-    override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
-        val v = row.getBigDecimal(idx)
-        return if (v != null) Rt_DecimalValue.get(v) else checkSqlNull(name, nullable)
-    }
-}
-
-class Rt_DecimalValue private constructor(val value: BigDecimal): Rt_Value() {
-    override val valueType = Rt_CoreValueTypes.DECIMAL.type()
-
-    override fun type() = Rt_PrimitiveTypes.DECIMAL
-    override fun asDecimal() = value
-    override fun toFormatArg() = value
-    override fun strCode(showTupleFieldNames: Boolean) = "dec[${str()}]"
-    override fun str(format: StrFormat) = Lib_DecimalMath.toString(value)
-    override fun equals(other: Any?) = other === this || (other is Rt_DecimalValue && value == other.value)
-    override fun hashCode() = value.hashCode()
-
-    companion object : KLogging() {
-        val ZERO = Rt_DecimalValue(BigDecimal.ZERO)
-
-        fun get(v: BigDecimal): Rt_Value {
-            val res = getTry(v)
-            return res ?: throw errOverflow("decimal:overflow", "Decimal value out of range")
-        }
-
-        fun getTry(v: BigDecimal): Rt_Value? {
-            if (v.signum() == 0) {
-                return ZERO
-            }
-            val t = Lib_DecimalMath.scale(v)
-            return if (t == null) null else Rt_DecimalValue(t)
-        }
-
-        fun get(s: String): Rt_Value {
-            val v = try {
-                Lib_DecimalMath.parse(s)
-            } catch (e: NumberFormatException) {
-                throw Rt_Exception.common("decimal:invalid:$s", "Invalid decimal value: '$s'")
-            }
-            return get(v)
-        }
-
-        fun get(v: Long): Rt_Value {
-            val bd = BigDecimal(v)
-            return get(bd)
-        }
-
-        fun errOverflow(code: String, msg: String): Rt_Exception {
-            val p = Lib_DecimalMath.DECIMAL_INT_DIGITS
-            return Rt_Exception.common(code, "$msg (allowed range is -10^$p..10^$p, exclusive)")
-        }
-    }
-}
-
-object GtvRtConversion_Decimal: GtvRtConversion {
-    override val directCompatibility = GtvCompatibility(fromGtv = true, toGtv = true)
-    override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvFactory.gtv(Lib_DecimalMath.toString(rt.asDecimal()))
-
-    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value = when {
-        !ctx.strictGtvConversion && gtv.type == GtvType.INTEGER -> {
-            val v = GtvRtUtils.gtvToInteger(ctx, gtv, "decimal")
-            Rt_DecimalValue.get(v)
-        }
-        !ctx.strictGtvConversion && ctx.bigIntegerSupport && gtv.type == GtvType.BIGINTEGER -> {
-            val v = gtv.asBigInteger()
-            val bd = BigDecimal(v)
-            Rt_DecimalValue.get(bd)
-        }
-        else -> {
-            val s = GtvRtUtils.gtvToString(ctx, gtv, "decimal")
-            Rt_DecimalValue.get(s)
-        }
     }
 }

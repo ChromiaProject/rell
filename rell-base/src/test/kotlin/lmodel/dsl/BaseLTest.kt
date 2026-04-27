@@ -12,8 +12,8 @@ import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty_RtValue
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.lib.type.Rt_IntValue
-import net.postchain.rell.base.lib.type.Rt_UnitValue
+import net.postchain.rell.base.runtime.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_Module
 import net.postchain.rell.base.lmodel.L_TypeDefMembers
 import net.postchain.rell.base.model.*

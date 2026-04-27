@@ -4,12 +4,9 @@
 
 package net.postchain.rell.base.lib.type
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvArray
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionMetaBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.GtvCompatibility
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.lib.type.Lib_Type_Any as AnyFns
 
@@ -169,7 +166,7 @@ object Lib_Type_Collection {
                 bodyMeta {
                     val valueRtType = typeArgRt("T")
                     val comparator = getSortComparatorRt(this, valueRtType)
-                    val listType = rtListType(valueRtType)
+                    val listType = Rt_ListType(valueRtType)
                     body { self ->
                         val col = self.asCollection()
                         val copy = ArrayList(col)
@@ -181,7 +178,7 @@ object Lib_Type_Collection {
         }
     }
 
-    fun getSortComparatorRt(m: Ld_FunctionMetaBodyDsl, valueType: Rt_Type): Comparator<Rt_Value> {
+    fun getSortComparatorRt(m: Ld_FunctionMetaBodyDsl, valueType: Rt_ValueClass<*>): Comparator<Rt_Value> {
         val comparator = valueType.comparator
         return if (comparator != null) {
             comparator
@@ -196,16 +193,4 @@ object Lib_Type_Collection {
     }
 }
 
-sealed class GtvRtConversion_Collection(
-    protected val typeName: String,
-    elementConversion: Lazy<Rt_TypeGtvConversion>,
-    rtType: Lazy<Rt_Type>,
-): GtvRtConversion {
-    protected val elementConversion by elementConversion
-    protected val rtType by rtType
 
-    final override val directCompatibility = GtvCompatibility(fromGtv = true, toGtv = true)
-
-    final override fun rtToGtv(rt: Rt_Value, pretty: Boolean): Gtv =
-        GtvArray(rt.asCollection().map { elementConversion.rtToGtv(it, pretty) }.toTypedArray())
-}

@@ -4,6 +4,8 @@
 
 package net.postchain.rell.base.compiler.lib
 
+import net.postchain.rell.base.runtime.*
+
 import net.postchain.common.toHex
 import net.postchain.rell.base.compiler.ast.S_Expr
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
@@ -13,8 +15,8 @@ import net.postchain.rell.base.compiler.base.lib.C_SpecialLibGlobalFunctionBody
 import net.postchain.rell.base.compiler.base.lib.C_SpecialLibMemberFunctionBody
 import net.postchain.rell.base.compiler.base.lib.V_SpecialMemberFunctionCall
 import net.postchain.rell.base.compiler.vexpr.V_Expr
-import net.postchain.rell.base.lib.type.Rt_IntValue
-import net.postchain.rell.base.lib.type.Rt_TextValue
+import net.postchain.rell.base.runtime.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_TextValue
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.PostchainGtvUtils

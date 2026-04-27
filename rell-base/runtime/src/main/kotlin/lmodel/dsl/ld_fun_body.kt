@@ -22,7 +22,8 @@ import net.postchain.rell.base.utils.LazyString
 abstract class Ld_CommonFunctionBodyDslImpl(
     private val maker: Ld_CommonFunctionBodyMaker,
 ): Ld_CommonFunctionBodyDsl {
-    final override val fnSimpleName: String get() = maker.fnSimpleName.str
+    final override val fnSimpleName: String
+        get() = maker.fnSimpleName.str
 
     final override fun dbFunction(dbFn: Db_SysFunction) {
         maker.dbFunction(dbFn)
@@ -384,7 +385,8 @@ class Ld_FunctionMetaBodyDslImpl(
     override val fnBodyMeta: L_FunctionBodyMeta,
     private val maker: Ld_FunctionMetaBodyMaker,
 ): Ld_CommonFunctionBodyDslImpl(maker), Ld_FunctionMetaBodyDsl {
-    override val fnQualifiedName: String get() = maker.fnQualifiedName.value
+    override val fnQualifiedName: String
+        get() = maker.fnQualifiedName.value
 
     override fun validationError(code: String, msg: String) {
         maker.validationError(code, msg)

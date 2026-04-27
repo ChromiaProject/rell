@@ -49,10 +49,10 @@ object RellTestUtils {
         return deserializeRellApp(bytes)
     }
 
-    val ENCODER_PLAIN = { _: Rt_Type, v: Rt_Value -> v.str(Rt_Value.StrFormat.V1) }
-    val ENCODER_STRICT = { _: Rt_Type, v: Rt_Value -> v.strCode() }
-    val ENCODER_GTV = { t: Rt_Type, v: Rt_Value -> GtvTestUtils.gtvToStr(t.gtvConversion!!.rtToGtv(v, true)) }
-    val ENCODER_GTV_STRICT = { t: Rt_Type, v: Rt_Value -> GtvTestUtils.encodeGtvStr(t.gtvConversion!!.rtToGtv(v, true)) }
+    val ENCODER_PLAIN = { _: Rt_ValueClass<*>, v: Rt_Value -> v.str(Rt_StrFormat.V1) }
+    val ENCODER_STRICT = { _: Rt_ValueClass<*>, v: Rt_Value -> v.strCode() }
+    val ENCODER_GTV = { t: Rt_ValueClass<*>, v: Rt_Value -> GtvTestUtils.gtvToStr(t.gtvConversion!!.rtToGtv(v, true)) }
+    val ENCODER_GTV_STRICT = { t: Rt_ValueClass<*>, v: Rt_Value -> GtvTestUtils.encodeGtvStr(t.gtvConversion!!.rtToGtv(v, true)) }
 
     inline fun processApp(code: String, processor: (T_App) -> String): String {
         val sourceDir = C_SourceDir.mapDirOf(MAIN_FILE to code)
@@ -169,9 +169,9 @@ object RellTestUtils {
         exeCtx: Rt_ExecutionContext,
         name: String,
         args: List<Rt_Value>,
-        encoder: (Rt_Type, Rt_Value) -> String,
+        encoder: (Rt_ValueClass<*>, Rt_Value) -> String,
     ): String {
-        val decoder = { _: List<Rt_Type>, args2: List<Rt_Value> -> args2 }
+        val decoder = { _: List<Rt_ValueClass<*>>, args2: List<Rt_Value> -> args2 }
         val eval = RellTestEval()
         return eval.eval {
             callQueryGeneric(eval, exeCtx, name, args, decoder, encoder)
@@ -183,8 +183,8 @@ object RellTestUtils {
         exeCtx: Rt_ExecutionContext,
         name: String,
         args: List<T>,
-        decoder: (List<Rt_Type>, List<T>) -> List<Rt_Value>,
-        encoder: (Rt_Type, Rt_Value) -> String
+        decoder: (List<Rt_ValueClass<*>>, List<T>) -> List<Rt_Value>,
+        encoder: (Rt_ValueClass<*>, Rt_Value) -> String
     ): String {
         val interp = exeCtx.appCtx.interpreter
         val mName = MountName.of(name)
@@ -209,7 +209,7 @@ object RellTestUtils {
             sqlMgr: SqlManager,
             name: String,
             args: List<T>,
-            decoder: (List<Rt_Type>, List<T>) -> List<Rt_Value>
+            decoder: (List<Rt_ValueClass<*>>, List<T>) -> List<Rt_Value>
     ): String {
         val interp = appCtx.interpreter
         val mName = MountName.of(name)

@@ -6,13 +6,10 @@ package net.postchain.rell.base.lib.test
 
 import net.postchain.common.hexStringToByteArray
 import net.postchain.crypto.secp256k1_derivePubKey
-import net.postchain.rell.base.lib.type.Rt_ByteArrayValue
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.runtime.Rt_StructValue
-import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.BytesKeyPair
 import net.postchain.rell.base.utils.toImmMap
@@ -133,7 +130,7 @@ internal object Lib_Test_KeyPairs {
         val v2 = v.asStruct()
         // Validate by struct type name rather than R_StructType identity, so the pure-RR path works.
         val expectedTypeName = Lib_RellTest.KEYPAIR_TYPE.name
-        val actualTypeName = v2.type().name
+        val actualTypeName = v2.type.name
         if (actualTypeName != expectedTypeName) {
             throw Rt_Exception.common(
                 "type:struct:$expectedTypeName:$actualTypeName",
@@ -156,7 +153,7 @@ internal object Lib_Test_KeyPairs {
     private fun keyPairToStruct(rType: R_Type, keyPair: BytesKeyPair): Rt_Value {
         val structType = rType as R_StructType
         val attrs = listOf(keyPair.pub, keyPair.priv)
-            .mapTo(mutableListOf()) { Rt_ByteArrayValue.get(it.toByteArray()) }
+            .mapTo(mutableListOf<Rt_Value>()) { Rt_ByteArrayValue.get(it.toByteArray()) }
         return Rt_StructValue(structType, attrs)
     }
 }

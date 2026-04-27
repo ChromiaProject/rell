@@ -7,12 +7,7 @@ package net.postchain.rell.base.lib.type
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
-import net.postchain.rell.base.runtime.Rt_CoreValueTypes
-import net.postchain.rell.base.runtime.Rt_PrimitiveTypes
-import net.postchain.rell.base.runtime.Rt_TypeNativeConversion
-import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.utils.immSetOf
-import kotlin.reflect.full.createType
+import net.postchain.rell.base.runtime.Rt_UnitValue
 
 object Lib_Type_Unit {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -42,18 +37,4 @@ object Lib_Type_Unit {
             }
         }
     }
-}
-
-object Rt_NativeConversion_Unit: Rt_TypeNativeConversion {
-    override val nativeTypes = immSetOf(Unit::class.createType(), Void::class.createType())
-    override fun nativeToRt(value: Any?) = Rt_UnitValue
-    override fun rtToNative(value: Rt_Value) = null
-}
-
-object Rt_UnitValue: Rt_Value() {
-    override val valueType = Rt_CoreValueTypes.UNIT.type()
-
-    override fun type() = Rt_PrimitiveTypes.UNIT
-    override fun strCode(showTupleFieldNames: Boolean) = "unit"
-    override fun str(format: StrFormat) = "unit"
 }

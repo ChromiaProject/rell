@@ -18,12 +18,7 @@ import org.jooq.Query
 /**
  * Anything that can run a single SQL statement against a [SqlExecutor]. Pure data — dispatch lives
  * in [SqlExecutor.execute], which exhaustively pattern-matches the sealed hierarchy and is the
- * only place that touches raw JDBC. Variants:
- *  - [RawSqlStatement.dangerouslyRaw]: hand-written SQL string (PL/pgSQL bodies, dialect-specific
- *    shapes jOOQ can't express).
- *  - [JooqDdlStatement]: jOOQ-built DDL whose structural origin is audit-trustworthy.
- *  - [ParameterizedSql]: SELECT/DML with `Rt_Value` binds.
- *  - [RawSqlBoundStatement.dangerouslyRaw]: hand-written SQL with a free [SqlPreparator] (test escape hatch).
+ * only place that touches raw JDBC.
  */
 sealed interface ExecutableSql
 
@@ -86,14 +81,14 @@ data class ParameterizedSql(val sql: String, val params: ImmList<Rt_Value>) : Ex
 class SqlArgs(private val values: ImmList<Rt_Value>) {
     fun bind(params: PreparedStatementParams) {
         for ((i, value) in values.withIndex()) {
-            val rtType = value.type()
+            val rtType = value.type
             val adapter = checkNotNull(rtType.sqlAdapter) { "No SQL adapter for type: ${rtType.name}" }
-            adapter.toSql(params, i + 1, value)
+            adapter.rtToSql(params, i + 1, value)
         }
     }
 }
 
-class SqlSelectRt(val pSql: ParameterizedSql, val resultTypes: ImmList<Rt_Type>) {
+class SqlSelectRt(val pSql: ParameterizedSql, val resultTypes: ImmList<Rt_ValueClass<*>>) {
     fun execute(sqlExec: SqlExecutor): List<List<Rt_Value>> = buildList {
         sqlExec.executeQuery(pSql) { rsRow ->
             val list = mutableListOf<Rt_Value>()

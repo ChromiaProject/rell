@@ -255,7 +255,9 @@ object SqlMeta {
                 ).values(
                     classId,
                     attr.sqlMapping,
-                    interpreter.resolveType(attr.type).sqlAdapter!!.metaName(sqlCtx),
+                    checkNotNull(interpreter.resolveType(attr.type).sqlAdapter) {
+                        "No SQL adapter for attribute '${attr.name}' of type ${attr.type}"
+                    }.metaName(sqlCtx),
                 )
             )
         }

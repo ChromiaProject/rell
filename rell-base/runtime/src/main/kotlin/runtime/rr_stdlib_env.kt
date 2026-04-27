@@ -10,7 +10,7 @@ import net.postchain.rell.base.utils.immMapOf
 /**
  * Standard library environment — sys functions only.
  *
- * Sys functions are per-compilation: meta-bodies capture `Rt_Type`/`FilePos`/other compile
+ * Sys functions are per-compilation: meta-bodies capture `Rt_ValueClass`/`FilePos`/other compile
  * context. Each compilation builds its own [Rt_StdlibEnv] from the sys functions collected
  * by that compilation's [Rt_ResolverRuntime]. Sharing sys-fn registrations across compilations
  * causes closure-capture leaks between unrelated tests.

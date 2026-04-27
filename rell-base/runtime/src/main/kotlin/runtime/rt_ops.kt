@@ -5,7 +5,8 @@
 package net.postchain.rell.base.runtime
 
 import com.google.common.math.LongMath
-import net.postchain.rell.base.lib.type.*
+import net.postchain.rell.base.lib.type.Lib_BigIntegerMath
+import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import net.postchain.rell.base.model.rr.RR_CmpBinaryOp
 import net.postchain.rell.base.model.rr.RR_ConstantValue
 import kotlin.math.min
@@ -167,7 +168,7 @@ private inline fun evalBigIntArith(
     val a = left.asBigInteger()
     val b = right.asBigInteger()
     val res = op(a, b)
-    return Rt_BigIntegerValue.getTry(res) ?: throw Rt_DecimalValue.errOverflow(
+    return Rt_BigIntegerValue.getOrNull(res) ?: throw Rt_DecimalValue.errOverflow(
         "expr:$code:overflow",
         "Decimal overflow: operator '$code'",
     )
@@ -182,7 +183,7 @@ private inline fun evalDecArith(
     val a = left.asDecimal()
     val b = right.asDecimal()
     val res = op(a, b)
-    return Rt_DecimalValue.getTry(res) ?: throw Rt_DecimalValue.errOverflow(
+    return Rt_DecimalValue.getOrNull(res) ?: throw Rt_DecimalValue.errOverflow(
         "expr:$code:overflow",
         "Decimal overflow: operator '$code'",
     )
@@ -194,40 +195,40 @@ fun evalConcatList(left: Rt_Value, right: Rt_Value): Rt_Value {
     val out: MutableList<Rt_Value> = mutableListOf()
     out.addAll(left.asList())
     out.addAll(right.asCollection())
-    return Rt_ListValue(left.type(), out)
+    return Rt_ListValue(left.type, out)
 }
 
 fun evalUnionSet(left: Rt_Value, right: Rt_Value): Rt_Value {
     val out: MutableSet<Rt_Value> = mutableSetOf()
     out.addAll(left.asSet())
     out.addAll(right.asCollection())
-    return Rt_SetValue(left.type(), out)
+    return Rt_SetValue(left.type, out)
 }
 
 fun evalSubList(left: Rt_Value, right: Rt_Value): Rt_Value {
     val out: MutableList<Rt_Value> = mutableListOf()
     out.addAll(left.asList())
     out.removeAll(right.asCollection())
-    return Rt_ListValue(left.type(), out)
+    return Rt_ListValue(left.type, out)
 }
 
 fun evalSubSet(left: Rt_Value, right: Rt_Value): Rt_Value {
     val out: MutableSet<Rt_Value> = mutableSetOf()
     out.addAll(left.asSet())
     out.removeAll(right.asSet())
-    return Rt_SetValue(left.type(), out)
+    return Rt_SetValue(left.type, out)
 }
 
 fun evalIntersectList(left: Rt_Value, right: Rt_Value): Rt_Value {
     val out: MutableList<Rt_Value> = mutableListOf()
     left.asList().filter { right.asCollection().contains(it) }.forEach { out.add(it) }
-    return Rt_ListValue(left.type(), out)
+    return Rt_ListValue(left.type, out)
 }
 
 fun evalIntersectSet(left: Rt_Value, right: Rt_Value): Rt_Value {
     val out: MutableSet<Rt_Value> = mutableSetOf()
     left.asSet().filter { right.asCollection().contains(it) }.forEach { out.add(it) }
-    return Rt_SetValue(left.type(), out)
+    return Rt_SetValue(left.type, out)
 }
 
 fun evalMergeMap(left: Rt_Value, right: Rt_Value): Rt_Value {
@@ -235,7 +236,7 @@ fun evalMergeMap(left: Rt_Value, right: Rt_Value): Rt_Value {
     val out: MutableMap<Rt_Value, Rt_Value> = mutableMapOf()
     out.putAll(left.asMap())
     out.putAll(right.asMap())
-    return Rt_MapValue(left.type(), out)
+    return Rt_MapValue(left.type, out)
 }
 
 // =============================================================================

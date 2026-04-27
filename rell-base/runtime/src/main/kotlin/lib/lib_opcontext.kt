@@ -14,7 +14,7 @@ import net.postchain.rell.base.compiler.base.lib.C_SysFunctionCtx
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceProperty
 import net.postchain.rell.base.compiler.base.namespace.C_NamespacePropertyContext
 import net.postchain.rell.base.compiler.vexpr.V_Expr
-import net.postchain.rell.base.lib.type.*
+import net.postchain.rell.base.lib.type.Lib_Type_Struct
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.DefinitionId
 import net.postchain.rell.base.model.QualifiedName
@@ -107,11 +107,11 @@ object Lib_OpContext {
                     bodyContext { ctx, a ->
                         val (mountName, gtvArgs) = Lib_Type_Struct.decodeOperation(ctx, a)
                         val nameValue = Rt_TextValue.get(mountName.str())
-                        val rtArgs = gtvArgs.mapTo(mutableListOf()) { Rt_GtvValue.get(it) }
+                        val rtArgs = gtvArgs.mapTo(mutableListOf<Rt_Value>()) { Rt_GtvValue.get(it) }
                         val interpreter = ctx.exeCtx.appCtx.interpreter
                         val argsRtType = interpreter.resolveType(LIST_OF_GTV_RR_TYPE)
                         val argsValue = Rt_ListValue(argsRtType, rtArgs)
-                        val attrs = mutableListOf(nameValue, argsValue)
+                        val attrs = mutableListOf<Rt_Value>(nameValue, argsValue)
                         gtxOperationStructValue(interpreter, attrs)
                     }
                 }
@@ -204,7 +204,7 @@ object Lib_OpContext {
                 validate(::checkCtx)
                 bodyContext { ctx ->
                     val opCtx = ctx.exeCtx.opCtx
-                    val elements = opCtx.signers().map { Rt_ByteArrayValue.get(it.toByteArray()) }.toMutableList()
+                    val elements = opCtx.signers().mapTo(mutableListOf<Rt_Value>()) { Rt_ByteArrayValue.get(it.toByteArray()) }
                     val rtType = ctx.exeCtx.appCtx.interpreter.resolveType(GET_SIGNERS_RETURN_RR_TYPE)
                     Rt_ListValue(rtType, elements)
                 }
@@ -348,7 +348,7 @@ object Lib_OpContext {
     fun gtxTransactionStructValue(interpreter: Rt_Interpreter, name: String, args: List<Gtv>): Rt_Value {
         val nameValue = Rt_TextValue.get(name)
         val argsRtType = interpreter.resolveType(LIST_OF_GTV_RR_TYPE)
-        val argsValue = Rt_ListValue(argsRtType, args.map { Rt_GtvValue.get(it) }.toMutableList())
+        val argsValue = Rt_ListValue(argsRtType, args.mapTo(mutableListOf()) { Rt_GtvValue.get(it) })
         return gtxOperationStructValue(interpreter, mutableListOf(nameValue, argsValue))
     }
 

@@ -188,7 +188,7 @@ object Lib_Type_Struct {
 
     fun decodeOperation(ctx: Rt_CallContext, v: Rt_Value): Pair<MountName, ImmList<Gtv>> {
         val sv = v.asStruct()
-        val rtType = sv.type()
+        val rtType = sv.type
         val interpreter = ctx.exeCtx.appCtx.interpreter
         val rrType = rtType.rrType as? RR_Type.Struct
             ?: throw Rt_Exception.common("decode_operation:bad_type", "Wrong struct runtime type ${rtType.name}")
@@ -254,7 +254,7 @@ object Lib_Type_Struct {
         name: String,
     ): Rt_Value {
         val v = arg.asStruct()
-        val rtType = v.type()
+        val rtType = v.type
         val interpreter = ctx.exeCtx.appCtx.interpreter
         val rrType = rtType.rrType as? RR_Type.Struct
             ?: throw Rt_Exception.common(
@@ -379,9 +379,7 @@ object Lib_Type_Struct {
         ): V_SpecialMemberFunctionCall(exprCtx, selfType) {
             private val members = getValueMembers(struct)
 
-            override fun calculator(): R_MemberCalculator {
-                throw IllegalStateException("copy() is lowered to V_StructExpr")
-            }
+            override fun calculator(): R_MemberCalculator = error("copy() is lowered to V_StructExpr")
 
             override fun lower(ctx: C_ExprContext, base: V_Expr): V_Expr {
                 val overrideMap = overrides.toMap()

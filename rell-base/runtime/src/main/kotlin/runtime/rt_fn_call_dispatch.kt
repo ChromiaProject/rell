@@ -4,10 +4,6 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.rell.base.lib.type.Rt_BooleanValue
-import net.postchain.rell.base.lib.type.Rt_ListValue
-import net.postchain.rell.base.lib.type.Rt_MapValue
-import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.model.expr.R_PartialCallMapping
 import net.postchain.rell.base.model.rr.RR_FunctionCallTarget
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
@@ -28,7 +24,7 @@ internal fun sysFnDisplayName(fnName: String): String {
 
 fun createFunctionValueFromTarget(
     target: Rt_FunctionCallTarget,
-    resType: Rt_Type,
+    resType: Rt_ValueClass<*>,
     mapping: R_PartialCallMapping,
     baseValue: Rt_Value?,
     args: List<Rt_Value>,
@@ -39,7 +35,7 @@ fun createFunctionValueFromTarget(
     return Rt_FunctionValue(resType, mapping, target, baseValue, args)
 }
 
-fun Rt_FunctionCallTarget.targetStr(baseValue: Rt_Value?, format: Rt_Value.StrFormat): String {
+fun Rt_FunctionCallTarget.targetStr(baseValue: Rt_Value?, format: Rt_StrFormat): String {
     if (rrTarget is RR_FunctionCallTarget.FunctionValue && baseValue != null && baseValue != Rt_NullValue) {
         return baseValue.asFunction().str(format)
     }
@@ -50,7 +46,7 @@ fun Rt_FunctionCallTarget.targetStrCode(baseValue: Rt_Value?): String {
     if (rrTarget is RR_FunctionCallTarget.FunctionValue && baseValue != null && baseValue != Rt_NullValue) {
         return baseValue.asFunction().strCode()
     }
-    return targetStr(baseValue, Rt_Value.StrFormat.V1)
+    return targetStr(baseValue, Rt_StrFormat.V1)
 }
 
 private fun Rt_FunctionCallTarget.rrTargetName(): String = when (val rr = rrTarget) {
@@ -153,7 +149,7 @@ class Rt_ExtendableFunctionCombiner_Nullable: Rt_ExtendableFunctionCombiner() {
     override fun getCombinedResult() = result
 }
 
-class Rt_ExtendableFunctionCombiner_List(private val type: Rt_Type): Rt_ExtendableFunctionCombiner() {
+class Rt_ExtendableFunctionCombiner_List(private val type: Rt_ValueClass<*>): Rt_ExtendableFunctionCombiner() {
     private val result = mutableListOf<Rt_Value>()
     private var done = false
 
@@ -171,7 +167,7 @@ class Rt_ExtendableFunctionCombiner_List(private val type: Rt_Type): Rt_Extendab
     }
 }
 
-class Rt_ExtendableFunctionCombiner_Map(private val mapType: Rt_Type): Rt_ExtendableFunctionCombiner() {
+class Rt_ExtendableFunctionCombiner_Map(private val mapType: Rt_ValueClass<*>): Rt_ExtendableFunctionCombiner() {
     private val result = mutableMapOf<Rt_Value, Rt_Value>()
     private var done = false
 

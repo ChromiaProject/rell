@@ -4,8 +4,8 @@
 
 package net.postchain.rell.base.utils
 
-import net.postchain.rell.base.lib.test.Rt_TestBlockValue
 import net.postchain.rell.base.runtime.Rt_CallContext
+import net.postchain.rell.base.runtime.Rt_TestBlockValue
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 
 interface Rt_UnitTestBlockRunner {

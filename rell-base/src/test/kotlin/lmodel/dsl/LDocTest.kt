@@ -7,8 +7,8 @@ package net.postchain.rell.base.lmodel.dsl
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.lib.type.Rt_IntValue
-import net.postchain.rell.base.lib.type.Rt_UnitValue
+import net.postchain.rell.base.runtime.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_Module
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.L_ParamImplication

@@ -6,7 +6,7 @@ package net.postchain.rell.base.testutils
 
 import net.postchain.rell.base.lib.type.Lib_BigIntegerMath
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
-import net.postchain.rell.base.lib.type.Rt_BooleanValue
+import net.postchain.rell.base.runtime.Rt_BooleanValue
 import net.postchain.rell.base.utils.CommonUtils
 import java.math.BigDecimal
 import java.math.BigInteger

@@ -6,27 +6,17 @@
 
 package net.postchain.rell.base.lib.type
 
-import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvString
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lmodel.dsl.Ld_BodyResult
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.GtvCompatibility
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.sql.PreparedStatementParams
-import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.toIntExact
-import org.jooq.SQLDialect
-import org.jooq.impl.DefaultDataType
-import org.postgresql.util.PGobject
 
 private val SET_OF_TEXT_RR_TYPE: RR_Type =
     RR_Type.Set(RR_Type.Primitive(RR_PrimitiveKind.TEXT))
@@ -60,7 +50,7 @@ object Lib_Type_Json {
                     val jsonString = value.asString()
                     val jsonValue = try {
                         Rt_JsonValue.parse(jsonString)
-                    } catch (e: IllegalArgumentException) {
+                    } catch (_: IllegalArgumentException) {
                         throw Rt_Exception.common("fn_json_badstr", "Bad JSON: $jsonString")
                     }
                     jsonValue
@@ -389,70 +379,6 @@ private fun asTypeBody(
 
 private fun isTypeBody(m: Ld_FunctionDsl, checkType: (JsonNode) -> Boolean): Ld_BodyResult = with(m) {
     body { json -> Rt_BooleanValue.get(checkType(json.asJson().node)) }
-}
-
-private val JSON_SQL_DATA_TYPE = DefaultDataType(null as SQLDialect?, String::class.java, "jsonb")
-
-object Rt_ValueSqlAdapter_Json: Rt_ValueSqlAdapter_Primitive("json", JSON_SQL_DATA_TYPE) {
-    override fun toSqlValue(value: Rt_Value): Any {
-        val str = value.asJson().str
-        val obj = PGobject()
-        obj.type = "json"
-        obj.value = str
-        return obj
-    }
-
-    override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
-        val obj = toSqlValue(value)
-        params.setObject(idx, obj)
-    }
-
-    override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
-        val v = row.getString(idx)
-        return if (v != null) Rt_JsonValue.parse(v) else checkSqlNull(name, nullable)
-    }
-}
-
-class Rt_JsonValue(val node: JsonNode): Rt_Value() {
-    override val valueType = Rt_CoreValueTypes.JSON.type()
-
-    override fun type() = Rt_PrimitiveTypes.JSON
-    override fun asJson() = this
-    override fun str(format: StrFormat) = str
-    override fun strCode(showTupleFieldNames: Boolean) = "json[$str]"
-    override fun equals(other: Any?) = other === this || (other is Rt_JsonValue && str == other.str)
-    override fun hashCode() = str.hashCode()
-
-    val str by lazy { node.toString() }
-
-    companion object {
-        // https://stackoverflow.com/questions/3907929/should-i-declare-jacksons-objectmapper-as-a-static-field
-        private val mapper = ObjectMapper()
-
-        fun parse(s: String): Rt_JsonValue {
-            if (s.isBlank()) {
-                throw IllegalArgumentException(s)
-            }
-
-            val json = try {
-                mapper.readTree(s)
-            } catch (e: JsonProcessingException) {
-                throw IllegalArgumentException(s)
-            }
-
-            if (json == null) {
-                throw IllegalArgumentException(s)
-            }
-
-            return Rt_JsonValue(json)
-        }
-    }
-}
-
-object GtvRtConversion_Json: GtvRtConversion {
-    override val directCompatibility = GtvCompatibility(fromGtv = true, toGtv = true)
-    override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvString(rt.asJson().str)
-    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv) = GtvRtUtils.gtvToJson(ctx, gtv, "json")
 }
 
 object JsonUtils {

@@ -11,8 +11,6 @@ import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
-import net.postchain.rell.base.lib.type.Rt_JsonValue
-import net.postchain.rell.base.lib.type.Rt_UnitValue
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.rr.RR_Attribute
 import net.postchain.rell.base.model.rr.RR_EntityDefinition
@@ -29,8 +27,6 @@ interface GtvToRtDefaultValueEvaluator {
 
     companion object {
         private val STRUCT_DEFAULT_SWITCH = C_FeatureSwitch("0.14.12")
-
-        fun getError(): GtvToRtDefaultValueEvaluator = GtvToRtDefaultValueEvaluator_Error
 
         fun getNormal(exeCtx: Rt_ExecutionContext): GtvToRtDefaultValueEvaluator {
             return GtvToRtDefaultValueEvaluator_Default(exeCtx)
@@ -164,9 +160,7 @@ class GtvToRtContext private constructor(
         return if (symbol === this.symbol) this else GtvToRtContext(state, symbol, keep)
     }
 
-    fun rtValue(supplier: () -> Rt_Value): Rt_Value {
-        return if (state.validateOnly) Rt_UnitValue else supplier()
-    }
+    fun rtValue(supplier: () -> Rt_Value): Rt_Value = if (state.validateOnly) Rt_UnitValue else supplier()
 
     fun trackRecord(entity: R_EntityDefinition, rowid: Long) = state.trackRecord(entity, rowid)
     fun trackRecordRR(entity: RR_EntityDefinition, rowid: Long) =
@@ -190,18 +184,16 @@ class GtvToRtContext private constructor(
     }
 
     fun getDefaultValue(defBase: R_DefinitionBase?, attr: R_Attribute, name: String, kind: String): Rt_Value {
-        val hasExpr = attr.hasExpr
-        return if (defaultValueEvaluator != null && defBase != null && hasExpr) {
-            rtValue {
-                defaultValueEvaluator.evaluate(defBase, attr.index)
-            }
-        } else {
-            throw GtvRtUtils.errGtv(
-                this,
-                "${kind}_noattr:$name:${attr.name}",
-                "Missing $kind attribute value: '$name.${attr.name}'",
-            )
+        // In validateOnly mode the actual default isn't computed (rtValue short-circuits to
+        // Rt_UnitValue); the attribute having a default expression is enough to accept the input.
+        if (defBase != null && attr.hasExpr && (defaultValueEvaluator != null || state.validateOnly)) {
+            return rtValue { defaultValueEvaluator!!.evaluate(defBase, attr.index) }
         }
+        throw GtvRtUtils.errGtv(
+            this,
+            "${kind}_noattr:$name:${attr.name}",
+            "Missing $kind attribute value: '$name.${attr.name}'",
+        )
     }
 
     /**
@@ -217,17 +209,14 @@ class GtvToRtContext private constructor(
         typeName: String,
         kind: String,
     ): Rt_Value {
-        return if (defaultValueEvaluator != null && defId != null && hasExpr) {
-            rtValue {
-                defaultValueEvaluator.evaluateByDefId(defId, attrIndex)
-            }
-        } else {
-            throw GtvRtUtils.errGtv(
-                this,
-                "${kind}_noattr:$typeName:$attrName",
-                "Missing $kind attribute value: '$typeName.$attrName'",
-            )
+        if (defId != null && hasExpr && (defaultValueEvaluator != null || state.validateOnly)) {
+            return rtValue { defaultValueEvaluator!!.evaluateByDefId(defId, attrIndex) }
         }
+        throw GtvRtUtils.errGtv(
+            this,
+            "${kind}_noattr:$typeName:$attrName",
+            "Missing $kind attribute value: '$typeName.$attrName'",
+        )
     }
 
     companion object {
@@ -252,19 +241,6 @@ class GtvToRtContext private constructor(
     }
 }
 
-interface GtvRtConversion {
-    val directCompatibility: GtvCompatibility
-
-    fun rtToGtv(rt: Rt_Value, pretty: Boolean): Gtv
-    fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value
-}
-
-object GtvRtConversion_None: GtvRtConversion {
-    override val directCompatibility = GtvCompatibility(fromGtv = false, toGtv = false)
-    override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = throw UnsupportedOperationException()
-    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv) = throw UnsupportedOperationException()
-}
-
 private class GtvToRtDefaultValueEvaluator_Default(
     private val exeCtx: Rt_ExecutionContext,
 ): GtvToRtDefaultValueEvaluator {
@@ -276,16 +252,6 @@ private class GtvToRtDefaultValueEvaluator_Default(
     override fun evaluateByDefId(defId: DefinitionId, attrIndex: Int): Rt_Value {
         val interpreter = exeCtx.appCtx.interpreter
         return interpreter.evaluateAttributeDefault(defId, attrIndex, exeCtx)
-    }
-}
-
-private object GtvToRtDefaultValueEvaluator_Error: GtvToRtDefaultValueEvaluator {
-    override fun evaluate(rDefBase: R_DefinitionBase, attrIndex: Int): Rt_Value {
-        throw UnsupportedOperationException("Default values evaluation not supported")
-    }
-
-    override fun evaluateByDefId(defId: DefinitionId, attrIndex: Int): Rt_Value {
-        throw UnsupportedOperationException("Default values evaluation not supported")
     }
 }
 
@@ -405,26 +371,6 @@ object GtvRtUtils {
         } catch (e: UserMistake) {
             throw errGtvType(ctx, typeName, gtv, GtvType.DICT, e)
         }
-    }
-
-    fun gtvToArray(ctx: GtvToRtContext, gtv: Gtv, typeName: String, minCount: Int, maxCount: Int): Array<out Gtv> {
-        val array = try {
-            gtv.asArray()
-        } catch (_: UserMistake) {
-            throw errGtvType(
-                ctx,
-                typeName,
-                "${GtvType.ARRAY}:${gtv.type}",
-                "expected ${GtvType.ARRAY}, actual ${gtv.type}",
-            )
-        }
-        if (array.size !in minCount..maxCount) {
-            throw errGtvType(
-                ctx, typeName, "array_size:${array.size}:${minCount}:${maxCount}",
-                "wrong array size: ${array.size} (expected $minCount..$maxCount)",
-            )
-        }
-        return array
     }
 
     fun errGtvType(ctx: GtvToRtContext, typeName: String, code: String, msg: String): Rt_Exception {

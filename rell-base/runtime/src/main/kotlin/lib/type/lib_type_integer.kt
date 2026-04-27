@@ -4,25 +4,17 @@
 
 package net.postchain.rell.base.lib.type
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvInteger
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Math
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.GtvCompatibility
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.sql.PreparedStatementParams
-import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
-import net.postchain.rell.base.utils.immSetOf
-import org.jooq.impl.SQLDataType
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.math.sign
-import kotlin.reflect.full.createType
 
 object Lib_Type_Integer {
     private const val SINCE0 = "0.6.0"
@@ -318,66 +310,5 @@ object Lib_Type_Integer {
         }
 
         return Rt_IntValue.get(r)
-    }
-}
-
-object Rt_NativeConversion_Integer: Rt_TypeNativeConversion {
-    override val nativeTypes = immSetOf(Long::class.createType())
-    override fun rtToNative(value: Rt_Value) = value.asInteger()
-    override fun nativeToRt(value: Any?) = Rt_IntValue.get(value as Long)
-}
-
-object Rt_ValueSqlAdapter_Integer: Rt_ValueSqlAdapter_Primitive("integer", SQLDataType.BIGINT) {
-    override fun toSqlValue(value: Rt_Value) = value.asInteger()
-
-    override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
-        params.setLong(idx, value.asInteger())
-    }
-
-    override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
-        val v = row.getLong(idx)
-        return checkSqlNull(v == 0L, row, name, nullable) ?: Rt_IntValue.get(v)
-    }
-}
-
-class Rt_IntValue private constructor(val value: Long): Rt_Value() {
-    override val valueType = Rt_CoreValueTypes.INTEGER.type()
-
-    override fun type() = Rt_PrimitiveTypes.INTEGER
-    override fun asInteger() = value
-    override fun toFormatArg() = value
-    override fun strCode(showTupleFieldNames: Boolean) = "int[$value]"
-    override fun str(format: StrFormat) = "" + value
-    override fun equals(other: Any?) = other is Rt_IntValue && value == other.value
-    override fun hashCode() = value.hashCode()
-
-    companion object {
-        const val MAX_VALUE = Long.MAX_VALUE
-        const val MIN_VALUE = Long.MIN_VALUE
-        val MAX_VALUE_AS_BIGINT: BigInteger = BigInteger.valueOf(MAX_VALUE)
-        val MIN_VALUE_AS_BIGINT: BigInteger = BigInteger.valueOf(MIN_VALUE)
-
-        private const val CACHE_RANGE = 1000
-        private val CACHE: Array<Rt_Value> = Array(2 * CACHE_RANGE + 1) { Rt_IntValue((it - CACHE_RANGE).toLong()) }
-
-        val ZERO: Rt_Value = CACHE[CACHE_RANGE]
-
-        @JvmStatic
-        fun get(v: Long): Rt_Value = if (v >= -CACHE_RANGE && v <= CACHE_RANGE) {
-            CACHE[(v + CACHE_RANGE).toInt()]
-        } else {
-            Rt_IntValue(v)
-        }
-    }
-}
-
-object GtvRtConversion_Integer: GtvRtConversion {
-    override val directCompatibility = GtvCompatibility(fromGtv = true, toGtv = true)
-
-    override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvInteger(rt.asInteger())
-
-    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-        val v = GtvRtUtils.gtvToInteger(ctx, gtv, "integer")
-        return Rt_IntValue.get(v)
     }
 }

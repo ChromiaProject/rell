@@ -17,7 +17,7 @@ import java.util.*
  * the produced [net.postchain.rell.base.model.rr.RR_App] when constructing [Rt_Interpreter].
  *
  * Isolation is critical: stdlib meta-bodies (e.g. `rell.gtv_ext(T).to_gtv`, `log()`) capture
- * compile-specific state (`Rt_Type`, `FilePos`). Merging registrations from independent compiles
+ * compile-specific state (`Rt_ValueClass`, `FilePos`). Merging registrations from independent compiles
  * into a single shared map would let test A's interpreter dispatch to test B's closure and vice
  * versa — corrupting attribute layouts, entity references, and call-position metadata.
  */

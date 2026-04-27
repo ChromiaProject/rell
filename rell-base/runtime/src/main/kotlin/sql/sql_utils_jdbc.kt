@@ -27,7 +27,8 @@ interface ResultSetRow {
 }
 
 private class DirectResultSetRow(private val rs: ResultSet): ResultSetRow {
-    override val metaData: ResultSetMetaData get() = rs.metaData
+    override val metaData: ResultSetMetaData
+        get() = rs.metaData
 
     override fun wasNull(): Boolean = rs.wasNull()
     override fun getString(columnIndex: Int): String? = rs.getString(columnIndex)

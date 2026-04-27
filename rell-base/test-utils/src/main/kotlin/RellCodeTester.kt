@@ -13,8 +13,6 @@ import net.postchain.gtv.GtvNull
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.lib.type.Rt_BooleanValue
-import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.MountName
 import net.postchain.rell.base.model.R_StackPos
@@ -213,13 +211,13 @@ class RellCodeTester(
     }
 
     fun callQueryGtv(code: String, name: String, args: List<Rt_Value>): Gtv {
-        val encoder = { t: Rt_Type, v: Rt_Value -> PostchainGtvUtils.gtvToBytes(t.gtvConversion!!.rtToGtv(v, true)).toHex() }
+        val encoder = { t: Rt_ValueClass<*>, v: Rt_Value -> PostchainGtvUtils.gtvToBytes(t.gtvConversion!!.rtToGtv(v, true)).toHex() }
         val str = callQuery0(code, name, args, { _, v -> v }, encoder)
         val bytes = str.hexStringToByteArray()
         return PostchainGtvUtils.bytesToGtv(bytes)
     }
 
-    private fun resultEncoder(): (Rt_Type, Rt_Value) -> String {
+    private fun resultEncoder(): (Rt_ValueClass<*>, Rt_Value) -> String {
         return when {
             gtvResult && gtvResultRaw -> RellTestUtils.ENCODER_GTV_STRICT
             gtvResult -> RellTestUtils.ENCODER_GTV
@@ -232,8 +230,8 @@ class RellCodeTester(
         code: String,
         name: String,
         args: List<T>,
-        decoder: (List<Rt_Type>, List<T>) -> List<Rt_Value>,
-        encoder: (Rt_Type, Rt_Value) -> String,
+        decoder: (List<Rt_ValueClass<*>>, List<T>) -> List<Rt_Value>,
+        encoder: (Rt_ValueClass<*>, Rt_Value) -> String,
     ): String {
         val evalRes = eval.eval {
             if (wrapInit) {
@@ -263,7 +261,7 @@ class RellCodeTester(
         return callOp0(code, "o", args, GtvTestUtils::decodeGtvStrOpArgs)
     }
 
-    private fun <T> callOp0(code: String, name: String, args: List<T>, decoder: (List<Rt_Type>, List<T>) -> List<Rt_Value>): String {
+    private fun <T> callOp0(code: String, name: String, args: List<T>, decoder: (List<Rt_ValueClass<*>>, List<T>) -> List<Rt_Value>): String {
         init()
         return processWithAppSqlCtx(code) { appCtx, sqlCtx ->
             RellTestUtils.callOpGeneric(appCtx, opContext, sqlCtx, tstCtx.sqlMgr(), name, args, decoder)

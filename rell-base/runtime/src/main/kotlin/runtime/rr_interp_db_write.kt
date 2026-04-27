@@ -6,8 +6,6 @@ package net.postchain.rell.base.runtime
 
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory
-import net.postchain.rell.base.lib.type.Rt_ListValue
-import net.postchain.rell.base.lib.type.Rt_RowidValue
 import net.postchain.rell.base.model.AtCardinality
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.utils.CommonUtils
@@ -126,7 +124,7 @@ fun Rt_Interpreter.evaluateStructListCreate(expr: RR_Expr.StructListCreate, fram
     val rowidFn = frame.sqlCtx.mainChainMapping().rowidFunction
 
     val snapshotEnabled = frame.exeCtx.opCtx.hasSnapshotContext()
-    val snapshotConvs: List<Pair<String, Rt_TypeGtvConversion>>
+    val snapshotConvs: List<Pair<String, Rt_GtvCompatibleValueClass<*>>>
     val snapshotMetaNameGtv: Gtv?
     if (snapshotEnabled) {
         snapshotConvs = entityGtvConversions(entityDef)
@@ -145,7 +143,7 @@ fun Rt_Interpreter.evaluateStructListCreate(expr: RR_Expr.StructListCreate, fram
         val sqlField = DSL.field("{0}({1})", Any::class.java, DSL.name(rowidsFn), ANY_PARAM_PLACEHOLDER)
         val pSql = ParameterizedSql(
             "SELECT ${renderJooq(sqlField)}",
-            listOf(net.postchain.rell.base.lib.type.Rt_IntValue.get(count.toLong())).toImmList(),
+            listOf(Rt_IntValue.get(count.toLong())).toImmList(),
         )
         var firstRowidVar: Long? = null
         frame.userSqlExec.executeQuery(pSql) { row -> firstRowidVar = row.getLong(1) }
@@ -171,7 +169,7 @@ fun Rt_Interpreter.evaluateStructListCreate(expr: RR_Expr.StructListCreate, fram
             val row = LinkedHashMap<Field<*>, Field<*>>()
             if (useFastRowid) {
                 row[rowidColField] = ANY_PARAM_PLACEHOLDER
-                binds.add(net.postchain.rell.base.lib.type.Rt_IntValue.get(firstRowid + pageStart + idx))
+                binds.add(Rt_IntValue.get(firstRowid + pageStart + idx))
             } else {
                 row[rowidColField] = rowidFnExpr
             }
@@ -504,7 +502,7 @@ private fun Rt_Interpreter.emitCreateSnapshot(
 
     val attrs = entityDef.strAttributes.values.associate { attr ->
         val rtType = resolveType(attr.type)
-        val conv: Rt_TypeGtvConversion = checkNotNull(rtType.gtvConversion) {
+        val conv: Rt_GtvCompatibleValueClass<*> = checkNotNull(rtType.gtvConversion) {
             "No GTV conversion for type: ${rtType.name}"
         }
         attr.name to conv.rtToGtv(attrValues[attr.name] ?: Rt_NullValue, false)
@@ -515,7 +513,7 @@ private fun Rt_Interpreter.emitCreateSnapshot(
 
 private fun Rt_Interpreter.entityGtvConversions(
     entityDef: RR_EntityDefinition,
-): List<Pair<String, Rt_TypeGtvConversion>> = entityDef.strAttributes.values.map { attr ->
+): List<Pair<String, Rt_GtvCompatibleValueClass<*>>> = entityDef.strAttributes.values.map { attr ->
     val rtType = resolveType(attr.type)
     val conv = checkNotNull(rtType.gtvConversion) { "No GTV conversion for type: ${rtType.name}" }
     attr.name to conv
@@ -525,7 +523,7 @@ private fun emitCreateSnapshotWith(
     frame: Rt_CallFrame,
     metaNameGtv: Gtv,
     rowid: Long,
-    convs: List<Pair<String, Rt_TypeGtvConversion>>,
+    convs: List<Pair<String, Rt_GtvCompatibleValueClass<*>>>,
     valueAt: (Int) -> Rt_Value,
 ) {
     val attrGtvs = LinkedHashMap<String, Gtv>(convs.size)

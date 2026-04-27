@@ -15,7 +15,6 @@ import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_ExprInfo
 import net.postchain.rell.base.compiler.vexpr.V_UnaryExpr
 import net.postchain.rell.base.compiler.vexpr.V_UnaryOp_IsNull
-import net.postchain.rell.base.lib.type.Rt_BooleanValue
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_BooleanType
 import net.postchain.rell.base.model.R_CollectionType
@@ -25,6 +24,7 @@ import net.postchain.rell.base.model.expr.Db_ExistsExpr
 import net.postchain.rell.base.model.expr.Db_Expr
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.runtime.R_SysFunction_1
+import net.postchain.rell.base.runtime.Rt_BooleanValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.LazyPosString

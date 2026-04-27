@@ -4,29 +4,23 @@
 
 package net.postchain.rell.base.lib.type
 
-import net.postchain.gtv.*
+import net.postchain.gtv.Gtv
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_BodyResult
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionMetaBodyDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.GtvCompatibility
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.R_VirtualType
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.immMapOf
-import net.postchain.rell.base.utils.immSetOf
 import net.postchain.rell.base.utils.toIntExactOrNull
-import java.math.BigInteger
-import kotlin.reflect.full.createType
 
 object Lib_Type_Gtv {
-    val LIST_OF_GTV_TYPE: Rt_Type = rtListType(Rt_PrimitiveTypes.GTV)
+    val LIST_OF_GTV_TYPE = Rt_ListType(Rt_PrimitiveTypes.GTV)
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         alias("GTXValue", "gtv", C_MessageType.ERROR, since = "0.6.1")
@@ -402,7 +396,7 @@ object Lib_Type_Gtv {
         return gtvToRt(ctx, rTypeToRtType(type), gtv, pretty)
     }
 
-    fun gtvToRt(ctx: Rt_CallContext, rtType: Rt_Type, gtv: Gtv, pretty: Boolean): Rt_Value {
+    fun gtvToRt(ctx: Rt_CallContext, rtType: Rt_ValueClass<*>, gtv: Gtv, pretty: Boolean): Rt_Value {
         val convCtx = GtvToRtContext.make(
             pretty = pretty,
             defaultValueEvaluator = GtvToRtDefaultValueEvaluator.getStructDefault(ctx.exeCtx),
@@ -430,7 +424,7 @@ object Lib_Type_Gtv {
 
     private fun calcHashNormal(
         ctx: Rt_CallContext,
-        valueRt: Rt_Type,
+        valueRt: Rt_ValueClass<*>,
         value: Rt_Value,
         version: Rt_Value?,
         fnName: String,
@@ -457,92 +451,5 @@ object Lib_Type_Gtv {
             requireNotNull(v) { "Hash version out of range: $version" }
         }
         return ctx.appCtx.gtvHashCalculator.hash(gtv, iVersion)
-    }
-}
-
-object Rt_NativeConversion_Gtv: Rt_TypeNativeConversion {
-    override val nativeTypes = immSetOf(Gtv::class.createType())
-    override fun rtToNative(value: Rt_Value) = value.asGtv()
-    override fun nativeToRt(value: Any?) = Rt_GtvValue.get(value as Gtv)
-}
-
-class Rt_GtvValue private constructor(val value: Gtv): Rt_Value() {
-    override val valueType = Rt_CoreValueTypes.GTV.type()
-
-    override fun type() = Rt_PrimitiveTypes.GTV
-    override fun asGtv() = value
-
-    override fun equals(other: Any?) = other === this || (other is Rt_GtvValue && value == other.value)
-    override fun hashCode() = value.hashCode()
-
-    override fun strCode(showTupleFieldNames: Boolean) = "gtv[${str(StrFormat.V2)}]"
-
-    override fun str(format: StrFormat): String = when(format) {
-        StrFormat.V1 -> toString(value)
-        StrFormat.V2 -> value.toString()
-    }
-
-    override fun strPretty(indent: Int): String {
-        if (value.type == GtvType.ARRAY) {
-            val array = value.asArray()
-            if (array.isNotEmpty()) {
-                val indentStr = "    ".repeat(indent)
-                return array.joinToString(",", "[", "\n$indentStr]") {
-                    val s = Rt_GtvValue(it).strPretty(indent + 1)
-                    "\n$indentStr    $s"
-                }
-            }
-        } else if (value.type == GtvType.DICT) {
-            val map = value.asDict()
-            if (map.isNotEmpty()) {
-                val indentStr = "    ".repeat(indent)
-                return map.entries.joinToString(",", "[", "\n$indentStr]") {
-                    val k = GtvFactory.gtv(it.key).toString()
-                    val v = Rt_GtvValue(it.value).strPretty(indent + 1)
-                    "\n$indentStr    $k: $v"
-                }
-            }
-        }
-
-        return super.strPretty(indent)
-    }
-
-    companion object {
-        val NULL: Rt_Value = Rt_GtvValue(GtvNull)
-
-        private val ZERO_INTEGER: Rt_Value = Rt_GtvValue(GtvFactory.gtv(0))
-        private val ZERO_BIG_INTEGER: Rt_Value = Rt_GtvValue(GtvFactory.gtv(BigInteger.ZERO))
-        private val EMPTY_STRING: Rt_Value = Rt_GtvValue(GtvFactory.gtv(""))
-        private val EMPTY_BYTE_ARRAY: Rt_Value = Rt_GtvValue(GtvFactory.gtv(ByteArray(0)))
-        private val EMPTY_ARRAY: Rt_Value = Rt_GtvValue(GtvFactory.gtv(immListOf()))
-        private val EMPTY_DICT: Rt_Value = Rt_GtvValue(GtvFactory.gtv(immMapOf()))
-
-        fun get(value: Gtv): Rt_Value = when (value) {
-            GtvNull -> NULL
-            is GtvInteger -> if (value.integer == 0L) ZERO_INTEGER else Rt_GtvValue(value)
-            is GtvBigInteger -> if (value.integer == BigInteger.ZERO) ZERO_BIG_INTEGER else Rt_GtvValue(value)
-            is GtvString -> if (value.string.isEmpty()) EMPTY_STRING else Rt_GtvValue(value)
-            is GtvByteArray -> if (value.bytearray.isEmpty()) EMPTY_BYTE_ARRAY else Rt_GtvValue(value)
-            is GtvArray -> if (value.array.isEmpty()) EMPTY_ARRAY else Rt_GtvValue(value)
-            is GtvDictionary -> if (value.dict.isEmpty()) EMPTY_DICT else Rt_GtvValue(value)
-            else -> Rt_GtvValue(value)
-        }
-
-        fun toString(value: Gtv): String {
-            return try {
-                PostchainGtvUtils.gtvToJson(value)
-            } catch (_: Exception) {
-                value.toString() // Fallback, just in case (did not happen).
-            }
-        }
-    }
-}
-
-object GtvRtConversion_Gtv: GtvRtConversion {
-    override val directCompatibility = GtvCompatibility(fromGtv = true, toGtv = true)
-    override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = rt.asGtv()
-
-    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-        return Rt_GtvValue.get(gtv)
     }
 }

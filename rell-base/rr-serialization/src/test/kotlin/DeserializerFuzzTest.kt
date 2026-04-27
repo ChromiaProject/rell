@@ -54,7 +54,7 @@ class DeserializerFuzzTest: BaseSerializerTest() {
                 else -> rng.nextInt(10)       // micro - exercise boundary conditions
             }
             val bytes = ByteArray(size).also(rng::nextBytes)
-            expectSafeOutcome(bytes, "iter=$i size=$size")
+            expectSafeOutcome(bytes, "toIterable=$i size=$size")
         }
     }
 

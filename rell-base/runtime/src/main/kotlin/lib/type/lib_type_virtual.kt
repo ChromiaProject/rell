@@ -7,6 +7,7 @@ package net.postchain.rell.base.lib.type
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_VirtualType
+import net.postchain.rell.base.runtime.asVirtual
 import net.postchain.rell.base.runtime.simple
 import net.postchain.rell.base.utils.doc.DocCode
 

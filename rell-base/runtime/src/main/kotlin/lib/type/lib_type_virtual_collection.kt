@@ -5,6 +5,9 @@
 package net.postchain.rell.base.lib.type
 
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
+import net.postchain.rell.base.runtime.Rt_BooleanValue
+import net.postchain.rell.base.runtime.Rt_IntValue
+import net.postchain.rell.base.runtime.asVirtualCollection
 
 object Lib_Type_VirtualCollection {
     val NAMESPACE = Ld_NamespaceDsl.make {

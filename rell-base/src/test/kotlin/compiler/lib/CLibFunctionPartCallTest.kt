@@ -4,12 +4,15 @@
 
 package net.postchain.rell.base.compiler.lib
 
-import net.postchain.rell.base.lib.type.Rt_IntValue
-import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lmodel.L_ParamArity
+import net.postchain.rell.base.model.rr.RR_TupleField
+import net.postchain.rell.base.model.rr.RR_Type
+import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_PrimitiveTypes
+import net.postchain.rell.base.runtime.Rt_TextValue
+import net.postchain.rell.base.runtime.Rt_TupleType
 import net.postchain.rell.base.runtime.Rt_TupleValue
-import net.postchain.rell.base.runtime.rtTupleType
+import net.postchain.rell.base.utils.immListOf
 import kotlin.test.Test
 
 class CLibFunctionPartCallTest: BaseCLibTest() {
@@ -208,7 +211,13 @@ class CLibFunctionPartCallTest: BaseCLibTest() {
 
     @Test fun testPartCallExactMatchResult() {
         tst.extraMod = makeModule {
-            val tupleRtType = rtTupleType(Rt_PrimitiveTypes.INTEGER, Rt_PrimitiveTypes.TEXT)
+            val tupleRtType = Rt_TupleType(
+                fields = immListOf(
+                    RR_TupleField(null, RR_Type.Primitive(net.postchain.rell.base.model.rr.RR_PrimitiveKind.INTEGER)),
+                    RR_TupleField(null, RR_Type.Primitive(net.postchain.rell.base.model.rr.RR_PrimitiveKind.TEXT)),
+                ),
+                fieldClasses = immListOf(Rt_PrimitiveTypes.INTEGER, Rt_PrimitiveTypes.TEXT),
+            )
             function("_foo", "(integer?,text)") {
                 body { -> Rt_TupleValue.make(tupleRtType, Rt_IntValue.get(1), Rt_TextValue.get("_foo_0")) }
             }

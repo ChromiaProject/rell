@@ -7,7 +7,12 @@ package net.postchain.rell.base.runtime
 import net.postchain.gtv.Gtv
 
 sealed class Rt_VirtualCollectionValue(gtv: Gtv): Rt_VirtualValue(gtv) {
-    override fun asVirtualCollection() = this
     abstract fun size(): Int
-    abstract override fun asIterable(): Iterable<Rt_Value>
+
+    companion object: Rt_ValueClass<Rt_VirtualCollectionValue> {
+        override val name
+            get() = "virtual_collection"
+
+        override val klass = Rt_VirtualCollectionValue::class
+    }
 }

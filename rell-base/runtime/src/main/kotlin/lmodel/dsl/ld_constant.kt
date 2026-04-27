@@ -4,14 +4,11 @@
 
 package net.postchain.rell.base.lmodel.dsl
 
-import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.L_Constant
 import net.postchain.rell.base.lmodel.L_ConstantDocSource
 import net.postchain.rell.base.model.Name
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.runtime.Rt_NullValue
-import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.runtime.rtValueToRRConstant
+import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.futures.FcFuture
 
 class Ld_Constant(
@@ -52,7 +49,7 @@ class Ld_Constant(
         is Rt_TextValue -> L_ConstantDocSource.Text(value.value)
         is Rt_ByteArrayValue -> L_ConstantDocSource.Bytes(value.asByteArray())
         is Rt_RowidValue -> L_ConstantDocSource.Rowid(value.value)
-        else -> L_ConstantDocSource.Complex(lazy { value.str(Rt_Value.StrFormat.V2) })
+        else -> L_ConstantDocSource.Complex(lazy { value.str(Rt_StrFormat.V2) })
     }
 }
 

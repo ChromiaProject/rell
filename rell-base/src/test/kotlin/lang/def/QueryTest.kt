@@ -4,9 +4,9 @@
 
 package net.postchain.rell.base.lang.def
 
-import net.postchain.rell.base.lib.type.Rt_BooleanValue
-import net.postchain.rell.base.lib.type.Rt_IntValue
-import net.postchain.rell.base.lib.type.Rt_TextValue
+import net.postchain.rell.base.runtime.Rt_BooleanValue
+import net.postchain.rell.base.runtime.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_TextValue
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.utils.RellVersions
 import kotlin.test.Test

@@ -93,7 +93,7 @@ public final class net/postchain/rell/api/gtx/Rt_DynamicBlockRunnerStrategy : ne
 
 public final class net/postchain/rell/api/gtx/Rt_PostchainUnitTestBlockRunner : net/postchain/rell/base/utils/Rt_UnitTestBlockRunner {
 	public fun <init> (Lnet/postchain/rell/base/utils/BytesKeyPair;Lnet/postchain/rell/api/gtx/Rt_BlockRunnerConfig;Lnet/postchain/rell/api/gtx/Rt_BlockRunnerStrategy;)V
-	public fun runBlock (Lnet/postchain/rell/base/runtime/Rt_CallContext;Lnet/postchain/rell/base/lib/test/Rt_TestBlockValue;)V
+	public fun runBlock (Lnet/postchain/rell/base/runtime/Rt_CallContext;Lnet/postchain/rell/base/runtime/Rt_TestBlockValue;)V
 }
 
 public final class net/postchain/rell/api/gtx/Rt_StaticBlockRunnerStrategy : net/postchain/rell/api/gtx/Rt_BlockRunnerStrategy {

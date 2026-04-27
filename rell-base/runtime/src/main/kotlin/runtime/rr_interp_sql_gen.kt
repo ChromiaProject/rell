@@ -5,8 +5,6 @@
 package net.postchain.rell.base.runtime
 
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
-import net.postchain.rell.base.lib.type.Rt_BooleanValue
-import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.model.R_EntitySqlMapping
 import net.postchain.rell.base.model.expr.Rt_AtExprExtras
 import net.postchain.rell.base.model.rr.*
@@ -461,27 +459,25 @@ class DbSqlGen private constructor(
     // EXISTS
     // -------------------------------------------------------------------------------------------
 
-    private fun existsField(expr: RR_DbExpr.Exists, frame: Rt_CallFrame): Field<Any?> {
-        return when (val sub = expr.subExpr) {
-            is RR_DbExpr.SubQuery -> {
-                val subSql = subQueryParameterizedSql(sub, frame)
-                val subField = wrapAsRawField(subSql)
-                val op = if (expr.not) "NOT EXISTS" else "EXISTS"
-                (DSL.field("$op {0}", Any::class.java, subField))
-            }
+    private fun existsField(expr: RR_DbExpr.Exists, frame: Rt_CallFrame): Field<Any?> = when (val sub = expr.subExpr) {
+        is RR_DbExpr.SubQuery -> {
+            val subSql = subQueryParameterizedSql(sub, frame)
+            val subField = wrapAsRawField(subSql)
+            val op = if (expr.not) "NOT EXISTS" else "EXISTS"
+            (DSL.field("$op {0}", Any::class.java, subField))
+        }
 
-            is RR_DbExpr.Interpreted -> {
-                // Non-subquery (e.g. collection at). Evaluate at R-level, emit literal TRUE/FALSE.
-                val value = interpreter.evaluateExpr(sub.expr, frame)
-                val exists = if (value === Rt_NullValue) false else value.asCollection().isNotEmpty()
-                boolField(if (expr.not) !exists else exists)
-            }
+        is RR_DbExpr.Interpreted -> {
+            // Non-subquery (e.g. collection at). Evaluate at R-level, emit literal TRUE/FALSE.
+            val value = interpreter.evaluateExpr(sub.expr, frame)
+            val exists = if (value === Rt_NullValue) false else value.asCollection().isNotEmpty()
+            boolField(if (expr.not) !exists else exists)
+        }
 
-            else -> {
-                val subField = dbExprToField(sub, frame)
-                val op = if (expr.not) "NOT EXISTS" else "EXISTS"
-                DSL.field("$op({0})", Any::class.java, subField)
-            }
+        else -> {
+            val subField = dbExprToField(sub, frame)
+            val op = if (expr.not) "NOT EXISTS" else "EXISTS"
+            DSL.field("$op({0})", Any::class.java, subField)
         }
     }
 

@@ -330,7 +330,9 @@ private class SqlEntityIniter private constructor(
             val metaAttr = metaEntity.attrs[attr.sqlMapping]
             if (metaAttr != null) {
                 val oldType = metaAttr.type
-                val newType = interpreter.resolveType(attr.type).sqlAdapter!!.metaName(sqlCtx)
+                val newType = checkNotNull(interpreter.resolveType(attr.type).sqlAdapter) {
+                    "No SQL adapter for attribute '${attr.name}' of type ${attr.type}"
+                }.metaName(sqlCtx)
                 if (newType != oldType) {
                     val entityName = msgEntityName(entity)
                     initCtx.msgs.error("meta:attr:diff_type:$metaName:${attr.name}:$oldType:$newType",

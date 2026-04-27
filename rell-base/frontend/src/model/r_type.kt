@@ -25,7 +25,7 @@ import net.postchain.rell.base.utils.doc.DocType
 import net.postchain.rell.base.utils.doc.DocUtils
 import java.util.*
 
-/** Compile-time SQL metadata — no Rt_Value references or Rt_ValueSqlAdapter reference. */
+/** Compile-time SQL metadata — no Rt_Value or Rt_SqlCompatibleValueClass reference. */
 class R_TypeSqlInfo(
     private val sqlCompatible: (C_CompilerOptions) -> Boolean,
     private val allowedForEntityAttributes: (C_CompilerOptions) -> Boolean,
@@ -212,14 +212,14 @@ abstract class R_Type(
         is R_EntityType, is R_EnumType, is R_NullType,
         is R_NullableType, is R_StructType, is R_TupleType,
         is R_ListType, is R_SetType, is R_MapType ->
-            GtvCompatibility(fromGtv = true, toGtv = true)
+            GtvCompatibility.FULL
 
         // Virtual types support fromGtv (deserialization from Merkle proof) but NOT toGtv.
         is R_VirtualListType, is R_VirtualSetType, is R_VirtualMapType,
         is R_VirtualStructType, is R_VirtualTupleType ->
-            GtvCompatibility(fromGtv = true, toGtv = false)
+            GtvCompatibility.FROM_ONLY
 
-        else -> GtvCompatibility(fromGtv = false, toGtv = false)
+        else -> GtvCompatibility.NONE
     }
 
     private fun computeSqlInfo(): R_TypeSqlInfo = when (this) {

@@ -4,18 +4,9 @@
 
 package net.postchain.rell.base.lib.type
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvInteger
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.GtvCompatibility
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
-import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.sql.PreparedStatementParams
-import net.postchain.rell.base.sql.ResultSetRow
-import net.postchain.rell.base.utils.immSetOf
-import org.jooq.impl.SQLDataType
-import kotlin.reflect.full.createType
 
 object Lib_Type_Boolean {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -101,52 +92,3 @@ object Lib_Type_Boolean {
     }
 }
 
-object Rt_NativeConversion_Boolean: Rt_TypeNativeConversion {
-    override val nativeTypes = immSetOf(Boolean::class.createType())
-    override fun rtToNative(value: Rt_Value) = value.asBoolean()
-    override fun nativeToRt(value: Any?) = Rt_BooleanValue.get(value as Boolean)
-}
-
-object Rt_ValueSqlAdapter_Boolean: Rt_ValueSqlAdapter_Primitive("boolean", SQLDataType.BOOLEAN) {
-    override fun toSqlValue(value: Rt_Value) = value.asBoolean()
-
-    override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
-        params.setBoolean(idx, value.asBoolean())
-    }
-
-    override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
-        val v = row.getBoolean(idx)
-        return checkSqlNull(!v, row, name, nullable) ?: Rt_BooleanValue.get(v)
-    }
-}
-
-class Rt_BooleanValue private constructor(val value: Boolean): Rt_Value() {
-    override val valueType = Rt_CoreValueTypes.BOOLEAN.type()
-
-    private val strCode = "boolean[$value]"
-
-    override fun type() = Rt_PrimitiveTypes.BOOLEAN
-    override fun asBoolean() = value
-    override fun toFormatArg() = value
-    override fun strCode(showTupleFieldNames: Boolean) = strCode
-    override fun str(format: StrFormat) = if (value) "true" else "false"
-    override fun equals(other: Any?) = other is Rt_BooleanValue && value == other.value
-    override fun hashCode() = value.hashCode()
-
-    companion object {
-        val TRUE: Rt_Value = Rt_BooleanValue(true)
-        val FALSE: Rt_Value = Rt_BooleanValue(false)
-
-        fun get(value: Boolean): Rt_Value = if (value) TRUE else FALSE
-    }
-}
-
-object GtvRtConversion_Boolean: GtvRtConversion {
-    override val directCompatibility = GtvCompatibility(fromGtv = true, toGtv = true)
-    override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvInteger(if (rt.asBoolean()) 1L else 0L)
-
-    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-        val v = GtvRtUtils.gtvToBoolean(ctx, gtv, "boolean")
-        return Rt_BooleanValue.get(v)
-    }
-}

@@ -4,22 +4,14 @@
 
 package net.postchain.rell.base.lib.type
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvInteger
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.GtvCompatibility
-import net.postchain.rell.base.model.R_RowidType
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_RowidValue
+import net.postchain.rell.base.runtime.asInteger
+import net.postchain.rell.base.runtime.asRowid
 import net.postchain.rell.base.runtime.utils.Rt_Utils
-import net.postchain.rell.base.sql.PreparedStatementParams
-import net.postchain.rell.base.sql.ResultSetRow
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.immSetOf
-import net.postchain.rell.base.utils.mapToImmList
-import org.jooq.impl.SQLDataType
-import kotlin.reflect.full.createType
 
 object Lib_Type_Rowid {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -93,63 +85,5 @@ object Lib_Type_Rowid {
                 }
             }
         }
-    }
-}
-
-object Rt_NativeConversion_Rowid: Rt_TypeNativeConversion {
-    override val nativeTypes = immSetOf(Long::class.createType())
-    override fun rtToNative(value: Rt_Value) = value.asRowid()
-    override fun nativeToRt(value: Any?) = Rt_RowidValue.get(value as Long)
-}
-
-object Rt_ValueSqlAdapter_Rowid: Rt_ValueSqlAdapter_Primitive("rowid", SQLDataType.BIGINT) {
-    override fun toSqlValue(value: Rt_Value) = value.asRowid()
-
-    override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
-        params.setLong(idx, value.asRowid())
-    }
-
-    override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
-        val v = row.getLong(idx)
-        return checkSqlNull(v == 0L, row, name, nullable) ?: Rt_RowidValue.get(v)
-    }
-}
-
-class Rt_RowidValue private constructor(val value: Long): Rt_Value() {
-    init {
-        check(value >= 0) { "Negative rowid value: $value" }
-    }
-
-    override val valueType = Rt_CoreValueTypes.ROWID.type()
-
-    override fun type() = Rt_PrimitiveTypes.ROWID
-    override fun asRowid() = value
-    override fun toFormatArg() = value
-    override fun strCode(showTupleFieldNames: Boolean) = "rowid[$value]"
-    override fun str(format: StrFormat) = "" + value
-    override fun equals(other: Any?) = other is Rt_RowidValue && value == other.value
-    override fun hashCode() = value.hashCode()
-
-    companion object {
-        private val VALUES: ImmList<Rt_Value> = (0 .. 1000).mapToImmList { Rt_RowidValue(it.toLong()) }
-
-        val ZERO = VALUES[0]
-
-        fun get(value: Long): Rt_Value {
-            return if (value >= 0 && value < VALUES.size) VALUES[value.toInt()] else Rt_RowidValue(value)
-        }
-    }
-}
-
-object GtvRtConversion_Rowid: GtvRtConversion {
-    override val directCompatibility = GtvCompatibility(fromGtv = true, toGtv = true)
-    override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvInteger(rt.asRowid())
-
-    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-        val v = GtvRtUtils.gtvToInteger(ctx, gtv, "rowid")
-        if (v < 0) {
-            throw GtvRtUtils.errGtv(ctx, "rowid:negative:$v", "Negative value of $R_RowidType type: $v")
-        }
-        return Rt_RowidValue.get(v)
     }
 }

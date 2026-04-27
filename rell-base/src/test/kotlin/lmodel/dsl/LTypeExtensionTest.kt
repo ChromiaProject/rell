@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.lmodel.dsl
 
-import net.postchain.rell.base.lib.type.Rt_UnitValue
+import net.postchain.rell.base.runtime.Rt_UnitValue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

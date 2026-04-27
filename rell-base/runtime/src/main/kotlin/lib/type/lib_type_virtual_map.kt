@@ -6,9 +6,7 @@ package net.postchain.rell.base.lib.type
 
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_VirtualMapType
-import net.postchain.rell.base.runtime.rtListType
-import net.postchain.rell.base.runtime.rtSetType
-import net.postchain.rell.base.runtime.typeArgRt
+import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.doc.DocCode
 
 object Lib_Type_VirtualMap {
@@ -33,7 +31,7 @@ object Lib_Type_VirtualMap {
 
             function("keys", result = "set<K>", pure = true, since = "0.9.0") {
                 bodyMeta {
-                    val keySetType = rtSetType(typeArgRt("K"))
+                    val keySetType = Rt_SetType(typeArgRt("K"))
                     body { a ->
                         val map = a.asMap()
                         val r = map.keys.toMutableSet()
@@ -44,7 +42,7 @@ object Lib_Type_VirtualMap {
 
             function("values", result = "list<V>", pure = true, since = "0.9.0") {
                 bodyMeta {
-                    val valueListType = rtListType(typeArgRt("V"))
+                    val valueListType = Rt_ListType(typeArgRt("V"))
                     body { a ->
                         val map = a.asMap()
                         val r = map.values.toMutableList()

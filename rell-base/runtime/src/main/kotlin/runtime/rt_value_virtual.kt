@@ -5,24 +5,26 @@
 package net.postchain.rell.base.runtime
 
 import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvVirtual
 
-sealed class Rt_VirtualValue(val gtv: Gtv): Rt_Value() {
-    override fun asVirtual() = this
-
+sealed class Rt_VirtualValue(val gtv: Gtv): Rt_ValueBase() {
     fun toFull(): Rt_Value {
-        if (gtv is net.postchain.gtv.GtvVirtual) {
-            val typeStr = type().name
+        if (gtv is GtvVirtual) {
+            val typeStr = type.name
             throw Rt_Exception.common("virtual:to_full:notfull:$typeStr", "Value of type $typeStr is not full")
         }
-        val res = toFull0()
-        return res
+
+        return toFull0()
     }
 
     protected abstract fun toFull0(): Rt_Value
 
-    companion object {
-        fun toFull(v: Rt_Value): Rt_Value {
-            return if (v is Rt_VirtualValue) v.toFull() else v
-        }
+    companion object: Rt_ValueClass<Rt_VirtualValue> {
+        override val name
+            get() = "virtual"
+
+        override val klass = Rt_VirtualValue::class
+
+        fun toFull(v: Rt_Value): Rt_Value = if (v is Rt_VirtualValue) v.toFull() else v
     }
 }

@@ -13,12 +13,11 @@ import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_LangVersion
-import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.R_StructDefinition
 import net.postchain.rell.base.model.rr.RR_App
-import net.postchain.rell.base.runtime.GtvToRtDefaultValueEvaluator
 import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_GtvModuleArgsSource
@@ -367,7 +366,7 @@ public object RellApiBaseInternal {
                 expectedStruct,
                 actualGtv,
                 validateOnly = true,
-                defaultValueEvaluator = GtvToRtDefaultValueEvaluator.getError(),
+                defaultValueEvaluator = null,
                 compilerOptions = compilerOptions,
             )
         } catch (e: Rt_Exception) {

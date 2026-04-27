@@ -4,10 +4,10 @@
 
 package net.postchain.rell.base.lib
 
-import net.postchain.rell.base.lib.type.Rt_ListValue
-import net.postchain.rell.base.lib.type.Rt_TextValue
+import net.postchain.rell.base.runtime.Rt_ListType
+import net.postchain.rell.base.runtime.Rt_ListValue
 import net.postchain.rell.base.runtime.Rt_PrimitiveTypes
-import net.postchain.rell.base.runtime.rtListType
+import net.postchain.rell.base.runtime.Rt_TextValue
 import net.postchain.rell.base.testutils.BaseRellTest
 import kotlin.test.Test
 
@@ -91,7 +91,7 @@ class LibQueriesTest: BaseRellTest() {
     }
 
     private fun List<String>.toRtValue() =
-        Rt_ListValue(rtListType(Rt_PrimitiveTypes.TEXT), map { Rt_TextValue.get(it) }.toMutableList())
+        Rt_ListValue(Rt_ListType(Rt_PrimitiveTypes.TEXT), map { Rt_TextValue.get(it) }.toMutableList())
 
     @Test fun testGetModuleArgs() {
         file(

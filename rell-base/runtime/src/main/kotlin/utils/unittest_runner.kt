@@ -8,8 +8,6 @@ import com.google.common.base.Throwables
 import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.GtvType
 import net.postchain.rell.base.lib.test.Rt_AssertEqualsError
-import net.postchain.rell.base.lib.type.Rt_GtvValue
-import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.model.DefinitionName
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.*
@@ -96,9 +94,7 @@ class UnitTestCaseResult(val case: UnitTestCase, val res: UnitTestResult) {
     override fun toString() = "$case:$res"
 }
 
-class UnitTestRunnerResults(
-    private val printPrettyLargeValues: Boolean = true,
-) {
+class UnitTestRunnerResults(private val printPrettyLargeValues: Boolean = true) {
     private val results = mutableListOf<UnitTestCaseResult>()
 
     fun add(res: UnitTestCaseResult) {
@@ -310,8 +306,8 @@ private fun printAssertEqualsErrorDiff(printer: Rt_Printer, err: Rt_AssertEquals
         return
     }
 
-    val rrType = err.expected.type().rrType ?: return
-    if (err.actual.type().rrType != rrType || !hasComponents(rrType)) {
+    val rrType = err.expected.type.rrType!!
+    if (err.actual.type.rrType != rrType || !hasComponents(rrType)) {
         return
     }
 
@@ -381,7 +377,7 @@ private fun getValueDiff(v1: Rt_Value, v2: Rt_Value): Map<List<String>, Pair<Rt_
         return immMapOf(immListOf<String>() to (v1 to v2))
     }
 
-    return when (val rrType = v1.type().rrType) {
+    return when (val rrType = v1.type.rrType) {
         is RR_Type.Tuple -> {
             val t1 = v1.asTuple()
             val t2 = v2.asTuple()
@@ -426,10 +422,10 @@ private fun getValueDiff(v1: Rt_Value, v2: Rt_Value): Map<List<String>, Pair<Rt_
                     getValueDiffList(list1, list2)
                 }
                 g2.type if g1.type == GtvType.DICT -> {
-                    val map1 = g1.asDict()
+                    val map1: Map<Rt_Value, Rt_Value> = g1.asDict()
                         .map { Rt_GtvValue.get(GtvFactory.gtv(it.key)) to Rt_GtvValue.get(it.value) }
                         .toMap()
-                    val map2 = g2.asDict()
+                    val map2: Map<Rt_Value, Rt_Value> = g2.asDict()
                         .map { Rt_GtvValue.get(GtvFactory.gtv(it.key)) to Rt_GtvValue.get(it.value) }
                         .toMap()
                     getValueDiffMap(map1, map2)

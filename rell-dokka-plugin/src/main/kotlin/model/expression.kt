@@ -4,9 +4,8 @@
 
 package com.chromia.rell.dokka.model
 
-import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.L_ConstantDocSource
-import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.*
 import org.jetbrains.dokka.model.*
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -30,7 +29,7 @@ fun Rt_Value.toExpression(): Expression = when (this) {
     is Rt_BooleanValue -> BooleanConstant(value)
     is Rt_DecimalValue -> value.toExpression()
     is Rt_TextValue -> StringConstant(value)
-    else -> ComplexExpression(str(Rt_Value.StrFormat.V2))
+    else -> ComplexExpression(str(Rt_StrFormat.V2))
 }
 
 private fun BigInteger.toExpression() =

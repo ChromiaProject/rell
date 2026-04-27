@@ -4,15 +4,11 @@
 
 package net.postchain.rell.base.lib
 
-import net.postchain.rell.base.lib.type.Rt_IntValue
-import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_PrimitiveType
 import net.postchain.rell.base.runtime.*
-import org.apache.commons.lang3.time.FastDateFormat
 import java.text.ParseException
-import java.util.*
 
 internal object Lib_RellTimeFormat {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -184,58 +180,4 @@ internal object Lib_RellTimeFormat {
 
 internal object R_TimeFormatType: R_PrimitiveType("rell.time.format")
 
-private val TIME_FORMAT_RT_TYPE: Rt_Type = makeStdlibLibType("rell.time.format")
 
-class Rt_TimeFormatValue(format: String): Rt_Value() {
-    override val valueType: Rt_ValueType = Rt_CoreValueTypes.RELL_TIME_FORMAT.type()
-    override fun type() = TIME_FORMAT_RT_TYPE
-    override fun str(format: StrFormat): String = "rell.time.format(${formatter.pattern})"
-    override fun strCode(showTupleFieldNames: Boolean): String = "rell.time.format[${formatter.pattern}]"
-    override fun asRellTimeFormat(): Rt_TimeFormatValue = this
-
-    private val formatter: FastDateFormat = FastDateFormat.getInstance(validate(format), UTC_TIME_ZONE, Locale.US)
-
-    fun textToMs(text: String): Long = formatter.parse(text).time
-    fun msToText(ms: Long): String = formatter.format(ms)
-    fun toText(): String = formatter.pattern
-
-    companion object {
-        private val UTC_TIME_ZONE: TimeZone = TimeZone.getTimeZone("UTC")
-        private const val LEGAL_UNQUOTED_ALPHA = "yMwWDdEuaHhmsS"
-        private val LEGAL_QUOTED_ALPHA: Set<Char> = (('A'..'Z') + ('a'..'z')).toSet()
-        private val LEGAL_NON_ALPHA: Set<Char> =
-            ((' '..'@') +                       // ASCII space, punctuation, symbols and digits
-            ('['..'`') + ('{'..'~')).toSet() +  // More ASCII punctuation and symbols
-            '\t'                                // ASCII tab character
-        private fun isLegalUnquoted(c: Char): Boolean = c in LEGAL_NON_ALPHA || c in LEGAL_UNQUOTED_ALPHA
-        private fun isLegalQuoted(c: Char): Boolean = c in LEGAL_NON_ALPHA || c in LEGAL_QUOTED_ALPHA
-
-        private fun validate(format: String): String {
-            var index = 0
-            var inQuotes = false
-
-            while (index < format.length) {
-                val current = format[index]
-                val hasNext = index + 1 < format.length
-                if (current == '\'' && hasNext && format[index + 1] == '\'') {
-                    index += 2
-                    continue
-                } else if (current == '\'') {
-                    inQuotes = !inQuotes
-                } else if (inQuotes && !isLegalQuoted(current)) {
-                    throw Rt_Exception.common("rell.time.format:format_text:illegal_character:$current",
-                        "Illegal character ('$current') in time format text (within quotes).")
-                } else if (!inQuotes && !isLegalUnquoted(current)) {
-                    throw Rt_Exception.common("rell.time.format:format_text:illegal_format_character:$current",
-                        "Illegal format character ('$current') in time format text.")
-                }
-                index++
-            }
-            if (inQuotes) {
-                throw Rt_Exception.common("rell.time.format:format_text:unclosed_quoted_region",
-                    "Unclosed quoted region in time format text.")
-            }
-            return format
-        }
-    }
-}

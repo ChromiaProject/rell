@@ -136,7 +136,7 @@ class R_Struct(
         private val ERROR_TYPE_FLAGS = TypeFlags(
             pure = true,
             mutable = false,
-            gtv = GtvCompatibility(fromGtv = true, toGtv = true),
+            gtv = GtvCompatibility.FULL,
             virtualable = true,
             mixedTuple = false,
             hasTypeVariable = false,

@@ -5,7 +5,7 @@
 package net.postchain.rell.base.compiler.lib
 
 import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.lib.type.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.testutils.LibModuleTester
 import kotlin.test.Test
 

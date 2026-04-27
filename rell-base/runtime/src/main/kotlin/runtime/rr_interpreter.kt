@@ -8,13 +8,9 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvInteger
 import net.postchain.gtv.GtvString
 import net.postchain.gtv.GtvType
-import net.postchain.rell.base.lib.Rt_RellMetaValue
-import net.postchain.rell.base.lib.test.Rt_TestOpValue
-import net.postchain.rell.base.lib.type.*
+import net.postchain.rell.base.lib.type.JsonUtils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.rr.*
-import net.postchain.rell.base.sql.PreparedStatementParams
-import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.utils.*
 
 /**
@@ -27,7 +23,7 @@ class Rt_Interpreter(val rrApp: RR_App, val stdlib: Rt_StdlibEnv = Rt_StdlibEnv.
          * map comes from `C_CompilationResult.compilationSysFns` / `T_App.compilationSysFns` —
          * values are downcast to [R_SysFunction]. Using this factory (rather than the raw
          * constructor) is strongly preferred so meta-body closure captures (e.g. `log()` call
-         * positions, `gtv_ext(T)` `Rt_Type` captures) don't leak across unrelated compilations.
+         * positions, `gtv_ext(T)` `Rt_ValueClass` captures) don't leak across unrelated compilations.
          */
         fun forCompilation(rrApp: RR_App, compilationSysFns: Map<String, Any>): Rt_Interpreter {
             @Suppress("UNCHECKED_CAST")
@@ -330,7 +326,7 @@ class Rt_Interpreter(val rrApp: RR_App, val stdlib: Rt_StdlibEnv = Rt_StdlibEnv.
         }
 
         is RR_Expr.ObjectValue -> {
-            Rt_ObjectValue(resolveType(expr.type))
+            Rt_ObjectValue(rrApp.allObjects[expr.objectDefIndex].base.appLevelName)
         }
     }
 
@@ -463,14 +459,14 @@ class Rt_Interpreter(val rrApp: RR_App, val stdlib: Rt_StdlibEnv = Rt_StdlibEnv.
 
         is RR_ConstantValue.Gtv -> {
             val gtv = PostchainGtvUtils.jsonToGtv(cv.json)
-            // If the target type is something other than gtv, decode through the Rt_Type GTV converter.
+            // If the target type is something other than gtv, decode through its GTV converter.
             val rtType = if (hintType != null) resolveType(hintType) else null
             val conv = rtType?.gtvConversion
             if (conv != null && rtType.rrType !is RR_Type.Primitive) {
                 try {
                     val gtvCtx = GtvToRtContext.make(pretty = false)
                     conv.gtvToRt(gtvCtx, gtv)
-                } catch (_: Throwable) {
+                } catch (_: Rt_Exception) {
                     Rt_GtvValue.get(gtv)
                 }
             } else {
@@ -517,267 +513,46 @@ class Rt_Interpreter(val rrApp: RR_App, val stdlib: Rt_StdlibEnv = Rt_StdlibEnv.
     }
 
     /**
-     * Build [Rt_Type] from [RR_Type] and pre-populate its GTV/SQL/comparator/default
-     * capability slots so the runtime never needs per-call-site `R_Type` dispatch.
+     * Build a runtime type-class from [RR_Type], cached per-app. All capabilities
+     * (gtvConversion / sqlAdapter / comparator / nativeConversion) live on the returned
+     * type-class itself; previously this dispatched to a bag plus parallel builders.
      */
-    fun resolveType(type: RR_Type): Rt_Type = typeCache.getOrPut(type) { buildRtType(type) }
+    fun resolveType(type: RR_Type): Rt_ValueClass<*> = typeCache.getOrPut(type) { buildRtType(type) }
 
-    private val typeCache = mutableMapOf<RR_Type, Rt_Type>()
+    private val typeCache = mutableMapOf<RR_Type, Rt_ValueClass<*>>()
 
-    private fun buildRtType(type: RR_Type): Rt_Type = when (type) {
-        is RR_Type.Entity -> buildEntityRtType(type)
-        is RR_Type.Enum -> buildEnumRtType(type)
-        is RR_Type.Object -> buildObjectRtType(type)
-        is RR_Type.Struct -> buildStructRtType(type)
-        else -> Rt_Type(
-            rrType = type,
-            name = rrTypeName(type),
-            sqlAdapter = buildCompositeSqlAdapter(type),
-            gtvConversion = buildCompositeGtvConversion(type),
-            comparator = buildCompositeComparator(type),
-            nativeConversion = buildCompositeNativeConversion(type),
+    private fun buildRtType(type: RR_Type): Rt_ValueClass<*> = when (type) {
+        is RR_Type.Primitive -> primitiveValueClass(type.kind)
+            ?: error("No primitive value class for ${type.kind}")
+        is RR_Type.Null -> Rt_NullValue
+        is RR_Type.Nullable -> Rt_NullableType(resolveType(type.value))
+        is RR_Type.List -> Rt_ListType(resolveType(type.element))
+        is RR_Type.Set -> Rt_SetType(resolveType(type.element))
+        is RR_Type.Map -> Rt_MapType(resolveType(type.key), resolveType(type.value))
+        is RR_Type.Tuple -> Rt_TupleType(type.fields, type.fields.mapToImmList { resolveType(it.type) })
+        is RR_Type.Entity -> Rt_EntityType(rrApp, type.defIndex)
+        is RR_Type.Enum -> Rt_EnumType(rrApp, type.defIndex)
+        is RR_Type.Object -> Rt_ObjectType(rrApp, type.defIndex)
+        is RR_Type.Struct -> Rt_StructType(rrApp, type.defIndex) { rrType, def ->
+            buildStructGtvConversion(rrType, def)
+        }
+        is RR_Type.VirtualList -> Rt_VirtualListType(resolveType(type.element)) { buildCompositeGtvConversion(type) }
+        is RR_Type.VirtualSet -> Rt_VirtualSetType(resolveType(type.element)) { buildCompositeGtvConversion(type) }
+        is RR_Type.VirtualMap -> Rt_VirtualMapType(resolveType(type.key), resolveType(type.value)) {
+            buildCompositeGtvConversion(type)
+        }
+        is RR_Type.VirtualTuple -> Rt_VirtualTupleType(
+            type.fields,
+            type.fields.mapToImmList { resolveType(it.type) },
+        ) { buildCompositeGtvConversion(type) }
+        is RR_Type.VirtualStruct -> Rt_VirtualStructType(rrApp, type.defIndex) { buildCompositeGtvConversion(type) }
+        is RR_Type.Operation -> Rt_OperationType(rrApp, type.defIndex)
+        is RR_Type.Function -> Rt_FunctionType(
+            type.params.mapToImmList { resolveType(it) },
+            resolveType(type.result),
         )
-    }
-
-    private fun buildCompositeSqlAdapter(type: RR_Type): Rt_TypeSqlAdapter? = when (type) {
-        is RR_Type.Primitive -> primitiveSqlAdapter(type.kind)
-        is RR_Type.Nullable -> buildNullableSqlAdapter(type)
-        else -> null
-    }
-
-    private fun buildNullableSqlAdapter(type: RR_Type.Nullable): Rt_TypeSqlAdapter? {
-        val inner = resolveType(type.value)
-        val innerAdapter = inner.sqlAdapter ?: return null
-        return object: Rt_TypeSqlAdapter {
-            override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
-                if (value == Rt_NullValue) {
-                    params.setObject(idx, null)
-                } else {
-                    innerAdapter.toSql(params, idx, value)
-                }
-            }
-
-            override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
-                return innerAdapter.fromSql(row, idx, true)
-            }
-
-            override fun metaName(sqlCtx: Rt_SqlContext): String = innerAdapter.metaName(sqlCtx)
-        }
-    }
-
-    private fun buildCompositeComparator(type: RR_Type): Comparator<Rt_Value>? = when (type) {
-        is RR_Type.Primitive -> primitiveComparator(type.kind)
-        is RR_Type.Null -> Comparator { _, _ -> 0 }
-        is RR_Type.Nullable -> {
-            val inner = resolveType(type.value).comparator
-            inner?.let { c ->
-                Comparator { a, b ->
-                    when {
-                        a == Rt_NullValue && b == Rt_NullValue -> 0
-                        a == Rt_NullValue -> -1
-                        b == Rt_NullValue -> 1
-                        else -> c.compare(a, b)
-                    }
-                }
-            }
-        }
-
-        is RR_Type.Entity -> Comparator { a, b -> a.asObjectId().compareTo(b.asObjectId()) }
-        is RR_Type.Enum -> Comparator { a, b -> a.asEnum().value.compareTo(b.asEnum().value) }
-        is RR_Type.Tuple -> {
-            val fieldComparators = type.fields.map { resolveType(it.type).comparator }
-            if (fieldComparators.any { it == null }) null
-            else Comparator { a, b ->
-                val ta = a.asTuple()
-                val tb = b.asTuple()
-                var result = 0
-                for (i in fieldComparators.indices) {
-                    result = fieldComparators[i]!!.compare(ta[i], tb[i])
-                    if (result != 0) break
-                }
-                result
-            }
-        }
-
-        is RR_Type.List -> {
-            val elemComparator = resolveType(type.element).comparator
-            elemComparator?.let { ec ->
-                Comparator { a, b ->
-                    val la = a.asList()
-                    val lb = b.asList()
-                    val len = minOf(la.size, lb.size)
-                    var result = 0
-                    for (i in 0 until len) {
-                        result = ec.compare(la[i], lb[i])
-                        if (result != 0) break
-                    }
-                    if (result == 0) la.size.compareTo(lb.size) else result
-                }
-            }
-        }
-
-        else -> null
-    }
-
-    private fun buildCompositeNativeConversion(type: RR_Type): Rt_TypeNativeConversion? = when (type) {
-        is RR_Type.Primitive -> primitiveNativeConversion(type.kind)
-        is RR_Type.Nullable -> {
-            val inner = resolveType(type.value).nativeConversion
-            inner?.let { Rt_TypeNativeConversion_Nullable(it) }
-        }
-
-        else -> null
-    }
-
-    private fun buildEntityRtType(rrType: RR_Type.Entity): Rt_Type {
-        val entityDef = rrApp.allEntities[rrType.defIndex]
-        val name = entityDef.base.appLevelName
-        lateinit var rtType: Rt_Type
-        val sqlAdapter: Rt_TypeSqlAdapter = object: Rt_TypeSqlAdapter {
-            override val sqlType: org.jooq.DataType<*>? = org.jooq.impl.SQLDataType.BIGINT
-
-            override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
-                params.setLong(idx, value.asObjectId())
-            }
-
-            override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
-                val v = row.getLong(idx)
-                return if (v == 0L && row.wasNull()) {
-                    if (nullable) Rt_NullValue
-                    else throw Rt_Exception.common("sql_null:$name", "SQL value is NULL for type $name")
-                } else {
-                    Rt_EntityValue(rtType, v)
-                }
-            }
-
-            override fun metaName(sqlCtx: Rt_SqlContext): String {
-                val mapping = entityDef.sqlMapping
-                val chainMapping = if (mapping.externalChainIndex >= 0) {
-                    sqlCtx.chainMappingByIndex(mapping.externalChainIndex)
-                } else {
-                    sqlCtx.mainChainMapping()
-                }
-                return "class:${chainMapping.chainId}:${mapping.metaName}"
-            }
-        }
-        val gtvConversion: Rt_TypeGtvConversion = object: Rt_TypeGtvConversion {
-            override fun rtToGtv(value: Rt_Value, pretty: Boolean) =
-                GtvInteger(value.asObjectId())
-
-            override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-                val rowid = if (gtv.type == GtvType.INTEGER) gtv.asInteger()
-                else throw GtvRtUtils.errGtvType(
-                    ctx,
-                    name,
-                    "INTEGER:${gtv.type}",
-                    "expected INTEGER, actual ${gtv.type}",
-                )
-                return ctx.rtValue {
-                    ctx.trackRecordRR(entityDef, rowid)
-                    Rt_EntityValue(rtType, rowid)
-                }
-            }
-        }
-        val entityComparator = Comparator<Rt_Value> { a, b -> a.asObjectId().compareTo(b.asObjectId()) }
-        rtType = Rt_Type(
-            rrType = rrType,
-            name = name,
-            sqlAdapter = sqlAdapter,
-            gtvConversion = gtvConversion,
-            comparator = entityComparator,
-        )
-        return rtType
-    }
-
-    private fun buildEnumRtType(rrType: RR_Type.Enum): Rt_Type {
-        val enumDef = rrApp.allEnums[rrType.defIndex]
-        val name = enumDef.base.appLevelName
-        lateinit var rtType: Rt_Type
-        val rtValues: List<Rt_Value> by lazy {
-            enumDef.attrs.map { attr -> Rt_RR_EnumValue(lazy { rtType }, attr) }
-        }
-        val sqlAdapter: Rt_TypeSqlAdapter = object: Rt_TypeSqlAdapter {
-            override val sqlType: org.jooq.DataType<*>? = org.jooq.impl.SQLDataType.INTEGER
-
-            override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
-                params.setInt(idx, value.asEnum().value)
-            }
-
-            override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
-                val v = row.getInt(idx)
-                return if (v == 0 && row.wasNull()) {
-                    if (nullable) Rt_NullValue
-                    else throw Rt_Exception.common("sql_null:$name", "SQL value is NULL for type $name")
-                } else {
-                    rtValues.getOrNull(v)
-                        ?: throw Rt_Exception.common(
-                            "enum_bad_sql:$name:$v",
-                            "Invalid enum value $v for type $name",
-                        )
-                }
-            }
-
-            override fun metaName(sqlCtx: Rt_SqlContext): String = "enum:$name"
-        }
-        val gtvConversion: Rt_TypeGtvConversion = object: Rt_TypeGtvConversion {
-            override fun rtToGtv(value: Rt_Value, pretty: Boolean): Gtv {
-                val e = value.asEnum()
-                return if (pretty) GtvString(e.name) else GtvInteger(e.value.toLong())
-            }
-
-            override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-                val attr = if (ctx.pretty && gtv.type == GtvType.STRING) {
-                    val s = gtv.asString()
-                    enumDef.attr(s)
-                        ?: throw GtvRtUtils.errGtvType(ctx, name, "enum:bad_value:$s", "invalid value: '$s'")
-                } else {
-                    val v = if (gtv.type == GtvType.INTEGER) gtv.asInteger()
-                    else throw GtvRtUtils.errGtvType(
-                        ctx,
-                        name,
-                        "INTEGER:${gtv.type}",
-                        "expected INTEGER, actual ${gtv.type}",
-                    )
-                    enumDef.attr(v)
-                        ?: throw GtvRtUtils.errGtvType(ctx, name, "enum:bad_value:$v", "invalid value: $v")
-                }
-                val idx = attr.value
-                return ctx.rtValue { rtValues[idx] }
-            }
-        }
-        val comparator = Comparator<Rt_Value> { a, b -> a.asEnum().value.compareTo(b.asEnum().value) }
-        rtType = Rt_Type(
-            rrType = rrType,
-            name = name,
-            sqlAdapter = sqlAdapter,
-            gtvConversion = gtvConversion,
-            comparator = comparator,
-        )
-        return rtType
-    }
-
-    private fun buildObjectRtType(rrType: RR_Type.Object): Rt_Type {
-        val objectDef = rrApp.allObjects[rrType.defIndex]
-        val name = objectDef.base.appLevelName
-        return Rt_Type(
-            rrType = rrType,
-            name = name,
-            sqlAdapter = null,
-            gtvConversion = null,
-            comparator = null,
-        )
-    }
-
-    private fun buildStructRtType(rrType: RR_Type.Struct): Rt_Type {
-        val structDef = rrApp.allStructs[rrType.defIndex]
-        val name = structDef.struct.name
-        return Rt_Type(
-            rrType = rrType,
-            name = name,
-            sqlAdapter = null,
-            gtvConversion = buildStructGtvConversion(rrType, structDef),
-            comparator = null,
-        )
+        is RR_Type.Generic -> Rt_LibType(type.name)
+        is RR_Type.Error -> Rt_GenericRrType(type, "error")
     }
 
     internal fun rrTypeName(type: RR_Type): String = when (type) {
@@ -911,7 +686,7 @@ class Rt_Interpreter(val rrApp: RR_App, val stdlib: Rt_StdlibEnv = Rt_StdlibEnv.
         }
         for (i in paramVars.indices) {
             val paramType = paramVars[i].type
-            val argType = args[i].type().rrType!!
+            val argType = args[i].type.rrType!!
             if (!isAssignableRR(paramType, argType)) {
                 val name = fnName ?: "?"
                 val expected = rrTypeName(paramType)
@@ -1055,8 +830,8 @@ class Rt_Interpreter(val rrApp: RR_App, val stdlib: Rt_StdlibEnv = Rt_StdlibEnv.
                         checkSizeConstraint(constraint, arg)
                     }
                 }
-                val rtType = resolveType(if (i < params.size) params[i].type else arg.type().rrType!!)
-                val conv: Rt_TypeGtvConversion = checkNotNull(rtType.gtvConversion) {
+                val rtType = resolveType(if (i < params.size) params[i].type else arg.type.rrType!!)
+                val conv: Rt_GtvCompatibleValueClass<*> = checkNotNull(rtType.gtvConversion) {
                     "No GTV conversion for type: ${rtType.name}"
                 }
                 conv.rtToGtv(arg, false)
@@ -1115,7 +890,8 @@ class Rt_Interpreter(val rrApp: RR_App, val stdlib: Rt_StdlibEnv = Rt_StdlibEnv.
         }
     }
 
-    val AtCardinality.isMany: Boolean get() = this == AtCardinality.ZERO_MANY || this == AtCardinality.ONE_MANY
+    val AtCardinality.isMany: Boolean
+        get() = this == AtCardinality.ZERO_MANY || this == AtCardinality.ONE_MANY
 
     fun RR_Type.elementType(): RR_Type = when (this) {
         is RR_Type.List -> element
@@ -1143,21 +919,21 @@ private fun stripSysFnHash(fnName: String): String = sysFnDisplayName(fnName)
  * Lazy value that evaluates an [RR_Expr] on demand through the [Rt_Interpreter].
  * Used for `try_call` and similar constructs.
  */
-private class Rt_RR_LazyValue(
-    private val rtType: Rt_Type,
+internal class Rt_RR_LazyValue(
+    override val type: Rt_ValueClass<*>,
     private val expr: RR_Expr,
     private val frame: Rt_CallFrame,
     private val interpreter: Rt_Interpreter,
-): Rt_Value() {
+): Rt_ValueBase(), Rt_LazyResolvableValue {
     private var cachedValue: Rt_Value? = null
 
-    override val valueType get() = Rt_CoreValueTypes.LAZY.type()
+    override val name
+        get() = Companion.name
 
-    override fun type(): Rt_Type = rtType
-    override fun str(format: StrFormat): String = "lazy[...]"
+    override fun str(format: Rt_StrFormat): String = "lazy[...]"
     override fun strCode(showTupleFieldNames: Boolean): String = "lazy[...]"
 
-    override fun asLazyValue(): Rt_Value {
+    override fun resolveLazy(): Rt_Value {
         var res = cachedValue
         if (res == null) {
             res = interpreter.evaluateExpr(expr, frame)
@@ -1165,21 +941,30 @@ private class Rt_RR_LazyValue(
         }
         return res
     }
+
+    companion object: Rt_ValueClass<Rt_RR_LazyValue> {
+        override val name
+            get() = "lazy"
+
+        override val klass = Rt_RR_LazyValue::class
+    }
 }
 
 /**
  * Enum value for the deserialized (RR_-only) path, where no [R_EnumType] is available.
  */
-internal class Rt_RR_EnumValue(
-    private val rtTypeRef: Lazy<Rt_Type>,
-    private val rrAttr: RR_EnumAttr,
-): Rt_Value() {
-    override val valueType = Rt_CoreValueTypes.ENUM.type()
+class Rt_RR_EnumValue(
+    private val rtTypeRef: Lazy<Rt_ValueClass<*>>,
+    internal val rrAttr: RR_EnumAttr,
+): Rt_ValueBase() {
+    override val name
+        get() = Companion.name
 
-    override fun type() = rtTypeRef.value
-    override fun asEnum() = rrAttr
+    override val type: Rt_ValueClass<*>
+        get() = rtTypeRef.value
+
     override fun strCode(showTupleFieldNames: Boolean) = "${rtTypeRef.value.name}[${rrAttr.name}]"
-    override fun str(format: StrFormat) = rrAttr.name
+    override fun str(format: Rt_StrFormat) = rrAttr.name
 
     override fun equals(other: Any?): Boolean {
         if (other === this) return true
@@ -1187,17 +972,55 @@ internal class Rt_RR_EnumValue(
         // Compare by enum type name + value index for cross-compatibility.
         val otherAttr = try {
             other.asEnum()
-        } catch (_: Exception) {
+        } catch (_: Rt_Exception) {
             return false
         }
         if (otherAttr.value != rrAttr.value) return false
-        val otherType = try {
-            other.type()
-        } catch (_: Exception) {
-            return false
-        }
-        return otherType.name == rtTypeRef.value.name
+        return other.type.name == rtTypeRef.value.name
     }
 
     override fun hashCode(): Int = rtTypeRef.value.name.hashCode() * 31 + rrAttr.value
+
+    companion object: Rt_ValueClass<Rt_RR_EnumValue> {
+        override val name
+            get() = "enum"
+
+        override val klass = Rt_RR_EnumValue::class
+
+        fun gtvConversion(enum: R_EnumDefinition): Rt_GtvCompatibleValueClass<*> = gtvConversion(
+            typeName = enum.type.strCode(),
+            rtByName = { n -> enum.attr(n)?.let { enum.rtGetValue(it) } },
+            rtByValue = { v -> enum.attr(v)?.let { enum.rtGetValue(it) } },
+        )
+
+        /**
+         * Generic factory: looks up enum values by name/integer via the supplied callbacks.
+         * Used by both the R_-driven [Rt_RR_EnumValue.gtvConversion] (above) and the
+         * pure-RR [Rt_Interpreter] enum type construction.
+         */
+        fun gtvConversion(
+            typeName: String,
+            rtByName: (String) -> Rt_Value?,
+            rtByValue: (Long) -> Rt_Value?,
+        ): Rt_GtvCompatibleValueClass<*> = object: Rt_UntypedGtvConversion(typeName) {
+            override fun toGtv(value: Rt_Value, pretty: Boolean): Gtv {
+                val attr = (value as Rt_RR_EnumValue).rrAttr
+                return if (pretty) GtvString(attr.name) else GtvInteger(attr.value.toLong())
+            }
+
+            override fun fromGtv(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
+                return if (ctx.pretty && gtv.type == GtvType.STRING) {
+                    val n = GtvRtUtils.gtvToString(ctx, gtv, typeName)
+                    rtByName(n) ?: throw GtvRtUtils.errGtvType(
+                        ctx, typeName, "enum:bad_value:$n", "invalid value: '$n'",
+                    )
+                } else {
+                    val v = GtvRtUtils.gtvToInteger(ctx, gtv, typeName)
+                    rtByValue(v) ?: throw GtvRtUtils.errGtvType(
+                        ctx, typeName, "enum:bad_value:$v", "invalid value: $v",
+                    )
+                }
+            }
+        }
+    }
 }

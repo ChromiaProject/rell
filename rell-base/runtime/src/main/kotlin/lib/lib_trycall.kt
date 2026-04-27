@@ -6,8 +6,6 @@ package net.postchain.rell.base.lib
 
 import mu.KLogging
 import net.postchain.rell.base.compiler.base.lib.C_LibType
-import net.postchain.rell.base.lib.type.Rt_BooleanValue
-import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.rr.RR_Type
@@ -195,7 +193,6 @@ internal object Lib_TryCall: KLogging() {
                 since = "0.14.16",
                 comment = """
                     Get the value contained in this result.
-
                     @throws exception if the function call threw a `require` exception
                 """,
             ) {
@@ -232,12 +229,12 @@ internal object Lib_TryCall: KLogging() {
         }
     }
 
-    private fun tryCallResultType(fn: Rt_Value): Rt_Type {
-        val fnType = fn.asFunction().type()
+    private fun tryCallResultType(fn: Rt_Value): Rt_ValueClass<*> {
+        val fnType = fn.asFunction().type
         val rrFnType = checkNotNull(fnType.rrType as? RR_Type.Function) {
             "Expected function type, got ${fnType.name}"
         }
-        return Rt_Type(
+        return Rt_GenericRrType(
             rrType = RR_Type.Generic("try_call_result", immListOf(rrFnType.result)),
             name = "try_call_result",
         )
@@ -328,74 +325,3 @@ private class R_TryCallResultType(val elementType: R_Type): R_Type("try_call_res
     override fun getLibType0() = C_LibType.make(Lib_Rell.TRY_CALL_RESULT_TYPE, elementType)
 }
 
-private class Rt_TryCallResultValue(
-    private val rtType: Rt_Type,
-    val valueOrNull: Rt_Value?,
-    val requireMessageOrNull: String?,
-): Rt_Value() {
-    init {
-        check(valueOrNull != null || requireMessageOrNull != null) { "both value and require message are null" }
-    }
-
-    val isError: Boolean
-        get() = valueOrNull == null
-
-    override val valueType = VALUE_TYPE
-
-    override fun str(format: StrFormat): String = buildString {
-        append(rtType.name)
-        append('{')
-        if (isError) {
-            append("error=$requireMessageOrNull")
-        } else {
-            append("value=${valueOrNull?.str(format)}")
-        }
-        append('}')
-    }
-
-    override fun strCode(showTupleFieldNames: Boolean): String = buildString {
-        append(rtType.name)
-        append('[')
-        if (isError) {
-            append("error=$requireMessageOrNull")
-        } else {
-            append("value=${valueOrNull?.strCode(showTupleFieldNames)}")
-        }
-        append(']')
-    }
-
-    override fun type() = rtType
-
-    override fun strPretty(indent: Int): String = buildString {
-        val indentStr = "    ".repeat(indent)
-        append(rtType.name)
-        append('{')
-        append("\n$indentStr    value_or_null = ")
-        append(valueOrNull?.strPretty(indent + 1))
-        append("\n$indentStr    require_message_or_null = ")
-        append(requireMessageOrNull)
-        append("\n$indentStr}")
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Rt_TryCallResultValue) return false
-        if (valueOrNull != other.valueOrNull) return false
-        if (requireMessageOrNull != other.requireMessageOrNull) return false
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = valueOrNull?.hashCode() ?: 0
-        result = 31 * result + (requireMessageOrNull?.hashCode() ?: 0)
-        return result
-    }
-
-    companion object {
-        private val VALUE_TYPE = Rt_LibValueType.of("TRY_CALL_RESULT")
-
-        fun get(v: Rt_Value): Rt_TryCallResultValue {
-            return v.asType(Rt_TryCallResultValue::class, VALUE_TYPE)
-        }
-    }
-}

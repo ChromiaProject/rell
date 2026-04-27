@@ -76,7 +76,9 @@ object Lib_Rell {
 
     // Doesn't belong here logically, but shall be here for explicit initialization.
     private val GTX_OPERATION_STRUCT = MODULE.lModule.getStruct("gtx_operation").rStruct
-    val GTX_OPERATION_STRUCT_TYPE: R_StructType get() = GTX_OPERATION_STRUCT.type
+
+    val GTX_OPERATION_STRUCT_TYPE: R_StructType
+        get() = GTX_OPERATION_STRUCT.type
 
     init {
         // Register R_Type → L_TypeDef bindings for builtin types AFTER all type defs are constructed.

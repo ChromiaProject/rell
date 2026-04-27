@@ -5,8 +5,8 @@
 package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.lib.type.Rt_IntValue
-import net.postchain.rell.base.lib.type.Rt_UnitValue
+import net.postchain.rell.base.runtime.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_UnitValue
 import kotlin.test.Test
 
 class LNamespaceNameConflictTest: BaseLTest() {

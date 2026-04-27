@@ -64,7 +64,7 @@ fun Rt_Interpreter.assignTo(
                 evaluateBinaryOp(op, old, value)
             } else value
             // Apply size-constraint validation from the RR struct definition (for the pure-RR path).
-            val rrType = struct.type().rrType
+            val rrType = struct.type.rrType
             if (rrType is RR_Type.Struct) {
                 val structDef = rrApp.allStructs[rrType.defIndex]
                 val rrAttr = structDef.struct.attributesList[dstExpr.attrIndex]

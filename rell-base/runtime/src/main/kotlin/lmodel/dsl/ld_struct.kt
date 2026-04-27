@@ -85,7 +85,7 @@ class Ld_Struct(
                 val rTypeFlags = TypeFlags(
                     pure = true,
                     mutable = false,
-                    gtv = GtvCompatibility(fromGtv = true, toGtv = true),
+                    gtv = GtvCompatibility.FULL,
                     virtualable = true,
                     mixedTuple = false,
                     hasTypeVariable = false,

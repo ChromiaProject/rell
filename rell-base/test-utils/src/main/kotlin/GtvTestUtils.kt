@@ -9,7 +9,7 @@ import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.GtvType
 import net.postchain.rell.base.runtime.GtvToRtContext
 import net.postchain.rell.base.runtime.PostchainGtvUtils
-import net.postchain.rell.base.runtime.Rt_Type
+import net.postchain.rell.base.runtime.Rt_ValueClass
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.checkEquals
@@ -19,30 +19,30 @@ object GtvTestUtils {
     fun decodeGtvStr(s: String) = PostchainGtvUtils.jsonToGtv(s)
     fun encodeGtvStr(gtv: Gtv) = PostchainGtvUtils.gtvToJson(gtv)
 
-    fun decodeGtvStrQueryArgs(params: List<Rt_Type>, args: List<String>): List<Rt_Value> {
+    fun decodeGtvStrQueryArgs(params: List<Rt_ValueClass<*>>, args: List<String>): List<Rt_Value> {
         return decodeGtvStrArgs(params, args, true)
     }
 
-    fun decodeGtvQueryArgs(params: List<Rt_Type>, args: List<Gtv>): List<Rt_Value> {
+    fun decodeGtvQueryArgs(params: List<Rt_ValueClass<*>>, args: List<Gtv>): List<Rt_Value> {
         return decodeGtvArgs(params, args, true)
     }
 
-    fun decodeGtvOpArgs(params: List<Rt_Type>, args: List<Gtv>): List<Rt_Value> {
+    fun decodeGtvOpArgs(params: List<Rt_ValueClass<*>>, args: List<Gtv>): List<Rt_Value> {
         checkEquals(args.size, params.size)
         return decodeGtvArgs(params, args, false)
     }
 
-    fun decodeGtvStrOpArgs(params: List<Rt_Type>, args: List<String>): List<Rt_Value> {
+    fun decodeGtvStrOpArgs(params: List<Rt_ValueClass<*>>, args: List<String>): List<Rt_Value> {
         return decodeGtvStrArgs(params, args, false)
     }
 
-    private fun decodeGtvStrArgs(params: List<Rt_Type>, args: List<String>, pretty: Boolean): List<Rt_Value> {
+    private fun decodeGtvStrArgs(params: List<Rt_ValueClass<*>>, args: List<String>, pretty: Boolean): List<Rt_Value> {
         checkEquals(args.size, params.size)
         val gtvArgs = args.map { decodeGtvStr(it) }
         return decodeGtvArgs(params, gtvArgs, pretty)
     }
 
-    private fun decodeGtvArgs(params: List<Rt_Type>, args: List<Gtv>, pretty: Boolean): List<Rt_Value> {
+    private fun decodeGtvArgs(params: List<Rt_ValueClass<*>>, args: List<Gtv>, pretty: Boolean): List<Rt_Value> {
         checkEquals(args.size, params.size)
         val ctx = GtvToRtContext.make(pretty = pretty)
         return args.mapIndexed { i, arg ->

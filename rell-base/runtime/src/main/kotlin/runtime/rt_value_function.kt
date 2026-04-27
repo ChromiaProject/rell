@@ -12,30 +12,26 @@ import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
 class Rt_FunctionValue(
-    private val rtType: Rt_Type,
+    override val type: Rt_ValueClass<*>,
     private val mapping: R_PartialCallMapping,
     private val target: Rt_FunctionCallTarget,
     private val baseValue: Rt_Value?,
     exprValues: List<Rt_Value>,
-): Rt_Value() {
+): Rt_ValueBase() {
     private val exprValues = let {
         checkEquals(exprValues.size, mapping.exprCount)
         exprValues.toImmList()
     }
 
-    override val valueType = Rt_CoreValueTypes.FUNCTION.type()
+    override val name
+        get() = Companion.name
 
-    override fun type() = rtType
-    override fun asFunction() = this
+    override fun strCode(showTupleFieldNames: Boolean): String = STR_RECURSION_DETECTOR.calculate(this) {
+        val argsStr = mapping.args.joinToString(",") { if (it.wild) "*" else exprValues[it.index].strCode() }
+        "fn[${target.targetStrCode(baseValue)}($argsStr)]"
+    } ?: "fn[...]"
 
-    override fun strCode(showTupleFieldNames: Boolean): String {
-        return STR_RECURSION_DETECTOR.calculate(this) {
-            val argsStr = mapping.args.joinToString(",") { if (it.wild) "*" else exprValues[it.index].strCode() }
-            "fn[${target.targetStrCode(baseValue)}($argsStr)]"
-        } ?: "fn[...]"
-    }
-
-    override fun str(format: StrFormat) = "${target.targetStr(baseValue, format)}(*)"
+    override fun str(format: Rt_StrFormat) = "${target.targetStr(baseValue, format)}(*)"
 
     fun call(args: List<Rt_Value>): Rt_Value {
         checkEquals(args.size, mapping.wildCount)
@@ -43,7 +39,7 @@ class Rt_FunctionValue(
         return target.interpreter.callTarget(target.rrTarget, baseValue, combinedArgs, target.outerFrame)
     }
 
-    fun combine(newType: Rt_Type, newMapping: R_PartialCallMapping, newArgs: List<Rt_Value>): Rt_Value {
+    fun combine(newType: Rt_ValueClass<*>, newMapping: R_PartialCallMapping, newArgs: List<Rt_Value>): Rt_Value {
         checkEquals(newMapping.args.size, mapping.wildCount)
         checkEquals(newArgs.size, newMapping.exprCount)
 
@@ -62,7 +58,12 @@ class Rt_FunctionValue(
         return Rt_FunctionValue(newType, resMapping, target, baseValue, resExprValues)
     }
 
-    companion object {
+    companion object: Rt_ValueClass<Rt_FunctionValue> {
+        override val name
+            get() = "function"
+
+        override val klass = Rt_FunctionValue::class
+
         private val STR_RECURSION_DETECTOR = Rt_ValueRecursionDetector()
     }
 }

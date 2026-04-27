@@ -227,9 +227,9 @@ class LibGtvTest: BaseRellTest() {
 
         chkFromGtv("0", "rowid.from_gtv(g)", "rowid[0]")
         chkFromGtv("123", "rowid.from_gtv(g)", "rowid[123]")
-        chkFromGtv("-456", "rowid.from_gtv(g)", "rt_err:fn:[rowid]:from_gtv:false")
+        chkFromGtv("-456", "rowid.from_gtv(g)", "gtv_err:rowid:negative:-456")
         chkFromGtv("123", "rowid.from_gtv_pretty(g)", "rowid[123]")
-        chkFromGtv("-456", "rowid.from_gtv_pretty(g)", "rt_err:fn:[rowid]:from_gtv:true")
+        chkFromGtv("-456", "rowid.from_gtv_pretty(g)", "gtv_err:rowid:negative:-456")
 
         chkFromGtv("'Hello'", "rowid.from_gtv(g)", "gtv_err:type:[rowid]:INTEGER:STRING")
         chkFromGtv("'Hello'", "rowid.from_gtv_pretty(g)", "gtv_err:type:[rowid]:INTEGER:STRING")

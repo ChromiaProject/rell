@@ -23,7 +23,8 @@ import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.lib.test.Lib_RellTest
-import net.postchain.rell.base.lib.type.Rt_UnitValue
+import net.postchain.rell.base.runtime.Rt_UnitValue
+import net.postchain.rell.base.runtime.Rt_StrFormat
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.*
@@ -445,13 +446,17 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
 
     private fun resultToString(res: Rt_Value, json: Boolean): String {
         return if (json) {
-            val rtType = res.type()
+            val rtType = res.type
             val gtvConv = rtType.gtvConversion
                 ?: throw RellCliBasicException("Result of type '${rtType.name}' cannot be converted to Gtv")
             val gtv = gtvConv.rtToGtv(res, true)
             PostchainGtvUtils.gtvToJson(gtv)
         } else {
-            res.toString()
+            // Use str(V1) explicitly. Used to be res.toString() back when Rt_Value was an
+            // abstract class with a final toString() override that delegated to str(V1) in
+            // production. Now that Rt_Value is an interface (so leaves can be value classes),
+            // toString() falls back to Object.toString() which prints `class@hash`.
+            res.str(Rt_StrFormat.V1)
         }
     }
 

@@ -123,7 +123,7 @@ object C_StructGraphUtils {
         val nonGtvToStructs = C_GraphUtils.closure(info.nonGtvTo, transGraphFn).toSet()
 
         for (struct in structs) {
-            val gtv = GtvCompatibility(struct !in nonGtvFromStructs, struct !in nonGtvToStructs)
+            val gtv = GtvCompatibility.of(struct !in nonGtvFromStructs, struct !in nonGtvToStructs)
 
             val typeFlags = TypeFlags(
                 pure = struct !in nonPureStructs,

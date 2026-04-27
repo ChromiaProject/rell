@@ -17,9 +17,7 @@ data class RR_EnumDefinition(
     fun attr(value: Long): RR_EnumAttr? = if (value < 0 || value >= attrs.size) null else attrs[value.toInt()]
 }
 
-data class RR_EnumAttr(
-    val rName: Name,
-    val value: Int,
-) {
-    val name: String get() = rName.str
+data class RR_EnumAttr(val rName: Name, val value: Int) {
+    val name: String
+        get() = rName.str
 }

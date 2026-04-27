@@ -23,7 +23,7 @@ class R_FunctionCallTarget_AbstractUserFunction(
 
 class R_FunctionCallTarget_NativeUserFunction(
         val fnName: FullName,
-        /** Arg/result type references — native conversions resolved at runtime via [Rt_Type.nativeConversion]. */
+        /** Arg/result type references — native conversions resolved at runtime via [Rt_ValueClass.nativeConversion]. */
     val argTypes: ImmList<R_Type>,
         val resultType: R_Type,
 ): R_FunctionCallTarget()

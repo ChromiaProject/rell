@@ -13,7 +13,7 @@ import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.utils.C_StringQualifiedName
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.make
-import net.postchain.rell.base.lib.type.*
+import net.postchain.rell.base.lib.type.Lib_Type_Struct
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
@@ -24,7 +24,6 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
 import net.postchain.rell.base.utils.*
 import java.sql.SQLException
-import java.util.*
 
 object Lib_RellTest {
     private const val MODULE_NAME_STR = "rell.test"
@@ -52,7 +51,9 @@ object Lib_RellTest {
     }
 
     private val KEYPAIR_STRUCT: R_Struct = MODULE.lModule.getStruct("rell.test.keypair").rStruct
-    val KEYPAIR_TYPE: R_StructType get() = KEYPAIR_STRUCT.type
+
+    val KEYPAIR_TYPE: R_StructType
+        get() = KEYPAIR_STRUCT.type
 
     val BLOCK_TYPE = MODULE.getTypeDef("rell.test.block")
     val TX_TYPE = MODULE.getTypeDef("rell.test.tx")
@@ -75,9 +76,6 @@ private const val SINCE0 = "0.10.4"
 
 private fun typeDefName(name: String) = Lib_RellTest.typeDefName(C_StringQualifiedName.of(name.split(".")))
 
-private val TEST_BLOCK_RT_TYPE: Rt_Type = makeStdlibLibType("rell.test.block")
-private val TEST_TX_RT_TYPE: Rt_Type = makeStdlibLibType("rell.test.tx")
-private val TEST_OP_RT_TYPE: Rt_Type = makeStdlibLibType("rell.test.op")
 
 internal object R_TestBlockType: R_LibUniqueType("rell.test.block", typeDefName("rell.test.block")) {
     override fun isReference() = true
@@ -917,7 +915,7 @@ private object Lib_Type_Op {
                     body { a ->
                         val sv = a.asStruct()
                         // Validate by struct type name rather than R_StructType identity, so the pure-RR path works.
-                        checkEquals(sv.type().name, Lib_Rell.GTX_OPERATION_STRUCT_TYPE.name)
+                        checkEquals(sv.type.name, Lib_Rell.GTX_OPERATION_STRUCT_TYPE.name)
                         val rtName = sv.get(0)
                         val rtArgs = sv.get(1).asList()
                         val mountName = MountName.of(rtName.asString())
@@ -1251,122 +1249,11 @@ private object Lib_Nop {
     }
 
     fun callOneArg(arg: Rt_Value): Rt_TestOpValue {
-        val gtv = checkNotNull(arg.type().gtvConversion) { "No GTV conversion for ${arg.type().name}" }.rtToGtv(arg, false)
+        val gtv = checkNotNull(arg.type.gtvConversion) { "No GTV conversion for ${arg.type.name}" }.rtToGtv(arg, false)
         return makeValue(gtv)
     }
 
     private fun makeValue(arg: Gtv) = Rt_TestOpValue(MOUNT_NAME, immListOf(arg))
-}
-
-class Rt_TestBlockValue(txs: List<RawTestTxValue>): Rt_Value() {
-    private val txs = txs.toMutableList()
-
-    override val valueType = VALUE_TYPE
-
-    override fun type() = TEST_BLOCK_RT_TYPE
-
-    override fun strCode(showTupleFieldNames: Boolean): String {
-        val txsStr = txs.joinToString(",") { Rt_TestTxValue.strCode(it.ops, it.signers) }
-        return "${R_TestBlockType.str()}[$txsStr]"
-    }
-
-    override fun str(format: StrFormat) = "block(${txs.joinToString(",")})"
-
-    override fun equals(other: Any?) = other === this || (other is Rt_TestBlockValue && txs == other.txs)
-    override fun hashCode() = Objects.hash(txs)
-
-    fun txs() = txs.toImmList()
-
-    fun addTx(tx: RawTestTxValue) {
-        txs.add(tx)
-    }
-
-    companion object {
-        private val VALUE_TYPE = Rt_LibValueType.of("TEST_BLOCK")
-    }
-}
-
-internal class Rt_TestTxValue(
-        ops: List<RawTestOpValue>,
-        signers: List<BytesKeyPair>
-): Rt_Value() {
-    private val ops = ops.toMutableList()
-    private val signers = signers.toMutableList()
-
-    override val valueType = VALUE_TYPE
-
-    override fun type() = TEST_TX_RT_TYPE
-
-    override fun str(format: StrFormat) = toString(ops)
-    override fun strCode(showTupleFieldNames: Boolean) = strCode(ops, signers)
-
-    override fun equals(other: Any?) = other === this || (other is Rt_TestTxValue && ops == other.ops && signers == other.signers)
-    override fun hashCode() = Objects.hash(ops, signers)
-
-    fun addOp(op: RawTestOpValue) {
-        ops.add(op)
-    }
-
-    fun sign(keyPair: BytesKeyPair) {
-        signers.add(keyPair)
-    }
-
-    fun copy() = Rt_TestTxValue(ops, signers)
-
-    fun toRaw() = RawTestTxValue(ops.toImmList(), signers.toImmList())
-
-    companion object {
-        private val VALUE_TYPE = Rt_LibValueType.of("TEST_TX")
-
-        fun strCode(ops: List<RawTestOpValue>, signers: List<BytesKeyPair>): String {
-            val opsList = ops.map { Rt_TestOpValue.strCode(it.name, it.args) }
-            val signersList = signers.map { it.pub.toHex().substring(0, 6).lowercase() }
-            val innerStr = (opsList + signersList).joinToString(",")
-            return "${R_TestTxType.str()}[$innerStr]"
-        }
-
-        fun toString(ops: List<RawTestOpValue>): String {
-            val opsStr = ops.joinToString(",")
-            return "tx[$opsStr]"
-        }
-    }
-}
-
-internal class Rt_TestOpValue(private val name: MountName, val args: ImmList<Gtv>): Rt_Value() {
-    val nameValue: Rt_Value by lazy {
-        Rt_TextValue.get(name.str())
-    }
-
-    override val valueType = VALUE_TYPE
-
-    override fun type() = TEST_OP_RT_TYPE
-
-    override fun str(format: StrFormat) = toString(name, args)
-    override fun strCode(showTupleFieldNames: Boolean) = strCode(name, args)
-
-    override fun equals(other: Any?) = other === this || (other is Rt_TestOpValue && name == other.name && args == other.args)
-    override fun hashCode() = Objects.hash(name, args)
-
-    fun toRaw() = RawTestOpValue(name, args)
-
-    fun argsValue(): Rt_Value {
-        val argValues: MutableList<Rt_Value> = args.map { Rt_GtvValue.get(it) }.toMutableList()
-        return Rt_ListValue(Lib_Type_Gtv.LIST_OF_GTV_TYPE, argValues)
-    }
-
-    companion object {
-        private val VALUE_TYPE = Rt_LibValueType.of("TEST_OP")
-
-        fun strCode(name: MountName, args: List<Gtv>): String {
-            val argsStr = args.joinToString(",") { Rt_GtvValue.get(it).str(StrFormat.V2) }
-            return "op[$name($argsStr)]"
-        }
-
-        fun toString(name: MountName, args: List<Gtv>): String {
-            val argsStr = args.joinToString(",") { Rt_GtvValue.get(it).str(StrFormat.V2) }
-            return "$name($argsStr)"
-        }
-    }
 }
 
 class RawTestTxValue(

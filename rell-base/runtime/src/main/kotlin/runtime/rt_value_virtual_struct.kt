@@ -5,31 +5,31 @@
 package net.postchain.rell.base.runtime
 
 import net.postchain.gtv.Gtv
+import net.postchain.rell.base.model.R_VirtualStructType
 
 class Rt_VirtualStructValue(
     gtv: Gtv,
-    private val rtType: Rt_Type,
+    override val type: Rt_ValueClass<*>,
     /** Inner non-virtual struct's runtime type, used by [toFull0]. */
-    private val innerStructRtType: Rt_Type,
+    private val innerStructRtType: Rt_ValueClass<*>,
     private val structName: String,
     private val attrNames: List<String>,
     private val attributes: List<Rt_Value?>,
 ): Rt_VirtualValue(gtv) {
 
-    override val valueType = Rt_CoreValueTypes.VIRTUAL_STRUCT.type()
+    override val name
+        get() = Companion.name
 
-    override fun type() = rtType
-    override fun asVirtualStruct() = this
     override fun equals(other: Any?) =
         other === this || (other is Rt_VirtualStructValue && attributes == other.attributes)
 
-    override fun hashCode() = rtType.hashCode() * 31 + attributes.hashCode()
+    override fun hashCode() = type.hashCode() * 31 + attributes.hashCode()
 
-    override fun str(format: StrFormat): String =
-        Rt_StructValue.formatStr(this, rtType.name, attrNames, attributes, format)
+    override fun str(format: Rt_StrFormat): String =
+        Rt_StructValue.formatStr(this, type.name, attrNames, attributes, format)
 
     override fun strCode(showTupleFieldNames: Boolean): String =
-        Rt_StructValue.formatStrCode(this, rtType.name, attrNames, attributes)
+        Rt_StructValue.formatStrCode(this, type.name, attrNames, attributes)
 
     fun get(index: Int): Rt_Value {
         val value = attributes[index]
@@ -46,5 +46,16 @@ class Rt_VirtualStructValue(
     override fun toFull0(): Rt_Value {
         val fullAttrValues = attributes.map { toFull(it!!) }.toMutableList()
         return Rt_StructValue(innerStructRtType, attrNames, fullAttrValues)
+    }
+
+    companion object: Rt_ValueClass<Rt_VirtualStructValue> {
+        override val name
+            get() = "virtual_struct"
+
+        override val klass = Rt_VirtualStructValue::class
+
+        fun gtvConversion(type: R_VirtualStructType): Rt_GtvCompatibleValueClass<*> = gtvConversionOf { ctx, gtv ->
+            decodeVirtualStruct(ctx, type, deserializeVirtual(ctx, gtv))
+        }
     }
 }

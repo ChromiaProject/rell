@@ -8,9 +8,6 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.builder.GtvBuilder
 import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.base.utils.C_Utils
-import net.postchain.rell.base.lib.type.Rt_GtvValue
-import net.postchain.rell.base.lib.type.Rt_MapValue
-import net.postchain.rell.base.lib.type.Rt_TextValue
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
@@ -62,7 +59,7 @@ private object SysQueryFns {
 
     object GetBuildDetails: R_SysFunctionEx_N() {
         val TYPE = R_MapType(R_TextType, R_TextType)
-        private val RT_TYPE: Rt_Type = rtMapType(Rt_PrimitiveTypes.TEXT, Rt_PrimitiveTypes.TEXT)
+        private val RT_TYPE = Rt_MapType(Rt_PrimitiveTypes.TEXT, Rt_PrimitiveTypes.TEXT)
 
         override fun call(ctx: Rt_CallContext, args: List<Rt_Value>): Rt_Value {
             checkEquals(args.size, 0)

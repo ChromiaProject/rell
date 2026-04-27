@@ -5,10 +5,8 @@
 package net.postchain.rell.base.lib.type
 
 import com.google.common.math.LongMath
-import net.postchain.gtv.Gtv
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.ErrorPos
 import net.postchain.rell.base.model.R_ListType
 import net.postchain.rell.base.runtime.*
 
@@ -30,7 +28,7 @@ object Lib_Type_List {
             constructor(pure = true, since = SINCE0) {
                 comment("Construct a new empty list.")
                 bodyMeta {
-                    val listType = rtListType(typeArgRt("T"))
+                    val listType = Rt_ListType(typeArgRt("T"))
                     body { ->
                         Rt_ListValue(listType, mutableListOf())
                     }
@@ -43,7 +41,7 @@ object Lib_Type_List {
                     comment("an iterable containing values with which to initialize this list")
                 }
                 bodyMeta {
-                    val listType = rtListType(typeArgRt("T"))
+                    val listType = Rt_ListType(typeArgRt("T"))
                     body { arg ->
                         val iterable = arg.asIterable()
                         val list = mutableListOf<Rt_Value>()
@@ -126,7 +124,7 @@ object Lib_Type_List {
                 """)
                 param("start", "integer", comment = "the starting index of the sublist (inclusive)")
                 body { self, start ->
-                    val type = self.type()
+                    val type = self.type
                     val list = self.asList()
                     val startIndex = start.asInteger()
                     calcSub(type, list, startIndex, list.size.toLong())
@@ -147,7 +145,7 @@ object Lib_Type_List {
                 param("start", "integer", comment = "the start index of the sublist (inclusive)")
                 param("end", "integer", comment = "the end index of the sublist (exclusive)")
                 body { self, start, end ->
-                    val type = self.type()
+                    val type = self.type
                     val list = self.asList()
                     val startIndex = start.asInteger()
                     val endIndex = end.asInteger()
@@ -288,7 +286,7 @@ object Lib_Type_List {
                         }
                     }
 
-                    Rt_ListValue(self.type(), resList)
+                    Rt_ListValue(self.type, resList)
                 }
             }
 
@@ -319,7 +317,7 @@ object Lib_Type_List {
                     val list = self.asList()
                     val resList = list.toMutableList()
                     resList.reverse()
-                    Rt_ListValue(self.type(), resList)
+                    Rt_ListValue(self.type, resList)
                 }
             }
 
@@ -373,7 +371,7 @@ object Lib_Type_List {
         }
     }
 
-    private fun calcSub(type: Rt_Type, list: MutableList<Rt_Value>, start: Long, end: Long): Rt_Value {
+    private fun calcSub(type: Rt_ValueClass<*>, list: MutableList<Rt_Value>, start: Long, end: Long): Rt_Value {
         if (start < 0 || end < start || end > list.size) {
             throw Rt_Exception.common("fn:list.sub:args:${list.size}:$start:$end",
                 "Invalid range: start = $start, end = $end, size = ${list.size}")
@@ -393,72 +391,6 @@ object Lib_Type_List {
                 throw Rt_Exception.common("fn:$type.repeat:too_big:$total", "Resulting size is too large: $s * $n = $total")
             }
             total.toInt()
-        }
-    }
-}
-
-class Rt_ListValue(private val rtType: Rt_Type, private val elements: MutableList<Rt_Value>): Rt_Value() {
-    override val valueType = Rt_CoreValueTypes.LIST.type()
-
-    override fun type() = rtType
-    override fun asIterable(): Iterable<Rt_Value> = elements
-    override fun asCollection() = elements
-    override fun asList() = elements
-
-    override fun equals(other: Any?) = other === this || (other is Rt_ListValue && elements == other.elements)
-    override fun hashCode() = elements.hashCode()
-
-    override fun strCode(showTupleFieldNames: Boolean) = strCode(rtType, elements)
-    override fun str(format: StrFormat) = elements.joinToString(", ", "[", "]") { it.str(format) }
-
-    override fun strPretty(indent: Int): String {
-        if (elements.isEmpty()) {
-            return str(StrFormat.V2)
-        }
-        val indentStr = "    ".repeat(indent)
-        return elements.joinToString(",", "[", "\n$indentStr]") {
-            val s = it.strPretty(indent + 1)
-            "\n$indentStr    $s"
-        }
-    }
-
-    companion object {
-        fun checkIndex(frame: Rt_CallFrame, errPos: ErrorPos, size: Int, index: Long) {
-            val codeMsg = checkIndex0(size, index)
-            if (codeMsg != null) {
-                frame.error(errPos, codeMsg.first, codeMsg.second)
-            }
-        }
-
-        fun checkIndex(size: Int, index: Long) {
-            val codeMsg = checkIndex0(size, index)
-            if (codeMsg != null) {
-                throw Rt_Exception.common(codeMsg.first, codeMsg.second)
-            }
-        }
-
-        private fun checkIndex0(size: Int, index: Long): Pair<String, String>? = when {
-            index in 0 ..< size -> null
-            else -> "list:index:$size:$index" to "List index out of bounds: $index (size $size)"
-        }
-
-        fun strCode(type: Rt_Type, elements: List<Rt_Value?>): String {
-            val elems = elements.joinToString(",") { it?.strCode(false) ?: "null" }
-            return "${type.name}[$elems]"
-        }
-    }
-}
-
-class GtvRtConversion_List(
-    typeName: String,
-    elementConversion: Lazy<Rt_TypeGtvConversion>,
-    rtType: Lazy<Rt_Type>,
-): GtvRtConversion_Collection(typeName, elementConversion, rtType) {
-    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-        val array = GtvRtUtils.gtvToArrayAny(ctx, gtv, typeName)
-        val rtList = array.map { elementConversion.gtvToRt(ctx, it) }
-        return ctx.rtValue {
-            Rt_ListValue(rtType, rtList.toMutableList())
         }
     }
 }

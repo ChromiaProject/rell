@@ -4,39 +4,31 @@
 
 package net.postchain.rell.base.lib.type
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvString
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_BodyResult
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.model.GtvCompatibility
 import net.postchain.rell.base.model.expr.Db_SysFunction
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
-import net.postchain.rell.base.sql.PreparedStatementParams
-import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.formatEx
-import net.postchain.rell.base.utils.immSetOf
-import org.jooq.impl.SQLDataType
 import java.nio.ByteBuffer
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
-import kotlin.reflect.full.createType
 
 object Lib_Type_Text {
     val DB_SUBSCRIPT: Db_SysFunction =
         Db_SysFunction.template("text.[]", 2, "${SqlConstants.FN_TEXT_GETCHAR}(#0, (#1)::INT)")
 
     private val CHARSET = Charsets.UTF_8
-    private val LIST_OF_TEXT: Rt_Type = rtListType(Rt_PrimitiveTypes.TEXT)
-    private val MAP_OF_TEXT_TO_TEXT: Rt_Type = rtMapType(Rt_PrimitiveTypes.TEXT, Rt_PrimitiveTypes.TEXT)
+    private val LIST_OF_TEXT = Rt_ListType(Rt_PrimitiveTypes.TEXT)
+    private val MAP_OF_TEXT_TO_TEXT = Rt_MapType(Rt_PrimitiveTypes.TEXT, Rt_PrimitiveTypes.TEXT)
 
     private const val SINCE0 = "0.6.0"
 
@@ -284,7 +276,7 @@ object Lib_Type_Text {
                     val s1 = text.asString()
                     val s2 = delimiter.asString()
                     val arr = s1.split(s2)
-                    val list = MutableList(arr.size) { Rt_TextValue.get(arr[it]) }
+                    val list = MutableList<Rt_Value>(arr.size) { Rt_TextValue.get(arr[it]) }
                     Rt_ListValue(LIST_OF_TEXT, list)
                 }
             }
@@ -562,7 +554,6 @@ object Lib_Type_Text {
                 }
             }
 
-
             function("last_index_of", result = "integer", pure = true, since = "0.9.0") {
                 alias("lastIndexOf", C_MessageType.ERROR, since = SINCE0)
                 comment("""
@@ -710,109 +701,4 @@ object Lib_Type_Text {
 
     private fun Ld_FunctionDsl.matchedMatcherOrNullBody(rCode: (Matcher) -> Rt_Value): Ld_BodyResult =
         matcherBody { if (!it.matches()) Rt_NullValue else rCode(it) }
-}
-
-object Rt_NativeConversion_Text: Rt_TypeNativeConversion {
-    override val nativeTypes = immSetOf(String::class.createType())
-    override fun rtToNative(value: Rt_Value) = value.asString()
-    override fun nativeToRt(value: Any?) = Rt_TextValue.get(value as String)
-}
-
-object Rt_ValueSqlAdapter_Text: Rt_ValueSqlAdapter_Primitive("text", SQLDataType.CLOB) {
-    override fun toSqlValue(value: Rt_Value) = value.asString()
-
-    override fun toSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) {
-        params.setString(idx, value.asString())
-    }
-
-    override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
-        val v = row.getString(idx)
-        return if (v != null) Rt_TextValue.get(v) else checkSqlNull(name, nullable)
-    }
-}
-
-class Rt_TextValue private constructor(val value: String): Rt_Value() {
-    override val valueType = Rt_CoreValueTypes.TEXT.type()
-
-    override fun type() = Rt_PrimitiveTypes.TEXT
-    override fun asString() = value
-
-    override fun strCode(showTupleFieldNames: Boolean): String {
-        val esc = escape(value)
-        return "text[$esc]"
-    }
-
-    override fun str(format: StrFormat): String = value
-    override fun equals(other: Any?) = other === this || (other is Rt_TextValue && value == other.value)
-    override fun hashCode() = value.hashCode()
-
-    companion object {
-        val EMPTY: Rt_Value = Rt_TextValue("")
-
-        fun get(s: String): Rt_Value {
-            return if (s.isEmpty()) EMPTY else Rt_TextValue(s)
-        }
-
-        fun like(s: String, pattern: String): Boolean {
-            val regex = likePatternToRegex(pattern, '_', '%')
-            val m = regex.matcher(s)
-            return m.matches()
-        }
-
-        fun likePatternToRegex(pattern: String, one: Char, many: Char): Pattern {
-            val buf = StringBuilder()
-            val raw = StringBuilder()
-            var esc = false
-
-            for (c in pattern) {
-                if (esc) {
-                    raw.append(c)
-                    esc = false
-                } else if (c == '\\') {
-                    esc = true
-                } else if (c == one || c == many) {
-                    if (raw.isNotEmpty()) buf.append(Pattern.quote(raw.toString()))
-                    raw.setLength(0)
-                    buf.append(if (c == many) ".*" else ".")
-                } else {
-                    raw.append(c)
-                }
-            }
-
-            if (raw.isNotEmpty()) buf.append(Pattern.quote(raw.toString()))
-            val s = buf.toString()
-            return Pattern.compile(s, Pattern.DOTALL)
-        }
-
-        private fun escape(s: String): String {
-            if (s.isEmpty()) return ""
-
-            return buildString(s.length) {
-                for (c in s) {
-                    when (c) {
-                        '\t' -> append("\\t")
-                        '\r' -> append("\\r")
-                        '\n' -> append("\\n")
-                        '\b' -> append("\\b")
-                        '\\' -> append("\\\\")
-                        in '\u0020'..<'\u0080' -> append(c)
-                        else -> {
-                            append("\\u")
-                            append("%04x".formatEx(c.code))
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-object GtvRtConversion_Text: GtvRtConversion {
-    override val directCompatibility = GtvCompatibility(fromGtv = true, toGtv = true)
-    override fun rtToGtv(rt: Rt_Value, pretty: Boolean) = GtvString(rt.asString())
-
-    override fun gtvToRt(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-        val s = GtvRtUtils.gtvToString(ctx, gtv, "text")
-        return Rt_TextValue.get(s)
-    }
 }

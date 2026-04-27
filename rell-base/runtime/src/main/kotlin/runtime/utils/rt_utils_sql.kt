@@ -107,7 +107,7 @@ object Rt_SnapshotSqlUtils {
                 val rtType = interpreter.resolveType(attr.type)
                 val sqlAdapter = checkNotNull(rtType.sqlAdapter) { "No SQL adapter for type: ${rtType.name}" }
                 val rtValue = sqlAdapter.fromSql(row, i + 1, false)
-                val conv: Rt_TypeGtvConversion = checkNotNull(rtType.gtvConversion) {
+                val conv: Rt_GtvCompatibleValueClass<*> = checkNotNull(rtType.gtvConversion) {
                     "No GTV conversion for type: ${rtType.name}"
                 }
                 attrValues[attr.name] = conv.rtToGtv(rtValue, false)
