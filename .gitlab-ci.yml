@@ -186,6 +186,9 @@ qodana:
     policy: pull-push
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "dev"
+      variables:
+        QODANA_MR_MODE: "false"
   artifacts:
     paths:
       - .qodana/results/qodana.sarif.json

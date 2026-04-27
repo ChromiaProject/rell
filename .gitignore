@@ -46,6 +46,6 @@ bin/
 
 CLAUDE.local.md
 .mcp.json
-.claude/
+.claude
 .junie/
 .ai/
