@@ -23,6 +23,7 @@ reporting.reports.create<JacocoCoverageReport>("testCodeCoverageReport") {
         reports {
             xml.required = true
             html.required = true
+            csv.required = true
         }
     }
 }
