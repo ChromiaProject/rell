@@ -1,14 +1,66 @@
 image: eclipse-temurin:21-jdk-noble
 
+include:
+  - component: $CI_SERVER_FQDN/qodana/qodana/qodana-gitlab-ci@v2025.3
+    inputs:
+      stage: qodana
+      args: --image,jetbrains/qodana-jvm-community:2025.3
+
 stages:
   - build
   - deploy
   - dependency-check
+  - qodana
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH =~ /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
 
 variables:
+  # Opt-in build scan publication. Defaults to "false" so regular pipelines don't publish;
+  # override to "true" via the manual pipeline UI ("Run pipeline" → variables) when investigating a slow or flaky build.
+  PUBLISH_BUILD_SCAN:
+    value: "false"
+    description: "Set to 'true' to publish a Develocity build scan for this pipeline (visible at scans.gradle.com)."
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
-  GRADLE_OPTS: "-Dorg.gradle.caching=true"
-  ORG_GRADLE_PROJECT_gitlabAuthHeaderValue: $CI_JOB_TOKEN
+  # CI-specific Gradle args — all build tuning lives here.
+  #   -Pkotlin.daemon.jvmargs  Kotlin compiler daemon heap (only reads project properties)
+  #   -PtestJvmMaxHeap         Forked test JVM heap (default 4g in build.gradle.kts)
+  #   -PjunitParallelThreads   JUnit ForkJoinPool threads per test worker (unset = availableProcessors())
+  #   -PgitlabAuthHeaderValue  GitLab Package Registry auth token
+  #
+  # Heap budget on saas-linux-xlarge-amd64 (16 vCPU / 64 GiB):
+  #   Gradle daemon  12g
+  #   Kotlin daemon   6g
+  #   Test JVMs       8 workers × 4g = 32g (testJvmMaxHeap × --max-workers)
+  #   Headroom       ~14g for Postgres, Docker
+  #
+  # Thread budget (16 vCPU):
+  #   8 Gradle workers × 4 JUnit threads = 32 runnable threads.
+  #   Most are I/O-bound (DB round-trips), so moderate over-subscription is fine.
+  GRADLE_FLAGS: >-
+    -Dorg.gradle.caching=true
+    --max-workers=8
+    -Dorg.gradle.jvmargs=-Xmx12g
+    -Pkotlin.daemon.jvmargs=-Xmx6g
+    -PtestJvmMaxHeap=4g
+    -PjunitParallelThreads=4
+    -PgitlabAuthHeaderValue=$CI_JOB_TOKEN
+  # Reduced profile for constrained runners (12 GiB total RAM).
+  # Injected when the runner sets WEAK_RUNNER=true in its config.toml.
+  #   Gradle daemon  4g
+  #   Kotlin daemon  2g
+  #   Test JVMs      1 worker × 4g = 4g
+  #   Headroom      ~2g for Postgres (disk-backed), Docker
+  GRADLE_FLAGS_WEAK: >-
+    -Dorg.gradle.caching=true
+    --max-workers=1
+    -Dorg.gradle.jvmargs=-Xmx4g
+    -Pkotlin.daemon.jvmargs=-Xmx2g
+    -PtestJvmMaxHeap=4g
+    -PjunitParallelThreads=2
+    -PgitlabAuthHeaderValue=$CI_JOB_TOKEN
   POSTCHAIN_DB_URL: jdbc:postgresql://docker/postchain
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
@@ -32,22 +84,51 @@ cache:
 .setup:
   tags: [ saas-linux-xlarge-amd64 ]
   before_script:
+    - |
+      if [ "${WEAK_RUNNER:-}" = "true" ]; then
+        export GRADLE_FLAGS="$GRADLE_FLAGS_WEAK"
+        echo "Weak runner detected — using reduced memory profile (4g/2g/4g×1)"
+      fi
     - apt-get update && apt-get install -y ca-certificates curl gnupg jq
     - install -m 0755 -d /etc/apt/keyrings
     - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu noble stable" > /etc/apt/sources.list.d/docker.list
     - apt-get update && apt-get install -y docker-ce-cli
-    - docker run
-      --detach
-      --name postgres
-      --env POSTGRES_PASSWORD=postchain
-      --env POSTGRES_USER=postchain
-      --env PGDATA=/pgtmpfs
-      --tmpfs=/pgtmpfs:size=1000m
-      --publish 5432:5432
-      postgres:16.13-alpine3.23@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416
+    - |
+      PGDATA_ARGS="--env PGDATA=/pgtmpfs --tmpfs=/pgtmpfs:size=1000m"
+      if [ "${WEAK_RUNNER:-}" = "true" ]; then
+        PGDATA_ARGS=""
+      fi
+      docker run \
+        --detach \
+        --name postgres \
+        --env POSTGRES_PASSWORD=postchain \
+        --env POSTGRES_USER=postchain \
+        $PGDATA_ARGS \
+        --publish 5432:5432 \
+        postgres:16.13-alpine3.23@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416
     - chmod +x gradlew
-    - ./gradlew --version
+    # When PUBLISH_BUILD_SCAN=true, append a Develocity plugin block to settings.gradle.kts in flight.
+    # The plugin is intentionally NOT committed so that local devs neither pull the plugin dependency nor have ToU
+    # auto-accepted on their behalf. The Develocity 4.x plugin only reads termsOfUseAgree from a Kotlin DSL block, so a
+    # tracked-file edit is the only way to express it.
+    #
+    - |
+      if [ "$PUBLISH_BUILD_SCAN" = "true" ]; then
+        cat >> settings.gradle.kts <<'EOF'
+
+      plugins { id("com.gradle.develocity") version "4.3.2" }
+
+      develocity {
+          buildScan {
+              termsOfUseUrl = "https://gradle.com/help/legal-terms-of-use"
+              termsOfUseAgree = "yes"
+              uploadInBackground = false
+          }
+      }
+      EOF
+      fi
+    - ./gradlew $GRADLE_FLAGS --version
   artifacts:
     when: always
     paths:
@@ -64,29 +145,52 @@ cache:
 build:
   extends: .setup
   stage: build
-  except:
-    - master
-    - dev
-    - /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
-  script: [ "./gradlew check :coverage-report-aggregate:testCodeCoverageReport" ]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - ./gradlew $GRADLE_FLAGS check :coverage-report-aggregate:testCodeCoverageReport
+    - "awk -F, 'NR>1 { missed += $4; covered += $5 } END { printf \"Line coverage: %.2f%%\\n\", 100 * covered / (missed + covered) }' $JACOCO_REPORT_DIR/testCodeCoverageReport.csv"
+  coverage: '/Line coverage: (\d+\.\d+%)/'
 
 deploy:
   extends: .setup
   stage: deploy
-  only:
-    - master
-    - dev
-    - /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
-  script: [ "./gradlew check publish -PgenerateTestCases" ]
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH =~ /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
+  script:
+    - ./gradlew $GRADLE_FLAGS check :coverage-report-aggregate:testCodeCoverageReport publish -PgenerateTestCases
+    - "awk -F, 'NR>1 { missed += $4; covered += $5 } END { printf \"Line coverage: %.2f%%\\n\", 100 * covered / (missed + covered) }' $JACOCO_REPORT_DIR/testCodeCoverageReport.csv"
+  coverage: '/Line coverage: (\d+\.\d+%)/'
 
 dependency-check:
   extends: .setup
   stage: dependency-check
   interruptible: true
-  only:
-    variables:
-      - $RUN_DEPENDENCY_CHECK == "true"
-  script: [ "./gradlew dependencyCheckAggregate" ]
+  rules:
+    - if: $RUN_DEPENDENCY_CHECK == "true"
+  script: [ "./gradlew $GRADLE_FLAGS --no-configuration-cache dependencyCheckAggregate" ]
   artifacts:
     when: always
     paths: [ build/reports/dependency-check-report.* ]
+
+qodana:
+  tags: [ saas-linux-xlarge-amd64 ]
+  variables:
+    QODANA_MR_MODE: "true"
+  cache:
+    key: "qodana-$CI_COMMIT_REF_SLUG"
+    fallback_keys:
+      - qodana-dev
+    paths:
+      - .qodana/cache
+    policy: pull-push
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "dev"
+      variables:
+        QODANA_MR_MODE: "false"
+  artifacts:
+    paths:
+      - .qodana/results/qodana.sarif.json
+    when: always
+    expire_in: 1 week

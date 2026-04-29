@@ -17,6 +17,7 @@
 .gradle/
 .kotlin/
 **/build/
+/local.properties
 
 # Editor / IDE
 .vscode/
@@ -40,9 +41,11 @@ venv/
 
 # Misc
 *.log
+*.hprof
 bin/
 
-CLAUDE.md
+CLAUDE.local.md
 .mcp.json
-.claude/
+.claude
 .junie/
+.ai/
