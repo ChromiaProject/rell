@@ -3,7 +3,10 @@ plugins {
     antlr
 }
 
-val rellTestCasesConfiguration by configurations.creating
+val rellTestCasesConfiguration by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
 
 dependencies {
     antlr(libs.antlr)
@@ -15,7 +18,7 @@ dependencies {
     implementation(libs.commons.collections4)
     api(projects.rellToolbox.common)
 
-    rellTestCasesConfiguration("net.postchain.rell:rell-api-gtx:${project.version}:rell-test-cases@zip")
+    rellTestCasesConfiguration(project(path = ":rell-api-gtx", configuration = "rellTestCases"))
 
     testImplementation(libs.bundles.jackson)
     testImplementation(libs.bundles.toolbox.testing)
@@ -26,7 +29,7 @@ dependencies {
 val testCasesDir = layout.buildDirectory.dir("rell-test-cases")
 
 val copyTestCases by tasks.registering(Copy::class) {
-    from({ zipTree(rellTestCasesConfiguration.singleFile) })
+    from(rellTestCasesConfiguration)
     into(testCasesDir.map { it.dir("test-cases") })
 }
 

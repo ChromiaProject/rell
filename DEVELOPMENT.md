@@ -119,6 +119,18 @@ TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 TESTCONTAINERS_RYUK_DISABLED=true
 ```
 
+### Grammar Tests
+
+The ANTLR grammar in `:rell-toolbox:ast` is checked against a corpus of Rell snippets recorded by the runtime test suites (`rell-base`, `rell-gtx`, `rell-api-base`, `rell-api-gtx`). The recorder writes each compiled snippet to `{module}/build/rell-test-cases/` and `:rell-toolbox:ast` consumes them via a project dependency.
+
+Grammar tests take ~6 minutes and are not part of `check`. Run them after editing the ANTLR grammar or the hand-written compiler parser:
+
+```shell
+./gradlew :rell-toolbox:ast:grammarTest
+```
+
+The task transitively depends on the four runtime `test` tasks, so the corpus is regenerated automatically.
+
 ### Locale Testing
 
 Passing `-PwithLocales` to `check` runs the test suite under several non-default locales to verify that the implementation is locale-independent. This matters because Rell must be deterministic.
@@ -156,7 +168,6 @@ The following project properties control resource allocation and test behavior. 
 | `testJvmMaxHeap`        | `2g`                    | Max heap for each forked test JVM                         |
 | `junitParallelThreads`  | `availableProcessors()` | JUnit ForkJoinPool threads per test worker                |
 | `withLocales`           | unset                   | Run tests under extra locales (`tr_TR`, `ar_SA`, `ja_JP`) |
-| `generateTestCases`     | unset                   | Generate grammar test case files during build             |
 | `gitlabAuthHeaderValue` | unset                   | GitLab Package Registry auth token (CI only)              |
 
 Example for a memory-constrained laptop:
@@ -173,7 +184,6 @@ Shared run configurations are stored in `work/` as `.run.xml` files. Import them
 |----------------------------|--------------------------------------|
 | `All_tests.run.xml`        | Gradle `check` across all modules    |
 | `Kotlin_ABI_Dump.run.xml`  | Gradle `apiDump` (binary compat)     |
-| `Test_snippets.run.xml`    | Generate grammar test snippets       |
 
 ## Running Rell
 

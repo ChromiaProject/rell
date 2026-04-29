@@ -12,9 +12,6 @@ group = "net.postchain.rell"
 version = "0.16.0-SNAPSHOT"
 description = "Rell programming language"
 
-// Opt-in flag to generate Rell test cases (replacement for Maven profile generate-test-cases)
-val generateTestCases by extra(providers.gradleProperty("generateTestCases").isPresent)
-
 // Load local.properties (not committed) for machine-specific settings like Docker socket paths.
 val localProperties = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
@@ -114,14 +111,12 @@ subprojects {
             maxParallelForks = 1
             forkEvery = 0
 
-            if (generateTestCases) {
-                systemProperty("test.snippets.recorder.enabled", "true")
-                systemProperty(
-                    "test.snippets.recorder.target",
-                    layout.buildDirectory.dir("rell-test-cases").get().asFile.absolutePath,
-                )
-                systemProperty("test.snippets.recorder.zipfile", "false")
-            }
+            systemProperty("test.snippets.recorder.enabled", "true")
+            systemProperty(
+                "test.snippets.recorder.target",
+                layout.buildDirectory.dir("rell-test-cases").get().asFile.absolutePath,
+            )
+            systemProperty("test.snippets.recorder.zipfile", "false")
 
             testLogging {
                 events("passed", "skipped", "failed")
