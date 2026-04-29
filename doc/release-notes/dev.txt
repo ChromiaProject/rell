@@ -1,79 +1,12 @@
 UNRELEASED NOTES
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-1. Runtime: Fix snapshot metadata initialization
+1. Runtime: Global system functions moved out of per-chain initializeDB
 
-Fixed a bug where snapshot metadata initialization (datum id 0 and object state datums) could be lost if a transaction
-was rolled back. The snapshotInited flag was set during transaction execution, but if the transaction was rolled back,
-the flag remained set and the initial datums were never re-emitted.
+Initialization of Rell's global SQL system functions has been extracted from the per-chain `initializeDB` path
+into a new `RellGlobalStorageInitializer` registered as a Postchain `GlobalStorageInitializer` service. Previously,
+these functions were (re)installed during every chain's database initialization, which under concurrent chain
+startup could deadlock on shared catalog locks (POS-2115).
 
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-2. Library: gtv_type enum and gtv.type property
-
-Added a new enum `gtv_type` with values representing the possible types of a GTV value:
-
-    NULL, BYTEARRAY, STRING, INTEGER, DICT, ARRAY, BIGINTEGER
-
-Added a new property `gtv.type` that returns the `gtv_type` of a GTV value:
-
-    (123).to_gtv().type // INTEGER
-    'hello'.to_gtv().type // STRING
-    [1, 2, 3].to_gtv().type // ARRAY
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-3. Tools: Monorepo consolidation
-
-The following projects have been merged into the main Rell repository:
-
-- rell-toolbox (LSP server, formatter, linter, indexer, seeder)
-- rell-codegen (client stub generation for Kotlin, TypeScript, JavaScript, Python, Mermaid)
-- rell-dokka-plugin (Dokka plugin for Rell system library documentation)
-
-All modules are now built, tested, and published as part of the Rell from the main
-Rell Maven registry. The separate GitLab Maven registries for these projects will not be updated in the future.
-
-Artifact coordinates have changed. All artifacts are now published under group net.postchain.rell
-with version aligned to Rell. Update your dependencies as follows:
-
-    ┌────────────────────────────────────────────────────────────────────────────────────────────┐
-    │ rell-toolbox                                                                               │
-    ├───────────────────────────────────────────┬────────────────────────────────────────────────┤
-    │ Old coordinates                           │ New coordinates                                │
-    ├───────────────────────────────────────────┼────────────────────────────────────────────────┤
-    │ net.postchain.rell.toolbox:common         │ net.postchain.rell:rell-toolbox-common         │
-    │ net.postchain.rell.toolbox:ast            │ net.postchain.rell:rell-toolbox-ast            │
-    │ net.postchain.rell.toolbox:indexer        │ net.postchain.rell:rell-toolbox-indexer        │
-    │ net.postchain.rell.toolbox:code-quality   │ net.postchain.rell:rell-toolbox-code-quality   │
-    │ net.postchain.rell.toolbox:language-server│ net.postchain.rell:rell-toolbox-language-server│
-    │ net.postchain.rell.toolbox:seeder         │ net.postchain.rell:rell-toolbox-seeder         │
-    └───────────────────────────────────────────┴────────────────────────────────────────────────┘
-
-    ┌───────────────────────────────────────────────────────────────────────────────────────────┐
-    │ rell-codegen                                                                              │
-    ├──────────────────────────────────────────┬────────────────────────────────────────────────┤
-    │ Old coordinates                          │ New coordinates                                │
-    ├──────────────────────────────────────────┼────────────────────────────────────────────────┤
-    │ net.postchain.rell:codegen               │ net.postchain.rell:rell-codegen                │
-    │ net.postchain.rell:codegen-kotlin        │ net.postchain.rell:rell-codegen-kotlin         │
-    │ net.postchain.rell:codegen-typescript    │ net.postchain.rell:rell-codegen-typescript     │
-    │ net.postchain.rell:codegen-javascript    │ net.postchain.rell:rell-codegen-javascript     │
-    │ net.postchain.rell:codegen-python        │ net.postchain.rell:rell-codegen-python         │
-    │ net.postchain.rell:codegen-mermaid       │ net.postchain.rell:rell-codegen-mermaid        │
-    │ net.postchain.rell:rellgen               │ net.postchain.rell:rell-rellgen                │
-    └──────────────────────────────────────────┴────────────────────────────────────────────────┘
-
-    ┌───────────────────────────────────────────────────────────────────────────────────────────┐
-    │ rell-dokka-plugin                                                                         │
-    ├──────────────────────────────────────────┬────────────────────────────────────────────────┤
-    │ Old coordinates                          │ New coordinates                                │
-    ├──────────────────────────────────────────┼────────────────────────────────────────────────┤
-    │ com.chromia.rell.dokka:rell-dokka-plugin │ net.postchain.rell:rell-dokka-plugin           │
-    └──────────────────────────────────────────┴────────────────────────────────────────────────┘
-
-Artifacts are renamed to avoid version conflicts with the independently versioned legacy registry.
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-4. Tools: CLI library changed from Picocli to Clikt
-
-The CLI argument parsing library for tools has been replaced.
-All options and arguments remain the same, but the format of help and error output differs minimally.
+With this change, global system functions are created once per storage during global initialization, and per-chain
+`initializeDB` no longer touches them. Existing deployments are migrated transparently; no user action is required.

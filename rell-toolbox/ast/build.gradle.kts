@@ -3,7 +3,7 @@ plugins {
     antlr
 }
 
-val rellTestCasesConfiguration by configurations.creating
+val generateTestCases: Boolean by rootProject.extra
 
 dependencies {
     antlr(libs.antlr)
@@ -15,8 +15,6 @@ dependencies {
     implementation(libs.commons.collections4)
     implementation(projects.rellToolbox.common)
 
-    rellTestCasesConfiguration("net.postchain.rell:rell-api-gtx:${project.version}:rell-test-cases@zip")
-
     testImplementation(libs.bundles.jackson)
     testImplementation(libs.bundles.toolbox.testing)
     testImplementation(libs.testcontainers)
@@ -25,8 +23,21 @@ dependencies {
 
 val testCasesDir = layout.buildDirectory.dir("rell-test-cases")
 
+// Copy test cases directly from project build directories (avoids zipTree config cache issues)
 val copyTestCases by tasks.registering(Copy::class) {
-    from({ zipTree(rellTestCasesConfiguration.singleFile) })
+    enabled = generateTestCases
+    if (generateTestCases) {
+        dependsOn(
+            project(":rell-api-gtx").tasks.named("test"),
+            project(":rell-base").tasks.named("test"),
+            project(":rell-gtx").tasks.named("test"),
+            project(":rell-api-base").tasks.named("test"),
+        )
+        from(project(":rell-api-gtx").layout.buildDirectory.dir("rell-test-cases"))
+        from(project(":rell-base").layout.buildDirectory.dir("rell-test-cases"))
+        from(project(":rell-gtx").layout.buildDirectory.dir("rell-test-cases"))
+        from(project(":rell-api-base").layout.buildDirectory.dir("rell-test-cases"))
+    }
     into(testCasesDir.map { it.dir("test-cases") })
 }
 

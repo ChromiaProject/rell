@@ -204,16 +204,15 @@ private class SqlInitPlanner private constructor(
     }
 
     private fun processFunctions(functions: Set<String>) {
+        // Chain-specific rowid function — still created here, per chain.
         val (rowidsFn, rowidsSql) = SqlGen.genFunctionMakeRowids(sqlCtx.mainChainMapping())
         if (rowidsFn !in functions) {
             initCtx.step(ORD_TABLES, "Create function: '$rowidsFn'", SqlStepAction_ExecSql(rowidsSql))
         }
 
-        for ((name, sql) in SqlGen.RELL_SYS_FUNCTIONS) {
-            if (name !in functions) {
-                initCtx.step(ORD_TABLES, "Create function: '$name'", SqlStepAction_ExecSql(sql))
-            }
-        }
+        // Global system functions are now created by RellGlobalStorageInitializer at node startup,
+        // in a committed transaction before any blockchain starts, to avoid deadlocks when multiple
+        // blockchains initialize concurrently. See RellGlobalStorageInitializer.
     }
 }
 

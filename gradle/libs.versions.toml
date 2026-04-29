@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.3.0"
-postchain = "3.47.7"
+postchain = "3.49.10"
 
 junit = "6.0.2"
 
