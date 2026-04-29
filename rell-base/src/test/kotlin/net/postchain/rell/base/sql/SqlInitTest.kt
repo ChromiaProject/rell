@@ -650,12 +650,10 @@ class SqlInitTest: BaseSqlInitTest() {
     }
 
     @Test fun testSysFunctions() {
-        chkFunctions(listOf())
-        chkInit("")
-
-        val expectedFuns = listOf(
-            "c0.make_rowid",
-            "c0.make_rowids",
+        // Global rell_* functions are managed by RellGlobalStorageInitializer in production
+        // and re-created by SqlUtils.dropAll in test setup; SqlInit itself only manages per-chain
+        // helpers (c0.make_rowid, c0.make_rowids).
+        val globalFuns = listOf(
             "rell_biginteger_from_text",
             "rell_biginteger_power",
             "rell_bytea_substr1",
@@ -679,14 +677,19 @@ class SqlInitTest: BaseSqlInitTest() {
             "rell_text_substr1",
             "rell_text_substr2",
         )
+        val perChainFuns = listOf("c0.make_rowid", "c0.make_rowids")
 
-        chkFunctions(expectedFuns)
+        chkFunctions(globalFuns)
+        chkInit("")
+        chkFunctions((globalFuns + perChainFuns).sorted())
 
-        execSql("DROP FUNCTION rell_bytea_substr2; DROP FUNCTION rell_text_substr1;")
-        chkFunctions(expectedFuns.filter { it !in listOf("rell_text_substr1", "rell_bytea_substr2") })
+        // Per-chain make_rowids: SqlInit recreates it when missing (the singular make_rowid is
+        // bundled with the rowid_gen table creation step and only re-emitted on a fresh schema).
+        execSql("""DROP FUNCTION "c0.make_rowids";""")
+        chkFunctions((globalFuns + listOf("c0.make_rowid")).sorted())
 
         chkInit("")
-        chkFunctions(expectedFuns)
+        chkFunctions((globalFuns + perChainFuns).sorted())
     }
 
     @Test fun testDropRemovedAttrs() {
