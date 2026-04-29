@@ -133,7 +133,7 @@ object IdeApi {
 
     @JvmStatic fun getAllComments(
         sourceDir: C_SourceDir,
-        modules: ImmList<ModuleName>,
+        modules: List<ModuleName>,
         options: C_CompilerOptions,
     ): Map<String, String> {
         val res = C_Compiler.compile(sourceDir, modules, options)

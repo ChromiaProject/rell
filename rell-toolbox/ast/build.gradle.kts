@@ -75,3 +75,24 @@ configurations {
 tasks.withType<Jar>().configureEach {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
+// Grammar/parser correctness tests are slow (~6 min) and only relevant when the ANTLR
+// grammar or the hand-written compiler parser changes. Excluded from the default `test`
+// task and not wired into `check` so CI doesn't pay for them on every build.
+// Run manually after grammar/parser edits: `./gradlew :rell-toolbox:ast:grammarTest`.
+tasks.test {
+    useJUnitPlatform {
+        excludeTags("grammar")
+    }
+}
+
+tasks.register<Test>("grammarTest") {
+    description = "Runs ANTLR grammar / parser correctness tests. Slow; not part of `check`."
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform {
+        includeTags("grammar")
+    }
+    shouldRunAfter(tasks.test)
+}
