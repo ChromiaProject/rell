@@ -114,7 +114,7 @@ class JavascriptCodegenITTest {
         assertThat(res).executeSuccessFully()
     }
 
-    private fun Assert<Container.ExecResult>.executeSuccessFully() = given { actual ->
+    private fun Assert<Container.ExecResult>.executeSuccessFully(): Unit = given { actual ->
         if (actual.exitCode == 0) return
         val errorMessage = buildString {
             appendLine("Node test suite failed with exit code: ${actual.exitCode}")

@@ -113,7 +113,7 @@ class TypescriptCodegenITTest {
         assertThat(res).executeSuccessFully()
     }
 
-    private fun Assert<org.testcontainers.containers.Container.ExecResult>.executeSuccessFully() = given { actual ->
+    private fun Assert<org.testcontainers.containers.Container.ExecResult>.executeSuccessFully(): Unit = given { actual ->
         if (actual.exitCode == 0) return
         val errorMessage = buildString {
             appendLine("Node test suite failed with exit code: ${actual.exitCode}")
