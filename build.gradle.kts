@@ -70,11 +70,24 @@ subprojects {
             include("**/*Test.*", "**/*Tests.*", "**/*TestCase.*", "**/*IT.*")
             systemProperty("java.awt.headless", "true")
 
-            // Forward Docker config to test JVM for Testcontainers in DinD CI
-            listOf("DOCKER_HOST", "DOCKER_TLS_CERTDIR", "TESTCONTAINERS_HOST_OVERRIDE", "TESTCONTAINERS_RYUK_DISABLED").forEach { key ->
-                providers.environmentVariable(key).orNull?.let { environment(key, it) }
+            // Forward Docker config to test JVM for Testcontainers (DinD CI + local Colima/Docker Desktop overrides).
+            // Per-developer overrides may live in <rootDir>/local.properties; env vars take precedence.
+            val localProps = java.util.Properties().apply {
+                val f = rootProject.file("local.properties")
+                if (f.exists()) f.inputStream().use { load(it) }
             }
-            providers.environmentVariable("DOCKER_HOST").orNull?.let { dockerHost ->
+            fun resolveDockerOverride(key: String): String? =
+                providers.environmentVariable(key).orNull ?: localProps.getProperty(key)
+            listOf(
+                "DOCKER_HOST",
+                "DOCKER_TLS_CERTDIR",
+                "TESTCONTAINERS_HOST_OVERRIDE",
+                "TESTCONTAINERS_RYUK_DISABLED",
+                "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE",
+            ).forEach { key ->
+                resolveDockerOverride(key)?.let { environment(key, it) }
+            }
+            resolveDockerOverride("DOCKER_HOST")?.let { dockerHost ->
                 systemProperty("docker.host", dockerHost)
             }
 
