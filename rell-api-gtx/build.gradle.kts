@@ -31,11 +31,11 @@ val rellTestCases by configurations.creating {
     isCanBeResolved = false
 }
 
-val rellTestCaseTests = listOf(
+val rellTestCaseTests = listOf<Any>(
     tasks.test,
-    project(":rell-base").tasks.named<Test>("test"),
-    project(":rell-gtx").tasks.named<Test>("test"),
-    project(":rell-api-base").tasks.named<Test>("test"),
+    ":rell-base:test",
+    ":rell-gtx:test",
+    ":rell-api-base:test",
 )
 
 val rellTestCaseDirs = listOf(
