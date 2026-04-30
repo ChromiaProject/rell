@@ -162,7 +162,9 @@ subprojects {
         }
 
         tasks.withType<JacocoReport> {
-            dependsOn(tasks.withType<Test>())
+            // Exclude opt-in Test tasks (e.g. :rell-toolbox:ast:grammarTest) from Jacoco wiring,
+            // otherwise `test`'s `finalizedBy(jacocoTestReport)` would transitively run them.
+            dependsOn(tasks.withType<Test>().matching { it.name !in setOf("grammarTest") })
             reports {
                 xml.required = true
                 html.required = true

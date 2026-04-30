@@ -98,4 +98,8 @@ tasks.register<Test>("grammarTest") {
         includeTags("grammar")
     }
     shouldRunAfter(tasks.test)
+    // Don't trigger jacocoTestReport on this opt-in task; the root build's withType<Test>
+    // wires `finalizedBy(jacocoTestReport)` for all Test tasks, which would otherwise pull
+    // grammarTest back into `check` via the JacocoReport dependency graph.
+    setFinalizedBy(emptyList<Any>())
 }
