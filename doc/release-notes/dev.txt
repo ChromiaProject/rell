@@ -1,12 +1,1 @@
 UNRELEASED NOTES
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-1. Runtime: Global system functions moved out of per-chain initializeDB
-
-Initialization of Rell's global SQL system functions has been extracted from the per-chain `initializeDB` path
-into a new `RellGlobalStorageInitializer` registered as a Postchain `GlobalStorageInitializer` service. Previously,
-these functions were (re)installed during every chain's database initialization, which under concurrent chain
-startup could deadlock on shared catalog locks (POS-2115).
-
-With this change, global system functions are created once per storage during global initialization, and per-chain
-`initializeDB` no longer touches them. Existing deployments are migrated transparently; no user action is required.
