@@ -84,3 +84,14 @@ The exact SQL text written to PostgreSQL logs and pg_dump differs in whitespace,
 keyword casing — the queries are semantically equivalent and produce identical result sets. A new
 regression test (rell-base/src/test/kotlin/sql/SqlEmissionTest.kt) pins the emitted SQL for a
 representative corpus so any future drift is caught at CI time.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+7. Runtime: Global system functions moved out of per-chain initializeDB
+
+Initialization of Rell's global SQL system functions has been extracted from the per-chain `initializeDB` path
+into a new `RellGlobalStorageInitializer` registered as a Postchain `GlobalStorageInitializer` service. Previously,
+these functions were (re)installed during every chain's database initialization, which under concurrent chain
+startup could deadlock on shared catalog locks (POS-2115).
+
+With this change, global system functions are created once per storage during global initialization, and per-chain
+`initializeDB` no longer touches them. Existing deployments are migrated transparently; no user action is required.

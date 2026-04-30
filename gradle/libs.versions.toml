@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.3.0"
-postchain = "3.49.4"
+postchain = "3.49.10"
 kotlinx-benchmark = "0.4.16"
 kandy = "0.8.3"
 

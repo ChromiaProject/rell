@@ -26,6 +26,21 @@ object SqlUtils {
     fun dropAll(sqlExec: SqlExecutor, sysTables: Boolean) {
         dropTables(sqlExec, sysTables)
         dropFunctions(sqlExec)
+        createRellSysFunctions(sqlExec)
+    }
+
+    /**
+     * Recreates the Rell global SQL system functions ([SqlGen.RELL_SYS_FUNCTIONS]) in the current schema.
+     *
+     * In production these functions are created once at node startup by `RellGlobalStorageInitializer`
+     * (see `rell-gtx`). After `dropAll` wipes them, callers that need a usable Rell schema must
+     * recreate them; doing it here keeps the contract that `dropAll` leaves the schema initialized
+     * with the global helpers Rell-generated SQL relies on.
+     */
+    private fun createRellSysFunctions(sqlExec: SqlExecutor) {
+        for (stmt in SqlGen.RELL_SYS_FUNCTIONS.values) {
+            sqlExec.execute(stmt)
+        }
     }
 
     fun dropTables(sqlExec: SqlExecutor, sysTables: Boolean) {

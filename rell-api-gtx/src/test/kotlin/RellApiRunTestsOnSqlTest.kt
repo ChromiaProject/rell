@@ -290,9 +290,10 @@ internal class RellApiRunTestsOnSqlTest: BaseRellApiRunTestsTest() {
 
     private fun chkInitSqls(test: TestInfo) {
         // Checking some common init SQL statements to make sure they are intercepted.
+        // Global `rell_*` functions are created once at node startup by RellGlobalStorageInitializer,
+        // not per chain, so they no longer flow through this per-chain SQL hook.
         chkInitSql(test, """sys|-|CREATE TABLE "c0.rowid_gen" (""")
         chkInitSql(test, """sys|-|CREATE TABLE "c0.sys.classes"(""")
-        chkInitSql(test, """sys|-|CREATE FUNCTION "rell_""", 5, 1000)
     }
 
     private fun chkInitSql(test: TestInfo, sqlPrefix: String, minCount: Int = 1, maxCount: Int = minCount) {
