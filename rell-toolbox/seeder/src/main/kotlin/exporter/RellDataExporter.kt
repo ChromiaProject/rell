@@ -6,9 +6,9 @@ package net.postchain.rell.toolbox.seeder.exporter
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.JsonSerializer
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.rell.toolbox.seeder.generator.EntityRecord
 import net.postchain.rell.toolbox.seeder.generator.GeneratedData
@@ -34,7 +34,7 @@ class RellDataExporter : BaseDataExporter() {
         """.trimIndent()
     }
 
-    private val objectMapper = ObjectMapper().apply {
+    private val objectMapper = jacksonObjectMapper().apply {
         val module = SimpleModule()
         module.addSerializer(
             WrappedByteArray::class.java,

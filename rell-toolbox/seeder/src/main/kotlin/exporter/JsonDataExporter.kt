@@ -4,14 +4,14 @@
 
 package net.postchain.rell.toolbox.seeder.exporter
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import net.postchain.rell.toolbox.seeder.generator.GeneratedData
 import java.nio.file.Path
 
 class JsonDataExporter : BaseDataExporter() {
-    private val objectMapper = ObjectMapper().apply {
+    private val objectMapper = jacksonObjectMapper().apply {
         enable(SerializationFeature.INDENT_OUTPUT)
     }
 
