@@ -7,7 +7,7 @@ package net.postchain.rell.base.utils
 import net.postchain.rell.base.model.R_LangVersion
 
 object RellVersions {
-    const val VERSION_STR = "0.15.3"
+    const val VERSION_STR = "0.15.4"
     val VERSION = R_LangVersion.of(VERSION_STR)
 
     val SUPPORTED_VERSIONS: ImmSet<R_LangVersion> =

@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "net.postchain.rell"
-version = "0.15.3"
+version = "0.15.4"
 description = "Rell programming language"
 
 // Opt-in flag to generate Rell test cases (replacement for Maven profile generate-test-cases)
