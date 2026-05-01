@@ -257,14 +257,14 @@ class SqlEmissionTest {
                 // through the DESC wrapping, instead of re-rendering the field to raw SQL text.
                 "at_sort_desc_parameterized",
                 """
-                    sql=SELECT A00."k" FROM "c0.data" A00 ORDER BY A00."k" + ? DESC, A00."rowid"
-                    binds=[long]
+                    sql=SELECT A00."k" + ? FROM "c0.data" A00 ORDER BY A00."k" + ? DESC, A00."rowid"
+                    binds=[long,long]
                 """.trimIndent(),
             ) { tst ->
                 tst.def(DATA_DEF)
                 tst.def("function f(n: integer) = data @* {} ( @sort_desc .k + n );")
                 tst.insert("c0.data", "k,v", "1,3,'c'", "2,1,'a'", "3,2,'b'")
-                tst.chk("f(5)", "list<integer>[int[3],int[2],int[1]]")
+                tst.chk("f(5)", "list<integer>[int[8],int[7],int[6]]")
             },
             SqlCase(
                 "at_limit",

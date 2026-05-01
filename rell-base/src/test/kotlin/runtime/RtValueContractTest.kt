@@ -51,18 +51,20 @@ class RtValueContractTest {
     }
 
     @Test fun decimalGetRejectsOverflow() {
-        val tooBig = BigDecimal("1e1000")
+        // Decimal range is -10^131072..10^131072 exclusive (Lib_DecimalMath.DECIMAL_INT_DIGITS).
+        val tooBig = BigDecimal("1e131073")
         val ex = assertFails { Rt_DecimalValue.get(tooBig) }
         assertTrue(ex is Rt_Exception, "Expected Rt_Exception, got ${ex::class}")
         assertEquals("rt_err:decimal:overflow", (ex.err as Rt_CommonError).code())
     }
 
     @Test fun decimalGetOrNullReturnsNullOnOverflow() {
-        assertEquals(null, Rt_DecimalValue.getOrNull(BigDecimal("1e1000")))
+        assertEquals(null, Rt_DecimalValue.getOrNull(BigDecimal("1e131073")))
     }
 
     @Test fun bigIntegerGetRejectsOverflow() {
-        val tooBig = BigInteger.TEN.pow(200)
+        // Big-integer range is -10^131072..10^131072 exclusive (Lib_BigIntegerMath.PRECISION).
+        val tooBig = BigInteger.TEN.pow(131073)
         val ex = assertFails { Rt_BigIntegerValue.get(tooBig) }
         assertTrue(ex is Rt_Exception)
         assertEquals("rt_err:bigint:overflow", (ex.err as Rt_CommonError).code())
@@ -87,13 +89,15 @@ class RtValueContractTest {
     @Test fun decimalFromGtvAcceptsIntegerInNonStrictMode() {
         val ctx = GtvToRtContext.make(pretty = false, strictGtvConversion = false)
         val v = Rt_DecimalValue.fromGtv(ctx, GtvFactory.gtv(42L))
-        assertEquals(BigDecimal("42"), v.value)
+        // Compare numerically: Lib_DecimalMath.scale normalises the result to DECIMAL_FRAC_DIGITS,
+        // so `v.value` is "42.00…0" and BigDecimal.equals (scale-sensitive) would reject it.
+        assertEquals(0, BigDecimal("42").compareTo(v.value))
     }
 
     @Test fun decimalFromGtvAcceptsBigIntegerInNonStrictMode() {
         val ctx = GtvToRtContext.make(pretty = false, strictGtvConversion = false)
         val v = Rt_DecimalValue.fromGtv(ctx, GtvFactory.gtv(BigInteger("12345678901234567890")))
-        assertEquals(BigDecimal("12345678901234567890"), v.value)
+        assertEquals(0, BigDecimal("12345678901234567890").compareTo(v.value))
     }
 
     @Test fun decimalFromGtvRejectsIntegerInStrictMode() {

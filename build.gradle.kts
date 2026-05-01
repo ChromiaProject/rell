@@ -111,12 +111,18 @@ subprojects {
             maxParallelForks = 1
             forkEvery = 0
 
-            systemProperty("test.snippets.recorder.enabled", "true")
-            systemProperty(
-                "test.snippets.recorder.target",
-                layout.buildDirectory.dir("rell-test-cases").get().asFile.absolutePath,
-            )
-            systemProperty("test.snippets.recorder.zipfile", "false")
+            // Test-snippet recorder: opt in per-invocation with `-Ptest.snippets.recorder.enabled=true`.
+            // Forcing it on for every Test task wrote tens of thousands of snippets to
+            // `<module>/build/rell-test-cases` on every CI run, even for unrelated suites. The
+            // recorder is only meaningful when paired with grammar/parser correctness work.
+            if (providers.gradleProperty("test.snippets.recorder.enabled").orNull?.toBoolean() == true) {
+                systemProperty("test.snippets.recorder.enabled", "true")
+                systemProperty(
+                    "test.snippets.recorder.target",
+                    layout.buildDirectory.dir("rell-test-cases").get().asFile.absolutePath,
+                )
+                systemProperty("test.snippets.recorder.zipfile", "false")
+            }
 
             testLogging {
                 events("passed", "skipped", "failed")
