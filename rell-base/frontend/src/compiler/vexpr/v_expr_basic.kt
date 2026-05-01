@@ -35,7 +35,7 @@ private fun RR_ConstantValue.rType(): R_Type = when (this) {
     is RR_ConstantValue.MapConstant,
     is RR_ConstantValue.TupleConstant,
     is RR_ConstantValue.Meta,
-    -> throw IllegalStateException("Cannot infer R_Type from ${this::class.simpleName}; provide explicit type")
+    -> error("Cannot infer R_Type from ${this::class.simpleName}; provide explicit type")
 }
 
 class V_ErrorExpr(

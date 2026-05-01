@@ -83,9 +83,7 @@ fun evaluateBinaryOp(key: String, left: Rt_Value, right: Rt_Value): Rt_Value = w
 
     else -> {
         // Comparison operators: key = "Cmp_{CmpOpClass}_{CmpTypeClass}"
-        if (key.startsWith("Cmp_")) {
-            error("Comparison binary op must be dispatched via evaluateCmpBinaryOp: $key")
-        }
+        check(!key.startsWith("Cmp_")) { "Comparison binary op must be dispatched via evaluateCmpBinaryOp: $key" }
         error("Unknown binary op key: $key")
     }
 }

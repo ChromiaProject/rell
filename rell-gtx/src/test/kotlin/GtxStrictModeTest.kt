@@ -250,11 +250,9 @@ class GtxStrictModeTest: BaseGtxTest() {
         return Pair(gtvArg, argType)
     }
 
-    private fun argToPath(arg: Gtv): String {
-        return when (arg.type) {
-            GtvType.ARRAY -> (0..arg.asArray().size).joinToString(",", "[", "]") { "[$it]" }
-            GtvType.DICT -> arg.asDict().keys.joinToString(",", "[", "]") { "['$it']" }
-            else -> throw IllegalArgumentException("Invalid argument type: ${arg.type}")
-        }
+    private fun argToPath(arg: Gtv): String = when (arg.type) {
+        GtvType.ARRAY -> (0..arg.asArray().size).joinToString(",", "[", "]") { "[$it]" }
+        GtvType.DICT -> arg.asDict().keys.joinToString(",", "[", "]") { "['$it']" }
+        else -> throw IllegalArgumentException("Invalid argument type: ${arg.type}")
     }
 }

@@ -12,7 +12,7 @@ object RellVersionInfo {
     fun getAbout() = RellAbout(getRellVersion(), getAboutText())
 
     private fun getAboutText(): String {
-        val versionInfo = getRellVersionInfo() ?: error("Rell version info is not available")
+        val versionInfo = checkNotNull(getRellVersionInfo()) { "Rell version info is not available" }
         return """
             Rell ${versionInfo[Rt_RellVersionProperty.RELL_VERSION]}
             Postchain ${versionInfo[Rt_RellVersionProperty.POSTCHAIN_VERSION]}
@@ -24,7 +24,8 @@ object RellVersionInfo {
 
     private fun getRellVersion(): String {
         val versionInfo = getRellVersionInfo()
-        return versionInfo?.get(Rt_RellVersionProperty.RELL_VERSION)
-            ?: error("Rell version info is not available")
+        return checkNotNull(versionInfo?.get(Rt_RellVersionProperty.RELL_VERSION)) {
+            "Rell version info is not available"
+        }
     }
 }

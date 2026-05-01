@@ -207,7 +207,7 @@ fun deserializeFunctionDefinition(fb: FbFunctionDefinition): RR_FunctionDefiniti
 }
 
 internal fun deserializeFunctionBody(fb: FbFunctionBody?, fallbackDefName: DefinitionName): RR_FunctionBase {
-    if (fb == null) error("Null function body for ${fallbackDefName.qualifiedName}")
+    checkNotNull(fb) { "Null function body for ${fallbackDefName.qualifiedName}" }
     val defName = fb.defName?.let { deserializeDefinitionName(it) } ?: fallbackDefName
     val params = deserializeFunctionParams(fb)
     val paramVars = (0 until fb.paramPtrsLength).mapToImmList { i ->

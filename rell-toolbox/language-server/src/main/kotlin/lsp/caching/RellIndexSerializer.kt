@@ -104,12 +104,12 @@ class RellIndexSerializer(
             )
         val metaData = serializableWorkspaceIndexer.metaData
         val currentVersion = VersionInfo.getImplementationVersion()
-        if (metaData?.languageServerVersion != currentVersion) {
-            throw IllegalStateException(
-                "The serialized indexer was created with a different version of the language server. " +
-                    "Expected: $currentVersion, Found: ${metaData?.languageServerVersion}"
-            )
+
+        check(metaData?.languageServerVersion == currentVersion) {
+            "The serialized indexer was created with a different version of the language server. " +
+                "Expected: $currentVersion, Found: ${metaData?.languageServerVersion}"
         }
+
         indexer.fileUriResourceMap = ConcurrentHashMap(
             fromSerializableResources(serializableWorkspaceIndexer.serializableResources)
         )

@@ -124,7 +124,7 @@ private fun deserializeDbExprInner(fb: DbExpr?): RR_DbExpr = when (fb?.exprType)
 // --- At-expression support ---
 
 fun deserializeDbAtEntity(fb: DbAtEntity?): RR_DbAtEntity {
-    if (fb == null) error("Null DbAtEntity")
+    checkNotNull(fb) { "Null DbAtEntity" }
     return RR_DbAtEntity(
         entityDefIndex = fb.entityDefIndex.toInt(),
         entityId = fb.id.toInt(),
@@ -135,7 +135,7 @@ fun deserializeDbAtEntity(fb: DbAtEntity?): RR_DbAtEntity {
 }
 
 fun deserializeDbAtFrom(fb: DbAtExprFrom?): RR_DbAtFrom {
-    if (fb == null) error("Null DbAtExprFrom")
+    checkNotNull(fb) { "Null DbAtExprFrom" }
     val entities = (0 until fb.entitiesLength).mapToImmList { deserializeDbAtEntity(fb.entities(it)) }
     return RR_DbAtFrom(entities, fb.block?.let { deserializeFrameBlock(it) })
 }
@@ -169,7 +169,7 @@ fun deserializeAtCardinality(fb: UByte): AtCardinality = when (fb) {
 // --- ColAt support ---
 
 fun deserializeColAtParam(fb: ColAtParam?): RR_ColAtParam {
-    if (fb == null) error("Null ColAtParam")
+    checkNotNull(fb) { "Null ColAtParam" }
     val ptr = fb.ptr?.let { RR_VarPtr(it.blockUid.toLong(), it.offset) } ?: RR_VarPtr(0, 0)
     return RR_ColAtParam(deserializeType(fb.type), ptr)
 }
@@ -184,7 +184,7 @@ fun deserializeColAtFrom(fb: ColAtFrom?): RR_ColAtFrom {
 }
 
 fun deserializeColAtWhat(fb: ColAtWhat?): RR_ColAtWhat {
-    if (fb == null) error("Null ColAtWhat")
+    checkNotNull(fb) { "Null ColAtWhat" }
     val fields = (0 until fb.fieldsLength).mapToImmList { i ->
         val f = fb.fields(i)
         val flags = f.flags.let { RR_AtWhatFieldFlags(it.omit, it.sort, it.group, it.aggregate) }

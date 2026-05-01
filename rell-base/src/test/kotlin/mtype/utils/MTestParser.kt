@@ -97,7 +97,7 @@ private object MTestGrammar: M_TypeGrammar<MsType>() {
         when (sign.text) {
             "-" -> MsTypeSet_Range(null, type)
             "+" -> MsTypeSet_Range(type, null)
-            else -> throw IllegalStateException(sign.text)
+            else -> error(sign.text)
         }
     }
 
@@ -191,7 +191,7 @@ private class MsTypeSet_Range(private val lower: MsType?, private val upper: MsT
             pLower == null && pUpper == null -> MTestParsedSet(M_TypeSets.ALL, immSetOf())
             pLower != null -> MTestParsedSet(M_TypeSets.superOf(pLower.type), pLower.params)
             pUpper != null -> MTestParsedSet(M_TypeSets.subOf(pUpper.type), pUpper.params)
-            else -> throw IllegalStateException("$pLower, $pUpper")
+            else -> error("$pLower, $pUpper")
         }
     }
 }
@@ -211,7 +211,7 @@ private class MsType_Name(private val name: String): MsType() {
             val mType = M_Types.param(param)
             MTestParsedType(mType, immSetOf(param))
         } else {
-            throw IllegalStateException("Unknown type: $name")
+            error("Unknown type: $name")
         }
     }
 }

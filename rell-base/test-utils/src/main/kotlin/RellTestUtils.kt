@@ -162,7 +162,7 @@ object RellTestUtils {
             val fn = module.functions[name]
             if (fn != null) return fn
         }
-        throw IllegalStateException("Function not found: '$name'")
+        error("Function not found: '$name'")
     }
 
     fun callQuery(

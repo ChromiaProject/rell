@@ -4,12 +4,11 @@
 
 package net.postchain.rell.base.runtime
 
-class Rt_ObjectValue(val typeName: String): Rt_ValueBase() {
+class Rt_ObjectValue(override val type: Rt_ValueClass<*>): Rt_ValueBase() {
+    val typeName: String get() = type.name
+
     override val name
         get() = Companion.name
-
-    override val type
-        get() = Companion
 
     override fun strCode(showTupleFieldNames: Boolean) = typeName
     override fun str(format: Rt_StrFormat) = typeName

@@ -27,8 +27,6 @@ class JsonSchemaChangesTest {
         assertThat(templateSchema).isEqualTo(realSchema)
     }
 
-    fun getResourceAsString(path: String): String {
-        return this::class.java.getResource(path)?.readText()
-            ?: throw IllegalArgumentException("Resource not found: $path")
-    }
+    fun getResourceAsString(path: String): String = this::class.java.getResource(path)?.readText()
+        ?: throw IllegalArgumentException("Resource not found: $path")
 }

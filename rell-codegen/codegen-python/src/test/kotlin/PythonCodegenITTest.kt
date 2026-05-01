@@ -124,8 +124,7 @@ class PythonCodegenITTest {
     }
 
     private fun readClasspathResourceText(path: String): String {
-        val url = this::class.java.getResource(path)
-            ?: throw IllegalStateException("$path not found on test classpath")
+        val url = checkNotNull(this::class.java.getResource(path)) { "$path not found on test classpath" }
         return File(url.toURI()).readText()
     }
 

@@ -77,6 +77,14 @@ class SqlInit private constructor(
     private val initCtx = SqlInitCtx(logger, logging, SqlObjectsInit(exeCtx), isSnapshot)
 
     companion object : KLogging() {
+        /**
+         * Runs the database init plan.
+         *
+         * Multi-statement steps (e.g. ALTER TABLE … ADD COLUMN; UPDATE; SET NOT NULL) are now
+         * dispatched as one round-trip per statement (no batch join, since [ExecutableSql] can
+         * carry binds). The caller MUST wrap this call in a transaction so that a mid-step failure
+         * rolls back the entire init plan; otherwise a partial DDL apply is possible.
+         */
         fun init(
             exeCtx: Rt_ExecutionContext,
             adapter: SqlInitProjExt,

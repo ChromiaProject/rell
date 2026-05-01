@@ -135,7 +135,7 @@ class RellExprIpTester: RellExprTester() {
                     val e = module.entities[name]
                     if (e != null) return e
                 }
-                throw IllegalStateException("Entity not found: '$name'")
+                error("Entity not found: '$name'")
             }
         }
     }

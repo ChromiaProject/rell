@@ -326,7 +326,7 @@ class Rt_Interpreter(val rrApp: RR_App, val stdlib: Rt_StdlibEnv = Rt_StdlibEnv.
         }
 
         is RR_Expr.ObjectValue -> {
-            Rt_ObjectValue(rrApp.allObjects[expr.objectDefIndex].base.appLevelName)
+            Rt_ObjectValue(resolveType(expr.type))
         }
     }
 
@@ -522,8 +522,9 @@ class Rt_Interpreter(val rrApp: RR_App, val stdlib: Rt_StdlibEnv = Rt_StdlibEnv.
     private val typeCache = mutableMapOf<RR_Type, Rt_ValueClass<*>>()
 
     private fun buildRtType(type: RR_Type): Rt_ValueClass<*> = when (type) {
-        is RR_Type.Primitive -> primitiveValueClass(type.kind)
-            ?: error("No primitive value class for ${type.kind}")
+        is RR_Type.Primitive -> checkNotNull(primitiveValueClass(type.kind)) {
+            "No primitive value class for ${type.kind}"
+        }
         is RR_Type.Null -> Rt_NullValue
         is RR_Type.Nullable -> Rt_NullableType(resolveType(type.value))
         is RR_Type.List -> Rt_ListType(resolveType(type.element))

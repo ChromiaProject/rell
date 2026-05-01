@@ -57,7 +57,5 @@ class ConfigurationFileBuilder {
         configuration = builder.build()
     }
 
-    fun build(): Configuration {
-        return configuration ?: error("Configuration is not set")
-    }
+    fun build(): Configuration = checkNotNull(configuration) { "Configuration is not set" }
 }

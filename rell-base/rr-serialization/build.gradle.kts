@@ -120,7 +120,7 @@ val generateFlatBuffersKotlin by tasks.registering {
             .inheritIO()
             .start()
             .waitFor()
-        if (exitCode != 0) error("flatc --kotlin failed (exit $exitCode)")
+        check(exitCode == 0) { "flatc --kotlin failed (exit $exitCode)" }
 
         // Fix flatc Kotlin codegen nullability bug: union accessors return Table,
         // but the body returns null when offset is 0. Patch return type to Table?.

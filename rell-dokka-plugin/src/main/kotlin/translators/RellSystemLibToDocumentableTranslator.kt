@@ -23,8 +23,9 @@ import org.jetbrains.dokka.transformers.sources.SourceToDocumentableTranslator
 object RellSystemLibToDocumentableTranslator : SourceToDocumentableTranslator {
 
     override fun invoke(sourceSet: DokkaConfiguration.DokkaSourceSet, context: DokkaContext): DModule {
-        val module = RellModule.find(sourceSet)
-                ?: throw IllegalArgumentException("Module not found for source set ${sourceSet.sourceSetID}")
+        val module = requireNotNull(RellModule.find(sourceSet)) {
+            "Module not found for source set ${sourceSet.sourceSetID}"
+        }
         return SystemLibVisitor(sourceSet, context.logger).run {
             DModule(
                     "Rell System Library",

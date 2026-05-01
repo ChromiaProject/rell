@@ -38,11 +38,10 @@ class YamlSchemaValidator {
 
     private fun loadYamlFileAsJsonNode(yamlFilePath: Path): JsonNode {
         val yamlFile = yamlFilePath.toFile()
-        if (!yamlFile.exists()) {
-            throw IllegalArgumentException("File not found: $yamlFilePath")
+        require(yamlFile.exists()) {
+            "File not found: $yamlFilePath"
         }
 
-        val yamlNode = objectMapper.readTree(yamlFile)
-        return yamlNode
+        return objectMapper.readTree(yamlFile)
     }
 }

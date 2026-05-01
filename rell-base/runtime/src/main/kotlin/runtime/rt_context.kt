@@ -258,7 +258,7 @@ class Rt_RegularSqlContext private constructor(
                 val extRtType = interpreter.resolveType(extAttr.type)
 
                 val extType = checkNotNull(extRtType.sqlAdapter) {
-                    error("No SQL adapter for type: ${extRtType.name}")
+                    "No SQL adapter for type: ${extRtType.name}"
                 }.metaName(sqlCtx)
 
                 if (metaType != extType) {

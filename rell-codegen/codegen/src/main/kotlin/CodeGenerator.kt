@@ -38,7 +38,7 @@ class CodeGenerator(private val factory: DocumentFactory, private val config: Co
         val rAppModules = modules?.mapToImmList { ModuleName.of(it) }
         val options = RellApiBaseInternal.makeCompilerOptions(conf)
         val (apiRes, _) = RellApiBaseInternal.compileApp(conf, options, cSourceDir, rAppModules, immListOf())
-        val app = apiRes.cRes.app ?: error("Compilation failed")
+        val app = checkNotNull(apiRes.cRes.app) { "Compilation failed" }
         return createSections(app)
     }
 

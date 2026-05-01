@@ -23,7 +23,8 @@ class Rt_VirtualStructValue(
     override fun equals(other: Any?) =
         other === this || (other is Rt_VirtualStructValue && attributes == other.attributes)
 
-    override fun hashCode() = type.hashCode() * 31 + attributes.hashCode()
+    // Hash by type.name for cross-construction-route consistency. See Rt_StructValue.hashCode.
+    override fun hashCode() = type.name.hashCode() * 31 + attributes.hashCode()
 
     override fun str(format: Rt_StrFormat): String =
         Rt_StructValue.formatStr(this, type.name, attrNames, attributes, format)

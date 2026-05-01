@@ -388,6 +388,10 @@ class DbSqlGen private constructor(
     // -------------------------------------------------------------------------------------------
 
     private fun inField(expr: RR_DbExpr.In, frame: Rt_CallFrame): Field<Any?> {
+        // PostgreSQL rejects `x IN ()` as a syntax error. An empty static list is unambiguously
+        // `false` (or `true` for `NOT IN`); short-circuit here to a boolean literal, mirroring
+        // [inCollectionField]'s handling of an empty runtime collection.
+        if (expr.exprs.isEmpty()) return boolField(expr.not)
         val key = dbExprToField(expr.keyExpr, frame)
         val items = expr.exprs.map { dbExprToField(it, frame) }
         val itemsTuple = tupleField(items)
@@ -659,11 +663,12 @@ class DbSqlGen private constructor(
     private fun conditionFromBoolField(field: Field<Any?>): Condition = boolFieldToCondition(field)
 
     /** Builds an ORDER BY sort entry without rendering an explicit `ASC` keyword (matches the
-     *  legacy emitter's byte format). [Field.sortDefault] renders as just `<field>`; for descending
-     *  sorts, the field is wrapped as a plain SQL fragment with a trailing ` DESC`. */
+     *  legacy emitter's byte format). [Field.sortDefault] renders as just `<field>`; [Field.desc]
+     *  renders as `<field> DESC` while preserving the field's parameter bindings — the previous
+     *  implementation re-rendered the field to a string and re-wrapped via [DSL.field], which lost
+     *  jOOQ's [org.jooq.Param] tracking for any `?` placeholders inside the field. */
     private fun sortField(field: Field<Any?>, desc: Boolean): SortField<*> =
-        if (desc) DSL.field(renderJooq(field) + " DESC", Any::class.java).sortDefault()
-        else field.sortDefault()
+        if (desc) field.desc() else field.sortDefault()
 
     /** Starts a CASE chain — `DSL.case_()` followed by the first `when_(cond, thenField)`. */
     private fun caseStart(cond: Condition, thenField: Field<Any?>): CaseConditionStep<Any?> =

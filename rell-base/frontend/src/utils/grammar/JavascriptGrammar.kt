@@ -106,6 +106,6 @@ private fun parserToJavascript(
             """{"type":"opt","parser":$sub}"""
         }
         is ParserReference<*> -> parserToJavascript(nameMap, parser.parser, refs, false)
-        else -> throw IllegalStateException(parser::class.java.simpleName)
+        else -> error(parser::class.java.simpleName)
     }
 }

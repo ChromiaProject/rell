@@ -36,12 +36,10 @@ object Ld_Parser {
         }
     }
 
-    private fun convertTypeSet(typeSet: M_AstTypeSet, pos: Exception): Ld_TypeSet {
-        return when (typeSet) {
-            is M_AstTypeSet_One -> Ld_TypeSet_One(convertType(typeSet.type, pos))
-            is M_AstTypeSet_SubOf -> Ld_TypeSet_SubOf(convertType(typeSet.type, pos))
-            else -> throw IllegalArgumentException()
-        }
+    private fun convertTypeSet(typeSet: M_AstTypeSet, pos: Exception): Ld_TypeSet = when (typeSet) {
+        is M_AstTypeSet_One -> Ld_TypeSet_One(convertType(typeSet.type, pos))
+        is M_AstTypeSet_SubOf -> Ld_TypeSet_SubOf(convertType(typeSet.type, pos))
+        else -> throw IllegalArgumentException()
     }
 }
 

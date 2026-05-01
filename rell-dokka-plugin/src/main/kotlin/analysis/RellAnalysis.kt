@@ -54,7 +54,7 @@ class RellAnalysis(
         val rAppModules = modulesToCompile.mapToImmList { ModuleName.of(it) }
         val options = RellApiBaseInternal.makeCompilerOptions(config)
         val (apiRes, _) = RellApiBaseInternal.compileApp(config, options, cSourceDir, rAppModules, immListOf())
-        val app = apiRes.cRes.app ?: error("Compilation failed")
+        val app = checkNotNull(apiRes.cRes.app) { "Compilation failed" }
 
         modules = app.modules.filterNot { it.test }
         testModules = app.modules.filter { it.test }

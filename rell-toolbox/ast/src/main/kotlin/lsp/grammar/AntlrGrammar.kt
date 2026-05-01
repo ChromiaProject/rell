@@ -345,7 +345,7 @@ private object AntlrGramExprGen {
                     AntlrGramExpr_Map(createAntlrGramExprSub(parser.innerParser), parser.transform as (Any) -> Any)
                 }
             }
-            else -> throw IllegalStateException(parser::class.java.simpleName)
+            else -> error(parser::class.java.simpleName)
         }
     }
 }

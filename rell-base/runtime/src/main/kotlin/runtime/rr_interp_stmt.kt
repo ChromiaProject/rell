@@ -90,7 +90,7 @@ fun Rt_Interpreter.assignTo(
         }
 
         is RR_Expr.MapSubscript -> {
-            val map = evaluateExpr(dstExpr.base, frame).asMap() as MutableMap<Rt_Value, Rt_Value>
+            val map = evaluateExpr(dstExpr.base, frame).asMutableMap()
             val key = evaluateExpr(dstExpr.key, frame)
             val finalValue = if (op != null) {
                 val old = map[key] ?: frame.error(

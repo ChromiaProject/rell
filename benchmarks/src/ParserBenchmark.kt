@@ -46,10 +46,12 @@ class ParserBenchmark {
     @Setup
     fun setUp() {
         val resource = "samples/$sample.rell"
+
         source = javaClass.classLoader.getResourceAsStream(resource)
             ?.bufferedReader()
             ?.use { it.readText() }
             ?: error("Benchmark resource not found on classpath: $resource")
+
         sourcePath = C_SourcePath.parse("$sample.rell")
         idePath = IdeSourcePathFilePath(sourcePath)
         antlrParser = AntlrRellParser()

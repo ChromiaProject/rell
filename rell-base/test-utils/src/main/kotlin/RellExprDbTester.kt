@@ -125,7 +125,7 @@ class RellExprDbTester: RellExprTester(), AutoCloseable {
         val resValue = when (res) {
             "list<optest>[optest[5]]" -> Rt_BooleanValue.TRUE
             "list<optest>[]" -> Rt_BooleanValue.FALSE
-            else -> throw IllegalStateException(res)
+            else -> error(res)
         }
 
         return resValue.strCode()

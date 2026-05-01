@@ -20,8 +20,9 @@ class GeneratorRegistry {
 
     fun getOrNull(identifier: String): DataPatternGenerator? = generators[identifier]
 
-    fun getOrThrow(identifier: String): DataPatternGenerator =
-        generators[identifier] ?: throw IllegalArgumentException("No generator found for identifier: $identifier")
+    fun getOrThrow(identifier: String): DataPatternGenerator = requireNotNull(generators[identifier]) {
+        "No generator found for identifier: $identifier"
+    }
 
     fun getAllGenerators(): Map<String, DataPatternGenerator> = generators.toMap()
 }

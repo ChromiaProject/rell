@@ -32,7 +32,7 @@ object Rt_PrimitiveTypes {
  * Companion [Rt_ValueClass] for a primitive kind, when one exists. `guid` and `signer`
  * have no value-class companion (no `Rt_*Value` class is sealed to them), so this returns null.
  */
-internal fun primitiveValueClass(kind: RR_PrimitiveKind): Rt_ValueClass<*>? = when (kind) {
+fun primitiveValueClass(kind: RR_PrimitiveKind): Rt_ValueClass<*>? = when (kind) {
     RR_PrimitiveKind.BOOLEAN -> Rt_BooleanValue
     RR_PrimitiveKind.INTEGER -> Rt_IntValue
     RR_PrimitiveKind.BIG_INTEGER -> Rt_BigIntegerValue

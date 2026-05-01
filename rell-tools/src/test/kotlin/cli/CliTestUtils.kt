@@ -60,8 +60,9 @@ internal object CliTestUtils {
      * Resolves the script name to its main class and prepends JVM arguments.
      */
     internal fun buildCommandLine(script: String, args: List<String>): List<String> {
-        val mainClass = MAIN_CLASSES[script]
-            ?: error("Unknown script: $script (known: ${MAIN_CLASSES.keys})")
+        val mainClass = checkNotNull(MAIN_CLASSES[script]) {
+            "Unknown script: $script (known: ${MAIN_CLASSES.keys})"
+        }
         return listOf(JAVA_BIN, "-cp", CLASSPATH, mainClass) + args
     }
 

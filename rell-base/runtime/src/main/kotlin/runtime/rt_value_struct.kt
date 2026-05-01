@@ -44,7 +44,11 @@ class Rt_StructValue private constructor(
         get() = Companion.name
 
     override fun equals(other: Any?) = other === this || (other is Rt_StructValue && attributes == other.attributes)
-    override fun hashCode() = type.hashCode() * 31 + attributes.hashCode()
+    // Hash by type.name, not type.hashCode(): different Rt_ValueClass implementations
+    // (Rt_StructType uses defIndex, Rt_RTypeBackedValueClass uses name.hashCode(), etc.)
+    // produce inconsistent hashes for the "same" struct type built via different routes,
+    // breaking HashMap/HashSet semantics.
+    override fun hashCode() = type.name.hashCode() * 31 + attributes.hashCode()
 
     override fun str(format: Rt_StrFormat): String {
         val names = effectiveNames

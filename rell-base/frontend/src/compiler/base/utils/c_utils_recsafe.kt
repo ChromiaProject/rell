@@ -57,7 +57,7 @@ interface C_RecursionSafeCalculator<K, A, R> {
 }
 
 class C_RecursionSafeResult<A, R> private constructor(val value: R?, val error: (A) -> C_Error) {
-    constructor(value: R): this(value, { throw IllegalStateException("No errors") })
+    constructor(value: R): this(value, { error("No errors") })
 
     companion object {
         fun <A, R> error(error: (A) -> C_Error): C_RecursionSafeResult<A, R> = C_RecursionSafeResult(null, error)

@@ -183,7 +183,7 @@ private object XtextNontermGen {
                 if (gram.zero) XtextExpr_Opt(one) else one
             }
         }
-        is GramExpr_Map -> throw IllegalStateException("Map not expected here")
+        is GramExpr_Map -> error("Map not expected here")
     }
 
     private fun convertToken(name: String, attr: XtextAttr?): XtextExpr {
@@ -275,7 +275,7 @@ private object GramExprGen {
                     GramExpr_Map(createGramExprSub(parser.innerParser), parser.transform as (Any) -> Any)
                 }
             }
-            else -> throw IllegalStateException(parser::class.java.simpleName)
+            else -> error(parser::class.java.simpleName)
         }
     }
 }

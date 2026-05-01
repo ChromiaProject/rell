@@ -13,13 +13,8 @@ abstract class GeneralDir {
 
     abstract fun readTextOpt(path: String): String?
 
-    fun readText(path: String): String {
-        val res = readTextOpt(path)
-        if (res == null) {
-            val fullPath = absolutePath(path)
-            throw IllegalArgumentException("File not found: $fullPath")
-        }
-        return res
+    fun readText(path: String): String = requireNotNull(readTextOpt(path)) {
+        "File not found: ${absolutePath(path)}"
     }
 }
 

@@ -100,7 +100,7 @@ internal fun buildBridgeGtvConversion(rType: R_Type, rrType: RR_Type): Rt_GtvCom
  * or composite recursion through R_Type (nullable/tuple/list/set/map).
  * The interpreter has its own full pure-RR equivalent.
  */
-internal fun createGtvConversion(rrType: RR_Type): Rt_GtvCompatibleValueClass<*>? = when (rrType) {
+fun createGtvConversion(rrType: RR_Type): Rt_GtvCompatibleValueClass<*>? = when (rrType) {
     is RR_Type.Primitive -> when (rrType.kind) {
         RR_PrimitiveKind.BOOLEAN -> Rt_BooleanValue
         RR_PrimitiveKind.INTEGER -> Rt_IntValue

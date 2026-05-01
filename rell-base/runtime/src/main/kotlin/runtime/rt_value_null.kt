@@ -28,7 +28,13 @@ object Rt_NullValue: Rt_ValueBase(), Rt_ValueClass<Rt_NullValue> {
     override val gtvConversion: Rt_GtvCompatibleValueClass<*> = object: Rt_UntypedGtvConversion(NULL_NAME) {
         override fun toGtv(value: Rt_Value, pretty: Boolean): Gtv = GtvNull
         override fun fromGtv(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
-            check(gtv.isNull())
+            if (!gtv.isNull()) {
+                throw GtvRtUtils.errGtv(
+                    ctx,
+                    "null:expected_null:${gtv.type}",
+                    "Expected null Gtv, got: ${gtv.type}",
+                )
+            }
             return Rt_NullValue
         }
     }

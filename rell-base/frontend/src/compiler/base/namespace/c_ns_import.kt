@@ -527,7 +527,7 @@ private class C_NsImp_Result<T> private constructor(
         val ideInfos: ImmList<C_IdeSymbolInfo>,
         val error: () -> C_Error
 ) {
-    constructor(value: T, ideInfos: ImmList<C_IdeSymbolInfo>): this(value, ideInfos, { throw IllegalStateException("error: no error") })
+    constructor(value: T, ideInfos: ImmList<C_IdeSymbolInfo>): this(value, ideInfos, { error("error: no error") })
     constructor(target: C_NsImp_QNameRes<T>): this(target.value, target.ideInfos)
 
     fun <R> castType(): C_NsImp_Result<R> {

@@ -9,14 +9,14 @@ import net.postchain.common.types.WrappedByteArray
 import net.postchain.rell.base.model.rr.RR_EnumDefinition
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
-import net.postchain.rell.toolbox.seeder.schema.Attribute
-import net.postchain.rell.toolbox.seeder.schema.Entity
-import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.config.Configuration
 import net.postchain.rell.toolbox.seeder.config.Distribution
 import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGenerator
 import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGeneratorFactory
+import net.postchain.rell.toolbox.seeder.schema.Attribute
+import net.postchain.rell.toolbox.seeder.schema.Entity
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import kotlin.random.Random
 
 class FieldValueGenerator(
@@ -42,31 +42,32 @@ class FieldValueGenerator(
                 entity,
                 attributeConfig,
                 attributeFakerGenerator.faker,
-                attributeFakerGenerator.uniqueProducer
+                attributeFakerGenerator.uniqueProducer,
             )
             when (attributeConfig) {
                 is AttributeConfig.PredefinedValues -> generateFromPredefinedValues(
                     attributeConfig,
                     currentEntityRecords.size,
-                    attribute
+                    attribute,
                 )
 
                 is AttributeConfig.Range -> generateFromRange(ctx)
                 is AttributeConfig.TextConfig -> FieldValue(
                     generatorFactory.callGenerator(
                         "random.text",
-                        ctx
-                    ) as String
+                        ctx,
+                    ) as String,
                 )
+
                 is AttributeConfig.ByteArrayConfig -> FieldValue(
-                    primitiveValueGenerator.generateForType(ctx) as WrappedByteArray
+                    primitiveValueGenerator.generateForType(ctx) as WrappedByteArray,
                 )
 
                 is AttributeConfig.DataPatternConfig -> FieldValue(
                     generatorFactory.callGenerator(
                         attributeConfig.pattern,
-                        ctx
-                    )
+                        ctx,
+                    ),
                 )
 
                 else -> generateDefaultValue(ctx, existingEntityData)
@@ -74,7 +75,7 @@ class FieldValueGenerator(
         } catch (e: RetryLimitException) {
             throw DataGenerationException(
                 "Could not generate unique values for '${attribute.name}' of entity '${entity.qualifiedName}'",
-                e
+                e,
             )
         } catch (e: StackOverflowError) {
             throw DataGenerationException(
@@ -98,18 +99,21 @@ class FieldValueGenerator(
 
         return when {
             type is RR_Type.Enum -> {
-                val enumDef = attribute.enumDefinition ?: error("Enum definition not found for type $type")
+                val enumDef = checkNotNull(attribute.enumDefinition) {
+                    "Enum definition not found for type $type"
+                }
                 FieldValue(getOrdinalValue(value as String, enumDef))
             }
+
             type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.DECIMAL -> FieldValue(value.toString())
             else -> FieldValue(value)
         }
     }
 
-    private fun getOrdinalValue(enumValue: String, enumDef: RR_EnumDefinition): Int {
-        return enumDef.attrs.find { it.name == enumValue }?.value
-            ?: throw IllegalArgumentException("Enum value '$enumValue' not found in enum type '${enumDef.base.appLevelName}'")
-    }
+    private fun getOrdinalValue(enumValue: String, enumDef: RR_EnumDefinition): Int =
+        requireNotNull(enumDef.attrs.find { it.name == enumValue }?.value) {
+            "Enum value '$enumValue' not found in enum type '${enumDef.base.appLevelName}'"
+        }
 
     private fun selectWeightedValue(config: AttributeConfig.PredefinedValues): Any {
         // This is a simplified implementation
@@ -150,12 +154,12 @@ class FieldValueGenerator(
         // Returning ordinal value instead of rowid, as rowid is generated at runtime
         val referenceValue = generatorFactory.callGenerator(
             "random.integer",
-            ctx.copy(attributeConfig = AttributeConfig.Range(0, records.size - 1))
+            ctx.copy(attributeConfig = AttributeConfig.Range(0, records.size - 1)),
         )
         return FieldValue(
             referenceValue as Long,
             isReference = true,
-            entityReferenceType = refEntityName
+            entityReferenceType = refEntityName,
         )
     }
 

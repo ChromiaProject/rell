@@ -137,8 +137,8 @@ private fun parseArgs(args: Array<String>): Args {
         i++
     }
     return Args(
-        input = input ?: error("Missing --input"),
-        output = output ?: error("Missing --output"),
+        input = checkNotNull(input) { "Missing --input" },
+        output = checkNotNull(output) { "Missing --output" },
     )
 }
 

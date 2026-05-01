@@ -55,7 +55,7 @@ object TestSnippetsRecorder {
         return if (caller != null) {
             "${caller.className}/${caller.methodName}.json"
         } else {
-            throw IllegalStateException("Unable to find caller of TestSnippetsRecorder.record()")
+            error("Unable to find caller of TestSnippetsRecorder.record()")
         }
     }
 

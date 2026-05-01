@@ -15,8 +15,7 @@ abstract class BaseExprTest: BaseResourcefulTest() {
         when {
             className.endsWith(ipTest) || className.endsWith("InterpretedTest") -> Mode.INTERPRETED
             className.endsWith(dbTest) -> Mode.DATABASE
-            else -> throw IllegalStateException(
-                "Cannot decide test mode from class name: $className; must end with $ipTest or $dbTest")
+            else -> error("Cannot decide test mode from class name: $className; must end with $ipTest or $dbTest")
         }
     }
 

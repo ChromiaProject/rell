@@ -38,17 +38,18 @@ import org.jetbrains.dokka.plugability.querySingle
 import org.jetbrains.dokka.utilities.DokkaLogger
 
 class RellSignatureProvider internal constructor(
-        ctcc: CommentsToContentConverter,
-        logger: DokkaLogger,
-        val rellConfig: RellDokkaPluginConfiguration
-) : SignatureProvider {
+    ctcc: CommentsToContentConverter,
+    logger: DokkaLogger,
+    val rellConfig: RellDokkaPluginConfiguration
+): SignatureProvider {
     private val contentBuilder = PageContentBuilder(ctcc, this, logger)
 
-    constructor(context: DokkaContext) : this(
-            context.plugin<DokkaBase>().querySingle { commentsToContentConverter },
-            context.logger,
-            configuration<RellDokkaPlugin, RellDokkaPluginConfiguration>(context)
-                    ?: throw IllegalArgumentException("No configuration")
+    constructor(context: DokkaContext): this(
+        context.plugin<DokkaBase>().querySingle { commentsToContentConverter },
+        context.logger,
+        requireNotNull(configuration<RellDokkaPlugin, RellDokkaPluginConfiguration>(context)) {
+            "No configuration"
+        },
     )
 
     override fun signature(documentable: Documentable): List<ContentNode> {
@@ -66,9 +67,11 @@ class RellSignatureProvider internal constructor(
         return a.sourceSets.map { sourceSet ->
             contentBuilder.contentFor(a, sourceSets = setOf(sourceSet)) {
                 a.underlyingType.entries.groupBy({ it.value }, { it.key }).map { (type, platforms) ->
-                    +contentBuilder.contentFor(a, ContentKind.Symbol,
-                            setOf(TextStyle.Monospace),
-                            sourceSets = platforms.toSet()) {
+                    +contentBuilder.contentFor(
+                        a, ContentKind.Symbol,
+                        setOf(TextStyle.Monospace),
+                        sourceSets = platforms.toSet(),
+                    ) {
                         keyword("alias ")
                         group(styles = mainStyles + a.stylesIfDeprecated(sourceSet)) {
                             signatureForProjection(a.type)
@@ -82,18 +85,20 @@ class RellSignatureProvider internal constructor(
     }
 
     private fun PageContentBuilder.DocumentableContentBuilder.signatureForTypealiasTarget(
-            typeAlias: DTypeAlias, bound: Bound
+        typeAlias: DTypeAlias, bound: Bound
     ) {
         signatureForProjection(
-                p = bound,
-                showFullyQualifiedName = bound.driOrNull?.classNames == typeAlias.dri.classNames
+            p = bound,
+            showFullyQualifiedName = bound.driOrNull?.classNames == typeAlias.dri.classNames,
         )
     }
 
     private fun classLikeSignature(c: DClasslike) = c.sourceSets.map { sourceSet ->
-        contentBuilder.contentFor(c, ContentKind.Symbol,
-                setOf(TextStyle.Monospace),
-                sourceSets = setOf(sourceSet)) {
+        contentBuilder.contentFor(
+            c, ContentKind.Symbol,
+            setOf(TextStyle.Monospace),
+            sourceSets = setOf(sourceSet),
+        ) {
             if (c.isHidden()) keyword("hidden ")
             if (c is WithAbstraction) {
                 modifier(c, sourceSet)
@@ -113,9 +118,11 @@ class RellSignatureProvider internal constructor(
 
             link(c.name!!, c.dri, styles = mainStyles) // + deprecationStyles)
             if (c is WithGenerics) {
-                list(c.generics, prefix = "<", suffix = ">",
-                        separatorStyles = mainStyles + TokenStyle.Punctuation,
-                        surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
+                list(
+                    c.generics, prefix = "<", suffix = ">",
+                    separatorStyles = mainStyles + TokenStyle.Punctuation,
+                    surroundingCharactersStyle = mainStyles + TokenStyle.Operator,
+                ) {
                     //annotationsInline(it)
                     +buildSignature(it)
                 }
@@ -134,8 +141,8 @@ class RellSignatureProvider internal constructor(
                     // no parameters, it should result in `class Example`
                     if (pConstructor.parameters.isNotEmpty()) {
                         val parameterPropertiesByName = c.properties
-                                //.filter { it.isAlsoParameter(sourceSet) }
-                                .associateBy { it.name }
+                            //.filter { it.isAlsoParameter(sourceSet) }
+                            .associateBy { it.name }
 
                         punctuation("(")
                         parametersBlock(pConstructor) { param ->
@@ -155,9 +162,11 @@ class RellSignatureProvider internal constructor(
             c.supertypes.filter { it.key == sourceSet }.map { (s, typeConstructors) ->
                 list(typeConstructors, prefix = " : ", sourceSets = setOf(s)) { (constructor, _) ->
                     link(constructor.dri.sureClassNames, constructor.dri, sourceSets = setOf(s))
-                    list(constructor.projections, prefix = "<", suffix = "> ",
-                            separatorStyles = mainStyles + TokenStyle.Punctuation,
-                            surroundingCharactersStyle = mainStyles + TokenStyle.Operator) { p ->
+                    list(
+                        constructor.projections, prefix = "<", suffix = "> ",
+                        separatorStyles = mainStyles + TokenStyle.Punctuation,
+                        surroundingCharactersStyle = mainStyles + TokenStyle.Operator,
+                    ) { p ->
                         signatureForProjection(p)
                     }
                 }
@@ -166,9 +175,9 @@ class RellSignatureProvider internal constructor(
     }
 
     private fun <T> PageContentBuilder.DocumentableContentBuilder.modifier(
-            documentable: T,
-            sourceSet: DokkaConfiguration.DokkaSourceSet
-    ) where T : Documentable, T : WithAbstraction {
+        documentable: T,
+        sourceSet: DokkaConfiguration.DokkaSourceSet
+    ) where T: Documentable, T: WithAbstraction {
         val modifier = documentable.modifier[sourceSet]?.takeIf { it.name.isNotEmpty() } ?: return
         keyword("${modifier.name} ")
     }
@@ -194,7 +203,12 @@ class RellSignatureProvider internal constructor(
     private fun propertySignature(d: DProperty): List<ContentNode> {
         val deprecationStyles = if (d.isDeprecated()) setOf(TextStyle.Strikethrough) else setOf()
         return d.sourceSets.map { sourceSet ->
-            contentBuilder.contentFor(d, ContentKind.Symbol, setOf(TextStyle.Monospace), sourceSets = setOf(sourceSet)) {
+            contentBuilder.contentFor(
+                d,
+                ContentKind.Symbol,
+                setOf(TextStyle.Monospace),
+                sourceSets = setOf(sourceSet),
+            ) {
                 if (d.isMutable()) keyword("var ") else keyword("val ")
                 link(d.name, d.dri, styles = mainStyles + deprecationStyles)
                 operator(": ")
@@ -210,7 +224,12 @@ class RellSignatureProvider internal constructor(
     private fun functionSignature(d: DFunction): List<ContentNode> {
         val deprecationStyles = if (d.isDeprecated()) setOf(TextStyle.Strikethrough) else setOf()
         return d.sourceSets.map { sourceSet ->
-            contentBuilder.contentFor(d, ContentKind.Symbol, setOf(TextStyle.Monospace), sourceSets = setOf(sourceSet)) {
+            contentBuilder.contentFor(
+                d,
+                ContentKind.Symbol,
+                setOf(TextStyle.Monospace),
+                sourceSets = setOf(sourceSet),
+            ) {
                 if (d.dri.isAlias()) punctuation("(alias) ")
                 if (d.isPure()) keyword("pure ")
                 if (d.isStatic()) keyword("static ")
@@ -234,9 +253,11 @@ class RellSignatureProvider internal constructor(
                     else -> keyword("function ")
                 }
 
-                list(d.generics, prefix = "<", suffix = "> ",
-                        separatorStyles = mainStyles + TokenStyle.Punctuation,
-                        surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
+                list(
+                    d.generics, prefix = "<", suffix = "> ",
+                    separatorStyles = mainStyles + TokenStyle.Punctuation,
+                    surroundingCharactersStyle = mainStyles + TokenStyle.Operator,
+                ) {
                     +buildSignature(it)
                 }
 
@@ -268,7 +289,7 @@ class RellSignatureProvider internal constructor(
     }
 
     private fun PageContentBuilder.DocumentableContentBuilder.signatureForProjection(
-            p: Projection, showFullyQualifiedName: Boolean = false
+        p: Projection, showFullyQualifiedName: Boolean = false
     ) {
         when (p) {
             is TypeParameter -> {
@@ -287,11 +308,12 @@ class RellSignatureProvider internal constructor(
                     }
                     parameterType(p)
                     list(
-                            p.projections,
-                            prefix = if (!p.isTuple()) "<" else "(",
-                            suffix = if (!p.isTuple()) ">" else if (p.projections.size <= 1) ",)" else ")",
-                            separatorStyles = mainStyles + TokenStyle.Punctuation,
-                            surroundingCharactersStyle = mainStyles + TokenStyle.Operator)
+                        p.projections,
+                        prefix = if (!p.isTuple()) "<" else "(",
+                        suffix = if (!p.isTuple()) ">" else if (p.projections.size <= 1) ",)" else ")",
+                        separatorStyles = mainStyles + TokenStyle.Punctuation,
+                        surroundingCharactersStyle = mainStyles + TokenStyle.Operator,
+                    )
                     {
                         signatureForProjection(it, showFullyQualifiedName)
                     }
@@ -301,8 +323,13 @@ class RellSignatureProvider internal constructor(
             is FunctionalTypeConstructor -> {
                 group(styles = emptySet()) {
                     if (p.projections.size == 1) punctuation("()")
-                    list(p.projections.dropLast(1), prefix = "(", suffix = ")", separatorStyles = mainStyles + TokenStyle.Punctuation,
-                            surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
+                    list(
+                        p.projections.dropLast(1),
+                        prefix = "(",
+                        suffix = ")",
+                        separatorStyles = mainStyles + TokenStyle.Punctuation,
+                        surroundingCharactersStyle = mainStyles + TokenStyle.Operator,
+                    ) {
                         signatureForProjection(it, showFullyQualifiedName)
                     }
                     operator(" -> ")
@@ -325,10 +352,11 @@ class RellSignatureProvider internal constructor(
                 text(p.name)
                 p.extra[GenericUnresolvedBoundExtra]?.let { element ->
                     list(
-                            element.bounds.toList(),
-                            prefix = "<", suffix = ">",
-                            separatorStyles = mainStyles + TokenStyle.Punctuation,
-                            surroundingCharactersStyle = mainStyles + TokenStyle.Operator)
+                        element.bounds.toList(),
+                        prefix = "<", suffix = ">",
+                        separatorStyles = mainStyles + TokenStyle.Punctuation,
+                        surroundingCharactersStyle = mainStyles + TokenStyle.Operator,
+                    )
                     {
                         signatureForProjection(it, showFullyQualifiedName)
                     }
@@ -336,8 +364,10 @@ class RellSignatureProvider internal constructor(
                 }
                 p.extra[FunctionUnresolvedBoundExtra]?.let { (params, result) ->
                     group(styles = emptySet()) {
-                        list(params, prefix = "(", suffix = ")", separatorStyles = mainStyles + TokenStyle.Punctuation,
-                                surroundingCharactersStyle = mainStyles + TokenStyle.Operator) {
+                        list(
+                            params, prefix = "(", suffix = ")", separatorStyles = mainStyles + TokenStyle.Punctuation,
+                            surroundingCharactersStyle = mainStyles + TokenStyle.Operator,
+                        ) {
                             signatureForProjection(it, showFullyQualifiedName)
                         }
                         operator(" -> ")
@@ -369,9 +399,9 @@ class RellSignatureProvider internal constructor(
         link(linkText, p.dri)
     }
 
-    private fun <T : Documentable> PageContentBuilder.DocumentableContentBuilder.defaultValueAssign(
-            d: WithExtraProperties<T>,
-            sourceSet: DokkaConfiguration.DokkaSourceSet
+    private fun <T: Documentable> PageContentBuilder.DocumentableContentBuilder.defaultValueAssign(
+        d: WithExtraProperties<T>,
+        sourceSet: DokkaConfiguration.DokkaSourceSet
     ) {
         // a default value of parameter can be got from expect source set
         // but expect properties cannot have a default value
@@ -390,6 +420,6 @@ class RellSignatureProvider internal constructor(
         is BooleanConstant -> booleanLiteral(expr.value)
         is StringConstant -> stringLiteral("\"${expr.value}\"")
         is ComplexExpression -> text(expr.value)
-        else ->  Unit
+        else -> Unit
     }
 }

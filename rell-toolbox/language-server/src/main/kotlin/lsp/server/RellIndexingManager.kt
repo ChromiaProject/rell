@@ -38,7 +38,7 @@ class RellIndexingManager(
 
     private val workspaceFolderUris
         get() = workspaceFolders.map {
-            parseFileUri(it.uri) ?: throw IllegalArgumentException("Invalid workspace folder ${it.uri}")
+            requireNotNull(parseFileUri(it.uri)) { "Invalid workspace folder ${it.uri}" }
         }
 
     fun initialize(workspaceFolders: List<WorkspaceFolder>) {

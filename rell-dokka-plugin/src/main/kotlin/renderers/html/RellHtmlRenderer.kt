@@ -71,12 +71,10 @@ class RellHtmlRenderer(
      * @see TabbedContentType
      * @see ContentStyle.TabbedContent
      */
-    private fun createTabs(pageContext: ContentPage): List<ContentTab> {
-        return when (pageContext) {
-            is ClasslikePage -> createTabsForClasslikes(pageContext)
-            is PackagePage -> createTabsForPackage(pageContext)
-            else -> throw IllegalArgumentException("Page ${pageContext.name} cannot have tabs")
-        }
+    private fun createTabs(pageContext: ContentPage): List<ContentTab> = when (pageContext) {
+        is ClasslikePage -> createTabsForClasslikes(pageContext)
+        is PackagePage -> createTabsForPackage(pageContext)
+        else -> throw IllegalArgumentException("Page ${pageContext.name} cannot have tabs")
     }
 
     private fun createTabsForClasslikes(page: ClasslikePage): List<ContentTab> {
@@ -1031,7 +1029,7 @@ private fun TabbedContentType.toHtmlAttribute(): String =
                     RellTabbedContentType.OPERATION -> "OPERATION"
                 }
 
-            else -> throw IllegalStateException("Unknown TabbedContentType $this")
+            else -> error("Unknown TabbedContentType $this")
         }
 
 /**

@@ -208,7 +208,7 @@ internal class MTypeParamsInfererTest: BaseMTypeTest() {
             "<" -> M_TypeMatchRelation.SUB
             ">" -> M_TypeMatchRelation.SUPER
             "~" -> M_TypeMatchRelation.CONVERT
-            else -> throw IllegalStateException(ref)
+            else -> error(ref)
         }
         return Triple(param, mType, rel)
     }

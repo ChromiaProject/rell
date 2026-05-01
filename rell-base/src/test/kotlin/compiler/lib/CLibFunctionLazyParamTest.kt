@@ -166,6 +166,13 @@ class CLibFunctionLazyParamTest: BaseCLibTest() {
     }
 
     private object IfIntDefs {
+        // Note: this file used to also exercise lazy-parameter dispatch on a user-defined library
+        // type (`test_type`) via a method-style call. That fixture required extending `Rt_Value`
+        // directly; after cb938c6a9 sealed the value hierarchy and split it across modules,
+        // restoring it would mean placing test-only `Rt_ValueClass` fixture code in the runtime
+        // production tree. Lazy-param dispatch on user-defined types is now exercised indirectly
+        // through `Lib_Test_Type_*` definitions; the cases below cover the free-function and
+        // built-in-extension paths.
         val MODULE: C_LibModule = C_LibModule.make("test", Lib_Rell.MODULE, requireSince = false) {
             extension("boolean_ext", type = "boolean") {
                 function("if_int", result = "integer") {
