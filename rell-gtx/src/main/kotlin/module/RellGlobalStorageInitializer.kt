@@ -24,10 +24,12 @@ import java.sql.SQLException
  *
  * **Concurrent startup safety.** A node-level `SELECT routine_name` followed by `CREATE FUNCTION` is a
  * TOCTOU window: two JVMs (multi-replica deployments, parallel testcontainers, k8s rolling restarts)
- * may both observe a missing function, both attempt to create it, and one will fail with PostgreSQL
- * SQLSTATE `42723` (duplicate_function). Each `CREATE` is therefore wrapped in a savepoint that
- * tolerates `42723` and rolls back to the savepoint, leaving the rest of the batch and the outer
- * transaction intact. Any other SQL error propagates.
+ * may both observe a missing function, both attempt to create it, and one loses the race. PostgreSQL
+ * surfaces this as either SQLSTATE `42723` (duplicate_function — the post-parse name check) or `23505`
+ * (unique_violation — the catalog index `pg_proc_proname_args_nsp_index` rejecting the duplicate row);
+ * which one fires depends on which backend reaches the `pg_proc` insert first. Each `CREATE` is
+ * therefore wrapped in a savepoint that tolerates both states and rolls back to the savepoint, leaving
+ * the rest of the batch and the outer transaction intact. Any other SQL error propagates.
  */
 class RellGlobalStorageInitializer : GlobalStorageInitializer {
 
@@ -51,9 +53,10 @@ class RellGlobalStorageInitializer : GlobalStorageInitializer {
     }
 
     /**
-     * Runs [sql] inside a savepoint. If the statement fails with SQLSTATE `42723` (the function was
-     * created by a racing process between our discovery query and this CREATE), rolls back to the
-     * savepoint and continues. Any other SQL error propagates.
+     * Runs [sql] inside a savepoint. If the statement fails because a racing process created the same
+     * function between our discovery query and this CREATE — surfaced as SQLSTATE `42723`
+     * (duplicate_function) or `23505` on `pg_proc_proname_args_nsp_index` (the catalog unique index) —
+     * rolls back to the savepoint and continues. Any other SQL error propagates.
      */
     private fun createFunctionTolerantOfDuplicate(connection: Connection, name: String, sql: String) {
         val savepoint = connection.setSavepoint("rell_create_fn_${name}")
@@ -61,7 +64,7 @@ class RellGlobalStorageInitializer : GlobalStorageInitializer {
             connection.createStatement().use { it.execute(sql) }
             connection.releaseSavepoint(savepoint)
         } catch (e: SQLException) {
-            if (e.sqlState == DUPLICATE_FUNCTION_SQLSTATE) {
+            if (isDuplicateFunctionRace(e)) {
                 connection.rollback(savepoint)
                 connection.releaseSavepoint(savepoint)
             } else {
@@ -69,6 +72,12 @@ class RellGlobalStorageInitializer : GlobalStorageInitializer {
                 throw e
             }
         }
+    }
+
+    private fun isDuplicateFunctionRace(e: SQLException): Boolean = when (e.sqlState) {
+        DUPLICATE_FUNCTION_SQLSTATE -> true
+        UNIQUE_VIOLATION_SQLSTATE -> e.message?.contains(PG_PROC_UNIQUE_INDEX) == true
+        else -> false
     }
 
     private fun getExistingFunctions(connection: Connection): Set<String> {
@@ -86,7 +95,12 @@ class RellGlobalStorageInitializer : GlobalStorageInitializer {
     }
 
     companion object {
-        // PostgreSQL: function with that signature already exists. See https://www.postgresql.org/docs/current/errcodes-appendix.html.
+        // PostgreSQL error codes. See https://www.postgresql.org/docs/current/errcodes-appendix.html.
+        // 42723: function with that signature already exists (post-parse name check).
+        // 23505: unique_violation; raised when two backends race the pg_proc catalog insert before
+        // either reaches the duplicate-function check, identified by the constraint name below.
         private const val DUPLICATE_FUNCTION_SQLSTATE = "42723"
+        private const val UNIQUE_VIOLATION_SQLSTATE = "23505"
+        private const val PG_PROC_UNIQUE_INDEX = "pg_proc_proname_args_nsp_index"
     }
 }
