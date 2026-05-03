@@ -49,15 +49,15 @@ class DeserializerSafetyBoundaryTest: BaseSerializerTest() {
 
     @Test
     fun deeplyNestedExpressionExceedsRecursionDepth() {
-        // Build a deeply nested expression that round-trips through deserializer recursion guards
-        // (one level of `withDeserializerDepth` per nested expression / type). The threshold is 500;
-        // we go well past it to be robust against any single-frame guards that may consume the budget.
+        // Build a left-associative `1+1+...+1` chain. The grammar parses left-associative `+`
+        // iteratively (no parser stack recursion), but the serialized AST is a left-leaning tree:
+        // deserializing the outer expression recurses into its left operand, which recurses into
+        // its left operand, and so on, advancing `withDeserializerDepth` once per `+`. The
+        // threshold is 500; we go well past it to be robust against any single-frame guards
+        // that may consume the budget. Nested parens were considered but trigger combinator
+        // backtracking in the better-parse grammar that is too expensive at this depth.
         val depth = DeserLimits.MAX_RECURSION_DEPTH + 200
-        val expr = buildString {
-            repeat(depth) { append("(") }
-            append("1")
-            repeat(depth) { append(")") }
-        }
+        val expr = (0..depth).joinToString(separator = "+") { "1" }
         val source = "function f(): integer = $expr;"
 
         val (rrApp, _) = compileAppWithSysFns(source)
