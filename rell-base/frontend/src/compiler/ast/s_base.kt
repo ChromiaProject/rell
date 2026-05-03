@@ -15,6 +15,7 @@ import net.postchain.rell.base.compiler.base.module.S_FileContext
 import net.postchain.rell.base.compiler.base.namespace.C_NsAsm_ComponentAssembler
 import net.postchain.rell.base.compiler.base.namespace.C_UserNsProtoBuilder
 import net.postchain.rell.base.compiler.base.utils.C_RNamePath
+import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.MountName
@@ -77,6 +78,10 @@ class S_RellFile(
     }
 
     internal fun ideModuleInfo(path: C_SourcePath): IdeModuleInfo? {
+        return ideModuleInfo(path, sourceDir = null)
+    }
+
+    internal fun ideModuleInfo(path: C_SourcePath, sourceDir: C_SourceDir?): IdeModuleInfo? {
         val (moduleName, directory) = C_ModuleUtils.getModuleInfo(path, this)
         moduleName ?: return null
 
@@ -85,9 +90,34 @@ class S_RellFile(
             def.ideGetImportedModules(moduleName, imports)
         }
 
-        val test = header != null && header.ideIsTestFile()
+        val test = isIdeTestModule(path, sourceDir)
 
         return IdeModuleInfo(moduleName, directory, app = !test, test = test, imports = imports.toImmSet())
+    }
+
+    private fun isIdeTestModule(path: C_SourcePath, sourceDir: C_SourceDir?): Boolean {
+        if (header != null) {
+            return header.ideIsTestFile()
+        }
+
+        // Folder-module member without its own header: consult the sibling module.rell.
+        sourceDir ?: return false
+
+        val parts = path.parts
+        if (parts.isEmpty() || parts.last() == C_ModuleUtils.MODULE_FILE) {
+            return false
+        }
+
+        val modulePath = path.parent().add(C_ModuleUtils.MODULE_FILE)
+        val moduleFile = sourceDir.file(modulePath) ?: return false
+
+        val moduleAst = try {
+            moduleFile.readAst()
+        } catch (e: Exception) {
+            return false
+        }
+
+        return moduleAst.header?.ideIsTestFile() == true
     }
 
     internal fun ideBuildOutlineTree(b: IdeOutlineTreeBuilder) {

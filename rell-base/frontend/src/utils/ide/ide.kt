@@ -75,6 +75,14 @@ object IdeApi {
         return ast.ideModuleInfo(path)
     }
 
+    /**
+     * Like [getModuleInfo] but consults [sourceDir] so that members of a folder module (files without their own
+     * `module;` header) inherit the `test` flag from the sibling `module.rell`.
+     */
+    @JvmStatic fun getModuleInfo(sourceDir: C_SourceDir, path: C_SourcePath, ast: S_RellFile): IdeModuleInfo? {
+        return ast.ideModuleInfo(path, sourceDir)
+    }
+
     @JvmStatic fun buildOutlineTree(b: IdeOutlineTreeBuilder, ast: S_RellFile) {
         ast.ideBuildOutlineTree(b)
     }

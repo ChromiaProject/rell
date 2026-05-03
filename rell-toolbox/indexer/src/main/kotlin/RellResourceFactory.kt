@@ -83,7 +83,7 @@ class RellResourceFactory(
 
         return Resource(
             parseResult.parseTree,
-            IdeApi.getModuleInfo(rellCompilerSourcePath, ast.first),
+            IdeApi.getModuleInfo(IdeDirApi.mapDir(fileMap), rellCompilerSourcePath, ast.first),
             fileUri,
             workspaceUri,
             ast.first,

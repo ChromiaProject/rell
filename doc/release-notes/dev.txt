@@ -95,3 +95,25 @@ startup could deadlock on shared catalog locks (POS-2115).
 
 With this change, global system functions are created once per storage during global initialization, and per-chain
 `initializeDB` no longer touches them. Existing deployments are migrated transparently; no user action is required.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+8. API: IdeApi.getModuleInfo overload that recognises folder-based test modules
+
+`IdeApi.getModuleInfo(C_SourcePath, S_RellFile)` could only inspect the file's own header to decide whether the
+file belonged to a test module. For a folder module:
+
+    tests/module.rell      // @test module;
+    tests/test_one.rell    // function test_foo() {}
+    tests/test_two.rell    // function test_bar() {}
+
+only `module.rell` carries the `@test module;` header, so the IDE plugin was unable to detect that
+`test_one.rell` and `test_two.rell` are part of a test module and did not show the run-test gutter icon for
+their test functions (RELL-252).
+
+A new overload that takes the source directory as well is now available:
+
+    IdeApi.getModuleInfo(sourceDir: C_SourceDir, path: C_SourcePath, ast: S_RellFile): IdeModuleInfo?
+
+When the file has no module header, the new overload looks at the sibling `module.rell` and inherits the `test`
+flag from it. The original two-argument overload is unchanged for backwards compatibility — IDE integrations
+that need correct test detection on folder-module members should switch to the new overload.
