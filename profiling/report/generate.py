@@ -39,13 +39,20 @@ COMPONENT_RULES = [
     ("Postchain",  ["net.postchain.", "com.chromia."],                    []),
 ]
 
+PG_RELL = "PostgreSQL (Rell)"
+PG_POSTCHAIN = "PostgreSQL (Postchain)"
+
 COMPONENT_COLORS = {
-    "Rell":       "#1D4ED8",  # deep indigo
-    "Postchain":  "#166534",  # forest
-    "PostgreSQL": "#B45309",  # amber
-    "JVM":        "#44403C",  # charcoal
-    "Idle":       "#A8A9AE",  # neutral grey — parked threads
+    "Rell":        "#1D4ED8",  # deep indigo
+    "Postchain":   "#166534",  # forest
+    PG_RELL:       "#B45309",  # amber — SQL emitted by Rell-generated queries
+    PG_POSTCHAIN:  "#D97706",  # lighter amber — SQL from Postchain block storage
+    "JVM":         "#44403C",  # charcoal
+    "Idle":        "#A8A9AE",  # neutral grey — parked threads
 }
+
+# Display order used by donut, breakdown table, hot-method chip, and JS.
+COMPONENT_ORDER = ["Rell", "Postchain", PG_RELL, PG_POSTCHAIN, "JVM", "Idle"]
 
 # Components hidden on first paint. The user re-enables by clicking the
 # row or swatch. These dominate idle single-node captures and would
@@ -165,6 +172,10 @@ def classify_frame(frame: str) -> str:
 def classify_stack(stack: str) -> str:
     """Classify by scanning all frames for component membership.
     Priority: PostgreSQL > Rell > Postchain > Idle > JVM.
+    PostgreSQL is sub-classified by caller: a SQL stack that contains
+    a Rell frame above the SQL call is attributed to "PostgreSQL (Rell)";
+    SQL stacks without a Rell frame go to "PostgreSQL (Postchain)" —
+    that's block-storage / consensus SQL, not user query work.
     Idle: no application frames AND leaf is a park/wait primitive.
     JVM: no application frames and leaf isn't idle (GC/JIT/classloading)."""
     frames = stack.split(";")
@@ -172,7 +183,7 @@ def classify_stack(stack: str) -> str:
     for frame in frames:
         seen.add(classify_frame(frame))
     if "PostgreSQL" in seen:
-        return "PostgreSQL"
+        return PG_RELL if "Rell" in seen else PG_POSTCHAIN
     if "Rell" in seen:
         return "Rell"
     if "Postchain" in seen:
@@ -182,6 +193,14 @@ def classify_stack(stack: str) -> str:
     if frames and is_idle_frame(frames[-1]):
         return "Idle"
     return "JVM"
+
+
+def _pg_bucket_for_stack(frames: list[str]) -> str:
+    """Which PG sub-bucket a SQL frame in this stack belongs to."""
+    for f in frames:
+        if classify_frame(f) == "Rell":
+            return PG_RELL
+    return PG_POSTCHAIN
 
 
 # ── Parsing ──────────────────────────────────────────────────────────────
@@ -280,13 +299,16 @@ def compute_component_hotspots(stacks,
     per_comp: dict[str, dict[str, int]] = {
         "Rell": defaultdict(int),
         "Postchain": defaultdict(int),
-        "PostgreSQL": defaultdict(int),
+        PG_RELL: defaultdict(int),
+        PG_POSTCHAIN: defaultdict(int),
         "JVM": defaultdict(int),
         "Idle": defaultdict(int),
     }
     for stack, count in stacks:
+        frames = stack.split(";")
+        pg_bucket = _pg_bucket_for_stack(frames)
         seen = set()
-        for frame in stack.split(";"):
+        for frame in frames:
             if frame in seen:
                 continue
             seen.add(frame)
@@ -295,7 +317,10 @@ def compute_component_hotspots(stacks,
             if is_idle_frame(frame):
                 per_comp["Idle"][frame] += count
             else:
-                per_comp[classify_frame(frame)][frame] += count
+                comp = classify_frame(frame)
+                if comp == "PostgreSQL":
+                    comp = pg_bucket
+                per_comp[comp][frame] += count
     return {
         comp: sorted(methods.items(), key=lambda x: -x[1])[:top_n]
         for comp, methods in per_comp.items()
@@ -304,32 +329,47 @@ def compute_component_hotspots(stacks,
 
 def compute_hotspots(stacks, top_n: int = 30) -> list[dict]:
     """Inclusive (Samples) and self (Own Samples) counts per method,
-    sorted by inclusive. Recursive frames are deduplicated per stack."""
+    sorted by inclusive. Recursive frames are deduplicated per stack.
+    Methods are keyed by (frame, component) so SQL frames called from
+    both Rell and Postchain contexts surface as separate rows."""
     if stacks and len(stacks[0]) == 3:
         stacks = _drop_thread(stacks)
-    inclusive = defaultdict(int)
-    own = defaultdict(int)
+    inclusive: dict[tuple[str, str], int] = defaultdict(int)
+    own: dict[tuple[str, str], int] = defaultdict(int)
     grand_total = 0
     for stack, count in stacks:
         grand_total += count
         frames = stack.split(";")
         if not frames:
             continue
-        for fr in set(frames):
-            inclusive[fr] += count
-        own[frames[-1]] += count
+        pg_bucket = _pg_bucket_for_stack(frames)
+        seen = set()
+        for fr in frames:
+            comp = classify_frame(fr)
+            if comp == "PostgreSQL":
+                comp = pg_bucket
+            key = (fr, comp)
+            if key in seen:
+                continue
+            seen.add(key)
+            inclusive[key] += count
+        leaf = frames[-1]
+        leaf_comp = classify_frame(leaf)
+        if leaf_comp == "PostgreSQL":
+            leaf_comp = pg_bucket
+        own[(leaf, leaf_comp)] += count
     grand_total = grand_total or 1
     sorted_methods = sorted(inclusive.items(), key=lambda x: -x[1])[:top_n]
     return [
         {
             "method": m,
             "samples": s,
-            "own_samples": own.get(m, 0),
+            "own_samples": own.get((m, comp), 0),
             "pct": round(100.0 * s / grand_total, 2),
-            "own_pct": round(100.0 * own.get(m, 0) / grand_total, 2),
-            "component": classify_frame(m),
+            "own_pct": round(100.0 * own.get((m, comp), 0) / grand_total, 2),
+            "component": comp,
         }
-        for m, s in sorted_methods
+        for (m, comp), s in sorted_methods
     ]
 
 
@@ -342,19 +382,32 @@ def compute_hotspots_filterable(stacks, max_methods: int = 300) -> list[dict]:
     if stacks and len(stacks[0]) == 3:
         stacks = _drop_thread(stacks)
 
-    inclusive: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
-    own: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
-    totals: dict[str, int] = defaultdict(int)
+    inclusive: dict[tuple[str, str], dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    own: dict[tuple[str, str], dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    totals: dict[tuple[str, str], int] = defaultdict(int)
 
     for stack, count in stacks:
         t_cat = classify_thread(stack)
         frames = stack.split(";")
         if not frames:
             continue
-        for fr in set(frames):
-            inclusive[fr][t_cat] += count
-            totals[fr] += count
-        own[frames[-1]][t_cat] += count
+        pg_bucket = _pg_bucket_for_stack(frames)
+        seen = set()
+        for fr in frames:
+            comp = classify_frame(fr)
+            if comp == "PostgreSQL":
+                comp = pg_bucket
+            key = (fr, comp)
+            if key in seen:
+                continue
+            seen.add(key)
+            inclusive[key][t_cat] += count
+            totals[key] += count
+        leaf = frames[-1]
+        leaf_comp = classify_frame(leaf)
+        if leaf_comp == "PostgreSQL":
+            leaf_comp = pg_bucket
+        own[(leaf, leaf_comp)][t_cat] += count
 
     # Rank by total inclusive and keep the top `max_methods` so the JS
     # can filter within a reasonably bounded set.
@@ -362,11 +415,11 @@ def compute_hotspots_filterable(stacks, max_methods: int = 300) -> list[dict]:
     return [
         {
             "m": m,
-            "c": classify_frame(m),
-            "incl": dict(inclusive[m]),
-            "own":  dict(own[m]),
+            "c": comp,
+            "incl": dict(inclusive[(m, comp)]),
+            "own":  dict(own[(m, comp)]),
         }
-        for m, _total in ranked
+        for (m, comp), _total in ranked
     ]
 
 
@@ -400,7 +453,7 @@ def svg_donut(breakdown: dict[str, int], size: int = 320,
                 f"L {x1i:.2f} {y1i:.2f} "
                 f"A {r_inner:.2f} {r_inner:.2f} 0 {large} 0 {x2i:.2f} {y2i:.2f} Z")
 
-    for component in ["Rell", "Postchain", "PostgreSQL", "JVM", "Idle"]:
+    for component in COMPONENT_ORDER:
         if component in disabled:
             continue
         count = breakdown.get(component, 0)
@@ -600,6 +653,7 @@ def generate_html(run_dir: str) -> str:
     date_display = ts.replace("T", " · ").rstrip("Z") if ts else ""
 
     colors_json = json.dumps(COMPONENT_COLORS)
+    component_order_json = json.dumps(COMPONENT_ORDER)
     default_disabled_components_json = json.dumps(sorted(DEFAULT_DISABLED_COMPONENTS))
     default_disabled_threads_json = json.dumps(sorted(DEFAULT_DISABLED_THREADS))
     grid_json = json.dumps(grid, separators=(",", ":"))
@@ -761,7 +815,7 @@ def generate_html(run_dir: str) -> str:
   const HOTSPOTS = {hotspots_full_json};
   const HOTSPOTS_VISIBLE = 15;
   const COLORS = {colors_json};
-  const ORDER = ["Rell", "Postchain", "PostgreSQL", "JVM", "Idle"];
+  const ORDER = {component_order_json};
   const disabledComp = new Set({default_disabled_components_json});
   const disabledThread = new Set({default_disabled_threads_json});
 
@@ -1023,7 +1077,7 @@ def _breakdown_rows(breakdown: dict, total: int,
     del total  # recomputed below from enabled components only
     active_total = sum(v for c, v in breakdown.items() if c not in disabled) or 1
     rows = []
-    for comp in ["Rell", "Postchain", "PostgreSQL", "JVM", "Idle"]:
+    for comp in COMPONENT_ORDER:
         s = breakdown.get(comp, 0)
         off = comp in disabled
         pct = 0.0 if off else 100.0 * s / active_total
@@ -1079,7 +1133,7 @@ def _thread_filter_html(summary: list[dict], disabled: frozenset[str]) -> str:
 
 def _component_filter_html(breakdown: dict, disabled: frozenset[str]) -> str:
     parts = []
-    for comp in ["Rell", "Postchain", "PostgreSQL", "JVM", "Idle"]:
+    for comp in COMPONENT_ORDER:
         samples = breakdown.get(comp, 0)
         if samples == 0:
             continue

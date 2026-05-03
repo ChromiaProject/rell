@@ -49,21 +49,16 @@ class DeserializerSafetyBoundaryTest: BaseSerializerTest() {
 
     @Test
     fun deeplyNestedExpressionExceedsRecursionDepth() {
-        // Build a left-associative `1+1+...+1` chain. The grammar parses left-associative `+`
-        // iteratively (no parser stack recursion), but the serialized AST is a left-leaning tree:
-        // deserializing the outer expression recurses into its left operand, which recurses into
-        // its left operand, and so on, advancing `withDeserializerDepth` once per `+`. The
-        // threshold is 500; we go well past it to be robust against any single-frame guards
-        // that may consume the budget. Nested parens were considered but trigger combinator
-        // backtracking in the better-parse grammar that is too expensive at this depth.
-        val depth = DeserLimits.MAX_RECURSION_DEPTH + 200
-        val expr = (0..depth).joinToString(separator = "+") { "1" }
-        val source = "function f(): integer = $expr;"
+        // White-box: drive `withDeserializerDepth` past its threshold directly.
+        // The fuzz suite covers wire-level paths; here we just pin the named guard's
+        // rejection message. Going through compile + serialize would force a 500-deep
+        // AST through the compiler, which overflows CI's default 512 KiB thread stack
+        // before ever reaching the deserializer.
+        fun recurse(remaining: Int): Unit = withDeserializerDepth {
+            if (remaining > 0) recurse(remaining - 1)
+        }
 
-        val (rrApp, _) = compileAppWithSysFns(source)
-        val bytes = serializeRellApp(rrApp)
-
-        val ex = assertFails { deserializeRellApp(bytes) }
+        val ex = assertFails { recurse(DeserLimits.MAX_RECURSION_DEPTH + 1) }
         assertTrue(ex is RRDeserializationException, "Expected RRDeserializationException, got ${ex::class}")
         assertContains(ex.message ?: "", "recursion depth")
     }

@@ -33,6 +33,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import NoReturn
 from urllib.error import URLError
 from urllib.request import urlopen
 
@@ -54,7 +55,7 @@ def log(msg: str) -> None:
     print(f"[profile] {ts} {msg}", flush=True)
 
 
-def die(msg: str) -> None:
+def die(msg: str) -> NoReturn:
     log(f"FATAL: {msg}")
     sys.exit(1)
 
@@ -78,7 +79,7 @@ signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
 
 
 def check_prereqs() -> None:
-    for cmd in ["java", "mvn", "git", "docker", "curl"]:
+    for cmd in ["java", "git", "docker", "curl"]:
         if not shutil.which(cmd):
             die(f"{cmd} is required but not found on PATH")
 
@@ -447,7 +448,11 @@ def main() -> None:
         die(f"A node is already running on {NODE_URL} -- stop it first")
 
     java_args = os.environ.get("JAVA_ARGS", "")
-    java_args += " --enable-native-access=ALL-UNNAMED -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints"
+    # -XX:+EnableDynamicAgentLoading: JDK 21+ disables dynamic agent
+    # attach by default; async-profiler attaches as a JVMTI agent.
+    java_args += (" --enable-native-access=ALL-UNNAMED"
+                  " -XX:+EnableDynamicAgentLoading"
+                  " -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints")
     env = {**os.environ, "JAVA_ARGS": java_args.strip()}
 
     # Apply JAVA_HOME from local.properties (project requires JDK 21)
