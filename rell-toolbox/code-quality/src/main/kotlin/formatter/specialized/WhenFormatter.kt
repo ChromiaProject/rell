@@ -4,70 +4,84 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.WhenConditionExprContext
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.WhenExprContext
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.WhenStmtAltContext
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
-import net.postchain.rell.toolbox.parser.RellParser.*
 
 class WhenStmtFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
-) : NodeFormatter<RuleX_WhenStmtContext> {
-    override fun format(node: RuleX_WhenStmtContext, doc: FormattableDocument) {
+) : NodeFormatter<WhenStmtAltContext> {
+    override fun format(node: WhenStmtAltContext, doc: FormattableDocument) {
+        // whenStmtAlt: 'when' ('(' expression ')')? '{' (whenCondition '->' statement ';'?)* '}'
         doc.interiorIndent(node)
-        doc.append(node.ruleX_tkWHEN()) { it.oneSpace() }
-        doc.surround(node.ruleX_ExpressionRef()) { it.noSpace() }
-        doc.format(node.ruleX_ExpressionRef())
+        val whenTok = tokenAnalyzer.tokenFor(node, "when")
+        if (whenTok != null) doc.append(whenTok) { it.oneSpace() }
+        node.expression()?.let { doc.surround(it) { c -> c.noSpace() }; doc.format(it) }
         val openingCurly = tokenAnalyzer.tokenFor(node, "{")
-        doc.prepend(openingCurly) { it.oneSpace() }
-        for (whenCase in node.ruleX_WhenStmtCase()) {
-            doc.prepend(whenCase) { it.newLine() }
-            doc.append(whenCase.ruleX_WhenCondition()) {
+        if (openingCurly != null) doc.prepend(openingCurly) { it.oneSpace() }
+
+        // Iterate through whenCondition + statement pairs.
+        val conds = node.whenCondition()
+        val stmts = node.statement()
+        for (i in conds.indices) {
+            val whenCond = conds[i]
+            doc.prepend(whenCond) { it.newLine() }
+            doc.append(whenCond) {
                 it.oneSpace()
                 it.highPriority()
             }
-            doc.format(whenCase.ruleX_WhenCondition())
-            doc.prepend(whenCase.ruleX_StatementRef()) { it.oneSpace() }
-            doc.format(whenCase.ruleX_StatementRef())
+            doc.format(whenCond)
+            stmts.getOrNull(i)?.let { stmt ->
+                doc.prepend(stmt) { it.oneSpace() }
+                doc.format(stmt)
+            }
         }
-        val closingCurly = node.ruleX_tkRCURL()
-        doc.prepend(closingCurly) { it.newLine() }
+        val closingCurly = tokenAnalyzer.tokenFor(node, "}")
+        if (closingCurly != null) doc.prepend(closingCurly) { it.newLine() }
     }
 }
 
 class WhenExprFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
-) : NodeFormatter<RuleX_WhenExprContext> {
-    override fun format(node: RuleX_WhenExprContext, doc: FormattableDocument) {
+) : NodeFormatter<WhenExprContext> {
+    override fun format(node: WhenExprContext, doc: FormattableDocument) {
+        // whenExpr: 'when' ('(' expression ')')? '{' (whenCondition '->' expression) (';' whenCondition '->' expression)* ';'? '}'
         doc.interiorIndent(node)
-        doc.append(node.ruleX_tkWHEN()) { it.oneSpace() }
-        doc.surround(node.ruleX_ExpressionRef()) { it.noSpace() }
-        doc.format(node.ruleX_ExpressionRef())
+        val whenTok = tokenAnalyzer.tokenFor(node, "when")
+        if (whenTok != null) doc.append(whenTok) { it.oneSpace() }
+
+        val exprs = node.expression()
+        // The first expression *may* be the discriminator inside `(` `)`. We can't
+        // distinguish positionally; format all expressions with newline+space rules
+        // delegated below.
+
         val openingCurly = tokenAnalyzer.tokenFor(node, "{")
-        doc.prepend(openingCurly) { it.oneSpace() }
+        if (openingCurly != null) doc.prepend(openingCurly) { it.oneSpace() }
         val closingCurly = tokenAnalyzer.tokenFor(node, "}")
-        doc.prepend(closingCurly) { it.newLine() }
-        node.ruleX_WhenExprCase()?.forEach { whenCase ->
-            doc.format(whenCase)
+        if (closingCurly != null) doc.prepend(closingCurly) { it.newLine() }
+
+        // Each whenCondition + the following expression form a case.
+        val conds = node.whenCondition()
+        for (i in conds.indices) {
+            val cond = conds[i]
+            doc.prepend(cond) { it.newLine() }
+            doc.append(cond) {
+                it.oneSpace()
+                it.highPriority()
+            }
+            doc.format(cond)
         }
+        // Format expressions; they self-handle.
+        exprs.forEach { doc.format(it) }
     }
 }
 
-class WhenCaseFormatter : NodeFormatter<RuleX_WhenExprCaseContext> {
-    override fun format(node: RuleX_WhenExprCaseContext, doc: FormattableDocument) {
-        doc.prepend(node) { it.newLine() }
-        doc.append(node.ruleX_WhenCondition()) {
-            it.oneSpace()
-            it.highPriority()
-        }
-        doc.format(node.ruleX_WhenCondition())
-        doc.prepend(node.ruleX_ExpressionRef()) { it.oneSpace() }
-        doc.format(node.ruleX_ExpressionRef())
-    }
-}
-
-class WhenCondExprFormatter : NodeFormatter<RuleX_WhenConditionExprContext> {
-    override fun format(node: RuleX_WhenConditionExprContext, doc: FormattableDocument) {
-        val expressions = node.ruleX_ExpressionRef()
+class WhenCondExprFormatter : NodeFormatter<WhenConditionExprContext> {
+    override fun format(node: WhenConditionExprContext, doc: FormattableDocument) {
+        val expressions = node.expression()
         expressions.forEachIndexed { index, xExprRef ->
             doc.prepend(xExprRef) { it.oneSpace() }
             if (index == expressions.lastIndex) {

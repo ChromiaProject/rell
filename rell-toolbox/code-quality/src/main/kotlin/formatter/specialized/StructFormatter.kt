@@ -4,22 +4,23 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.StructDefContext
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
 import net.postchain.rell.toolbox.formatter.util.WhitespaceFormatter
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_StructDefContext
 
 
 class StructDefFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
     private val whitespaceFormatter: WhitespaceFormatter,
-) : NodeFormatter<RuleX_StructDefContext> {
-    override fun format(node: RuleX_StructDefContext, doc: FormattableDocument) {
+) : NodeFormatter<StructDefContext> {
+    override fun format(node: StructDefContext, doc: FormattableDocument) {
+        // structDef: ('struct' | 'record') RULE_ID '{' attributeClause* '}'
         doc.surround(node) { it.setNewLines(2) }
         doc.interiorIndent(node)
-        doc.surround(node.ruleX_Name()) { it.oneSpace() }
-        for (xAttriDef in node.ruleX_AttributeClause()) {
+        doc.surround(node.RULE_ID()) { it.oneSpace() }
+        for (xAttriDef in node.attributeClause()) {
             whitespaceFormatter.formatSemicolon(node, doc)
             doc.format(xAttriDef)
         }

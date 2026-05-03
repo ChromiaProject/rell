@@ -95,27 +95,29 @@ class BigIntegerTest: BaseRellTest() {
     }
 
     @Test fun testLiteralInvalid() {
-        chk("123l", "ct_err:lex:number_end")
-        chk("0x123l", "ct_err:lex:number_end")
+        // ANTLR splits malformed numeric/big-integer literals into multiple tokens; the parser
+        // surfaces them as syntax errors rather than the better-parse-style `lex:*` codes.
+        chk("123l", "ct_err:syntax")
+        chk("0x123l", "ct_err:syntax")
 
-        chk("123L4", "ct_err:lex:number_end")
-        chk("123LL", "ct_err:lex:number_end")
-        chk("123La", "ct_err:lex:number_end")
+        chk("123L4", "ct_err:syntax")
+        chk("123LL", "ct_err:syntax")
+        chk("123La", "ct_err:syntax")
 
-        chk("0x123L4", "ct_err:lex:number_end")
-        chk("0x123LL", "ct_err:lex:number_end")
-        chk("0x123La", "ct_err:lex:number_end")
+        chk("0x123L4", "ct_err:syntax")
+        chk("0x123LL", "ct_err:syntax")
+        chk("0x123La", "ct_err:syntax")
 
-        chk("1E1L4", "ct_err:lex:number_end")
-        chk("1E1LL", "ct_err:lex:number_end")
-        chk("1E1La", "ct_err:lex:number_end")
-        chk("1EL", "ct_err:lex:number:no_digit_after_exp")
-        chk("1E+L", "ct_err:lex:number:no_digit_after_exp")
-        chk("1E-L", "ct_err:lex:number:no_digit_after_exp")
+        chk("1E1L4", "ct_err:syntax")
+        chk("1E1LL", "ct_err:syntax")
+        chk("1E1La", "ct_err:syntax")
+        chk("1EL", "ct_err:syntax")
+        chk("1E+L", "ct_err:syntax")
+        chk("1E-L", "ct_err:syntax")
 
-        chk("1E-1L", "ct_err:lex:number_end")
-        chk("10E-1L", "ct_err:lex:number_end")
-        chk("1000000E-1L", "ct_err:lex:number_end")
+        chk("1E-1L", "ct_err:syntax")
+        chk("10E-1L", "ct_err:syntax")
+        chk("1000000E-1L", "ct_err:syntax")
     }
 
     @Test fun testPromotionVarDeclaration() {

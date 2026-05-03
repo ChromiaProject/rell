@@ -5,8 +5,7 @@ function foo() {
     .last_name == "",
     .salary == 2,
     .age == 2
-  } (
-    @sort .salary,
+  } ( @sort   .salary,
     .first_name,
     .last_name,
     .age
@@ -19,8 +18,7 @@ function foo() {
   val user4c = user4 @* {
     .first_name == "",
     .age == 2
-  } (
-    @sort .salary,
+  } ( @sort   .salary,
     .first_name
   );
 }

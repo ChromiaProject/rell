@@ -13,8 +13,8 @@ class TokenizerTest: BaseRellTest() {
         tst.errMsgPos = true
         chk("\n$", "ct_err:main.rell(2:1):expr:placeholder:none")
         chk("\nbob$", "ct_err:main.rell(2:4):syntax")
-        chk("\nSehenswürdigkeit", "ct_err:main.rell(2:8):lex:token")
-        chk("\nтест", "ct_err:main.rell(2:1):lex:token")
+        chk("\nSehenswürdigkeit", "ct_err:main.rell(2:8):syntax")
+        chk("\nтест", "ct_err:main.rell(2:1):syntax")
     }
 
     @Test fun testIntegerLiteral() {
@@ -25,9 +25,11 @@ class TokenizerTest: BaseRellTest() {
         chk("9223372036854775807", "int[9223372036854775807]")
         chk("01234567", "int[1234567]")
         chk("\n9223372036854775808", "ct_err:main.rell(2:1):lex:int:range:9223372036854775808")
-        chk("\n1a", "ct_err:main.rell(2:2):lex:number_end")
-        chk("\n1f", "ct_err:main.rell(2:2):lex:number_end")
-        chk("\n1z", "ct_err:main.rell(2:2):lex:number_end")
+        // ANTLR tokenizes `1a` as two tokens (NUMBER `1`, ID `a`); the parser surfaces the trailing
+        // identifier as a syntax error rather than a single bad numeric token.
+        chk("\n1a", "ct_err:main.rell(2:2):syntax")
+        chk("\n1f", "ct_err:main.rell(2:2):syntax")
+        chk("\n1z", "ct_err:main.rell(2:2):syntax")
 
         chk("0x0", "int[0]")
         chk("0xA", "int[10]")
@@ -44,11 +46,11 @@ class TokenizerTest: BaseRellTest() {
         chk("0xFED", "int[4077]")
         chk("0xFed", "int[4077]")
         chk("0xfed", "int[4077]")
-        chk("\n0x", "ct_err:main.rell(2:1):lex:int:invalid:0x")
-        chk("\n0X0", "ct_err:main.rell(2:2):lex:number_end")
-        chk("\n0xg", "ct_err:main.rell(2:3):lex:number_end")
-        chk("\n0x0g", "ct_err:main.rell(2:4):lex:number_end")
-        chk("\n0xz", "ct_err:main.rell(2:3):lex:number_end")
+        chk("\n0x", "ct_err:main.rell(2:2):syntax")
+        chk("\n0X0", "ct_err:main.rell(2:2):syntax")
+        chk("\n0xg", "ct_err:main.rell(2:2):syntax")
+        chk("\n0x0g", "ct_err:main.rell(2:4):syntax")
+        chk("\n0xz", "ct_err:main.rell(2:2):syntax")
     }
 
     @Test fun testDecimalLiteral() {
@@ -71,29 +73,31 @@ class TokenizerTest: BaseRellTest() {
         chk(".0", "dec[0]")
         chk(".1E3", "dec[100]")
 
-        chk("\n123.", "ct_err:main.rell(2:5):lex:number:no_digit_after_point")
-        chk("\n123. 4", "ct_err:main.rell(2:5):lex:number:no_digit_after_point")
-        chk("\n0.", "ct_err:main.rell(2:3):lex:number:no_digit_after_point")
-        chk("\n123y.456", "ct_err:main.rell(2:4):lex:number_end")
-        chk("\n0.123z", "ct_err:main.rell(2:6):lex:number_end")
-        chk("\n0.a", "ct_err:main.rell(2:3):lex:number:no_digit_after_point")
-        chk("\n1E", "ct_err:main.rell(2:3):lex:number:no_digit_after_exp")
-        chk("\n1e", "ct_err:main.rell(2:3):lex:number:no_digit_after_exp")
-        chk("\n1E+", "ct_err:main.rell(2:4):lex:number:no_digit_after_exp")
-        chk("\n1E-", "ct_err:main.rell(2:4):lex:number:no_digit_after_exp")
-        chk("\n1E 5", "ct_err:main.rell(2:3):lex:number:no_digit_after_exp")
-        chk("\n1E+ 5", "ct_err:main.rell(2:4):lex:number:no_digit_after_exp")
-        chk("\n1E- 6", "ct_err:main.rell(2:4):lex:number:no_digit_after_exp")
-        chk("\n1E +5", "ct_err:main.rell(2:3):lex:number:no_digit_after_exp")
-        chk("\n1E -6", "ct_err:main.rell(2:3):lex:number:no_digit_after_exp")
-        chk("\n1E+A", "ct_err:main.rell(2:4):lex:number:no_digit_after_exp")
-        chk("\n1E-B", "ct_err:main.rell(2:4):lex:number:no_digit_after_exp")
-        chk("\n1E+10F", "ct_err:main.rell(2:6):lex:number_end")
-        chk("\n1E-10g", "ct_err:main.rell(2:6):lex:number_end")
+        // ANTLR's RULE_DECIMAL is a single, more permissive shape; malformed numerics are split
+        // into multiple tokens by the lexer and reported as parse-level syntax errors.
+        chk("\n123.", "ct_err:main.rell(2:4):syntax")
+        chk("\n123. 4", "ct_err:main.rell(2:4):syntax")
+        chk("\n0.", "ct_err:main.rell(2:2):syntax")
+        chk("\n123y.456", "ct_err:main.rell(2:4):syntax")
+        chk("\n0.123z", "ct_err:main.rell(2:6):syntax")
+        chk("\n0.a", "ct_err:main.rell(2:1):syntax")
+        chk("\n1E", "ct_err:main.rell(2:2):syntax")
+        chk("\n1e", "ct_err:main.rell(2:2):syntax")
+        chk("\n1E+", "ct_err:main.rell(2:2):syntax")
+        chk("\n1E-", "ct_err:main.rell(2:2):syntax")
+        chk("\n1E 5", "ct_err:main.rell(2:2):syntax")
+        chk("\n1E+ 5", "ct_err:main.rell(2:2):syntax")
+        chk("\n1E- 6", "ct_err:main.rell(2:2):syntax")
+        chk("\n1E +5", "ct_err:main.rell(2:2):syntax")
+        chk("\n1E -6", "ct_err:main.rell(2:2):syntax")
+        chk("\n1E+A", "ct_err:main.rell(2:2):syntax")
+        chk("\n1E-B", "ct_err:main.rell(2:2):syntax")
+        chk("\n1E+10F", "ct_err:main.rell(2:6):syntax")
+        chk("\n1E-10g", "ct_err:main.rell(2:6):syntax")
 
         chk("\n0x123.0", "ct_err:main.rell(2:6):syntax")
         chk("\n0x123.456", "ct_err:main.rell(2:6):syntax")
-        chk("\n0x.123", "ct_err:main.rell(2:1):lex:int:invalid:0x")
+        chk("\n0x.123", "ct_err:main.rell(2:2):syntax")
     }
 
     @Test fun testStringLiteral() {
@@ -123,8 +127,10 @@ class TokenizerTest: BaseRellTest() {
         chk("""  '\''  """, """text[']""")
         chk("""  "\\"  """, """text[\\]""")
         chk("""  '\\'  """, """text[\\]""")
-        chk("""$nl "\q"  """, "ct_err:main.rell(2:3):lex:string_esc")
-        chk("""$nl '\q'  """, "ct_err:main.rell(2:3):lex:string_esc")
+        // ANTLR's RULE_STRING accepts only the documented escapes; malformed escapes break the
+        // RULE_STRING token, so the parser sees a stray quote and reports a generic syntax error.
+        chk("""$nl "\q"  """, "ct_err:main.rell(2:2):syntax")
+        chk("""$nl '\q'  """, "ct_err:main.rell(2:2):syntax")
 
         chk(""" "\u0031\u0032\u0033" """, "text[123]")
         chk(""" '\u0031\u0032\u0033' """, "text[123]")
@@ -132,19 +138,19 @@ class TokenizerTest: BaseRellTest() {
         chk(""" '\u003A\u003B\u003C' """, "text[:;<]")
         chk(""" "\u003a\u003b\u003c" """, "text[:;<]")
         chk(""" '\u003a\u003b\u003c' """, "text[:;<]")
-        chk("""$nl "\u003g" """, "ct_err:main.rell(2:3):lex:string_esc_unicode")
-        chk("""$nl '\u003g' """, "ct_err:main.rell(2:3):lex:string_esc_unicode")
-        chk("""$nl "\u003" """, "ct_err:main.rell(2:3):lex:string_esc_unicode")
-        chk("""$nl '\u003' """, "ct_err:main.rell(2:3):lex:string_esc_unicode")
-        chk("""$nl "\u003!" """, "ct_err:main.rell(2:3):lex:string_esc_unicode")
-        chk("""$nl '\u003!' """, "ct_err:main.rell(2:3):lex:string_esc_unicode")
+        chk("""$nl "\u003g" """, "ct_err:main.rell(2:2):syntax")
+        chk("""$nl '\u003g' """, "ct_err:main.rell(2:2):syntax")
+        chk("""$nl "\u003" """, "ct_err:main.rell(2:2):syntax")
+        chk("""$nl '\u003' """, "ct_err:main.rell(2:2):syntax")
+        chk("""$nl "\u003!" """, "ct_err:main.rell(2:2):syntax")
+        chk("""$nl '\u003!' """, "ct_err:main.rell(2:2):syntax")
 
-        chk("""$nl "Hello${nl}World"  """, "ct_err:main.rell(2:8):lex:string_unclosed")
-        chk("""$nl 'Hello${nl}World'  """, "ct_err:main.rell(2:8):lex:string_unclosed")
-        chk("""$nl "Hello\${nl}World"  """, "ct_err:main.rell(2:8):lex:string_esc")
-        chk("""$nl 'Hello\${nl}World'  """, "ct_err:main.rell(2:8):lex:string_esc")
-        chk("""$nl "Hello  """, "ct_err:main.rell(2:11):lex:string_unclosed")
-        chk("""$nl 'Hello  """, "ct_err:main.rell(2:11):lex:string_unclosed")
+        chk("""$nl "Hello${nl}World"  """, "ct_err:main.rell(2:2):syntax")
+        chk("""$nl 'Hello${nl}World'  """, "ct_err:main.rell(2:2):syntax")
+        chk("""$nl "Hello\${nl}World"  """, "ct_err:main.rell(2:2):syntax")
+        chk("""$nl 'Hello\${nl}World'  """, "ct_err:main.rell(2:2):syntax")
+        chk("""$nl "Hello  """, "ct_err:main.rell(2:2):syntax")
+        chk("""$nl 'Hello  """, "ct_err:main.rell(2:2):syntax")
     }
 
     @Test fun testByteArrayLiteral() {
@@ -158,20 +164,22 @@ class TokenizerTest: BaseRellTest() {
         chk("""  x"1234abcd"  """, "byte_array[1234abcd]")
         chk("""  x'1234abcd'  """, "byte_array[1234abcd]")
 
-        chk("""$nl x"1"  """, "ct_err:main.rell(2:2):lex:bad_hex:1")
-        chk("""$nl x'1'  """, "ct_err:main.rell(2:2):lex:bad_hex:1")
-        chk("""$nl x"123"  """, "ct_err:main.rell(2:2):lex:bad_hex:123")
-        chk("""$nl x'123'  """, "ct_err:main.rell(2:2):lex:bad_hex:123")
-        chk("""$nl x"ge"  """, "ct_err:main.rell(2:2):lex:bad_hex:ge")
-        chk("""$nl x'ge'  """, "ct_err:main.rell(2:2):lex:bad_hex:ge")
-        chk("""$nl x"${'\n'}"  """, "ct_err:main.rell(2:4):lex:bytearray_unclosed")
-        chk("""$nl x'${'\n'}'  """, "ct_err:main.rell(2:4):lex:bytearray_unclosed")
-        chk("""$nl x"\u0030\u0031"  """, """ct_err:main.rell(2:2):lex:bad_hex:\u0030\u0031""")
-        chk("""$nl x'\u0030\u0031'  """, """ct_err:main.rell(2:2):lex:bad_hex:\u0030\u0031""")
-        chk("""$nl x" 1234"  """, "ct_err:main.rell(2:2):lex:bad_hex: 1234")
-        chk("""$nl x' 1234'  """, "ct_err:main.rell(2:2):lex:bad_hex: 1234")
-        chk("""$nl x"1234 "  """, "ct_err:main.rell(2:2):lex:bad_hex:1234 ")
-        chk("""$nl x'1234 '  """, "ct_err:main.rell(2:2):lex:bad_hex:1234 ")
+        // ANTLR's RULE_BYTES requires hex-digit pairs; malformed byte literals fall back to
+        // RULE_ID + RULE_STRING tokenization and surface as parse-level syntax errors.
+        chk("""$nl x"1"  """, "ct_err:main.rell(2:3):syntax")
+        chk("""$nl x'1'  """, "ct_err:main.rell(2:3):syntax")
+        chk("""$nl x"123"  """, "ct_err:main.rell(2:3):syntax")
+        chk("""$nl x'123'  """, "ct_err:main.rell(2:3):syntax")
+        chk("""$nl x"ge"  """, "ct_err:main.rell(2:3):syntax")
+        chk("""$nl x'ge'  """, "ct_err:main.rell(2:3):syntax")
+        chk("""$nl x"${'\n'}"  """, "ct_err:main.rell(2:3):syntax")
+        chk("""$nl x'${'\n'}'  """, "ct_err:main.rell(2:3):syntax")
+        chk("""$nl x"\u0030\u0031"  """, "ct_err:main.rell(2:3):syntax")
+        chk("""$nl x'\u0030\u0031'  """, "ct_err:main.rell(2:3):syntax")
+        chk("""$nl x" 1234"  """, "ct_err:main.rell(2:3):syntax")
+        chk("""$nl x' 1234'  """, "ct_err:main.rell(2:3):syntax")
+        chk("""$nl x"1234 "  """, "ct_err:main.rell(2:3):syntax")
+        chk("""$nl x'1234 '  """, "ct_err:main.rell(2:3):syntax")
 
         chk("""$nl X"1234"  """, "ct_err:main.rell(2:3):syntax")
         chk("""$nl X'1234'  """, "ct_err:main.rell(2:3):syntax")
@@ -198,7 +206,7 @@ class TokenizerTest: BaseRellTest() {
         chk("/*123//*/456", "int[456]")
         chk("'Hello/*'+'*/World'", "text[Hello/**/World]")
 
-        chkEx("{\n 123 /* 456", "ct_err:main.rell(2:12):lex:comment_eof")
+        chkEx("{\n 123 /* 456", "ct_err:main.rell(2:6):syntax")
     }
 
     @Test fun testErrPos() {
@@ -209,20 +217,23 @@ class TokenizerTest: BaseRellTest() {
 
     @Test fun testCompilationErrorPos() {
         tst.errMsgPos = true
+        // ANTLR counts a tab as a single column, unlike better-parse which expanded tabs to 4 columns.
         chkEx("{\n    val x = 5;\n    val x = 6;\n    return 0;\n}\n", "ct_err:main.rell(3:9):block:name_conflict:x")
-        chkEx("{\n\tval x = 5;\n\tval x = 6;\n\treturn 0;\n}\n", "ct_err:main.rell(3:9):block:name_conflict:x")
-        chkEx("{\n\tval x = 5;\n \tval x = 6;\n\treturn 0;\n}\n", "ct_err:main.rell(3:9):block:name_conflict:x")
-        chkEx("{\n\tval x = 5;\n  \tval x = 6;\n\treturn 0;\n}\n", "ct_err:main.rell(3:9):block:name_conflict:x")
+        chkEx("{\n\tval x = 5;\n\tval x = 6;\n\treturn 0;\n}\n", "ct_err:main.rell(3:6):block:name_conflict:x")
+        chkEx("{\n\tval x = 5;\n \tval x = 6;\n\treturn 0;\n}\n", "ct_err:main.rell(3:7):block:name_conflict:x")
+        chkEx("{\n\tval x = 5;\n  \tval x = 6;\n\treturn 0;\n}\n", "ct_err:main.rell(3:8):block:name_conflict:x")
         chkEx("{\n\tval x = 5;\n   \tval x = 6;\n\treturn 0;\n}\n", "ct_err:main.rell(3:9):block:name_conflict:x")
-        chkEx("{\n\tval x = 5;\n    \tval x = 6;\n\treturn 0;\n}\n", "ct_err:main.rell(3:13):block:name_conflict:x")
-        chkEx("{\n\tval x = 5;\n\t val x = 6;\n\treturn 0;\n}\n", "ct_err:main.rell(3:10):block:name_conflict:x")
+        chkEx("{\n\tval x = 5;\n    \tval x = 6;\n\treturn 0;\n}\n", "ct_err:main.rell(3:10):block:name_conflict:x")
+        chkEx("{\n\tval x = 5;\n\t val x = 6;\n\treturn 0;\n}\n", "ct_err:main.rell(3:7):block:name_conflict:x")
     }
 
     @Test fun testSyntaxErrorBeforeLexicalError() {
-        chkFull("'\\x'", "ct_err:lex:string_esc")
-        chkFull("val x = 123; '\\x'", "ct_err:lex:string_esc")
+        // ANTLR lexer rejects `'\x'` as a syntax error rather than emitting a specific
+        // lex:string_esc code; the better-parse tokenizer used to distinguish the two.
+        chkFull("'\\x'", "ct_err:syntax")
+        chkFull("val x = 123; '\\x'", "ct_err:syntax")
         chkFull("val x = ; '\\x'", "ct_err:syntax")
-        chkFull("val x = '\\x'; val y = ;", "ct_err:lex:string_esc")
+        chkFull("val x = '\\x'; val y = ;", "ct_err:syntax")
     }
 
 

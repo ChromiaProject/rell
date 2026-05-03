@@ -1,17 +1,17 @@
 function trailingStmt() {
 
-    val (a, b, c,) = (1, 2, 3,);
+    val (a, b, c,) = (1 , 2 , 3,);
     val (
         d,
         e,
         f,
     ) = (
-        1,
-        2,
+        1 ,
+        2 ,
         3,
     );
 
-    val ((d, e,), f, g,) = ((1, 2,), 2, 3,);
+    val ((d, e,), f, g,) = ((1, 2,), 2    , 3,);
     val (
         (
         d,
@@ -21,10 +21,12 @@ function trailingStmt() {
         g,
     ) = (
         (
-            1,
-            2,
-        ),
-        2,
+                1 ,
+                2
+                ,
+            ),
+        2
+            ,
         3,
     );
 
@@ -43,11 +45,6 @@ function trailingStmt() {
     ];
 
     val a = map<text, text,>("a", "b",);
-    val a = map<
-        text,
-        text,
-    >(
-        "a",
-        "b",
+    val a = map<text, text,>("a", "b",
     );
 }

@@ -20,9 +20,9 @@ import kotlinx.benchmark.Warmup
 import net.postchain.rell.base.compiler.base.utils.C_Parser
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
+import net.postchain.rell.base.compiler.parser.antlr.RellManualLexer
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
 import net.postchain.rell.toolbox.parser.AntlrRellParser
-import net.postchain.rell.toolbox.parser.RellLexer
-import net.postchain.rell.toolbox.parser.RellParser
 import org.antlr.v4.runtime.BailErrorStrategy
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
@@ -59,46 +59,42 @@ class ParserBenchmark {
 
     /** better-parse path used by the Rell compiler; produces the AST (`S_RellFile`). */
     @Benchmark
-    fun betterParse(blackhole: Blackhole) {
-        blackhole.consume(C_Parser.parse(sourcePath, idePath, source))
-    }
+    fun betterParse(blackhole: Blackhole) = blackhole.consume(C_Parser.parse(sourcePath, idePath, source))
 
     /**
      * ANTLR path used by the toolbox (`AntlrRellParser`): LL prediction, full parse tree,
      * default error recovery. Not apples-to-apples with [betterParse] but it is what ships today.
      */
     @Benchmark
-    fun antlr(blackhole: Blackhole) {
-        blackhole.consume(antlrParser.parse(source))
+    fun antlr(blackhole: Blackhole) = blackhole.consume(antlrParser.parse(source))
+
+    /**
+     * Hand-written `RellManual.g4` parser, default settings: LL prediction with the
+     * full parse tree built. Apples-to-apples with [antlr] above — same shipping
+     * defaults, different grammar.
+     */
+    @Benchmark
+    fun manualAntlr(blackhole: Blackhole) {
+        val lexer = RellManualLexer(CharStreams.fromString(source))
+        val parser = RellManualParser(CommonTokenStream(lexer))
+        blackhole.consume(parser.file())
     }
 
     /**
-     * ANTLR with default LL prediction and error recovery, but `buildParseTree=false`.
-     * Isolates the cost of materializing the parse tree from prediction/recovery.
+     * `RellManual` with the same SLL + BailErrorStrategy + no-tree configuration as
+     * [antlrSLL]. The hand-written grammar inlines wrapper rules and orders
+     * alternatives so SLL prediction commits earlier; this benchmark measures
+     * exactly that win.
      */
     @Benchmark
-    fun antlrNoTree(blackhole: Blackhole) {
-        val lexer = RellLexer(CharStreams.fromString(source))
-        val parser = RellParser(CommonTokenStream(lexer))
-        parser.buildParseTree = false
-        blackhole.consume(parser.ruleX_RootParser())
-    }
-
-    /**
-     * Tuned ANTLR path: SLL prediction + `buildParseTree=false` + BailErrorStrategy.
-     * Matches the "parse without producing a tree" baseline that is comparable to
-     * parser-combinator throughput. Relies on the samples being syntactically valid
-     * (no fallback-to-LL pass is attempted).
-     */
-    @Benchmark
-    fun antlrSLL(blackhole: Blackhole) {
-        val lexer = RellLexer(CharStreams.fromString(source))
+    fun manualAntlrSLL(blackhole: Blackhole) {
+        val lexer = RellManualLexer(CharStreams.fromString(source))
         lexer.removeErrorListeners()
-        val parser = RellParser(CommonTokenStream(lexer))
+        val parser = RellManualParser(CommonTokenStream(lexer))
         parser.removeErrorListeners()
         parser.errorHandler = BailErrorStrategy()
         parser.buildParseTree = false
         parser.interpreter.predictionMode = PredictionMode.SLL
-        blackhole.consume(parser.ruleX_RootParser())
+        blackhole.consume(parser.file())
     }
 }

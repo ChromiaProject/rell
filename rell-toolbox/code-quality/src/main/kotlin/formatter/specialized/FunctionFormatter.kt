@@ -4,35 +4,33 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.FunctionBodyContext
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.FunctionDefContext
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.QueryBodyContext
 import net.postchain.rell.toolbox.formatter.BracePairTypes
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.*
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_FunctionBodyShortContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_FunctionDefContext
 
 class FunctionDefFormatter(
     private val braceFormatter: BraceFormatter,
     private val argumentFormatter: ArgumentFormatter,
     private val whitespaceFormatter: WhitespaceFormatter,
     private val lineAnalyzer: LineAnalyzer,
-) : NodeFormatter<RuleX_FunctionDefContext> {
-    override fun format(node: RuleX_FunctionDefContext, doc: FormattableDocument) {
+) : NodeFormatter<FunctionDefContext> {
+    override fun format(node: FunctionDefContext, doc: FormattableDocument) {
         doc.surround(node) { it.setNewLines(2) }
-        doc.prepend(node.ruleX_QualifiedName()) { it.oneSpace() }
-        doc.append(node.ruleX_QualifiedName()) { it.noSpace() }
+        node.qualifiedName()?.let {
+            doc.prepend(it) { c -> c.oneSpace() }
+            doc.append(it) { c -> c.noSpace() }
+        }
 
-        node.ruleX_FormalParameters() ?: return
+        val params = node.formalParameters() ?: return
 
-        braceFormatter.formatBracePairWithoutSpace(
-            node.ruleX_FormalParameters(),
-            doc,
-            BracePairTypes.PARENTHESES
-        )
+        braceFormatter.formatBracePairWithoutSpace(params, doc, BracePairTypes.PARENTHESES)
         whitespaceFormatter.formatType(node, doc)
         val lineSeparate = lineAnalyzer.lineSeparateArguments(node, BracePairTypes.PARENTHESES)
-        val (formalParameters, trailingComma) = node.ruleX_FormalParameters()
-            .getFormalParameterWithTrailingComma()
+        val (formalParameters, trailingComma) = params.getFormalParametersItems()
 
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
         argumentFormatter.formatArguments(
@@ -41,15 +39,43 @@ class FunctionDefFormatter(
             formatAsMultiLine = lineSeparate
         )
         argumentFormatter.formatParametersType(formalParameters, doc)
-        doc.format(node.ruleX_FunctionBody())
+        doc.format(node.functionBody())
     }
 }
 
-class FunctionBodyShortFormatter(
+/**
+ * functionBody: ';' | '=' expression ';' | blockStmt
+ */
+class FunctionBodyFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
-) : NodeFormatter<RuleX_FunctionBodyShortContext> {
-    override fun format(node: RuleX_FunctionBodyShortContext, doc: FormattableDocument) {
+) : NodeFormatter<FunctionBodyContext> {
+    override fun format(node: FunctionBodyContext, doc: FormattableDocument) {
         whitespaceFormatter.formatSemicolon(node, doc)
-        doc.format(node.ruleX_Expression())
+        // Surround '=' with a single space when the body is the short form.
+        node.children?.forEach { c ->
+            if (c is org.antlr.v4.runtime.tree.TerminalNode && c.symbol.text == "=") {
+                doc.surround(c) { it.oneSpace() }
+            }
+        }
+        node.expression()?.let { doc.format(it) }
+        node.blockStmt()?.let { doc.format(it) }
+    }
+}
+
+/**
+ * queryBody: '=' expression ';' | blockStmt
+ */
+class QueryBodyFormatter(
+    private val whitespaceFormatter: WhitespaceFormatter,
+) : NodeFormatter<QueryBodyContext> {
+    override fun format(node: QueryBodyContext, doc: FormattableDocument) {
+        whitespaceFormatter.formatSemicolon(node, doc)
+        node.children?.forEach { c ->
+            if (c is org.antlr.v4.runtime.tree.TerminalNode && c.symbol.text == "=") {
+                doc.surround(c) { it.oneSpace() }
+            }
+        }
+        node.expression()?.let { doc.format(it) }
+        node.blockStmt()?.let { doc.format(it) }
     }
 }

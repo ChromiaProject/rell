@@ -80,7 +80,7 @@ jOOQ query AST instead of concatenated strings. Identifiers go through jOOQ's Po
 removes a class of identifier-quoting risks the previous emitter relied on convention to avoid.
 
 Two latent schema-init bugs surfaced and were fixed by the rewrite. Adding an attribute that had both a
-foreign-key and a size-check constraint silently dropped one of the two. `@max_size(N)` with `N` above
+foreign-key and a size-check constraint silently dropped one of the two. @max_size(N) with N above
 2,147,483,647 was truncated to a negative value, producing a CHECK that rejected every INSERT. Both
 behaviours now work as documented.
 
@@ -92,32 +92,48 @@ representative corpus so any future drift is caught at CI time.
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 7. Runtime: Global system functions moved out of per-chain initializeDB
 
-Initialization of Rell's global SQL system functions has been extracted from the per-chain `initializeDB` path
-into a new `RellGlobalStorageInitializer` registered as a Postchain `GlobalStorageInitializer` service. Previously,
+Initialization of Rell's global SQL system functions has been extracted from the per-chain initializeDB path
+into a new RellGlobalStorageInitializer registered as a Postchain GlobalStorageInitializer service. Previously,
 these functions were (re)installed during every chain's database initialization, which under concurrent chain
 startup could deadlock on shared catalog locks (POS-2115).
 
 With this change, global system functions are created once per storage during global initialization, and per-chain
-`initializeDB` no longer touches them. Existing deployments are migrated transparently; no user action is required.
+initializeDB no longer touches them. Existing deployments are migrated transparently; no user action is required.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 8. API: IdeApi.getModuleInfo overload that recognises folder-based test modules
 
-`IdeApi.getModuleInfo(C_SourcePath, S_RellFile)` could only inspect the file's own header to decide whether the
+IdeApi.getModuleInfo(C_SourcePath, S_RellFile) could only inspect the file's own header to decide whether the
 file belonged to a test module. For a folder module:
 
     tests/module.rell      // @test module;
     tests/test_one.rell    // function test_foo() {}
     tests/test_two.rell    // function test_bar() {}
 
-only `module.rell` carries the `@test module;` header, so the IDE plugin was unable to detect that
-`test_one.rell` and `test_two.rell` are part of a test module and did not show the run-test gutter icon for
+only module.rell carries the @test module; header, so the IDE plugin was unable to detect that
+test_one.rell and test_two.rell are part of a test module and did not show the run-test gutter icon for
 their test functions (RELL-252).
 
 A new overload that takes the source directory as well is now available:
 
     IdeApi.getModuleInfo(sourceDir: C_SourceDir, path: C_SourcePath, ast: S_RellFile): IdeModuleInfo?
 
-When the file has no module header, the new overload looks at the sibling `module.rell` and inherits the `test`
+When the file has no module header, the new overload looks at the sibling module.rell and inherits the test
 flag from it. The original two-argument overload is unchanged for backwards compatibility — IDE integrations
 that need correct test detection on folder-module members should switch to the new overload.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+9. Compiler: ANTLR is the new mainline parser
+
+The Rell frontend parser is now built from a hand-tuned ANTLR4 grammar instead of the better-parse Kotlin combinator
+library. Every production parse entry point runs the new pipeline; better-parse is no longer on the production code
+path.
+
+The pipeline uses an SLL fast path with bail-out on prediction conflict, and falls back to a full LL parse with error
+recovery only on inputs that actually contain syntax errors. For valid (hotpath) programs this is several times faster
+than the previous combinator-based parser. The LL fallback collects every recoverable error in a file rather than
+bailing on the first one, so IDE diagnostics can surface the full list together with a (possibly partial) AST.
+
+The previous parser is kept in tree as a reference implementation, reachable only through a test-only entry point. A
+differential test gate parses every Rell snippet in the test corpus through both pipelines and compares the resulting
+ASTs; any future divergence fails the build.

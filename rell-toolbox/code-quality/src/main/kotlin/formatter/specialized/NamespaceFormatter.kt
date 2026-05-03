@@ -4,16 +4,22 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.NamespaceDefContext
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_NamespaceDefContext
+import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
 
-class NamespaceDefFormatter : NodeFormatter<RuleX_NamespaceDefContext> {
-    override fun format(node: RuleX_NamespaceDefContext, doc: FormattableDocument) {
+class NamespaceDefFormatter(
+    private val tokenAnalyzer: TokenAnalyzer,
+) : NodeFormatter<NamespaceDefContext> {
+    override fun format(node: NamespaceDefContext, doc: FormattableDocument) {
+        // namespaceDef: 'namespace' qualifiedName? '{' annotatedDef* '}'
         doc.surround(node) { it.setNewLines(2) }
-        doc.append(node.ruleX_tkNAMESPACE()) { it.oneSpace() }
-        doc.append(node.ruleX_QualifiedName()) { it.oneSpace() }
-        val openingCurly = node.ruleX_tkLCURL()
+        val nsTok = tokenAnalyzer.tokenFor(node, "namespace")
+        if (nsTok != null) doc.append(nsTok) { it.oneSpace() }
+        node.qualifiedName()?.let { doc.append(it) { c -> c.oneSpace() } }
+
+        val openingCurly = tokenAnalyzer.tokenFor(node, "{")
         if (openingCurly != null) {
             doc.append(openingCurly) {
                 it.setNewLines(1, 1, 2)
@@ -21,10 +27,10 @@ class NamespaceDefFormatter : NodeFormatter<RuleX_NamespaceDefContext> {
             }
         }
         doc.interiorIndent(node)
-        for (xAnnotDef in node.ruleX_AnnotatedDef()) {
+        for (xAnnotDef in node.annotatedDef()) {
             doc.format(xAnnotDef)
         }
-        val closingCurly = node.ruleX_tkRCURL()
+        val closingCurly = tokenAnalyzer.tokenFor(node, "}")
         if (closingCurly != null) {
             doc.prepend(closingCurly) {
                 it.setNewLines(1, 1, 2)
@@ -32,7 +38,7 @@ class NamespaceDefFormatter : NodeFormatter<RuleX_NamespaceDefContext> {
             }
         }
 
-        node.ruleX_AnnotatedDef().forEach {
+        node.annotatedDef().forEach {
             doc.prepend(it) {
                 it.setNewLines(1, 1, 2)
                 it.highPriority()

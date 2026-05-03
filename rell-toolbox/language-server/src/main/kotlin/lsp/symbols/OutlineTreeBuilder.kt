@@ -9,8 +9,9 @@ import net.postchain.rell.base.compiler.ast.S_Node
 import net.postchain.rell.base.utils.ide.IdeOutlineNodeType
 import net.postchain.rell.base.utils.ide.IdeOutlineTreeBuilder
 import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.toolbox.parser.RellParser
-import net.postchain.rell.toolbox.transformer.AntlrRellNodeAttachment
+import net.postchain.rell.base.compiler.parser.antlr.AntlrRellNodeAttachment
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import org.antlr.v4.runtime.ParserRuleContext
 import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
@@ -60,11 +61,20 @@ class OutlineTreeBuilder(
 
     fun getAnnotations(node: S_Node): List<String>? {
         val attachment = node.attachment as AntlrRellNodeAttachment
-        val antlrNode = attachment.node
-        return if (antlrNode is RellParser.RuleX_AnnotatedDefContext) {
-            antlrNode.ruleX_Modifiers()?.ruleX_Modifier()?.map { it?.ruleX_Annotation()?.ruleX_Name()?.text ?: "" }
-        } else {
-            null
+        var antlrNode: ParserRuleContext? = attachment.node
+        // The S_Node attachment for a function/operation/etc. is the inner def context
+        // (e.g. FunctionDefContext). Annotations live on the enclosing AnnotatedDefContext.
+        // Walk up until we find one — works whether the attachment points to the inner def
+        // or directly at the AnnotatedDefContext.
+        while (antlrNode != null && antlrNode !is RellManualParser.AnnotatedDefContext) {
+            antlrNode = antlrNode.parent as? ParserRuleContext
+        }
+        if (antlrNode !is RellManualParser.AnnotatedDefContext) return null
+        val modifiers = antlrNode.modifiers() ?: return emptyList()
+        return modifiers.modifier().mapNotNull { mod ->
+            // `modifier` is `'abstract' | 'mutable' | 'override' | annotation`. We only care
+            // about `annotation` (e.g. `@test`, `@disabled`) — return its identifier text.
+            mod.annotation()?.RULE_ID()?.text
         }
     }
 }
@@ -105,14 +115,36 @@ class OutlineNode(
 fun getFullRegion(node: S_Node, name: S_Node): Range {
     val attachment = node.attachment as AntlrRellNodeAttachment
     val nameAttachment = name.attachment as AntlrRellNodeAttachment
-    val startPos = Position(attachment.node.start.line - 1, attachment.node.start.charPositionInLine)
-    return if (attachment.node.stop.stopIndex > nameAttachment.node.stop.stopIndex) {
+    // For annotated definitions (functions, operations, etc.), the visible "full region" must
+    // include the leading modifiers/annotations. The inner def context starts after the
+    // annotations, so walk up to the enclosing AnnotatedDefContext only when (a) the parent's
+    // start token is strictly earlier (i.e. there are actually modifiers present) AND (b) the
+    // parent's stop is on the same line as the inner def's stop (so we don't inflate symbol
+    // ranges across error-recovered regions for incomplete code).
+    val regionNode: ParserRuleContext = run {
+        val inner = attachment.node
+        var p: ParserRuleContext? = inner
+        while (p?.parent is ParserRuleContext) {
+            val parent = p.parent as ParserRuleContext
+            if (parent is RellManualParser.AnnotatedDefContext) {
+                val widen = parent.start != null && inner.start != null
+                    && parent.start.startIndex < inner.start.startIndex
+                    && parent.stop != null && inner.stop != null
+                    && parent.stop.stopIndex == inner.stop.stopIndex
+                return@run if (widen) parent else inner
+            }
+            p = parent
+        }
+        inner
+    }
+    val startPos = Position(regionNode.start.line - 1, regionNode.start.charPositionInLine)
+    return if (regionNode.stop.stopIndex > nameAttachment.node.stop.stopIndex) {
         Range(
             startPos,
-            Position(attachment.node.stop.line - 1, attachment.node.stop.charPositionInLine)
+            Position(regionNode.stop.line - 1, regionNode.stop.charPositionInLine)
         )
     } else {
-        val nodeLength = attachment.node.text.length
+        val nodeLength = regionNode.text.length
         Range(
             startPos,
             Position(nameAttachment.node.stop.line - 1, nameAttachment.node.stop.charPositionInLine + nodeLength)

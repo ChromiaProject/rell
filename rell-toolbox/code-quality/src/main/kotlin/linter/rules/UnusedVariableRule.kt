@@ -4,13 +4,13 @@
 
 package net.postchain.rell.toolbox.linter.rules
 
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.references.ReferenceIndexer
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.NameNodesFinder
 import net.postchain.rell.toolbox.linter.isUnderscore
-import net.postchain.rell.toolbox.parser.RellParser
 import org.antlr.v4.runtime.misc.Interval
 
 class UnusedVariableRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
@@ -23,7 +23,7 @@ class UnusedVariableRule(config: LinterOptions, resource: Resource, linterContex
 
     override val ruleId = RULE_ID
 
-    override fun visitRuleX_VarStmt(ctx: RellParser.RuleX_VarStmtContext) {
+    override fun visitVarStmtAlt(ctx: RellManualParser.VarStmtAltContext) {
         if (isDisabled(config.ruleUnusedVariable) || hasIgnoreCommentOnTop(ctx.start) || hasSemanticErrors()) {
             return
         }
@@ -50,4 +50,5 @@ class UnusedVariableRule(config: LinterOptions, resource: Resource, linterContex
             }
         }
     }
+
 }

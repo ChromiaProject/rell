@@ -4,52 +4,46 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.*
 import net.postchain.rell.toolbox.formatter.BracePairTypes
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.*
-import net.postchain.rell.toolbox.parser.RellParser.*
+import org.antlr.v4.runtime.ParserRuleContext
 
 class MapExprFormatter(
     val braceFormatter: BraceFormatter,
     val lineAnalyzer: LineAnalyzer,
     val whitespaceFormatter: WhitespaceFormatter,
-) : NodeFormatter<RuleX_NonEmptyMapLiteralExprContext> {
-    override fun format(node: RuleX_NonEmptyMapLiteralExprContext, doc: FormattableDocument) {
-        val mapExprContext = node.getMapExprContext()
-
-        braceFormatter.formatBracePairWithoutSpace(mapExprContext, doc, BracePairTypes.BRACKETS)
+) : NodeFormatter<NonEmptyMapLiteralExprContext> {
+    override fun format(node: NonEmptyMapLiteralExprContext, doc: FormattableDocument) {
+        braceFormatter.formatBracePairWithoutSpace(node, doc, BracePairTypes.BRACKETS)
         val lineSeparate = lineAnalyzer.lineSeparateArguments(node, BracePairTypes.BRACKETS)
-        val (mapExprEntries, trailingComma) = node.getMapExprEntryWithTrailingComma()
+        val trailingComma = node.findTrailingComma("]")
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
 
-        mapExprEntries?.forEachIndexed { index, mapEntry ->
-            doc.prepend(mapEntry) { it.oneSpace() }
-            doc.append(mapEntry) { it.noSpace() }
-            doc.append(mapEntry.ruleX_ExpressionRef(0)) { it.noSpace() }
-            doc.prepend(mapEntry.ruleX_ExpressionRef(1)) { it.oneSpace() }
+        val entries = node.getMapEntries()
+        entries.forEachIndexed { index, (keyExpr, valExpr) ->
+            doc.prepend(keyExpr) { it.oneSpace() }
+            // No space before the ':' between key and value (the ':' is a terminal between them).
+            doc.append(keyExpr) { it.noSpace() }
+            doc.prepend(valExpr) { it.oneSpace() }
+            doc.append(valExpr) { it.noSpace() }
 
             if (lineSeparate) {
-                doc.prepend(mapEntry) {
+                doc.prepend(keyExpr) {
                     it.newLine()
                     it.indent()
                 }
-                if (index == mapExprEntries.lastIndex) {
-                    doc.append(mapEntry) {
+                if (index == entries.lastIndex) {
+                    doc.append(valExpr) {
                         it.newLine()
                     }
                 }
             }
-            doc.format(mapEntry)
+            doc.format(keyExpr)
+            doc.format(valExpr)
         }
-    }
-}
-
-class TupleEqExprFormatter : NodeFormatter<RuleX_TupleExprFieldContext> {
-    override fun format(node: RuleX_TupleExprFieldContext, doc: FormattableDocument) {
-        doc.surround(node.ruleX_NameNode()) { it.oneSpace() }
-        doc.surround(node.ruleX_tkASSIGN()) { it.oneSpace() }
-        doc.format(node.ruleX_ExpressionRef())
     }
 }
 
@@ -58,60 +52,164 @@ class ListExprFormatter(
     val lineAnalyzer: LineAnalyzer,
     val whitespaceFormatter: WhitespaceFormatter,
     val argumentFormatter: ArgumentFormatter,
-) : NodeFormatter<RuleX_ListLiteralExprContext> {
-    override fun format(node: RuleX_ListLiteralExprContext, doc: FormattableDocument) {
-        val xLisExprContext = node.getListLiteralExprContext()
-        braceFormatter.formatBracePairWithoutSpace(xLisExprContext, doc, BracePairTypes.BRACKETS)
-        val (expressionRef, trailingComma) = node.getExpressionRefWithTrailingComma()
-        val lineSeparate = lineAnalyzer.formatAsMultiLine(expressionRef)
+) : NodeFormatter<ListLiteralExprContext> {
+    override fun format(node: ListLiteralExprContext, doc: FormattableDocument) {
+        braceFormatter.formatBracePairWithoutSpace(node, doc, BracePairTypes.BRACKETS)
+        val (items, trailingComma) = node.getListItems()
+        val lineSeparate = lineAnalyzer.formatAsMultiLine(items)
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
-        argumentFormatter.formatArguments(expressionRef, doc)
-        expressionRef?.forEach { xExprRef -> doc.format(xExprRef) }
+        argumentFormatter.formatArguments(items, doc)
+        items.forEach { doc.format(it) }
     }
 }
 
-class MirrorStructFormatter(val braceFormatter: BraceFormatter) : NodeFormatter<RuleX_MirrorStructType0Context> {
-    override fun format(node: RuleX_MirrorStructType0Context, doc: FormattableDocument) {
+/**
+ * `# mirrorStructExpr` alt of `baseExprHead`: `'struct' '<' 'mutable'? type '>'`.
+ */
+class MirrorStructExprFormatterImpl(
+    val braceFormatter: BraceFormatter,
+) : NodeFormatter<MirrorStructExprContext> {
+    override fun format(node: MirrorStructExprContext, doc: FormattableDocument) {
         braceFormatter.formatBracePairWithoutSpace(node, doc, BracePairTypes.ANGLE)
-        doc.append(node) { it.noSpace() }
-        doc.append(node.ruleX_tkSTRUCT()) { it.noSpace() }
-        doc.append(node.ruleX_tkMUTABLE()) { it.oneSpace() }
+        // Walk children: 'struct' '<' 'mutable'? type '>'.
+        node.children?.forEachIndexed { i, c ->
+            if (c is org.antlr.v4.runtime.tree.TerminalNode) {
+                when (c.symbol.text) {
+                    "struct" -> doc.append(c) {
+                        it.noSpace()
+                        it.setNewLines(0)
+                        it.highPriority()
+                    }
+                    "mutable" -> doc.append(c) { it.oneSpace() }
+                }
+            }
+        }
     }
 }
 
-class TupleExprContextFormatter(
+/**
+ * `# mirrorStructType` alt of `primaryType`: `'struct' '<' 'mutable'? type '>'`.
+ */
+class MirrorStructTypeFormatter(
+    val braceFormatter: BraceFormatter,
+) : NodeFormatter<MirrorStructTypeContext> {
+    override fun format(node: MirrorStructTypeContext, doc: FormattableDocument) {
+        braceFormatter.formatBracePairWithoutSpace(node, doc, BracePairTypes.ANGLE)
+        node.children?.forEach { c ->
+            if (c is org.antlr.v4.runtime.tree.TerminalNode) {
+                when (c.symbol.text) {
+                    "struct" -> doc.append(c) {
+                        it.noSpace()
+                        it.setNewLines(0)
+                        it.highPriority()
+                    }
+                    "mutable" -> doc.append(c) { it.oneSpace() }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * `# tupleHead` alt of `baseExprHead`:
+ *   '(' ((RULE_ID '=')? expression) (',' (RULE_ID '=')? expression)* ','? ')'
+ *
+ * (Was `RuleX_TupleExprContext` in the old grammar.)
+ */
+class TupleHeadFormatter(
     val braceFormatter: BraceFormatter,
     val lineAnalyzer: LineAnalyzer,
     val whitespaceFormatter: WhitespaceFormatter,
     val argumentFormatter: ArgumentFormatter,
-) : NodeFormatter<RuleX_TupleExprContext> {
-    override fun format(node: RuleX_TupleExprContext, doc: FormattableDocument) {
-        val xTupleExpr = node.ruleX_CommaSeparated_14()
-        val opening = xTupleExpr.ruleX_tkLPAR()
-        val closing = xTupleExpr.ruleX_tkRPAR()
-        val lineSeparateExpression = lineAnalyzer.lineSeparateExpr(opening?.start, closing?.start)
-        braceFormatter.formatBracePairWithoutSpace(xTupleExpr, doc, BracePairTypes.PARENTHESES)
+) : NodeFormatter<TupleHeadContext> {
+    override fun format(node: TupleHeadContext, doc: FormattableDocument) {
+        val items = collectItemAnchors(node)
+        val trailingComma = node.findTrailingComma(")")
+        val lineSeparateExpression = node.start.line != node.stop.line
 
-        val commaSeparateExpr13 = xTupleExpr.ruleX_CommaSeparated_13()
-        val (tupleExprField, trailingComma) = node.getXNamesWithTrailingComma()
+        braceFormatter.formatBracePairWithoutSpace(node, doc, BracePairTypes.PARENTHESES)
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparateExpression)
 
-        if (lineSeparateExpression) {
-            doc.interiorIndent(xTupleExpr)
-            doc.prepend(commaSeparateExpr13) { it.newLine() }
-            doc.append(commaSeparateExpr13) { it.noSpace() }
-            doc.format(commaSeparateExpr13)
-
-            if (tupleExprField != null) {
-                argumentFormatter.formatArguments(
-                    tupleExprField,
-                    doc,
-                    indent = false
-                )
+        // RULE_ID '=' field labels: surround '=' with one space and ensure the label is on
+        // the same line as the value.
+        node.children?.forEach { c ->
+            if (c is org.antlr.v4.runtime.tree.TerminalNode && c.symbol.text == "=") {
+                doc.prepend(c) {
+                    it.oneSpace()
+                    it.setNewLines(0)
+                    it.highPriority()
+                }
+                doc.append(c) {
+                    it.oneSpace()
+                    it.setNewLines(0)
+                    it.highPriority()
+                }
             }
-            doc.prepend(closing) { it.newLine() }
+        }
+
+        if (lineSeparateExpression) {
+            doc.interiorIndent(node)
+            items.forEachIndexed { idx, anchor ->
+                anchor.applyPrepend(doc) { it.newLine() }
+                if (idx == items.lastIndex) {
+                    doc.append(node.expression().last()) { it.newLine() }
+                }
+            }
         } else {
-            argumentFormatter.formatArguments(tupleExprField, doc)
+            items.forEachIndexed { idx, anchor ->
+                anchor.applyPrepend(doc) { it.oneSpace() }
+                if (idx == items.lastIndex) {
+                    doc.append(node.expression().last()) { it.noSpace() }
+                }
+            }
+        }
+    }
+
+    /**
+     * Collect each tuple item's anchor: either the RULE_ID label terminal (for `name = expr`
+     * items) or the leading expression context (for plain `expr` items). Returns a list
+     * sized to [TupleHeadContext.expression].size.
+     */
+    private fun collectItemAnchors(node: TupleHeadContext): List<ItemAnchor> {
+        val result = mutableListOf<ItemAnchor>()
+        var i = 0
+        val n = node.childCount
+        var atItemStart = false
+        while (i < n) {
+            val c = node.getChild(i)
+            if (c is org.antlr.v4.runtime.tree.TerminalNode) {
+                val txt = c.symbol.text
+                when (txt) {
+                    "(" -> atItemStart = true
+                    "," -> atItemStart = true
+                    ")" -> atItemStart = false
+                    else -> {
+                        if (atItemStart && c.symbol.type == net.postchain.rell.base.compiler.parser.antlr.RellManualParser.RULE_ID) {
+                            result.add(ItemAnchor.Term(c))
+                            atItemStart = false
+                        }
+                    }
+                }
+            } else if (c is ParserRuleContext) {
+                if (atItemStart) {
+                    result.add(ItemAnchor.Rule(c))
+                    atItemStart = false
+                }
+            }
+            i++
+        }
+        return result
+    }
+
+    private sealed class ItemAnchor {
+        class Term(val node: org.antlr.v4.runtime.tree.TerminalNode) : ItemAnchor()
+        class Rule(val ctx: ParserRuleContext) : ItemAnchor()
+
+        fun applyPrepend(doc: FormattableDocument, mod: (net.postchain.rell.toolbox.formatter.Changes) -> Unit) {
+            when (this) {
+                is Term -> doc.prepend(node, mod)
+                is Rule -> doc.prepend(ctx, mod)
+            }
         }
     }
 }

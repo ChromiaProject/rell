@@ -4,8 +4,8 @@
 
 package net.postchain.rell.toolbox.formatter.util
 
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.FormalParameterContext
 import net.postchain.rell.toolbox.formatter.FormattableDocument
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_FormalParameterContext
 import org.antlr.v4.runtime.ParserRuleContext
 
 class ArgumentFormatter(
@@ -14,12 +14,12 @@ class ArgumentFormatter(
     private val lineAnalyzer: LineAnalyzer
 ) {
 
-    fun formatParametersType(params: List<RuleX_FormalParameterContext>?, doc: FormattableDocument) {
+    fun formatParametersType(params: List<FormalParameterContext>?, doc: FormattableDocument) {
         if (params.isNullOrEmpty()) {
             return
         }
         for (param in params) {
-            whitespaceFormatter.formatType(param.ruleX_AttrHeader(), doc)
+            whitespaceFormatter.formatType(param.attrHeader(), doc)
         }
     }
 

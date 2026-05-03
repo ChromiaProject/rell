@@ -16,14 +16,16 @@ class TypeTest: BaseRellTest() {
         chkEx("""= x"0123456789abcdef" ;""", "byte_array[0123456789abcdef]")
         chkEx("= x'0123456789abcdef' ;", "byte_array[0123456789abcdef]")
 
-        chkEx("= x'0' ;", "ct_err:lex:bad_hex:0")
-        chkEx("= x'F' ;", "ct_err:lex:bad_hex:F")
-        chkEx("= x'abc' ;", "ct_err:lex:bad_hex:abc")
+        // ANTLR's RULE_BYTES requires hex-digit pairs; malformed byte literals tokenize as
+        // RULE_ID + RULE_STRING and surface as parse-level syntax errors.
+        chkEx("= x'0' ;", "ct_err:syntax")
+        chkEx("= x'F' ;", "ct_err:syntax")
+        chkEx("= x'abc' ;", "ct_err:syntax")
 
-        chkEx("= x'0g' ;", "ct_err:lex:bad_hex:0g")
-        chkEx("= x'x' ;", "ct_err:lex:bad_hex:x")
-        chkEx("= x'0x' ;", "ct_err:lex:bad_hex:0x")
-        chkEx("= x'12345Z' ;", "ct_err:lex:bad_hex:12345Z")
+        chkEx("= x'0g' ;", "ct_err:syntax")
+        chkEx("= x'x' ;", "ct_err:syntax")
+        chkEx("= x'0x' ;", "ct_err:syntax")
+        chkEx("= x'12345Z' ;", "ct_err:syntax")
     }
 
     @Test fun testByteArraySql() {

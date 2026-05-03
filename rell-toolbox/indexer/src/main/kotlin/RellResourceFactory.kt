@@ -21,9 +21,7 @@ import net.postchain.rell.toolbox.compiler.AstSourceFile
 import net.postchain.rell.toolbox.compiler.RellCompilerApi
 import net.postchain.rell.toolbox.parser.AntlrRellParser
 import net.postchain.rell.toolbox.parser.RellCommonTokenStream
-import net.postchain.rell.toolbox.parser.RellParser
 import net.postchain.rell.toolbox.parser.SyntaxErrorCollector
-import org.antlr.v4.runtime.TokenStream
 import java.io.File
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
@@ -49,7 +47,7 @@ class RellResourceFactory(
         val ast = buildRellAstWithCompilerErrors(
             rellCompilerSourcePath,
             parseResult.parseTree,
-            parseResult.parser.tokenStream
+            parseResult.tokenStream,
         )
         return rellCompilerSourcePath to AstSourceFile.make(
             ast.first,
@@ -73,12 +71,12 @@ class RellResourceFactory(
         val ast = buildRellAstWithCompilerErrors(
             rellCompilerSourcePath,
             parseResult.parseTree,
-            parseResult.parser.tokenStream
+            parseResult.tokenStream,
         )
         val compilationResult = compileResult(rellCompilerSourcePath, ast.first, fileMap, fileContent)
         val symbolInfo = compilationResult?.symbolInfos ?: mapOf()
         val locationInfo = createLocationInfo(symbolInfo)
-        val tokenStream = parseResult.parser.tokenStream as RellCommonTokenStream
+        val tokenStream = parseResult.tokenStream as RellCommonTokenStream
         val checksum = calculateChecksum(fileContent)
 
         return Resource(
@@ -153,26 +151,36 @@ class RellResourceFactory(
     fun buildParseTree(fileContent: String): ParsingResult {
         val errorListener = SyntaxErrorCollector()
         return try {
-            val parser = parser.parserFor(fileContent, errorListeners = listOf(errorListener))
-            val parseTree = parser.ruleX_RootParser()
-            ParsingResult(parseTree, errorListener.errors, parser)
+            buildParseTreeFromSource(fileContent, errorListener)
         } catch (e: Exception) {
             // If error occurred we build a parse tree from an empty string instead. This is so that we can continue
             // with the flow of building the whole project
             logger.debug { "Stacktrace for failure for building parse tree: $e" }
-            val parser = parser.parserFor("", errorListeners = listOf(errorListener))
-            val parseTree = parser.ruleX_RootParser()
-            ParsingResult(parseTree, errorListener.errors, parser)
+            buildParseTreeFromSource("", errorListener)
         }
+    }
+
+    private fun buildParseTreeFromSource(source: String, errorListener: SyntaxErrorCollector): ParsingResult {
+        // Canonical parser from rell-base/frontend (RellManual.g4); produces the parse tree
+        // consumed by both AST construction and downstream tooling.
+        val manualParser = parser.parserFor(source, errorListeners = listOf(errorListener))
+        val manualTree = manualParser.file()
+        val manualTokens = manualParser.tokenStream as? org.antlr.v4.runtime.BufferedTokenStream
+
+        return ParsingResult(
+            parseTree = manualTree,
+            syntaxErrors = errorListener.errors.toList(),
+            tokenStream = manualTokens,
+        )
     }
 
     fun buildRellAstWithCompilerErrors(
         rellCompilerSourcePath: C_SourcePath,
-        parseTree: RellParser.RuleX_RootParserContext,
-        tokenStream: TokenStream
+        parseTree: net.postchain.rell.base.compiler.parser.antlr.RellManualParser.FileContext,
+        manualTokenStream: org.antlr.v4.runtime.BufferedTokenStream? = null,
     ): Pair<S_RellFile, List<C_Error>> {
         val rellCompilerFilePath = rellCompilerUtils.createRellCompilerFilePath(rellCompilerSourcePath)
-        return RellCompilerApi.antlrToRellAst(rellCompilerFilePath, parseTree, tokenStream)
+        return RellCompilerApi.antlrToRellAst(rellCompilerFilePath, parseTree, manualTokenStream)
     }
 
     companion object {

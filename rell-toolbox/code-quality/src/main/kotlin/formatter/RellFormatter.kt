@@ -4,20 +4,20 @@
 
 package net.postchain.rell.toolbox.formatter
 
+import net.postchain.rell.base.compiler.parser.antlr.RellManualLexer
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.*
 import net.postchain.rell.toolbox.common.TextReplacement
 import net.postchain.rell.toolbox.common.applyTextReplacements
 import net.postchain.rell.toolbox.formatter.specialized.*
 import net.postchain.rell.toolbox.formatter.util.*
 import net.postchain.rell.toolbox.parser.RellCommonTokenStream
-import net.postchain.rell.toolbox.parser.RellLexer
-import net.postchain.rell.toolbox.parser.RellParser
-import net.postchain.rell.toolbox.parser.RellParser.*
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.ParserRuleContext
 
 class RellFormatter(
-    val parser: RellParser,
+    val parser: RellManualParser,
     val source: String,
     formatterRequest: FormatterOptions
 ) {
@@ -43,22 +43,17 @@ class RellFormatter(
 
     private fun registerFormatters() {
         with(formatterRegistry) {
-            register(RuleX_AnnotationContext::class.java, AnnotationFormatter())
+            register(AnnotationContext::class.java, AnnotationFormatter(whitespaceFormatter))
             register(
-                RuleX_AnnotationArgsContext::class.java,
+                AnnotationArgsContext::class.java,
                 AnnotArgsFormatter(braceFormatter, argumentFormatter, whitespaceFormatter, lineAnalyzer)
             )
 
-            register(RuleX_AtExprModifiers_0Context::class.java, AtExprModFormatter0(tokenAnalyzer))
-            register(RuleX_AtExprModifiers_1Context::class.java, AtExprModFormatter1(tokenAnalyzer))
             register(
-                RuleX_AtExprFromContext::class.java,
-                AtExprFromFormatter(lineAnalyzer, braceFormatter, whitespaceFormatter, argumentFormatter)
+                AtExprAtContext::class.java, AtExprAtFormatter()
             )
-            register(RuleX_AtExprFromItemContext::class.java, AtExprFromItemFormatter(tokenAnalyzer))
-            register(RuleX_AtExprAtContext::class.java, AtExprAtFormatter())
             register(
-                RuleX_AtExprWhereContext::class.java,
+                AtExprWhereContext::class.java,
                 AtExprWhereFormatter(
                     lineAnalyzer,
                     braceFormatter,
@@ -67,7 +62,7 @@ class RellFormatter(
                 )
             )
             register(
-                RuleX_AtExprWhatComplexContext::class.java,
+                AtExprWhatComplexContext::class.java,
                 AtExprWhatCmplxFormatter(
                     lineAnalyzer,
                     braceFormatter,
@@ -76,27 +71,27 @@ class RellFormatter(
                     expressionFormatter,
                 )
             )
-            register(RuleX_AtExprWhatComplexItemContext::class.java, AtExprWhatCmplxItemFormatter())
+            register(AtExprModifiersContext::class.java, AtExprModFormatter(tokenAnalyzer))
 
             register(
-                RuleX_BaseExprContext::class.java,
+                BaseExprContext::class.java,
                 BaseExprFormatter(
                     expressionFormatter,
                     lineAnalyzer
                 )
             )
+            register(ExpressionContext::class.java, ExpressionInlineOpFormatter())
 
             register(
-                RuleX_NonEmptyMapLiteralExprContext::class.java,
+                NonEmptyMapLiteralExprContext::class.java,
                 MapExprFormatter(
                     braceFormatter,
                     lineAnalyzer,
                     whitespaceFormatter
                 )
             )
-            register(RuleX_TupleExprFieldContext::class.java, TupleEqExprFormatter())
             register(
-                RuleX_ListLiteralExprContext::class.java,
+                ListLiteralExprContext::class.java,
                 ListExprFormatter(
                     braceFormatter,
                     lineAnalyzer,
@@ -104,21 +99,37 @@ class RellFormatter(
                     argumentFormatter
                 )
             )
-            register(RuleX_MirrorStructType0Context::class.java, MirrorStructFormatter(braceFormatter))
             register(
-                RuleX_TupleExprContext::class.java,
-                TupleExprContextFormatter(
+                MirrorStructExprContext::class.java,
+                MirrorStructExprFormatterImpl(braceFormatter)
+            )
+            register(
+                MirrorStructTypeContext::class.java,
+                MirrorStructTypeFormatter(braceFormatter)
+            )
+            register(
+                TupleHeadContext::class.java,
+                TupleHeadFormatter(
                     braceFormatter,
                     lineAnalyzer,
                     whitespaceFormatter,
                     argumentFormatter
                 )
             )
-
-            register(RuleX_EntityDefContext::class.java, EntityDefFormatter())
-            register(RuleX_EntityBodyFullContext::class.java, EntityBodyFormatter(tokenAnalyzer))
             register(
-                RuleX_EntityAnnotationsContext::class.java,
+                AtExprContext::class.java,
+                AtExprFromFormatter(
+                    lineAnalyzer,
+                    braceFormatter,
+                    whitespaceFormatter,
+                    argumentFormatter
+                )
+            )
+
+            register(EntityDefContext::class.java, EntityDefFormatter())
+            register(EntityBodyContext::class.java, EntityBodyFormatter(tokenAnalyzer))
+            register(
+                EntityAnnotationsContext::class.java,
                 EntityAnnotationsFormatter(
                     braceFormatter,
                     argumentFormatter,
@@ -126,12 +137,12 @@ class RellFormatter(
                     lineAnalyzer,
                 )
             )
-            register(RuleX_KeyIndexClauseContext::class.java, KeyIndexFormatter(whitespaceFormatter))
-            register(RuleX_BaseAttributeDefinitionContext::class.java, BaseAttributeDefFormatter(tokenAnalyzer))
-            register(RuleX_NameTypeAttrHeaderContext::class.java, NameTypeAttrHeadFormatter())
+            register(KeyIndexClauseContext::class.java, KeyIndexFormatter(whitespaceFormatter))
+            register(BaseAttributeDefinitionContext::class.java, BaseAttributeDefFormatter(tokenAnalyzer))
+            register(NameTypeAttrHeaderContext::class.java, NameTypeAttrHeadFormatter())
 
             register(
-                RuleX_EnumDefContext::class.java,
+                EnumDefContext::class.java,
                 EnumDefFormatter(
                     lineAnalyzer,
                     whitespaceFormatter,
@@ -140,7 +151,7 @@ class RellFormatter(
             )
 
             register(
-                RuleX_FunctionDefContext::class.java,
+                FunctionDefContext::class.java,
                 FunctionDefFormatter(
                     braceFormatter,
                     argumentFormatter,
@@ -150,19 +161,23 @@ class RellFormatter(
             )
 
             register(
-                RuleX_FunctionBodyShortContext::class.java,
-                FunctionBodyShortFormatter(whitespaceFormatter)
+                FunctionBodyContext::class.java,
+                FunctionBodyFormatter(whitespaceFormatter)
+            )
+            register(
+                QueryBodyContext::class.java,
+                QueryBodyFormatter(whitespaceFormatter)
             )
 
             register(
-                RuleX_GenericTypeExprContext::class.java,
+                GenericTypeExprContext::class.java,
                 GenTypeExprFormatter(
                     braceFormatter,
                     expressionFormatter
                 )
             )
             register(
-                RuleX_GenericTypeContext::class.java,
+                GenericOrNameTypeContext::class.java,
                 GenericTypeFormatter(
                     braceFormatter,
                     argumentFormatter,
@@ -172,19 +187,19 @@ class RellFormatter(
             )
 
             register(
-                RuleX_IfStmtContext::class.java,
+                IfStmtAltContext::class.java,
                 IfStmtFormatter(
                     tokenAnalyzer,
                     expressionFormatter,
                     lineAnalyzer
                 )
             )
-            register(RuleX_IfExprContext::class.java, IfExprFormatter(tokenAnalyzer))
+            register(IfExprContext::class.java, IfExprFormatter(tokenAnalyzer))
 
-            register(RuleX_NamespaceDefContext::class.java, NamespaceDefFormatter())
+            register(NamespaceDefContext::class.java, NamespaceDefFormatter(tokenAnalyzer))
 
             register(
-                RuleX_ObjectDefContext::class.java,
+                ObjectDefContext::class.java,
                 ObjectDefFormatter(
                     tokenAnalyzer,
                     whitespaceFormatter
@@ -192,7 +207,7 @@ class RellFormatter(
             )
 
             register(
-                RuleX_OpDefContext::class.java,
+                OpDefContext::class.java,
                 OpDefFormatter(
                     braceFormatter,
                     argumentFormatter,
@@ -200,14 +215,9 @@ class RellFormatter(
                     lineAnalyzer
                 )
             )
-            register(RuleX_IncrementOperatorContext::class.java, IncrementOpFormatter())
-            register(RuleX_AssignOpContext::class.java, AssignOpFormatter())
-            register(RuleX_BinaryOperatorContext::class.java, BinaryOpFormatter())
-            register(RuleX_BinaryOperator_17Context::class.java, BinOp17Formatter())
-
 
             register(
-                RuleX_QueryDefContext::class.java,
+                QueryDefContext::class.java,
                 QueryDefFormatter(
                     braceFormatter,
                     lineAnalyzer,
@@ -216,33 +226,36 @@ class RellFormatter(
                 )
             )
 
-            register(RuleX_RootParserContext::class.java, RootNodeFormatter(expressionFormatter))
-            register(RuleX_ModuleHeaderContext::class.java, MooduleHeaderFormatter(whitespaceFormatter))
-            register(RuleX_ModifierContext::class.java, ModifierFormatter(whitespaceFormatter))
+            register(FileContext::class.java, RootNodeFormatter(expressionFormatter, tokenAnalyzer))
+            register(ModuleHeaderContext::class.java, MooduleHeaderFormatter(whitespaceFormatter))
+            register(ModifierContext::class.java, ModifierFormatter(whitespaceFormatter))
 
-            register(RuleX_BlockStmtContext::class.java, BlockStmtFormatter())
-            register(RuleX_ReturnStmtContext::class.java, ReturnStmtFormatter(whitespaceFormatter))
+            register(BlockStmtContext::class.java, BlockStmtFormatter())
+            register(ReturnStmtAltContext::class.java, ReturnStmtFormatter(whitespaceFormatter, tokenAnalyzer))
             register(
-                RuleX_WhileStmtContext::class.java,
+                WhileStmtAltContext::class.java,
                 WhileStmtFormatter(
                     expressionFormatter,
-                    lineAnalyzer
+                    lineAnalyzer,
+                    tokenAnalyzer
                 )
             )
-            register(RuleX_ForStmtContext::class.java, ForStmtFormatter())
+            register(ForStmtAltContext::class.java, ForStmtFormatter(tokenAnalyzer))
             register(
-                RuleX_CreateExprContext::class.java,
+                CreateExprContext::class.java,
                 CreateExprFormatter(
                     braceFormatter,
                     lineAnalyzer,
                     whitespaceFormatter,
-                    argumentFormatter
+                    argumentFormatter,
+                    tokenAnalyzer,
+                    expressionFormatter,
                 )
             )
-            register(RuleX_DeleteStmtContext::class.java, DeleteStmtFormatter(whitespaceFormatter))
+            register(DeleteStmtAltContext::class.java, DeleteStmtFormatter(whitespaceFormatter, tokenAnalyzer))
 
             register(
-                RuleX_StructDefContext::class.java,
+                StructDefContext::class.java,
                 StructDefFormatter(
                     tokenAnalyzer,
                     whitespaceFormatter,
@@ -250,16 +263,17 @@ class RellFormatter(
             )
 
             register(
-                RuleX_UpdateStmtContext::class.java,
+                UpdateStmtAltContext::class.java,
                 UpdateStmtFormatter(
                     braceFormatter,
                     lineAnalyzer,
                     whitespaceFormatter,
-                    argumentFormatter
+                    argumentFormatter,
+                    tokenAnalyzer
                 )
             )
             register(
-                RuleX_UpdateTargetAtContext::class.java,
+                UpdateTargetAtContext::class.java,
                 UpdateTargetAtFormatter(
                     braceFormatter,
                     lineAnalyzer,
@@ -268,20 +282,19 @@ class RellFormatter(
                 )
             )
 
-            register(RuleX_WhenStmtContext::class.java, WhenStmtFormatter(tokenAnalyzer))
-            register(RuleX_WhenExprContext::class.java, WhenExprFormatter(tokenAnalyzer))
-            register(RuleX_WhenExprCaseContext::class.java, WhenCaseFormatter())
-            register(RuleX_WhenConditionExprContext::class.java, WhenCondExprFormatter())
+            register(WhenStmtAltContext::class.java, WhenStmtFormatter(tokenAnalyzer))
+            register(WhenExprContext::class.java, WhenExprFormatter(tokenAnalyzer))
+            register(WhenConditionExprContext::class.java, WhenCondExprFormatter())
 
             register(
-                RuleX_VarStmtContext::class.java,
+                VarStmtAltContext::class.java,
                 VarStmtFormatter(
                     whitespaceFormatter,
                     tokenAnalyzer
                 )
             )
             register(
-                RuleX_TupleVarDeclaratorContext::class.java,
+                TupleVarDeclaratorContext::class.java,
                 TupleVarDecFormatter(
                     braceFormatter,
                     argumentFormatter,
@@ -290,11 +303,19 @@ class RellFormatter(
                 )
             )
             register(
-                RuleX_ConstantDefContext::class.java,
+                ConstantDefContext::class.java,
                 ConstantDefFormatter(
                     whitespaceFormatter,
                     tokenAnalyzer
                 )
+            )
+            register(
+                ExprStmtAltContext::class.java,
+                ExprStmtAltFormatter(whitespaceFormatter, tokenAnalyzer)
+            )
+            register(
+                IncrementStmtAltContext::class.java,
+                IncrementStmtAltFormatter(whitespaceFormatter)
             )
         }
     }
@@ -312,10 +333,10 @@ class RellFormatter(
 
         fun getFormattingChanges(source: String, formatterRequest: FormatterOptions): List<TextReplacement> {
             val input: CharStream = CharStreams.fromString(source)
-            val lexer = RellLexer(input)
+            val lexer = RellManualLexer(input)
             val tokenStream = RellCommonTokenStream(lexer)
-            val parser = RellParser(tokenStream)
-            val rootNode = parser.ruleX_RootParser()
+            val parser = RellManualParser(tokenStream)
+            val rootNode = parser.file()
 
             val formatter = RellFormatter(parser, source, formatterRequest)
             val tokenAnalyzer = TokenAnalyzer(parser)

@@ -2,65 +2,65 @@ function a() {
     components_structure.put(
         c
             .component_def(
-                componentStructure,
-                c.component_req(
-                    is_required = true,
-                    is_mutable = true
-                )
+            componentStructure,
+            c.component_req(
+                is_required = true,
+                is_mutable = true
             )
+        )
     );
     when (attribute.type) {
         type.boolean -> Boolean
             .create_value(
-                i,
-                attribute_name,
-                boolean.from_gtv(value),
-                access
-            );
+            i,
+            attribute_name,
+            boolean.from_gtv(value),
+            access
+        );
         type.decimal -> Decimal
             .create_value(
-                i,
-                attribute_name,
-                from_gtv(
-                    "First a Argument call",
-                    "A very long input to make this part of the token to be above the lenght of the defined max line width",
-                    from_next("a"),
-                    from_other(
-                        "a",
-                        "b"
-                    )
-                ),
-                access
-            );
+            i,
+            attribute_name,
+            from_gtv(
+                "First a Argument call",
+                "A very long input to make this part of the token to be above the lenght of the defined max line width",
+                from_next("a"),
+                from_other(
+                    "a",
+                    "b"
+                )
+            ),
+            access
+        );
         type.instance -> Instance
             .create_value(
-                i,
-                attribute_name
-                    .we_can_also
-                    .seperate_on,
-                user_seperation.user_can_also
-                    .if_this_token_chaining
-                    .is_too_long.period
-            );
+            i,
+            attribute_name
+            .we_can_also
+            .seperate_on,
+            user_seperation.user_can_also
+                .if_this_token_chaining
+                .is_too_long.period
+        );
     }
 
     val ordered_products = product @* { .id in ordered_product_ids } (
-        struct<product_order> (
-            order = order,
-            product = $,
-            quantity = customer_order.products @ { $.id == .id } (
-                .id == 2
-            )
+        struct<product_order>(
+        order = order,
+        product = $,
+        quantity = customer_order.products @ { $.id == .id } (
+            .id == 2
         )
+    )
     );
 
     assets
         .transfer_history_entry @* {
-            .transaction.tx_rid == tx_rid,
-            op_index
-        } (
-            extract_details_from_transfer_history_entry (
-                $
-            )
-        );
+        .transaction.tx_rid == tx_rid,
+        op_index
+    } (
+        extract_details_from_transfer_history_entry(
+        $
+    )
+    );
 }

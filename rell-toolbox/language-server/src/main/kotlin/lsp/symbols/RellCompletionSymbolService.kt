@@ -37,7 +37,10 @@ class RellCompletionSymbolService(private val symbolService: RellSymbolService) 
     ): List<IdeSymbolInfo> {
         val (startOffset, endOffset) = document.getStartAndEndOffset(symbol.range)
         val importPath = document.getTextIn(Interval.of(startOffset, endOffset)).substringBeforeLast(".")
-        val position = Position(symbol.range.start.line, importPath.length)
+        // Compute the position at the end of the import path via document offset translation; the
+        // import path may span multiple lines, so deriving column from `importPath.length` alone
+        // (as `Position(start.line, importPath.length)`) goes out of bounds on the start line.
+        val position = document.getPosition(startOffset + importPath.length)
         val symbolLocation = symbolService.getSymbolLocationsWithSymbol(document, indexer, position)
         val moduleName = symbolLocation?.second?.doc?.symbolName?.toString() ?: return listOf()
         return getModuleSymbols(indexer, moduleName)
@@ -51,7 +54,7 @@ class RellCompletionSymbolService(private val symbolService: RellSymbolService) 
     ): DocumentSymbol? {
         val position = document.getPosition(offset)
         val documentSymbols = symbolService.getDocumentSymbols(fileUri, document, resource)
-        return documentSymbols?.let { findEnclosingFileOrNamespaceSymbol(it, position) }
+        return documentSymbols?.let { findEnclosingFileOrNamespaceSymbol(it, position, document) }
     }
 
     private fun findPackageSymbol(
@@ -63,11 +66,22 @@ class RellCompletionSymbolService(private val symbolService: RellSymbolService) 
             document.offSetInRange(offset, symbol.range)
         }?.let { symbol ->
             when (symbol.kind) {
-                SymbolKind.Package -> symbol
+                // The ANTLR-backed outline can produce an `import` Package node whose range spans
+                // adjacent definitions when the import is malformed (e.g. a bare `import` keyword
+                // with no path). Only accept the Package as an active import path when its text
+                // actually contains a `.` — without one there is nothing to resolve.
+                SymbolKind.Package -> if (packageSymbolHasImportPath(symbol, document)) symbol else null
                 SymbolKind.Namespace -> symbol.children?.let { findPackageSymbol(it, offset, document) }
                 else -> null
             }
         }
+    }
+
+    private fun packageSymbolHasImportPath(symbol: DocumentSymbol, document: Document): Boolean {
+        val (startOffset, endOffset) = document.getStartAndEndOffset(symbol.range)
+        if (startOffset >= endOffset) return false
+        val text = document.getTextIn(Interval.of(startOffset, endOffset - 1))
+        return text.contains('.')
     }
 
     private fun getModuleSymbols(indexer: WorkspaceIndexer, moduleName: String): List<IdeSymbolInfo> {
@@ -96,24 +110,34 @@ class RellCompletionSymbolService(private val symbolService: RellSymbolService) 
         return resource.symbolInfos.any { it.value.doc == null }
     }
 
-    private fun findEnclosingFileOrNamespaceSymbol(node: DocumentSymbol, position: Position): DocumentSymbol? {
+    private fun findEnclosingFileOrNamespaceSymbol(
+        node: DocumentSymbol,
+        position: Position,
+        document: Document,
+    ): DocumentSymbol? {
         if (!containsPosition(node.range, position)) {
             return null
         }
 
         val matchingChild = findChildContainingPosition(node, position)
+        // A malformed `import` (Package child with no dotted path) should not block file-scope
+        // recognition — its outline range can spuriously overlap adjacent definitions on the
+        // ANTLR-backed parser. Treat such a child as if it were absent.
+        val effectiveChild = matchingChild?.takeUnless {
+            it.kind == SymbolKind.Package && !packageSymbolHasImportPath(it, document)
+        }
         return when (node.kind) {
             SymbolKind.File -> when {
-                matchingChild == null -> node
-                matchingChild.kind == SymbolKind.Namespace ->
-                    findEnclosingFileOrNamespaceSymbol(matchingChild, position)
+                effectiveChild == null -> node
+                effectiveChild.kind == SymbolKind.Namespace ->
+                    findEnclosingFileOrNamespaceSymbol(effectiveChild, position, document)
                 else -> null
             }
 
             SymbolKind.Namespace -> when {
-                matchingChild == null -> node
-                matchingChild.kind == SymbolKind.Namespace ->
-                    findEnclosingFileOrNamespaceSymbol(matchingChild, position)
+                effectiveChild == null -> node
+                effectiveChild.kind == SymbolKind.Namespace ->
+                    findEnclosingFileOrNamespaceSymbol(effectiveChild, position, document)
                 else -> null
             }
 

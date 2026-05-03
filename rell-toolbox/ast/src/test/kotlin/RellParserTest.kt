@@ -10,6 +10,8 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isGreaterThanOrEqualTo
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.*
+import net.postchain.rell.base.compiler.parser.antlr.RellManualLexer
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCodeSnippet
@@ -37,9 +39,9 @@ class RellParserTest {
     private val parseHarness: ThreadLocal<GrammarParseHarness> = ThreadLocal.withInitial { GrammarParseHarness() }
 
     private class GrammarParseHarness {
-        private val lexer = RellLexer(CharStreams.fromString(""))
+        private val lexer = RellManualLexer(CharStreams.fromString(""))
         private val tokens = CommonTokenStream(lexer)
-        private val parser = RellParser(tokens)
+        private val parser = RellManualParser(tokens)
 
         init {
             lexer.removeErrorListeners()
@@ -50,7 +52,7 @@ class RellParserTest {
             lexer.inputStream = CharStreams.fromString(sourceCode)
             tokens.tokenSource = lexer
             parser.reset()
-            parser.ruleX_RootParser()
+            parser.file()
             return parser.numberOfSyntaxErrors
         }
     }
@@ -152,13 +154,19 @@ class RellParserTest {
         val sourcePath = IdeDirApi.parseSourcePath(sourceFile)
         val idePath = IdeSourcePathFilePath(sourcePath!!)
 
-        val transformedAst = TestSourceFile(parser, sourcePath, sourceCode).readAst()
-        val compilerAst = C_Parser.parse(sourcePath, idePath, sourceCode)
-
-        try {
-            assertThat(transformedAst).isSimilarTo(compilerAst)
-        } catch (_: Exception) {
+        // Differential check: post-migration `C_Parser.parse` runs the same ANTLR pipeline as
+        // `AntlrRellParser`, so it would compare equally with itself. `parseLegacy` exposes the
+        // pre-migration `better-parse` pipeline; if the legacy parser rejects the snippet we have
+        // no reference AST and the case is skipped (signalled to the outer loop via C_CommonError).
+        val legacyAst = try {
+            C_Parser.parseLegacy(sourcePath, idePath, sourceCode)
+        } catch (e: C_Error) {
+            throw C_CommonError(e.code, e.errMsg)
         }
+
+        val transformedAst = TestSourceFile(parser, sourcePath, sourceCode).readAst()
+
+        assertThat(transformedAst).isSimilarTo(legacyAst)
 
         return ParsingArtifacts(sourcePath, idePath, transformedAst, sourceCode)
     }

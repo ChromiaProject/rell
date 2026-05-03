@@ -4,11 +4,11 @@
 
 package net.postchain.rell.toolbox.linter.rules
 
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.issues.ImportFromNonModuleIssue
-import net.postchain.rell.toolbox.parser.RellParser
 import java.nio.file.Paths
 
 class ImportFromNonModuleRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
@@ -22,11 +22,11 @@ class ImportFromNonModuleRule(config: LinterOptions, resource: Resource, linterC
 
     override val ruleId = RULE_ID
 
-    override fun visitRuleX_RootParser(ctx: RellParser.RuleX_RootParserContext) {
-        hasModuleHeader = ctx.ruleX_ModuleHeader() != null
+    override fun visitFile(ctx: RellManualParser.FileContext) {
+        hasModuleHeader = ctx.moduleHeader() != null
     }
 
-    override fun visitRuleX_ImportDef(ctx: RellParser.RuleX_ImportDefContext) {
+    override fun visitImportDef(ctx: RellManualParser.ImportDefContext) {
         if (isDisabled(config.ruleImportFromNonModule) || hasIgnoreCommentOnTop(ctx.start) || hasSemanticErrors()) {
             return
         }

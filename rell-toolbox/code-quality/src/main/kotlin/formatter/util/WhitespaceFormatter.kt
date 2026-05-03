@@ -5,8 +5,8 @@
 package net.postchain.rell.toolbox.formatter.util
 
 import net.postchain.rell.toolbox.formatter.FormattableDocument
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_tkCOMMAContext
 import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.tree.TerminalNode
 
 class WhitespaceFormatter(private val tokenAnalyzer: TokenAnalyzer) {
 
@@ -39,10 +39,11 @@ class WhitespaceFormatter(private val tokenAnalyzer: TokenAnalyzer) {
     }
 
     fun formatTrailingComma(
-        trailingComma: RuleX_tkCOMMAContext?,
+        trailingComma: TerminalNode?,
         doc: FormattableDocument,
         newLine: Boolean = false
     ) {
+        if (trailingComma == null) return
         doc.prepend(trailingComma) {
             it.noSpace()
             it.setNewLines(0)

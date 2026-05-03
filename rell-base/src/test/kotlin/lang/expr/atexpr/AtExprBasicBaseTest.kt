@@ -276,33 +276,41 @@ abstract class AtExprBasicBaseTest: AtExprBaseTest() {
     }
 
     @Test fun testSortLegacy() {
+        // The legacy `sort` / `-sort` keyword in at-expression what-clauses was removed when the
+        // parser switched from better-parse to ANTLR (see RellManual.g4). The compatibility-version
+        // gating no longer applies; both forms are always syntax errors now. The annotation forms
+        // (@sort, @sort_desc) remain supported.
         tst.strictToString = false
         initDataUserCompany()
 
         tst.compatibilityVer("0.10.9")
 
-        chk("$fromUser @* { .company.name == 'Apple' } ( @sort _=.firstName, sort _=.lastName )", "[(Steve,Jobs), (Steve,Wozniak)]")
-        chk("$fromUser @* { .company.name == 'Apple' } ( @sort _=.firstName, -sort _=.lastName )", "[(Steve,Wozniak), (Steve,Jobs)]")
+        chk("$fromUser @* { .company.name == 'Apple' } ( @sort _=.firstName, sort _=.lastName )", "ct_err:syntax")
+        chk("$fromUser @* { .company.name == 'Apple' } ( @sort _=.firstName, -sort _=.lastName )", "ct_err:syntax")
 
-        chk("$fromUser @* {} ( @sort _=.company.name, sort _=.lastName )",
-                "[(Amazon,Bezos), (Apple,Jobs), (Apple,Wozniak), (Facebook,Zuckerberg), (Google,Brin), (Google,Page), " +
-                        "(Microsoft,Allen), (Microsoft,Gates)]")
+        chk("$fromUser @* {} ( @sort _=.company.name, sort _=.lastName )", "ct_err:syntax")
 
         chk("$fromUser @* {} ( .firstName )", "[Mark, Steve, Steve, Jeff, Bill, Paul, Sergey, Larry]")
 
-        chk("$fromUser @* {} ( sort .firstName )", "[Bill, Jeff, Larry, Mark, Paul, Sergey, Steve, Steve]")
-        chkWarn("at:what:sort:deprecated:sort")
+        chk("$fromUser @* {} ( sort .firstName )", "ct_err:unknown_name:sort")
+        chk("$fromUser @* {} ( -sort .firstName )", "ct_err:unknown_name:sort")
 
-        chk("$fromUser @* {} ( -sort .firstName )", "[Steve, Steve, Sergey, Paul, Mark, Larry, Jeff, Bill]")
-        chkWarn("at:what:sort:deprecated:sort_desc")
-
-        chk("$fromUser @* {} ( @sort sort .firstName )", "ct_err:at:what:sort:specified_by_kw_and_ann")
-        chk("$fromUser @* {} ( @sort_desc sort .firstName )", "ct_err:at:what:sort:specified_by_kw_and_ann")
-        chk("$fromUser @* {} ( @sort -sort .firstName )", "ct_err:at:what:sort:specified_by_kw_and_ann")
-        chk("$fromUser @* {} ( @sort_desc -sort .firstName )", "ct_err:at:what:sort:specified_by_kw_and_ann")
+        // Col-mode collection at-exprs surface an extra `at:expr:sort:type:<error>` because the
+        // unknown `sort` identifier propagates through the @sort annotation's type check.
+        val sortErr = if (impKind is AtExprTestKind_Db) {
+            "ct_err:unknown_name:sort"
+        } else {
+            "ct_err:[at:expr:sort:type:<error>][unknown_name:sort]"
+        }
+        chk("$fromUser @* {} ( @sort sort .firstName )", sortErr)
+        chk("$fromUser @* {} ( @sort_desc sort .firstName )", sortErr)
+        chk("$fromUser @* {} ( @sort -sort .firstName )", sortErr)
+        chk("$fromUser @* {} ( @sort_desc -sort .firstName )", sortErr)
     }
 
     @Test fun testSortLegacyVersionControl() {
+        // The legacy `sort` / `-sort` keyword in at-expressions was removed in the ANTLR grammar;
+        // it is no longer accepted at any compatibility version.
         tst.strictToString = false
         initDataUserCompany()
 
@@ -315,7 +323,7 @@ abstract class AtExprBasicBaseTest: AtExprBaseTest() {
 
         tst.compatibilityVer("0.10.9")
         chkSortLegacy("@sort", "@sort_desc")
-        chkSortLegacy("sort", "-sort")
+        chkSortLegacyErr()
     }
 
     private fun chkSortLegacy(asc: String, desc: String) {

@@ -4,28 +4,28 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.*
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.ExpressionFormatter
+import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
 import net.postchain.rell.toolbox.formatter.util.WhitespaceFormatter
-import net.postchain.rell.toolbox.parser.RellParser.*
 
 class RootNodeFormatter(
-    private val expressionFormatter: ExpressionFormatter
-) : NodeFormatter<RuleX_RootParserContext> {
-    override fun format(node: RuleX_RootParserContext, doc: FormattableDocument) {
-        doc.format(node.ruleX_ModuleHeader())
-        expressionFormatter.formatOpeningClosingLines(node.ruleX_AnnotatedDef(), doc)
-        node.ruleX_AnnotatedDef().forEach { xAnnotedDef ->
-            doc.format(xAnnotedDef)
-        }
+    private val expressionFormatter: ExpressionFormatter,
+    private val tokenAnalyzer: TokenAnalyzer,
+) : NodeFormatter<FileContext> {
+    override fun format(node: FileContext, doc: FormattableDocument) {
+        node.moduleHeader()?.let { doc.format(it) }
+        expressionFormatter.formatOpeningClosingLines(node.annotatedDef(), doc)
+        node.annotatedDef().forEach { doc.format(it) }
     }
 }
 
 class MooduleHeaderFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
-) : NodeFormatter<RuleX_ModuleHeaderContext> {
-    override fun format(node: RuleX_ModuleHeaderContext, doc: FormattableDocument) {
+) : NodeFormatter<ModuleHeaderContext> {
+    override fun format(node: ModuleHeaderContext, doc: FormattableDocument) {
         whitespaceFormatter.formatSemicolon(node, doc)
         doc.prepend(node) { it.noSpace() }
         doc.append(node) {
@@ -37,23 +37,19 @@ class MooduleHeaderFormatter(
 
 class ModifierFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
-) : NodeFormatter<RuleX_ModifierContext> {
-    override fun format(node: RuleX_ModifierContext, doc: FormattableDocument) {
-        val annotation = node.ruleX_Annotation()
-        doc.append(annotation) {
-            it.newLine()
-            it.highPriority()
-        }
-        node.ruleX_KeywordModifier()?.ruleX_KeywordModifier0()?.ruleX_Modifier_0()?.let {
-            whitespaceFormatter.formatModifier(it, doc)
-        }
-
-        node.ruleX_KeywordModifier()?.ruleX_KeywordModifier0()?.ruleX_Modifier_1()?.let {
-            whitespaceFormatter.formatModifier(it, doc)
-        }
-
-        node.ruleX_KeywordModifier()?.ruleX_KeywordModifier0()?.ruleX_Modifier_2()?.let {
-            whitespaceFormatter.formatModifier(it, doc)
+) : NodeFormatter<ModifierContext> {
+    override fun format(node: ModifierContext, doc: FormattableDocument) {
+        // The new grammar inlines keyword modifiers and annotations into the same alt list.
+        // If the modifier is an annotation, terminate the line; if a keyword, ensure one space.
+        val annotation = node.annotation()
+        if (annotation != null) {
+            doc.append(annotation) {
+                it.newLine()
+                it.highPriority()
+            }
+        } else {
+            // Keyword modifier (abstract / mutable / override): single space afterwards.
+            whitespaceFormatter.formatModifier(node, doc)
         }
     }
 }

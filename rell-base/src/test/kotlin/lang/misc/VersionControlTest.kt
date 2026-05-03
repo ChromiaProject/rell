@@ -140,13 +140,15 @@ class VersionControlTest: BaseRellTest() {
     }
 
     @Test fun testSortKeyword() {
+        // The ANTLR grammar drops the legacy `sort` keyword (formerly only valid as an at-expression
+        // ordering modifier); `sort` is now a regular identifier at every compatibility version.
         chkLegacyKw("sort", "OK")
 
         tst.compatibilityVer("0.10.10")
         chkLegacyKw("sort", "OK")
 
         tst.compatibilityVer("0.10.9")
-        chkLegacyKw("sort", "ct_err:syntax")
+        chkLegacyKw("sort", "OK")
     }
 
     @Suppress("SameParameterValue")

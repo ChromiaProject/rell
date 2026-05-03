@@ -6,14 +6,15 @@ function varVal() {
 
     var2 = var2 + 1;
 
-    val (a, b, c) = (1, 2, 3);
+    val (a, b, c) = (1 , 2 , 3);
     val (
         (d, e),
         f,
         g
     ) = (
-        (1, 2),
-        2,
+        (1, 2)
+    ,
+        2    ,
         3
     );
 

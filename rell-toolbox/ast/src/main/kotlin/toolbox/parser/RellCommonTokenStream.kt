@@ -4,9 +4,19 @@
 
 package net.postchain.rell.toolbox.parser
 
+import org.antlr.v4.runtime.Lexer
 import org.antlr.v4.runtime.Token
 
-class RellCommonTokenStream(lexer: RellLexer) : AbstractRellCommonTokenStream(lexer) {
+/**
+ * Common token stream used across both the legacy `Rell.g4` and the canonical `RellManual.g4`
+ * lexers. The relevant token-type constants (`RULE_ML_COMMENT`, `RULE_SL_COMMENT`, etc.) and the
+ * `COMMENTS` channel are identical between the two grammars, so we resolve the comment-token id
+ * at construction time from the lexer's token-type map.
+ */
+class RellCommonTokenStream(lexer: Lexer) : AbstractRellCommonTokenStream(lexer) {
+
+    private val mlCommentType: Int = lexer.tokenTypeMap["RULE_ML_COMMENT"] ?: -1
+
     override fun getPreviousTokenOnChannel(tokenIndex: Int, channel: Int): Token? {
         if (tokenIndex <= 0) return null
         val prevOnChannel = previousTokenOnChannel(tokenIndex - 1, channel)
@@ -14,11 +24,11 @@ class RellCommonTokenStream(lexer: RellLexer) : AbstractRellCommonTokenStream(le
     }
 
     override fun getPreviousRellDocCommentToken(tokenIndex: Int): Token? {
-        if (tokenIndex < 0 || tokenIndex >= tokens.size || get(tokenIndex).channel != RellLexer.DEFAULT_TOKEN_CHANNEL) {
+        if (tokenIndex < 0 || tokenIndex >= tokens.size || get(tokenIndex).channel != Lexer.DEFAULT_TOKEN_CHANNEL) {
             return null
         }
         return getPreviousTokenOnChannel(tokenIndex, RellCustomTokenChannels.COMMENTS.channel)?.takeIf {
-            nextTokenOnChannel(it.tokenIndex, RellLexer.DEFAULT_TOKEN_CHANNEL) == tokenIndex && isRellDocComment(it)
+            nextTokenOnChannel(it.tokenIndex, Lexer.DEFAULT_TOKEN_CHANNEL) == tokenIndex && isRellDocComment(it)
         }
     }
 
@@ -28,7 +38,7 @@ class RellCommonTokenStream(lexer: RellLexer) : AbstractRellCommonTokenStream(le
     }
 
     override fun isRellDocComment(token: Token?): Boolean {
-        if (token == null || token.type != RellLexer.RULE_ML_COMMENT) {
+        if (token == null || token.type != mlCommentType) {
             return false
         }
         val text = token.text

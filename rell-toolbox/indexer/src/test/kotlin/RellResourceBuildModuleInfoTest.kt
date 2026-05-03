@@ -55,12 +55,10 @@ class RellResourceBuildModuleInfoTest {
         val sRellFileImport = rellDesc.buildRellAstWithCompilerErrors(
             compilerSourcePathImport,
             parseTreeImport,
-            importParseResult.parser.tokenStream
         ).first
         val sRellFileSemanticError = rellDesc.buildRellAstWithCompilerErrors(
             compilerSourcePathSemanticError,
             parseTreeSematicError,
-            importParseResult.parser.tokenStream
         ).first
 
         val rellCompileResultSemanticError = rellDesc.compileResult(
@@ -94,11 +92,9 @@ class RellResourceBuildModuleInfoTest {
 
         val rellDesc = RellResourceFactory(workspaceError.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
         val parsingResult = rellDesc.buildParseTree(fileContent)
-        val parseTree = parsingResult.parseTree
         val sRellFile = rellDesc.buildRellAstWithCompilerErrors(
             compilerSourcePath,
-            parseTree,
-            parsingResult.parser.tokenStream
+            parsingResult.parseTree,
         ).first
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
 

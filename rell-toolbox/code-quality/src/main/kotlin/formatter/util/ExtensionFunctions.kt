@@ -4,118 +4,127 @@
 
 package net.postchain.rell.toolbox.formatter.util
 
-import net.postchain.rell.toolbox.parser.RellParser.*
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.*
+import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.tree.TerminalNode
 
-internal fun RuleX_CallArgsContext.getCallArgWithTrailingComma():
-    Pair<List<RuleX_CallArgContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CommaSeparated_28()?.ruleX_CommaSeparated_27()
-    return Pair(commaSeparated?.ruleX_CallArg(), commaSeparated?.ruleX_tkCOMMA())
+/**
+ * Find the trailing comma of a comma-separated list inside [node]: a `,` terminal that is
+ * immediately followed by the closing brace/bracket of the list. Returns `null` if no such
+ * trailing comma exists. Searches only direct children, not nested contexts.
+ *
+ * The closing brace text is one of `)`, `]`, `}`, `>`. We don't take it as a parameter and
+ * instead scan from the end for the last `,` whose next non-empty sibling is a closing token.
+ */
+internal fun ParserRuleContext.findTrailingComma(closing: String): TerminalNode? {
+    val n = childCount
+    var seenClosing = false
+    for (i in n - 1 downTo 0) {
+        val c = getChild(i)
+        if (c is TerminalNode) {
+            val t = c.symbol.text
+            if (t == closing) {
+                seenClosing = true
+                continue
+            }
+            if (seenClosing) {
+                return if (t == ",") c else null
+            }
+        } else if (seenClosing) {
+            // A rule context between closing and a potential comma: not a trailing comma.
+            return null
+        }
+    }
+    return null
 }
 
-internal fun RuleX_AtExprWhereContext.getExpressionRefWithTrailingComma():
-    Pair<List<RuleX_ExpressionRefContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CommaSeparated_20()?.ruleX_CommaSeparated_19()
-    return Pair(commaSeparated?.ruleX_ExpressionRef(), commaSeparated?.ruleX_tkCOMMA())
+internal fun CallArgsContext.getCallArgsItems(): Pair<List<ExpressionContext>, TerminalNode?> {
+    val exprs = expression()
+    return Pair(exprs, findTrailingComma(")"))
 }
 
-internal fun RuleX_FormalParametersContext.getFormalParameterWithTrailingComma():
-    Pair<List<RuleX_FormalParameterContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CommaSeparated_36()?.ruleX_CommaSeparated_35()
-    return Pair(commaSeparated?.ruleX_FormalParameter(), commaSeparated?.ruleX_tkCOMMA())
+internal fun AtExprWhereContext.getWhereItems(): Pair<List<ExpressionContext>, TerminalNode?> {
+    return Pair(expression(), findTrailingComma("}"))
 }
 
-internal fun RuleX_EnumDefContext.getXNamesWithTrailingComma():
-    Pair<List<RuleX_EnumValueContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CommaSeparated_12()?.ruleX_CommaSeparated_11()
-    return Pair(commaSeparated?.ruleX_EnumValue(), commaSeparated?.ruleX_tkCOMMA())
+internal fun FormalParametersContext.getFormalParametersItems():
+    Pair<List<FormalParameterContext>, TerminalNode?> {
+    return Pair(formalParameter(), findTrailingComma(")"))
 }
 
-internal fun RuleX_KeyIndexClauseContext.getAttributeDefsWithTrailingComma():
-    Pair<List<RuleX_BaseAttributeDefinitionContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CommaSeparated_8()
-    return Pair(commaSeparated?.ruleX_BaseAttributeDefinition(), commaSeparated?.ruleX_tkCOMMA())
+internal fun EnumDefContext.getEnumValues(): Pair<List<TerminalNode>, TerminalNode?> {
+    // First RULE_ID is the enum name (matched by the grammar before '{'); subsequent
+    // RULE_IDs inside the braces are the enum values. Walk children, skip until '{',
+    // collect RULE_IDs, stop at '}'.
+    val values = mutableListOf<TerminalNode>()
+    var inside = false
+    for (i in 0 until childCount) {
+        val c = getChild(i)
+        if (c is TerminalNode) {
+            when (c.symbol.text) {
+                "{" -> inside = true
+                "}" -> break
+                else -> if (inside && c.symbol.type == RULE_ID) values.add(c)
+            }
+        }
+    }
+    return Pair(values, findTrailingComma("}"))
 }
 
-internal fun RuleX_AnnotationArgsContext.getAnnotationArgWithTrailingComma():
-    Pair<List<RuleX_AnnotationArgContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CommaSeparated_7()?.ruleX_CommaSeparated_6()
-    return Pair(commaSeparated?.ruleX_AnnotationArg(), commaSeparated?.ruleX_tkCOMMA())
+internal fun KeyIndexClauseContext.getAttrItems():
+    Pair<List<BaseAttributeDefinitionContext>, TerminalNode?> {
+    return Pair(baseAttributeDefinition(), findTrailingComma(";"))
 }
 
-internal fun RuleX_CreateExprContext.getCreateExprArgWithTrailingComma():
-    Pair<List<RuleX_CreateExprArgContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CreateExprArgs()?.ruleX_CommaSeparated_26()?.ruleX_CommaSeparated_25()
-    return Pair(commaSeparated?.ruleX_CreateExprArg(), commaSeparated?.ruleX_tkCOMMA())
+internal fun AnnotationArgsContext.getAnnotationArgs():
+    Pair<List<AnnotationArgContext>, TerminalNode?> {
+    return Pair(annotationArg(), findTrailingComma(")"))
 }
 
-internal fun RuleX_UpdateStmtContext.getUpdateWhatExprWithTrailingComma():
-    Pair<List<RuleX_UpdateWhatExprContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_UpdateWhat()?.ruleX_CommaSeparated_34()?.ruleX_CommaSeparated_33()
-    return Pair(commaSeparated?.ruleX_UpdateWhatExpr(), commaSeparated?.ruleX_tkCOMMA())
+internal fun NonEmptyMapLiteralExprContext.getMapEntries(): List<Pair<ExpressionContext, ExpressionContext>> {
+    // expression items come in pairs separated by ':'. Walk children pairing them up.
+    val exprs = expression()
+    val result = mutableListOf<Pair<ExpressionContext, ExpressionContext>>()
+    var i = 0
+    while (i + 1 < exprs.size) {
+        result.add(exprs[i] to exprs[i + 1])
+        i += 2
+    }
+    return result
 }
 
-internal fun RuleX_AtExprFromContext.getAtExprFromItemWithTrailingComma():
-    Pair<List<RuleX_AtExprFromItemContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CommaSeparated_16()?.ruleX_CommaSeparated_15()
-    return Pair(commaSeparated?.ruleX_AtExprFromItem(), commaSeparated?.ruleX_tkCOMMA())
+internal fun ListLiteralExprContext.getListItems(): Pair<List<ExpressionContext>, TerminalNode?> {
+    return Pair(expression(), findTrailingComma("]"))
 }
 
-internal fun RuleX_AtExprWhatComplexContext.getAtExprWhatComplexItemWithTrailingComma():
-    Pair<List<RuleX_AtExprWhatComplexItemContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CommaSeparated_18()?.ruleX_CommaSeparated_17()
-    return Pair(commaSeparated?.ruleX_AtExprWhatComplexItem(), commaSeparated?.ruleX_tkCOMMA())
+internal fun GenericOrNameTypeContext.getTypeArgs(): Pair<List<TypeContext>, TerminalNode?> {
+    return Pair(type(), findTrailingComma(">"))
 }
 
-internal fun RuleX_AtExprWhatComplexItemContext.getBaseExpr(): RuleX_BaseExprContext? =
-    ruleX_ExpressionRef()?.ruleX_Expression()?.ruleX_UnaryExpr()?.ruleX_OperandExpr()?.ruleX_BaseExpr()
-
-internal fun RuleX_TupleVarDeclaratorContext.getTupleVarContext(): RuleX_CommaSeparated_30Context =
-    ruleX_CommaSeparated_30()
-
-internal fun RuleX_TupleVarDeclaratorContext.getVarDeclaratorWithTrailingComma():
-    Pair<List<RuleX_VarDeclaratorContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CommaSeparated_30()?.ruleX_CommaSeparated_29()
-    return Pair(commaSeparated?.ruleX_VarDeclarator(), commaSeparated?.ruleX_tkCOMMA())
+internal fun EntityAnnotationsContext.getAnnotationNames(): Pair<List<TerminalNode>, TerminalNode?> {
+    val ids = mutableListOf<TerminalNode>()
+    for (i in 0 until childCount) {
+        val c = getChild(i)
+        if (c is TerminalNode && c.symbol.type == RULE_ID) ids.add(c)
+    }
+    return Pair(ids, findTrailingComma(")"))
 }
 
-internal fun RuleX_NonEmptyMapLiteralExprContext.getMapExprContext(): RuleX_CommaSeparated_24Context =
-    ruleX_CommaSeparated_24()
-
-internal fun RuleX_NonEmptyMapLiteralExprContext.getMapExprEntryWithTrailingComma():
-    Pair<List<RuleX_MapLiteralExprEntryContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CommaSeparated_24()?.ruleX_CommaSeparated_23()
-    return Pair(commaSeparated?.ruleX_MapLiteralExprEntry(), commaSeparated?.ruleX_tkCOMMA())
+internal fun TupleVarDeclaratorContext.getVarDeclaratorItems():
+    Pair<List<VarDeclaratorContext>, TerminalNode?> {
+    return Pair(varDeclarator(), findTrailingComma(")"))
 }
 
-internal fun RuleX_GenericTypeContext.getGenericTypeContext(): RuleX_CommaSeparated_3Context =
-    ruleX_CommaSeparated_3()
-
-internal fun RuleX_GenericTypeContext.getTypeRefWithTrailingComma():
-    Pair<List<RuleX_TypeRefContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CommaSeparated_3()?.ruleX_CommaSeparated_2()
-    return Pair(commaSeparated?.ruleX_TypeRef(), commaSeparated?.ruleX_tkCOMMA())
-}
-
-internal fun RuleX_ListLiteralExprContext.getListLiteralExprContext(): RuleX_CommaSeparated_22Context =
-    ruleX_CommaSeparated_22()
-
-internal fun RuleX_ListLiteralExprContext.getExpressionRefWithTrailingComma():
-    Pair<List<RuleX_ExpressionRefContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CommaSeparated_22()?.ruleX_CommaSeparated_21()
-    return Pair(commaSeparated?.ruleX_ExpressionRef(), commaSeparated?.ruleX_tkCOMMA())
-}
-
-internal fun RuleX_EntityAnnotationsContext.getEntityAnnotationContext():
-    RuleX_CommaSeparated_10Context = ruleX_CommaSeparated_10()
-
-internal fun RuleX_EntityAnnotationsContext.getXNamesWithTrailingComma():
-    Pair<List<RuleX_NameContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CommaSeparated_10()?.ruleX_CommaSeparated_9()
-    return Pair(commaSeparated?.ruleX_Name(), commaSeparated?.ruleX_tkCOMMA())
-}
-
-internal fun RuleX_TupleExprContext.getXNamesWithTrailingComma():
-    Pair<List<RuleX_TupleExprFieldContext>?, RuleX_tkCOMMAContext?> {
-    val commaSeparated = ruleX_CommaSeparated_14()?.ruleX_CommaSeparated_13()
-    return Pair(commaSeparated?.ruleX_TupleExprField(), commaSeparated?.ruleX_tkCOMMA())
+/**
+ * Find every direct-child terminal in [parent] whose text equals [text]. Used to format
+ * inline tokens like `=` (assignment labels), `,` (between list items), or keywords that
+ * the grammar inlines instead of wrapping in dedicated rule contexts.
+ */
+internal fun ParserRuleContext.directTerminals(text: String): List<TerminalNode> {
+    val result = mutableListOf<TerminalNode>()
+    for (i in 0 until childCount) {
+        val c = getChild(i)
+        if (c is TerminalNode && c.symbol.text == text) result.add(c)
+    }
+    return result
 }

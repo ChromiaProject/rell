@@ -5,50 +5,21 @@ package net.postchain.rell.benchmarks.report
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import kotlinx.html.DL
-import kotlinx.html.FlowContent
-import kotlinx.html.HTML
-import kotlinx.html.a
-import kotlinx.html.body
-import kotlinx.html.code
-import kotlinx.html.dd
-import kotlinx.html.div
-import kotlinx.html.dl
-import kotlinx.html.dt
-import kotlinx.html.footer
-import kotlinx.html.h1
-import kotlinx.html.h3
-import kotlinx.html.head
-import kotlinx.html.header
-import kotlinx.html.html
-import kotlinx.html.link
-import kotlinx.html.main
-import kotlinx.html.meta
-import kotlinx.html.p
-import kotlinx.html.section
-import kotlinx.html.span
+import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
-import kotlinx.html.style
-import kotlinx.html.table
-import kotlinx.html.tbody
-import kotlinx.html.td
-import kotlinx.html.th
-import kotlinx.html.thead
-import kotlinx.html.title
-import kotlinx.html.tr
-import kotlinx.html.unsafe
 import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlinx.kandy.dsl.categorical
 import org.jetbrains.kotlinx.kandy.dsl.plot
 import org.jetbrains.kotlinx.kandy.letsplot.export.toSVG
 import org.jetbrains.kotlinx.kandy.letsplot.feature.layout
 import org.jetbrains.kotlinx.kandy.letsplot.layers.bars
+import org.jetbrains.kotlinx.kandy.letsplot.scales.guide.LegendType
 import org.jetbrains.kotlinx.kandy.util.color.Color
 import java.io.File
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.util.*
 import kotlin.system.exitProcess
 
 private data class JmhMetric(
@@ -79,13 +50,14 @@ private const val ACCENT = "#C1440E"
 
 private val METHOD_COLOR = mapOf(
     "antlr" to ACCENT,
-    "antlrNoTree" to "#2E5E8A",
     "antlrSLL" to "#1F6B4A",
+    "manualAntlr" to "#E07A4E",
+    "manualAntlrSLL" to "#4FA37D",
     "betterParse" to "#0F0F10",
     "runQuery" to ACCENT,
 )
 
-private val PALETTE = listOf(ACCENT, "#2E5E8A", "#1F6B4A", "#0F0F10", "#8A5E2E", "#5E2E8A")
+private val PALETTE = listOf(ACCENT, "#2E5E8A", "#1F6B4A", "#8A5E2E", "#5E2E8A", "#B07A1E")
 
 private const val DEFAULT_COLOR = "#6B6D73"
 
@@ -132,6 +104,7 @@ private fun parseArgs(args: Array<String>): Args {
                 println("Usage: report --input <json> --output <html>")
                 exitProcess(0)
             }
+
             else -> error("Unknown argument: ${args[i]}")
         }
         i++
@@ -281,60 +254,76 @@ private fun FlowContent.renderResults(
         .orEmpty()
     val strap = if (unit.isNotEmpty()) "$unit · lower is better" else ""
     renderSection(benchmarkClass.lowercase(), strap) {
-    div(classes = "bars-wrap") {
-        unsafe { +renderBarChart(pivot, methods) }
-    }
-    div(classes = "legend") {
-        methods.forEachIndexed { i, method ->
-            div(classes = "legend-item") {
-                span(classes = "swatch") {
-                    attributes["style"] = "background:${colorFor(method, i)}"
+        div(classes = "bars-grid") {
+            pivot.forEach { (sample, byMethod) ->
+                val svg = renderSamplePanel(sample, byMethod, methods)
+                if (svg.isNotEmpty()) {
+                    div(classes = "bars-panel") {
+                        div(classes = "bars-panel-title") { +sample }
+                        div(classes = "bars-panel-svg") { unsafe { +svg } }
+                    }
                 }
-                span(classes = "legend-label") { +method }
             }
         }
-    }
-    div(classes = "table-scroll") {
-        table(classes = "results") {
-            thead {
-                tr {
-                    th { +"Sample" }
-                    methods.forEach { method ->
-                        th(classes = "num") {
-                            +method
-                            if (unit.isNotEmpty()) span(classes = "unit") { +" $unit" }
-                        }
+        div(classes = "legend") {
+            methods.forEachIndexed { i, method ->
+                div(classes = "legend-item") {
+                    span(classes = "swatch") {
+                        attributes["style"] = "background:${colorFor(method, i)}"
                     }
-                    if (methods.size == 2) th(classes = "num") { +"Ratio" }
+                    span(classes = "legend-label") { +method }
                 }
             }
-            tbody {
-                pivot.forEach { (sample, byMethod) ->
+        }
+        div(classes = "table-scroll") {
+            table(classes = "results") {
+                thead {
                     tr {
-                        td(classes = "name") { +sample }
+                        th { +"Sample" }
                         methods.forEach { method ->
-                            val r = byMethod[method]
-                            td(classes = "num") {
-                                if (r != null) {
-                                    val m = r.primaryMetric
-                                    +"%.3f".formatRoot(m.score)
-                                    span(classes = "err") { +" ± %.3f".formatRoot(m.scoreError) }
-                                } else {
-                                    +"—"
-                                }
+                            th(classes = "num") {
+                                +method
+                                if (unit.isNotEmpty()) span(classes = "unit") { +" $unit" }
                             }
                         }
-                        if (methods.size == 2) {
-                            td(classes = "num") {
-                                val a = byMethod[methods[0]]?.primaryMetric?.score
-                                val b = byMethod[methods[1]]?.primaryMetric?.score
-                                if (a != null && b != null && a > 0 && b > 0) {
-                                    val ratio = if (a < b) b / a else a / b
-                                    val faster = if (a < b) methods[0] else methods[1]
-                                    span(classes = "ratio") { +"%.2f×".formatRoot(ratio) }
-                                    span(classes = "ratio-note") { +" $faster" }
-                                } else {
-                                    +"—"
+                        if (methods.size == 2) th(classes = "num") { +"Ratio" }
+                    }
+                }
+                tbody {
+                    pivot.forEach { (sample, byMethod) ->
+                        val winner = methods
+                            .mapNotNull { m -> byMethod[m]?.primaryMetric?.score?.let { m to it } }
+                            .filter { it.second > 0 }
+                            .minByOrNull { it.second }
+                            ?.first
+                            ?.takeIf { byMethod.values.count { it.primaryMetric.score > 0 } > 1 }
+                        tr {
+                            td(classes = "name") { +sample }
+                            methods.forEach { method ->
+                                val r = byMethod[method]
+                                val cls = if (method == winner) "num winner" else "num"
+                                td(classes = cls) {
+                                    if (r != null) {
+                                        val m = r.primaryMetric
+                                        +"%.3f".formatRoot(m.score)
+                                        span(classes = "err") { +" ± %.3f".formatRoot(m.scoreError) }
+                                    } else {
+                                        +"—"
+                                    }
+                                }
+                            }
+                            if (methods.size == 2) {
+                                td(classes = "num") {
+                                    val a = byMethod[methods[0]]?.primaryMetric?.score
+                                    val b = byMethod[methods[1]]?.primaryMetric?.score
+                                    if (a != null && b != null && a > 0 && b > 0) {
+                                        val ratio = if (a < b) b / a else a / b
+                                        val faster = if (a < b) methods[0] else methods[1]
+                                        span(classes = "ratio") { +"%.2f×".formatRoot(ratio) }
+                                        span(classes = "ratio-note") { +" $faster" }
+                                    } else {
+                                        +"—"
+                                    }
                                 }
                             }
                         }
@@ -342,7 +331,6 @@ private fun FlowContent.renderResults(
                 }
             }
         }
-    }
     }
 }
 
@@ -364,60 +352,45 @@ private fun FlowContent.renderMethodology(head: JmhResult) = renderSection("meth
     }
 }
 
-private fun FlowContent.renderColophon(source: File, generatedAt: Instant) {
-    footer(classes = "colophon") {
-        div(classes = "colophon-inner") {
-            span { +"kotlinx-benchmark + Kotlin renderer" }
-            span(classes = "sep") { +"·" }
-            span { a(href = "https://gitlab.com/chromaway/rell") { +"chromaway/rell" } }
-            span(classes = "colophon-spacer") {}
-            span(classes = "colophon-meta") { +source.name }
-            span(classes = "sep") { +"·" }
-            span(classes = "colophon-meta") { +generatedAt.toHuman() }
-        }
+private fun FlowContent.renderColophon(source: File, generatedAt: Instant) = footer(classes = "colophon") {
+    div(classes = "colophon-inner") {
+        span { a(href = "https://gitlab.com/chromaway/rell") { +"chromaway/rell" } }
+        span(classes = "colophon-spacer") {}
+        span(classes = "colophon-meta") { +source.name }
+        span(classes = "sep") { +"·" }
+        span(classes = "colophon-meta") { +generatedAt.toHuman() }
     }
 }
 
-private fun renderBarChart(
-    pivot: Map<String, Map<String, JmhResult>>,
+private fun renderSamplePanel(
+    sample: String,
+    byMethod: Map<String, JmhResult>,
     methods: List<String>,
 ): String {
-    if (pivot.isEmpty() || methods.isEmpty()) return ""
-    val flat = pivot.values.flatMap { it.values }
-    if (flat.isEmpty()) return ""
-    val unit = flat.first().primaryMetric.scoreUnit
-
-    val samples = mutableListOf<String>()
-    val methodCol = mutableListOf<String>()
-    val scores = mutableListOf<Double>()
-    pivot.forEach { (sample, byMethod) ->
-        methods.forEach { method ->
-            val r = byMethod[method] ?: return@forEach
-            samples += sample
-            methodCol += method
-            scores += r.primaryMetric.score
-        }
-    }
+    val present = methods.filter { byMethod[it] != null }
+    if (present.isEmpty()) return ""
+    val unit = byMethod.values.first().primaryMetric.scoreUnit
+    val methodCol = present.toMutableList()
+    val scores = present.map { byMethod.getValue(it).primaryMetric.score }.toMutableList()
 
     return plot {
         bars {
-            x(samples) { axis.name = "" }
+            x(methodCol) { axis.name = "" }
             y(scores) { axis.name = "$unit (lower is better)" }
             fillColor(methodCol) {
                 scale = categorical(
                     *methods.mapIndexed { i, m -> m to Color.hex(colorFor(m, i)) }.toTypedArray(),
                 )
-                legend.name = ""
+                legend.type = LegendType.None
             }
         }
         layout {
-            size = 720 to 360
+            size = 320 to 220
         }
     }.toSVG()
 }
 
-private fun JmhResult.benchmarkClass(): String =
-    benchmark.substringBeforeLast('.').substringAfterLast('.')
+private fun JmhResult.benchmarkClass(): String = benchmark.substringBeforeLast('.').substringAfterLast('.')
 private fun JmhResult.method(): String = benchmark.substringAfterLast('.')
 private fun JmhResult.sample(): String = params["sample"] ?: "—"
 
@@ -532,14 +505,23 @@ main { max-width: 1180px; margin: 0 auto; padding: 2rem 2rem 2.5rem; }
 .sysinfo-block dd { color: var(--ink); font-family: var(--sans); font-size: .82rem; word-break: break-all; }
 .mono { font-family: var(--mono); font-size: .76rem; }
 
-.bars-wrap {
+.bars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: .6rem;
   background: var(--surface);
   border: 1px solid var(--rule);
   padding: .9rem 1rem;
   margin-bottom: 1.2rem;
-  max-width: 720px;
 }
-.bars-wrap svg { display: block; }
+.bars-panel { display: flex; flex-direction: column; min-width: 0; }
+.bars-panel-title {
+  font-family: var(--mono); font-size: .7rem; font-weight: 600;
+  text-transform: lowercase; letter-spacing: .04em;
+  color: var(--ink-soft); padding: .2rem .25rem .35rem;
+  border-bottom: 1px solid var(--rule-hair); margin-bottom: .35rem;
+}
+.bars-panel-svg svg { display: block; max-width: 100%; height: auto; }
 .grid { stroke: var(--rule-hair); stroke-width: 1; }
 .baseline { stroke: var(--ink); stroke-width: 1; }
 .tick { font-family: var(--mono); font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
@@ -568,6 +550,7 @@ tbody tr:hover { background: rgba(193,68,14,0.04); }
 td.name { font-family: var(--sans); font-weight: 500; }
 td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: .82rem; color: var(--ink); }
 td.num .err { color: var(--muted); font-size: .75rem; }
+td.num.winner { font-weight: 700; color: var(--accent); }
 td.num .ratio { color: var(--accent); font-weight: 600; }
 td.num .ratio-note { color: var(--muted); font-family: var(--mono); font-size: .72rem; letter-spacing: .04em; margin-left: .35rem; text-transform: lowercase; }
 

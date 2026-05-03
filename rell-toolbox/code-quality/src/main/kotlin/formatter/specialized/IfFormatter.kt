@@ -4,94 +4,94 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.IfExprContext
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.IfStmtAltContext
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.ExpressionFormatter
 import net.postchain.rell.toolbox.formatter.util.LineAnalyzer
 import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_IfExprContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_IfStmtContext
 
 class IfStmtFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
     private val expressionFormatter: ExpressionFormatter,
     private val lineAnalyzer: LineAnalyzer,
-) : NodeFormatter<RuleX_IfStmtContext> {
-    override fun format(node: RuleX_IfStmtContext, doc: FormattableDocument) {
-        doc.append(node.ruleX_tkIF()) { it.oneSpace() }
-        doc.surround(node.ruleX_Expression()) { it.noSpace() }
-        val xExpression = node.ruleX_Expression()
+) : NodeFormatter<IfStmtAltContext> {
+    override fun format(node: IfStmtAltContext, doc: FormattableDocument) {
+        // ifStmtAlt: 'if' '(' expression ')' statement ('else' statement)?
+        val ifTok = tokenAnalyzer.directTokenFor(node, "if") ?: tokenAnalyzer.tokenFor(node, "if")
+        if (ifTok != null) doc.append(ifTok) { it.oneSpace() }
+
+        val xExpression = node.expression()
+        doc.surround(xExpression) { it.noSpace() }
         if (lineAnalyzer.formatAsMultiLine(
-                expressionFormatter.prependNodeList(xExpression, xExpression.ruleX_BinaryExprOperand())
-            )
+                expressionFormatter.expressionOperands(xExpression)
+            ) && expressionFormatter.hasBinaryOperands(xExpression)
         ) {
-            expressionFormatter.formatMultiLineStmts(
-                xExpression.ruleX_UnaryExpr(),
-                xExpression.ruleX_BinaryExprOperand(),
-                doc
-            )
+            expressionFormatter.formatMultiLineStmts(xExpression, doc)
         } else {
             doc.format(xExpression)
         }
 
-        if (node.ruleX_tkIF().stop.line != node.ruleX_StatementRef().start.line) {
-            val openingCurly = tokenAnalyzer.tokenFor(node.ruleX_StatementRef(), "{")
+        val statements = node.statement()
+        val thenStmt = statements.firstOrNull() ?: return
+        val elseStmt = statements.getOrNull(1)
+
+        if (ifTok != null && ifTok.symbol.line != thenStmt.start.line) {
+            val openingCurly = tokenAnalyzer.tokenFor(thenStmt, "{")
             doc.prepend(openingCurly) {
                 it.oneSpace()
                 it.setNewLines(0)
                 it.highPriority()
             }
-            doc.prepend(node.ruleX_StatementRef()) {
+            doc.prepend(thenStmt) {
                 it.newLine()
             }
             if (openingCurly == null) {
-                doc.prepend(node.ruleX_StatementRef()) {
+                doc.prepend(thenStmt) {
                     it.indent()
                 }
-                doc.interiorIndentRangeIncludeLast(
-                    node.ruleX_StatementRef(),
-                    node.ruleX_StatementRef()
-                )
+                doc.interiorIndentRangeIncludeLast(thenStmt, thenStmt)
             }
         } else {
-            doc.prepend(node.ruleX_StatementRef()) { it.oneSpace() }
+            doc.prepend(thenStmt) { it.oneSpace() }
         }
 
-        val elseStatement = node.ruleX_ElseStmt()
-        if (elseStatement?.ruleX_tkELSE() != null && elseStatement.ruleX_StatementRef() != null) {
-            if (elseStatement.ruleX_tkELSE().stop.line != elseStatement.ruleX_StatementRef().start.line) {
-                doc.prepend(elseStatement.ruleX_tkELSE()) { it.newLine() }
-                doc.prepend(elseStatement.ruleX_StatementRef()) {
+        val elseTok = tokenAnalyzer.directTokenFor(node, "else") ?: tokenAnalyzer.tokenFor(node, "else")
+        if (elseTok != null && elseStmt != null) {
+            if (elseTok.symbol.line != elseStmt.start.line) {
+                doc.prepend(elseTok) { it.newLine() }
+                doc.prepend(elseStmt) {
                     it.newLine()
                     it.indent()
                 }
-                doc.interiorIndentRangeIncludeLast(
-                    elseStatement.ruleX_StatementRef(),
-                    elseStatement.ruleX_StatementRef()
-                )
-                doc.append(elseStatement.ruleX_StatementRef()) { it.noSpace() }
+                doc.interiorIndentRangeIncludeLast(elseStmt, elseStmt)
+                doc.append(elseStmt) { it.noSpace() }
             } else {
-                doc.prepend(elseStatement.ruleX_tkELSE()) { it.oneSpace() }
-                doc.prepend(elseStatement.ruleX_StatementRef()) {
+                doc.prepend(elseTok) { it.oneSpace() }
+                doc.prepend(elseStmt) {
                     it.oneSpace()
                     it.highPriority()
                 }
             }
         }
-        doc.format(node.ruleX_StatementRef())
-        doc.format(node.ruleX_ElseStmt())
+        doc.format(thenStmt)
+        elseStmt?.let { doc.format(it) }
     }
 }
 
 class IfExprFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
-) : NodeFormatter<RuleX_IfExprContext> {
-    override fun format(node: RuleX_IfExprContext, doc: FormattableDocument) {
-        val checkExpr = node.ruleX_ExpressionRef(0)
-        val conditionalIfExpr = node.ruleX_ExpressionRef(1)
-        val conditionalElseExpr = node.ruleX_ExpressionRef(2)
+) : NodeFormatter<IfExprContext> {
+    override fun format(node: IfExprContext, doc: FormattableDocument) {
+        // ifExpr: 'if' '(' expression ')' expression 'else' expression
+        val expressions = node.expression()
+        val checkExpr = expressions[0]
+        val conditionalIfExpr = expressions[1]
+        val conditionalElseExpr = expressions[2]
 
-        doc.surround(node.ruleX_tkIF()) { it.oneSpace() }
+        val ifTok = tokenAnalyzer.directTokenFor(node, "if") ?: tokenAnalyzer.tokenFor(node, "if")
+        if (ifTok != null) doc.surround(ifTok) { it.oneSpace() }
         doc.surround(checkExpr) { it.noSpace() }
         doc.format(checkExpr)
 

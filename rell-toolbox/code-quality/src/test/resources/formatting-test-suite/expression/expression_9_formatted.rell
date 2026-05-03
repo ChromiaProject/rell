@@ -1,20 +1,20 @@
 function foo() {
     val ordered_products = product @* { .id in ordered_product_ids } (
-        struct<product_order> (
-            order = order,
-            product = $,
-            quantity = customer_order.products @ { $.id == .id }.quantity
-        )
+        struct<product_order>(
+        order = order,
+        product = $,
+        quantity = customer_order.products @ { $.id == .id }.quantity
+    )
     );
 
     val ordered_products = product @* { .id in ordered_product_ids } (
-        struct<product_order> (
-            order = order,
-            product = $,
-            quantity = customer_order.products @ { $.id == .id } (
-                .id == 2
-            )
+        struct<product_order>(
+        order = order,
+        product = $,
+        quantity = customer_order.products @ { $.id == .id } (
+            .id == 2
         )
+    )
     );
 
     var expected_result = assets.extract_data_from_transfer_history_list(

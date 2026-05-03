@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    antlr
 }
 
 val rellTestCasesConfiguration by configurations.creating {
@@ -9,11 +8,11 @@ val rellTestCasesConfiguration by configurations.creating {
 }
 
 dependencies {
-    antlr(libs.antlr)
     api(libs.antlr.runtime)
     implementation(libs.oshai)
     implementation(libs.slf4j)
     implementation(projects.rellBase)
+    implementation(projects.rellBase.frontend)
     implementation(libs.guava)
     implementation(libs.commons.collections4)
     api(projects.rellToolbox.common)
@@ -33,13 +32,8 @@ val copyTestCases by tasks.registering(Copy::class) {
     into(testCasesDir.map { it.dir("test-cases") })
 }
 
-tasks.compileKotlin {
-    dependsOn(tasks.generateGrammarSource)
-}
-
 tasks.compileTestKotlin {
     dependsOn(copyTestCases)
-    dependsOn(tasks.generateTestGrammarSource)
 }
 
 tasks.compileTestJava {
@@ -50,29 +44,8 @@ tasks.processTestResources {
     dependsOn(tasks.compileTestKotlin)
 }
 
-tasks.generateGrammarSource {
-    arguments = arguments + listOf(
-        "-visitor",
-        "-long-messages",
-    )
-    packageName = "net.postchain.rell.toolbox.parser"
-    outputDirectory = layout.buildDirectory.dir("generated/antlr").get().asFile
-}
-
 sourceSets.getByName("test") {
     resources.srcDir(testCasesDir)
-}
-
-sourceSets.getByName("main") {
-    java.srcDir(tasks.generateGrammarSource)
-}
-
-// Workaround excluding antlr "non-runtime" dependencies from jar.
-// https://github.com/gradle/gradle/issues/820#issuecomment-288838412
-configurations {
-    api {
-        setExtendsFrom(extendsFrom.filterNot { it == antlr.get() })
-    }
 }
 
 tasks.withType<Jar>().configureEach {
@@ -87,6 +60,30 @@ tasks.test {
     useJUnitPlatform {
         excludeTags("grammar")
     }
+}
+
+val rellManualGrammar = rootProject.layout.projectDirectory
+    .file("rell-base/frontend/src/main/antlr/net.postchain.rell.base.compiler.parser.antlr/RellManual.g4")
+
+// The BNF generator (`RellBnfGenerator`) imports `org.antlr.v4.tool.*`, so it needs the
+// ANTLR tool jar at compile time and at run time. Wire it onto compileOnly + a dedicated
+// resolvable configuration for the JavaExec classpath.
+val antlrTool: Configuration by configurations.creating
+dependencies {
+    compileOnly(libs.antlr)
+    antlrTool(libs.antlr)
+}
+
+tasks.register<JavaExec>("generateBnf") {
+    description = "Generates an IntelliJ GrammarKit BNF file from RellManual.g4."
+    group = "build"
+    classpath = sourceSets.main.get().runtimeClasspath + antlrTool
+    mainClass.set("net.postchain.rell.toolbox.grammar.RellBnfGenerator")
+    val outFile = layout.buildDirectory.file("generated/bnf/Rell.bnf")
+    val customOut = providers.gradleProperty("bnfOut").orNull
+    inputs.file(rellManualGrammar)
+    outputs.file(customOut?.let(::file) ?: outFile)
+    args("--grammar", rellManualGrammar.asFile.absolutePath, "--out", customOut ?: outFile.get().asFile.absolutePath)
 }
 
 tasks.register<Test>("grammarTest") {

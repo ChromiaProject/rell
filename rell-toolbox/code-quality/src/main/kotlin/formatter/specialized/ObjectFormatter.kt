@@ -4,25 +4,26 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.ObjectDefContext
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
 import net.postchain.rell.toolbox.formatter.util.WhitespaceFormatter
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_ObjectDefContext
 
 class ObjectDefFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
     private val whitespaceFormatter: WhitespaceFormatter,
-) : NodeFormatter<RuleX_ObjectDefContext> {
-    override fun format(node: RuleX_ObjectDefContext, doc: FormattableDocument) {
+) : NodeFormatter<ObjectDefContext> {
+    override fun format(node: ObjectDefContext, doc: FormattableDocument) {
+        // objectDef: 'object' RULE_ID '{' attributeClause* '}'
         doc.surround(node) { it.setNewLines(2) }
         doc.interiorIndent(node)
-        doc.surround(node.ruleX_Name()) { it.oneSpace() }
+        doc.surround(node.RULE_ID()) { it.oneSpace() }
 
-        for (xAttriDef in node.ruleX_AttributeClause()) {
+        for (xAttriDef in node.attributeClause()) {
             whitespaceFormatter.formatSemicolon(node, doc)
             whitespaceFormatter.formatEqualSign(node, doc)
-            doc.append(xAttriDef.ruleX_AttributeDefinition().ruleX_BaseAttributeDefinition().ruleX_AttrHeader()) {
+            doc.append(xAttriDef.baseAttributeDefinition().attrHeader()) {
                 it.setNewLines(0)
                 it.oneSpace()
             }

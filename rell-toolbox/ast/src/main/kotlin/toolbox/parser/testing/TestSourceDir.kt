@@ -43,13 +43,14 @@ class TestSourceFile(
     override fun readAst(version: R_LangVersion): S_RellFile {
         val errorCollector = SyntaxErrorCollector()
         val parser = parser.parserFor(text, errorListeners = listOf(errorCollector))
-        val root = parser.ruleX_RootParser()
+        val root = parser.file()
         val errors = errorCollector.errors
         if (errors.isNotEmpty()) {
             throw C_CommonError("syntax", errors.joinToString("\n"))
         }
         val rcPath = RellCompilerFilePath(path, idePath)
-        val pair = RellCompilerApi.antlrToRellAst(rcPath, root, parser.tokenStream)
+        val tokenStream = parser.tokenStream as? org.antlr.v4.runtime.BufferedTokenStream
+        val pair = RellCompilerApi.antlrToRellAst(rcPath, root, tokenStream)
         return pair.first
     }
 

@@ -1,7 +1,6 @@
 function a() {
     if (
         true
-        and
-        false
+            and false
     ) {}
 }

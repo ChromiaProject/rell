@@ -4,6 +4,8 @@
 
 package net.postchain.rell.toolbox.linter.rules
 
+import net.postchain.rell.base.compiler.parser.antlr.RellManualBaseVisitor
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
 import net.postchain.rell.toolbox.common.Position
 import net.postchain.rell.toolbox.common.Range
 import net.postchain.rell.toolbox.indexer.Resource
@@ -13,9 +15,6 @@ import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.NameNodesFinder
 import net.postchain.rell.toolbox.linter.isUnderscore
 import net.postchain.rell.toolbox.linter.issues.ConstantDetectionIssue
-import net.postchain.rell.toolbox.parser.RellBaseVisitor
-import net.postchain.rell.toolbox.parser.RellParser
-import net.postchain.rell.toolbox.parser.RellParser.*
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.misc.Interval
 
@@ -33,14 +32,14 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
     private val varReferences = mutableMapOf<Range, ConstantDetectionRuleContext>()
     private val constants = mutableMapOf<Range, ConstantDetectionRuleContext>()
 
-    override fun visitRuleX_VarStmt(ctx: RellParser.RuleX_VarStmtContext) {
-        super.visitRuleX_VarStmt(ctx)
+    override fun visitVarStmtAlt(ctx: RellManualParser.VarStmtAltContext) {
+        super.visitVarStmtAlt(ctx)
         if (isDisabled(config.ruleConstantDetection) || hasSemanticErrors()) {
             return
         }
 
-        val varOrVal = ctx.ruleX_VarVal().text
-        if (varOrVal == "val") {
+        val keyword = ctx.start?.text
+        if (keyword != "var") {
             return
         }
         val varDeclaratorCollector = SimpleVarDeclaratorCollector()
@@ -56,7 +55,8 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
             val symbolInfo = resource.locationInfo[symbolInterval]
             val references = referenceIndexer.findAllReferences(resource.fileUri, symbolInfo)
             val varName = name.text
-            val isTupleDeclarator = declarator.parent?.parent is RuleX_CommaSeparated_29Context
+            // A tuple declarator is one whose enclosing declarator chain reaches a TupleVarDeclarator.
+            val isTupleDeclarator = isInsideTupleDeclarator(declarator)
             val constantContext = ConstantDetectionRuleContext(varName, name, isTupleDeclarator)
             val varRange = Range(
                 Position(name.start.line - 1, name.stop.charPositionInLine),
@@ -69,55 +69,48 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
         }
     }
 
-    override fun visitRuleX_BaseExpr(ctx: RellParser.RuleX_BaseExprContext) {
-        super.visitRuleX_BaseExpr(ctx)
-        val isPostfix = ctx.ruleX_BaseExprTail(0)?.ruleX_BaseExprTailUnaryPostfixOp() != null
-        val isPrefix = ctx.parent is RuleX_IncrementStmtContext
-        if (isPostfix || isPrefix) {
-            val ruleCtx = ctx.ruleX_BaseExprHead()?.ruleX_NameExpr()?.ruleX_Name()
-            if (ruleCtx != null) {
-                val range = Range(
-                    Position(ruleCtx.start.line - 1, ruleCtx.stop.charPositionInLine),
-                    Position(ruleCtx.stop.line - 1, ruleCtx.stop.charPositionInLine + ruleCtx.text.length)
-                )
-                val removed = varReferences.remove(range)
-                if (removed != null) {
-                    val removedRuleCtx = removed.parserRuleContext
-                    val varRange = Range(
-                        Position(removedRuleCtx.start.line - 1, removedRuleCtx.stop.charPositionInLine),
-                        Position(
-                            removedRuleCtx.stop.line - 1,
-                            removedRuleCtx.stop.charPositionInLine + removedRuleCtx.text.length
-                        )
-                    )
-                    constants.remove(varRange)
-                }
-            }
+    override fun visitBaseExpr(ctx: RellManualParser.BaseExprContext) {
+        super.visitBaseExpr(ctx)
+        // Detect: postfix increment (x++ / x-- as the only tail), prefix increment (parent is
+        // IncrementStmtAlt), or assignment (parent is ExprStmtAlt with an `=` expression child).
+        val isPostfix = ctx.baseExprTailNoCallNoAt().lastOrNull() is RellManualParser.BaseExprTailUnaryPostfixOpContext
+        val parent = ctx.parent
+        val isPrefix = parent is RellManualParser.IncrementStmtAltContext
+        val isAssignmentLhs = parent is RellManualParser.ExprStmtAltContext &&
+            parent.expression() != null &&
+            parent.baseExpr() === ctx
+        if (!(isPostfix || isPrefix || isAssignmentLhs)) {
+            return
         }
-    }
-
-    override fun visitRuleX_AssignStmt(ctx: RellParser.RuleX_AssignStmtContext) {
-        super.visitRuleX_AssignStmt(ctx)
-        val name = ctx.ruleX_BaseExpr()?.ruleX_BaseExprHead()?.ruleX_NameExpr()?.ruleX_Name()
-        name?.let {
-            val range = Range(
-                Position(it.start.line - 1, it.stop.charPositionInLine),
-                Position(it.stop.line - 1, it.stop.charPositionInLine + name.text.length)
+        val nameExpr = ctx.baseExprHead() as? RellManualParser.NameExprContext ?: return
+        val qualifiedName = nameExpr.qualifiedName() ?: return
+        // Only treat single-segment names as variable references (qualified names like a.b are
+        // member accesses, not variable rebinds).
+        val ruleIds = qualifiedName.RULE_ID()
+        if (ruleIds.size != 1) {
+            return
+        }
+        val nameToken = ruleIds[0].symbol
+        val range = Range(
+            Position(nameToken.line - 1, nameToken.charPositionInLine + nameToken.text.length - nameToken.text.length),
+            Position(nameToken.line - 1, nameToken.charPositionInLine + nameToken.text.length)
+        )
+        val removed = varReferences.remove(range)
+        if (removed != null) {
+            val removedRuleCtx = removed.parserRuleContext
+            val varRange = Range(
+                Position(removedRuleCtx.start.line - 1, removedRuleCtx.stop.charPositionInLine),
+                Position(
+                    removedRuleCtx.stop.line - 1,
+                    removedRuleCtx.stop.charPositionInLine + removedRuleCtx.text.length
+                )
             )
-            val removed = varReferences.remove(range)
-            if (removed != null) {
-                val ruleCtx = removed.parserRuleContext
-                val varRange = Range(
-                    Position(ruleCtx.start.line - 1, ruleCtx.stop.charPositionInLine),
-                    Position(ruleCtx.stop.line - 1, ruleCtx.stop.charPositionInLine + ruleCtx.text.length)
-                )
-                constants.remove(varRange)
-            }
+            constants.remove(varRange)
         }
     }
 
-    override fun visitRuleX_RootParser(ctx: RellParser.RuleX_RootParserContext?) {
-        super.visitRuleX_RootParser(ctx)
+    override fun visitFile(ctx: RellManualParser.FileContext) {
+        super.visitFile(ctx)
         constants.forEach {
             if (!hasIgnoreCommentOnTop(it.value.parserRuleContext.start)) {
                 val varMessage = "Variable '${it.value.varName}' is never modified"
@@ -138,6 +131,16 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
         varReferences.clear()
         constants.clear()
     }
+
+    private fun isInsideTupleDeclarator(declarator: RellManualParser.SimpleVarDeclaratorContext): Boolean {
+        var p: org.antlr.v4.runtime.RuleContext? = declarator.parent
+        while (p != null) {
+            if (p is RellManualParser.TupleVarDeclaratorContext) return true
+            if (p is RellManualParser.VarStmtAltContext) return false
+            p = p.parent
+        }
+        return false
+    }
 }
 
 class ConstantDetectionRuleContext(
@@ -146,9 +149,9 @@ class ConstantDetectionRuleContext(
     val isTupleDeclarator: Boolean
 )
 
-class SimpleVarDeclaratorCollector : RellBaseVisitor<Unit>() {
-    val declarations = mutableListOf<RuleX_SimpleVarDeclaratorContext>()
-    override fun visitRuleX_SimpleVarDeclarator(ctx: RuleX_SimpleVarDeclaratorContext?) {
+class SimpleVarDeclaratorCollector : RellManualBaseVisitor<Unit>() {
+    val declarations = mutableListOf<RellManualParser.SimpleVarDeclaratorContext>()
+    override fun visitSimpleVarDeclarator(ctx: RellManualParser.SimpleVarDeclaratorContext?) {
         if (ctx != null) {
             declarations.add(ctx)
         }

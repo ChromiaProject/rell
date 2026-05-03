@@ -1,8 +1,15 @@
 query q1() {
     return (
-        u: user,
-        c: contract @* {
-            c.user == u
-        }
+     u:
+        user,
+
+
+     c:
+        contract @*
+         {
+
+c.user == u
+
+}
     ) @* { } ( u, c );
 }

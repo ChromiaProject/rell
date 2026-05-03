@@ -10,8 +10,8 @@ import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
-import net.postchain.rell.toolbox.parser.RellBaseVisitor
-import net.postchain.rell.toolbox.parser.RellParser
+import net.postchain.rell.base.compiler.parser.antlr.RellManualBaseVisitor
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either3
 import java.net.URI
@@ -160,26 +160,27 @@ class RellRenamingService(
     }
 
     private fun findAnonAttrFullName(resource: Resource, location: Location): FullNameWithRange? {
-        val visitor = object : RellBaseVisitor<Unit>() {
+        val visitor = object : RellManualBaseVisitor<Unit>() {
             var result: FullNameWithRange? = null
-            override fun visitRuleX_AnonAttrHeader(ctx: RellParser.RuleX_AnonAttrHeaderContext) {
+            override fun visitAnonAttrHeader(ctx: RellManualParser.AnonAttrHeaderContext) {
                 val startPos = ctx.start.line
                 if (startPos == location.range.start.line + 1 &&
                     ctx.stop.charPositionInLine == location.range.start.character
                 ) {
+                    val qualifiedName = ctx.qualifiedName()
                     val range = Range(
                         Position(
-                            ctx.ruleX_QualifiedNameNode().start.line - 1,
-                            ctx.ruleX_QualifiedNameNode().start.charPositionInLine
+                            qualifiedName.start.line - 1,
+                            qualifiedName.start.charPositionInLine
                         ),
                         Position(
-                            ctx.ruleX_QualifiedNameNode().stop.line - 1,
-                            ctx.ruleX_QualifiedNameNode().stop.charPositionInLine +
-                                ctx.ruleX_QualifiedNameNode().stop.text.length
+                            qualifiedName.stop.line - 1,
+                            qualifiedName.stop.charPositionInLine +
+                                qualifiedName.stop.text.length
                         )
                     )
                     result = FullNameWithRange(
-                        ctx.ruleX_QualifiedNameNode().ruleX_NameNode().map { it.text },
+                        qualifiedName.RULE_ID().map { it.text },
                         range
                     )
                 }

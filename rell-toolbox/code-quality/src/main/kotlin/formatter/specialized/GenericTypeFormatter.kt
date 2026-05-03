@@ -4,51 +4,96 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.GenericOrNameTypeContext
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.GenericTypeExprContext
+import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.TypeContext
 import net.postchain.rell.toolbox.formatter.BracePairTypes
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.*
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_GenericTypeContext
-import net.postchain.rell.toolbox.parser.RellParser.RuleX_GenericTypeExprContext
+import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.tree.TerminalNode
 
+/**
+ * `# genericTypeExpr` of `baseExprHead`:
+ *   qualifiedName '<' type (',' type)* ','? '>' (callArgs | '.' RULE_ID)
+ */
 class GenTypeExprFormatter(
     private val braceFormatter: BraceFormatter,
     private val expressionFormatter: ExpressionFormatter,
-) : NodeFormatter<RuleX_GenericTypeExprContext> {
-    override fun format(node: RuleX_GenericTypeExprContext, doc: FormattableDocument) {
-        doc.format(node.ruleX_GenericType())
-        if (node.ruleX_BaseExprTailMember() != null) {
-            doc.format(node.ruleX_BaseExprTailMember())
-        } else if (node.ruleX_BaseExprTailCall() != null) {
-            val tailCall = node.ruleX_BaseExprTailCall()
-            val (callArg, _) = tailCall.ruleX_CallArgs().getCallArgWithTrailingComma()
-            doc.prepend(tailCall) { it.noSpace() }
-            if (!callArg.isNullOrEmpty()) {
-                expressionFormatter.formatExprTailSingleline(tailCall, doc)
+) : NodeFormatter<GenericTypeExprContext> {
+    override fun format(node: GenericTypeExprContext, doc: FormattableDocument) {
+        // No space between qualifiedName and '<'.
+        doc.append(node.qualifiedName()) { it.noSpace() }
+        formatAngleTypeArgs(node, node.type(), doc, braceFormatter)
+
+        val callArgs = node.callArgs()
+        if (callArgs != null) {
+            doc.prepend(callArgs) { it.noSpace() }
+            val (callArg, _) = callArgs.getCallArgsItems()
+            if (callArg.isNotEmpty()) {
+                expressionFormatter.formatExprTailSingleline(BaseExprTail.Call(callArgs), doc)
             } else {
-                braceFormatter.formatBracePairWithoutSpace(tailCall, doc, BracePairTypes.PARENTHESES)
+                braceFormatter.formatBracePairWithoutSpace(callArgs, doc, BracePairTypes.PARENTHESES)
             }
-            doc.format(tailCall)
+            doc.format(callArgs)
         }
+        // The '.' RULE_ID alt: leave default formatting.
     }
 }
 
+/**
+ * `# genericOrNameType` of `primaryType`:
+ *   qualifiedName ('<' type (',' type)* ','? '>')?
+ */
 class GenericTypeFormatter(
     private val braceFormatter: BraceFormatter,
     private val argumentFormatter: ArgumentFormatter,
     private val whitespaceFormatter: WhitespaceFormatter,
     private val lineAnalyzer: LineAnalyzer,
-) : NodeFormatter<RuleX_GenericTypeContext> {
-    override fun format(node: RuleX_GenericTypeContext, doc: FormattableDocument) {
-        doc.append(node.ruleX_QualifiedName()) { it.noSpace() }
-        braceFormatter.formatBracePairWithoutSpace(node.getGenericTypeContext(), doc, BracePairTypes.ANGLE)
-        val (typeRef, trailingComma) = node.getTypeRefWithTrailingComma()
-        val lineSeparate = lineAnalyzer.formatAsMultiLine(typeRef)
-        argumentFormatter.formatArguments(typeRef, doc, formatAsMultiLine = lineSeparate)
-        whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
-        typeRef?.forEach { xTypeRef ->
-            doc.prepend(xTypeRef) { it.oneSpace() }
-            doc.append(xTypeRef) { it.noSpace() }
+) : NodeFormatter<GenericOrNameTypeContext> {
+    override fun format(node: GenericOrNameTypeContext, doc: FormattableDocument) {
+        if (node.type().isNotEmpty()) {
+            doc.append(node.qualifiedName()) { it.noSpace() }
+            formatAngleTypeArgs(node, node.type(), doc, braceFormatter)
+        }
+    }
+}
+
+/**
+ * Common helper: format a `'<' type (',' type)* ','? '>'` run inside [parent] given the
+ * concrete list of [TypeContext] type-arguments. Angle brackets get no surrounding space;
+ * commas take no space before, single space after; type arguments themselves render flat
+ * (no leading whitespace forced).
+ */
+private fun formatAngleTypeArgs(
+    parent: ParserRuleContext,
+    typeArgs: List<TypeContext>,
+    doc: FormattableDocument,
+    braceFormatter: BraceFormatter,
+) {
+    if (typeArgs.isEmpty()) return
+    braceFormatter.formatBracePairWithoutSpace(parent, doc, BracePairTypes.ANGLE)
+
+    // First type arg: no space before. Subsequent: one space before. None has trailing space.
+    typeArgs.forEachIndexed { i, t ->
+        if (i == 0) {
+            doc.prepend(t) { it.noSpace() }
+        } else {
+            doc.prepend(t) { it.oneSpace() }
+        }
+        doc.append(t) { it.noSpace() }
+    }
+    // Commas: no space before, single space after; trailing comma (if any) has no space after.
+    val trailing = parent.findTrailingComma(">")
+    parent.children?.forEach { c ->
+        if (c is TerminalNode && c.symbol.text == ",") {
+            doc.prepend(c) { it.noSpace() }
+            if (c === trailing) {
+                doc.append(c) { it.noSpace() }
+            } else {
+                doc.append(c) { it.oneSpace() }
+            }
         }
     }
 }

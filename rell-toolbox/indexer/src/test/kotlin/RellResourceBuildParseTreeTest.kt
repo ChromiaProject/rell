@@ -43,8 +43,11 @@ class RellResourceBuildParseTreeTest {
         assertThat(parseTreeWithErrors.syntaxErrors).extracting { it.message }.containsAtLeast(
             "missing ';' at 'function'",
             "missing ';' at '}'",
-            "extraneous input 'va' expecting {<EOF>, 'abstract', 'mutable', 'override', 'entity', 'class', 'struct', '@', 'object', 'record', 'enum', 'function', 'val', 'namespace', 'import', 'operation', 'query', 'include'}",
-            "extraneous input ';' expecting {'(', 'false', 'true', 'null', '.', 'virtual', 'struct', '+', '-', 'not', '++', '--', '\$', 'create', '[', 'if', 'when', RULE_ID, RULE_DECIMAL, RULE_BIG_INTEGER, RULE_NUMBER, RULE_BYTES, RULE_STRING}"
+            // ANTLR's expected-token list ordering is determined by token IDs in the .g4 grammar,
+            // not by the rule's literal source order. Updated to match RellManual.g4's emitted order
+            // (the previous strings were captured from the legacy better-parse output).
+            "extraneous input 'va' expecting {<EOF>, 'abstract', 'mutable', 'override', '@', 'entity', 'class', 'object', 'struct', 'record', 'enum', 'function', 'namespace', 'import', 'operation', 'query', 'include', 'val'}",
+            "extraneous input ';' expecting {'.', '(', 'false', 'true', 'null', 'struct', 'virtual', 'if', 'when', '++', '--', '+', '-', 'not', 'create', '\$', '[', RULE_ID, RULE_DECIMAL, RULE_BIG_INTEGER, RULE_NUMBER, RULE_BYTES, RULE_STRING}"
         )
     }
 
