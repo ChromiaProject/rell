@@ -5,9 +5,8 @@
 package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.base.runtime.Rt_IntValue
-import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.model.Name
+import net.postchain.rell.base.runtime.Rt_UnitValue
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.test.Test

@@ -5,8 +5,8 @@
 package net.postchain.rell.base.ide
 
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
+import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.testutils.unwrap
 import kotlin.test.Test
 import kotlin.test.assertEquals

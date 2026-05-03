@@ -9,8 +9,8 @@ import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.GtvType
 import net.postchain.rell.base.runtime.GtvToRtContext
 import net.postchain.rell.base.runtime.PostchainGtvUtils
-import net.postchain.rell.base.runtime.Rt_ValueClass
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.Rt_ValueClass
 import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.mapValuesToImmMap

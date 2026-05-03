@@ -5,19 +5,10 @@
 package net.postchain.rell.base.compiler.lib
 
 import net.postchain.common.hexStringToByteArray
-import net.postchain.rell.base.lib.type.*
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.Name
-import net.postchain.rell.base.runtime.Rt_BigIntegerValue
-import net.postchain.rell.base.runtime.Rt_BooleanValue
-import net.postchain.rell.base.runtime.Rt_ByteArrayValue
-import net.postchain.rell.base.runtime.Rt_DecimalValue
-import net.postchain.rell.base.runtime.Rt_IntValue
-import net.postchain.rell.base.runtime.Rt_RowidValue
-import net.postchain.rell.base.runtime.Rt_TextValue
-import net.postchain.rell.base.runtime.Rt_UnitValue
-import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.testutils.RellTestUtils
 import java.math.BigInteger
 import kotlin.test.Test

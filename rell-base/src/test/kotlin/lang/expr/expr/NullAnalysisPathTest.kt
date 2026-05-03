@@ -5,11 +5,11 @@
 package net.postchain.rell.base.lang.expr.expr
 
 import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceBodyDsl
 import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.base.model.R_Type
+import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_StructValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.testutils.BaseRellTest

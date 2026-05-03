@@ -5,8 +5,8 @@
 package net.postchain.rell.base.ide
 
 import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.lmodel.dsl.Ld_ModuleDsl
+import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.testutils.LibModuleTester
 import kotlin.test.Test
 

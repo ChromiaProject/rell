@@ -15,9 +15,9 @@ import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.rr.RR_App
+import net.postchain.rell.base.runtime.RawSqlStatement
 import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.runtime.Rt_Printer
-import net.postchain.rell.base.runtime.RawSqlStatement
 import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.utils.*
 import kotlin.test.assertEquals

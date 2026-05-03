@@ -15,7 +15,7 @@ allOpen.annotation("org.openjdk.jmh.annotations.State")
 dependencies {
     implementation(libs.kotlinx.benchmark.runtime)
     implementation(projects.rellBase.frontend)
-    implementation(projects.rellBase.runtime)
+    implementation(projects.rellBase.runtimeInterpreter)
     implementation(projects.rellBase.testUtils)
     implementation(projects.rellToolbox.ast)
     implementation(libs.antlr.runtime)

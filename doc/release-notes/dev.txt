@@ -24,16 +24,20 @@ compilation and execution:
     ┌──────────────────┬────────────────────────────────────────────────────────────────────┐
     │ Sub-module       │ Purpose                                                            │
     ├──────────────────┼────────────────────────────────────────────────────────────────────┤
-    │ utils            │ Shared utilities, no Rell dependencies                             │
-    │ rr-tree          │ RR_ data classes (depends only on utils)                           │
-    │ rr-serialization │ Serialization/deserialization of RR_App (depends on rr-tree)       │
-    │ frontend         │ Compiler, AST, R_ model, resolve()                                 │
-    │ runtime          │ Interpreter, SQL generation, standard library                      │
-    └──────────────────┴────────────────────────────────────────────────────────────────────┘
+    │ utils                │ Shared utilities, no Rell dependencies                         │
+    │ rr-tree              │ RR_ data classes (depends only on utils)                       │
+    │ rr-serialization     │ Serialization/deserialization of RR_App (depends on rr-tree)   │
+    │ frontend             │ Compiler, AST, R_ model, resolve()                             │
+    │ runtime-core         │ Runtime values, types, SQL generation, standard library        │
+    │ runtime-interpreter  │ Tree-walking interpreter over RR_App (depends on runtime-core) │
+    └──────────────────────┴────────────────────────────────────────────────────────────────┘
 
 A consumer that only needs to deserialize an RR_App pulls in rr-tree and rr-serialization, without the frontend or the
-interpreter. The frontend/runtime split is enforced at the Gradle module level: the runtime cannot accidentally import
-compiler internals, and the compiler cannot depend on runtime-only classes.
+runtime. The frontend/runtime split is enforced at the Gradle module level: the runtime cannot accidentally import
+compiler internals, and the compiler cannot depend on runtime-only classes. The runtime is itself split into
+runtime-core (values, types, SQL, stdlib) and runtime-interpreter (the RR_App tree-walking executor): an alternative
+backend — for example, a future native compiler — can reuse the value model and standard library without pulling in
+the interpreter.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 3. API: compileApp() returns RR_App

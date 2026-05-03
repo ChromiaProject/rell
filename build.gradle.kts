@@ -20,7 +20,7 @@ val localProperties = Properties().apply {
 apiValidation {
     ignoredProjects += listOf(
         "rell-base", "rr-tree", "rr-serialization", "utils", "test-utils", "rell-gtx", "rell-tools",
-        "frontend", "runtime",
+        "frontend", "runtime-core", "runtime-interpreter",
         // Imported projects — no API stability guarantees yet
         "rell-toolbox", "common", "ast", "indexer", "code-quality", "language-server", "seeder",
         "rell-codegen", "codegen", "codegen-kotlin", "codegen-typescript", "codegen-javascript",

@@ -6,8 +6,11 @@ package net.postchain.rell.base.compiler.base.utils
 
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.model.R_LangVersion
-import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.ImmMap
+import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.ide.IdeFilePath
+import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.toImmMap
 import java.io.File
 import java.util.*
 
@@ -15,78 +18,6 @@ class IdeSourcePathFilePath(val path: C_SourcePath): IdeFilePath() {
     override fun equals(other: Any?) = other is IdeSourcePathFilePath && path == other.path
     override fun hashCode() = Objects.hash(javaClass, path)
     override fun toString() = path.str()
-}
-
-class C_SourcePath private constructor(val parts: ImmList<String>): Comparable<C_SourcePath> {
-    private val str = parts.joinToString("/")
-
-    fun add(path: C_SourcePath) = C_SourcePath(parts + path.parts)
-
-    fun add(part: String): C_SourcePath {
-        if (!validate(part)) {
-            throw errBadPath(part)
-        }
-        return C_SourcePath(parts + part)
-    }
-
-    fun parent() = C_SourcePath(parts.subList(0, parts.size - 1))
-    fun str() = str
-
-    override fun compareTo(other: C_SourcePath) = CommonUtils.compareLists(parts, other.parts)
-    override fun equals(other: Any?) = other === this || (other is C_SourcePath && parts == other.parts)
-    override fun hashCode() = parts.hashCode()
-    override fun toString() = str()
-
-    companion object {
-        val EMPTY = C_SourcePath(immListOf())
-
-        fun of(): C_SourcePath = EMPTY
-
-        fun of(parts: List<String>): C_SourcePath {
-            if (!validate(parts)) {
-                val str = parts.joinToString("/")
-                throw errBadPath(str)
-            }
-            return C_SourcePath(parts.toImmList())
-        }
-
-        fun ofOpt(parts: List<String>): C_SourcePath? {
-            if (!validate(parts)) {
-                return null
-            }
-            return C_SourcePath(parts.toImmList())
-        }
-
-        fun parse(path: String): C_SourcePath {
-            val res = parseOpt(path)
-            return res ?: throw errBadPath(path)
-        }
-
-        fun parseOpt(path: String): C_SourcePath? {
-            val parts = path.split('/', '\\').toImmList()
-            if (parts.isEmpty()) {
-                return null
-            }
-
-            if (!validate(parts)) {
-                return null
-            }
-
-            return C_SourcePath(parts)
-        }
-
-        private fun validate(parts: List<String>): Boolean {
-            return parts.all { validate(it) }
-        }
-
-        private fun validate(part: String): Boolean {
-            return part != "" && part != "." && part != ".."
-        }
-
-        private fun errBadPath(str: String): C_CommonError {
-            return C_CommonError("invalid_path:$str", "Invalid path: '$str'")
-        }
-    }
 }
 
 abstract class C_SourceFile {

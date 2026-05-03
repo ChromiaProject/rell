@@ -7,11 +7,7 @@ package net.postchain.rell.base.compiler.lib
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.model.rr.RR_TupleField
 import net.postchain.rell.base.model.rr.RR_Type
-import net.postchain.rell.base.runtime.Rt_IntValue
-import net.postchain.rell.base.runtime.Rt_PrimitiveTypes
-import net.postchain.rell.base.runtime.Rt_TextValue
-import net.postchain.rell.base.runtime.Rt_TupleType
-import net.postchain.rell.base.runtime.Rt_TupleValue
+import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.immListOf
 import kotlin.test.Test
 

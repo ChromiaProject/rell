@@ -5,12 +5,12 @@
 package net.postchain.rell.base.compiler.lib
 
 import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.runtime.Rt_TextValue
-import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_ParamImplication
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionBodyDsl
 import net.postchain.rell.base.model.R_IntegerType
 import net.postchain.rell.base.model.R_TextType
+import net.postchain.rell.base.runtime.Rt_TextValue
+import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.testutils.LibModuleTester
 import kotlin.test.Test
 

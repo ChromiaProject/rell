@@ -944,7 +944,7 @@ private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
     }
 
     private fun parseSourcePath(s: String): C_SourcePath {
-        val path = C_SourcePath.parseOpt(s)
+        val path = C_SourcePath.parseOrNull(s)
         return path ?: throw UserMistake("Invalid file path: '$s'")
     }
 

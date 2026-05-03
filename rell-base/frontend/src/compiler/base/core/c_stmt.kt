@@ -300,7 +300,8 @@ class C_IterableAdapter(val itemType: R_Type, val rAdapter: R_IterableAdapter) {
 
         private fun isMapCompatibilityMode(ctx: C_ExprContext, atExpr: Boolean): Boolean {
             val opts = ctx.globalCtx.compilerOptions
-            return atExpr && opts.compatibility != null && opts.compatibility < LANG_VER_UNNAMED_MAP_FIELDS
+            val compatibility = opts.compatibility
+            return atExpr && compatibility != null && compatibility < LANG_VER_UNNAMED_MAP_FIELDS
         }
     }
 }

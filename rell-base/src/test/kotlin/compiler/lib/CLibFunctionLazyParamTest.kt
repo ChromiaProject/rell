@@ -4,14 +4,11 @@
 
 package net.postchain.rell.base.compiler.lib
 
-import net.postchain.rell.base.runtime.*
-
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.make
-import net.postchain.rell.base.runtime.Rt_TextValue
-import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_ParamArity
+import net.postchain.rell.base.runtime.*
 import kotlin.test.Test
 
 class CLibFunctionLazyParamTest: BaseCLibTest() {

@@ -16,6 +16,7 @@ import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.doc.DocSymbolName
+import net.postchain.rell.base.utils.ide.IdeApi.getModuleInfo
 import org.apache.commons.configuration2.PropertiesConfiguration
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder
 import org.apache.commons.configuration2.builder.fluent.Parameters
@@ -165,11 +166,11 @@ object IdeDirApi {
     fun diskDir(dir: File): C_SourceDir = C_SourceDir.diskDir(dir)
 
     @JvmStatic
-    fun parseSourcePath(s: String): C_SourcePath? = C_SourcePath.parseOpt(s)
+    fun parseSourcePath(s: String): C_SourcePath? = C_SourcePath.parseOrNull(s)
 
     @JvmStatic
-    fun makeSourcePath(parts: List<String>): C_SourcePath = C_SourcePath.of(parts)
+    fun makeSourcePath(parts: List<String>): C_SourcePath = C_SourcePath.ofParts(parts)
 
     @JvmStatic
-    fun makeSourcePathOpt(parts: List<String>): C_SourcePath? = C_SourcePath.ofOpt(parts)
+    fun makeSourcePathOpt(parts: List<String>): C_SourcePath? = C_SourcePath.ofPartsOrNull(parts)
 }

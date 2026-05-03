@@ -36,18 +36,8 @@ import java.util.*
 
 typealias C_CodeMsgSupplier = () -> C_CodeMsg
 
-class C_CodeMsg(val code: String, val msg: String) {
-    override fun toString() = code
-}
-
-infix fun String.toCodeMsg(that: String): C_CodeMsg = C_CodeMsg(this, that)
-
 class C_PosCodeMsg(val pos: S_Pos, val code: String, val msg: String) {
     constructor(pos: S_Pos, codeMsg: C_CodeMsg): this(pos, codeMsg.code, codeMsg.msg)
-}
-
-class C_CommonError(val code: String, val msg: String): RuntimeException(msg) {
-    constructor(codeMsg: C_CodeMsg): this(codeMsg.code, codeMsg.msg)
 }
 
 class C_Error: RuntimeException {
@@ -75,19 +65,6 @@ class C_Error: RuntimeException {
 sealed class C_ValueOrError<T>
 class C_ValueOrError_Value<T>(val value: T): C_ValueOrError<T>()
 class C_ValueOrError_Error<T>(val error: C_PosCodeMsg): C_ValueOrError<T>()
-
-object C_Constants {
-    const val LOG_ANNOTATION = "log"
-    const val MODULE_ARGS_STRUCT = "module_args"
-
-    const val AT_PLACEHOLDER = "$"
-
-    const val TRANSACTION_ENTITY = "transaction"
-    const val BLOCK_ENTITY = "block"
-
-    val TRANSACTION_ENTITY_RNAME = Name.of(TRANSACTION_ENTITY)
-    val BLOCK_ENTITY_RNAME = Name.of(BLOCK_ENTITY)
-}
 
 // Operations and queries defined in Postchain (StandardOpsGTXModule). Shall be reserved (not allowed) in Rell.
 object C_ReservedMountNames {

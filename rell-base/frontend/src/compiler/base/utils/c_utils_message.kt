@@ -9,11 +9,6 @@ import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.mapToImmList
 
-enum class C_MessageType(val text: String, val ignorable: Boolean) {
-    WARNING("Warning", true),
-    ERROR("ERROR", false)
-}
-
 class C_Message(
         val type: C_MessageType,
         val pos: S_Pos,

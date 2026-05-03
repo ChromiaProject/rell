@@ -9,8 +9,8 @@ import com.google.common.collect.HashMultimap
 import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.model.rr.RR_EntityDefinition
 import net.postchain.rell.base.runtime.RawSqlBoundQuery
-import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.runtime.RawSqlStatement
+import net.postchain.rell.base.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.*
 import org.postgresql.util.PGobject

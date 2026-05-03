@@ -11,25 +11,8 @@ import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.model.R_LangVersion
 
-/** [default] is the status if compatibility version is not set, which is the case when the compiler (not source)
- * version is not specified (allowed for source versions < 0.13.11) */
-class C_FeatureSwitch(
-    private val since: R_LangVersion,
-    private val default: Boolean = true,
-) {
-    constructor(version: String, default: Boolean = true): this(R_LangVersion.of(version), default)
-
-    fun isActive(version: R_LangVersion?) = isActive(since, version, default)
-    fun isActive(compilerOptions: C_CompilerOptions) = isActive(compilerOptions.compatibility)
-    fun isActive(globalCtx: C_GlobalContext) = isActive(globalCtx.compilerOptions)
-    fun isActive(exprCtx: C_ExprContext) = isActive(exprCtx.globalCtx)
-
-    companion object {
-        fun isActive(since: R_LangVersion, version: R_LangVersion?, default: Boolean = true): Boolean {
-            return if (version != null) version >= since else default
-        }
-    }
-}
+fun C_FeatureSwitch.isActive(globalCtx: C_GlobalContext) = isActive(globalCtx.compilerOptions)
+fun C_FeatureSwitch.isActive(exprCtx: C_ExprContext) = isActive(exprCtx.globalCtx)
 
 class C_FeatureRestrictions(
     private val since: R_LangVersion,

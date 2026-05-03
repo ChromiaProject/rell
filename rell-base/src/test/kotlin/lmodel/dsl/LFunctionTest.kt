@@ -5,9 +5,9 @@
 package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
-import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.runtime.R_SysFunction
+import net.postchain.rell.base.runtime.Rt_UnitValue
 import kotlin.test.Test
 
 class LFunctionTest: BaseLTest() {

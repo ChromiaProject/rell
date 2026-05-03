@@ -11,10 +11,7 @@ import net.postchain.rell.base.compiler.base.core.C_Name
 import net.postchain.rell.base.compiler.base.core.C_NameHandle
 import net.postchain.rell.base.compiler.base.core.C_TypeHint
 import net.postchain.rell.base.compiler.base.expr.*
-import net.postchain.rell.base.compiler.base.utils.C_Errors
-import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
-import net.postchain.rell.base.compiler.base.utils.C_Utils
-import net.postchain.rell.base.compiler.base.utils.toCodeMsg
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.model.Name
 import net.postchain.rell.base.model.R_NullableType
 import net.postchain.rell.base.model.R_Type
@@ -130,9 +127,7 @@ class V_ValueMemberExpr private constructor(
         return C_DbAtWhatValue_Complex(immListOf(base), evaluator)
     }
 
-    override fun destination(): C_Destination {
-        return member.destination(base)
-    }
+    override fun destination(): C_Destination = member.destination(base)
 
     override fun member0(
         ctx: C_ExprContext,

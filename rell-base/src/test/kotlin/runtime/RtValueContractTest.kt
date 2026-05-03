@@ -9,12 +9,7 @@ import net.postchain.gtv.GtvNull
 import java.lang.reflect.Modifier
 import java.math.BigDecimal
 import java.math.BigInteger
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFails
-import kotlin.test.assertFalse
-import kotlin.test.assertSame
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 /**
  * Pins runtime contracts that are easy to silently regress:

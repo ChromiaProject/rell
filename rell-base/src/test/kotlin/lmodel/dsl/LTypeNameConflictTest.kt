@@ -4,8 +4,8 @@
 
 package net.postchain.rell.base.lmodel.dsl
 
-import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.model.R_IntegerType
+import net.postchain.rell.base.runtime.Rt_UnitValue
 import kotlin.test.Test
 
 class LTypeNameConflictTest: BaseLTest() {

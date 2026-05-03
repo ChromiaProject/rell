@@ -30,7 +30,7 @@ tasks.check {
 
 dependencies {
     api(projects.rellBase.frontend)
-    api(projects.rellBase.runtime)
+    api(projects.rellBase.runtimeInterpreter)
 
     testImplementation(projects.rellBase.testUtils)
     testImplementation(libs.junit.jupiter)

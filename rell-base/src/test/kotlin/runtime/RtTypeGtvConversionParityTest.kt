@@ -6,17 +6,12 @@ package net.postchain.rell.base.runtime
 
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
-import kotlin.test.Test
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertSame
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 /**
  * Two pure-RR GTV-conversion entry points exist post-cb938c6a9:
  *
- * - [createGtvConversion] in `rt_type_gtv.kt` — used by the R_Type bridge ([buildBridgeGtvConversion])
- *   for primitives and null.
+ * - [createGtvConversion] in `rt_type_gtv.kt` — used by [gtvConversionFromR] for primitives and null.
  * - [Rt_Interpreter.buildCompositeGtvConversion] in `rr_interp_gtv.kt` — used by the pure-RR
  *   interpreter for primitives, null, nullable, composites (list/set/map/tuple), and virtuals.
  *

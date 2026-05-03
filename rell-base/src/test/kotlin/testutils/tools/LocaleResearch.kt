@@ -9,12 +9,7 @@
 
 package net.postchain.rell.base.testutils.tools
 
-import net.postchain.rell.base.runtime.Rt_ByteArrayValue
-import net.postchain.rell.base.runtime.Rt_TextValue
-import net.postchain.rell.base.runtime.ParameterizedSql
-import net.postchain.rell.base.runtime.RawSqlBoundQuery
-import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.runtime.RawSqlStatement
+import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.testutils.SqlTestUtils
 import net.postchain.rell.base.utils.*
