@@ -15,7 +15,7 @@ fi
 CHR_REPO_URL="https://gitlab.com/chromaway/core-tools/chromia-cli.git"
 CHR_REPO_DIR="./chromia-cli-local"
 CHR_EXECUTABLE="$CHR_REPO_DIR/chromia-cli/target/chromia-cli-dev-dist/bin/chr"
-GIT_BRANCH="dev"
+GIT_BRANCH="update-rell-0.16.0-snapshot"
 
 # Parse arguments for --rebuild and --skip-publish
 REBUILD=false
@@ -33,15 +33,21 @@ for arg in "$@"; do
 done
 
 setup_repository() {
-    if [ -d "$CHR_REPO_DIR" ]; then
-        echo "chromia-cli repository directory already exists, proceeding..."
-    else
-        echo "Cloning chromia-cli repository..."
-        git clone --depth 1 "$CHR_REPO_URL" "$CHR_REPO_DIR"
+    if [ -d "$CHR_REPO_DIR/.git" ]; then
+        echo "Updating chromia-cli repository to latest $GIT_BRANCH..."
+        REPO_ROOT=$(pwd)
         cd "$CHR_REPO_DIR"
+        git fetch --depth 1 origin "$GIT_BRANCH"
         git checkout "$GIT_BRANCH"
-        rm -rf .git
-        cd ..
+        git reset --hard "origin/$GIT_BRANCH"
+        cd "$REPO_ROOT"
+    else
+        if [ -d "$CHR_REPO_DIR" ]; then
+            echo "Existing $CHR_REPO_DIR has no .git; removing for fresh clone..."
+            rm -rf "$CHR_REPO_DIR"
+        fi
+        echo "Cloning chromia-cli repository ($GIT_BRANCH)..."
+        git clone --depth 1 --branch "$GIT_BRANCH" "$CHR_REPO_URL" "$CHR_REPO_DIR"
     fi
 }
 
@@ -111,11 +117,8 @@ if [ "$REBUILD" = true ]; then
     rm -rf "$CHR_REPO_DIR"
 fi
 
-# Check if chr executable exists, if not setup repository
-if [ ! -d "$CHR_REPO_DIR" ] || [ "$REBUILD" = true ]; then
-    echo "Setting up repository..."
-    setup_repository
-fi
+echo "Setting up repository..."
+setup_repository
 
 echo "Updating Rell version..."
 update_rell_version
