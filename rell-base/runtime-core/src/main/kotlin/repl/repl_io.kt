@@ -50,7 +50,7 @@ object ReplValueFormatter {
         ReplValueFormat.GTV_XML -> formatGtvXml(v)
     }
 
-    private fun formatDefault(v: Rt_Value): String? = if (v == Rt_UnitValue) null else v.str()
+    private fun formatDefault(v: Rt_Value): String? = if (v === Rt_UnitValue) null else v.str()
 
     private fun formatOneItemPerLine(v: Rt_Value): String? = when (v.type.rrType) {
         is RR_Type.List, is RR_Type.Set -> collectionToLines(v.asCollection()) { it.str() }

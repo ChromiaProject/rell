@@ -20,7 +20,7 @@ internal fun Rt_InterpreterImpl.executeStatements(stmts: List<RR_Statement>, fra
     return null
 }
 
-internal fun Rt_InterpreterImpl.initializeDeclarator(
+fun Rt_InterpreterImpl.initializeDeclarator(
     decl: RR_VarDeclarator,
     frame: Rt_CallFrame,
     value: Rt_Value,
@@ -43,7 +43,7 @@ internal fun Rt_InterpreterImpl.initializeDeclarator(
     }
 }
 
-internal fun Rt_InterpreterImpl.assignTo(
+fun Rt_InterpreterImpl.assignTo(
     dstExpr: RR_Expr,
     frame: Rt_CallFrame,
     value: Rt_Value,

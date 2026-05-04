@@ -10,6 +10,10 @@ dependencies {
     api(libs.junit.platform.launcher)
     api(kotlin("test-junit5"))
     implementation(projects.rellBase.rrSerialization)
+    // Truffle peer backend: dependency is `implementation`, not `api`, so unrelated test
+    // utilities don't transitively depend on Truffle. The backend is only activated via the
+    // `rell.test.backend=truffle` system property; otherwise it lies dormant on the classpath.
+    implementation(projects.rellBase.runtimeTruffle)
     implementation(libs.log4j.slf4j2.impl)
     implementation(libs.postgresql)
 }

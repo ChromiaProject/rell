@@ -10,6 +10,7 @@ import net.postchain.rell.base.model.rr.RR_EntityDefinition
 import net.postchain.rell.base.runtime.Rt_Interpreter
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
+import net.postchain.rell.base.testutils.RellTestUtils
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -617,7 +618,7 @@ class EntityTest: BaseRellTest() {
 
     private fun chkEntity(code: String, exp: String) {
         val act = tst.processApp(code) { app ->
-            val interp = Rt_Interpreter.forCompilation(app.rrApp, app.compilationSysFns)
+            val interp = RellTestUtils.forCompilation(app.rrApp, app.compilationSysFns)
             val e = app.rrApp.moduleMap.getValue(ModuleName.EMPTY).entities.getValue("data")
             entityToString(e, interp)
         }

@@ -26,12 +26,12 @@ fun evaluateBinaryOp(key: String, left: Rt_Value, right: Rt_Value): Rt_Value = w
     "R_BinaryOp_Sub_Integer" -> evalIntArith("-", left, right) { a, b -> LongMath.checkedSubtract(a, b) }
     "R_BinaryOp_Mul_Integer" -> evalIntArith("*", left, right) { a, b -> LongMath.checkedMultiply(a, b) }
     "R_BinaryOp_Div_Integer" -> evalIntArith("/", left, right) { a, b ->
-        if (b == 0L) throw Rt_Exception.common("expr:/:div0:$a", "Division by zero: $a / $b")
+        if (b == 0L) throw Rt_Exception.common("expr:/:div0:$a", "Division by zero: $a / 0")
         a / b
     }
 
     "R_BinaryOp_Mod_Integer" -> evalIntArith("%", left, right) { a, b ->
-        if (b == 0L) throw Rt_Exception.common("expr:%:div0:$a", "Division by zero: $a % $b")
+        if (b == 0L) throw Rt_Exception.common("expr:%:div0:$a", "Division by zero: $a % 0")
         a % b
     }
 
@@ -190,49 +190,52 @@ private inline fun evalDecArith(
 // --- Collection operation helpers ---
 
 fun evalConcatList(left: Rt_Value, right: Rt_Value): Rt_Value {
-    val out: MutableList<Rt_Value> = mutableListOf()
-    out.addAll(left.asList())
-    out.addAll(right.asCollection())
+    val leftList = left.asList()
+    val rightCollection = right.asCollection()
+    val out = ArrayList<Rt_Value>(leftList.size + rightCollection.size)
+    out += leftList
+    out += rightCollection
     return Rt_ListValue(left.type, out)
 }
 
 fun evalUnionSet(left: Rt_Value, right: Rt_Value): Rt_Value {
-    val out: MutableSet<Rt_Value> = mutableSetOf()
-    out.addAll(left.asSet())
-    out.addAll(right.asCollection())
+    val out: MutableSet<Rt_Value> = left.asSet().toMutableSet()
+    out += right.asCollection()
     return Rt_SetValue(left.type, out)
 }
 
 fun evalSubList(left: Rt_Value, right: Rt_Value): Rt_Value {
-    val out: MutableList<Rt_Value> = mutableListOf()
-    out.addAll(left.asList())
-    out.removeAll(right.asCollection())
+    val out = left.asList().toMutableList()
+    out.removeAll(right.asCollection().toSet())
     return Rt_ListValue(left.type, out)
 }
 
 fun evalSubSet(left: Rt_Value, right: Rt_Value): Rt_Value {
-    val out: MutableSet<Rt_Value> = mutableSetOf()
-    out.addAll(left.asSet())
+    val out: MutableSet<Rt_Value> = left.asSet().toMutableSet()
     out.removeAll(right.asSet())
     return Rt_SetValue(left.type, out)
 }
 
 fun evalIntersectList(left: Rt_Value, right: Rt_Value): Rt_Value {
-    val out: MutableList<Rt_Value> = mutableListOf()
-    left.asList().filter { right.asCollection().contains(it) }.forEach { out.add(it) }
+    val leftList = left.asList()
+    val out: MutableList<Rt_Value> = ArrayList(leftList.size)
+    for (it in leftList.filter { right.asCollection().contains(it) }) {
+        out += it
+    }
     return Rt_ListValue(left.type, out)
 }
 
 fun evalIntersectSet(left: Rt_Value, right: Rt_Value): Rt_Value {
     val out: MutableSet<Rt_Value> = mutableSetOf()
-    left.asSet().filter { right.asCollection().contains(it) }.forEach { out.add(it) }
+    for (it in left.asSet().filter { right.asCollection().contains(it) }) {
+        out += it
+    }
     return Rt_SetValue(left.type, out)
 }
 
 fun evalMergeMap(left: Rt_Value, right: Rt_Value): Rt_Value {
     require(left is Rt_MapValue)
-    val out: MutableMap<Rt_Value, Rt_Value> = mutableMapOf()
-    out.putAll(left.asMap())
+    val out: MutableMap<Rt_Value, Rt_Value> = left.asMap().toMutableMap()
     out.putAll(right.asMap())
     return Rt_MapValue(left.type, out)
 }
@@ -262,6 +265,24 @@ fun evaluateUnaryOp(key: String, operand: Rt_Value): Rt_Value = when (key) {
     "Not" -> Rt_BooleanValue.get(!operand.asBoolean())
     else -> error("Unknown unary op key: $key")
 }
+
+/**
+ * Apply a runtime type adapter to a value. Pure data transformation — no interpreter state required,
+ * so it lives at the runtime-core level where any backend can call it directly without going through
+ * the tree-walker.
+ */
+fun applyTypeAdapter(adapter: net.postchain.rell.base.model.rr.RR_TypeAdapter, value: Rt_Value): Rt_Value =
+    when (adapter) {
+        is net.postchain.rell.base.model.rr.RR_TypeAdapter.Direct -> value
+        is net.postchain.rell.base.model.rr.RR_TypeAdapter.IntegerToBigInteger ->
+            Rt_BigIntegerValue.get(value.asInteger().toBigInteger())
+        is net.postchain.rell.base.model.rr.RR_TypeAdapter.IntegerToDecimal ->
+            Rt_DecimalValue.get(value.asInteger().toBigDecimal())
+        is net.postchain.rell.base.model.rr.RR_TypeAdapter.BigIntegerToDecimal ->
+            Rt_DecimalValue.get(value.asBigInteger().toBigDecimal())
+        is net.postchain.rell.base.model.rr.RR_TypeAdapter.Nullable ->
+            if (value == Rt_NullValue) Rt_NullValue else applyTypeAdapter(adapter.inner, value)
+    }
 
 /** Convert an RR_ConstantValue to an Rt_Value. Returns null for complex types (struct, collection, etc.). */
 fun rrConstantToRtValue(cv: RR_ConstantValue): Rt_Value? = when (cv) {

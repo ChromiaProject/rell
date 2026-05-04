@@ -11,7 +11,6 @@ import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.sql.SqlPreparator
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
 import org.intellij.lang.annotations.Language
 import org.jooq.Query
 
@@ -91,14 +90,15 @@ data class ParameterizedSql(val sql: String, val params: ImmList<Rt_Value>) : Ex
 class SqlSelectRt(val pSql: ParameterizedSql, val resultTypes: ImmList<Rt_ValueClass<*>>) {
     fun execute(sqlExec: SqlExecutor): List<List<Rt_Value>> = buildList {
         sqlExec.executeQuery(pSql) { rsRow ->
-            val list = mutableListOf<Rt_Value>()
-            for ((i, type) in resultTypes.withIndex()) {
-                val adapter = checkNotNull(type.sqlAdapter) {
-                    "No SQL adapter for type: ${type.name}"
+            val list = buildList(resultTypes.size) {
+                for ((i, type) in resultTypes.withIndex()) {
+                    val adapter = checkNotNull(type.sqlAdapter) {
+                        "No SQL adapter for type: ${type.name}"
+                    }
+                    add(adapter.fromSql(rsRow, i + 1, false))
                 }
-                list.add(adapter.fromSql(rsRow, i + 1, false))
             }
-            add(list.toImmList())
+            add(list)
         }
     }
 }

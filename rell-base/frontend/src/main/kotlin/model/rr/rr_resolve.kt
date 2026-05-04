@@ -294,13 +294,13 @@ private class RR_Resolver(private val rApp: R_App, private val resolverRuntime: 
                 val seenObjectIds = mutableSetOf<DefinitionId>()
                 RR_AppSqlDefs(
                     entities = rApp.sqlDefs.entities
-                        .filter { seenEntityIds.add(entityIndexMap[it]!!.let { idx -> allEntitiesList[idx].base.defId }) }
-                        .mapToImmList { allEntitiesList[entityIndexMap[it]!!] },
+                        .filter { seenEntityIds.add(entityIndexMap.getValue(it).let { idx -> allEntitiesList[idx].base.defId }) }
+                        .mapToImmList { allEntitiesList[entityIndexMap.getValue(it)] },
                     objects = rApp.sqlDefs.objects
-                        .filter { seenObjectIds.add(objectIndexMap[it]!!.let { idx -> allObjectsList[idx].base.defId }) }
-                        .mapToImmList { allObjectsList[objectIndexMap[it]!!] },
+                        .filter { seenObjectIds.add(objectIndexMap.getValue(it).let { idx -> allObjectsList[idx].base.defId }) }
+                        .mapToImmList { allObjectsList[objectIndexMap.getValue(it)] },
                     topologicalEntities = rApp.sqlDefs.topologicalEntities
-                        .mapToImmList { allEntitiesList[entityIndexMap[it]!!] }
+                        .mapToImmList { allEntitiesList[entityIndexMap.getValue(it)] }
                         .distinctBy { it.base.defId }
                         .toImmList(),
                 )

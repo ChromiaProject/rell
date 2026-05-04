@@ -213,7 +213,9 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
                 chainCtx = chainCtx,
                 blockRunner = blockRunner,
                 moduleArgsSource = Rt_ModuleArgsSource.NULL,
-                compilationSysFns = compiled.compilationSysFns,
+                interpreterFactory = {
+                    Rt_InterpreterImpl.forCompilation(compiled.rrApp, compiled.compilationSysFns)
+                },
             )
 
             val cases = fns.map { UnitTestCase(null, it) }

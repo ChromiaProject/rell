@@ -1,4 +1,4 @@
-image: eclipse-temurin:21-jdk-noble
+image: container-registry.oracle.com/graalvm/jdk:21
 
 include:
   - component: $CI_SERVER_FQDN/qodana/qodana/qodana-gitlab-ci@v2025.3
@@ -11,6 +11,7 @@ stages:
   - deploy
   - dependency-check
   - qodana
+  - benchmarks
 
 workflow:
   rules:
@@ -89,13 +90,19 @@ cache:
         export GRADLE_FLAGS="$GRADLE_FLAGS_WEAK"
         echo "Weak runner detected — using reduced memory profile (4g/2g/4g×1)"
       fi
-    - apt-get update && apt-get install -y ca-certificates curl gnupg
-    - install -m 0755 -d /etc/apt/keyrings
-    - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu noble stable" > /etc/apt/sources.list.d/docker.list
-    - apt-get update && apt-get install -y docker-ce-cli
+    - microdnf install -y ca-certificates curl tar gzip
     - |
-      PGDATA_ARGS="--env PGDATA=/pgtmpfs --tmpfs=/pgtmpfs:size=1000m"
+      DOCKER_VERSION=28.1.1
+      curl -fsSL "https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz" -o /tmp/docker.tgz
+      tar -xzf /tmp/docker.tgz -C /tmp
+      install -m 0755 /tmp/docker/docker /usr/local/bin/docker
+      rm -rf /tmp/docker /tmp/docker.tgz
+    - |
+      # Sized for the full parallel test load: rell-base now runs `test`, `testRoundTrip`,
+      # and `testTruffle` against this single Postgres, alongside tests in other modules.
+      # 1000m filled up under that load and the daemon died, causing "connection refused"
+      # in dependent test workers.
+      PGDATA_ARGS="--env PGDATA=/pgtmpfs --tmpfs=/pgtmpfs:size=8g"
       if [ "${WEAK_RUNNER:-}" = "true" ]; then
         PGDATA_ARGS=""
       fi
@@ -172,6 +179,38 @@ dependency-check:
   artifacts:
     when: always
     paths: [ build/reports/dependency-check-report.* ]
+
+# Manual benchmark run that publishes the HTML report to GitLab Pages under a per-branch
+# path prefix, so concurrent runs on different branches don't clobber each other.
+# URL: https://<group>.gitlab.io/<project>/<branch-slug>/report.html
+# Same-branch reruns intentionally overwrite the previous deployment.
+pages:
+  stage: benchmarks
+  tags: [ saas-linux-xlarge-amd64 ]
+  interruptible: true
+  rules:
+    - when: manual
+      allow_failure: true
+  needs: []
+  cache:
+    key: "$CI_COMMIT_REF_SLUG"
+    fallback_keys: [ dev ]
+    paths: [ .gradle ]
+    policy: pull-push
+  script:
+    - chmod +x gradlew
+    - ./gradlew $GRADLE_FLAGS :benchmarks:mainBenchmark
+    - mkdir -p public
+    - cp -r benchmarks/build/reports/benchmarks/html/. public/
+    - echo "Benchmark report - $CI_PAGES_URL/report.html"
+  pages:
+    path_prefix: "$CI_COMMIT_REF_SLUG"
+  environment:
+    name: "benchmarks/$CI_COMMIT_REF_SLUG"
+    url: "$CI_PAGES_URL/report.html"
+  artifacts:
+    paths: [ public ]
+    expire_in: 30 days
 
 qodana:
   tags: [ saas-linux-xlarge-amd64 ]

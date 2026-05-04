@@ -9,8 +9,6 @@ import net.postchain.rell.base.model.DefinitionId
 import net.postchain.rell.base.model.FilePos
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.rr.*
-import net.postchain.rell.base.runtime.Rt_Interpreter.Companion.setInterpreterFactory
-import net.postchain.rell.base.utils.toImmMap
 
 /**
  * Tree-walk interpreter contract. The concrete implementation
@@ -73,54 +71,14 @@ interface Rt_Interpreter {
         callPos: FilePos? = null,
     ): Rt_Value
 
-    companion object {
-        /**
-         * Factory that pairs an [RR_App] with its compilation-local sys-function registry. The
-         * map comes from `C_CompilationResult.compilationSysFns` / `T_App.compilationSysFns` —
-         * values are downcast to [R_SysFunction]. Using this factory (rather than the raw
-         * constructor) is strongly preferred so meta-body closure captures (e.g. `log()` call
-         * positions, `gtv_ext(T)` `Rt_ValueClass` captures) don't leak across unrelated compilations.
-         */
-        fun forCompilation(rrApp: RR_App, compilationSysFns: Map<String, Any>): Rt_Interpreter {
-            @Suppress("UNCHECKED_CAST")
-            val sysFnMap = compilationSysFns as Map<String, R_SysFunction>
-            ensureImplLoaded()
-            return interpreterFactory(rrApp, Rt_StdlibEnv(sysFnMap.toImmMap()))
-        }
-
-        /**
-         * Forces class-loading of the `runtime-interpreter` impl so its static-init block
-         * registers the concrete factory. No-op if the JAR isn't on the classpath — the
-         * subsequent factory call will throw the registration error.
-         */
-        private fun ensureImplLoaded() {
-            try {
-                Class.forName("net.postchain.rell.base.runtime.Rt_InterpreterImpl")
-            } catch (_: ClassNotFoundException) {
-                // runtime-interpreter not on classpath — factory call will surface a clear error.
-            }
-        }
-
-        /**
-         * Wired up by `runtime-interpreter` (via [setInterpreterFactory]) so that
-         * `runtime-core` can construct an [Rt_Interpreter] without a compile-time dependency
-         * on the implementation. The default implementation throws — calling code paths
-         * that need an interpreter must run with `runtime-interpreter` on the classpath.
-         */
-        @Volatile
-        private var interpreterFactory: (RR_App, Rt_StdlibEnv) -> Rt_Interpreter = { _, _ ->
-            error("Rt_Interpreter implementation not registered — runtime-interpreter must be on the classpath")
-        }
-
-        /** Called once by `runtime-interpreter` at class-load to install the concrete factory. */
-        fun setInterpreterFactory(factory: (RR_App, Rt_StdlibEnv) -> Rt_Interpreter) {
-            interpreterFactory = factory
-        }
-
-        /** Direct factory mirroring the original `Rt_Interpreter(rrApp)` constructor call site. */
-        fun create(rrApp: RR_App, stdlib: Rt_StdlibEnv = Rt_StdlibEnv.global()): Rt_Interpreter {
-            ensureImplLoaded()
-            return interpreterFactory(rrApp, stdlib)
-        }
-    }
+    /**
+     * Returns the plainest tree-walker interpreter underlying this instance, for code paths that
+     * intrinsically require the tree-walker (REPL line execution, low-level frame state
+     * inspection, etc.).
+     *
+     * The REPL evaluates one input line at a time while threading `Rt_CallFrameState` between
+     * calls — there's no Truffle benefit possible at that granularity, so backends that wrap a
+     * tree-walker (Truffle) simply unwrap and delegate.
+     */
+    fun unwrapInterpreterImpl(): Any
 }

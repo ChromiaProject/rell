@@ -107,7 +107,7 @@ object Lib_Type_Iterable {
     }
 
     private fun extractLimit(value: Rt_Value?): Int {
-        if (value == null || value is Rt_NullValue) {
+        if (value == null || value === Rt_NullValue) {
             return -1
         }
 

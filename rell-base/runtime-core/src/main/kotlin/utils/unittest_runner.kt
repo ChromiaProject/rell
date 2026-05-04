@@ -54,8 +54,12 @@ class UnitTestRunnerContext(
     private val chainCtx: Rt_ChainContext,
     private val blockRunner: Rt_UnitTestBlockRunner,
     private val moduleArgsSource: Rt_ModuleArgsSource,
-    /** Sys-function registry collected by the compilation that produced [app]. */
-    private val compilationSysFns: Map<String, Any> = emptyMap(),
+    /**
+     * Builds a fresh interpreter for each test case. Callers wire this to whichever backend
+     * they want — `Rt_InterpreterImpl.forCompilation(app, sysFns)`, the test-utils routing
+     * helper, etc. `runtime-core` deliberately doesn't know any concrete backend.
+     */
+    private val interpreterFactory: () -> Rt_Interpreter,
     val printTestCases: Boolean = true,
     val printPrettyLargeValues: Boolean = true,
     val stopOnError: Boolean = false,
@@ -67,7 +71,7 @@ class UnitTestRunnerContext(
     fun createAppContext(): Rt_AppContext = Rt_AppContext(
         globalCtx = globalCtx,
         chainCtx = chainCtx,
-        interpreter = Rt_Interpreter.forCompilation(app, compilationSysFns),
+        interpreter = interpreterFactory(),
         repl = false,
         test = true,
         blockRunner = blockRunner,

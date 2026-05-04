@@ -5,6 +5,7 @@
 package net.postchain.rell.base.sql
 
 import com.google.common.collect.HashMultimap
+import com.google.common.collect.Multimap
 import net.postchain.rell.base.model.rr.RR_EntityDefinition
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.*
@@ -144,7 +145,7 @@ object SqlUtils {
 
     fun getTableIndexes(con: Connection, schema: String, table: String): ImmList<SqlIndex> {
         class IndexRec(val unique: Boolean, val ordinal: Int, val column: String)
-        val map = HashMultimap.create<String, IndexRec>()
+        val map: Multimap<String, IndexRec> = HashMultimap.create<String, IndexRec>()
 
         con.metaData.getIndexInfo(null, schema, table, false, false).use { rs ->
             while (rs.next()) {
@@ -158,25 +159,27 @@ object SqlUtils {
             }
         }
 
-        val res = mutableListOf<SqlIndex>()
+        val keys: Set<String> = map.keySet()
 
-        for (name in map.keySet().sorted()) {
-            val recs = map.get(name)
-            val sortedRecs = recs.toList().sortedBy { it.ordinal }
-            val n = sortedRecs.size
+        val res = buildList(keys.size) {
+            for (name in keys.sorted()) {
+                val recs = map[name]
+                val sortedRecs = recs.toList().sortedBy { it.ordinal }
+                val n = sortedRecs.size
 
-            val ordinals = sortedRecs.map { it.ordinal }
-            val expOrdinals = (1 .. n).toList()
-            check(ordinals == expOrdinals) { "Table $table, index $name: ordinals = $ordinals" }
+                val ordinals = sortedRecs.map { it.ordinal }
+                val expOrdinals = (1..n).toList()
+                check(ordinals == expOrdinals) { "Table $table, index $name: ordinals = $ordinals" }
 
-            val cols = sortedRecs.mapToImmList { it.column }
-            check(cols.toSet().size == cols.size) { "Table $table, index $name: duplicate column(s): $cols" }
+                val cols = sortedRecs.mapToImmList { it.column }
+                check(cols.toSet().size == cols.size) { "Table $table, index $name: duplicate column(s): $cols" }
 
-            val uniques = sortedRecs.map { it.unique }.toSet()
-            check(uniques.size == 1) { "Table $table, index $name: conflicting unique flag" }
-            val unique = uniques.iterator().next()
+                val uniques = sortedRecs.map { it.unique }.toSet()
+                check(uniques.size == 1) { "Table $table, index $name: conflicting unique flag" }
+                val unique = uniques.iterator().next()
 
-            res.add(SqlIndex(name, unique, cols))
+                add(SqlIndex(name, unique, cols))
+            }
         }
 
         return res.toImmList()

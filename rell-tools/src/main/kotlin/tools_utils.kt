@@ -19,6 +19,7 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.Rt_Interpreter
+import net.postchain.rell.base.runtime.Rt_InterpreterImpl
 import net.postchain.rell.base.runtime.Rt_RellVersion
 import net.postchain.rell.base.utils.UnitTestMatcher
 import net.postchain.rell.base.utils.UnitTestRunner
@@ -134,12 +135,12 @@ class RellCompiledApp(
     val rrApp: RR_App,
     /**
      * Sys-function registrations produced by the compilation that yielded [rrApp]. Must be
-     * threaded into the interpreter — see `Rt_Interpreter.forCompilation` for why isolation
+     * threaded into the interpreter — see `Rt_InterpreterImpl.forCompilation` for why isolation
      * across compilations matters (stdlib meta-bodies capture compile-specific state).
      */
     val compilationSysFns: Map<String, Any> = emptyMap(),
 ) {
-    fun createInterpreter(): Rt_Interpreter = Rt_Interpreter.forCompilation(rrApp, compilationSysFns)
+    fun createInterpreter(): Rt_Interpreter = Rt_InterpreterImpl.forCompilation(rrApp, compilationSysFns)
 
     fun getRRTestFunctions(moduleName: ModuleName, matcher: UnitTestMatcher): List<RR_FunctionDefinition> {
         val rrModule = rrApp.moduleMap[moduleName] ?: return emptyList()

@@ -20,8 +20,8 @@ dependencies {
     api(projects.rellBase.rrTree)
     api(libs.postchain.gtv)
     api(libs.better.parse)
+    api(libs.jooq)
     implementation(libs.jackson.databind)
-    implementation(libs.jooq)
 }
 
 tasks.compileKotlin {

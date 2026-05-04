@@ -20,6 +20,7 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.R_StackPos
 import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.truffle.Tf_Backend
 import net.postchain.rell.base.sql.SqlManager
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.serialization.deserializeRellApp
@@ -48,6 +49,33 @@ object RellTestUtils {
         val bytes = serializeRellApp(rrApp)
         return deserializeRellApp(bytes)
     }
+
+    /**
+     * Selected runtime backend for this test run. Read from the system property
+     * `rell.test.backend` once at class-load time. Valid values: `interpreter` (default,
+     * tree-walker) and `truffle` (Truffle peer backend; runs each test through
+     * [net.postchain.rell.base.runtime.truffle.Tf_Backend]).
+     *
+     * The CI suite runs the full `rell-base` test family three times:
+     *   1. interpreter (default)
+     *   2. interpreter + roundtrip (existing `testRoundTrip` task)
+     *   3. truffle (new `testTruffle` task)
+     *
+     * Bit-identical results across (1)/(2)/(3) are the correctness invariant. Differences
+     * between (1) and (3) are Truffle-backend bugs; (1) is the canonical reference.
+     */
+    val BACKEND: String = System.getProperty("rell.test.backend")?.lowercase() ?: "interpreter"
+
+    /**
+     * Test-only routing factory. Picks [Rt_InterpreterImpl] or [Tf_Backend] based on [BACKEND].
+     * Production callers should construct backends directly — this helper exists so test code
+     * can stay agnostic of which backend the current run is exercising.
+     */
+    fun forCompilation(rrApp: RR_App, compilationSysFns: Map<String, Any>): Rt_Interpreter =
+        when (BACKEND) {
+            "truffle" -> Tf_Backend.forCompilation(rrApp, compilationSysFns)
+            else -> Rt_InterpreterImpl.forCompilation(rrApp, compilationSysFns)
+        }
 
     val ENCODER_PLAIN = { _: Rt_ValueClass<*>, v: Rt_Value -> v.str(Rt_StrFormat.V1) }
     val ENCODER_STRICT = { _: Rt_ValueClass<*>, v: Rt_Value -> v.strCode() }

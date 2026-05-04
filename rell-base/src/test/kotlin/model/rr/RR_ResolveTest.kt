@@ -331,7 +331,7 @@ class RR_ResolveTest {
 
     @Test fun testTypeResolution() {
         val app = resolve("function foo(): integer = 1;")
-        val interpreter = net.postchain.rell.base.runtime.Rt_Interpreter.create(app)
+        val interpreter = RellTestUtils.forCompilation(app, emptyMap())
         val intType = RR_Type.Primitive(RR_PrimitiveKind.INTEGER)
         val rtType = interpreter.resolveType(intType)
         assertEquals("integer", rtType.name)

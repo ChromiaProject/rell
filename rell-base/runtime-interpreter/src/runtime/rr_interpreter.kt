@@ -16,13 +16,47 @@ import net.postchain.rell.base.utils.*
  * Public surface lives on the [Rt_Interpreter] interface in `runtime-core`; this class
  * is the concrete back-end and the receiver of the `rr_interp_*.kt` extension functions.
  */
-internal class Rt_InterpreterImpl(
+/**
+ * Tree-walk interpreter, the canonical reference backend.
+ *
+ * Public (rather than `internal`) so a peer Truffle backend in `runtime-truffle` can construct
+ * one directly for delegation: complex / not-yet-translated [RR_Expr] / [RR_Statement] sub-trees
+ * fall through to this implementation, guaranteeing bit-identical semantics across both
+ * backends.
+ */
+class Rt_InterpreterImpl(
     override val rrApp: RR_App,
     override val stdlib: Rt_StdlibEnv = Rt_StdlibEnv.global(),
 ): Rt_Interpreter {
+    /**
+     * The "outer" [Rt_Interpreter] that should receive user-function/query call dispatches.
+     *
+     * Defaults to `this` so a tree-walker run in isolation has unchanged behaviour. A peer
+     * backend that wraps this impl (notably the Truffle [net.postchain.rell.base.runtime.truffle.Tf_Backend])
+     * sets `outerInterp = this` so that whenever the tree-walker recursively dispatches a
+     * user-function call (e.g. inside a fallback expression node, or from any of the many
+     * recursive `evaluateExpr` paths), the call exits the tree-walker and re-enters the wrapping
+     * backend — which then uses its cached Truffle [com.oracle.truffle.api.RootCallTarget] for the
+     * callee instead of tree-walking it again.
+     *
+     * Without this hook, every user-function call inside a fallback subtree would defeat the
+     * Truffle peer backend's per-callee cache, making "any program containing a fallback" pay
+     * full tree-walker cost for everything reached through that fallback.
+     */
+    var outerInterp: Rt_Interpreter = this
+
     companion object {
-        init {
-            Rt_Interpreter.setInterpreterFactory { app, env -> Rt_InterpreterImpl(app, env) }
+        /**
+         * Pairs an [RR_App] with its compilation-local sys-function registry. The map comes
+         * from `C_CompilationResult.compilationSysFns` / `T_App.compilationSysFns`; values are
+         * downcast to [R_SysFunction]. Callers should use this rather than the raw constructor
+         * so meta-body closure captures (e.g. `log()` call positions, `gtv_ext(T)` `Rt_ValueClass`
+         * captures) don't leak across unrelated compilations.
+         */
+        fun forCompilation(rrApp: RR_App, compilationSysFns: Map<String, Any>): Rt_InterpreterImpl {
+            @Suppress("UNCHECKED_CAST")
+            val sysFnMap = compilationSysFns as Map<String, R_SysFunction>
+            return Rt_InterpreterImpl(rrApp, Rt_StdlibEnv(sysFnMap.toImmMap()))
         }
     }
 
@@ -137,7 +171,7 @@ internal class Rt_InterpreterImpl(
 
     override fun evaluateExpr(expr: RR_Expr, frame: Rt_Frame): Rt_Value = evaluateExpr(expr, frame as Rt_CallFrame)
 
-    internal fun evaluateExpr(expr: RR_Expr, frame: Rt_CallFrame): Rt_Value = when (expr) {
+    fun evaluateExpr(expr: RR_Expr, frame: Rt_CallFrame): Rt_Value = when (expr) {
         is RR_Expr.Var -> frame.get(expr.ptr)
         is RR_Expr.ConstantValue -> toRtValue(expr.value, expr.type)
         is RR_Expr.Binary -> evaluateBinary(expr, frame)
@@ -251,7 +285,10 @@ internal class Rt_InterpreterImpl(
         is RR_Expr.StructListCreate -> evaluateStructListCreate(expr, frame)
         is RR_Expr.DbAt -> evaluateDbAt(expr, frame)
         is RR_Expr.ColAt -> evaluateColAt(expr, frame)
-        is RR_Expr.Lazy -> Rt_RR_LazyValue(resolveType(expr.type), expr.innerExpr, frame, this)
+        // `snapshotIfEphemeral` is a no-op for the tree-walker's heap-backed frames; on the
+        // Truffle backend it copies the VirtualFrame-backed slots into a fresh heap storage so
+        // the lazy can outlive the call's `VirtualFrame`.
+        is RR_Expr.Lazy -> Rt_RR_LazyValue(resolveType(expr.type), expr.innerExpr, frame.snapshotIfEphemeral(), this)
         is RR_Expr.Error -> error("RR_Expr.Error reached at runtime: ${expr.message}")
 
         // Subscript expressions
@@ -333,7 +370,7 @@ internal class Rt_InterpreterImpl(
 
     // --- Statement interpreter ---
 
-    internal fun executeStmt(stmt: RR_Statement, frame: Rt_CallFrame): Rt_StatementResult? = when (stmt) {
+    fun executeStmt(stmt: RR_Statement, frame: Rt_CallFrame): Rt_StatementResult? = when (stmt) {
         is RR_Statement.Empty -> null
         is RR_Statement.Var -> {
             val value = stmt.expr?.let { evaluateExpr(it, frame) }
@@ -698,12 +735,12 @@ internal class Rt_InterpreterImpl(
     }
 
     /** Optionally wraps [body] in a lambda block entry if [lambdaBlock] is non-null. */
-    internal fun <T> executeInLambdaBlock(
+    internal inline fun <T> executeInLambdaBlock(
         lambdaBlock: RR_FrameBlock?,
         lambdaVarPtr: RR_VarPtr?,
         lambdaExpr: RR_Expr?,
         frame: Rt_CallFrame,
-        body: () -> T
+        body: () -> T,
     ): T {
         if (lambdaBlock == null) return body()
         // Evaluate the target expression before entering the block (matches R_UpdateTarget_Expr.execute).
@@ -716,7 +753,7 @@ internal class Rt_InterpreterImpl(
         }
     }
 
-    internal fun createFrame(
+    fun createFrame(
         exeCtx: Rt_ExecutionContext,
         rrFrame: RR_FrameDescriptor,
         dbUpdateAllowed: Boolean,
@@ -726,7 +763,7 @@ internal class Rt_InterpreterImpl(
         return Rt_CallFrame(defCtx, rrFrame, null)
     }
 
-    private fun validateParams(params: List<RR_FunctionParam>, args: List<Rt_Value>) {
+    fun validateParams(params: List<RR_FunctionParam>, args: List<Rt_Value>) {
         for (i in args.indices) {
             if (i < params.size) {
                 val constraint = params[i].sizeConstraint ?: continue
@@ -767,7 +804,7 @@ internal class Rt_InterpreterImpl(
         }
     }
 
-    private fun setParams(
+    fun setParams(
         frame: Rt_CallFrame,
         paramVars: List<RR_ParamVar>,
         args: List<Rt_Value>,
@@ -851,6 +888,8 @@ internal class Rt_InterpreterImpl(
         return result
     }
 
+    override fun unwrapInterpreterImpl() = this
+
     private fun callTarget0(
         target: RR_FunctionCallTarget,
         base: Rt_Value?,
@@ -859,17 +898,17 @@ internal class Rt_InterpreterImpl(
     ): Rt_Value = when (target) {
         is RR_FunctionCallTarget.RegularUser -> {
             val fn = rrApp.allFunctions[target.fnDefIndex]
-            callFunction(fn, frame.exeCtx, args, dbUpdateAllowed = frame.dbUpdateAllowed())
+            outerInterp.callFunction(fn, frame.exeCtx, args, dbUpdateAllowed = frame.dbUpdateAllowed())
         }
 
         is RR_FunctionCallTarget.RegularQuery -> {
             val query = rrApp.allQueries[target.queryDefIndex]
-            callQuery(query, frame.exeCtx, args)
+            outerInterp.callQuery(query, frame.exeCtx, args)
         }
 
         is RR_FunctionCallTarget.AbstractUser -> {
             val fn = rrApp.allFunctions[target.fnDefIndex]
-            callFunction(fn, frame.exeCtx, args, dbUpdateAllowed = frame.dbUpdateAllowed())
+            outerInterp.callFunction(fn, frame.exeCtx, args, dbUpdateAllowed = frame.dbUpdateAllowed())
         }
 
         is RR_FunctionCallTarget.AbstractOverride -> {

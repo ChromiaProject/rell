@@ -164,7 +164,7 @@ class RellCodeTester(
     fun chkQueryType(bodyCode: String, expected: String) {
         val queryCode = "query q() $bodyCode"
         val actual = processApp(queryCode) { app ->
-            val interp = Rt_Interpreter.forCompilation(app.rrApp, app.compilationSysFns)
+            val interp = RellTestUtils.forCompilation(app.rrApp, app.compilationSysFns)
             val rrQuery = app.rrApp.queries.getValue(MountName.of("q"))
             interp.resolveType(rrQuery.type()).name
         }
@@ -360,7 +360,7 @@ class RellCodeTester(
         val res = processApp(code) { app ->
             RellTestUtils.catchRtErr {
                 val (appCtx, sqlCtx) = tstCtx.sqlMgr().access { sqlExec ->
-                    val interpreter = Rt_Interpreter.forCompilation(app.rrApp, app.compilationSysFns)
+                    val interpreter = RellTestUtils.forCompilation(app.rrApp, app.compilationSysFns)
                     val appCtx0 = createAppCtx(globalCtx, app.rrApp, C_SourceDir.EMPTY, false, interpreter)
                     val sqlCtx0 = createSqlCtx(app.rrApp, sqlExec, interpreter)
                     Pair(appCtx0, sqlCtx0)
@@ -420,7 +420,7 @@ class RellCodeTester(
                 chainCtx = createChainContext(),
                 blockRunner = blockRunner,
                 moduleArgsSource = createModuleArgsSource(globalCtx.compilerOptions),
-                compilationSysFns = app.compilationSysFns,
+                interpreterFactory = { RellTestUtils.forCompilation(app.rrApp, app.compilationSysFns) },
             )
 
             try {
@@ -496,7 +496,7 @@ class RellCodeTester(
             sourceDir: C_SourceDir = C_SourceDir.EMPTY,
             test: Boolean = false,
     ): Rt_ExecutionContext {
-        val interpreter = Rt_Interpreter.forCompilation(rrApp, compilationSysFns)
+        val interpreter = RellTestUtils.forCompilation(rrApp, compilationSysFns)
         val appCtx = createAppCtx(globalCtx, rrApp, sourceDir, test, interpreter)
         val sqlCtx = createSqlCtx(rrApp, sqlExec, interpreter)
         return Rt_ExecutionContext(appCtx, opContext, sqlCtx, sqlExec)

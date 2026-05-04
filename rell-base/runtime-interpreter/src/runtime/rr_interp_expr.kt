@@ -247,16 +247,6 @@ internal fun Rt_InterpreterImpl.evaluateTypeAdapter(expr: RR_Expr.TypeAdapter, f
     return applyTypeAdapter(expr.adapter, value)
 }
 
-internal fun Rt_InterpreterImpl.applyTypeAdapter(adapter: RR_TypeAdapter, value: Rt_Value): Rt_Value = when (adapter) {
-    is RR_TypeAdapter.Direct -> value
-    is RR_TypeAdapter.IntegerToBigInteger -> Rt_BigIntegerValue.get(value.asInteger().toBigInteger())
-    is RR_TypeAdapter.IntegerToDecimal -> Rt_DecimalValue.get(value.asInteger().toBigDecimal())
-    is RR_TypeAdapter.BigIntegerToDecimal -> Rt_DecimalValue.get(value.asBigInteger().toBigDecimal())
-    is RR_TypeAdapter.Nullable -> {
-        if (value == Rt_NullValue) Rt_NullValue else applyTypeAdapter(adapter.inner, value)
-    }
-}
-
 internal fun Rt_InterpreterImpl.evaluateAttributeDefaultValue(
     expr: RR_Expr.AttributeDefaultValue,
     frame: Rt_CallFrame,

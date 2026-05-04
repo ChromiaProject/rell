@@ -81,7 +81,7 @@ private class GtvToRtState(
         val tableName = mapping.table(sqlCtx)
         val rowidList = rowids.joinToString(",")
         val sql = when {
-            mapping.kind == RR_EntitySqlMappingKind.EXTERNAL -> {
+            mapping.kind === RR_EntitySqlMappingKind.EXTERNAL -> {
                 // External user entities are visible only up to the linked chain's height — join
                 // through the external chain's block/transaction tables.
                 // Mirrors `R_ExternalEntitySqlMapping.selectExistingObjects`.
@@ -94,7 +94,7 @@ private class GtvToRtState(
                   | JOIN "$blkTbl" B ON B.block_iid = T.block_iid
                   | WHERE A."$rowidCol" IN ($rowidList) AND B.block_height <= $height""".trimMargin()
             }
-            mapping.externalChainIndex >= 0 && mapping.kind == RR_EntitySqlMappingKind.TRANSACTION -> {
+            mapping.externalChainIndex >= 0 && mapping.kind === RR_EntitySqlMappingKind.TRANSACTION -> {
                 val linked = sqlCtx.chainMappingByIndex(mapping.externalChainIndex)
                 val blkTbl = linked.blocksTable
                 val height = sqlCtx.linkedChainByIndex(mapping.externalChainIndex).height
@@ -102,7 +102,7 @@ private class GtvToRtState(
                   | FROM "$tableName" T JOIN "$blkTbl" B ON B.block_iid = T.block_iid
                   | WHERE T."$rowidCol" IN ($rowidList) AND B.block_height <= $height""".trimMargin()
             }
-            mapping.externalChainIndex >= 0 && mapping.kind == RR_EntitySqlMappingKind.BLOCK -> {
+            mapping.externalChainIndex >= 0 && mapping.kind === RR_EntitySqlMappingKind.BLOCK -> {
                 val height = sqlCtx.linkedChainByIndex(mapping.externalChainIndex).height
                 "SELECT \"$rowidCol\" FROM \"$tableName\" WHERE \"$rowidCol\" IN ($rowidList) AND block_height <= $height"
             }
@@ -308,13 +308,13 @@ object GtvRtUtils {
 
     fun gtvToBigInteger(ctx: GtvToRtContext, gtv: Gtv, typeName: String): BigInteger {
         return when {
-            gtv.type == GtvType.BIGINTEGER -> try {
+            gtv.type === GtvType.BIGINTEGER -> try {
                 gtv.asBigInteger()
             } catch (e: UserMistake) {
                 throw errGtvType(ctx, typeName, gtv, GtvType.BIGINTEGER, e)
             }
 
-            ctx.pretty && gtv.type == GtvType.INTEGER -> try {
+            ctx.pretty && gtv.type === GtvType.INTEGER -> try {
                 gtv.asInteger().toBigInteger()
             } catch (e: UserMistake) {
                 throw errGtvType(ctx, typeName, gtv, GtvType.BIGINTEGER, e)

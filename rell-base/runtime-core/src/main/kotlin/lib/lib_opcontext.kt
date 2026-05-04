@@ -107,11 +107,14 @@ object Lib_OpContext {
                     bodyContext { ctx, a ->
                         val (mountName, gtvArgs) = Lib_Type_Struct.decodeOperation(ctx, a)
                         val nameValue = Rt_TextValue.get(mountName.str())
-                        val rtArgs = gtvArgs.mapTo(mutableListOf<Rt_Value>()) { Rt_GtvValue.get(it) }
+
+                        val rtArgs =
+                            gtvArgs.mapTo(ArrayList<Rt_Value>(gtvArgs.size)) { Rt_GtvValue.get(it) }
+
                         val interpreter = ctx.exeCtx.appCtx.interpreter
                         val argsRtType = interpreter.resolveType(LIST_OF_GTV_RR_TYPE)
                         val argsValue = Rt_ListValue(argsRtType, rtArgs)
-                        val attrs = mutableListOf<Rt_Value>(nameValue, argsValue)
+                        val attrs = arrayListOf<Rt_Value>(nameValue, argsValue)
                         gtxOperationStructValue(interpreter, attrs)
                     }
                 }

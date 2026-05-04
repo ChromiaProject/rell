@@ -222,7 +222,9 @@ private class RellRunConfigLaunchCommand : RellRunConfigCommand("RellRunConfigLa
                     chainCtx = chainCtx,
                     blockRunner = blockRunner,
                     moduleArgsSource = moduleArgsSource,
-                    compilationSysFns = tChain.compiled.compilationSysFns,
+                    interpreterFactory = {
+                        Rt_InterpreterImpl.forCompilation(tChain.compiled.rrApp, tChain.compiled.compilationSysFns)
+                    },
                 )
 
                 UnitTestRunner.runTests(testCtx, cases, testRes)

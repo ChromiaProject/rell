@@ -87,26 +87,60 @@ object R_SysFunctionUtils {
     ): Rt_Value {
         return try {
             fn.call(callCtx, values)
-        } catch (e: Rt_Exception) {
-            throw if (e.info.extraMessage != null || e.err is Rt_RequireError) e else {
-                val extra = "System function '${name.value}'"
-                val info = Rt_ExceptionInfo(e.info.stack, extra)
-                Rt_Exception(e.err, info, e)
-            }
-        } catch (e: RellInterpreterCrashException) {
-            throw e
-        } catch (e: InterruptedException) {
-            Thread.currentThread().interrupt()
-            throw e
         } catch (e: Throwable) {
-            if (e is java.sql.SQLException && e.isPostgresQueryCanceled) throw e
-            if (callCtx.globalCtx.wrapFunctionCallErrors) {
-                val extra = "System function '${name.value}'"
-                val info = Rt_ExceptionInfo(stack = net.postchain.rell.base.utils.immListOf(), extraMessage = extra)
-                val err = Rt_CommonError("fn:error:$name:${e.javaClass.canonicalName}", e.message ?: "error")
-                throw Rt_Exception(err, info)
-            } else {
-                throw e
+            throw decorateSysFnException(callCtx, name, e)
+        }
+    }
+
+    /**
+     * Convert a Throwable raised by a sys-function impl into the Throwable that should leave
+     * the call boundary.
+     *
+     * Extracted from [callAndCatch] so backends that want to keep the success path free of a
+     * try/catch wrapper (Truffle) can apply identical catch-arm semantics from a `BranchProfile`-
+     * guarded slow path. The interpreter's `callAndCatch` and the Truffle catch site share this
+     * helper so the catch-arm logic stays single-sourced.
+     *
+     * Catch arms — same as the original [callAndCatch]:
+     *
+     * - [Rt_Exception]: keep as-is if `extraMessage` is already set or the error is a
+     *   [Rt_RequireError]; otherwise re-decorate with `"System function '<name>'"` extra and
+     *   chain the cause.
+     * - [RellInterpreterCrashException]: rethrown unchanged (interpreter crash signal).
+     * - [InterruptedException]: re-flag the thread's interrupt status before rethrowing.
+     * - [java.sql.SQLException] with `isPostgresQueryCanceled`: rethrown unchanged so the
+     *   query-cancel handler upstack can recognise it.
+     * - Any other [Throwable]: when `wrapFunctionCallErrors` is set, wrap into [Rt_Exception]
+     *   carrying a [Rt_CommonError] with code `fn:error:<name>:<exception-class>`; otherwise
+     *   rethrow unchanged.
+     */
+    fun decorateSysFnException(callCtx: Rt_CallContext, name: LazyString, e: Throwable): Throwable {
+        return when (e) {
+            is Rt_Exception -> {
+                if (e.info.extraMessage == null && e.err !is Rt_RequireError) {
+                    // Mutate-and-rethrow: attaching the wrapper extra-message to the existing
+                    // exception avoids a fresh `Rt_Exception` (and `fillInStackTrace`) per
+                    // catch-rethrow level — hot on workloads with deep sys-function chains.
+                    e.attachExtraMessage("System function '${name.value}'")
+                }
+                e
+            }
+            is RellInterpreterCrashException -> e
+            is InterruptedException -> {
+                Thread.currentThread().interrupt()
+                e
+            }
+            else -> {
+                if (e is java.sql.SQLException && e.isPostgresQueryCanceled) {
+                    e
+                } else if (callCtx.globalCtx.wrapFunctionCallErrors) {
+                    val extra = "System function '${name.value}'"
+                    val info = Rt_ExceptionInfo(stack = net.postchain.rell.base.utils.immListOf(), extraMessage = extra)
+                    val err = Rt_CommonError("fn:error:$name:${e.javaClass.canonicalName}", e.message ?: "error")
+                    Rt_Exception(err, info)
+                } else {
+                    e
+                }
             }
         }
     }

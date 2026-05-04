@@ -301,7 +301,7 @@ private class RellPostchainModule(
         typeCheck = config.typeCheck,
     )
 
-    private val interpreter = Rt_Interpreter.forCompilation(rrApp, compilationSysFns)
+    private val interpreter = Rt_InterpreterImpl.forCompilation(rrApp, compilationSysFns)
 
     val appCtx = Rt_AppContext(
         globalCtx,

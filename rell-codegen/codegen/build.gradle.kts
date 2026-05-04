@@ -14,7 +14,7 @@ val testConfiguration by configurations.creating
 
 val testjar by tasks.register<Jar>("testJar") {
     from(sourceSets.test.get().output)
-    archiveClassifier.set("test")
+    archiveClassifier = "test"
 }
 
 artifacts {

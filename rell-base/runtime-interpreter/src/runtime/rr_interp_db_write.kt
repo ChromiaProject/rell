@@ -525,7 +525,7 @@ private fun Rt_InterpreterImpl.entityGtvConversions(
     attr.name to conv
 }
 
-private fun emitCreateSnapshotWith(
+private inline fun emitCreateSnapshotWith(
     frame: Rt_CallFrame,
     metaNameGtv: Gtv,
     rowid: Long,

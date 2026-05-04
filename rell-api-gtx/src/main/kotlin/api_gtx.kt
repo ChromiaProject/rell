@@ -14,6 +14,7 @@ import net.postchain.rell.base.lib.test.Lib_RellTest
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.runtime.Rt_GtvModuleArgsSource
+import net.postchain.rell.base.runtime.Rt_InterpreterImpl
 import net.postchain.rell.base.runtime.Rt_LogPrinter
 import net.postchain.rell.base.runtime.Rt_OutPrinter
 import net.postchain.rell.base.runtime.Rt_Printer
@@ -263,7 +264,7 @@ internal object RellApiGtxInternal {
                     chainCtx = chainCtx,
                     blockRunner = blockRunner,
                     moduleArgsSource = Rt_GtvModuleArgsSource(config.compileConfig.moduleArgs, options),
-                    compilationSysFns = compilationSysFns,
+                    interpreterFactory = { Rt_InterpreterImpl.forCompilation(rrApp, compilationSysFns) },
                     printTestCases = config.printTestCases,
                     printPrettyLargeValues = config.printPrettyLargeValues,
                     stopOnError = config.stopOnError,

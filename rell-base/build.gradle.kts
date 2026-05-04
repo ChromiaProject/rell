@@ -14,18 +14,67 @@ sourceSets.main {
 tasks.withType<Test> {
     useJUnitPlatform()
     systemProperty("rell.test.roundtrip", findProperty("rellTestRoundTrip") ?: "false")
+    systemProperty("rell.test.backend", findProperty("rellTestBackend") ?: "interpreter")
 }
 
 val testRoundTrip by tasks.registering(Test::class) {
     description = "Runs tests with RR serialization round-trip enabled"
     group = "verification"
     useJUnitPlatform()
+    // Custom Test tasks default to `sourceSets.test`, but Gradle 8+ doesn't auto-discover
+    // test classes when the task is registered (vs inherited from `test`). Explicitly point at
+    // the test source set so the run isn't NO-SOURCE.
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
     systemProperty("rell.test.roundtrip", "true")
+    systemProperty("rell.test.backend", "interpreter")
+    shouldRunAfter(tasks.test)
+}
+
+// Detect whether the Gradle daemon itself is running on a GraalVM-flavoured JDK.
+// We use the daemon JVM directly (no toolchain pin) because:
+//   - Gradle's vendor-matching auto-detection is fragile across GraalVM distributions
+//     (Oracle GraalVM reports `java.vendor=Oracle Corporation`, so `matching("GraalVM")`
+//     misses it), and there's no toolchain download repository configured.
+//   - Pinning a `javaLauncher` Provider that fails to resolve breaks configuration cache
+//     serialization, not just task execution.
+// On non-GraalVM daemons (e.g. Temurin on a dev laptop) we skip the task rather than
+// crash — `-XX:+UseJVMCINativeLibrary` is fatal without libgraal.
+val runningOnGraalVm = arrayOf("java.vm.name", "java.vendor.version", "java.runtime.name")
+    .any { System.getProperty(it, "").contains("GraalVM", ignoreCase = true) }
+
+val testTruffle by tasks.registering(Test::class) {
+    description = "Runs tests through the Truffle peer backend (Tf_Backend)"
+    group = "verification"
+    useJUnitPlatform()
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    systemProperty("rell.test.roundtrip", "false")
+    systemProperty("rell.test.backend", "truffle")
+
+    enabled = runningOnGraalVm
+
+    if (runningOnGraalVm) {
+        // Force GraalVM Truffle runtime to engage instead of fallback Interpreted runtime
+        jvmArgs(
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCI",
+            "-XX:+UseJVMCINativeLibrary",
+            "--enable-native-access=ALL-UNNAMED",
+        )
+    }
+
+    // Disable JaCoCo: bytecode agent races libgraal initialisation on the worker JVM.
+    extensions.configure(JacocoTaskExtension::class.java) {
+        isEnabled = false
+    }
+
     shouldRunAfter(tasks.test)
 }
 
 tasks.check {
     dependsOn(testRoundTrip)
+    dependsOn(testTruffle)
 }
 
 dependencies {
@@ -33,6 +82,9 @@ dependencies {
     api(projects.rellBase.runtimeInterpreter)
 
     testImplementation(projects.rellBase.testUtils)
+    // Truffle peer backend is only referenced by Tf_BackendActivationTest; keep the dep in
+    // testImplementation rather than exposing it on the production classpath.
+    testImplementation(projects.rellBase.runtimeTruffle)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.platform.launcher)
     testImplementation(kotlin("test-junit5"))

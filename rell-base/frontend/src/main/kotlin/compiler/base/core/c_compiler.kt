@@ -369,7 +369,7 @@ class C_CompilationResult(
     val ideCompletions: ImmMultimap<String, IdeCompletion>,
     /**
      * Sys-function registrations collected by the resolver for THIS compilation. The map pairs
-     * with [rrApp] — the interpreter must receive both together (see `Rt_Interpreter.forCompilation`
+     * with [rrApp] — the interpreter must receive both together (see `Rt_InterpreterImpl.forCompilation`
      * in the runtime module). Opaque `Any` to keep the frontend module independent of runtime
      * types; callers downcast to the runtime's sys-fn type.
      */

@@ -92,32 +92,29 @@ internal object C_SystemLibrary {
     private val CACHE = mutableMapOf<Config, C_SysLibScope>()
 
     fun getScope(config: Config): C_SysLibScope = synchronized(this) {
-        CACHE.getOrPut(config) {
-            createScope(config)
-        }
+        CACHE.getOrPut(config) { createScope(config) }
     }
 
     private fun createScope(cfg: Config): C_SysLibScope {
-        val modules = mutableListOf<C_LibModule>()
+        val modules = ArrayList<C_LibModule>(4)
 
         if (cfg.defaultLib) {
-            modules.add(Lib_Rell.MODULE)
+            modules += Lib_Rell.MODULE
         }
 
         if (cfg.hiddenLib) {
-            modules.add(Lib_RellHidden.MODULE)
+            modules += Lib_RellHidden.MODULE
         }
 
         if (cfg.testLib) {
-            modules.add(Lib_RellTest.MODULE)
+            modules += Lib_RellTest.MODULE
         }
 
         if (cfg.extraMod != null) {
-            modules.add(cfg.extraMod)
+            modules += cfg.extraMod
         }
 
-        val namespaces = modules.map { it.namespace }
-        val combinedNamespace = C_LibNamespace.merge(namespaces)
+        val combinedNamespace = C_LibNamespace.merge(modules.map { it.namespace })
 
         val nsProto = combinedNamespace.toSysNsProto()
         return C_SysLibScope(nsProto, modules.toImmList())

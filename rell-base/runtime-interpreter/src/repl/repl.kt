@@ -53,7 +53,13 @@ internal class ReplCode(
     fun execute(exeCtx: Rt_ExecutionContext, rrReplCode: RR_ReplCode): ReplCodeState {
         val rtDefCtx = Rt_DefinitionContext(exeCtx, false, DefinitionId("", "<console>"))
         val rtFrame = Rt_CallFrame(rtDefCtx, rrReplCode.frame, state.frameState)
-        (exeCtx.appCtx.interpreter as Rt_InterpreterImpl).executeStatements(rrReplCode.stmts, rtFrame)
+        // The REPL is intrinsically a tree-walking concept (it threads `Rt_CallFrameState` between
+        // commands and re-uses statement-level dispatch). Whichever runtime backend is active,
+        // we drive the statement-list executor on `Rt_InterpreterImpl` directly. For the Truffle
+        // backend, this means delegating through its wrapped impl — there's nothing to specialise
+        // for a one-shot REPL line.
+        val impl: Rt_InterpreterImpl = exeCtx.appCtx.interpreter.unwrapInterpreterImpl() as Rt_InterpreterImpl
+        impl.executeStatements(rrReplCode.stmts, rtFrame)
         return ReplCodeState(
             frameProto = state.frameProto,
             blockCodeProto = state.blockCodeProto,
@@ -369,7 +375,7 @@ class ReplInterpreter private constructor(private val config: ReplInterpreterCon
         return cRes.success
     }
 
-    private fun executeCatch(code: () -> Unit): Boolean {
+    private inline fun executeCatch(code: () -> Unit): Boolean {
         try {
             code()
             return true
@@ -391,7 +397,7 @@ class ReplInterpreter private constructor(private val config: ReplInterpreterCon
         return Rt_AppContext(
             globalCtx = globalCtx,
             chainCtx = Rt_ChainContext.NULL,
-            interpreter = Rt_Interpreter.forCompilation(rrApp, compilationSysFns),
+            interpreter = Rt_InterpreterImpl.forCompilation(rrApp, compilationSysFns),
             repl = true,
             test = false,
             replOut = outChannel,

@@ -31,7 +31,7 @@ object Lib_Type_List {
                     val elemR = typeArgR("T")
                     bodyContext { ctx ->
                         val listType = Rt_ListType(ctx.exeCtx.appCtx.interpreter.resolveRType(elemR))
-                        Rt_ListValue(listType, mutableListOf())
+                        Rt_ListValue(listType)
                     }
                 }
             }
@@ -283,8 +283,8 @@ object Lib_Type_List {
 
                     val resList: MutableList<Rt_Value> = ArrayList(total)
                     if (nRepeats > 0 && list.isNotEmpty()) {
-                        for (i in 0 until nRepeats) {
-                            resList.addAll(list)
+                        for (_ in 0 until nRepeats) {
+                            resList += list
                         }
                     }
 
@@ -374,6 +374,7 @@ object Lib_Type_List {
     }
 
     private fun calcSub(type: Rt_ValueClass<*>, list: MutableList<Rt_Value>, start: Long, end: Long): Rt_Value {
+        @Suppress("ConvertTwoComparisonsToRangeCheck")
         if (start < 0 || end < start || end > list.size) {
             throw Rt_Exception.common("fn:list.sub:args:${list.size}:$start:$end",
                 "Invalid range: start = $start, end = $end, size = ${list.size}")

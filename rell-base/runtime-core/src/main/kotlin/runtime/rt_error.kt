@@ -8,6 +8,7 @@ import net.postchain.rell.base.model.R_AttrValidator
 import net.postchain.rell.base.model.R_StackPos
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.plus
 
 class Rt_ExceptionInfo(val stack: ImmList<R_StackPos>, val extraMessage: String? = null) {
     fun fullMessage(err: Rt_Error): String {
@@ -23,12 +24,52 @@ class Rt_ExceptionInfo(val stack: ImmList<R_StackPos>, val extraMessage: String?
     }
 }
 
+/**
+ * Runtime exception carrying a Rell [Rt_Error] plus a mutable [Rt_ExceptionInfo] capturing the
+ * call stack and an optional extra-message wrapper.
+ *
+ * The `info` field is mutated in place by interpreter catch-and-rethrow sites to attach
+ * source-position metadata (see [attachStackPos], [attachExtraMessage]). This avoids
+ * allocating a fresh `Rt_Exception` (and a fresh JVM `fillInStackTrace`) on every
+ * exception-decoration step — those decorations show up as a hot leaf on workloads with
+ * deeply nested catch-rethrow chains (e.g. FT4 `rule_serde`). Because callers don't retain
+ * references to the caught exception after rethrowing, in-place mutation is observationally
+ * identical to allocating a wrapper.
+ *
+ * `getMessage()` is overridden to read [info] lazily so the rendered message reflects the
+ * current state after mutation, rather than the snapshot captured at construction time.
+ */
 class Rt_Exception(
     val err: Rt_Error,
-    val info: Rt_ExceptionInfo = Rt_ExceptionInfo.NONE,
+    info: Rt_ExceptionInfo = Rt_ExceptionInfo.NONE,
     cause: Throwable? = null,
-): RuntimeException(info.fullMessage(err), cause) {
+): RuntimeException(null, cause) {
+    var info: Rt_ExceptionInfo = info
+        private set
+
+    override val message: String
+        get() = info.fullMessage(err)
+
     fun fullMessage() = info.fullMessage(err)
+
+    /**
+     * Append [stackPos] to the current stack and rethrow the same exception instance.
+     * If [nested] is `false` and the existing stack is already non-empty, the stack is
+     * preserved unchanged (matches the legacy rule in `Rt_CallFrame.error`).
+     */
+    fun attachStackPos(stackPos: R_StackPos, nested: Boolean) {
+        val cur = info
+        val newStack = if (nested || cur.stack.isEmpty()) (cur.stack + stackPos) else cur.stack
+        if (newStack !== cur.stack) {
+            info = Rt_ExceptionInfo(stack = newStack, extraMessage = cur.extraMessage)
+        }
+    }
+
+    /** Replace the [Rt_ExceptionInfo.extraMessage] wrapper, preserving the existing stack. */
+    fun attachExtraMessage(extraMessage: String) {
+        val cur = info
+        info = Rt_ExceptionInfo(stack = cur.stack, extraMessage = extraMessage)
+    }
 
     companion object {
         fun common(code: String, msg: String) = Rt_Exception(Rt_CommonError(code, msg))

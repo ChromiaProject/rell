@@ -27,7 +27,7 @@ import org.antlr.v4.runtime.atn.PredictionMode
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(BenchmarkTimeUnit.MICROSECONDS)
-@Warmup(iterations = 5, time = 2, timeUnit = BenchmarkTimeUnit.SECONDS)
+@Warmup(iterations = 3, time = 2, timeUnit = BenchmarkTimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 2, timeUnit = BenchmarkTimeUnit.SECONDS)
 class ParserBenchmark {
 

@@ -134,8 +134,9 @@ recovery only on inputs that actually contain syntax errors. For valid (hotpath)
 than the previous combinator-based parser. The LL fallback collects every recoverable error in a file rather than
 bailing on the first one, so IDE diagnostics can surface the full list together with a (possibly partial) AST.
 
-The previous parser is kept in tree as a reference implementation. A differential test gate parses every Rell snippet
-in the test corpus through both pipelines and compares the resulting ASTs; any future divergence fails the build.
+The previous parser is kept in tree as a reference implementation, reachable only through a test-only entry point. A
+differential test gate parses every Rell snippet in the test corpus through both pipelines and compares the resulting
+ASTs; any future divergence fails the build.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 10. Tooling: BNF grammar facility removed for IntelliJ plugin consumers
@@ -150,3 +151,21 @@ example via antlr/antlr4-intellij-adaptor (https://github.com/antlr/antlr4-intel
 ANTLR parser as an IntelliJ PsiParser without an intermediate BNF.
 
 This is a breaking change for the IntelliJ plugin and any other consumer that built a BNF off the old transformer.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+11. Runtime: GraalVM Truffle peer backend
+
+A second runtime backend sits alongside the tree-walking interpreter. Both consume the same RR_App, the same
+standard library, and the same database connection; they differ only in dispatch. The Truffle backend translates each user function/operation/query body to
+a Truffle AST and lets GraalVM's partial evaluator specialise hot paths. Sub-trees that don't yet have hand-written
+Truffle nodes fall through to the tree-walker, so semantics are identical from day one.
+
+The tree-walker remains the only supported backend for deployed applications. The Truffle backend is exercised
+internally by the test matrix and microbenchmarks but is not yet ready for production use; no public toggle is
+documented. Performance on real-world Rell workloads is mixed — early measurements show the two backends within the
+same order of magnitude on the FT4 functions used by most Chromia dapps, with Truffle ahead on some shapes and
+behind on others. We are not publishing comparative numbers until the implementation has stabilised.
+
+The CI suite now runs the entire rell-base test family three times — interpreter, interpreter + RR-serialization
+round-trip, and Truffle — and requires bit-identical results on all three. Differences between the tree-walker and
+Truffle are Truffle bugs; the tree-walker is the canonical reference.

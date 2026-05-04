@@ -26,7 +26,7 @@ class Rt_InterpreterTest {
         check(cRes.errors.isEmpty()) { "Compilation errors: ${cRes.errors.map { it.code }}" }
 
         val rrApp = cRes.rrApp!!
-        val interpreter = Rt_Interpreter.forCompilation(rrApp, cRes.compilationSysFns)
+        val interpreter = RellTestUtils.forCompilation(rrApp, cRes.compilationSysFns)
 
         val globalCtx = Rt_GlobalContext(
             RellTestUtils.DEFAULT_COMPILER_OPTIONS,
@@ -51,7 +51,7 @@ class Rt_InterpreterTest {
         check(cRes.errors.isEmpty()) { "Compilation errors: ${cRes.errors.map { it.code }}" }
 
         val rrApp = cRes.rrApp!!
-        val interpreter = Rt_Interpreter.forCompilation(rrApp, cRes.compilationSysFns)
+        val interpreter = RellTestUtils.forCompilation(rrApp, cRes.compilationSysFns)
 
         val globalCtx = Rt_GlobalContext(
             RellTestUtils.DEFAULT_COMPILER_OPTIONS,

@@ -83,12 +83,10 @@ class R_SizeAttrValidator(
     }
 
     companion object {
-        fun getSizeAdapter(type: R_Type): Pair<(Any) -> Int, R_SqlSizeAdapter>? {
-            return when (type) {
-                is R_ByteArrayType -> R_SizeExtractors.BYTE_ARRAY to R_SqlSizeAdapter.BYTE_ARRAY
-                is R_TextType -> R_SizeExtractors.TEXT to R_SqlSizeAdapter.TEXT
-                else -> null
-            }
+        fun getSizeAdapter(type: R_Type): Pair<(Any) -> Int, R_SqlSizeAdapter>? = when (type) {
+            is R_ByteArrayType -> R_SizeExtractors.BYTE_ARRAY to R_SqlSizeAdapter.BYTE_ARRAY
+            is R_TextType -> R_SizeExtractors.TEXT to R_SqlSizeAdapter.TEXT
+            else -> null
         }
     }
 }

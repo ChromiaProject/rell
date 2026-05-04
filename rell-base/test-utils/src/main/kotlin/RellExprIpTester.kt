@@ -31,7 +31,7 @@ class RellExprIpTester: RellExprTester() {
         )
 
         val res = processExpr0(expr2, types) { app ->
-            val interpreter = Rt_Interpreter.forCompilation(app.rrApp, app.compilationSysFns)
+            val interpreter = RellTestUtils.forCompilation(app.rrApp, app.compilationSysFns)
             val ctx = ValCtx(app.rrApp, interpreter)
             val rtArgs = args2.map { it.rt(ctx) }
             val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(app.rrApp, Rt_ChainSqlMapping(0))

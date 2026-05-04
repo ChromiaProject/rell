@@ -442,7 +442,7 @@ private class SqlEntityIniter private constructor(
         val metaName = entity.sqlMapping.metaName
         val sqlEntityName = "c0.$metaName"
         val msgEntityName = msgEntityName(entity)
-        val rrAttr = entity.strAttributes[attrName]!!
+        val rrAttr = entity.strAttributes.getValue(attrName)
         val constraintObj = SqlGen.genSizeCheckConstraint(
             sqlConstraintName(entity.mountName.str(), attrName),
             rrAttr.sqlMapping,

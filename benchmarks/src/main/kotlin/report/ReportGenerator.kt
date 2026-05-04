@@ -48,11 +48,83 @@ private data class JmhResult(
 
 private const val ACCENT = "#C1440E"
 
+private data class SampleSource(val label: String, val url: String)
+
+private data class SampleInfo(
+    val title: String,
+    val description: String,
+    val sources: List<SampleSource>,
+)
+
+private const val FT4_BLOB = "https://gitlab.com/chromaway/ft4-lib/-/blob/development/rell/src/lib/ft4"
+
+/**
+ * Per-sample editorial copy: a human-readable title, a short description of what the workload
+ * actually computes (so a reader can tell whether a slow result matters), and pointers to the
+ * upstream source. The keys must match the JMH `sample` parameter values reported in the JSON.
+ */
+private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
+    "collatz_primes_fib" to SampleInfo(
+        title = "Collatz · primality · Fibonacci",
+        description = "Sums Collatz sequence lengths for every prime in [2, 100_000], then adds the 20th Fibonacci number. Pure integer arithmetic across three user-defined functions: while loops, modulo, and direct recursion.",
+        sources = listOf(
+            SampleSource(
+                "benchmarks/src/main/resources/synthetic_bench/main.rell",
+                "https://gitlab.com/chromaway/rell/-/blob/dev/benchmarks/src/main/resources/synthetic_bench/main.rell",
+            ),
+        ),
+    ),
+    "gtv_text" to SampleInfo(
+        title = "convert_gtv_to_text",
+        description = "Recursively pretty-prints a fixed mid-sized nested gtv (lists, dicts, ints, byte_arrays, booleans) 200 times. Stresses string allocation, recursion and gtv-tag dispatch via the is_text / is_list / is_dict predicates.",
+        sources = listOf(
+            SampleSource(
+                "ft4-lib · utils/utils.rell · convert_gtv_to_text",
+                "$FT4_BLOB/utils/utils.rell",
+            ),
+        ),
+    ),
+    "rule_serde" to SampleInfo(
+        title = "auth descriptor rule serde",
+        description = "Serialises a list of five rule_expressions to gtv via serialize_rules, then parses them back via map_rule_expressions_from_gtv — 500 round-trips. Stresses gtv build/parse and from_gtv / to_gtv conversions for enums, ints, and lists.",
+        sources = listOf(
+            SampleSource(
+                "ft4-lib · core/accounts/auth_descriptor_rule_validation.rell",
+                "$FT4_BLOB/core/accounts/auth_descriptor_rule_validation.rell",
+            ),
+            SampleSource(
+                "ft4-lib · core/accounts/auth_descriptor_rule_expression.rell",
+                "$FT4_BLOB/core/accounts/auth_descriptor_rule_expression.rell",
+            ),
+        ),
+    ),
+    "rule_eval" to SampleInfo(
+        title = "auth descriptor rule evaluation",
+        description = "Evaluates a five-rule rule set against a fixed map<text, gtv> of variable values 5_000 times via is_rule_violated → evaluate_int_variable_rule. Stresses enum dispatch (operator + variable), integer comparisons and map<text, gtv> lookups.",
+        sources = listOf(
+            SampleSource(
+                "ft4-lib · core/accounts/auth_descriptor_rule_validation.rell",
+                "$FT4_BLOB/core/accounts/auth_descriptor_rule_validation.rell",
+            ),
+        ),
+    ),
+)
+
+private fun sampleInfo(sample: String): SampleInfo? = SAMPLE_INFO[sample]
+private fun sampleTitle(sample: String): String = sampleInfo(sample)?.title ?: sample
+
 private val METHOD_COLOR = mapOf(
     "antlr" to ACCENT,
     "antlrSLL" to "#1F6B4A",
     "betterParse" to "#0F0F10",
     "runQuery" to ACCENT,
+    "interpreter" to ACCENT,
+    "truffle" to "#2E5E8A",
+    // InterpreterBenchmark variant labels — `runQuery[<backend>]` after the report's
+    // `${method}[${variant}]` collapse, plus the bare backend names emitted when the
+    // benchmark class only has one method.
+    "runQuery[interpreter]" to ACCENT,
+    "runQuery[truffle]" to "#2E5E8A",
 )
 
 private val PALETTE = listOf(ACCENT, "#2E5E8A", "#1F6B4A", "#8A5E2E", "#5E2E8A", "#B07A1E")
@@ -146,14 +218,23 @@ private fun HTML.renderReport(results: List<JmhResult>, source: File, generatedA
 }
 
 private fun FlowContent.renderGroup(benchmarkClass: String, results: List<JmhResult>) {
+    val distinctMethods = results.map { it.method() }.distinct()
+    val variantOf: (JmhResult) -> String = { r ->
+        val extra = r.params.filterKeys { it != "sample" }.toSortedMap()
+        when {
+            extra.isEmpty() -> r.method()
+            distinctMethods.size == 1 -> extra.values.joinToString("/")
+            else -> "${r.method()}[${extra.values.joinToString("/")}]"
+        }
+    }
     val samples = results.map { it.sample() }.distinct()
-    val methods = results.map { it.method() }.distinct().sorted()
+    val variants = results.map(variantOf).distinct().sorted()
     val pivot: Map<String, Map<String, JmhResult>> = samples.associateWith { sample ->
-        methods.mapNotNull { method ->
-            results.firstOrNull { it.sample() == sample && it.method() == method }?.let { method to it }
+        variants.mapNotNull { variant ->
+            results.firstOrNull { it.sample() == sample && variantOf(it) == variant }?.let { variant to it }
         }.toMap()
     }
-    renderResults(benchmarkClass, pivot, methods)
+    renderResults(benchmarkClass, pivot, variants, results)
 }
 
 private fun FlowContent.renderDocHead(head: JmhResult, generatedAt: Instant) {
@@ -198,13 +279,6 @@ private fun FlowContent.renderEnvironment(head: JmhResult) = renderSection("envi
                 dlRow("Unit", head.primaryMetric.scoreUnit.ifBlank { "—" })
             }
         }
-        div(classes = "sysinfo-block") {
-            h3 { +"Timing" }
-            dl {
-                dlRow("Warmup", "${head.warmupIterations}× ${head.warmupTime ?: "—"}")
-                dlRow("Measurement", "${head.measurementIterations}× ${head.measurementTime ?: "—"}")
-            }
-        }
     }
 }
 
@@ -245,19 +319,43 @@ private fun FlowContent.renderResults(
     benchmarkClass: String,
     pivot: Map<String, Map<String, JmhResult>>,
     methods: List<String>,
+    allResults: List<JmhResult>,
 ) {
     val unit = pivot.values.flatMap { it.values }
         .map { it.primaryMetric.scoreUnit }
         .firstOrNull { it.isNotBlank() }
         .orEmpty()
-    val strap = if (unit.isNotEmpty()) "$unit · lower is better" else ""
+    val head = allResults.first()
+    val timing = "warmup ${head.warmupIterations}× ${head.warmupTime ?: "—"} · " +
+        "measurement ${head.measurementIterations}× ${head.measurementTime ?: "—"}"
+    val strap = buildList {
+        if (unit.isNotEmpty()) add("$unit · lower is better")
+        add(timing)
+    }.joinToString("  ·  ")
     renderSection(benchmarkClass.lowercase(), strap) {
         div(classes = "bars-grid") {
             pivot.forEach { (sample, byMethod) ->
                 val svg = renderSamplePanel(sample, byMethod, methods)
                 if (svg.isNotEmpty()) {
+                    val info = sampleInfo(sample)
                     div(classes = "bars-panel") {
-                        div(classes = "bars-panel-title") { +sample }
+                        div(classes = "bars-panel-title") { +sampleTitle(sample) }
+                        if (info != null) {
+                            div(classes = "bars-panel-desc") { +info.description }
+                            if (info.sources.isNotEmpty()) {
+                                ul(classes = "bars-panel-sources") {
+                                    info.sources.forEach { src ->
+                                        li {
+                                            a(href = src.url) {
+                                                attributes["target"] = "_blank"
+                                                attributes["rel"] = "noopener"
+                                                +src.label
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         div(classes = "bars-panel-svg") { unsafe { +svg } }
                     }
                 }
@@ -296,7 +394,7 @@ private fun FlowContent.renderResults(
                             ?.first
                             ?.takeIf { byMethod.values.count { it.primaryMetric.score > 0 } > 1 }
                         tr {
-                            td(classes = "name") { +sample }
+                            td(classes = "name") { +sampleTitle(sample) }
                             methods.forEach { method ->
                                 val r = byMethod[method]
                                 val cls = if (method == winner) "num winner" else "num"
@@ -374,7 +472,7 @@ private fun renderSamplePanel(
     return plot {
         bars {
             x(methodCol) { axis.name = "" }
-            y(scores) { axis.name = "$unit (lower is better)" }
+            y(scores) { axis.name = "" }
             fillColor(methodCol) {
                 scale = categorical(
                     *methods.mapIndexed { i, m -> m to Color.hex(colorFor(m, i)) }.toTypedArray(),
@@ -383,7 +481,7 @@ private fun renderSamplePanel(
             }
         }
         layout {
-            size = 320 to 220
+            size = 260 to 160
         }
     }.toSVG()
 }
@@ -503,10 +601,24 @@ main { max-width: 1180px; margin: 0 auto; padding: 2rem 2rem 2.5rem; }
 .sysinfo-block dd { color: var(--ink); font-family: var(--sans); font-size: .82rem; word-break: break-all; }
 .mono { font-family: var(--mono); font-size: .76rem; }
 
+.timing {
+  background: var(--surface); border: 1px solid var(--rule);
+  padding: .9rem 1.2rem; margin-bottom: 1rem;
+}
+.timing h3 {
+  font-family: var(--mono); font-size: .68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .18em; color: var(--muted);
+  margin-bottom: .55rem; padding-bottom: .3rem;
+  border-bottom: 1px solid var(--rule-hair);
+}
+.timing dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem .8rem; font-size: .8rem; }
+.timing dt { color: var(--muted); font-size: .72rem; font-family: var(--mono); font-weight: 500; letter-spacing: .02em; }
+.timing dd { color: var(--ink); font-family: var(--sans); font-size: .82rem; }
+
 .bars-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: .6rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: .4rem;
   background: var(--surface);
   border: 1px solid var(--rule);
   padding: .9rem 1rem;
@@ -514,11 +626,22 @@ main { max-width: 1180px; margin: 0 auto; padding: 2rem 2rem 2.5rem; }
 }
 .bars-panel { display: flex; flex-direction: column; min-width: 0; }
 .bars-panel-title {
-  font-family: var(--mono); font-size: .7rem; font-weight: 600;
+  font-family: var(--mono); font-size: .78rem; font-weight: 600;
   text-transform: lowercase; letter-spacing: .04em;
-  color: var(--ink-soft); padding: .2rem .25rem .35rem;
-  border-bottom: 1px solid var(--rule-hair); margin-bottom: .35rem;
+  color: var(--ink); padding: .2rem .25rem .35rem;
+  border-bottom: 1px solid var(--rule-hair); margin-bottom: .45rem;
 }
+.bars-panel-desc {
+  font-family: var(--sans); font-size: .76rem; line-height: 1.45;
+  color: var(--ink-soft); padding: 0 .25rem .5rem; margin-bottom: .15rem;
+}
+.bars-panel-sources {
+  list-style: none; padding: 0 .25rem .55rem; margin: 0 0 .25rem;
+  border-bottom: 1px dashed var(--rule-hair);
+  font-family: var(--mono); font-size: .68rem;
+}
+.bars-panel-sources li { margin: .12rem 0; }
+.bars-panel-sources a { color: var(--accent); }
 .bars-panel-svg svg { display: block; max-width: 100%; height: auto; }
 .grid { stroke: var(--rule-hair); stroke-width: 1; }
 .baseline { stroke: var(--ink); stroke-width: 1; }

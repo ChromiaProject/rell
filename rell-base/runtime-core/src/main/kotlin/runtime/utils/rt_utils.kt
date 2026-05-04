@@ -88,12 +88,12 @@ class Rt_Messages(private val logger: KLogger) {
     private val errors = mutableListOf<Rt_CommonError>()
 
     fun warning(code: String, msg: String) {
-        warningCodes.add(code)
+        warningCodes += code
         logger.warn(msg)
     }
 
     fun error(code: String, msg: String) {
-        errors.add(Rt_CommonError(code, msg))
+        errors += Rt_CommonError(code, msg)
     }
 
     fun errorIfNotEmpty(list: Collection<String>, code: String, msg: String) {

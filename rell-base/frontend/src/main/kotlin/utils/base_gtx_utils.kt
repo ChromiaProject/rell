@@ -18,7 +18,7 @@ class RellGtxModuleApp(
     val compilerOptions: C_CompilerOptions,
     /**
      * Sys-function registrations produced by the compilation that yielded [rrApp]. Must be
-     * passed to [Rt_Interpreter.forCompilation] — stdlib meta-bodies (`log()`, `gtv_ext`, ...)
+     * passed to `Rt_InterpreterImpl.forCompilation` — stdlib meta-bodies (`log()`, `gtv_ext`, ...)
      * capture compile-specific state, so sharing the registry across compilations corrupts
      * closures.
      */
