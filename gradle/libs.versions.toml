@@ -1,6 +1,8 @@
 [versions]
 kotlin = "2.3.0"
 postchain = "3.49.10"
+kotlinx-benchmark = "0.4.16"
+kandy = "0.8.3"
 
 junit = "6.0.2"
 
@@ -121,6 +123,9 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
+kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinx-benchmark" }
+kandy-lets-plot = { module = "org.jetbrains.kotlinx:kandy-lets-plot", version.ref = "kandy" }
+
 [bundles]
 lsp4j = ["lsp4j", "lsp4j-debug", "lsp4j-websocket"]
 koin = ["koin-core", "koin-logger"]
@@ -136,3 +141,5 @@ dependency-check = { id = "org.owasp.dependencycheck", version.ref = "dependency
 git-properties = { id = "com.gorylenko.gradle-git-properties", version.ref = "gradle-git-properties" }
 sentry = { id = "io.sentry.jvm.gradle", version.ref = "sentry" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+kotlinx-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinx-benchmark" }
+kotlin-allopen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin" }

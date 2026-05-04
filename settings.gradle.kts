@@ -50,3 +50,5 @@ include("rell-codegen:codegen-mermaid")
 include("rell-codegen:rellgen")
 
 include("rell-dokka-plugin")
+
+include("benchmarks")

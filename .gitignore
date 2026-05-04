@@ -43,6 +43,7 @@ venv/
 *.log
 *.hprof
 bin/
+profiling/
 
 CLAUDE.local.md
 .mcp.json
