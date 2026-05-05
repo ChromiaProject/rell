@@ -1,0 +1,44 @@
+// Synthetic compute workload: primality test, Collatz sequence, and recursive Fibonacci.
+
+function is_prime(n: integer): boolean {
+    if (n < 2) { return false; }
+    if (n < 4) { return true; }
+    if (n % 2 == 0) { return false; }
+    var i = 3;
+    while (i * i <= n) {
+        if (n % i == 0) { return false; }
+        i += 2;
+    }
+    return true;
+}
+
+function collatz_steps(n: integer): integer {
+    var m = n;
+    var steps = 0;
+    while (m > 1) {
+        if (m % 2 == 0) {
+            m = m / 2;
+        } else {
+            m = 3 * m + 1;
+        }
+        steps += 1;
+    }
+    return steps;
+}
+
+function fib(n: integer): integer {
+    if (n < 2) { return n; }
+    return fib(n - 1) + fib(n - 2);
+}
+
+query bench(cap: integer): integer {
+    var acc = 0;
+    var i = 2;
+    while (i <= cap) {
+        if (is_prime(i)) {
+            acc += collatz_steps(i);
+        }
+        i += 1;
+    }
+    return acc + fib(20);
+}

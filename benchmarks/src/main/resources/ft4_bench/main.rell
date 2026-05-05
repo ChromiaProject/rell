@@ -1,0 +1,224 @@
+// Compute-only excerpts from chromaway/ft4-lib (development @ 5d6bb5df), repackaged
+// for the Rell runtime microbenchmarks. Every helper kept here is database-free,
+// op_context-free and chain_context-free, so the same source compiles and runs
+// under both the tree-walker and the Truffle backend without extra plumbing.
+
+val GTV_NULL = null.to_gtv();
+
+// ----------------------------------------------------------------------------
+//  utils/utils.rell — convert_gtv_to_text + the gtv-tag predicates it dispatches on
+// ----------------------------------------------------------------------------
+
+function is_byte_array(gtv) = gtv.to_bytes()[0] == 161;
+function is_text(gtv) = gtv.to_bytes()[0] == 162;
+function is_integer(gtv) = gtv.to_bytes()[0] == 163;
+function is_dict(gtv) = gtv.to_bytes()[0] == 164;
+function is_list(gtv) = gtv.to_bytes()[0] == 165;
+function is_big_integer(gtv) = gtv.to_bytes()[0] == 166;
+
+function convert_gtv_to_text(
+    gtv,
+    indentation_index: integer = 0,
+    in_dict: boolean = false
+): text {
+    var indents = "\t".repeat(indentation_index);
+    var string: text = if (in_dict) "" else indents;
+
+    if (is_text(gtv)) {
+        string += text.from_gtv(gtv);
+    } else if (is_byte_array(gtv)) {
+        string += byte_array.from_gtv(gtv).to_hex().upper_case();
+    } else if (is_dict(gtv)) {
+        val dict = map<text, gtv>.from_gtv(gtv);
+        if (dict.size() == 0) {
+            string += "{ }";
+        } else {
+            string += "{\n";
+            for (elm in dict) {
+                string += indents + "\t" +
+                    elm[0] + ": " +
+                    convert_gtv_to_text(elm[1], indentation_index + 1, true) + ",\n";
+            }
+            string =
+                string.sub(0, string.size() - 2) +
+                "\n" +
+                (if (indentation_index != 0) indents else "  ") +
+                "}";
+        }
+    } else if (is_list(gtv)) {
+        val l = list<gtv>.from_gtv(gtv);
+        if (l.size() == 0) {
+            string += "[ ]";
+        } else {
+            string += "[\n";
+            for (elm in l) {
+                string += convert_gtv_to_text(elm, indentation_index + 1) + ",\n";
+            }
+            string =
+                string.sub(0, string.size() - 2) +
+                "\n" +
+                (if (indentation_index != 0) indents else "  ") +
+                "]";
+        }
+    } else {
+        string += gtv;
+    }
+    return string;
+}
+
+// ----------------------------------------------------------------------------
+//  core/accounts/auth_descriptor_rule_expression.rell — enums + struct only
+// ----------------------------------------------------------------------------
+
+enum rule_variable { block_height, block_time, op_count }
+enum rule_operator { lt, le, eq, ge, gt }
+
+struct rule_expression {
+    operator: rule_operator;
+    variable: rule_variable;
+    value: integer;
+}
+
+// ----------------------------------------------------------------------------
+//  core/accounts/auth_descriptor_rule_validation.rell — pure-compute subset
+// ----------------------------------------------------------------------------
+
+function rule_expression_to_gtv(rule_expression): gtv = [
+    rule_expression.operator.name.to_gtv(),
+    rule_expression.variable.name.to_gtv(),
+    rule_expression.value.to_gtv()
+].to_gtv();
+
+function serialize_rules(rules: list<rule_expression>): gtv {
+    if (rules.size() == 0) return GTV_NULL;
+    if (rules.size() == 1) return rule_expression_to_gtv(rules[0]);
+
+    val rules_gtv = ["and".to_gtv()];
+    for (rule in rules) {
+        rules_gtv.add(rule_expression_to_gtv(rule));
+    }
+    return rules_gtv.to_gtv();
+}
+
+function rule_expression_from_gtv(gtv): rule_expression {
+    val components = list<gtv>.from_gtv(gtv);
+    val operator_name = text.from_gtv(components[0]);
+    val variable_name = text.from_gtv(components[1]);
+    val value = integer.from_gtv(components[2]);
+
+    val operator = require(
+        rule_operator.values() @? { .name == operator_name },
+        "INVALID RULE: Unknown rule operator %s".format(operator_name)
+    );
+    val variable = require(
+        rule_variable.values() @? { .name == variable_name },
+        "INVALID RULE: Unknown rule variable %s".format(variable_name)
+    );
+    return rule_expression(operator, variable, value);
+}
+
+function map_rule_expressions_from_gtv(gtv_rules: list<gtv>): list<rule_expression> {
+    val rules = list<rule_expression>();
+    for (rule in gtv_rules) {
+        rules.add(rule_expression_from_gtv(rule));
+    }
+    return rules;
+}
+
+function variable_value(variable: rule_variable, variables: map<text, gtv>): integer =
+    integer.from_gtv(variables[variable.name]);
+
+function evaluate_int_variable_rule(rule: rule_expression, variables: map<text, gtv>): boolean {
+    val cur = variable_value(rule.variable, variables);
+    val def = rule.value;
+    val op = rule.operator;
+    if (op == rule_operator.lt) return cur < def;
+    if (op == rule_operator.le) return cur <= def;
+    if (op == rule_operator.eq) return cur == def;
+    if (op == rule_operator.ge) return cur >= def;
+    return cur > def;
+}
+
+function is_rule_violated(rule: rule_expression, variables: map<text, gtv>): boolean {
+    return not evaluate_int_variable_rule(rule, variables);
+}
+
+// ----------------------------------------------------------------------------
+//  Benchmark entry points — each query loops the chosen function `reps` times so
+//  per-call cost is amortised against JMH's iteration overhead.
+// ----------------------------------------------------------------------------
+
+// Builds a moderately nested gtv to feed convert_gtv_to_text. Same shape every
+// call so partial evaluation in Truffle has a stable type profile to specialise.
+function bench_gtv_payload(): gtv {
+    val inner_dict = ["alpha": "one", "beta": "two", "gamma": "three"];
+    val inner_list = [1, 2, 3, 4, 5, 6, 7, 8];
+    val outer = [
+        "name": "auth_descriptor".to_gtv(),
+        "blockchain_rid": x"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20".to_gtv(),
+        "rules": inner_list.to_gtv(),
+        "labels": inner_dict.to_gtv(),
+        "nested": [inner_dict.to_gtv(), inner_list.to_gtv()].to_gtv(),
+        "active": true.to_gtv(),
+        "ctr": (42).to_gtv()
+    ];
+    return outer.to_gtv();
+}
+
+query bench_gtv_text(reps: integer): integer {
+    val payload = bench_gtv_payload();
+    var total = 0;
+    var i = 0;
+    while (i < reps) {
+        total += convert_gtv_to_text(payload).size();
+        i += 1;
+    }
+    return total;
+}
+
+function bench_rule_set(): list<rule_expression> = [
+    rule_expression(operator = rule_operator.lt, variable = rule_variable.block_height, value = 1000000),
+    rule_expression(operator = rule_operator.gt, variable = rule_variable.block_time, value = 0),
+    rule_expression(operator = rule_operator.le, variable = rule_variable.op_count, value = 100),
+    rule_expression(operator = rule_operator.eq, variable = rule_variable.block_height, value = 42),
+    rule_expression(operator = rule_operator.ge, variable = rule_variable.block_time, value = 1234567890)
+];
+
+query bench_rule_serde(reps: integer): integer {
+    val rules = bench_rule_set();
+    var total = 0;
+    var i = 0;
+    while (i < reps) {
+        val ser = serialize_rules(rules);
+        val gtv_rules = list<gtv>.from_gtv(ser);
+        // serialize_rules wraps multi-rule lists in ["and", ...]; strip the head before parsing.
+        val parsed = map_rule_expressions_from_gtv(gtv_rules.sub(1));
+        total += parsed.size();
+        i += 1;
+    }
+    return total;
+}
+
+function bench_rule_variables(): map<text, gtv> {
+    val v = map<text, gtv>();
+    v[rule_variable.block_height.name] = (50000).to_gtv();
+    v[rule_variable.block_time.name] = (1234567890).to_gtv();
+    v[rule_variable.op_count.name] = (3).to_gtv();
+    return v;
+}
+
+query bench_rule_eval(reps: integer): integer {
+    val rules = bench_rule_set();
+    val variables = bench_rule_variables();
+    var violations = 0;
+    var i = 0;
+    while (i < reps) {
+        for (rule in rules) {
+            if (is_rule_violated(rule, variables)) {
+                violations += 1;
+            }
+        }
+        i += 1;
+    }
+    return violations;
+}

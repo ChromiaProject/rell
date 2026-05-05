@@ -22,15 +22,11 @@ dependencies {
     implementation(libs.kandy.lets.plot)
 }
 
-sourceSets.main {
-    kotlin.setSrcDirs(listOf("src"))
-}
-
 benchmark {
     configurations {
         named("main") {
-            warmups = 3
-            iterations = 5
+            warmups = null
+            iterations = null
             iterationTime = 2
             iterationTimeUnit = "s"
             outputTimeUnit = "ms"
@@ -120,12 +116,14 @@ val mergedBenchmarkHtmlReport by tasks.registering(JavaExec::class) {
     }
 }
 
-// Debug helper task to run merge manually
-val debugMerge by tasks.registering(JavaExec::class) {
-    group = "debug"
-    description = "Debug the merge tool with fixed inputs"
+/**
+ * Smoke test: compile + run each ft4 workload once on the legacy interpreter, no JMH framing.
+ * Catches Rell source errors and obvious runtime breakage without paying for a full
+ * benchmark cycle.
+ */
+val smokeFt4 by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Run each Ft4Benchmark workload once on the legacy interpreter."
     classpath = sourceSets["main"].runtimeClasspath
-    mainClass = "net.postchain.rell.benchmarks.report.MergeBenchmarkJsonsKt"
-
-    args("--help") // Override in command line
+    mainClass = "net.postchain.rell.benchmarks.SmokeFt4Kt"
 }

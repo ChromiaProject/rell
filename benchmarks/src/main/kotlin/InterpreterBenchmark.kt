@@ -19,6 +19,7 @@ import kotlinx.benchmark.State
 import kotlinx.benchmark.Warmup
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
+import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.model.R_QueryDefinition
@@ -30,78 +31,43 @@ import net.postchain.rell.base.runtime.Rt_NopPrinter
 import net.postchain.rell.base.runtime.Rt_NullOpContext
 import net.postchain.rell.base.runtime.Rt_NullSqlContext
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.lib.type.Rt_IntValue
 import net.postchain.rell.base.sql.NoConnSqlExecutor
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.immListOf
 
 /**
- * Benchmark for the legacy `R_Expr` tree-walking interpreter.
+ * Synthetic microbenchmark on the **legacy R_Expr tree-walker** (this branch's only
+ * interpreter — the master codebase predates the RR_App refactor and the Truffle backend).
  *
- * Runs a CPU-bound Rell query (prime sieve + Collatz + recursive Fibonacci) end-to-end
- * through `R_QueryDefinition.call`, exercising the same interpreter paths used by
- * production query evaluation (no SQL, no I/O).
+ * Mirrors rell2's `InterpreterBenchmark` so the two reports merge cleanly: same Rell source
+ * (`synthetic_bench/main.rell`), same `sample = "collatz_primes_fib"`, same query name,
+ * same input size. The `backend` axis carries the single value `r-expr-legacy` so this
+ * branch's row sits next to rell2's `interpreter | truffle | kotlin` rows in the merged
+ * report.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
-@Warmup(iterations = 5, time = 2, timeUnit = BenchmarkTimeUnit.SECONDS)
-@Measurement(iterations = 5, time = 2, timeUnit = BenchmarkTimeUnit.SECONDS)
+@Warmup(iterations = 10, time = 2, timeUnit = BenchmarkTimeUnit.SECONDS)
+@Measurement(iterations = 10, time = 2, timeUnit = BenchmarkTimeUnit.SECONDS)
 class InterpreterBenchmark {
+
     /**
-     * Single-value param so the JSON output carries a `backend` label that
-     * lines up with rell2's `InterpreterBenchmark.backend = {interpreter,
-     * truffle, kotlin}` axis when results are merged into one report.
+     * Single-value @Param so the JSON output carries a `backend` label that lines up
+     * with rell2's `{interpreter, truffle, kotlin}` axis when results are merged.
      */
     @Param("r-expr-legacy")
     lateinit var backend: String
 
-    private val code = """
-        function is_prime(n: integer): boolean {
-            if (n < 2) { return false; }
-            if (n < 4) { return true; }
-            if (n % 2 == 0) { return false; }
-            var i = 3;
-            while (i * i <= n) {
-                if (n % i == 0) { return false; }
-                i += 2;
-            }
-            return true;
-        }
+    /**
+     * Single-value @Param so the report generator pivots this row by `sample` the same
+     * way it does for [Ft4Benchmark].
+     */
+    @Param("collatz_primes_fib")
+    lateinit var sample: String
 
-        function collatz_steps(n: integer): integer {
-            var m = n;
-            var steps = 0;
-            while (m > 1) {
-                if (m % 2 == 0) {
-                    m = m / 2;
-                } else {
-                    m = 3 * m + 1;
-                }
-                steps += 1;
-            }
-            return steps;
-        }
-
-        function fib(n: integer): integer {
-            if (n < 2) { return n; }
-            return fib(n - 1) + fib(n - 2);
-        }
-
-        query bench(cap: integer): integer {
-            var acc = 0;
-            var i = 2;
-            while (i <= cap) {
-                if (is_prime(i)) {
-                    acc += collatz_steps(i);
-                }
-                i += 1;
-            }
-            return acc + fib(20);
-        }
-    """.trimIndent()
-
-    private val limit: List<Rt_Value> = listOf(Rt_IntValue.get(100_000L))
+    private val limitInt = 100_000L
+    private val limit: List<Rt_Value> = listOf(Rt_IntValue.get(limitInt))
 
     private lateinit var app: R_App
     private lateinit var exeCtx: Rt_ExecutionContext
@@ -109,7 +75,8 @@ class InterpreterBenchmark {
 
     @Setup
     fun setUp() {
-        val sourceDir = C_SourceDir.mapDirOf(RellTestUtils.MAIN_FILE to code)
+        val rellSource = loadRellResource("synthetic_bench/main.rell")
+        val sourceDir = C_SourceDir.mapDirOf(RellTestUtils.MAIN_FILE to rellSource)
         val modSel = C_CompilerModuleSelection(immListOf(R_ModuleName.EMPTY), immListOf())
         val cRes = RellTestUtils.compileApp(sourceDir, modSel, RellTestUtils.DEFAULT_COMPILER_OPTIONS)
         check(cRes.errors.isEmpty()) {
@@ -127,7 +94,7 @@ class InterpreterBenchmark {
         val appCtx = Rt_AppContext(globalCtx, Rt_ChainContext.NULL, app)
         val sqlCtx = Rt_NullSqlContext.create(app)
         exeCtx = Rt_ExecutionContext(appCtx, Rt_NullOpContext, sqlCtx, NoConnSqlExecutor)
-        query = app.moduleMap[R_ModuleName.EMPTY]!!.queries.getValue("bench")
+        query = app.moduleMap.getValue(R_ModuleName.EMPTY).queries.getValue("bench")
     }
 
     @Benchmark
@@ -135,3 +102,9 @@ class InterpreterBenchmark {
         blackhole.consume(query.call(exeCtx, limit))
     }
 }
+
+internal fun loadRellResource(path: String): String =
+    InterpreterBenchmark::class.java.classLoader.getResourceAsStream(path)
+        ?.bufferedReader()
+        ?.use { it.readText() }
+        ?: error("Benchmark resource not found on classpath: $path")

@@ -5,50 +5,21 @@ package net.postchain.rell.benchmarks.report
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import kotlinx.html.DL
-import kotlinx.html.FlowContent
-import kotlinx.html.HTML
-import kotlinx.html.a
-import kotlinx.html.body
-import kotlinx.html.code
-import kotlinx.html.dd
-import kotlinx.html.div
-import kotlinx.html.dl
-import kotlinx.html.dt
-import kotlinx.html.footer
-import kotlinx.html.h1
-import kotlinx.html.h3
-import kotlinx.html.head
-import kotlinx.html.header
-import kotlinx.html.html
-import kotlinx.html.link
-import kotlinx.html.main
-import kotlinx.html.meta
-import kotlinx.html.p
-import kotlinx.html.section
-import kotlinx.html.span
+import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
-import kotlinx.html.style
-import kotlinx.html.table
-import kotlinx.html.tbody
-import kotlinx.html.td
-import kotlinx.html.th
-import kotlinx.html.thead
-import kotlinx.html.title
-import kotlinx.html.tr
-import kotlinx.html.unsafe
 import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlinx.kandy.dsl.categorical
 import org.jetbrains.kotlinx.kandy.dsl.plot
 import org.jetbrains.kotlinx.kandy.letsplot.export.toSVG
 import org.jetbrains.kotlinx.kandy.letsplot.feature.layout
 import org.jetbrains.kotlinx.kandy.letsplot.layers.bars
+import org.jetbrains.kotlinx.kandy.letsplot.scales.guide.LegendType
 import org.jetbrains.kotlinx.kandy.util.color.Color
 import java.io.File
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.util.*
 import kotlin.system.exitProcess
 
 private data class JmhMetric(
@@ -77,35 +48,93 @@ private data class JmhResult(
 
 private const val ACCENT = "#C1440E"
 
-private val METHOD_COLOR = mapOf(
-    "antlr" to ACCENT,
-    "antlrNoTree" to "#2E5E8A",
-    "antlrSLL" to "#1F6B4A",
-    "betterParse" to "#0F0F10",
-    "runQuery" to ACCENT,
+private data class SampleSource(val label: String, val url: String)
+
+private data class SampleInfo(
+    val title: String,
+    val description: String,
+    val sources: List<SampleSource>,
 )
+
+private const val FT4_BLOB = "https://gitlab.com/chromaway/ft4-lib/-/blob/development/rell/src/lib/ft4"
 
 /**
- * Backend-axis palette for `InterpreterBenchmark.backend`. Ordering goes from
- * "slow tree-walker" → "fast native baseline" with a perceptually distinct hue
- * per backend so the merged report makes the speed gradient visible at a glance.
+ * Per-sample editorial copy: a human-readable title, a short description of what the workload
+ * actually computes (so a reader can tell whether a slow result matters), and pointers to the
+ * upstream source. The keys must match the JMH `sample` parameter values reported in the JSON.
  */
-private val SAMPLE_COLOR = mapOf(
-    "r-expr-legacy" to "#C1440E", // ember — legacy R_Expr tree-walker
-    "interpreter" to "#2E5E8A",   // steel — RR_ tree-walker
-    "truffle" to "#1F6B4A",       // forest — Truffle JIT
-    "kotlin" to "#7A2E8A",        // violet — hand-written Kotlin baseline
+private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
+    "collatz_primes_fib" to SampleInfo(
+        title = "Collatz · primality · Fibonacci",
+        description = "Sums Collatz sequence lengths for every prime in [2, 100_000], then adds the 20th Fibonacci number. Pure integer arithmetic across three user-defined functions: while-loops, modulo, and direct recursion — what Truffle's partial evaluator should specialise hardest.",
+        sources = listOf(
+            SampleSource(
+                "benchmarks/src/main/resources/synthetic_bench/main.rell",
+                "https://gitlab.com/chromaway/rell/-/blob/dev/benchmarks/src/main/resources/synthetic_bench/main.rell",
+            ),
+        ),
+    ),
+    "gtv_text" to SampleInfo(
+        title = "convert_gtv_to_text",
+        description = "Recursively pretty-prints a fixed mid-sized nested gtv (lists, dicts, ints, byte_arrays, booleans) 200 times. Stresses string allocation, recursion and gtv-tag dispatch via the is_text / is_list / is_dict predicates.",
+        sources = listOf(
+            SampleSource(
+                "ft4-lib · utils/utils.rell · convert_gtv_to_text",
+                "$FT4_BLOB/utils/utils.rell",
+            ),
+        ),
+    ),
+    "rule_serde" to SampleInfo(
+        title = "auth descriptor rule serde",
+        description = "Serialises a list of five rule_expressions to gtv via serialize_rules, then parses them back via map_rule_expressions_from_gtv — 500 round-trips. Stresses gtv build/parse and from_gtv / to_gtv conversions for enums, ints, and lists.",
+        sources = listOf(
+            SampleSource(
+                "ft4-lib · core/accounts/auth_descriptor_rule_validation.rell",
+                "$FT4_BLOB/core/accounts/auth_descriptor_rule_validation.rell",
+            ),
+            SampleSource(
+                "ft4-lib · core/accounts/auth_descriptor_rule_expression.rell",
+                "$FT4_BLOB/core/accounts/auth_descriptor_rule_expression.rell",
+            ),
+        ),
+    ),
+    "rule_eval" to SampleInfo(
+        title = "auth descriptor rule evaluation",
+        description = "Evaluates a five-rule rule set against a fixed map<text, gtv> of variable values 5_000 times via is_rule_violated → evaluate_int_variable_rule. Stresses enum dispatch (operator + variable), integer comparisons and map<text, gtv> lookups.",
+        sources = listOf(
+            SampleSource(
+                "ft4-lib · core/accounts/auth_descriptor_rule_validation.rell",
+                "$FT4_BLOB/core/accounts/auth_descriptor_rule_validation.rell",
+            ),
+        ),
+    ),
 )
 
-private val PALETTE = listOf(ACCENT, "#2E5E8A", "#1F6B4A", "#0F0F10", "#8A5E2E", "#5E2E8A")
+private fun sampleInfo(sample: String): SampleInfo? = SAMPLE_INFO[sample]
+private fun sampleTitle(sample: String): String = sampleInfo(sample)?.title ?: sample
+
+private val METHOD_COLOR = mapOf(
+    "antlr" to ACCENT,
+    "antlrSLL" to "#1F6B4A",
+    "manualAntlr" to "#E07A4E",
+    "manualAntlrSLL" to "#4FA37D",
+    "betterParse" to "#0F0F10",
+    "runQuery" to ACCENT,
+    "interpreter" to ACCENT,
+    "truffle" to "#2E5E8A",
+    // InterpreterBenchmark variant labels — `runQuery[<backend>]` after the report's
+    // `${method}[${variant}]` collapse, plus the bare backend names emitted when the
+    // benchmark class only has one method.
+    "runQuery[interpreter]" to ACCENT,
+    "runQuery[truffle]" to "#2E5E8A",
+)
+
+private val PALETTE = listOf(ACCENT, "#2E5E8A", "#1F6B4A", "#8A5E2E", "#5E2E8A", "#B07A1E")
 
 private const val DEFAULT_COLOR = "#6B6D73"
 
 private fun colorFor(method: String, fallbackIndex: Int): String =
     METHOD_COLOR[method] ?: PALETTE.getOrElse(fallbackIndex) { DEFAULT_COLOR }
-
-private fun colorForSample(sample: String, fallbackIndex: Int): String =
-    SAMPLE_COLOR[sample] ?: PALETTE.getOrElse(fallbackIndex) { DEFAULT_COLOR }
 
 fun main(args: Array<String>) {
     val parsed = parseArgs(args)
@@ -147,6 +176,7 @@ private fun parseArgs(args: Array<String>): Args {
                 println("Usage: report --input <json> --output <html>")
                 exitProcess(0)
             }
+
             else -> error("Unknown argument: ${args[i]}")
         }
         i++
@@ -190,14 +220,23 @@ private fun HTML.renderReport(results: List<JmhResult>, source: File, generatedA
 }
 
 private fun FlowContent.renderGroup(benchmarkClass: String, results: List<JmhResult>) {
+    val distinctMethods = results.map { it.method() }.distinct()
+    val variantOf: (JmhResult) -> String = { r ->
+        val extra = r.params.filterKeys { it != "sample" }.toSortedMap()
+        when {
+            extra.isEmpty() -> r.method()
+            distinctMethods.size == 1 -> extra.values.joinToString("/")
+            else -> "${r.method()}[${extra.values.joinToString("/")}]"
+        }
+    }
     val samples = results.map { it.sample() }.distinct()
-    val methods = results.map { it.method() }.distinct().sorted()
+    val variants = results.map(variantOf).distinct().sorted()
     val pivot: Map<String, Map<String, JmhResult>> = samples.associateWith { sample ->
-        methods.mapNotNull { method ->
-            results.firstOrNull { it.sample() == sample && it.method() == method }?.let { method to it }
+        variants.mapNotNull { variant ->
+            results.firstOrNull { it.sample() == sample && variantOf(it) == variant }?.let { variant to it }
         }.toMap()
     }
-    renderResults(benchmarkClass, pivot, methods)
+    renderResults(benchmarkClass, pivot, variants)
 }
 
 private fun FlowContent.renderDocHead(head: JmhResult, generatedAt: Instant) {
@@ -295,26 +334,36 @@ private fun FlowContent.renderResults(
         .firstOrNull { it.isNotBlank() }
         .orEmpty()
     val strap = if (unit.isNotEmpty()) "$unit · lower is better" else ""
-    // When there's only one method (e.g. InterpreterBenchmark.runQuery × {backends}),
-    // color by sample/backend so each bar gets its own hue. Otherwise keep coloring
-    // by method (the parser benchmark case) where samples appear as x-axis groups.
-    val colorBySample = methods.size == 1
-    val samples = pivot.keys.toList()
     renderSection(benchmarkClass.lowercase(), strap) {
-    div(classes = "bars-wrap") {
-        unsafe { +renderBarChart(pivot, methods, colorBySample) }
-    }
-    div(classes = "legend") {
-        if (colorBySample) {
-            samples.forEachIndexed { i, sample ->
-                div(classes = "legend-item") {
-                    span(classes = "swatch") {
-                        attributes["style"] = "background:${colorForSample(sample, i)}"
+        div(classes = "bars-grid") {
+            pivot.forEach { (sample, byMethod) ->
+                val svg = renderSamplePanel(sample, byMethod, methods)
+                if (svg.isNotEmpty()) {
+                    val info = sampleInfo(sample)
+                    div(classes = "bars-panel") {
+                        div(classes = "bars-panel-title") { +sampleTitle(sample) }
+                        if (info != null) {
+                            div(classes = "bars-panel-desc") { +info.description }
+                            if (info.sources.isNotEmpty()) {
+                                ul(classes = "bars-panel-sources") {
+                                    info.sources.forEach { src ->
+                                        li {
+                                            a(href = src.url) {
+                                                attributes["target"] = "_blank"
+                                                attributes["rel"] = "noopener"
+                                                +src.label
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        div(classes = "bars-panel-svg") { unsafe { +svg } }
                     }
-                    span(classes = "legend-label") { +sample }
                 }
             }
-        } else {
+        }
+        div(classes = "legend") {
             methods.forEachIndexed { i, method ->
                 div(classes = "legend-item") {
                     span(classes = "swatch") {
@@ -324,48 +373,55 @@ private fun FlowContent.renderResults(
                 }
             }
         }
-    }
-    div(classes = "table-scroll") {
-        table(classes = "results") {
-            thead {
-                tr {
-                    th { +"Sample" }
-                    methods.forEach { method ->
-                        th(classes = "num") {
-                            +method
-                            if (unit.isNotEmpty()) span(classes = "unit") { +" $unit" }
-                        }
-                    }
-                    if (methods.size == 2) th(classes = "num") { +"Ratio" }
-                }
-            }
-            tbody {
-                pivot.forEach { (sample, byMethod) ->
+        div(classes = "table-scroll") {
+            table(classes = "results") {
+                thead {
                     tr {
-                        td(classes = "name") { +sample }
+                        th { +"Sample" }
                         methods.forEach { method ->
-                            val r = byMethod[method]
-                            td(classes = "num") {
-                                if (r != null) {
-                                    val m = r.primaryMetric
-                                    +"%.3f".formatRoot(m.score)
-                                    span(classes = "err") { +" ± %.3f".formatRoot(m.scoreError) }
-                                } else {
-                                    +"—"
-                                }
+                            th(classes = "num") {
+                                +method
+                                if (unit.isNotEmpty()) span(classes = "unit") { +" $unit" }
                             }
                         }
-                        if (methods.size == 2) {
-                            td(classes = "num") {
-                                val a = byMethod[methods[0]]?.primaryMetric?.score
-                                val b = byMethod[methods[1]]?.primaryMetric?.score
-                                if (a != null && b != null && a > 0 && b > 0) {
-                                    val ratio = if (a < b) b / a else a / b
-                                    val faster = if (a < b) methods[0] else methods[1]
-                                    span(classes = "ratio") { +"%.2f×".formatRoot(ratio) }
-                                    span(classes = "ratio-note") { +" $faster" }
-                                } else {
-                                    +"—"
+                        if (methods.size == 2) th(classes = "num") { +"Ratio" }
+                    }
+                }
+                tbody {
+                    pivot.forEach { (sample, byMethod) ->
+                        val winner = methods
+                            .mapNotNull { m -> byMethod[m]?.primaryMetric?.score?.let { m to it } }
+                            .filter { it.second > 0 }
+                            .minByOrNull { it.second }
+                            ?.first
+                            ?.takeIf { byMethod.values.count { it.primaryMetric.score > 0 } > 1 }
+                        tr {
+                            td(classes = "name") { +sampleTitle(sample) }
+                            methods.forEach { method ->
+                                val r = byMethod[method]
+                                val cls = if (method == winner) "num winner" else "num"
+                                td(classes = cls) {
+                                    if (r != null) {
+                                        val m = r.primaryMetric
+                                        +"%.3f".formatRoot(m.score)
+                                        span(classes = "err") { +" ± %.3f".formatRoot(m.scoreError) }
+                                    } else {
+                                        +"—"
+                                    }
+                                }
+                            }
+                            if (methods.size == 2) {
+                                td(classes = "num") {
+                                    val a = byMethod[methods[0]]?.primaryMetric?.score
+                                    val b = byMethod[methods[1]]?.primaryMetric?.score
+                                    if (a != null && b != null && a > 0 && b > 0) {
+                                        val ratio = if (a < b) b / a else a / b
+                                        val faster = if (a < b) methods[0] else methods[1]
+                                        span(classes = "ratio") { +"%.2f×".formatRoot(ratio) }
+                                        span(classes = "ratio-note") { +" $faster" }
+                                    } else {
+                                        +"—"
+                                    }
                                 }
                             }
                         }
@@ -373,7 +429,6 @@ private fun FlowContent.renderResults(
                 }
             }
         }
-    }
     }
 }
 
@@ -395,74 +450,47 @@ private fun FlowContent.renderMethodology(head: JmhResult) = renderSection("meth
     }
 }
 
-private fun FlowContent.renderColophon(source: File, generatedAt: Instant) {
-    footer(classes = "colophon") {
-        div(classes = "colophon-inner") {
-            span { +"kotlinx-benchmark + Kotlin renderer" }
-            span(classes = "sep") { +"·" }
-            span { a(href = "https://gitlab.com/chromaway/rell") { +"chromaway/rell" } }
-            span(classes = "colophon-spacer") {}
-            span(classes = "colophon-meta") { +source.name }
-            span(classes = "sep") { +"·" }
-            span(classes = "colophon-meta") { +generatedAt.toHuman() }
-        }
+private fun FlowContent.renderColophon(source: File, generatedAt: Instant) = footer(classes = "colophon") {
+    div(classes = "colophon-inner") {
+        span { a(href = "https://gitlab.com/chromaway/rell") { +"chromaway/rell" } }
+        span(classes = "colophon-spacer") {}
+        span(classes = "colophon-meta") { +source.name }
+        span(classes = "sep") { +"·" }
+        span(classes = "colophon-meta") { +generatedAt.toHuman() }
     }
 }
 
-private fun renderBarChart(
-    pivot: Map<String, Map<String, JmhResult>>,
+private fun renderSamplePanel(
+    sample: String,
+    byMethod: Map<String, JmhResult>,
     methods: List<String>,
-    colorBySample: Boolean = false,
 ): String {
-    if (pivot.isEmpty() || methods.isEmpty()) return ""
-    val flat = pivot.values.flatMap { it.values }
-    if (flat.isEmpty()) return ""
-    val unit = flat.first().primaryMetric.scoreUnit
-
-    val samples = mutableListOf<String>()
-    val methodCol = mutableListOf<String>()
-    val scores = mutableListOf<Double>()
-    pivot.forEach { (sample, byMethod) ->
-        methods.forEach { method ->
-            val r = byMethod[method] ?: return@forEach
-            samples += sample
-            methodCol += method
-            scores += r.primaryMetric.score
-        }
-    }
-
-    val sampleOrder = pivot.keys.toList()
+    val present = methods.filter { byMethod[it] != null }
+    if (present.isEmpty()) return ""
+    val unit = byMethod.values.first().primaryMetric.scoreUnit
+    val methodCol = present.toMutableList()
+    val scores = present.map { byMethod.getValue(it).primaryMetric.score }.toMutableList()
 
     return plot {
         bars {
-            x(samples) { axis.name = "" }
-            y(scores) { axis.name = "$unit (lower is better)" }
-            if (colorBySample) {
-                fillColor(samples) {
-                    scale = categorical(
-                        *sampleOrder.mapIndexed { i, s -> s to Color.hex(colorForSample(s, i)) }.toTypedArray(),
-                    )
-                    legend.name = ""
-                }
-            } else {
-                fillColor(methodCol) {
-                    scale = categorical(
-                        *methods.mapIndexed { i, m -> m to Color.hex(colorFor(m, i)) }.toTypedArray(),
-                    )
-                    legend.name = ""
-                }
+            x(methodCol) { axis.name = "" }
+            y(scores) { axis.name = "" }
+            fillColor(methodCol) {
+                scale = categorical(
+                    *methods.mapIndexed { i, m -> m to Color.hex(colorFor(m, i)) }.toTypedArray(),
+                )
+                legend.type = LegendType.None
             }
         }
         layout {
-            size = 720 to 360
+            size = 320 to 220
         }
     }.toSVG()
 }
 
-private fun JmhResult.benchmarkClass(): String =
-    benchmark.substringBeforeLast('.').substringAfterLast('.')
+private fun JmhResult.benchmarkClass(): String = benchmark.substringBeforeLast('.').substringAfterLast('.')
 private fun JmhResult.method(): String = benchmark.substringAfterLast('.')
-private fun JmhResult.sample(): String = params["sample"] ?: params["backend"] ?: "—"
+private fun JmhResult.sample(): String = params["sample"] ?: "—"
 
 private fun Instant.toHuman(): String =
     atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd · HH:mm z"))
@@ -575,14 +603,34 @@ main { max-width: 1180px; margin: 0 auto; padding: 2rem 2rem 2.5rem; }
 .sysinfo-block dd { color: var(--ink); font-family: var(--sans); font-size: .82rem; word-break: break-all; }
 .mono { font-family: var(--mono); font-size: .76rem; }
 
-.bars-wrap {
+.bars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: .6rem;
   background: var(--surface);
   border: 1px solid var(--rule);
   padding: .9rem 1rem;
   margin-bottom: 1.2rem;
-  max-width: 720px;
 }
-.bars-wrap svg { display: block; }
+.bars-panel { display: flex; flex-direction: column; min-width: 0; }
+.bars-panel-title {
+  font-family: var(--mono); font-size: .78rem; font-weight: 600;
+  text-transform: lowercase; letter-spacing: .04em;
+  color: var(--ink); padding: .2rem .25rem .35rem;
+  border-bottom: 1px solid var(--rule-hair); margin-bottom: .45rem;
+}
+.bars-panel-desc {
+  font-family: var(--sans); font-size: .76rem; line-height: 1.45;
+  color: var(--ink-soft); padding: 0 .25rem .5rem; margin-bottom: .15rem;
+}
+.bars-panel-sources {
+  list-style: none; padding: 0 .25rem .55rem; margin: 0 0 .25rem;
+  border-bottom: 1px dashed var(--rule-hair);
+  font-family: var(--mono); font-size: .68rem;
+}
+.bars-panel-sources li { margin: .12rem 0; }
+.bars-panel-sources a { color: var(--accent); }
+.bars-panel-svg svg { display: block; max-width: 100%; height: auto; }
 .grid { stroke: var(--rule-hair); stroke-width: 1; }
 .baseline { stroke: var(--ink); stroke-width: 1; }
 .tick { font-family: var(--mono); font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
@@ -611,6 +659,7 @@ tbody tr:hover { background: rgba(193,68,14,0.04); }
 td.name { font-family: var(--sans); font-weight: 500; }
 td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: .82rem; color: var(--ink); }
 td.num .err { color: var(--muted); font-size: .75rem; }
+td.num.winner { font-weight: 700; color: var(--accent); }
 td.num .ratio { color: var(--accent); font-weight: 600; }
 td.num .ratio-note { color: var(--muted); font-family: var(--mono); font-size: .72rem; letter-spacing: .04em; margin-left: .35rem; text-transform: lowercase; }
 
