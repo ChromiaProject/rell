@@ -9,5 +9,5 @@ import net.postchain.rell.base.utils.ide.IdeFilePath
 
 class RellCompilerFilePath(
     val cPath: C_SourcePath,
-    val idePath: IdeFilePath
+    val idePath: IdeFilePath,
 )

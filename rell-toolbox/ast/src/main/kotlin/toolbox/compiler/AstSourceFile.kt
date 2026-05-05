@@ -14,22 +14,12 @@ class AstSourceFile private constructor(
     private val ideFilePath: IdeFilePath,
     private val text: String,
 ) : C_SourceFile() {
-
-    override fun idePath(): IdeFilePath {
-        return ideFilePath
-    }
-
-    override fun readAst(version: R_LangVersion): S_RellFile {
-        return ast
-    }
-
-    override fun readText(): String {
-        return text
-    }
+    override fun idePath(): IdeFilePath = ideFilePath
+    override fun readAst(version: R_LangVersion): S_RellFile = ast
+    override fun readText(): String = text
 
     companion object {
-        fun make(ast: S_RellFile, ideFilePath: IdeFilePath, text: String): C_SourceFile {
-            return AstSourceFile(ast, ideFilePath, text)
-        }
+        fun make(ast: S_RellFile, ideFilePath: IdeFilePath, text: String): C_SourceFile =
+            AstSourceFile(ast, ideFilePath, text)
     }
 }

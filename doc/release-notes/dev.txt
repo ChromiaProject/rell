@@ -21,9 +21,9 @@ logic lives entirely in the interpreter rather than on the tree itself.
 The old monolithic rell-base has been split into sub-modules so the serialized IR format is defined independently of
 compilation and execution:
 
-    ┌──────────────────┬────────────────────────────────────────────────────────────────────┐
-    │ Sub-module       │ Purpose                                                            │
-    ├──────────────────┼────────────────────────────────────────────────────────────────────┤
+    ┌──────────────────────┬────────────────────────────────────────────────────────────────┐
+    │ Sub-module           │ Purpose                                                        │
+    ├──────────────────────┼────────────────────────────────────────────────────────────────┤
     │ utils                │ Shared utilities, no Rell dependencies                         │
     │ rr-tree              │ RR_ data classes (depends only on utils)                       │
     │ rr-serialization     │ Serialization/deserialization of RR_App (depends on rr-tree)   │
@@ -134,6 +134,19 @@ recovery only on inputs that actually contain syntax errors. For valid (hotpath)
 than the previous combinator-based parser. The LL fallback collects every recoverable error in a file rather than
 bailing on the first one, so IDE diagnostics can surface the full list together with a (possibly partial) AST.
 
-The previous parser is kept in tree as a reference implementation, reachable only through a test-only entry point. A
-differential test gate parses every Rell snippet in the test corpus through both pipelines and compares the resulting
-ASTs; any future divergence fails the build.
+The previous parser is kept in tree as a reference implementation. A differential test gate parses every Rell snippet
+in the test corpus through both pipelines and compares the resulting ASTs; any future divergence fails the build.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+10. Tooling: BNF grammar facility removed for IntelliJ plugin consumers
+
+The previously published helper for generating an IntelliJ GrammarKit BNF from the Rell grammar has been
+removed, along with its supporting parser-introspection surface. It walked the better-parse combinator tree;
+with the better-parse parser retired, that helper was deleted.
+
+No replacement BNF generator ships from rell-base or rell-toolbox. The ANTLR grammar shipped with the
+frontend is the single source of truth for Rell syntax; downstream plugins should consume it directly — for
+example via antlr/antlr4-intellij-adaptor (https://github.com/antlr/antlr4-intellij-adaptor), which wraps an
+ANTLR parser as an IntelliJ PsiParser without an intermediate BNF.
+
+This is a breaking change for the IntelliJ plugin and any other consumer that built a BNF off the old transformer.

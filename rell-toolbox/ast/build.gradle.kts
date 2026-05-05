@@ -62,30 +62,6 @@ tasks.test {
     }
 }
 
-val rellManualGrammar = rootProject.layout.projectDirectory
-    .file("rell-base/frontend/src/main/antlr/net.postchain.rell.base.compiler.parser.antlr/RellManual.g4")
-
-// The BNF generator (`RellBnfGenerator`) imports `org.antlr.v4.tool.*`, so it needs the
-// ANTLR tool jar at compile time and at run time. Wire it onto compileOnly + a dedicated
-// resolvable configuration for the JavaExec classpath.
-val antlrTool: Configuration by configurations.creating
-dependencies {
-    compileOnly(libs.antlr)
-    antlrTool(libs.antlr)
-}
-
-tasks.register<JavaExec>("generateBnf") {
-    description = "Generates an IntelliJ GrammarKit BNF file from RellManual.g4."
-    group = "build"
-    classpath = sourceSets.main.get().runtimeClasspath + antlrTool
-    mainClass.set("net.postchain.rell.toolbox.grammar.RellBnfGenerator")
-    val outFile = layout.buildDirectory.file("generated/bnf/Rell.bnf")
-    val customOut = providers.gradleProperty("bnfOut").orNull
-    inputs.file(rellManualGrammar)
-    outputs.file(customOut?.let(::file) ?: outFile)
-    args("--grammar", rellManualGrammar.asFile.absolutePath, "--out", customOut ?: outFile.get().asFile.absolutePath)
-}
-
 tasks.register<Test>("grammarTest") {
     description = "Runs ANTLR grammar / parser correctness tests. Slow; not part of `check`."
     group = LifecycleBasePlugin.VERIFICATION_GROUP

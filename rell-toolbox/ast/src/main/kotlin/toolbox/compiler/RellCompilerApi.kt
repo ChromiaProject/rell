@@ -65,7 +65,7 @@ object RellCompilerApi {
             val rModule = IdeApi.parseModuleName(s)
             checkNotNull(rModule) { "Invalid module name: [$s]" }
         }
-        val res = IdeApi.compile(srcDir, rModules.toImmList(), options)
-        return res.messages
+
+        return IdeApi.compile(srcDir, rModules.toImmList(), options).messages
     }
 }

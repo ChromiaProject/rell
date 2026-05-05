@@ -27,6 +27,7 @@ class RellCommonTokenStream(lexer: Lexer) : AbstractRellCommonTokenStream(lexer)
         if (tokenIndex < 0 || tokenIndex >= tokens.size || get(tokenIndex).channel != Lexer.DEFAULT_TOKEN_CHANNEL) {
             return null
         }
+
         return getPreviousTokenOnChannel(tokenIndex, RellCustomTokenChannels.COMMENTS.channel)?.takeIf {
             nextTokenOnChannel(it.tokenIndex, Lexer.DEFAULT_TOKEN_CHANNEL) == tokenIndex && isRellDocComment(it)
         }
@@ -41,6 +42,7 @@ class RellCommonTokenStream(lexer: Lexer) : AbstractRellCommonTokenStream(lexer)
         if (token == null || token.type != mlCommentType) {
             return false
         }
+
         val text = token.text
         return text.startsWith("/**") && text.endsWith("*/") && text.length >= MINIMUM_DOC_COMMENT_LENGTH
     }

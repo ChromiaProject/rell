@@ -33,12 +33,9 @@ class TestSourceFile(
     private val path: C_SourcePath,
     val text: String
 ) : C_SourceFile() {
-
     private val idePath: IdeFilePath = IdeSourcePathFilePath(path)
 
-    override fun idePath(): IdeFilePath {
-        return idePath
-    }
+    override fun idePath(): IdeFilePath = idePath
 
     override fun readAst(version: R_LangVersion): S_RellFile {
         val errorCollector = SyntaxErrorCollector()
@@ -54,7 +51,5 @@ class TestSourceFile(
         return pair.first
     }
 
-    override fun readText(): String {
-        return text
-    }
+    override fun readText(): String = text
 }
