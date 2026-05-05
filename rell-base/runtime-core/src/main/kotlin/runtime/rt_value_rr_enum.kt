@@ -29,14 +29,8 @@ class Rt_RR_EnumValue(
 
     override fun equals(other: Any?): Boolean {
         if (other === this) return true
-        if (other !is Rt_Value) return false
-        // Compare by enum type name + value index for cross-compatibility.
-        val otherAttr = try {
-            other.asEnum()
-        } catch (_: Rt_Exception) {
-            return false
-        }
-        if (otherAttr.value != rrAttr.value) return false
+        if (other !is Rt_RR_EnumValue) return false
+        if (other.rrAttr.value != rrAttr.value) return false
         return other.type.name == rtTypeRef.value.name
     }
 

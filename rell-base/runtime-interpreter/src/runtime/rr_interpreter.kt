@@ -397,8 +397,9 @@ internal class Rt_InterpreterImpl(
                         is RR_VarDeclarator.Simple -> d.type
                         else -> RR_Type.Primitive(RR_PrimitiveKind.UNIT)
                     }
+                    val tupleType = resolveType(rrType)
                     iterable.asMap().entries.map { (k, v) ->
-                        Rt_TupleValue(resolveType(rrType), listOf(k, v))
+                        Rt_TupleValue(tupleType, listOf(k, v))
                     }
                 }
             }

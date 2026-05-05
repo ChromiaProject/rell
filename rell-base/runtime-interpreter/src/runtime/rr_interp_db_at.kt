@@ -500,6 +500,7 @@ internal fun Rt_InterpreterImpl.generateDbAtOrderBy(
 }
 
 internal fun Rt_InterpreterImpl.evaluateAtExtras(extras: RR_AtExtras, frame: Rt_CallFrame): Rt_AtExprExtras {
+    if (extras.limit == null && extras.offset == null) return Rt_AtExprExtras.NULL
     val limit = extras.limit?.let {
         val v = evaluateExpr(it, frame).asInteger()
         if (v < 0) throw Rt_Exception.common("expr:at:limit:negative:$v", "Negative limit: $v")
@@ -511,6 +512,25 @@ internal fun Rt_InterpreterImpl.evaluateAtExtras(extras: RR_AtExtras, frame: Rt_
         v
     }
     return Rt_AtExprExtras(limit, offset)
+}
+
+/**
+ * Build the iterable feeding a `col @ ...` expression based on the static [RR_IterableAdapterKind].
+ *
+ * The kind is fixed at compile time, so the per-call `when` is hoisted here and the per-element
+ * tuple type is resolved once outside the `map` lambda (rather than per item, where the previous
+ * inline call paid a `typeCache.getOrPut` lookup for every entry of the source map).
+ */
+internal fun Rt_InterpreterImpl.iterableForColAt(
+    from: RR_ColAtFrom,
+    paramType: RR_Type,
+    fromValue: Rt_Value,
+): Iterable<Rt_Value> = when (from.iterableAdapter) {
+    RR_IterableAdapterKind.DIRECT -> fromValue.asIterable()
+    RR_IterableAdapterKind.LEGACY_MAP -> {
+        val tupleType = resolveType(paramType)
+        fromValue.asMap().entries.map { (k, v) -> Rt_TupleValue(tupleType, listOf(k, v)) }
+    }
 }
 
 internal fun Rt_InterpreterImpl.evaluateColAt(expr: RR_Expr.ColAt, frame: Rt_CallFrame): Rt_Value {
@@ -526,17 +546,73 @@ internal fun Rt_InterpreterImpl.evaluateColAt(expr: RR_Expr.ColAt, frame: Rt_Cal
     val fromValue = frame.blockOpt(expr.from.block) {
         evaluateExpr(expr.from.expr, frame)
     }
-    val iterable = when (expr.from.iterableAdapter) {
-        RR_IterableAdapterKind.DIRECT -> fromValue.asIterable()
-        RR_IterableAdapterKind.LEGACY_MAP -> {
-            fromValue.asMap().entries.map { (k, v) ->
-                Rt_TupleValue(resolveType(expr.param.type), listOf(k, v))
-            }
-        }
+    val iterable = iterableForColAt(expr.from, expr.param.type, fromValue)
+
+    // Fast path: simple filter with no summarization, no sorting, no limit/offset.
+    if (expr.summarization == RR_ColAtSummarizationKind.NONE &&
+        expr.sorting.isEmpty() &&
+        extras.limit == null &&
+        extras.offset == null
+    ) {
+        return evaluateColAtSimpleFilter(expr, frame, iterable, rCardinality)
     }
 
     // Use native summarization pipeline for all cases (including NONE — uses sorting and selectedFields)
     return evaluateColAtWithNativeSummarization(expr, frame, iterable, extras, rCardinality)
+}
+
+/**
+ * Fast path for the common case: NONE summarization, no sorting, no limit/offset.
+ * Single tight loop — no per-row List allocation when projecting a single field.
+ */
+private fun Rt_InterpreterImpl.evaluateColAtSimpleFilter(
+    expr: RR_Expr.ColAt,
+    frame: Rt_CallFrame,
+    iterable: Iterable<Rt_Value>,
+    rCardinality: AtCardinality,
+): Rt_Value {
+    val selectedFields = expr.what.selectedFields
+    val elementRrType = expr.type.elementType()
+    val elementRtType = resolveType(elementRrType)
+    val wrapInTuple = elementRrType is RR_Type.Tuple && elementRrType.fields.size == selectedFields.size
+    val singleField = expr.what.fields.size == 1
+
+    val resList: MutableList<Rt_Value> = mutableListOf()
+
+    if (singleField) {
+        val theField = expr.what.fields[0].expr
+        frame.block(expr.block) {
+            for (item in iterable) {
+                frame.setUnchecked(expr.param.ptr, item, true)
+                if (!evaluateExpr(expr.where, frame).asBoolean()) continue
+                val v = evaluateExpr(theField, frame)
+                // selectedFields[0] indexes into the row of fields; with a single field that is index 0.
+                val out = if (wrapInTuple) Rt_TupleValue(elementRtType, listOf(v)) else v
+                resList.add(out)
+            }
+        }
+    } else {
+        frame.block(expr.block) {
+            for (item in iterable) {
+                frame.setUnchecked(expr.param.ptr, item, true)
+                if (!evaluateExpr(expr.where, frame).asBoolean()) continue
+                val rowValues = expr.what.fields.map { evaluateExpr(it.expr, frame) }
+                val selValues = selectedFields.map { rowValues[it] }
+                val out = if (wrapInTuple) Rt_TupleValue(elementRtType, selValues) else selValues[0]
+                resList.add(out)
+            }
+        }
+    }
+
+    checkAtCount(frame, expr.errPos, rCardinality, resList.size, "values")
+
+    return if (rCardinality.many) {
+        Rt_ListValue(resolveType(expr.type), resList)
+    } else if (resList.isNotEmpty()) {
+        resList[0]
+    } else {
+        Rt_NullValue
+    }
 }
 
 /**
