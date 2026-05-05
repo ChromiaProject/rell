@@ -5,7 +5,7 @@
 package net.postchain.rell.toolbox.linter.rules
 
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.base.compiler.parser.antlr.RellManualBaseVisitor
+import net.postchain.rell.base.compiler.parser.antlr.RellBaseVisitor
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterIssue
@@ -16,7 +16,7 @@ abstract class LinterRule(
     val config: LinterOptions,
     val resource: Resource,
     private val linterContext: LinterContext
-) : RellManualBaseVisitor<Unit>() {
+) : RellBaseVisitor<Unit>() {
 
     abstract val ruleId: String
 

@@ -4,9 +4,9 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.GenericOrNameTypeContext
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.GenericTypeExprContext
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.TypeContext
+import net.postchain.rell.base.compiler.parser.antlr.RellParser.GenericOrNameTypeContext
+import net.postchain.rell.base.compiler.parser.antlr.RellParser.GenericTypeExprContext
+import net.postchain.rell.base.compiler.parser.antlr.RellParser.TypeContext
 import net.postchain.rell.toolbox.formatter.BracePairTypes
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter

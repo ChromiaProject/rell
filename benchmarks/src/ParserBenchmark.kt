@@ -20,12 +20,8 @@ import kotlinx.benchmark.Warmup
 import net.postchain.rell.base.compiler.base.utils.C_Parser
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
-import net.postchain.rell.base.compiler.parser.antlr.RellManualLexer
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
 import net.postchain.rell.toolbox.parser.AntlrRellParser
 import org.antlr.v4.runtime.BailErrorStrategy
-import org.antlr.v4.runtime.CharStreams
-import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.atn.PredictionMode
 
 @State(Scope.Benchmark)
@@ -63,35 +59,22 @@ class ParserBenchmark {
 
     /**
      * ANTLR path used by the toolbox (`AntlrRellParser`): LL prediction, full parse tree,
-     * default error recovery. Not apples-to-apples with [betterParse] but it is what ships today.
+     * default error recovery. This is what production ships today. Not apples-to-apples
+     * with [betterParse] — different parser technology — but kept as the headline number.
      */
     @Benchmark
     fun antlr(blackhole: Blackhole) = blackhole.consume(antlrParser.parse(source))
 
     /**
-     * Hand-written `RellManual.g4` parser, default settings: LL prediction with the
-     * full parse tree built. Apples-to-apples with [antlr] above — same shipping
-     * defaults, different grammar.
+     * Same `Rell.g4` grammar as [antlr], reconfigured for the fast path: SLL
+     * prediction with `BailErrorStrategy` and `buildParseTree = false`. Measures the
+     * SLL win on inputs that don't hit a prediction conflict — i.e. all valid Rell
+     * programs in the corpus. The compiler uses this configuration on its hot path
+     * and falls back to LL only when SLL bails.
      */
     @Benchmark
-    fun manualAntlr(blackhole: Blackhole) {
-        val lexer = RellManualLexer(CharStreams.fromString(source))
-        val parser = RellManualParser(CommonTokenStream(lexer))
-        blackhole.consume(parser.file())
-    }
-
-    /**
-     * `RellManual` with the same SLL + BailErrorStrategy + no-tree configuration as
-     * [antlrSLL]. The hand-written grammar inlines wrapper rules and orders
-     * alternatives so SLL prediction commits earlier; this benchmark measures
-     * exactly that win.
-     */
-    @Benchmark
-    fun manualAntlrSLL(blackhole: Blackhole) {
-        val lexer = RellManualLexer(CharStreams.fromString(source))
-        lexer.removeErrorListeners()
-        val parser = RellManualParser(CommonTokenStream(lexer))
-        parser.removeErrorListeners()
+    fun antlrSLL(blackhole: Blackhole) {
+        val parser = antlrParser.parserFor(source)
         parser.errorHandler = BailErrorStrategy()
         parser.buildParseTree = false
         parser.interpreter.predictionMode = PredictionMode.SLL

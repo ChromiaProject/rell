@@ -4,9 +4,9 @@
 
 package net.postchain.rell.toolbox.lsp.inlayhints.visitor
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualBaseVisitor
-import net.postchain.rell.base.compiler.parser.antlr.RellManualLexer
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellBaseVisitor
+import net.postchain.rell.base.compiler.parser.antlr.RellLexer
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider.Companion.createParameterInlayHint
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider.Companion.isInRange
@@ -18,7 +18,7 @@ import org.eclipse.lsp4j.Range
 
 /**
  * Inlay-hint visitor for parameter names at function-call sites.
- * Migrated from legacy `Rell.g4` to canonical `RellManual.g4`.
+ * Migrated from legacy `Rell.g4` to canonical `Rell.g4`.
  *
  * In the new grammar there is no `RuleX_BaseExprTailCallContext`. Calls are
  * inline children of `baseExpr`: a `callArgs` child following a `baseExprHead`
@@ -33,9 +33,9 @@ class ParameterHintsVisitor(
     private val resource: Resource,
     private val range: Range,
     private val hints: MutableList<InlayHint>
-) : RellManualBaseVisitor<Unit>() {
+) : RellBaseVisitor<Unit>() {
 
-    override fun visitBaseExpr(ctx: RellManualParser.BaseExprContext) {
+    override fun visitBaseExpr(ctx: RellParser.BaseExprContext) {
         val head = ctx.baseExprHead()
         // Find each callArgs child, with the position of the head/preceding tail
         // it is invoking. For simplicity, only emit hints for the first call (the
@@ -50,8 +50,8 @@ class ParameterHintsVisitor(
     }
 
     private fun processCall(
-        baseExpr: RellManualParser.BaseExprContext,
-        callArgs: RellManualParser.CallArgsContext
+        baseExpr: RellParser.BaseExprContext,
+        callArgs: RellParser.CallArgsContext
     ) {
         val position = Position(callArgs.start.line - 1, callArgs.start.charPositionInLine)
         if (!isInRange(position, range)) return
@@ -68,7 +68,7 @@ class ParameterHintsVisitor(
         }
     }
 
-    private fun collectAnonymousArguments(callArgs: RellManualParser.CallArgsContext): List<CallArgument> {
+    private fun collectAnonymousArguments(callArgs: RellParser.CallArgsContext): List<CallArgument> {
         val out = mutableListOf<CallArgument>()
         var index = 0
         var i = 0
@@ -92,13 +92,13 @@ class ParameterHintsVisitor(
                 val sym = first.symbol
                 if (sym.text == ")") break
                 if (sym.text == ",") { i++; continue }
-                if (sym.type == RellManualLexer.RULE_ID
+                if (sym.type == RellLexer.RULE_ID
                     && i + 1 < children.size
                     && (children[i + 1] as? TerminalNode)?.symbol?.text == "="
                 ) {
                     // Named argument: skip RULE_ID, '=', and the following expression.
                     i += 2
-                    if (i < children.size && children[i] is RellManualParser.ExpressionContext) i++
+                    if (i < children.size && children[i] is RellParser.ExpressionContext) i++
                     index++
                     continue
                 }
@@ -113,7 +113,7 @@ class ParameterHintsVisitor(
                 i++
                 continue
             }
-            if (first is RellManualParser.ExpressionContext) {
+            if (first is RellParser.ExpressionContext) {
                 val pos = Position(first.start.line - 1, first.start.charPositionInLine)
                 out.add(CallArgument(index, pos, first.text))
                 i++
@@ -126,7 +126,7 @@ class ParameterHintsVisitor(
     }
 
     private fun resolveFunctionParams(
-        baseExpr: RellManualParser.BaseExprContext
+        baseExpr: RellParser.BaseExprContext
     ): Map<Int, String> {
         val offset = baseExpr.start?.startIndex ?: return mapOf()
         val ideSymbolInfo = resource.locationInfo[Interval(offset, offset)]?.ideSymbolInfo

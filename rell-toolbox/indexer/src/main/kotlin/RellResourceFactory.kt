@@ -161,7 +161,7 @@ class RellResourceFactory(
     }
 
     private fun buildParseTreeFromSource(source: String, errorListener: SyntaxErrorCollector): ParsingResult {
-        // Canonical parser from rell-base/frontend (RellManual.g4); produces the parse tree
+        // Canonical parser from rell-base/frontend (Rell.g4); produces the parse tree
         // consumed by both AST construction and downstream tooling.
         val manualParser = parser.parserFor(source, errorListeners = listOf(errorListener))
         val manualTree = manualParser.file()
@@ -176,7 +176,7 @@ class RellResourceFactory(
 
     fun buildRellAstWithCompilerErrors(
         rellCompilerSourcePath: C_SourcePath,
-        parseTree: net.postchain.rell.base.compiler.parser.antlr.RellManualParser.FileContext,
+        parseTree: net.postchain.rell.base.compiler.parser.antlr.RellParser.FileContext,
         manualTokenStream: org.antlr.v4.runtime.BufferedTokenStream? = null,
     ): Pair<S_RellFile, List<C_Error>> {
         val rellCompilerFilePath = rellCompilerUtils.createRellCompilerFilePath(rellCompilerSourcePath)

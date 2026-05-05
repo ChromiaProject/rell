@@ -8,7 +8,7 @@ import assertk.assertThat
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.parser.AntlrRellParser
 import net.postchain.rell.toolbox.parser.SyntaxErrorCollector
@@ -62,7 +62,7 @@ class RellResourceBuildRellAstTest {
     }
 
     private fun getSrcPathAndParseTree(workspaceFiles: MutableList<URI>, fileName: String, workspace: File):
-        Pair<C_SourcePath, RellManualParser.FileContext> {
+        Pair<C_SourcePath, RellParser.FileContext> {
         val fileUri = workspaceFiles.find { it.toString().endsWith("/$fileName") }!!
         val rellResDesc = RellResourceFactory(workspace.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
         val rellCSrcPath = rellResDesc.rellCompilerUtils.createCompilerSourcePath(fileUri, workspace.toURI())

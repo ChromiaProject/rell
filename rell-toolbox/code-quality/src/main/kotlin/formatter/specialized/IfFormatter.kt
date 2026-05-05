@@ -4,8 +4,8 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.IfExprContext
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.IfStmtAltContext
+import net.postchain.rell.base.compiler.parser.antlr.RellParser.IfExprContext
+import net.postchain.rell.base.compiler.parser.antlr.RellParser.IfStmtAltContext
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.ExpressionFormatter

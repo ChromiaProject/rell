@@ -10,8 +10,8 @@ import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
-import net.postchain.rell.base.compiler.parser.antlr.RellManualBaseVisitor
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellBaseVisitor
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either3
 import java.net.URI
@@ -160,9 +160,9 @@ class RellRenamingService(
     }
 
     private fun findAnonAttrFullName(resource: Resource, location: Location): FullNameWithRange? {
-        val visitor = object : RellManualBaseVisitor<Unit>() {
+        val visitor = object : RellBaseVisitor<Unit>() {
             var result: FullNameWithRange? = null
-            override fun visitAnonAttrHeader(ctx: RellManualParser.AnonAttrHeaderContext) {
+            override fun visitAnonAttrHeader(ctx: RellParser.AnonAttrHeaderContext) {
                 val startPos = ctx.start.line
                 if (startPos == location.range.start.line + 1 &&
                     ctx.stop.charPositionInLine == location.range.start.character

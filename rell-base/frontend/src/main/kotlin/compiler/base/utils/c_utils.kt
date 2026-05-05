@@ -20,8 +20,8 @@ import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.compiler.parser.RellTokenizerException
 import net.postchain.rell.base.compiler.parser.S_Grammar
 import net.postchain.rell.base.compiler.parser.antlr.RellAntlrVisitor
-import net.postchain.rell.base.compiler.parser.antlr.RellManualLexer
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellLexer
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import com.github.h0tk3y.betterParse.lexer.TokenMatchesSequence
 import com.github.h0tk3y.betterParse.parser.ErrorResult
 import com.github.h0tk3y.betterParse.parser.Parsed
@@ -576,7 +576,7 @@ object C_Parser {
     private fun <R : ParserRuleContext> parseAntlr(
         filePath: C_ParserFilePath,
         sourceCode: String,
-        ruleEntry: (RellManualParser) -> R,
+        ruleEntry: (RellParser) -> R,
     ): C_ParserResult<R> {
         // First pass: SLL prediction with BailErrorStrategy. This is the fast path; for valid input
         // it is 3–4× faster than LL. On any prediction conflict it bails immediately and we fall
@@ -592,7 +592,7 @@ object C_Parser {
     private fun <R : ParserRuleContext> tryParseSll(
         filePath: C_ParserFilePath,
         sourceCode: String,
-        ruleEntry: (RellManualParser) -> R,
+        ruleEntry: (RellParser) -> R,
     ): Pair<R, CommonTokenStream>? {
         val (lexer, parser) = newParser(filePath, sourceCode)
         lexer.removeErrorListeners()
@@ -613,7 +613,7 @@ object C_Parser {
     private fun <R : ParserRuleContext> parseLl(
         filePath: C_ParserFilePath,
         sourceCode: String,
-        ruleEntry: (RellManualParser) -> R,
+        ruleEntry: (RellParser) -> R,
     ): C_ParserResult<R> {
         val (lexer, parser) = newParser(filePath, sourceCode)
         val collector = AntlrErrorCollector(filePath, sourceCode)
@@ -648,11 +648,11 @@ object C_Parser {
         }
     }
 
-    private fun newParser(filePath: C_ParserFilePath, sourceCode: String): Pair<RellManualLexer, RellManualParser> {
+    private fun newParser(filePath: C_ParserFilePath, sourceCode: String): Pair<RellLexer, RellParser> {
         val cs = CharStreams.fromString(sourceCode, filePath.sourcePath.toString())
-        val lexer = RellManualLexer(cs)
+        val lexer = RellLexer(cs)
         val tokens = CommonTokenStream(lexer)
-        return lexer to RellManualParser(tokens)
+        return lexer to RellParser(tokens)
     }
 }
 

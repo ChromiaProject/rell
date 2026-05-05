@@ -29,10 +29,7 @@ tasks.compileKotlin {
 }
 
 tasks.generateGrammarSource {
-    arguments = arguments + listOf(
-        "-visitor",
-        "-long-messages",
-    )
+    arguments = arguments + listOf("-visitor", "-long-messages")
     packageName = "net.postchain.rell.base.compiler.parser.antlr"
     outputDirectory = layout.buildDirectory.dir("generated/antlr").get().asFile
 }

@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.*
+import net.postchain.rell.base.compiler.parser.antlr.RellParser.*
 import net.postchain.rell.toolbox.formatter.BracePairTypes
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
@@ -184,7 +184,7 @@ class TupleHeadFormatter(
                     "," -> atItemStart = true
                     ")" -> atItemStart = false
                     else -> {
-                        if (atItemStart && c.symbol.type == net.postchain.rell.base.compiler.parser.antlr.RellManualParser.RULE_ID) {
+                        if (atItemStart && c.symbol.type == net.postchain.rell.base.compiler.parser.antlr.RellParser.RULE_ID) {
                             result.add(ItemAnchor.Term(c))
                             atItemStart = false
                         }

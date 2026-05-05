@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.linter.rules
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.references.ReferenceIndexer
 import net.postchain.rell.toolbox.linter.LinterContext
@@ -23,7 +23,7 @@ class UnusedVariableRule(config: LinterOptions, resource: Resource, linterContex
 
     override val ruleId = RULE_ID
 
-    override fun visitVarStmtAlt(ctx: RellManualParser.VarStmtAltContext) {
+    override fun visitVarStmtAlt(ctx: RellParser.VarStmtAltContext) {
         if (isDisabled(config.ruleUnusedVariable) || hasIgnoreCommentOnTop(ctx.start) || hasSemanticErrors()) {
             return
         }

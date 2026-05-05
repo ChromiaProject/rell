@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.linter.rules
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
@@ -22,11 +22,11 @@ class ImportFromNonModuleRule(config: LinterOptions, resource: Resource, linterC
 
     override val ruleId = RULE_ID
 
-    override fun visitFile(ctx: RellManualParser.FileContext) {
+    override fun visitFile(ctx: RellParser.FileContext) {
         hasModuleHeader = ctx.moduleHeader() != null
     }
 
-    override fun visitImportDef(ctx: RellManualParser.ImportDefContext) {
+    override fun visitImportDef(ctx: RellParser.ImportDefContext) {
         if (isDisabled(config.ruleImportFromNonModule) || hasIgnoreCommentOnTop(ctx.start) || hasSemanticErrors()) {
             return
         }

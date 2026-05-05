@@ -4,8 +4,8 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.UpdateStmtAltContext
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.UpdateTargetAtContext
+import net.postchain.rell.base.compiler.parser.antlr.RellParser.UpdateStmtAltContext
+import net.postchain.rell.base.compiler.parser.antlr.RellParser.UpdateTargetAtContext
 import net.postchain.rell.toolbox.formatter.BracePairTypes
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter

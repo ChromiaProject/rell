@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.formatter.util
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.FormalParameterContext
+import net.postchain.rell.base.compiler.parser.antlr.RellParser.FormalParameterContext
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import org.antlr.v4.runtime.ParserRuleContext
 

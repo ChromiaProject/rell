@@ -13,7 +13,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
  *
  * In the legacy `Rell.g4` grammar, name-introducing positions were wrapped in a synthetic
  * `RuleX_NameNode` rule, so the finder simply visited that node. In the canonical
- * `RellManual.g4` grammar there is no such wrapper — names are bare `RULE_ID` terminals.
+ * `Rell.g4` grammar there is no such wrapper — names are bare `RULE_ID` terminals.
  * We approximate the old behaviour by descending into the parse tree and returning the
  * first `RULE_ID` terminal encountered (depth-first, left-to-right).
  */
@@ -26,7 +26,7 @@ class NameNodesFinder {
     private fun findFirstIdentifier(node: ParseTree): TerminalNode? {
         if (node is TerminalNode) {
             val tokenType = node.symbol.type
-            if (tokenType == net.postchain.rell.base.compiler.parser.antlr.RellManualLexer.RULE_ID) {
+            if (tokenType == net.postchain.rell.base.compiler.parser.antlr.RellLexer.RULE_ID) {
                 return node
             }
             return null

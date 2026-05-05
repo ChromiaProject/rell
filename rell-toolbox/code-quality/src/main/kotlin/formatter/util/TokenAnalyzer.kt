@@ -4,15 +4,15 @@
 
 package net.postchain.rell.toolbox.formatter.util
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualLexer
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellLexer
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.toolbox.parser.RellCustomTokenChannels
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.TerminalNode
 
-class TokenAnalyzer(private val parser: RellManualParser) {
+class TokenAnalyzer(private val parser: RellParser) {
 
     fun tokenFor(node: ParserRuleContext?, tokenText: String): TerminalNode? {
         if (node == null) {
@@ -78,12 +78,12 @@ class TokenAnalyzer(private val parser: RellManualParser) {
 
     fun nextHiddenRegion(token: Token): Token? {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
-        return commonTokenStream.getHiddenTokensToRight(token.tokenIndex, RellManualLexer.HIDDEN)?.firstOrNull()
+        return commonTokenStream.getHiddenTokensToRight(token.tokenIndex, RellLexer.HIDDEN)?.firstOrNull()
     }
 
     fun previousHiddenRegion(token: Token): Token? {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
-        return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellManualLexer.HIDDEN)?.lastOrNull()
+        return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellLexer.HIDDEN)?.lastOrNull()
     }
 
     fun previousCommentRegion(token: Token): Token? {
@@ -94,6 +94,6 @@ class TokenAnalyzer(private val parser: RellManualParser) {
 
     fun previousHiddenRegionList(token: Token): List<Token> {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
-        return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellManualLexer.HIDDEN) ?: listOf()
+        return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellLexer.HIDDEN) ?: listOf()
     }
 }

@@ -8,7 +8,7 @@ import org.antlr.v4.runtime.Lexer
 import org.antlr.v4.runtime.Token
 
 /**
- * Common token stream used across both the legacy `Rell.g4` and the canonical `RellManual.g4`
+ * Common token stream used across both the legacy `Rell.g4` and the canonical `Rell.g4`
  * lexers. The relevant token-type constants (`RULE_ML_COMMENT`, `RULE_SL_COMMENT`, etc.) and the
  * `COMMENTS` channel are identical between the two grammars, so we resolve the comment-token id
  * at construction time from the lexer's token-type map.

@@ -1,4 +1,4 @@
-grammar RellManual;
+grammar Rell;
 
 @header {
 import java.math.BigInteger;

@@ -10,8 +10,8 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isGreaterThanOrEqualTo
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.*
-import net.postchain.rell.base.compiler.parser.antlr.RellManualLexer
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellLexer
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCodeSnippet
@@ -39,9 +39,9 @@ class RellParserTest {
     private val parseHarness: ThreadLocal<GrammarParseHarness> = ThreadLocal.withInitial { GrammarParseHarness() }
 
     private class GrammarParseHarness {
-        private val lexer = RellManualLexer(CharStreams.fromString(""))
+        private val lexer = RellLexer(CharStreams.fromString(""))
         private val tokens = CommonTokenStream(lexer)
-        private val parser = RellManualParser(tokens)
+        private val parser = RellParser(tokens)
 
         init {
             lexer.removeErrorListeners()

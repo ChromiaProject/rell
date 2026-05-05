@@ -10,7 +10,7 @@ import net.postchain.rell.base.utils.ide.IdeOutlineNodeType
 import net.postchain.rell.base.utils.ide.IdeOutlineTreeBuilder
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.compiler.parser.antlr.AntlrRellNodeAttachment
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import org.antlr.v4.runtime.ParserRuleContext
 import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Position
@@ -66,10 +66,10 @@ class OutlineTreeBuilder(
         // (e.g. FunctionDefContext). Annotations live on the enclosing AnnotatedDefContext.
         // Walk up until we find one — works whether the attachment points to the inner def
         // or directly at the AnnotatedDefContext.
-        while (antlrNode != null && antlrNode !is RellManualParser.AnnotatedDefContext) {
+        while (antlrNode != null && antlrNode !is RellParser.AnnotatedDefContext) {
             antlrNode = antlrNode.parent as? ParserRuleContext
         }
-        if (antlrNode !is RellManualParser.AnnotatedDefContext) return null
+        if (antlrNode !is RellParser.AnnotatedDefContext) return null
         val modifiers = antlrNode.modifiers() ?: return emptyList()
         return modifiers.modifier().mapNotNull { mod ->
             // `modifier` is `'abstract' | 'mutable' | 'override' | annotation`. We only care
@@ -126,7 +126,7 @@ fun getFullRegion(node: S_Node, name: S_Node): Range {
         var p: ParserRuleContext? = inner
         while (p?.parent is ParserRuleContext) {
             val parent = p.parent as ParserRuleContext
-            if (parent is RellManualParser.AnnotatedDefContext) {
+            if (parent is RellParser.AnnotatedDefContext) {
                 val widen = parent.start != null && inner.start != null
                     && parent.start.startIndex < inner.start.startIndex
                     && parent.stop != null && inner.stop != null

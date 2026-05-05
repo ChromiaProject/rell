@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.linter.rules
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
@@ -15,7 +15,7 @@ class SpecificQuotesRule(config: LinterOptions, resource: Resource, linterContex
 
     override val ruleId = RULE_ID
 
-    override fun visitStringExpr(ctx: RellManualParser.StringExprContext) {
+    override fun visitStringExpr(ctx: RellParser.StringExprContext) {
         if (!config.enabled || config.ruleQuoteFormat == null || hasIgnoreCommentOnTop(ctx.start)) {
             return
         }

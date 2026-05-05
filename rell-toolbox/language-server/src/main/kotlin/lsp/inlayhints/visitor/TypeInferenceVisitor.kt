@@ -4,8 +4,8 @@
 
 package net.postchain.rell.toolbox.lsp.inlayhints.visitor
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualBaseVisitor
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellBaseVisitor
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
@@ -20,7 +20,7 @@ import org.eclipse.lsp4j.Position
 /**
  * Inlay-hint visitor for variable-declaration type inference.
  *
- * Migrated from the legacy `Rell.g4` grammar to the canonical `RellManual.g4`.
+ * Migrated from the legacy `Rell.g4` grammar to the canonical `Rell.g4`.
  * The new grammar collapses `varStmt`/`forStmt` into `varStmtAlt`/`forStmtAlt`
  * children of `statement`, and `attrHeader` exposes its `nameTypeAttrHeader`
  * vs. `anonAttrHeader` alts as sealed-style subclasses.
@@ -29,17 +29,17 @@ class TypeInferenceVisitor(
     private val resource: Resource,
     private val range: org.eclipse.lsp4j.Range,
     private val hints: MutableList<InlayHint>
-) : RellManualBaseVisitor<Unit>() {
+) : RellBaseVisitor<Unit>() {
 
-    override fun visitVarStmtAlt(ctx: RellManualParser.VarStmtAltContext) {
+    override fun visitVarStmtAlt(ctx: RellParser.VarStmtAltContext) {
         val declarator = ctx.varDeclarator() ?: return super.visitVarStmtAlt(ctx).let { }
-        if (declarator is RellManualParser.SimpleVarDeclaratorContext) {
+        if (declarator is RellParser.SimpleVarDeclaratorContext) {
             processSimpleDeclarator(declarator) { extractTypeForVarStmt(ctx) }
         }
         super.visitVarStmtAlt(ctx)
     }
 
-    override fun visitConstantDef(ctx: RellManualParser.ConstantDefContext) {
+    override fun visitConstantDef(ctx: RellParser.ConstantDefContext) {
         // If an explicit type is present (`val x : T = ...`), the second child
         // of `:` will be a TypeContext — skip the hint.
         if (ctx.type() != null) return super.visitConstantDef(ctx).let { }
@@ -56,37 +56,37 @@ class TypeInferenceVisitor(
         super.visitConstantDef(ctx)
     }
 
-    override fun visitForStmtAlt(ctx: RellManualParser.ForStmtAltContext) {
+    override fun visitForStmtAlt(ctx: RellParser.ForStmtAltContext) {
         val declarator = ctx.varDeclarator()
         when (declarator) {
-            is RellManualParser.SimpleVarDeclaratorContext -> processSimpleDeclarator(declarator) {
+            is RellParser.SimpleVarDeclaratorContext -> processSimpleDeclarator(declarator) {
                 extractTypeForAnonName(declarator)
             }
-            is RellManualParser.TupleVarDeclaratorContext -> processTupleDeclarator(declarator)
+            is RellParser.TupleVarDeclaratorContext -> processTupleDeclarator(declarator)
             else -> {}
         }
         super.visitForStmtAlt(ctx)
     }
 
-    private fun processTupleDeclarator(tuple: RellManualParser.TupleVarDeclaratorContext) {
+    private fun processTupleDeclarator(tuple: RellParser.TupleVarDeclaratorContext) {
         for (child in tuple.varDeclarator()) {
             when (child) {
-                is RellManualParser.SimpleVarDeclaratorContext -> processSimpleDeclarator(child) {
+                is RellParser.SimpleVarDeclaratorContext -> processSimpleDeclarator(child) {
                     extractTypeForAnonName(child)
                 }
-                is RellManualParser.TupleVarDeclaratorContext -> processTupleDeclarator(child)
+                is RellParser.TupleVarDeclaratorContext -> processTupleDeclarator(child)
             }
         }
     }
 
     private fun processSimpleDeclarator(
-        decl: RellManualParser.SimpleVarDeclaratorContext,
+        decl: RellParser.SimpleVarDeclaratorContext,
         getType: () -> String?
     ) {
         val header = decl.attrHeader() ?: return
         // Skip when the user wrote an explicit type (`name: T`).
-        if (header is RellManualParser.NameTypeAttrHeaderContext) return
-        val anon = header as? RellManualParser.AnonAttrHeaderContext ?: return
+        if (header is RellParser.NameTypeAttrHeaderContext) return
+        val anon = header as? RellParser.AnonAttrHeaderContext ?: return
 
         val nameNode: ParserRuleContext = anon.qualifiedName() ?: return
         val defPosition = Position(nameNode.start.line - 1, nameNode.stop.charPositionInLine + nameNode.text.length)
@@ -96,20 +96,20 @@ class TypeInferenceVisitor(
         hints.add(createTypeInlayHint(defPosition, type))
     }
 
-    private fun extractTypeForVarStmt(ctx: RellManualParser.VarStmtAltContext): String? {
-        val decl = ctx.varDeclarator() as? RellManualParser.SimpleVarDeclaratorContext ?: return null
-        val anon = decl.attrHeader() as? RellManualParser.AnonAttrHeaderContext ?: return null
+    private fun extractTypeForVarStmt(ctx: RellParser.VarStmtAltContext): String? {
+        val decl = ctx.varDeclarator() as? RellParser.SimpleVarDeclaratorContext ?: return null
+        val anon = decl.attrHeader() as? RellParser.AnonAttrHeaderContext ?: return null
         return extractTypeForAnonName(decl, anon)
     }
 
-    private fun extractTypeForAnonName(decl: RellManualParser.SimpleVarDeclaratorContext): String? {
-        val anon = decl.attrHeader() as? RellManualParser.AnonAttrHeaderContext ?: return null
+    private fun extractTypeForAnonName(decl: RellParser.SimpleVarDeclaratorContext): String? {
+        val anon = decl.attrHeader() as? RellParser.AnonAttrHeaderContext ?: return null
         return extractTypeForAnonName(decl, anon)
     }
 
     private fun extractTypeForAnonName(
-        @Suppress("UNUSED_PARAMETER") decl: RellManualParser.SimpleVarDeclaratorContext,
-        anon: RellManualParser.AnonAttrHeaderContext
+        @Suppress("UNUSED_PARAMETER") decl: RellParser.SimpleVarDeclaratorContext,
+        anon: RellParser.AnonAttrHeaderContext
     ): String? {
         val nameNode = anon.qualifiedName() ?: return null
         val interval = Interval(nameNode.start.startIndex, nameNode.stop.stopIndex + 1)

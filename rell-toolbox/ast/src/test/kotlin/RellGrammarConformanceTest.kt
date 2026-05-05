@@ -9,8 +9,8 @@ import assertk.assertions.isEqualTo
 import net.postchain.rell.base.compiler.base.utils.C_Parser
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
-import net.postchain.rell.base.compiler.parser.antlr.RellManualLexer
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellLexer
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.junit.jupiter.api.Tag
@@ -19,15 +19,15 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class RellManualParserTest {
+class RellGrammarConformanceTest {
 
-    private val parseHarness: ThreadLocal<ManualGrammarParseHarness> =
-        ThreadLocal.withInitial { ManualGrammarParseHarness() }
+    private val parseHarness: ThreadLocal<GrammarParseHarness> =
+        ThreadLocal.withInitial { GrammarParseHarness() }
 
-    private class ManualGrammarParseHarness {
-        private val lexer = RellManualLexer(CharStreams.fromString(""))
+    private class GrammarParseHarness {
+        private val lexer = RellLexer(CharStreams.fromString(""))
         private val tokens = CommonTokenStream(lexer)
-        private val parser = RellManualParser(tokens)
+        private val parser = RellParser(tokens)
 
         init {
             lexer.removeErrorListeners()
@@ -72,7 +72,7 @@ class RellManualParserTest {
     }
 
     @Test
-    fun `RellManual parses real-world samples`() {
+    fun `Rell grammar parses real-world samples`() {
         val harness = parseHarness.get()
         for ((name, code) in realWorldSamples) {
             val errors = harness.parse(code)
@@ -81,7 +81,7 @@ class RellManualParserTest {
     }
 
     @Test
-    fun `RellManual agrees with internal parser on real-world samples`() {
+    fun `Rell grammar agrees with internal parser on real-world samples`() {
         val harness = parseHarness.get()
         for ((name, code) in realWorldSamples) {
             val sourcePath = C_SourcePath.parse(name)
@@ -94,13 +94,13 @@ class RellManualParserTest {
             }
             val manualErrors = harness.parse(code)
             val manualAccepts = manualErrors == 0
-            assertThat(manualAccepts, "RellManual vs C_Parser on $name").isEqualTo(internalAccepts)
+            assertThat(manualAccepts, "Rell grammar vs C_Parser on $name").isEqualTo(internalAccepts)
         }
     }
 
     @Tag("grammar")
     @Test
-    fun `RellManual parser correctly parses Rell files`() = TestCaseSnippets.getTestCases().use { testCases ->
+    fun `Rell grammar parser correctly parses Rell files`() = TestCaseSnippets.getTestCases().use { testCases ->
         val falsePositives = ConcurrentLinkedQueue<String>()
         val falseNegatives = ConcurrentLinkedQueue<String>()
         var fp = 0L
@@ -135,7 +135,7 @@ class RellManualParserTest {
 
     @Tag("grammar")
     @Test
-    fun `RellManual parser agrees with the internal Rell parser`() = TestCaseSnippets.getTestCases().use { testCases ->
+    fun `Rell grammar parser agrees with the internal Rell parser`() = TestCaseSnippets.getTestCases().use { testCases ->
         val mismatches = ConcurrentLinkedQueue<String>()
         var m = 0L
         var checked = 0L
@@ -163,10 +163,10 @@ class RellManualParserTest {
         if (m > 0) {
             error(
                 buildString {
-                    append("RellManual disagreed with C_Parser on ").append(m)
+                    append("Rell grammar disagreed with C_Parser on ").append(m)
                         .append('/').append(checked).append(" accepted snippets.\n")
                     append("First ").append(MAX_REPORTED)
-                        .append(" mismatch(es) (C_Parser accepted, RellManual rejected):\n")
+                        .append(" mismatch(es) (C_Parser accepted, Rell grammar rejected):\n")
                     mismatches.forEachIndexed { i, c ->
                         append('[').append(i + 1).append("]\n").append(c).append('\n')
                     }
@@ -182,7 +182,7 @@ class RellManualParserTest {
         falsePositives: ConcurrentLinkedQueue<String>,
         falseNegatives: ConcurrentLinkedQueue<String>,
     ): String = buildString {
-        append("RellManual disagreed on ").append(checked).append(" snippets: ")
+        append("Rell grammar disagreed on ").append(checked).append(" snippets: ")
         append(fp).append(" false-positive(s), ").append(fn).append(" false-negative(s).\n")
         if (fp > 0) {
             append("First ").append(MAX_REPORTED).append(" false-positive(s) (manual accepted, expected rejected):\n")

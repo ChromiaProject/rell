@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.linter.rules
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.linter.LinterContext
@@ -18,7 +18,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
  * Checks that defining identifiers follow snake_case (or, where allowed, SCREAMING_SNAKE_CASE).
  *
  * In the legacy grammar a synthetic `RuleX_NameNode` rule wrapped every defining identifier and
- * the rule simply visited that wrapper. The canonical `RellManual.g4` grammar emits bare
+ * the rule simply visited that wrapper. The canonical `Rell.g4` grammar emits bare
  * `RULE_ID` terminals at all definition sites, so this rule overrides every relevant
  * "definition" visitor and pulls the first identifier terminal out by hand.
  */
@@ -31,25 +31,25 @@ class NamingConventionRule(config: LinterOptions, resource: Resource, linterCont
 
     override val ruleId = RULE_ID
 
-    override fun visitFunctionDef(ctx: RellManualParser.FunctionDefContext) =
+    override fun visitFunctionDef(ctx: RellParser.FunctionDefContext) =
         checkFirstIdentifier(ctx, uppercaseAllowed = false)
 
-    override fun visitQueryDef(ctx: RellManualParser.QueryDefContext) =
+    override fun visitQueryDef(ctx: RellParser.QueryDefContext) =
         checkFirstIdentifier(ctx, uppercaseAllowed = false)
 
-    override fun visitOpDef(ctx: RellManualParser.OpDefContext) =
+    override fun visitOpDef(ctx: RellParser.OpDefContext) =
         checkFirstIdentifier(ctx, uppercaseAllowed = false)
 
-    override fun visitEntityDef(ctx: RellManualParser.EntityDefContext) =
+    override fun visitEntityDef(ctx: RellParser.EntityDefContext) =
         checkFirstIdentifier(ctx, uppercaseAllowed = false)
 
-    override fun visitStructDef(ctx: RellManualParser.StructDefContext) =
+    override fun visitStructDef(ctx: RellParser.StructDefContext) =
         checkFirstIdentifier(ctx, uppercaseAllowed = false)
 
-    override fun visitObjectDef(ctx: RellManualParser.ObjectDefContext) =
+    override fun visitObjectDef(ctx: RellParser.ObjectDefContext) =
         checkFirstIdentifier(ctx, uppercaseAllowed = false)
 
-    override fun visitEnumDef(ctx: RellManualParser.EnumDefContext) {
+    override fun visitEnumDef(ctx: RellParser.EnumDefContext) {
         // The enum's own name (first RULE_ID) is a regular def name; subsequent RULE_IDs are values.
         val ids = collectRuleIdsAtTopLevel(ctx)
         if (ids.isEmpty()) return
@@ -60,36 +60,36 @@ class NamingConventionRule(config: LinterOptions, resource: Resource, linterCont
         }
     }
 
-    override fun visitNamespaceDef(ctx: RellManualParser.NamespaceDefContext) =
+    override fun visitNamespaceDef(ctx: RellParser.NamespaceDefContext) =
         checkFirstIdentifier(ctx, uppercaseAllowed = false)
 
-    override fun visitConstantDef(ctx: RellManualParser.ConstantDefContext) {
+    override fun visitConstantDef(ctx: RellParser.ConstantDefContext) {
         // Top-level `val NAME = ...` constants — SCREAMING_SNAKE allowed.
         val nameId = ctx.RULE_ID() ?: return
         check(nameId, uppercaseAllowed = true)
     }
 
-    override fun visitFormalParameter(ctx: RellManualParser.FormalParameterContext) =
+    override fun visitFormalParameter(ctx: RellParser.FormalParameterContext) =
         checkFirstIdentifier(ctx, uppercaseAllowed = false)
 
-    override fun visitNameTypeAttrHeader(ctx: RellManualParser.NameTypeAttrHeaderContext) {
+    override fun visitNameTypeAttrHeader(ctx: RellParser.NameTypeAttrHeaderContext) {
         // Skip when this attr header is part of a simple-var-declarator: the SimpleVarDeclarator
         // visitor handles those (avoids double-reporting). Entity/struct attrs go through here.
-        if (ctx.parent is RellManualParser.SimpleVarDeclaratorContext) return
+        if (ctx.parent is RellParser.SimpleVarDeclaratorContext) return
         checkFirstIdentifier(ctx, uppercaseAllowed = isAttrUppercaseAllowed(ctx))
     }
 
-    override fun visitAnonAttrHeader(ctx: RellManualParser.AnonAttrHeaderContext) {
+    override fun visitAnonAttrHeader(ctx: RellParser.AnonAttrHeaderContext) {
         // Anonymous attr headers reference an existing type name in entity/struct bodies, so they
         // are not defining positions there. Skip.
     }
 
-    override fun visitSimpleVarDeclarator(ctx: RellManualParser.SimpleVarDeclaratorContext) {
+    override fun visitSimpleVarDeclarator(ctx: RellParser.SimpleVarDeclaratorContext) {
         // First RULE_ID under a SimpleVarDeclarator is the variable name being declared.
         checkFirstIdentifier(ctx, uppercaseAllowed = false)
     }
 
-    private fun isAttrUppercaseAllowed(ctx: RellManualParser.NameTypeAttrHeaderContext): Boolean {
+    private fun isAttrUppercaseAllowed(ctx: RellParser.NameTypeAttrHeaderContext): Boolean {
         // Use IDE symbol kind to permit constants and enum values.
         val terminal = firstRuleIdTerminal(ctx) ?: return false
         val token = terminal.symbol
@@ -129,7 +129,7 @@ class NamingConventionRule(config: LinterOptions, resource: Resource, linterCont
 
     private fun firstRuleIdTerminal(ctx: org.antlr.v4.runtime.tree.ParseTree): TerminalNode? {
         if (ctx is TerminalNode) {
-            if (ctx.symbol.type == net.postchain.rell.base.compiler.parser.antlr.RellManualLexer.RULE_ID) {
+            if (ctx.symbol.type == net.postchain.rell.base.compiler.parser.antlr.RellLexer.RULE_ID) {
                 return ctx
             }
             return null
@@ -151,7 +151,7 @@ class NamingConventionRule(config: LinterOptions, resource: Resource, linterCont
 
     private fun collectRuleIdsRecursive(node: org.antlr.v4.runtime.tree.ParseTree, out: MutableList<TerminalNode>) {
         if (node is TerminalNode) {
-            if (node.symbol.type == net.postchain.rell.base.compiler.parser.antlr.RellManualLexer.RULE_ID) {
+            if (node.symbol.type == net.postchain.rell.base.compiler.parser.antlr.RellLexer.RULE_ID) {
                 out.add(node)
             }
             return

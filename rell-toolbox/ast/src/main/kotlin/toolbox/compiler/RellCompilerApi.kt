@@ -12,7 +12,7 @@ import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.parser.antlr.RellAntlrVisitor
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.toImmList
 import org.antlr.v4.runtime.BufferedTokenStream
@@ -20,16 +20,16 @@ import org.antlr.v4.runtime.BufferedTokenStream
 object RellCompilerApi {
 
     /**
-     * Build a Rell `S_RellFile` AST from a parse tree produced by the new `RellManualParser`.
+     * Build a Rell `S_RellFile` AST from a parse tree produced by the new `RellParser`.
      *
      * Phase 4 of the better-parse → ANTLR migration: this used to delegate to the auto-generated
      * `AntlrToRell` transformer (driven by the legacy `Rell.g4`); it now uses `RellAntlrVisitor`,
-     * the hand-written visitor over the canonical `RellManual.g4` grammar that lives in
+     * the hand-written visitor over the canonical `Rell.g4` grammar that lives in
      * `:rell-base:frontend`.
      */
     fun antlrToRellAst(
         path: RellCompilerFilePath,
-        antlrRootNode: RellManualParser.FileContext,
+        antlrRootNode: RellParser.FileContext,
         tokenStream: BufferedTokenStream? = null,
     ): Pair<S_RellFile, List<C_Error>> = RellCompilerFilePathHolder.overrideCurrentFile(path) {
         val filePath = C_ParserFilePath(path.cPath, path.idePath)

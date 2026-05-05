@@ -7,7 +7,7 @@ package net.postchain.rell.toolbox.lsp.caching
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.utils.C_Message
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.base.utils.ide.IdeModuleInfo
 import net.postchain.rell.toolbox.formatter.FormatterIssue
 import net.postchain.rell.toolbox.linter.LinterIssue
@@ -16,7 +16,7 @@ import net.postchain.rell.toolbox.parser.SyntaxError
 import java.net.URI
 
 data class SerializableResource(
-    val parseTree: RellManualParser.FileContext,
+    val parseTree: RellParser.FileContext,
     val moduleInfo: IdeModuleInfo?,
     val fileUri: URI,
     val workspaceUri: URI,

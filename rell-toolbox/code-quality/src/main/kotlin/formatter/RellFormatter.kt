@@ -4,9 +4,9 @@
 
 package net.postchain.rell.toolbox.formatter
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualLexer
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.*
+import net.postchain.rell.base.compiler.parser.antlr.RellLexer
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
+import net.postchain.rell.base.compiler.parser.antlr.RellParser.*
 import net.postchain.rell.toolbox.common.TextReplacement
 import net.postchain.rell.toolbox.common.applyTextReplacements
 import net.postchain.rell.toolbox.formatter.specialized.*
@@ -17,7 +17,7 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.ParserRuleContext
 
 class RellFormatter(
-    val parser: RellManualParser,
+    val parser: RellParser,
     val source: String,
     formatterRequest: FormatterOptions
 ) {
@@ -333,9 +333,9 @@ class RellFormatter(
 
         fun getFormattingChanges(source: String, formatterRequest: FormatterOptions): List<TextReplacement> {
             val input: CharStream = CharStreams.fromString(source)
-            val lexer = RellManualLexer(input)
+            val lexer = RellLexer(input)
             val tokenStream = RellCommonTokenStream(lexer)
-            val parser = RellManualParser(tokenStream)
+            val parser = RellParser(tokenStream)
             val rootNode = parser.file()
 
             val formatter = RellFormatter(parser, source, formatterRequest)

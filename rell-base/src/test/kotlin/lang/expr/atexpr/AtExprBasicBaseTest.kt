@@ -277,7 +277,7 @@ abstract class AtExprBasicBaseTest: AtExprBaseTest() {
 
     @Test fun testSortLegacy() {
         // The legacy `sort` / `-sort` keyword in at-expression what-clauses was removed when the
-        // parser switched from better-parse to ANTLR (see RellManual.g4). The compatibility-version
+        // parser switched from better-parse to ANTLR (see Rell.g4). The compatibility-version
         // gating no longer applies; both forms are always syntax errors now. The annotation forms
         // (@sort, @sort_desc) remain supported.
         tst.strictToString = false

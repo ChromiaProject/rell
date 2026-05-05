@@ -51,8 +51,6 @@ private const val ACCENT = "#C1440E"
 private val METHOD_COLOR = mapOf(
     "antlr" to ACCENT,
     "antlrSLL" to "#1F6B4A",
-    "manualAntlr" to "#E07A4E",
-    "manualAntlrSLL" to "#4FA37D",
     "betterParse" to "#0F0F10",
     "runQuery" to ACCENT,
 )

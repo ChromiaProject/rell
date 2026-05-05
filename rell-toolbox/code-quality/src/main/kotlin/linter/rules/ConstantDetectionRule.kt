@@ -4,8 +4,8 @@
 
 package net.postchain.rell.toolbox.linter.rules
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualBaseVisitor
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellBaseVisitor
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.toolbox.common.Position
 import net.postchain.rell.toolbox.common.Range
 import net.postchain.rell.toolbox.indexer.Resource
@@ -32,7 +32,7 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
     private val varReferences = mutableMapOf<Range, ConstantDetectionRuleContext>()
     private val constants = mutableMapOf<Range, ConstantDetectionRuleContext>()
 
-    override fun visitVarStmtAlt(ctx: RellManualParser.VarStmtAltContext) {
+    override fun visitVarStmtAlt(ctx: RellParser.VarStmtAltContext) {
         super.visitVarStmtAlt(ctx)
         if (isDisabled(config.ruleConstantDetection) || hasSemanticErrors()) {
             return
@@ -69,20 +69,20 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
         }
     }
 
-    override fun visitBaseExpr(ctx: RellManualParser.BaseExprContext) {
+    override fun visitBaseExpr(ctx: RellParser.BaseExprContext) {
         super.visitBaseExpr(ctx)
         // Detect: postfix increment (x++ / x-- as the only tail), prefix increment (parent is
         // IncrementStmtAlt), or assignment (parent is ExprStmtAlt with an `=` expression child).
-        val isPostfix = ctx.baseExprTailNoCallNoAt().lastOrNull() is RellManualParser.BaseExprTailUnaryPostfixOpContext
+        val isPostfix = ctx.baseExprTailNoCallNoAt().lastOrNull() is RellParser.BaseExprTailUnaryPostfixOpContext
         val parent = ctx.parent
-        val isPrefix = parent is RellManualParser.IncrementStmtAltContext
-        val isAssignmentLhs = parent is RellManualParser.ExprStmtAltContext &&
+        val isPrefix = parent is RellParser.IncrementStmtAltContext
+        val isAssignmentLhs = parent is RellParser.ExprStmtAltContext &&
             parent.expression() != null &&
             parent.baseExpr() === ctx
         if (!(isPostfix || isPrefix || isAssignmentLhs)) {
             return
         }
-        val nameExpr = ctx.baseExprHead() as? RellManualParser.NameExprContext ?: return
+        val nameExpr = ctx.baseExprHead() as? RellParser.NameExprContext ?: return
         val qualifiedName = nameExpr.qualifiedName() ?: return
         // Only treat single-segment names as variable references (qualified names like a.b are
         // member accesses, not variable rebinds).
@@ -109,7 +109,7 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
         }
     }
 
-    override fun visitFile(ctx: RellManualParser.FileContext) {
+    override fun visitFile(ctx: RellParser.FileContext) {
         super.visitFile(ctx)
         constants.forEach {
             if (!hasIgnoreCommentOnTop(it.value.parserRuleContext.start)) {
@@ -132,11 +132,11 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
         constants.clear()
     }
 
-    private fun isInsideTupleDeclarator(declarator: RellManualParser.SimpleVarDeclaratorContext): Boolean {
+    private fun isInsideTupleDeclarator(declarator: RellParser.SimpleVarDeclaratorContext): Boolean {
         var p: org.antlr.v4.runtime.RuleContext? = declarator.parent
         while (p != null) {
-            if (p is RellManualParser.TupleVarDeclaratorContext) return true
-            if (p is RellManualParser.VarStmtAltContext) return false
+            if (p is RellParser.TupleVarDeclaratorContext) return true
+            if (p is RellParser.VarStmtAltContext) return false
             p = p.parent
         }
         return false
@@ -149,9 +149,9 @@ class ConstantDetectionRuleContext(
     val isTupleDeclarator: Boolean
 )
 
-class SimpleVarDeclaratorCollector : RellManualBaseVisitor<Unit>() {
-    val declarations = mutableListOf<RellManualParser.SimpleVarDeclaratorContext>()
-    override fun visitSimpleVarDeclarator(ctx: RellManualParser.SimpleVarDeclaratorContext?) {
+class SimpleVarDeclaratorCollector : RellBaseVisitor<Unit>() {
+    val declarations = mutableListOf<RellParser.SimpleVarDeclaratorContext>()
+    override fun visitSimpleVarDeclarator(ctx: RellParser.SimpleVarDeclaratorContext?) {
         if (ctx != null) {
             declarations.add(ctx)
         }

@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.formatter
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualLexer
+import net.postchain.rell.base.compiler.parser.antlr.RellLexer
 import net.postchain.rell.toolbox.common.TextReplacement
 import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
 import net.postchain.rell.toolbox.parser.RellCommonTokenStream
@@ -218,7 +218,7 @@ class RootFormattableDocument(
         if (nextHiddenRegion != null && startsAfter(
                 appendAfterToken,
                 nextHiddenRegion
-            ) && nextHiddenRegion.type == RellManualLexer.RULE_WS
+            ) && nextHiddenRegion.type == RellLexer.RULE_WS
         ) {
             change.startOffset = nextHiddenRegion.startIndex
             change.stopOffset = nextHiddenRegion.startIndex + nextHiddenRegion.text.length
@@ -232,7 +232,7 @@ class RootFormattableDocument(
         if (prevHiddenRegion != null && startsBefore(
                 prependAfterToken,
                 prevHiddenRegion
-            ) && prevHiddenRegion.type == RellManualLexer.RULE_WS
+            ) && prevHiddenRegion.type == RellLexer.RULE_WS
         ) {
             change.startOffset = prevHiddenRegion.startIndex
             change.stopOffset = prevHiddenRegion.startIndex + prevHiddenRegion.text.length
@@ -245,7 +245,7 @@ class RootFormattableDocument(
         var newLines = 1
         if (prevCommentRegion != null) {
             val diffLines = token.line - prevCommentRegion.line
-            if (diffLines >= 2 && prevCommentRegion.type == RellManualLexer.RULE_SL_COMMENT) {
+            if (diffLines >= 2 && prevCommentRegion.type == RellLexer.RULE_SL_COMMENT) {
                 newLines = 2
             }
 

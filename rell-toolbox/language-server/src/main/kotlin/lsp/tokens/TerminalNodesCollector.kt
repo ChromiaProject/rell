@@ -4,12 +4,12 @@
 
 package net.postchain.rell.toolbox.lsp.tokens
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualBaseListener
+import net.postchain.rell.base.compiler.parser.antlr.RellBaseListener
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import org.antlr.v4.runtime.tree.TerminalNode
 
-class TerminalNodesCollector(private val tree: ParseTree?) : RellManualBaseListener() {
+class TerminalNodesCollector(private val tree: ParseTree?) : RellBaseListener() {
     private val terminalNodes = mutableListOf<TerminalNode>()
     override fun visitTerminal(node: TerminalNode) {
         terminalNodes.add(node)

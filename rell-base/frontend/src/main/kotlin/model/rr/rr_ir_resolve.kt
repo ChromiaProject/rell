@@ -663,12 +663,35 @@ internal class RR_IrResolver(
             chooser.elseIdx ?: -1,
         )
 
-        is R_LookupWhenChooser -> RR_WhenChooser.Lookup(
-            resolveExpr(chooser.keyExpr),
-            chooser.map.keys.toImmList(),
-            chooser.map.values.toImmList(),
-            chooser.elseIdx ?: -1,
-        )
+        is R_LookupWhenChooser -> {
+            // Enum constant keys carry a placeholder `enumDefIndex = 0` at parse time
+            // (see `s_expr_name.kt::compileWhenEnum`), because the AST has no resolver context.
+            // Patch them here against the chooser's key type, mirroring the resolution done
+            // for `R_RRConstantValueExpr` in `resolveExpr`. Without this, runtime lookup
+            // hits `allEnums[0]` regardless of the actual enum, throwing IOOBE when that
+            // enum has fewer attributes than the keyed one (RELL-255).
+            val keyEnumType = chooser.keyExpr.type.let {
+                when (it) {
+                    is R_EnumType -> it
+                    is R_NullableType -> it.valueType as? R_EnumType
+                    else -> null
+                }
+            }
+            val resolvedEnumIdx = keyEnumType?.let { resolveEnumIndex(it.enum) ?: 0 }
+            val keys = chooser.map.keys.mapToImmList { key ->
+                if (key is RR_ConstantValue.Enum && resolvedEnumIdx != null) {
+                    key.copy(enumDefIndex = resolvedEnumIdx)
+                } else {
+                    key
+                }
+            }
+            RR_WhenChooser.Lookup(
+                resolveExpr(chooser.keyExpr),
+                keys,
+                chooser.map.values.toImmList(),
+                chooser.elseIdx ?: -1,
+            )
+        }
     }
 
     private fun resolveVarDeclarator(decl: R_VarDeclarator): RR_VarDeclarator = when (decl) {

@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.formatter.util
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.*
+import net.postchain.rell.base.compiler.parser.antlr.RellParser.*
 import net.postchain.rell.toolbox.formatter.BracePairTypes
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import org.antlr.v4.runtime.ParserRuleContext
@@ -237,7 +237,7 @@ class ExpressionFormatter(
             for (i in 0 until parent.childCount) {
                 val c = parent.getChild(i)
                 if (c is org.antlr.v4.runtime.tree.TerminalNode &&
-                    c.symbol.type == net.postchain.rell.base.compiler.parser.antlr.RellManualParser.RULE_ID &&
+                    c.symbol.type == net.postchain.rell.base.compiler.parser.antlr.RellParser.RULE_ID &&
                     c.symbol.tokenIndex < itemStartIdx
                 ) {
                     // Check that the token before this RULE_ID is `(` or `,`.
@@ -459,8 +459,8 @@ class ExpressionFormatter(
             val firstDef = definitions[0]
 
             val fileStartsWithComment = tokenAnalyzer.previousHiddenRegionList(firstDef.start).any {
-                it.type == net.postchain.rell.base.compiler.parser.antlr.RellManualLexer.RULE_ML_COMMENT ||
-                    it.type == net.postchain.rell.base.compiler.parser.antlr.RellManualLexer.RULE_SL_COMMENT
+                it.type == net.postchain.rell.base.compiler.parser.antlr.RellLexer.RULE_ML_COMMENT ||
+                    it.type == net.postchain.rell.base.compiler.parser.antlr.RellLexer.RULE_SL_COMMENT
             }
             val newLines = if (fileStartsWithComment) 1 else 0
 

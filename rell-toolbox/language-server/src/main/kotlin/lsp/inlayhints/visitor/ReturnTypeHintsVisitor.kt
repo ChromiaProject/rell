@@ -4,8 +4,8 @@
 
 package net.postchain.rell.toolbox.lsp.inlayhints.visitor
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualBaseVisitor
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser
+import net.postchain.rell.base.compiler.parser.antlr.RellBaseVisitor
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider.Companion.createTypeInlayHint
@@ -18,21 +18,21 @@ import org.eclipse.lsp4j.Range
 
 /**
  * Inlay-hint visitor for inferred function/query return types.
- * Migrated from legacy `Rell.g4` to canonical `RellManual.g4`.
+ * Migrated from legacy `Rell.g4` to canonical `Rell.g4`.
  */
 class ReturnTypeHintsVisitor(
     private val resource: Resource,
     private val range: Range,
     private val hints: MutableList<InlayHint>
-) : RellManualBaseVisitor<Unit>() {
+) : RellBaseVisitor<Unit>() {
 
-    override fun visitFunctionDef(ctx: RellManualParser.FunctionDefContext) {
+    override fun visitFunctionDef(ctx: RellParser.FunctionDefContext) {
         val name = ctx.qualifiedName()
         processDefinition(ctx, ctx.type(), name, ctx.formalParameters())
         super.visitFunctionDef(ctx)
     }
 
-    override fun visitQueryDef(ctx: RellManualParser.QueryDefContext) {
+    override fun visitQueryDef(ctx: RellParser.QueryDefContext) {
         // The query name is a bare RULE_ID terminal in the new grammar.
         val nameTerminal = ctx.RULE_ID()
         val nameCtx = nameTerminal?.let { TerminalAsContext(it.symbol.startIndex, it.symbol.stopIndex, it.symbol.line, it.symbol.charPositionInLine) }
@@ -42,9 +42,9 @@ class ReturnTypeHintsVisitor(
 
     private fun processDefinition(
         context: ParserRuleContext,
-        type: RellManualParser.TypeContext?,
+        type: RellParser.TypeContext?,
         name: ParserRuleContext?,
-        params: RellManualParser.FormalParametersContext?
+        params: RellParser.FormalParametersContext?
     ) {
         if (type != null) return
 
@@ -69,7 +69,7 @@ class ReturnTypeHintsVisitor(
     private fun getPositionAfterParameters(
         context: ParserRuleContext,
         name: ParserRuleContext?,
-        params: RellManualParser.FormalParametersContext?
+        params: RellParser.FormalParametersContext?
     ): Position = when {
         params != null -> Position(params.stop.line - 1, params.stop.charPositionInLine + 1)
         name != null -> Position(name.stop.line - 1, name.stop.charPositionInLine + 1)

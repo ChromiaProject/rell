@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.linter
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualBaseVisitor
+import net.postchain.rell.base.compiler.parser.antlr.RellBaseVisitor
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.linter.rules.*
 import org.antlr.v4.runtime.tree.RuleNode
@@ -13,7 +13,7 @@ class LinterVisitor(
     val config: LinterOptions,
     val resource: Resource,
     linterContext: LinterContext
-) : RellManualBaseVisitor<Unit>() {
+) : RellBaseVisitor<Unit>() {
 
     private val rules = listOf(
         NamingConventionRule(config, resource, linterContext),

@@ -128,6 +128,20 @@ class WhenTest: BaseRellTest() {
         chkWhen("E", "= when(a) { A -> 'A'; E.A -> 'B'; else -> '?'; };", "E.A" to "ct_err:when_expr_dupvalue:E[A]")
     }
 
+    /**
+     * RELL-255: lookup `when` over an enum used the placeholder `enumDefIndex = 0` baked
+     * into the constant key at parse time, so the runtime resolved every key against the
+     * first declared enum. With a smaller enum declared earlier in the module, this threw
+     * `IndexOutOfBoundsException` at evaluation. The R_->RR_ resolver now patches the keys.
+     */
+    @Test fun testExprEnumKeyResolutionWithEarlierSmallerEnum() {
+        def("enum E1 { A, B, C }")
+        def("enum E2 { LT, LE, EQ, GE, GT }")
+        chkWhen("E2", "= when(a) { LT -> 'lt'; LE -> 'le'; EQ -> 'eq'; GE -> 'ge'; GT -> 'gt'; };",
+                "E2.LT" to "text[lt]", "E2.LE" to "text[le]", "E2.EQ" to "text[eq]",
+                "E2.GE" to "text[ge]", "E2.GT" to "text[gt]")
+    }
+
     @Test fun testFullCoverageNullableBoolean() {
         chkWhen("boolean?", "= when(a) { false -> 'A'; true -> 'B'; else -> 'C'; };",
                 "false" to "text[A]", "true" to "text[B]", "null" to "text[C]")

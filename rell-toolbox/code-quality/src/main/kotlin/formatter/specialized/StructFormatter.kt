@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
-import net.postchain.rell.base.compiler.parser.antlr.RellManualParser.StructDefContext
+import net.postchain.rell.base.compiler.parser.antlr.RellParser.StructDefContext
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
