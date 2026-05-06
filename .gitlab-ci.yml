@@ -48,8 +48,9 @@ variables:
     -PtestJvmMaxHeap=4g
     -PjunitParallelThreads=4
     -PgitlabAuthHeaderValue=$CI_JOB_TOKEN
-  # Reduced profile for constrained runners (12 GiB total RAM).
-  # Injected when the runner sets WEAK_RUNNER=true in its config.toml.
+  # Reduced profile for constrained runners (≤16 GiB total RAM): self-hosted weak boxes
+  # (WEAK_RUNNER=true in their config.toml) and the saas-linux-medium-amd64 jobs below
+  # (dependency-check, pages:benchmarks, pages:profile) that set WEAK_RUNNER=true via job variables.
   #   Gradle daemon  4g
   #   Kotlin daemon  2g
   #   Test JVMs      1 worker × 4g = 4g
@@ -172,7 +173,10 @@ deploy:
 dependency-check:
   extends: .setup
   stage: dependency-check
+  tags: [ saas-linux-medium-amd64 ]
   interruptible: true
+  variables:
+    WEAK_RUNNER: "true"
   rules:
     - if: $RUN_DEPENDENCY_CHECK == "true"
   script: [ "./gradlew $GRADLE_FLAGS --no-configuration-cache dependencyCheckAggregate" ]
@@ -193,7 +197,6 @@ dependency-check:
 pages:index:
   stage: deploy
   image: registry.gitlab.com/gitlab-org/cli:latest
-  tags: [ saas-linux-xlarge-amd64 ]
   interruptible: true
   rules:
     - if: $CI_COMMIT_BRANCH == "dev"
@@ -219,7 +222,7 @@ pages:index:
 #       https://<group>.gitlab.io/<project>/profile-<branch-slug>/report.html
 pages:benchmarks:
   stage: benchmarks
-  tags: [ saas-linux-xlarge-amd64 ]
+  tags: [ saas-linux-medium-amd64 ]
   interruptible: true
   rules:
     - when: manual
@@ -232,7 +235,7 @@ pages:benchmarks:
     policy: pull-push
   script:
     - chmod +x gradlew
-    - ./gradlew $GRADLE_FLAGS :performance:mainBenchmark
+    - ./gradlew $GRADLE_FLAGS_WEAK :performance:mainBenchmark
     - mkdir -p public
     - cp -r performance/build/reports/benchmarks/html/. public/
     - echo "Benchmark report - $CI_PAGES_URL/report.html"
@@ -251,7 +254,10 @@ pages:benchmarks:
 pages:profile:
   extends: .setup
   stage: benchmarks
+  tags: [ saas-linux-medium-amd64 ]
   interruptible: true
+  variables:
+    WEAK_RUNNER: "true"
   rules:
     - when: manual
       allow_failure: true
@@ -272,7 +278,7 @@ pages:profile:
     expire_in: 30 days
 
 qodana:
-  tags: [ saas-linux-xlarge-amd64 ]
+  tags: [ saas-linux-large-amd64 ]
   variables:
     QODANA_MR_MODE: "true"
   cache:
