@@ -53,6 +53,7 @@ private data class SampleInfo(
     val sources: List<SampleSource>,
 )
 
+private const val RELL_BLOB = "https://gitlab.com/chromaway/rell/-/blob/dev"
 private const val FT4_BLOB = "https://gitlab.com/chromaway/ft4-lib/-/blob/development/rell/src/lib/ft4"
 private const val MNA_BLOB = "https://bitbucket.org/chromawallet/mna-blockchain/src/development/rell/src"
 
@@ -64,7 +65,7 @@ private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
         sources = listOf(
             SampleSource(
                 "synthetic_bench/main.rell",
-                "https://gitlab.com/chromaway/rell/-/blob/dev/benchmarks/src/main/resources/synthetic_bench/main.rell",
+                "$RELL_BLOB/performance/src/main/resources/synthetic_bench/main.rell",
             ),
         ),
     ),
