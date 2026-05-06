@@ -19,9 +19,12 @@ import kotlin.io.path.*
  * workload, so the report only shows tables and indexes that actually moved. Sizes are absolute.
  */
 internal object PgStats {
-    private const val JDBC_URL = "jdbc:postgresql://127.0.0.1:5432/postchain"
-    private const val USER = "postchain"
-    private const val PASSWORD = "postchain"
+    private val JDBC_URL = System.getenv("POSTCHAIN_DB_URL")
+        ?: "jdbc:postgresql://127.0.0.1:5432/postchain"
+    private val USER = System.getenv("POSTCHAIN_DB_USER") ?: "postchain"
+    private val PASSWORD = System.getenv("POSTCHAIN_DB_PASSWORD") ?: "postchain"
+
+    val url: String get() = JDBC_URL
 
     private val INT_COLS = setOf(
         "seq_scan", "seq_tup_read", "idx_scan", "idx_tup_fetch",

@@ -51,8 +51,9 @@ class ProfileCommand : CliktCommand(name = "profile") {
         val localProps = loadLocalProperties()
 
         if (!PgStats.isReady()) {
-            log("profile", "WARNING: PostgreSQL not reachable on localhost:5432")
-            die("profile", "Start it with: ./work/psql/psql-docker.sh")
+            log("profile", "WARNING: PostgreSQL not reachable at ${PgStats.url}")
+            die("profile", "Start it with: ./work/psql/psql-docker.sh " +
+                "(or set POSTCHAIN_DB_URL to point at an existing instance)")
         }
 
         val asprofAgent = ensureAsprofAgent()

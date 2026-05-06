@@ -181,21 +181,23 @@ dependency-check:
     paths: [ build/reports/dependency-check-report.* ]
 
 # Static index page listing every currently-available `pages:benchmarks` / `pages:profile`
-# deployment. Renders client-side from the public Environments API, so it only needs to be
-# republished when `performance/ci-index/index.html` itself changes — pinned to dev so feature
-# branches can't overwrite the root deployment.
+# deployment. The project is private, so anonymous client-side fetches against the
+# Environments API return 401 — instead, build-index.sh bakes the deployment list into the
+# HTML at publish time using CI_JOB_TOKEN. Republished on every dev pipeline so the list
+# stays fresh as branches come and go; pinned to dev so feature branches can't overwrite
+# the root deployment.
 pages:index:
   stage: deploy
+  image: alpine:3.20
   tags: [ saas-linux-xlarge-amd64 ]
   interruptible: true
   rules:
     - if: $CI_COMMIT_BRANCH == "dev"
-      changes: [ performance/ci-index/index.html, .gitlab-ci.yml ]
   needs: []
   script:
+    - apk add --no-cache curl jq
     - mkdir -p public
-    - sed -e "s|@CI_API_V4_URL@|$CI_API_V4_URL|g" -e "s|@CI_PROJECT_ID@|$CI_PROJECT_ID|g"
-        performance/ci-index/index.html > public/index.html
+    - performance/ci-index/build-index.sh > public/index.html
   pages: true
   environment:
     name: pages-index

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
-@file:OptIn(kotlin.io.path.ExperimentalPathApi::class)
+@file:OptIn(ExperimentalPathApi::class)
 @file:JvmName("ProvisionKt")
 
 package net.postchain.rell.performance.profiler
