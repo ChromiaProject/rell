@@ -164,6 +164,14 @@ val smokeFt4 by tasks.registering(JavaExec::class) {
     mainClass = "net.postchain.rell.benchmarks.Ft4BenchmarkKt"
 }
 
+/** Same as `smokeFt4`, but for the mna-blockchain workloads in [MnaBenchmark]. */
+val smokeMna by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Run each MnaBenchmark workload once on the interpreter backend."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass = "net.postchain.rell.benchmarks.MnaBenchmarkKt"
+}
+
 val benchmarkHtmlReport by tasks.registering(JavaExec::class) {
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
     description = "Render the latest kotlinx-benchmark JSON result as HTML."

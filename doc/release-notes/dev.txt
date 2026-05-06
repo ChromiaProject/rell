@@ -1,4 +1,4 @@
-UNRELEASED NOTES
+    UNRELEASED NOTES
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 1. Compiler: Resolved runtime model (RR_*)
@@ -163,7 +163,7 @@ Truffle nodes fall through to the tree-walker, so semantics are identical from d
 The tree-walker remains the only supported backend for deployed applications. The Truffle backend is exercised
 internally by the test matrix and microbenchmarks but is not yet ready for production use; no public toggle is
 documented. Performance on real-world Rell workloads is mixed — early measurements show the two backends within the
-same order of magnitude on the FT4 functions used by most Chromia dapps, with Truffle ahead on some shapes and
+same order of magnitude on the FT4 library and on dapp-level workloads (mna-blockchain), with Truffle ahead on some shapes and
 behind on others. We are not publishing comparative numbers until the implementation has stabilised.
 
 The CI suite now runs the entire rell-base test family three times — interpreter, interpreter + RR-serialization

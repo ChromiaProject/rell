@@ -57,6 +57,7 @@ private data class SampleInfo(
 )
 
 private const val FT4_BLOB = "https://gitlab.com/chromaway/ft4-lib/-/blob/development/rell/src/lib/ft4"
+private const val MNA_BLOB = "https://bitbucket.org/chromawallet/mna-blockchain/src/development/rell/src"
 
 /**
  * Per-sample editorial copy: a human-readable title, a short description of what the workload
@@ -66,45 +67,67 @@ private const val FT4_BLOB = "https://gitlab.com/chromaway/ft4-lib/-/blob/develo
 private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
     "collatz_primes_fib" to SampleInfo(
         title = "Collatz · primality · Fibonacci",
-        description = "Sums Collatz sequence lengths for every prime in [2, 100_000], then adds the 20th Fibonacci number. Pure integer arithmetic across three user-defined functions: while loops, modulo, and direct recursion.",
+        description = "Sums Collatz sequence lengths for every prime in [2, 100_000], then adds the 20th Fibonacci number.",
         sources = listOf(
             SampleSource(
-                "benchmarks/src/main/resources/synthetic_bench/main.rell",
+                "synthetic_bench/main.rell",
                 "https://gitlab.com/chromaway/rell/-/blob/dev/benchmarks/src/main/resources/synthetic_bench/main.rell",
             ),
         ),
     ),
     "gtv_text" to SampleInfo(
         title = "convert_gtv_to_text",
-        description = "Recursively pretty-prints a fixed mid-sized nested gtv (lists, dicts, ints, byte_arrays, booleans) 200 times. Stresses string allocation, recursion and gtv-tag dispatch via the is_text / is_list / is_dict predicates.",
+        description = "Pretty-prints a mid-sized nested gtv (lists, dicts, ints, byte_arrays, booleans) 200 times.",
         sources = listOf(
-            SampleSource(
-                "ft4-lib · utils/utils.rell · convert_gtv_to_text",
-                "$FT4_BLOB/utils/utils.rell",
-            ),
+            SampleSource("ft4-lib · utils/utils.rell", "$FT4_BLOB/utils/utils.rell"),
         ),
     ),
     "rule_serde" to SampleInfo(
         title = "auth descriptor rule serde",
-        description = "Serialises a list of five rule_expressions to gtv via serialize_rules, then parses them back via map_rule_expressions_from_gtv — 500 round-trips. Stresses gtv build/parse and from_gtv / to_gtv conversions for enums, ints, and lists.",
+        description = "500 round-trips of a five-rule list: serialize_rules to gtv, then map_rule_expressions_from_gtv back.",
         sources = listOf(
             SampleSource(
-                "ft4-lib · core/accounts/auth_descriptor_rule_validation.rell",
+                "ft4-lib · auth_descriptor_rule_validation.rell",
                 "$FT4_BLOB/core/accounts/auth_descriptor_rule_validation.rell",
             ),
             SampleSource(
-                "ft4-lib · core/accounts/auth_descriptor_rule_expression.rell",
+                "ft4-lib · auth_descriptor_rule_expression.rell",
                 "$FT4_BLOB/core/accounts/auth_descriptor_rule_expression.rell",
             ),
         ),
     ),
     "rule_eval" to SampleInfo(
         title = "auth descriptor rule evaluation",
-        description = "Evaluates a five-rule rule set against a fixed map<text, gtv> of variable values 5_000 times via is_rule_violated → evaluate_int_variable_rule. Stresses enum dispatch (operator + variable), integer comparisons and map<text, gtv> lookups.",
+        description = "5_000 calls of is_rule_violated against a fixed five-rule set and a map<text, gtv> of variable values.",
         sources = listOf(
             SampleSource(
-                "ft4-lib · core/accounts/auth_descriptor_rule_validation.rell",
+                "ft4-lib · auth_descriptor_rule_validation.rell",
                 "$FT4_BLOB/core/accounts/auth_descriptor_rule_validation.rell",
+            ),
+        ),
+    ),
+    "decimal_pow" to SampleInfo(
+        title = "decimal power · ln · exp",
+        description = "200 calls × 4 (base, exponent) shapes of power: integer exponent, non-integer exponent, fractional base near 1, and negative exponent.",
+        sources = listOf(
+            SampleSource("mna-blockchain · math/math.rell", "$MNA_BLOB/math/math.rell"),
+        ),
+    ),
+    "perlin_noise" to SampleInfo(
+        title = "8-octave 2D Simplex noise",
+        description = "20 calls of sum_octave_2d on a 5×5 grid (500 simplex_2d samples per rep) with the canonical permutation tables.",
+        sources = listOf(
+            SampleSource("mna-blockchain · noise/functions.rell", "$MNA_BLOB/math/noise/functions.rell"),
+            SampleSource("mna-blockchain · noise/simplex_2d.rell", "$MNA_BLOB/math/noise/simplex_2d.rell"),
+        ),
+    ),
+    "locations" to SampleInfo(
+        title = "rotate · area_for_locations",
+        description = "200 reps × 4 cardinal rotations of a 64-point list<location>; each rotated copy is collected into a set<location> and reduced via area_for_locations.",
+        sources = listOf(
+            SampleSource(
+                "mna-blockchain · griddables/griddables.rell",
+                "$MNA_BLOB/griddables/griddables.rell",
             ),
         ),
     ),
@@ -640,7 +663,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 2rem 2rem 2.5rem; }
   border-bottom: 1px dashed var(--rule-hair);
   font-family: var(--mono); font-size: .68rem;
 }
-.bars-panel-sources li { margin: .12rem 0; }
+.bars-panel-sources li { margin: .12rem 0; overflow-wrap: anywhere; }
 .bars-panel-sources a { color: var(--accent); }
 .bars-panel-svg svg { display: block; max-width: 100%; height: auto; }
 .grid { stroke: var(--rule-hair); stroke-width: 1; }

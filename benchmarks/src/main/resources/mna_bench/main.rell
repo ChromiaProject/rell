@@ -1,0 +1,399 @@
+// Compute-only excerpts from chromaway/mna-blockchain (development @ 09617dc7), repackaged
+// for the Rell runtime microbenchmarks. Three pure-compute workloads with shapes distinct
+// from the ft4_bench three: decimal arithmetic via binary exponentiation + Padé/Taylor
+// transcendentals, list-indexed Simplex noise summation, and rotation + AABB reduction
+// over a list/set of integer-coordinate structs.
+
+// ----------------------------------------------------------------------------
+//  math/math.rell — power, integer_power, ln, ln_near_one, exp, ln2
+// ----------------------------------------------------------------------------
+
+function integer_power(base: decimal, exponent: integer): decimal {
+    var result: decimal = 1.0;
+    var b = base;
+    var e = abs(exponent);
+    while (e > 0) {
+        if (e % 2 == 1) {
+            result *= b;
+        }
+        b *= b;
+        e /= 2;
+    }
+    return if (exponent < 0) 1.0 / result else result;
+}
+
+function ln_near_one(x: decimal): decimal {
+    val y = x - 1;
+    val y2 = y * y;
+    val y3 = y2 * y;
+    val y4 = y3 * y;
+    val y5 = y4 * y;
+    return y - y2 / 2 + y3 / 3 - y4 / 4 + y5 / 5;
+}
+
+function ln2(): decimal = 0.69314718055994530941;
+
+function ln(x: decimal): decimal {
+    if (x <= 0) return 0.0;
+    if (x == 1) return 0;
+
+    if (x > 0.9 and x < 1.1) {
+        return ln_near_one(x);
+    }
+
+    var n = 0;
+    var y = x;
+    while (y >= 2) {
+        y /= 2;
+        n += 1;
+    }
+    while (y < 0.5) {
+        y *= 2;
+        n -= 1;
+    }
+
+    y -= 1;
+
+    val a0 = 0.99999999999999999998;
+    val a1 = 1.0000000000000000000;
+    val b1 = 0.50000000000000000004;
+    val b2 = 0.16666666666666666654;
+    val b3 = 0.041666666666666666704;
+    val b4 = 0.0083333333333333332177;
+
+    val numerator = y * (a0 + a1 * y);
+    val denominator = 1 + y * (b1 + y * (b2 + y * (b3 + b4 * y)));
+    return (numerator / denominator) + n * ln2();
+}
+
+function exp(x: decimal): decimal {
+    if (x == 0) return 1.0;
+    if (x < 0) return 1.0 / exp(-x);
+
+    var result = 1.0;
+    var term = 1.0;
+    var n = 1;
+    while (abs(term) > 1e-15) {
+        term *= x / n;
+        result += term;
+        n += 1;
+    }
+    return result;
+}
+
+function power(base: decimal, exponent: decimal): decimal {
+    if (exponent == 0) return 1.0;
+    if (base == 0) return 0.0;
+    if (exponent < 0) return 1.0 / power(base, -exponent);
+
+    if (exponent.floor() == exponent) {
+        return integer_power(base, exponent.to_integer());
+    }
+    return exp(exponent * ln(base));
+}
+
+// ----------------------------------------------------------------------------
+//  math/noise/* — GRAD3, simplex_2d, sum_octave_2d (with mna's FISHING_PERM tables)
+// ----------------------------------------------------------------------------
+
+val F2 = 0.3660254;
+val G2 = 0.21132487;
+
+function GRAD3(): list<integer> = [
+    1, 1, 0, -1, 1, 0, 1, -1, 0,
+    -1, -1, 0, 1, 0, 1, -1, 0, 1,
+    1, 0, -1, -1, 0, -1, 0, 1, 1,
+    0, -1, 1, 0, 1, -1, 0, -1, -1
+];
+
+function PERM(): list<integer> = [
+    219, 74, 150, 141, 223, 218, 203, 59, 203, 149, 233, 213, 46, 29, 120, 39, 227, 64, 191, 228, 175, 74, 72,
+    115, 72, 108, 108, 58, 134, 26, 69, 183, 152, 87, 42, 190, 19, 101, 29, 43, 142, 136, 226, 219, 103, 194,
+    13, 101, 244, 153, 114, 25, 63, 150, 144, 160, 95, 115, 222, 185, 248, 10, 152, 104, 203, 6, 48, 3, 248,
+    106, 45, 20, 118, 56, 150, 237, 189, 135, 50, 97, 65, 44, 163, 91, 213, 36, 184, 133, 65, 251, 39, 186, 15,
+    76, 216, 141, 78, 85, 129, 171, 36, 197, 230, 130, 22, 94, 130, 1, 161, 84, 161, 32, 46, 81, 239, 178, 254,
+    143, 228, 67, 90, 187, 222, 244, 96, 228, 67, 47, 199, 124, 59, 242, 117, 181, 89, 206, 172, 249, 101, 115,
+    84, 11, 31, 24, 201, 121, 37, 12, 63, 132, 213, 98, 163, 32, 195, 25, 228, 126, 187, 104, 25, 132, 249, 120,
+    200, 106, 163, 230, 117, 190, 64, 229, 155, 229, 11, 77, 144, 151, 136, 60, 145, 20, 221, 206, 59, 22, 117,
+    147, 4, 51, 7, 239, 218, 50, 73, 138, 69, 63, 12, 80, 112, 93, 29, 218, 170, 226, 83, 107, 187, 42, 31, 32,
+    227, 132, 250, 77, 181, 237, 200, 165, 47, 115, 147, 11, 178, 44, 213, 136, 253, 164, 65, 3, 209, 190, 63,
+    233, 63, 192, 58, 176, 182, 161, 135, 15, 206, 102, 130, 164, 44, 181, 144, 3, 219, 62, 195, 243, 29, 166,
+    59, 34, 88, 146, 174, 48, 83, 171, 137, 181, 60, 251, 84, 179, 41, 148, 223, 250, 151, 41, 171, 18, 145, 82,
+    139, 92, 244, 224, 99, 99, 76, 15, 20, 188, 225, 8, 30, 2, 38, 49, 13, 230, 106, 36, 226, 101, 93, 147, 200,
+    77, 172, 249, 57, 98, 41, 225, 56, 240, 59, 37, 160, 164, 108, 105, 250, 57, 147, 168, 93, 2, 47, 182, 199, 5,
+    193, 253, 33, 48, 152, 176, 101, 59, 122, 11, 123, 26, 155, 35, 53, 130, 97, 236, 161, 126, 203, 168, 7, 113,
+    176, 45, 186, 137, 72, 252, 67, 77, 151, 230, 15, 244, 195, 36, 85, 167, 8, 19, 100, 167, 183, 189, 238, 105,
+    65, 29, 206, 56, 149, 107, 3, 32, 225, 248, 239, 156, 18, 85, 196, 155, 108, 30, 94, 99, 69, 155, 25, 110, 165,
+    159, 161, 154, 205, 27, 32, 28, 42, 83, 253, 107, 243, 39, 220, 70, 147, 226, 175, 72, 203, 106, 80, 131, 185,
+    152, 177, 198, 208, 216, 146, 33, 54, 121, 70, 118, 254, 247, 32, 18, 195, 147, 244, 71, 197, 254, 19, 6, 119,
+    157, 8, 148, 218, 57, 172, 244, 191, 18, 28, 253, 46, 60, 132, 51, 4, 113, 152, 203, 162, 237, 67, 9, 170, 243,
+    50, 71, 74, 170, 232, 90, 193, 19, 49, 241, 165, 183, 113, 112, 175, 148, 137, 51, 148, 217, 11, 31, 188, 26,
+    83, 232, 15, 183, 188, 233, 29, 210, 165, 183
+];
+
+function PERM_MOD12(): list<integer> = [
+    3, 2, 6, 9, 7, 2, 11, 11, 11, 5, 5, 9, 10, 5, 0, 3, 11, 4, 11, 0, 7, 2, 0, 7, 0, 0, 0, 10, 2, 2, 9, 3, 8, 3, 6,
+    10, 7, 5, 5, 7, 10, 4, 10, 3, 7, 2, 1, 5, 4, 9, 6, 1, 3, 6, 0, 4, 11, 7, 6, 5, 8, 10, 8, 8, 11, 6, 0, 3, 8, 10,
+    9, 8, 10, 8, 6, 9, 9, 3, 2, 1, 5, 8, 7, 7, 9, 0, 4, 1, 5, 11, 3, 6, 3, 4, 0, 9, 6, 1, 9, 3, 0, 5, 2, 10, 10, 10,
+    10, 1, 5, 0, 5, 8, 10, 9, 11, 10, 2, 11, 0, 7, 6, 7, 6, 4, 0, 0, 7, 11, 7, 4, 11, 2, 9, 1, 5, 2, 4, 9, 5, 7, 0,
+    11, 7, 0, 9, 1, 1, 0, 3, 0, 9, 2, 7, 8, 3, 1, 0, 6, 7, 8, 1, 0, 9, 0, 8, 10, 7, 2, 9, 10, 4, 1, 11, 1, 11, 5, 0,
+    7, 4, 0, 1, 8, 5, 2, 11, 10, 9, 3, 4, 3, 7, 11, 2, 2, 1, 6, 9, 3, 0, 8, 4, 9, 5, 2, 2, 10, 11, 11, 7, 6, 7, 8, 11,
+    0, 10, 5, 1, 9, 8, 9, 11, 7, 3, 11, 10, 8, 9, 4, 1, 8, 5, 3, 5, 10, 3, 5, 3, 0, 10, 8, 2, 5, 3, 3, 2, 6, 10, 8, 8,
+    1, 0, 3, 3, 2, 3, 3, 5, 10, 11, 10, 4, 2, 6, 0, 11, 3, 5, 1, 0, 11, 0, 11, 5, 4, 7, 10, 7, 5, 3, 6, 1, 10, 7, 8,
+    4, 8, 3, 3, 4, 3, 8, 8, 9, 8, 6, 2, 2, 1, 1, 2, 10, 0, 10, 5, 9, 3, 8, 5, 4, 9, 9, 2, 5, 9, 8, 0, 11, 1, 4, 8, 0,
+    9, 10, 9, 3, 0, 9, 2, 11, 2, 7, 5, 1, 1, 9, 0, 8, 8, 5, 11, 2, 11, 3, 2, 11, 11, 5, 10, 1, 8, 5, 6, 11, 0, 7, 5, 8,
+    9, 6, 5, 0, 0, 7, 5, 7, 2, 3, 4, 3, 0, 1, 11, 8, 7, 4, 11, 3, 9, 10, 9, 5, 5, 2, 8, 5, 11, 3, 8, 9, 8, 11, 0, 6, 1,
+    4, 11, 0, 6, 10, 3, 9, 11, 1, 2, 9, 3, 5, 10, 1, 3, 8, 4, 6, 11, 1, 11, 3, 3, 4, 10, 3, 10, 7, 0, 11, 10, 8, 11, 5,
+    8, 9, 6, 4, 0, 2, 9, 6, 1, 10, 10, 2, 7, 8, 6, 3, 3, 4, 11, 5, 2, 7, 6, 11, 1, 8, 4, 2, 9, 4, 4, 11, 6, 4, 1, 10,
+    0, 0, 3, 4, 5, 8, 11, 6, 9, 7, 9, 2, 3, 2, 11, 2, 2, 4, 6, 1, 7, 1, 1, 9, 3, 5, 4, 7, 4, 5, 3, 4, 1, 11, 7, 8, 2,
+    11, 4, 3, 3, 8, 5, 5, 6, 9, 3
+];
+
+function simplex_2d(
+    perm_mod12: list<integer>,
+    perm: list<integer>,
+    grad3: list<integer>,
+    x: decimal,
+    y: decimal
+): decimal {
+    var n0 = 0.0;
+    var n1 = 0.0;
+    var n2 = 0.0;
+
+    val s = (x + y) * F2;
+    val i = (x + s).floor().to_integer();
+    val j = (y + s).floor().to_integer();
+    val t = (i + j) * G2;
+
+    val X0 = i - t;
+    val Y0 = j - t;
+    val x0 = x - X0;
+    val y0 = y - Y0;
+
+    val i1 = if (x0 > y0) 1 else 0;
+    val j1 = 1 - i1;
+
+    val x1 = x0 - i1 + G2;
+    val y1 = y0 - j1 + G2;
+    val x2 = x0 - 1.0 + 2.0 * G2;
+    val y2 = y0 - 1.0 + 2.0 * G2;
+
+    var ii = i % 256;
+    var jj = j % 256;
+    if (ii < 0) ii += 256;
+    if (jj < 0) jj += 256;
+
+    var t0 = 0.5 - x0 * x0 - y0 * y0;
+    if (t0 >= 0) {
+        val gi0 = perm_mod12.get(ii + perm.get(jj));
+        t0 *= t0;
+        n0 = t0 * t0 * (grad3.get(gi0) * x0 + grad3.get(gi0 + 1) * y0);
+    }
+
+    var t1 = 0.5 - x1 * x1 - y1 * y1;
+    if (t1 >= 0) {
+        val gi1 = perm_mod12.get(ii + i1 + perm.get(jj + j1));
+        t1 *= t1;
+        n1 = t1 * t1 * (grad3.get(gi1) * x1 + grad3.get(gi1 + 1) * y1);
+    }
+
+    var t2 = 0.5 - x2 * x2 - y2 * y2;
+    if (t2 >= 0) {
+        val gi2 = perm_mod12.get(ii + 1 + perm.get(jj + 1));
+        t2 *= t2;
+        n2 = t2 * t2 * (grad3.get(gi2) * x2 + grad3.get(gi2 + 1) * y2);
+    }
+
+    return 70.0 * (n0 + n1 + n2);
+}
+
+function sum_octave_2d(
+    perm_mod12: list<integer>,
+    perm: list<integer>,
+    grad3: list<integer>,
+    iterations: integer,
+    x: integer,
+    y: integer,
+    persistence: decimal,
+    lacunarity: decimal,
+    scale: decimal,
+    low: integer,
+    high: integer
+): decimal {
+    var max_amp = 0.0;
+    var amp = 1.0;
+    var freq = scale;
+    var noise = 0.0;
+    for (i in range(1, iterations + 1)) {
+        noise += simplex_2d(perm_mod12, perm, grad3, x * freq, y * freq) * amp;
+        max_amp += amp;
+        amp *= persistence;
+        freq *= lacunarity;
+    }
+    noise /= max_amp;
+    noise = (noise * (high - low) / 2 + (high + low) / 2) - 2;
+    return noise;
+}
+
+// ----------------------------------------------------------------------------
+//  griddables/griddables.rell — location, grid_rotation, rotate*, area_for_locations
+// ----------------------------------------------------------------------------
+
+enum grid_rotation { north, east, south, west }
+
+struct location {
+    x: integer;
+    y: integer;
+}
+
+function rotate_east(default_location: location): location =
+    location(x = default_location.y, y = default_location.x * -1);
+
+function rotate_south(default_location: location): location =
+    location(x = default_location.x * -1, y = default_location.y * -1);
+
+function rotate_west(default_location: location): location =
+    location(x = default_location.y * -1, y = default_location.x);
+
+function rotate(default_locations: list<location>, rotation: grid_rotation): list<location> {
+    val resulting_relative_locations = list<location>();
+    for (loc in default_locations) {
+        resulting_relative_locations.add(
+            when (rotation) {
+                grid_rotation.north -> loc;
+                grid_rotation.east -> rotate_east(loc);
+                grid_rotation.south -> rotate_south(loc);
+                grid_rotation.west -> rotate_west(loc);
+            }
+        );
+    }
+    return resulting_relative_locations;
+}
+
+// `integer.MAX_VALUE` isn't a Rell stdlib constant; use a finite sentinel that exceeds the
+// bench grid (which never goes past ~10_000 on either axis) by many orders of magnitude.
+val LOC_SENTINEL = 1000000000;
+
+function area_for_locations(
+    locations: set<location>,
+    add_borders: boolean = false
+): (from: location, to: location) {
+    var min_x = LOC_SENTINEL;
+    var min_y = LOC_SENTINEL;
+    var max_x = -LOC_SENTINEL;
+    var max_y = -LOC_SENTINEL;
+
+    for (loc in locations) {
+        if (loc.x < min_x) min_x = loc.x;
+        if (loc.x > max_x) max_x = loc.x;
+        if (loc.y < min_y) min_y = loc.y;
+        if (loc.y > max_y) max_y = loc.y;
+    }
+
+    if (add_borders) {
+        min_x -= 1;
+        min_y -= 1;
+        max_x += 1;
+        max_y += 1;
+    }
+
+    return (from = location(x = min_x, y = min_y), to = location(x = max_x, y = max_y));
+}
+
+// ----------------------------------------------------------------------------
+//  Benchmark entry points
+// ----------------------------------------------------------------------------
+
+// Decimal pow workload: alternates between integer-exponent (fast path: integer_power's
+// repeated-squaring loop) and non-integer-exponent (slow path: exp(exponent * ln(base)),
+// which exercises the Padé approximation of ln and the Taylor series expansion of exp).
+query bench_decimal_pow(reps: integer): integer {
+    var total = 0;
+    var i = 0;
+    while (i < reps) {
+        // Integer exponent — exercises integer_power's binary exponentiation.
+        val a = power(2.5, 17.0);
+        // Non-integer exponent — exercises ln (Padé range-reduction) + exp (Taylor).
+        val b = power(3.7, 4.25);
+        // Fractional base near 1 — hits the ln_near_one Taylor path.
+        val c = power(1.05, 6.5);
+        // Negative exponent — exercises the reciprocal branch.
+        val d = power(2.0, -5.0);
+        total += (a + b + c + d).to_integer();
+        i += 1;
+    }
+    return total;
+}
+
+// Perlin noise workload: 8-octave 2D simplex noise sampled across a 5x5 grid of points.
+// Each sum_octave_2d call dispatches into simplex_2d, which performs ~12 list-indexed
+// reads per sample plus mixed integer/decimal arithmetic — exactly the kind of hot
+// inner loop that Truffle's partial evaluator should specialise.
+query bench_perlin_noise(reps: integer): integer {
+    val grad3 = GRAD3();
+    val perm = PERM();
+    val perm_mod12 = PERM_MOD12();
+    val iterations = 8;
+    val persistence = 0.5;
+    val lacunarity = 2.0;
+    val scale = 0.05;
+    val low = 0;
+    val high = 100;
+
+    var total = 0;
+    var i = 0;
+    while (i < reps) {
+        var x = 0;
+        while (x < 5) {
+            var y = 0;
+            while (y < 5) {
+                val noise = sum_octave_2d(
+                    perm_mod12, perm, grad3, iterations, x, y,
+                    persistence, lacunarity, scale, low, high
+                );
+                total += noise.to_integer();
+                y += 1;
+            }
+            x += 1;
+        }
+        i += 1;
+    }
+    return total;
+}
+
+function bench_locations_input(): list<location> {
+    val locs = list<location>();
+    var i = 0;
+    while (i < 64) {
+        // Lissajous-ish pattern → varied (x, y) coordinates that stay finite.
+        val x = ((i * 13) % 97) - 48;
+        val y = ((i * 7 + 5) % 89) - 44;
+        locs.add(location(x = x, y = y));
+        i += 1;
+    }
+    return locs;
+}
+
+// Locations workload: rotate a 64-point list through all four cardinal rotations, then
+// build a set<location> from each rotated copy and reduce it via area_for_locations.
+// Stresses struct construction, list iteration with enum dispatch (when), set hashing
+// for `location`, and integer min/max reduction.
+query bench_locations(reps: integer): integer {
+    val base = bench_locations_input();
+    val rotations = [grid_rotation.north, grid_rotation.east, grid_rotation.south, grid_rotation.west];
+    var total = 0;
+    var i = 0;
+    while (i < reps) {
+        for (r in rotations) {
+            val rotated = rotate(base, r);
+            val rotated_set = set<location>();
+            for (loc in rotated) {
+                rotated_set.add(loc);
+            }
+            val area = area_for_locations(rotated_set, add_borders = true);
+            total += area.to.x - area.from.x + area.to.y - area.from.y;
+        }
+        i += 1;
+    }
+    return total;
+}
