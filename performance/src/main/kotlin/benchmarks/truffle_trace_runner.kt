@@ -2,24 +2,18 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 @file:Suppress("unused")
+@file:JvmName("TruffleTraceRunnerKt")
 
-package net.postchain.rell.benchmarks
+package net.postchain.rell.performance.benchmarks
 
 import com.oracle.truffle.api.Truffle
 import kotlinx.benchmark.Blackhole
 
 /**
- * Standalone diagnostic: drives a Truffle-backed benchmark long enough for compilation to
- * trigger, with stdout/stderr free of JMH framing so polyglot trace logs
- * (`-Dpolyglot.engine.TraceCompilation=true`, etc.) are easy to parse.
- *
- * Wire-up: `:benchmarks:traceTruffle` Gradle task supplies the JVMCI/Truffle flags, points
- * mainClass here, and runs against runtimeClasspath. The task fails loudly when Truffle
- * isn't running on top of Graal.
- *
- * Default workload is the synthetic primality/Collatz/fib query in [InterpreterBenchmark]
- * — small, predictable, easy to read in compilation logs. Set `TRACE_TARGET=ft4` plus
- * `TRACE_SAMPLE=<gtv_text|rule_serde|rule_eval>` to drive an [Ft4Benchmark] workload instead.
+ * Drives a Truffle-backed benchmark without JMH framing so polyglot trace logs
+ * (`-Dpolyglot.engine.TraceCompilation=true`, etc.) are easy to parse. Defaults to the
+ * synthetic [InterpreterBenchmark] query; `TRACE_TARGET=ft4` + `TRACE_SAMPLE=...` selects
+ * an [Ft4Benchmark] workload.
  */
 fun main() {
     val rt = Truffle.getRuntime()

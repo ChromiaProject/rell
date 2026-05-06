@@ -13,14 +13,12 @@ import net.postchain.rell.base.utils.LazyString
 /**
  * Recovers the display name from an RR_ sys-function key.
  *
- * Keys are `displayName#signature` (content-derived, see [RR_IrResolver.buildSysFnKey]).
+ * Keys are `displayName#signature`.
  * `#` is not used in Rell type syntax, so splitting on it cleanly yields the user-facing
  * name. `@` is preserved as a secondary split for defensive compatibility with legacy
  * identity-hash-suffixed keys (e.g. from a pre-migration serialized artifact).
  */
-fun sysFnDisplayName(fnName: String): String {
-    return fnName.substringBefore('#').substringBefore('@')
-}
+fun sysFnDisplayName(fnName: String): String = fnName.substringBefore('#').substringBefore('@')
 
 fun createFunctionValueFromTarget(
     target: Rt_FunctionCallTarget,
@@ -28,12 +26,12 @@ fun createFunctionValueFromTarget(
     mapping: R_PartialCallMapping,
     baseValue: Rt_Value?,
     args: List<Rt_Value>,
-): Rt_Value {
+): Rt_Value =
     if (target.rrTarget is RR_FunctionCallTarget.FunctionValue && baseValue != null && baseValue != Rt_NullValue) {
-        return baseValue.asFunction().combine(resType, mapping, args)
+        baseValue.asFunction().combine(resType, mapping, args)
+    } else {
+        Rt_FunctionValue(resType, mapping, target, baseValue, args)
     }
-    return Rt_FunctionValue(resType, mapping, target, baseValue, args)
-}
 
 fun Rt_FunctionCallTarget.targetStr(baseValue: Rt_Value?, format: Rt_StrFormat): String {
     if (rrTarget is RR_FunctionCallTarget.FunctionValue && baseValue != null && baseValue != Rt_NullValue) {
@@ -84,22 +82,15 @@ object R_SysFunctionUtils {
         fn: R_SysFunction,
         name: LazyString,
         values: List<Rt_Value>,
-    ): Rt_Value {
-        return try {
-            fn.call(callCtx, values)
-        } catch (e: Throwable) {
-            throw decorateSysFnException(callCtx, name, e)
-        }
+    ): Rt_Value = try {
+        fn.call(callCtx, values)
+    } catch (e: Throwable) {
+        throw decorateSysFnException(callCtx, name, e)
     }
 
     /**
      * Convert a Throwable raised by a sys-function impl into the Throwable that should leave
      * the call boundary.
-     *
-     * Extracted from [callAndCatch] so backends that want to keep the success path free of a
-     * try/catch wrapper (Truffle) can apply identical catch-arm semantics from a `BranchProfile`-
-     * guarded slow path. The interpreter's `callAndCatch` and the Truffle catch site share this
-     * helper so the catch-arm logic stays single-sourced.
      *
      * Catch arms — same as the original [callAndCatch]:
      *
@@ -114,33 +105,33 @@ object R_SysFunctionUtils {
      *   carrying a [Rt_CommonError] with code `fn:error:<name>:<exception-class>`; otherwise
      *   rethrow unchanged.
      */
-    fun decorateSysFnException(callCtx: Rt_CallContext, name: LazyString, e: Throwable): Throwable {
-        return when (e) {
-            is Rt_Exception -> {
-                if (e.info.extraMessage == null && e.err !is Rt_RequireError) {
-                    // Mutate-and-rethrow: attaching the wrapper extra-message to the existing
-                    // exception avoids a fresh `Rt_Exception` (and `fillInStackTrace`) per
-                    // catch-rethrow level — hot on workloads with deep sys-function chains.
-                    e.attachExtraMessage("System function '${name.value}'")
-                }
-                e
+    fun decorateSysFnException(callCtx: Rt_CallContext, name: LazyString, e: Throwable): Throwable = when (e) {
+        is Rt_Exception -> {
+            if (e.info.extraMessage == null && e.err !is Rt_RequireError) {
+                // Mutate-and-rethrow: attaching the wrapper extra-message to the existing
+                // exception avoids a fresh `Rt_Exception` (and `fillInStackTrace`) per
+                // catch-rethrow level — hot on workloads with deep sys-function chains.
+                e.attachExtraMessage("System function '${name.value}'")
             }
-            is RellInterpreterCrashException -> e
-            is InterruptedException -> {
-                Thread.currentThread().interrupt()
+            e
+        }
+
+        is RellInterpreterCrashException -> e
+        is InterruptedException -> {
+            Thread.currentThread().interrupt()
+            e
+        }
+
+        else -> {
+            if (e is java.sql.SQLException && e.isPostgresQueryCanceled) {
                 e
-            }
-            else -> {
-                if (e is java.sql.SQLException && e.isPostgresQueryCanceled) {
-                    e
-                } else if (callCtx.globalCtx.wrapFunctionCallErrors) {
-                    val extra = "System function '${name.value}'"
-                    val info = Rt_ExceptionInfo(stack = net.postchain.rell.base.utils.immListOf(), extraMessage = extra)
-                    val err = Rt_CommonError("fn:error:$name:${e.javaClass.canonicalName}", e.message ?: "error")
-                    Rt_Exception(err, info)
-                } else {
-                    e
-                }
+            } else if (callCtx.globalCtx.wrapFunctionCallErrors) {
+                val extra = "System function '${name.value}'"
+                val info = Rt_ExceptionInfo(stack = net.postchain.rell.base.utils.immListOf(), extraMessage = extra)
+                val err = Rt_CommonError("fn:error:$name:${e.javaClass.canonicalName}", e.message ?: "error")
+                Rt_Exception(err, info)
+            } else {
+                e
             }
         }
     }

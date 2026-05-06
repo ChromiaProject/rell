@@ -1,0 +1,11 @@
+graal_dumps/
+async-profiler/
+
+reports/
+
+dapp/.chromia/
+dapp/build/
+
+*.log
+
+local.properties

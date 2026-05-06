@@ -10,9 +10,7 @@ import net.postchain.rell.base.model.ErrorPos
  * Marker interface for an activation record handed back to the interpreter implementation.
  *
  * The tree-walking [Rt_Interpreter] implements this with `Rt_CallFrame` (in `runtime-interpreter`),
- * which holds an `Array<Rt_Value?>` and block-scope tracking. A future Truffle backend would supply
- * its own `VirtualFrame`-backed implementation. Code in `runtime-core` only needs an opaque handle
- * to thread frames through the interpreter API, plus the small surface declared here.
+ * which holds an `Array<Rt_Value?>` and block-scope tracking.
  */
 interface Rt_Frame {
     /**

@@ -8,23 +8,11 @@ package net.postchain.rell.base.runtime
  * Pluggable backing store for an [Rt_CallFrame]'s slot array.
  *
  * The tree-walker only ever reaches frame slots through this abstraction, so a peer backend
- * (notably the Truffle [net.postchain.rell.base.runtime.truffle.Tf_VirtualFrameStorage]) can
- * supply its own implementation that writes directly into the Truffle
- * [com.oracle.truffle.api.frame.VirtualFrame] without an intermediate `Array<Rt_Value?>`.
- *
- * # Why an interface
- *
- * Pre-wave-4 the tree-walker held one canonical `Array<Rt_Value?>` and the Truffle backend kept
- * a parallel copy in the [com.oracle.truffle.api.frame.VirtualFrame] indexed slots; every
- * fallback boundary mirrored the two. With this abstraction the slow-path interpreter writes
- * directly into the Truffle slot through [Tf_VirtualFrameStorage], so there is one source of
- * truth and no per-fallback copy.
+ * can supply its own implementation.
  *
  * # Contract
  *
- * Implementations are NOT thread-safe. The Truffle backend creates a fresh wrapper per
- * activation, the tree-walker uses one [Rt_HeapFrameStorage] per [Rt_CallFrame] — both are
- * single-threaded by construction.
+ * Implementations are NOT thread-safe.
  *
  * Reads of unwritten / cleared slots return `null`. The block-uid validation logic in
  * [Rt_CallFrame] is layered on top: storage operates on raw slot offsets and never inspects

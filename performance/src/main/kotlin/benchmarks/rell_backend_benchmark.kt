@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
-package net.postchain.rell.benchmarks
+package net.postchain.rell.performance.benchmarks
 
 import com.oracle.truffle.api.Truffle
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
@@ -14,12 +14,7 @@ import net.postchain.rell.base.sql.NoConnSqlExecutor
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.immListOf
 
-/**
- * Shared compile-and-wire-up scaffolding for benchmarks that drive a Rell program through
- * either the tree-walker or the Truffle backend. Subclasses declare their own `@Param`
- * fields, `@Setup`, and `@Benchmark` (JMH requires them on the concrete class), and call
- * [setUpBackend] to obtain the compiled [RR_App].
- */
+/** Compile-and-wire-up scaffolding shared by tree-walker and Truffle benchmarks. */
 abstract class RellBackendBenchmark {
     lateinit var interpreter: Rt_Interpreter
         protected set
@@ -27,7 +22,7 @@ abstract class RellBackendBenchmark {
     lateinit var exeCtx: Rt_ExecutionContext
         protected set
 
-    protected fun setUpBackend(backend: String, resourcePath: String): RR_App {
+    public fun setUpBackend(backend: String, resourcePath: String): RR_App {
         val rellSource = loadRellResource(resourcePath)
         val sourceDir = C_SourceDir.mapDirOf(RellTestUtils.MAIN_FILE to rellSource)
         val modSel = C_CompilerModuleSelection(immListOf(ModuleName.EMPTY), immListOf())

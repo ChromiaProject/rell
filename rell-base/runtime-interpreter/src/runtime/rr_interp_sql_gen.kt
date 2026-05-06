@@ -39,13 +39,6 @@ fun boolFieldToCondition(field: Field<Any?>): Condition = DSL.condition(field as
  * shared across nested sub-queries, with `?` placeholder fields added in DSL-tree order.
  *
  * The final SELECT query is rendered once into a [ParameterizedSql].
- *
- * Note: `truffle.md` lists this file under `runtime-core`, but it stays in `runtime-interpreter`
- * because it depends on tree-walking helpers ([dbUnaryOpSql], [Rt_InterpreterImpl.evaluateAtExtras])
- * that are not worth lifting onto the [Rt_Interpreter] interface — both are interpreter-private
- * dispatch helpers, not contracts a future Truffle backend would re-implement. A Truffle backend
- * would provide its own SQL-generation entry point (Tf_DbAtNode in truffle.md) sharing only the
- * jOOQ helpers below.
  */
 internal class DbSqlGen private constructor(
     private val interpreter: Rt_InterpreterImpl,

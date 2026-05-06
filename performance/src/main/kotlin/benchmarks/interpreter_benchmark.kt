@@ -2,8 +2,9 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 @file:Suppress("unused")
+@file:JvmName("InterpreterBenchmarkKt")
 
-package net.postchain.rell.benchmarks
+package net.postchain.rell.performance.benchmarks
 
 import kotlinx.benchmark.*
 import org.openjdk.jmh.annotations.Fork
@@ -13,31 +14,15 @@ import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_Value
 
 /**
- * Synthetic microbenchmark for the runtime backends.
- *
- * The `backend` parameter selects between the default tree-walker
- * ([net.postchain.rell.base.runtime.Rt_InterpreterImpl]), the Truffle peer
- * ([net.postchain.rell.base.runtime.truffle.Tf_Backend]), and a hand-written Kotlin baseline
- * computing the same function. JMH expands across all values, so each metric is reported once
- * per backend — letting us track Truffle/interpreter speed ratio and absolute distance from JIT-ed
- * Kotlin over time.
- *
- * Use:
- *   `./gradlew :benchmarks:mainBenchmark` (all backends)
- *   `./gradlew :benchmarks:mainBenchmark -Pbench.params=backend=truffle` (just Truffle)
- *
- * The benchmark exercises a query that combines a primality test, the Collatz sequence and a
- * recursive Fibonacci — covering arithmetic, control flow, and direct user-function calls,
- * which is what Truffle's partial evaluator should specialise hardest. Real-world ft4-lib
- * workloads live in [Ft4Benchmark]. The Rell source lives in
- * `src/main/resources/synthetic_bench/main.rell`.
+ * Synthetic microbenchmark comparing the tree-walker, Truffle, and a Kotlin baseline on
+ * primality + Collatz + recursive Fibonacci. Rell source in `synthetic_bench/main.rell`.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
 @Warmup(iterations = 10, time = 2, timeUnit = BenchmarkTimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 2, timeUnit = BenchmarkTimeUnit.SECONDS)
-// Force the Graal optimizing compiler in JMH's forked JVM so Graal truffle-runtime engages
+// Force the Graal optimizing compiler in JMH's forked JVM so Graal truffle-runtime engages.
 @Fork(
     jvmArgsPrepend = [
         "-XX:+UnlockExperimentalVMOptions",
@@ -48,20 +33,9 @@ import net.postchain.rell.base.runtime.Rt_Value
 )
 class InterpreterBenchmark : RellBackendBenchmark() {
 
-    /**
-     * Backend selector. Drives both the [net.postchain.rell.base.runtime.Rt_Interpreter] factory swap and JMH's reporting.
-     *
-     *   * `interpreter` - canonical tree-walker.
-     *   * `truffle` - Truffle backend.
-     *   * `kotlin` - hand-written Kotlin equivalent as JIT baseline.
-     */
     @Param("interpreter", "truffle", "kotlin")
     lateinit var backend: String
 
-    /**
-     * Single-value @Param so the report generator pivots this row by `sample` and can attach
-     * a description / source link the same way it does for [Ft4Benchmark].
-     */
     @Param("collatz_primes_fib")
     lateinit var sample: String
 

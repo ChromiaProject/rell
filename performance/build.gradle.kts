@@ -7,12 +7,12 @@ plugins {
     alias(libs.plugins.kotlinx.benchmark)
 }
 
-description = "Microbenchmarks for the Rell toolchain (parsers, etc.)"
+description = "Performance suite: JMH microbenchmarks and end-to-end profiler for the Rell stack"
 
 allOpen.annotation("org.openjdk.jmh.annotations.State")
 
 // GraalVM is only required for actual JMH execution (libgraal/libjvmci). Compilation and the
-// empty `:benchmarks:test` task must work on any JDK 21. The runtime assertion in
+// empty `:performance:test` task must work on any JDK 21. The runtime assertion in
 // InterpreterBenchmark (Truffle.getRuntime() check) is the real guarantee that the JVM has
 // JVMCI/libgraal — toolchain vendor pinning was too brittle (Oracle GraalVM reports vendor
 // "Oracle Corporation", not "GraalVM", so a strict match broke CI on the official image).
@@ -31,19 +31,42 @@ dependencies {
     implementation(libs.kotlinx.html)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.kotlin)
-    implementation(libs.kandy.lets.plot)
+    // CLI entry points for the end-to-end profiler (profile / workload / provision / report).
+    implementation(libs.clikt)
+    // JDBC driver for the PostgreSQL-stat collector (postchain-bom platform applied by the root
+    // build picks the version).
+    implementation(libs.postgresql)
+    // In-process `one.profiler.AsyncProfiler` for the `profile-sample` CLI.
+    implementation(libs.async.profiler)
 }
 
 val prepareSamples by tasks.registering(Copy::class) {
-    from(rootProject.file("rell-toolbox/indexer/src/test/resources/realWorldExamples/deathmatch/rell/src/deathmatch/main.rell")) {
+    description = "Stages real-world Rell sources from rell-toolbox fixtures and the local profiling dapp as " +
+            "ParserBenchmark inputs."
+
+    group = "build"
+
+    from(
+        rootProject.file(
+            "rell-toolbox/indexer/src/test/resources/realWorldExamples/deathmatch/rell/src/deathmatch/main.rell",
+        ),
+    ) {
         rename { "deathmatch.rell" }
     }
-    from(rootProject.file("rell-toolbox/indexer/src/test/resources/realWorldExamples/share-registry-backend-vinnova/rell/src/ecosec/operations_queries_api.rell")) {
+
+    from(
+        rootProject.file(
+            "rell-toolbox/indexer/src/test/resources/" +
+                    "realWorldExamples/share-registry-backend-vinnova/rell/src/ecosec/operations_queries_api.rell",
+        ),
+    ) {
         rename { "operations_queries_api.rell" }
     }
-    from(rootProject.file("profiling/dapp/src/main.rell")) {
+
+    from(layout.projectDirectory.file("dapp/src/main.rell")) {
         rename { "profiling-dapp.rell" }
     }
+
     into(layout.buildDirectory.dir("bench-samples/samples"))
 }
 
@@ -73,54 +96,17 @@ benchmark {
 }
 
 /**
- * Profile the Truffle backend with async-profiler: long-running driver, no JMH framing,
- * collapsed flame graph straight to disk. Uses the same `TruffleTraceRunner` entry point
- * but with `agentpath:libasyncProfiler` so we get one CPU sample on every method-frame.
- *
- * After running, view the flame graph: `open profiling/reports/truffle-bench.html`.
- */
-val profileTruffle by tasks.registering(JavaExec::class) {
-    group = "verification"
-    description = "Run Truffle benchmark under async-profiler (cpu mode, collapsed flamegraph)."
-    classpath = sourceSets["main"].runtimeClasspath
-    mainClass = "net.postchain.rell.benchmarks.TruffleTraceRunnerKt"
-
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-
-    val asprofLib = rootProject.file("profiling/async-profiler/lib/libasyncProfiler.dylib").absolutePath
-    val outDir = rootProject.layout.projectDirectory.dir("profiling/reports").asFile
-    doFirst { outDir.mkdirs() }
-    val htmlOut = "$outDir/truffle-bench.html"
-    val collapsedOut = "$outDir/truffle-bench.collapsed"
-
-    environment("TRACE_REPS", "300")
-
-    jvmArgs = listOf(
-        "-XX:+UnlockExperimentalVMOptions",
-        "-XX:+EnableJVMCI",
-        "-XX:+UseJVMCICompiler",
-        "-Dpolyglot.engine.WarnInterpreterOnly=false",
-        "-Dpolyglot.engine.AllowExperimentalOptions=true",
-        "-XX:+UnlockDiagnosticVMOptions",
-        "-XX:+DebugNonSafepoints",
-        "-agentpath:$asprofLib=start,event=cpu,interval=500000,file=$collapsedOut",
-    )
-}
-
-/**
- * Diagnostic harness: runs [net.postchain.rell.benchmarks.TruffleTraceRunnerKt] under a
- * GraalVM JDK with all the polyglot/Truffle/JVMCI flags needed for partial-evaluation
+ * Diagnostic harness: runs TruffleTraceRunnerKt
+ * under a GraalVM JDK with all the polyglot/Truffle/JVMCI flags needed for partial-evaluation
  * tracing. Output is plain stdout (one line per Truffle compilation event), so we can grep
- * for `[engine] opt done`, `[engine] opt failed`, `[engine] transferToInterpreter`,
+ * for `engine opt done`, `engine opt failed`, `engine transferToInterpreter`,
  * deoptimisation reasons, etc., without JMH's per-iteration framing in the way.
  */
 val traceTruffle by tasks.registering(JavaExec::class) {
-    group = "verification"
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
     description = "Run Truffle benchmark with -Dpolyglot.engine.TraceCompilation=true and friends."
     classpath = sourceSets["main"].runtimeClasspath
-    mainClass = "net.postchain.rell.benchmarks.TruffleTraceRunnerKt"
+    mainClass = "net.postchain.rell.performance.benchmarks.TruffleTraceRunnerKt"
 
     javaLauncher = javaToolchains.launcherFor {
         languageVersion = JavaLanguageVersion.of(21)
@@ -128,13 +114,11 @@ val traceTruffle by tasks.registering(JavaExec::class) {
 
     // - UnlockExperimentalVMOptions: needed before flipping JVMCI flags.
     // - EnableJVMCI / UseJVMCICompiler: turn on Graal as the JIT (replaces C2). Required
-    //   for Truffle's PE pipeline to engage; with stock C2, Truffle stays in the
-    //   interpreter shape we keep guarding against.
+    //   for Truffle's PE pipeline to engage.
     // - TraceCompilation / TraceCompilationDetails: prints one line per call-target
     //   compile/deopt with reason + node count; this is what we actually want to read.
     // - CompilationStatistics on shutdown gives a histogram of node counts and PE costs.
-    // - TraceTransferToInterpreter: each `transferToInterpreterAndInvalidate()` is logged
-    //   with stack trace; lets us see which nodes are forcing deopts at runtime.
+    // - TraceTransferToInterpreter: each `transferToInterpreterAndInvalidate()` is logged with stack trace;.
     jvmArgs = listOf(
         "-XX:+UnlockExperimentalVMOptions",
         "-XX:+EnableJVMCI",
@@ -161,22 +145,22 @@ val smokeFt4 by tasks.registering(JavaExec::class) {
     group = "verification"
     description = "Run each Ft4Benchmark workload once on the interpreter backend."
     classpath = sourceSets["main"].runtimeClasspath
-    mainClass = "net.postchain.rell.benchmarks.Ft4BenchmarkKt"
+    mainClass = "net.postchain.rell.performance.benchmarks.Ft4BenchmarkKt"
 }
 
-/** Same as `smokeFt4`, but for the mna-blockchain workloads in [MnaBenchmark]. */
+/** Same as `smokeFt4`, but for the mna-blockchain workloads in MnaBenchmark. */
 val smokeMna by tasks.registering(JavaExec::class) {
     group = "verification"
     description = "Run each MnaBenchmark workload once on the interpreter backend."
     classpath = sourceSets["main"].runtimeClasspath
-    mainClass = "net.postchain.rell.benchmarks.MnaBenchmarkKt"
+    mainClass = "net.postchain.rell.performance.benchmarks.MnaBenchmarkKt"
 }
 
 val benchmarkHtmlReport by tasks.registering(JavaExec::class) {
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
     description = "Render the latest kotlinx-benchmark JSON result as HTML."
     classpath = sourceSets["main"].runtimeClasspath
-    mainClass = "net.postchain.rell.benchmarks.report.ReportGeneratorKt"
+    mainClass = "net.postchain.rell.performance.report.BenchmarkReportKt"
     val resultsDir = layout.buildDirectory.dir("reports/benchmarks/main").get().asFile
     val outputFile = layout.buildDirectory.file("reports/benchmarks/html/report.html").get().asFile
     inputs.dir(resultsDir).withPropertyName("benchmarkJson").optional(true)
@@ -188,7 +172,7 @@ val benchmarkHtmlReport by tasks.registering(JavaExec::class) {
             .sortedByDescending { it.lastModified() }
 
         val input = checkNotNull(jsons.firstOrNull()?.absolutePath) {
-            "No kotlinx-benchmark JSON found under $resultsDir; run :benchmarks:mainBenchmark first."
+            "No kotlinx-benchmark JSON found under $resultsDir; run :performance:mainBenchmark first."
         }
 
         listOf("--input", input, "--output", outputFile.absolutePath)
@@ -202,4 +186,56 @@ afterEvaluate {
             languageVersion = JavaLanguageVersion.of(21)
         }
     }
+}
+
+// ─── End-to-end profiler tasks (Kotlin port of the legacy `profiling/` Python suite) ────
+//
+// `profile`        — orchestrate build / node / async-profiler / workload / HTML report
+// `workload`       — generate transactions and queries against a running node
+// `provisionAsprof`— download async-profiler for the current OS/arch
+//
+// Each task uses the same JavaExec wiring as the smoke tasks above so the user can
+// pass `--args` from the command line. The CLI parsing lives in the Clikt commands.
+
+val provisionAsprof by tasks.registering(JavaExec::class) {
+    group = "performance"
+    description = "Download async-profiler into performance/async-profiler for the current OS."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass = "net.postchain.rell.performance.profiler.ProvisionKt"
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+}
+
+val workload by tasks.registering(JavaExec::class) {
+    group = "performance"
+    description = "Run the test-workload generator against a Chromia node (see --help)."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass = "net.postchain.rell.performance.profiler.WorkloadKt"
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+}
+
+val profileSample by tasks.registering(JavaExec::class) {
+    group = "performance"
+    description = "Profile a single sample query under async-profiler in-process; emits flat/tree/collapsed text."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass = "net.postchain.rell.performance.profiler.ProfileSampleKt"
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+    // -Djdk.attach.allowAttachSelf=true is unnecessary because AsyncProfiler.getInstance()
+    // uses System.load on the bundled native lib (no Attach-API self-attach involved).
+}
+
+val profile by tasks.registering(JavaExec::class) {
+    group = "performance"
+    description = "End-to-end profiler: build chr, start node, attach async-profiler, run workload, render report."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass = "net.postchain.rell.performance.profiler.ProfileKt"
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+}
+
+val regenerateProfileReport by tasks.registering(JavaExec::class) {
+    group = "performance"
+    description = "Regenerate the profile HTML from existing performance/reports/ run data."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass = "net.postchain.rell.performance.report.Profile_reportKt"
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+    args(layout.projectDirectory.dir("reports").asFile.absolutePath)
 }

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rell performance reports</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 14px/1.5 -apple-system, system-ui, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
+  h1 { margin: 0 0 .25rem; }
+  .sub { color: #888; margin-bottom: 1.5rem; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: .5rem .75rem; border-bottom: 1px solid #8884; }
+  th { font-weight: 600; }
+  td.branch { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  td.empty { color: #888; }
+  td.when { color: #888; white-space: nowrap; }
+  .err { color: #c33; padding: 1rem; border: 1px solid #c33; border-radius: 4px; }
+  a { color: #0969da; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  @media (prefers-color-scheme: dark) { a { color: #58a6ff; } }
+</style>
+</head>
+<body>
+<h1>Rell performance reports</h1>
+<p class="sub">
+  Manual runs of <code>:performance:mainBenchmark</code> and <code>:performance:profile</code>
+  publish HTML reports to per-branch GitLab Pages deployments. This page lists every
+  currently-available deployment, queried live from the GitLab API.
+</p>
+
+<div id="status">Loading…</div>
+<table id="reports" hidden>
+  <thead>
+    <tr><th>Branch</th><th>Benchmarks</th><th>Profile</th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+(async () => {
+  // These two placeholders are substituted by the `pages:index` CI job before publish.
+  const API = "@CI_API_V4_URL@";
+  const PROJECT_ID = "@CI_PROJECT_ID@";
+
+  const status = document.getElementById("status");
+  const table = document.getElementById("reports");
+  const tbody = table.querySelector("tbody");
+
+  // Environments API: public projects allow anonymous reads. We page until exhausted.
+  // `name` shape is set in .gitlab-ci.yml: "benchmarks/<branch-slug>" / "profile/<branch-slug>".
+  async function fetchEnvs() {
+    const out = [];
+    for (let page = 1; page < 20; page++) {
+      const r = await fetch(`${API}/projects/${PROJECT_ID}/environments?states=available&per_page=100&page=${page}`);
+      if (!r.ok) throw new Error(`GitLab API ${r.status}`);
+      const batch = await r.json();
+      out.push(...batch);
+      if (batch.length < 100) break;
+    }
+    return out;
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d)) return "";
+    return d.toISOString().slice(0, 10);
+  }
+
+  try {
+    const envs = await fetchEnvs();
+    const byBranch = new Map();  // slug → { benchmarks?, profile? }
+
+    for (const env of envs) {
+      const m = /^(benchmarks|profile)\/(.+)$/.exec(env.name || "");
+      if (!m) continue;
+      const [, kind, slug] = m;
+      const url = env.external_url;
+      if (!url) continue;
+      const when = fmtDate(env.updated_at || env.created_at);
+      if (!byBranch.has(slug)) byBranch.set(slug, {});
+      byBranch.get(slug)[kind] = { url, when };
+    }
+
+    if (byBranch.size === 0) {
+      status.textContent = "No reports published yet — trigger the manual jobs in a pipeline.";
+      return;
+    }
+
+    // dev/master first, then other branches alphabetically.
+    const slugs = [...byBranch.keys()].sort((a, b) => {
+      const w = s => (s === "dev" ? 0 : s === "master" ? 1 : 2);
+      return w(a) - w(b) || a.localeCompare(b);
+    });
+
+    for (const slug of slugs) {
+      const row = byBranch.get(slug);
+      const tr = document.createElement("tr");
+      const branchCell = document.createElement("td");
+      branchCell.className = "branch";
+      branchCell.textContent = slug;
+      tr.appendChild(branchCell);
+
+      for (const kind of ["benchmarks", "profile"]) {
+        const cell = document.createElement("td");
+        const r = row[kind];
+        if (r) {
+          const a = document.createElement("a");
+          a.href = r.url;
+          a.textContent = "report";
+          cell.appendChild(a);
+          if (r.when) {
+            const span = document.createElement("span");
+            span.className = "when";
+            span.textContent = ` · ${r.when}`;
+            cell.appendChild(span);
+          }
+        } else {
+          cell.className = "empty";
+          cell.textContent = "—";
+        }
+        tr.appendChild(cell);
+      }
+      tbody.appendChild(tr);
+    }
+
+    status.hidden = true;
+    table.hidden = false;
+  } catch (e) {
+    status.className = "err";
+    status.textContent = `Failed to load reports: ${e.message}`;
+  }
+})();
+</script>
+</body>
+</html>

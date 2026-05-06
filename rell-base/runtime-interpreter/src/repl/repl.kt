@@ -55,10 +55,8 @@ internal class ReplCode(
         val rtFrame = Rt_CallFrame(rtDefCtx, rrReplCode.frame, state.frameState)
         // The REPL is intrinsically a tree-walking concept (it threads `Rt_CallFrameState` between
         // commands and re-uses statement-level dispatch). Whichever runtime backend is active,
-        // we drive the statement-list executor on `Rt_InterpreterImpl` directly. For the Truffle
-        // backend, this means delegating through its wrapped impl — there's nothing to specialise
-        // for a one-shot REPL line.
-        val impl: Rt_InterpreterImpl = exeCtx.appCtx.interpreter.unwrapInterpreterImpl() as Rt_InterpreterImpl
+        // we drive the statement-list executor on `Rt_InterpreterImpl`.
+        val impl = exeCtx.appCtx.interpreter.unwrapInterpreterImpl() as Rt_InterpreterImpl
         impl.executeStatements(rrReplCode.stmts, rtFrame)
         return ReplCodeState(
             frameProto = state.frameProto,

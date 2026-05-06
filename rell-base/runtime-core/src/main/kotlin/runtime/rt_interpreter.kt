@@ -75,10 +75,6 @@ interface Rt_Interpreter {
      * Returns the plainest tree-walker interpreter underlying this instance, for code paths that
      * intrinsically require the tree-walker (REPL line execution, low-level frame state
      * inspection, etc.).
-     *
-     * The REPL evaluates one input line at a time while threading `Rt_CallFrameState` between
-     * calls — there's no Truffle benefit possible at that granularity, so backends that wrap a
-     * tree-walker (Truffle) simply unwrap and delegate.
      */
     fun unwrapInterpreterImpl(): Any
 }

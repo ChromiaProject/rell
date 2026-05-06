@@ -60,7 +60,7 @@ tasks.generateGitProperties {
 }
 
 val generateDependencyList by tasks.registering {
-    group = "build"
+    group = LifecycleBasePlugin.BUILD_GROUP
     description = "Generates dependency list file"
 
     val outputDir = layout.buildDirectory.dir("generated/resources/dependencies")

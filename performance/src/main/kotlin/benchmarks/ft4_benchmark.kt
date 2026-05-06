@@ -2,8 +2,9 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 @file:Suppress("unused")
+@file:JvmName("Ft4BenchmarkKt")
 
-package net.postchain.rell.benchmarks
+package net.postchain.rell.performance.benchmarks
 
 import kotlinx.benchmark.*
 import org.openjdk.jmh.annotations.Fork
@@ -13,22 +14,8 @@ import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_Value
 
 /**
- * Real-world microbenchmark driven by code lifted out of
- * [chromaway/ft4-lib](https://gitlab.com/chromaway/ft4-lib) — the canonical Rell library
- * that most Chromia dapps depend on. Three pure-compute, DB-free workloads:
- *
- *   * `gtv_text` — `convert_gtv_to_text`, recursive pretty-printer over a nested gtv.
- *     Stresses string allocation, recursion and dispatch over the gtv tag predicates.
- *   * `rule_serde` — round-trip a list of `rule_expression`s through `serialize_rules`
- *     and `map_rule_expressions_from_gtv`. Stresses gtv build/parse and `from_gtv`/
- *     `to_gtv` conversions.
- *   * `rule_eval` — evaluate a parsed rule set against a `map<text, gtv>` of variables
- *     via `is_rule_violated`. Stresses enum dispatch, `when` chains and map lookups.
- *
- * The Rell source for all three lives in `src/main/resources/ft4_bench/main.rell`. Only the
- * tree-walker and Truffle backends are compared — there is no clean single-language Kotlin
- * equivalent for these workloads (gtv-typed values, dynamic dispatch). For a Kotlin baseline
- * see [InterpreterBenchmark].
+ * ft4-lib-derived microbenchmarks (`gtv_text`, `rule_serde`, `rule_eval`) on the tree-walker
+ * vs. Truffle. Pure compute, DB-free; Rell source in `ft4_bench/main.rell`.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
@@ -48,10 +35,6 @@ class Ft4Benchmark : RellBackendBenchmark() {
     @Param("interpreter", "truffle")
     lateinit var backend: String
 
-    /**
-     * Picks one of the three ft4-derived workloads exposed as queries by `ft4_bench/main.rell`.
-     * Named `sample` so the existing report generator pivots rows by workload without changes.
-     */
     @Param("gtv_text", "rule_serde", "rule_eval")
     lateinit var sample: String
 
@@ -69,11 +52,7 @@ class Ft4Benchmark : RellBackendBenchmark() {
     @Benchmark
     fun runQuery(blackhole: Blackhole) = blackhole.consume(interpreter.callQuery(query, exeCtx, args))
 
-    /**
-     * Per-workload tuning. The `reps` argument is sized so each invocation lands in the
-     * single-millisecond range on the tree-walker — small enough that JMH's 2-second
-     * iterations get plenty of samples, large enough to amortise per-call dispatch.
-     */
+    // `reps` sized so each invocation lands in the single-millisecond range on the tree-walker.
     private fun workloadConfig(sample: String): Pair<String, Long> = when (sample) {
         "gtv_text" -> "bench_gtv_text" to 200L
         "rule_serde" -> "bench_rule_serde" to 500L

@@ -3,7 +3,7 @@
  */
 @file:Suppress("unused")
 
-package net.postchain.rell.benchmarks
+package net.postchain.rell.performance.benchmarks
 
 import kotlinx.benchmark.Benchmark
 import kotlinx.benchmark.BenchmarkMode
@@ -53,25 +53,13 @@ class ParserBenchmark {
         antlrParser = AntlrRellParser()
     }
 
-    /** better-parse path used by the Rell compiler; produces the AST (`S_RellFile`). */
     @Benchmark
     fun betterParse(blackhole: Blackhole) = blackhole.consume(C_Parser.parse(sourcePath, idePath, source))
 
-    /**
-     * ANTLR path used by the toolbox (`AntlrRellParser`): LL prediction, full parse tree,
-     * default error recovery. This is what production ships today. Not apples-to-apples
-     * with [betterParse] — different parser technology — but kept as the headline number.
-     */
     @Benchmark
     fun antlr(blackhole: Blackhole) = blackhole.consume(antlrParser.parse(source))
 
-    /**
-     * Same `Rell.g4` grammar as [antlr], reconfigured for the fast path: SLL
-     * prediction with `BailErrorStrategy` and `buildParseTree = false`. Measures the
-     * SLL win on inputs that don't hit a prediction conflict — i.e. all valid Rell
-     * programs in the corpus. The compiler uses this configuration on its hot path
-     * and falls back to LL only when SLL bails.
-     */
+    // SLL + BailErrorStrategy + buildParseTree=false — the compiler's hot-path config.
     @Benchmark
     fun antlrSLL(blackhole: Blackhole) {
         val parser = antlrParser.parserFor(source)

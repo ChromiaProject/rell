@@ -1,25 +1,24 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
-package net.postchain.rell.benchmarks.report
+@file:JvmName("BenchmarkReportKt")
+
+package net.postchain.rell.performance.report
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
 import org.intellij.lang.annotations.Language
-import org.jetbrains.kotlinx.kandy.dsl.categorical
-import org.jetbrains.kotlinx.kandy.dsl.plot
-import org.jetbrains.kotlinx.kandy.letsplot.export.toSVG
-import org.jetbrains.kotlinx.kandy.letsplot.feature.layout
-import org.jetbrains.kotlinx.kandy.letsplot.layers.bars
-import org.jetbrains.kotlinx.kandy.letsplot.scales.guide.LegendType
-import org.jetbrains.kotlinx.kandy.util.color.Color
-import java.io.File
+import java.nio.file.Path
 import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.*
+import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.createDirectories
+import kotlin.io.path.inputStream
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.name
+import kotlin.io.path.writeText
 import kotlin.system.exitProcess
 
 private data class JmhMetric(
@@ -46,8 +45,6 @@ private data class JmhResult(
     val jmhVersion: String? = null,
 )
 
-private const val ACCENT = "#C1440E"
-
 private data class SampleSource(val label: String, val url: String)
 
 private data class SampleInfo(
@@ -59,11 +56,7 @@ private data class SampleInfo(
 private const val FT4_BLOB = "https://gitlab.com/chromaway/ft4-lib/-/blob/development/rell/src/lib/ft4"
 private const val MNA_BLOB = "https://bitbucket.org/chromawallet/mna-blockchain/src/development/rell/src"
 
-/**
- * Per-sample editorial copy: a human-readable title, a short description of what the workload
- * actually computes (so a reader can tell whether a slow result matters), and pointers to the
- * upstream source. The keys must match the JMH `sample` parameter values reported in the JSON.
- */
+/** Keys must match the JMH `sample` parameter values in the JSON. */
 private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
     "collatz_primes_fib" to SampleInfo(
         title = "Collatz · primality · Fibonacci",
@@ -137,20 +130,17 @@ private fun sampleInfo(sample: String): SampleInfo? = SAMPLE_INFO[sample]
 private fun sampleTitle(sample: String): String = sampleInfo(sample)?.title ?: sample
 
 private val METHOD_COLOR = mapOf(
-    "antlr" to ACCENT,
+    "antlr" to ACCENT_HEX,
     "antlrSLL" to "#1F6B4A",
-    "betterParse" to "#0F0F10",
-    "runQuery" to ACCENT,
-    "interpreter" to ACCENT,
+    "betterParse" to INK_HEX,
+    "runQuery" to ACCENT_HEX,
+    "interpreter" to ACCENT_HEX,
     "truffle" to "#2E5E8A",
-    // InterpreterBenchmark variant labels — `runQuery[<backend>]` after the report's
-    // `${method}[${variant}]` collapse, plus the bare backend names emitted when the
-    // benchmark class only has one method.
-    "runQuery[interpreter]" to ACCENT,
+    "runQuery[interpreter]" to ACCENT_HEX,
     "runQuery[truffle]" to "#2E5E8A",
 )
 
-private val PALETTE = listOf(ACCENT, "#2E5E8A", "#1F6B4A", "#8A5E2E", "#5E2E8A", "#B07A1E")
+private val PALETTE = listOf(ACCENT_HEX, "#2E5E8A", "#1F6B4A", "#8A5E2E", "#5E2E8A", "#B07A1E")
 
 private const val DEFAULT_COLOR = "#6B6D73"
 
@@ -159,16 +149,16 @@ private fun colorFor(method: String, fallbackIndex: Int): String =
 
 fun main(args: Array<String>) {
     val parsed = parseArgs(args)
-    val input = File(parsed.input).also {
-        require(it.isFile) { "Input JSON does not exist: $it" }
+    val input = Path(parsed.input).also {
+        require(it.isRegularFile()) { "Input JSON does not exist: $it" }
     }
-    val output = File(parsed.output)
-    output.parentFile?.mkdirs()
+    val output = Path(parsed.output)
+    output.parent?.createDirectories()
 
     val mapper = jacksonObjectMapper()
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     val results: List<JmhResult> = mapper.readValue(
-        input,
+        input.inputStream(),
         mapper.typeFactory.constructCollectionType(List::class.java, JmhResult::class.java),
     )
     require(results.isNotEmpty()) { "No benchmark results found in $input" }
@@ -180,7 +170,7 @@ fun main(args: Array<String>) {
         }
     }
     output.writeText(html)
-    println("Wrote HTML report: ${output.absolutePath}")
+    println("Wrote HTML report: ${output.absolutePathString()}")
 }
 
 private data class Args(val input: String, val output: String)
@@ -208,7 +198,7 @@ private fun parseArgs(args: Array<String>): Args {
     )
 }
 
-private fun HTML.renderReport(results: List<JmhResult>, source: File, generatedAt: Instant) {
+private fun HTML.renderReport(results: List<JmhResult>, source: Path, generatedAt: Instant) {
     val head = results.first()
     val byClass: Map<String, List<JmhResult>> = results.groupBy { it.benchmarkClass() }
         .toSortedMap()
@@ -219,37 +209,35 @@ private fun HTML.renderReport(results: List<JmhResult>, source: File, generatedA
     head {
         meta(charset = "utf-8")
         meta(name = "viewport", content = "width=device-width, initial-scale=1")
-        title("Rell Benchmarks — ${generatedAt.toHuman()}")
-        link(rel = "preconnect", href = "https://fonts.googleapis.com")
-        link(rel = "preconnect", href = "https://fonts.gstatic.com") { attributes["crossorigin"] = "" }
-        link(
-            rel = "stylesheet",
-            href = "https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap",
-        )
-        style { unsafe { +CSS } }
+        titleWithTimestamp("Rell Benchmarks", generatedAt)
+        linkWebFonts()
+        style { unsafe { +(BASE_CSS + EXTRA_CSS) } }
     }
     body {
-        renderDocHead()
+        renderDocHead("Rell Benchmarks")
         main {
             renderEnvironment(head)
             renderMetrics(results, totalSamples, totalMethods, byClass.size)
             byClass.forEach { (cls, group) -> renderGroup(cls, group) }
             renderMethodology(head)
         }
-        renderColophon(source, generatedAt)
+        renderColophon(source.name, generatedAt)
     }
 }
 
 private fun FlowContent.renderGroup(benchmarkClass: String, results: List<JmhResult>) {
     val distinctMethods = results.map { it.method() }.distinct()
+
     val variantOf: (JmhResult) -> String = { r ->
         val extra = r.params.filterKeys { it != "sample" }.toSortedMap()
+
         when {
             extra.isEmpty() -> r.method()
             distinctMethods.size == 1 -> extra.values.joinToString("/")
             else -> "${r.method()}[${extra.values.joinToString("/")}]"
         }
     }
+
     val samples = results.map { it.sample() }.distinct()
     val variants = results.map(variantOf).distinct().sorted()
     val pivot: Map<String, Map<String, JmhResult>> = samples.associateWith { sample ->
@@ -260,52 +248,20 @@ private fun FlowContent.renderGroup(benchmarkClass: String, results: List<JmhRes
     renderResults(benchmarkClass, pivot, variants, results)
 }
 
-private fun FlowContent.renderDocHead() = header(classes = "doc-head") {
-    div(classes = "doc-head-inner") { h1(classes = "doc-title") { +"Rell Benchmarks" } }
-}
-
-private inline fun FlowContent.renderSection(
-    title: String,
-    strap: String = "",
-    crossinline body: FlowContent.() -> Unit,
-) {
-    section(classes = "section") {
-        div(classes = "section-head") {
-            div(classes = "section-title") { +title }
-            if (strap.isNotEmpty()) div(classes = "section-strap") { +strap }
-        }
-        div(classes = "section-body") { body() }
-    }
-}
-
 private fun FlowContent.renderEnvironment(head: JmhResult) = renderSection("environment") {
     div(classes = "sysinfo-grid") {
-        div(classes = "sysinfo-block") {
-            h3 { +"JVM" }
-            dl {
-                dlRow("Name", head.vmName ?: "—")
-                dlRow("Version", head.vmVersion ?: "—")
-                dlRow("JDK", head.jdkVersion ?: "—")
-                dlRow("Path", head.jvm ?: "—", mono = true)
-            }
+        sysinfoBlock("JVM") {
+            dlRow("Name", head.vmName ?: "—")
+            dlRow("Version", head.vmVersion ?: "—")
+            dlRow("JDK", head.jdkVersion ?: "—")
+            dlRow("Path", head.jvm ?: "—", mono = true)
         }
-        div(classes = "sysinfo-block") {
-            h3 { +"Harness" }
-            dl {
-                dlRow("JMH", head.jmhVersion ?: "—")
-                dlRow("Mode", head.mode.ifBlank { "—" })
-                dlRow("Threads / forks", "${head.threads} / ${head.forks}")
-                dlRow("Unit", head.primaryMetric.scoreUnit.ifBlank { "—" })
-            }
+        sysinfoBlock("Harness") {
+            dlRow("JMH", head.jmhVersion ?: "—")
+            dlRow("Mode", head.mode.ifBlank { "—" })
+            dlRow("Threads / forks", "${head.threads} / ${head.forks}")
+            dlRow("Unit", head.primaryMetric.scoreUnit.ifBlank { "—" })
         }
-    }
-}
-
-private fun DL.dlRow(key: String, value: String, mono: Boolean = false) {
-    dt { +key }
-    dd {
-        if (mono) attributes["class"] = "mono"
-        +value
     }
 }
 
@@ -323,17 +279,6 @@ private fun FlowContent.renderMetrics(
     }
 }
 
-private fun FlowContent.metric(label: String, value: String, unit: String, sub: String) {
-    div(classes = "metric") {
-        div(classes = "metric-label") { +label }
-        div(classes = "metric-value") {
-            +value
-            if (unit.isNotEmpty()) span(classes = "metric-unit") { +" $unit" }
-        }
-        div(classes = "metric-sub") { +sub }
-    }
-}
-
 private fun FlowContent.renderResults(
     benchmarkClass: String,
     pivot: Map<String, Map<String, JmhResult>>,
@@ -344,13 +289,17 @@ private fun FlowContent.renderResults(
         .map { it.primaryMetric.scoreUnit }
         .firstOrNull { it.isNotBlank() }
         .orEmpty()
+
     val head = allResults.first()
+
     val timing = "warmup ${head.warmupIterations}× ${head.warmupTime ?: "—"} · " +
         "measurement ${head.measurementIterations}× ${head.measurementTime ?: "—"}"
+
     val strap = buildList {
         if (unit.isNotEmpty()) add("$unit · lower is better")
         add(timing)
     }.joinToString("  ·  ")
+
     renderSection(benchmarkClass.lowercase(), strap) {
         div(classes = "bars-grid") {
             pivot.forEach { (sample, byMethod) ->
@@ -467,171 +416,105 @@ private fun FlowContent.renderMethodology(head: JmhResult) = renderSection("meth
     }
 }
 
-private fun FlowContent.renderColophon(source: File, generatedAt: Instant) = footer(classes = "colophon") {
-    div(classes = "colophon-inner") {
-        span { a(href = "https://gitlab.com/chromaway/rell") { +"chromaway/rell" } }
-        span(classes = "colophon-spacer") {}
-        span(classes = "colophon-meta") { +source.name }
-        span(classes = "sep") { +"·" }
-        span(classes = "colophon-meta") { +generatedAt.toHuman() }
-    }
-}
-
 private fun renderSamplePanel(
     byMethod: Map<String, JmhResult>,
     methods: List<String>,
 ): String {
     val present = methods.filter { byMethod[it] != null }
     if (present.isEmpty()) return ""
-    val methodCol = present.toMutableList()
-    val scores = present.map { byMethod.getValue(it).primaryMetric.score }.toMutableList()
-
-    return plot {
-        bars {
-            x(methodCol) { axis.name = "" }
-            y(scores) { axis.name = "" }
-            fillColor(methodCol) {
-                scale = categorical(
-                    *methods.mapIndexed { i, m -> m to Color.hex(colorFor(m, i)) }.toTypedArray(),
-                )
-                legend.type = LegendType.None
-            }
-        }
-        layout {
-            size = 260 to 160
-        }
-    }.toSVG()
+    val scores = present.map { byMethod.getValue(it).primaryMetric.score }
+    val errors = present.map { byMethod.getValue(it).primaryMetric.scoreError }
+    return barsSvgPerMethod(present, scores, errors, methods, width = 280, height = 200)
 }
+
+private fun barsSvgPerMethod(
+    labels: List<String>,
+    values: List<Double>,
+    errors: List<Double>,
+    allMethods: List<String>,
+    width: Int,
+    height: Int,
+): String {
+    if (labels.isEmpty()) return ""
+    val padL = 36; val padR = 12; val padT = 14; val padB = 28
+    val plotW = width - padL - padR
+    val plotH = height - padT - padB
+    val maxV = values.indices.maxOf { values[it] + (errors.getOrNull(it) ?: 0.0).coerceAtLeast(0.0) }
+        .coerceAtLeast(1e-9)
+    val niceMax = niceCeilingBench(maxV)
+    val barGap = 0.30
+    val nBars = labels.size
+    val slot = plotW.toDouble() / nBars
+    val barW = slot * (1 - barGap)
+
+    val sb = StringBuilder()
+    sb.append("""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 $width $height" """)
+    sb.append("""width="$width" height="$height" role="img">""")
+    val ticks = 4
+    for (i in 0..ticks) {
+        val v = niceMax * i / ticks
+        val y = padT + plotH - plotH * i / ticks
+        sb.append("""<line class="grid" x1="$padL" y1="$y" x2="${padL + plotW}" y2="$y"/>""")
+        sb.append("""<text class="tick" x="${padL - 5}" y="${y + 3}" text-anchor="end">${formatTickBench(v)}</text>""")
+    }
+    sb.append("""<line class="baseline" x1="$padL" y1="${padT + plotH}" x2="${padL + plotW}" y2="${padT + plotH}"/>""")
+    for (i in labels.indices) {
+        val v = values[i]
+        val err = errors.getOrNull(i)?.takeIf { it.isFinite() && it > 0 } ?: 0.0
+        val h = plotH * (v / niceMax)
+        val x = padL + slot * i + (slot - barW) / 2
+        val y = padT + plotH - h
+        val color = colorFor(labels[i], allMethods.indexOf(labels[i]).coerceAtLeast(0))
+        sb.append("""<rect x="${"%.2f".formatRoot(x)}" y="${"%.2f".formatRoot(y)}" """)
+        sb.append("""width="${"%.2f".formatRoot(barW)}" height="${"%.2f".formatRoot(h)}" fill="$color"/>""")
+        if (err > 0) {
+            val cxBar = x + barW / 2
+            val yHi = padT + plotH - plotH * ((v + err) / niceMax)
+            val yLo = padT + plotH - plotH * ((v - err).coerceAtLeast(0.0) / niceMax)
+            val cap = (barW * 0.3).coerceAtMost(8.0)
+            sb.append("""<line class="err-line" x1="${"%.2f".formatRoot(cxBar)}" y1="${"%.2f".formatRoot(yHi)}" """)
+            sb.append("""x2="${"%.2f".formatRoot(cxBar)}" y2="${"%.2f".formatRoot(yLo)}"/>""")
+            sb.append("""<line class="err-line" x1="${"%.2f".formatRoot(cxBar - cap)}" y1="${"%.2f".formatRoot(yHi)}" """)
+            sb.append("""x2="${"%.2f".formatRoot(cxBar + cap)}" y2="${"%.2f".formatRoot(yHi)}"/>""")
+            sb.append("""<line class="err-line" x1="${"%.2f".formatRoot(cxBar - cap)}" y1="${"%.2f".formatRoot(yLo)}" """)
+            sb.append("""x2="${"%.2f".formatRoot(cxBar + cap)}" y2="${"%.2f".formatRoot(yLo)}"/>""")
+        }
+        val cx = padL + slot * i + slot / 2
+        sb.append("""<text class="bar-axis" x="${"%.2f".formatRoot(cx)}" y="${padT + plotH + 16}" text-anchor="middle">${labels[i].xmlEscapeBench()}</text>""")
+    }
+    sb.append("</svg>")
+    return sb.toString()
+}
+
+private fun niceCeilingBench(v: Double): Double {
+    if (v <= 0) return 1.0
+    val mag = Math.pow(10.0, Math.floor(Math.log10(v)))
+    val n = v / mag
+    val nice = when {
+        n <= 1.0 -> 1.0
+        n <= 2.0 -> 2.0
+        n <= 2.5 -> 2.5
+        n <= 5.0 -> 5.0
+        else -> 10.0
+    }
+    return nice * mag
+}
+
+private fun formatTickBench(v: Double): String =
+    if (v >= 100) "%.0f".formatRoot(v)
+    else if (v >= 10) "%.1f".formatRoot(v)
+    else "%.2f".formatRoot(v)
+
+private fun String.xmlEscapeBench(): String =
+    replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 private fun JmhResult.benchmarkClass(): String = benchmark.substringBeforeLast('.').substringAfterLast('.')
 private fun JmhResult.method(): String = benchmark.substringAfterLast('.')
 private fun JmhResult.sample(): String = params["sample"] ?: "—"
 
-private fun Instant.toHuman(): String =
-    atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd · HH:mm z"))
-
-private fun String.formatRoot(vararg args: Any?): String = format(Locale.ROOT, *args)
-
 @Suppress("CssUnresolvedCustomProperty", "CssUnusedSymbol", "CssNoGenericFontName")
 @Language("CSS")
-private val CSS = """
-:root {
-  --ink:        #0F0F10;
-  --ink-soft:   #2B2B2F;
-  --muted:      #6B6D73;
-  --faint:      #A8A9AE;
-  --bg:         #FAFAF7;
-  --bg-alt:     #F2F2EE;
-  --surface:    #FFFFFF;
-  --rule:       rgba(15,15,16,0.12);
-  --rule-hair:  rgba(15,15,16,0.06);
-  --accent:     #C1440E;
-  --accent-bg:  rgba(193,68,14,0.06);
-  --sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
-  --mono: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', Consolas, ui-monospace, monospace;
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 15px; scroll-behavior: smooth; }
-body {
-  font-family: var(--sans);
-  color: var(--ink);
-  background: var(--bg);
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: "ss01", "cv01";
-}
-a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color .15s ease; }
-a:hover { border-bottom-color: var(--accent); }
-
-.doc-head { background: var(--surface); border-bottom: 2px solid var(--ink); }
-.doc-head-inner { max-width: 1180px; margin: 0 auto; padding: 1.5rem 2rem 1.2rem; }
-.doc-title {
-  font-family: var(--mono); font-weight: 600;
-  font-size: clamp(1.7rem, 3.4vw, 2.4rem);
-  letter-spacing: -0.03em; color: var(--ink); line-height: 1.05; margin-bottom: .7rem;
-}
-.doc-meta { display: flex; flex-wrap: wrap; gap: .35rem 1.1rem; font-family: var(--mono); font-size: .74rem; color: var(--ink-soft); }
-.doc-meta-pair { display: inline-flex; gap: .4rem; }
-.doc-meta-pair .k {
-  color: var(--muted); text-transform: uppercase; letter-spacing: .12em;
-  font-size: .68rem; font-weight: 600; line-height: 1.6;
-}
-.doc-meta-pair .v { color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
-
-main { max-width: 1180px; margin: 0 auto; padding: 2rem 2rem 2.5rem; }
-
-.section { margin-bottom: 2.4rem; position: relative; }
-.section-head {
-  padding: 1rem 0 .8rem; margin-bottom: 1.1rem;
-  border-top: 1px solid var(--ink);
-}
-.section-title {
-  font-family: var(--mono); font-weight: 600;
-  font-size: 1.05rem; letter-spacing: -0.01em; line-height: 1.25;
-  color: var(--ink); text-transform: lowercase;
-  white-space: pre-wrap;
-}
-.section-title::before { content: '# '; color: var(--faint); font-weight: 400; }
-.section-strap { margin-top: .25rem; font-family: var(--sans); font-size: .82rem; color: var(--muted); max-width: 64ch; line-height: 1.5; }
-.section-body h3 {
-  font-family: var(--mono); font-size: .68rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .18em; color: var(--muted);
-  margin-bottom: .7rem; padding-bottom: .35rem;
-  border-bottom: 1px solid var(--rule-hair);
-}
-.prose { font-size: .92rem; color: var(--ink-soft); margin-bottom: .8rem; }
-.prose code {
-  font-family: var(--mono); font-size: .82rem;
-  color: var(--ink); background: var(--bg-alt);
-  padding: 1px 5px; border-radius: 2px;
-}
-
-.metrics {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  background: var(--surface); border: 1px solid var(--rule);
-}
-.metric { padding: 1rem 1.2rem; border-left: 1px solid var(--rule-hair); display: flex; flex-direction: column; justify-content: center; min-height: 92px; }
-.metric:first-child { border-left: 0; }
-.metric-label {
-  font-family: var(--mono); font-size: .66rem;
-  text-transform: uppercase; letter-spacing: .18em;
-  color: var(--muted); font-weight: 600; margin-bottom: .35rem;
-}
-.metric-value {
-  font-family: var(--mono); font-size: 1.8rem; font-weight: 600;
-  line-height: 1; letter-spacing: -0.02em;
-  color: var(--ink); font-variant-numeric: tabular-nums;
-}
-.metric-unit { font-family: var(--mono); font-size: .8rem; font-weight: 500; color: var(--muted); margin-left: .1rem; letter-spacing: 0; }
-.metric-sub { margin-top: .3rem; font-size: .72rem; color: var(--muted); font-family: var(--mono); }
-
-.sysinfo-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  background: var(--surface); border: 1px solid var(--rule);
-}
-.sysinfo-block { padding: 1rem 1.2rem; border-left: 1px solid var(--rule-hair); }
-.sysinfo-block:first-child { border-left: 0; }
-.sysinfo-block dl { display: grid; grid-template-columns: max-content 1fr; gap: .3rem .8rem; font-size: .8rem; }
-.sysinfo-block dt { color: var(--muted); font-size: .72rem; font-family: var(--mono); font-weight: 500; letter-spacing: .02em; }
-.sysinfo-block dd { color: var(--ink); font-family: var(--sans); font-size: .82rem; word-break: break-all; }
-.mono { font-family: var(--mono); font-size: .76rem; }
-
-.timing {
-  background: var(--surface); border: 1px solid var(--rule);
-  padding: .9rem 1.2rem; margin-bottom: 1rem;
-}
-.timing h3 {
-  font-family: var(--mono); font-size: .68rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .18em; color: var(--muted);
-  margin-bottom: .55rem; padding-bottom: .3rem;
-  border-bottom: 1px solid var(--rule-hair);
-}
-.timing dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem .8rem; font-size: .8rem; }
-.timing dt { color: var(--muted); font-size: .72rem; font-family: var(--mono); font-weight: 500; letter-spacing: .02em; }
-.timing dd { color: var(--ink); font-family: var(--sans); font-size: .82rem; }
-
+private val EXTRA_CSS = """
 .bars-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -673,46 +556,9 @@ main { max-width: 1180px; margin: 0 auto; padding: 2rem 2rem 2.5rem; }
 .swatch { display: inline-block; width: 10px; height: 10px; background: var(--muted); flex-shrink: 0; }
 .legend-label { letter-spacing: .04em; }
 
-table { border-collapse: collapse; width: 100%; }
-.table-scroll { overflow-x: auto; margin: 0 -.75rem; padding: 0 .75rem; }
-thead th {
-  text-align: left; font-family: var(--mono); font-weight: 600;
-  font-size: .68rem; text-transform: uppercase; letter-spacing: .18em;
-  color: var(--muted); padding: .5rem .75rem;
-  border-bottom: 1px solid var(--ink); background: transparent;
-}
-thead th.num { text-align: right; }
 thead th .unit { color: var(--faint); font-weight: 500; letter-spacing: .04em; }
-td { padding: .55rem .75rem; border-bottom: 1px solid var(--rule-hair); vertical-align: middle; font-size: .85rem; }
-tbody tr:hover { background: rgba(193,68,14,0.04); }
-td.name { font-family: var(--sans); font-weight: 500; }
-td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: .82rem; color: var(--ink); }
 td.num .err { color: var(--muted); font-size: .75rem; }
 td.num.winner { font-weight: 700; color: var(--accent); }
 td.num .ratio { color: var(--accent); font-weight: 600; }
 td.num .ratio-note { color: var(--muted); font-family: var(--mono); font-size: .72rem; letter-spacing: .04em; margin-left: .35rem; text-transform: lowercase; }
-
-.colophon { margin-top: 3rem; border-top: 1px solid var(--rule); background: var(--surface); }
-.colophon-inner {
-  max-width: 1180px; margin: 0 auto; padding: 1.1rem 2rem 1.3rem;
-  font-family: var(--mono); font-size: .7rem; letter-spacing: .06em;
-  color: var(--muted); display: flex; gap: .5rem; flex-wrap: wrap; align-items: center;
-}
-.colophon-inner .sep { color: var(--faint); }
-.colophon-spacer { flex: 1; }
-.colophon-meta { color: var(--faint); font-size: .66rem; letter-spacing: .02em; }
-
-@media (max-width: 720px) {
-  html { font-size: 14px; }
-  .doc-head-inner, main, .colophon-inner { padding-left: 1.1rem; padding-right: 1.1rem; }
-  .sysinfo-grid, .metrics { grid-template-columns: 1fr; }
-  .sysinfo-block, .metric { border-left: 0; border-top: 1px solid var(--rule-hair); }
-  .sysinfo-block:first-child, .metric:first-child { border-top: 0; }
-}
-
-@media print {
-  body { background: #fff; }
-  .section { break-inside: avoid; }
-  a { color: var(--ink); border-bottom: 0; }
-}
 """.trimIndent()

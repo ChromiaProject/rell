@@ -38,10 +38,7 @@ import net.postchain.rell.base.utils.toImmMap
  * `createFrame`, `setParams`, `validateParams`, `executeStmt`, `evaluateExpr`, `callTarget`,
  * at-expression / update / delete execution, type resolution, meta-Gtv synthesis. Re-implementing
  * these inside the Truffle module would duplicate a lot of code and re-introduce subtle
- * divergence between backends. The accepted long-term plan (see `~/chromaway/memory/truffle.md`)
- * is a `runtime-core` / `runtime-interpreter` split with `runtime-core` holding `DbAtExecutor`
- * etc.; that split has only partially landed. Until extraction completes, the Truffle backend
- * depends on `runtime-interpreter` at compile time and delegates the missing primitives.
+ * divergence between backends.
  */
 class Tf_Backend(
     override val rrApp: RR_App,

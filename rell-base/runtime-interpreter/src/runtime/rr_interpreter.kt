@@ -16,14 +16,6 @@ import net.postchain.rell.base.utils.*
  * Public surface lives on the [Rt_Interpreter] interface in `runtime-core`; this class
  * is the concrete back-end and the receiver of the `rr_interp_*.kt` extension functions.
  */
-/**
- * Tree-walk interpreter, the canonical reference backend.
- *
- * Public (rather than `internal`) so a peer Truffle backend in `runtime-truffle` can construct
- * one directly for delegation: complex / not-yet-translated [RR_Expr] / [RR_Statement] sub-trees
- * fall through to this implementation, guaranteeing bit-identical semantics across both
- * backends.
- */
 class Rt_InterpreterImpl(
     override val rrApp: RR_App,
     override val stdlib: Rt_StdlibEnv = Rt_StdlibEnv.global(),
@@ -32,16 +24,10 @@ class Rt_InterpreterImpl(
      * The "outer" [Rt_Interpreter] that should receive user-function/query call dispatches.
      *
      * Defaults to `this` so a tree-walker run in isolation has unchanged behaviour. A peer
-     * backend that wraps this impl (notably the Truffle [net.postchain.rell.base.runtime.truffle.Tf_Backend])
-     * sets `outerInterp = this` so that whenever the tree-walker recursively dispatches a
+     * backend that wraps this impl sets `outerInterp = this` so that whenever the tree-walker recursively dispatches a
      * user-function call (e.g. inside a fallback expression node, or from any of the many
      * recursive `evaluateExpr` paths), the call exits the tree-walker and re-enters the wrapping
-     * backend — which then uses its cached Truffle [com.oracle.truffle.api.RootCallTarget] for the
-     * callee instead of tree-walking it again.
-     *
-     * Without this hook, every user-function call inside a fallback subtree would defeat the
-     * Truffle peer backend's per-callee cache, making "any program containing a fallback" pay
-     * full tree-walker cost for everything reached through that fallback.
+     * backend.
      */
     var outerInterp: Rt_Interpreter = this
 
@@ -285,9 +271,6 @@ class Rt_InterpreterImpl(
         is RR_Expr.StructListCreate -> evaluateStructListCreate(expr, frame)
         is RR_Expr.DbAt -> evaluateDbAt(expr, frame)
         is RR_Expr.ColAt -> evaluateColAt(expr, frame)
-        // `snapshotIfEphemeral` is a no-op for the tree-walker's heap-backed frames; on the
-        // Truffle backend it copies the VirtualFrame-backed slots into a fresh heap storage so
-        // the lazy can outlive the call's `VirtualFrame`.
         is RR_Expr.Lazy -> Rt_RR_LazyValue(resolveType(expr.type), expr.innerExpr, frame.snapshotIfEphemeral(), this)
         is RR_Expr.Error -> error("RR_Expr.Error reached at runtime: ${expr.message}")
 

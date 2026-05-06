@@ -180,11 +180,38 @@ dependency-check:
     when: always
     paths: [ build/reports/dependency-check-report.* ]
 
-# Manual benchmark run that publishes the HTML report to GitLab Pages under a per-branch
-# path prefix, so concurrent runs on different branches don't clobber each other.
-# URL: https://<group>.gitlab.io/<project>/<branch-slug>/report.html
-# Same-branch reruns intentionally overwrite the previous deployment.
-pages:
+# Static index page listing every currently-available `pages:benchmarks` / `pages:profile`
+# deployment. Renders client-side from the public Environments API, so it only needs to be
+# republished when `performance/ci-index/index.html` itself changes — pinned to dev so feature
+# branches can't overwrite the root deployment.
+pages:index:
+  stage: deploy
+  tags: [ saas-linux-xlarge-amd64 ]
+  interruptible: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+      changes: [ performance/ci-index/index.html, .gitlab-ci.yml ]
+  needs: []
+  script:
+    - mkdir -p public
+    - sed -e "s|@CI_API_V4_URL@|$CI_API_V4_URL|g" -e "s|@CI_PROJECT_ID@|$CI_PROJECT_ID|g"
+        performance/ci-index/index.html > public/index.html
+  pages: true
+  environment:
+    name: pages-index
+    url: "$CI_PAGES_URL/"
+  artifacts:
+    paths: [ public ]
+    expire_in: 30 days
+
+# Manual benchmark / profile runs that publish HTML reports to GitLab Pages under per-branch
+# path prefixes. Benchmarks and profile use *different* prefixes (`bench-…` and `profile-…`)
+# so the two jobs from the same branch do not clobber each other; same-branch reruns of the
+# same job intentionally overwrite the previous deployment. Requires GitLab 16.7+ parallel
+# pages deployments.
+# URLs: https://<group>.gitlab.io/<project>/bench-<branch-slug>/report.html
+#       https://<group>.gitlab.io/<project>/profile-<branch-slug>/report.html
+pages:benchmarks:
   stage: benchmarks
   tags: [ saas-linux-xlarge-amd64 ]
   interruptible: true
@@ -199,16 +226,42 @@ pages:
     policy: pull-push
   script:
     - chmod +x gradlew
-    - ./gradlew $GRADLE_FLAGS :benchmarks:mainBenchmark
+    - ./gradlew $GRADLE_FLAGS :performance:mainBenchmark
     - mkdir -p public
-    - cp -r benchmarks/build/reports/benchmarks/html/. public/
+    - cp -r performance/build/reports/benchmarks/html/. public/
     - echo "Benchmark report - $CI_PAGES_URL/report.html"
   pages:
-    path_prefix: "$CI_COMMIT_REF_SLUG"
+    path_prefix: "bench-$CI_COMMIT_REF_SLUG"
   environment:
     name: "benchmarks/$CI_COMMIT_REF_SLUG"
     url: "$CI_PAGES_URL/report.html"
   artifacts:
+    paths: [ public ]
+    expire_in: 30 days
+
+# Manual end-to-end profiler run (Postgres + chr node + async-profiler + workload + HTML).
+# Extends `.setup` for the Postgres-via-DIND wiring; the pg_stats collector and chr node
+# both need a reachable Postgres (POSTCHAIN_DB_URL points at the DIND service).
+pages:profile:
+  extends: .setup
+  stage: benchmarks
+  interruptible: true
+  rules:
+    - when: manual
+      allow_failure: true
+  needs: []
+  script:
+    - ./gradlew $GRADLE_FLAGS :performance:profile
+    - mkdir -p public
+    - cp -r performance/reports/. public/
+    - echo "Profile report - $CI_PAGES_URL/report.html"
+  pages:
+    path_prefix: "profile-$CI_COMMIT_REF_SLUG"
+  environment:
+    name: "profile/$CI_COMMIT_REF_SLUG"
+    url: "$CI_PAGES_URL/report.html"
+  artifacts:
+    when: always
     paths: [ public ]
     expire_in: 30 days
 
