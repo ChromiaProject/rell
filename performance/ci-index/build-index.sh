@@ -1,12 +1,18 @@
 #!/bin/sh
 # Renders performance/ci-index/index.html with a server-side list of currently-available
 # benchmark / profile pages deployments. The project is private, so anonymous browser
-# fetches against the Environments API return 401 — we bake the data here using
-# CI_JOB_TOKEN and ship a fully static page.
+# fetches against the Environments API return 401 — we bake the data here at publish time
+# and ship a fully static page.
 #
-# Inputs (from GitLab CI):  CI_API_V4_URL, CI_PROJECT_ID, CI_JOB_TOKEN.
+# Auth: requires PAGES_INDEX_TOKEN (a project/group access token with `read_api` scope)
+# exposed as a masked CI variable on the dev branch. CI_JOB_TOKEN can't read the
+# Environments API — it's not on GitLab's allowlist for that endpoint and returns 403.
+#
+# Inputs (from GitLab CI):  CI_API_V4_URL, CI_PROJECT_ID, PAGES_INDEX_TOKEN.
 # Outputs: writes the rendered HTML to stdout.
 set -eu
+
+: "${PAGES_INDEX_TOKEN:?PAGES_INDEX_TOKEN is required (project access token with read_api)}"
 
 template=$(dirname "$0")/index.html
 
@@ -17,7 +23,7 @@ trap 'rm -rf "$tmp"' EXIT
 page=1
 while [ "$page" -lt 20 ]; do
   body=$(curl -fsS \
-    --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+    --header "PRIVATE-TOKEN: ${PAGES_INDEX_TOKEN}" \
     "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/environments?states=available&per_page=100&page=${page}")
   count=$(printf '%s' "$body" | jq 'length')
   printf '%s' "$body" | jq -c '.[]' >> "$tmp/all.json"

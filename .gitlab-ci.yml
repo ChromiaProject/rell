@@ -183,9 +183,13 @@ dependency-check:
 # Static index page listing every currently-available `pages:benchmarks` / `pages:profile`
 # deployment. The project is private, so anonymous client-side fetches against the
 # Environments API return 401 — instead, build-index.sh bakes the deployment list into the
-# HTML at publish time using CI_JOB_TOKEN. Republished on every dev pipeline so the list
-# stays fresh as branches come and go; pinned to dev so feature branches can't overwrite
-# the root deployment.
+# HTML at publish time. Republished on every dev pipeline so the list stays fresh as
+# branches come and go; pinned to dev so feature branches can't overwrite the root
+# deployment.
+#
+# Requires PAGES_INDEX_TOKEN — a project access token with `read_api` scope, exposed as a
+# masked, dev-branch-protected CI variable. CI_JOB_TOKEN is *not* sufficient: GitLab's
+# allowlist for that token excludes the Environments API and the call 403s.
 pages:index:
   stage: deploy
   image: alpine:3.20
