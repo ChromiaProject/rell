@@ -22,6 +22,7 @@ envs_json=$(glab api --paginate \
 # Group benchmarks/<slug> and profile/<slug> envs by slug, sort dev/master first.
 table=$(printf '%s' "$envs_json" | jq -r '
   map(select(.name | test("^(benchmarks|profile)/")))
+  | map(select(.external_url != null))
   | map({
       kind: (.name | capture("^(?<k>benchmarks|profile)/").k),
       slug: (.name | capture("^[^/]+/(?<s>.+)$").s),
