@@ -64,7 +64,7 @@ class Rt_CallFrame(
             check(rrFrame.size >= state.values.size)
             for ((i, element) in state.values.withIndex()) {
                 val v = element.orElse(null)
-                if (v != null) this.storage.set(i, v)
+                if (v != null) this.storage[i] = v
             }
         }
     }
@@ -77,7 +77,7 @@ class Rt_CallFrame(
         check(block.offset + block.size <= rrFrame.size)
 
         for (i in 0 until block.size) {
-            checkNull(storage.get(block.offset + i))
+            checkNull(storage[block.offset + i])
         }
 
         curBlockUid = block.uid
@@ -117,21 +117,21 @@ class Rt_CallFrame(
     fun setUnchecked(ptr: RR_VarPtr, value: Rt_Value, overwrite: Boolean) {
         val offset = checkPtr(ptr.blockUid, ptr.offset)
         if (!overwrite) {
-            checkNull(storage.get(offset)) { "Variable already initialized: $ptr" }
+            checkNull(storage[offset]) { "Variable already initialized: $ptr" }
         }
-        storage.set(offset, value)
+        storage[offset] = value
     }
 
     fun setUncheckedAt(offset: Int, value: Rt_Value) {
-        storage.set(offset, value)
+        storage[offset] = value
     }
 
     fun get(ptr: RR_VarPtr): Rt_Value {
         val offset = checkPtr(ptr.blockUid, ptr.offset)
-        return checkNotNull(storage.get(offset)) { "Variable not initialized: $ptr" }
+        return checkNotNull(storage[offset]) { "Variable not initialized: $ptr" }
     }
 
-    fun getUncheckedAt(offset: Int): Rt_Value? = storage.get(offset)
+    fun getUncheckedAt(offset: Int): Rt_Value? = storage[offset]
 
     private fun checkPtr(blockUid: Long, ptrOffset: Int): Int {
         check(blockUid == curBlockUid) { "wrong var block: var_ptr = Block[$blockUid]/Var[$ptrOffset], cur_block = Block[$curBlockUid]" }
@@ -146,8 +146,8 @@ class Rt_CallFrame(
         val heap = Rt_HeapFrameStorage(rrFrame.size)
         val src = storage
         for (i in 0 until rrFrame.size) {
-            val v = src.get(i)
-            if (v != null) heap.set(i, v)
+            val v = src[i]
+            if (v != null) heap[i] = v
         }
         val copy = Rt_CallFrame(defCtx, rrFrame, null, heap)
         copy.enterBlockSet(curBlockUid, curBlockOffset, curBlockSize)
@@ -166,7 +166,7 @@ class Rt_CallFrame(
 
     fun dumpState(): Rt_CallFrameState {
         checkEquals(curBlockUid, rrFrame.rootBlock.uid)
-        val valuesList = (0 until rrFrame.size).mapToImmList { Optional.ofNullable(storage.get(it)) }
+        val valuesList = (0 until rrFrame.size).mapToImmList { Optional.ofNullable(storage[it]) }
         return Rt_CallFrameState(valuesList)
     }
 

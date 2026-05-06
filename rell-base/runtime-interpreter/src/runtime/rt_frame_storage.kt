@@ -32,10 +32,10 @@ package net.postchain.rell.base.runtime
  */
 interface Rt_FrameStorage {
     /** Read raw slot at [offset]. Returns `null` if the slot was never written or has been cleared. */
-    fun get(offset: Int): Rt_Value?
+    operator fun get(offset: Int): Rt_Value?
 
     /** Write raw slot at [offset]. */
-    fun set(offset: Int, value: Rt_Value)
+    operator fun set(offset: Int, value: Rt_Value)
 
     /** Clear raw slot at [offset] back to its uninitialised state. */
     fun clear(offset: Int)

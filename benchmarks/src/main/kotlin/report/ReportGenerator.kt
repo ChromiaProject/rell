@@ -229,7 +229,7 @@ private fun HTML.renderReport(results: List<JmhResult>, source: File, generatedA
         style { unsafe { +CSS } }
     }
     body {
-        renderDocHead(head, generatedAt)
+        renderDocHead()
         main {
             renderEnvironment(head)
             renderMetrics(results, totalSamples, totalMethods, byClass.size)
@@ -260,18 +260,14 @@ private fun FlowContent.renderGroup(benchmarkClass: String, results: List<JmhRes
     renderResults(benchmarkClass, pivot, variants, results)
 }
 
-private fun FlowContent.renderDocHead(head: JmhResult, generatedAt: Instant) {
-    header(classes = "doc-head") {
-        div(classes = "doc-head-inner") {
-            h1(classes = "doc-title") { +"Rell Benchmarks" }
-        }
-    }
+private fun FlowContent.renderDocHead() = header(classes = "doc-head") {
+    div(classes = "doc-head-inner") { h1(classes = "doc-title") { +"Rell Benchmarks" } }
 }
 
-private fun FlowContent.renderSection(
+private inline fun FlowContent.renderSection(
     title: String,
     strap: String = "",
-    body: FlowContent.() -> Unit,
+    crossinline body: FlowContent.() -> Unit,
 ) {
     section(classes = "section") {
         div(classes = "section-head") {
@@ -358,7 +354,7 @@ private fun FlowContent.renderResults(
     renderSection(benchmarkClass.lowercase(), strap) {
         div(classes = "bars-grid") {
             pivot.forEach { (sample, byMethod) ->
-                val svg = renderSamplePanel(sample, byMethod, methods)
+                val svg = renderSamplePanel(byMethod, methods)
                 if (svg.isNotEmpty()) {
                     val info = sampleInfo(sample)
                     div(classes = "bars-panel") {
@@ -482,13 +478,11 @@ private fun FlowContent.renderColophon(source: File, generatedAt: Instant) = foo
 }
 
 private fun renderSamplePanel(
-    sample: String,
     byMethod: Map<String, JmhResult>,
     methods: List<String>,
 ): String {
     val present = methods.filter { byMethod[it] != null }
     if (present.isEmpty()) return ""
-    val unit = byMethod.values.first().primaryMetric.scoreUnit
     val methodCol = present.toMutableList()
     val scores = present.map { byMethod.getValue(it).primaryMetric.score }.toMutableList()
 
@@ -518,7 +512,7 @@ private fun Instant.toHuman(): String =
 
 private fun String.formatRoot(vararg args: Any?): String = format(Locale.ROOT, *args)
 
-@Suppress("CssUnresolvedCustomProperty")
+@Suppress("CssUnresolvedCustomProperty", "CssUnusedSymbol", "CssNoGenericFontName")
 @Language("CSS")
 private val CSS = """
 :root {
