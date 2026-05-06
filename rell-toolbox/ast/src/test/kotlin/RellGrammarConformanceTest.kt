@@ -50,8 +50,8 @@ class RellGrammarConformanceTest {
                 to "rell-toolbox/indexer/src/test/resources/realWorldExamples/deathmatch/rell/src/deathmatch/main.rell",
             "operations_queries_api.rell"
                 to "rell-toolbox/indexer/src/test/resources/realWorldExamples/share-registry-backend-vinnova/rell/src/ecosec/operations_queries_api.rell",
-            "profiling-dapp.rell"
-                to "profiling/dapp/src/main.rell",
+            "performance-dapp.rell"
+                to "performance/dapp/src/main.rell",
         )
         paths.map { (name, rel) ->
             val file = root.resolve(rel)
