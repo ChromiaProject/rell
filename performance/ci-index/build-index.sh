@@ -51,7 +51,7 @@ table=$(printf '%s' "$envs_json" | jq -r '
   | reverse
   | sort_by(branch_rank(.branch))   # stable sort preserves date-desc within branch
   | if length == 0 then
-      "<p class=\"empty-msg\">No reports published yet — trigger the manual jobs in a pipeline.</p>"
+      "<p class=\"empty-msg\">No reports published yet.</p>"
     else
       "<table><thead><tr><th>Branch</th><th>Commit</th><th>When</th><th>Benchmarks</th><th>Profile</th></tr></thead><tbody>"
       + (map(

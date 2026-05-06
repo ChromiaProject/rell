@@ -266,8 +266,17 @@ pages:benchmarks:
     - mkdir -p public public/data
     - cp -r performance/build/reports/benchmarks/html/. public/
     # Publish the raw kotlinx-benchmark JSON alongside the HTML so it can be ingested
-    # programmatically (e.g. for commit-to-commit regression diffs).
-    - cp performance/build/reports/benchmarks/main/*.json public/data/
+    # programmatically (e.g. for commit-to-commit regression diffs). The plugin writes the
+    # result to `reports/benchmarks/main/<timestamp>/main.json`; pick the newest one and
+    # expose it at a stable URL `<deployment>/data/main.json`.
+    - |
+      latest_json=$(find performance/build/reports/benchmarks/main -type f -name '*.json' -printf '%T@ %p\n' | sort -nr | head -n1 | cut -d' ' -f2-)
+      if [ -z "$latest_json" ]; then
+        echo "ERROR: no benchmark JSON found under performance/build/reports/benchmarks/main" >&2
+        exit 1
+      fi
+      cp "$latest_json" public/data/main.json
+      echo "Published $latest_json -> public/data/main.json"
     - echo "Benchmark report - $CI_PAGES_URL/report.html"
     - echo "Benchmark JSON   - $CI_PAGES_URL/data/main.json"
   pages:
