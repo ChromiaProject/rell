@@ -4,35 +4,23 @@
 # fetches against the Environments API return 401 — we bake the data here at publish time
 # and ship a fully static page.
 #
-# Auth: requires PAGES_INDEX_TOKEN (a project/group access token with `read_api` scope)
-# exposed as a masked CI variable on the dev branch. CI_JOB_TOKEN can't read the
-# Environments API — it's not on GitLab's allowlist for that endpoint and returns 403.
+# Auth: requires GITLAB_TOKEN (a project/group access token with `read_api` scope) exposed
+# as a masked CI variable on dev. CI_JOB_TOKEN can't read the Environments API — it's not
+# on GitLab's allowlist for that endpoint and returns 403.
 #
-# Inputs (from GitLab CI):  CI_API_V4_URL, CI_PROJECT_ID, PAGES_INDEX_TOKEN.
+# Inputs (from GitLab CI):  CI_PROJECT_ID, GITLAB_TOKEN.
 # Outputs: writes the rendered HTML to stdout.
 set -eu
 
-: "${PAGES_INDEX_TOKEN:?PAGES_INDEX_TOKEN is required (project access token with read_api)}"
+: "${GITLAB_TOKEN:?GITLAB_TOKEN is required (project access token with read_api)}"
 
 template=$(dirname "$0")/index.html
 
-tmp=$(mktemp -d)
-trap 'rm -rf "$tmp"' EXIT
-: > "$tmp/all.json"
-
-page=1
-while [ "$page" -lt 20 ]; do
-  body=$(curl -fsS \
-    --header "PRIVATE-TOKEN: ${PAGES_INDEX_TOKEN}" \
-    "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/environments?states=available&per_page=100&page=${page}")
-  count=$(printf '%s' "$body" | jq 'length')
-  printf '%s' "$body" | jq -c '.[]' >> "$tmp/all.json"
-  [ "$count" -lt 100 ] && break
-  page=$((page + 1))
-done
+envs_json=$(glab api --paginate \
+  "projects/${CI_PROJECT_ID}/environments?states=available&per_page=100")
 
 # Group benchmarks/<slug> and profile/<slug> envs by slug, sort dev/master first.
-table=$(jq -rs '
+table=$(printf '%s' "$envs_json" | jq -r '
   map(select(.name | test("^(benchmarks|profile)/")))
   | map({
       kind: (.name | capture("^(?<k>benchmarks|profile)/").k),
@@ -64,12 +52,10 @@ table=$(jq -rs '
         ) | join(""))
       + "</tbody></table>"
     end
-' "$tmp/all.json")
+')
 
 generated_at=$(date -u +"%Y-%m-%d %H:%M UTC")
 
-# Substitute in two passes; use awk so multiline `table` survives intact (sed would choke
-# on the embedded newlines on some platforms).
 awk -v content="$table" -v ts="$generated_at" '
   { gsub(/@CONTENT@/, content); gsub(/@GENERATED_AT@/, ts); print }
 ' "$template"
