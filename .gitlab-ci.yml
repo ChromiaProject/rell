@@ -12,6 +12,7 @@ stages:
   - dependency-check
   - qodana
   - benchmarks
+  - index
 
 workflow:
   rules:
@@ -194,13 +195,17 @@ dependency-check:
 # Requires GITLAB_TOKEN — a project access token with `read_api` scope, exposed as a
 # masked, dev-branch-protected CI variable. CI_JOB_TOKEN is *not* sufficient: GitLab's
 # allowlist for that token excludes the Environments API and the call 403s.
-pages:index:
-  stage: deploy
+#
+# Also re-published in the `index` stage after each manual `pages:benchmarks` /
+# `pages:profile` is triggered (see `pages:index:after-bench`/`-profile` below). That keeps
+# the listing fresh when manual jobs are clicked days after the initial dev pipeline ran;
+# without those follow-up jobs the index would still show the pre-click state because the
+# deploy-stage publication ran before the manual job existed.
+.pages-index:
   image: registry.gitlab.com/gitlab-org/cli:latest
   interruptible: true
   rules:
     - if: $CI_COMMIT_BRANCH == "dev"
-  needs: []
   script:
     - apk add --no-cache jq
     - mkdir -p public
@@ -213,13 +218,35 @@ pages:index:
     paths: [ public ]
     expire_in: 30 days
 
-# Manual benchmark / profile runs that publish HTML reports to GitLab Pages under per-branch
-# path prefixes. Benchmarks and profile use *different* prefixes (`bench-…` and `profile-…`)
-# so the two jobs from the same branch do not clobber each other; same-branch reruns of the
-# same job intentionally overwrite the previous deployment. Requires GitLab 16.7+ parallel
-# pages deployments.
-# URLs: https://<group>.gitlab.io/<project>/bench-<branch-slug>/report.html
-#       https://<group>.gitlab.io/<project>/profile-<branch-slug>/report.html
+pages:index:
+  extends: .pages-index
+  stage: deploy
+  needs: []
+
+# Re-publish the index after a manual `pages:benchmarks` is clicked, so the new per-commit
+# deployment shows up in the listing. `needs:` blocks until the manual job is triggered;
+# if it is never clicked, this job stays pending alongside it (harmless — same lifecycle
+# as the manual job itself). The deploy-stage `pages:index` already covered the no-click
+# case, so this purely fills the "manual click days later" gap. Same pattern for profile.
+pages:index:after-bench:
+  extends: .pages-index
+  stage: index
+  needs: [ pages:benchmarks ]
+
+pages:index:after-profile:
+  extends: .pages-index
+  stage: index
+  needs: [ pages:profile ]
+
+# Manual benchmark / profile runs that publish HTML reports to GitLab Pages under per-commit
+# path prefixes (`bench-<slug>-<sha>` / `profile-<slug>-<sha>`). Including the short SHA in
+# the prefix and environment name means same-branch reruns no longer clobber each other —
+# regression analysis between commits on the same branch needs both deployments to coexist.
+# Requires GitLab 16.7+ parallel pages deployments.
+# URLs: https://<group>.gitlab.io/<project>/bench-<branch-slug>-<sha>/report.html
+#       https://<group>.gitlab.io/<project>/profile-<branch-slug>-<sha>/report.html
+# Each deployment also exposes the parseable benchmark JSON at /data/main.json so external
+# tooling (or the LLM analysis path) can fetch raw scores without scraping HTML.
 pages:benchmarks:
   stage: benchmarks
   tags: [ saas-linux-medium-amd64 ]
@@ -236,13 +263,17 @@ pages:benchmarks:
   script:
     - chmod +x gradlew
     - ./gradlew $GRADLE_FLAGS_WEAK :performance:mainBenchmark
-    - mkdir -p public
+    - mkdir -p public public/data
     - cp -r performance/build/reports/benchmarks/html/. public/
+    # Publish the raw kotlinx-benchmark JSON alongside the HTML so it can be ingested
+    # programmatically (e.g. for commit-to-commit regression diffs).
+    - cp performance/build/reports/benchmarks/main/*.json public/data/
     - echo "Benchmark report - $CI_PAGES_URL/report.html"
+    - echo "Benchmark JSON   - $CI_PAGES_URL/data/main.json"
   pages:
-    path_prefix: "bench-$CI_COMMIT_REF_SLUG"
+    path_prefix: "bench-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
   environment:
-    name: "benchmarks/$CI_COMMIT_REF_SLUG"
+    name: "benchmarks/$CI_COMMIT_REF_SLUG/$CI_COMMIT_SHORT_SHA"
     url: "$CI_PAGES_URL/report.html"
   artifacts:
     paths: [ public ]
@@ -268,9 +299,9 @@ pages:profile:
     - cp -r performance/reports/. public/
     - echo "Profile report - $CI_PAGES_URL/report.html"
   pages:
-    path_prefix: "profile-$CI_COMMIT_REF_SLUG"
+    path_prefix: "profile-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
   environment:
-    name: "profile/$CI_COMMIT_REF_SLUG"
+    name: "profile/$CI_COMMIT_REF_SLUG/$CI_COMMIT_SHORT_SHA"
     url: "$CI_PAGES_URL/report.html"
   artifacts:
     when: always

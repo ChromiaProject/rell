@@ -59,8 +59,10 @@
   td { padding:.55rem .75rem; border-bottom:1px solid var(--rule-hair); vertical-align:middle; font-size:.85rem; }
   tbody tr:hover { background:rgba(193,68,14,0.04); }
   td.branch { font-family:var(--mono); font-weight:500; color:var(--ink); }
+  td.sha { font-family:var(--mono); color:var(--ink-soft); font-size:.8rem; }
+  td.when { font-family:var(--mono); color:var(--muted); font-size:.78rem; }
   td.empty { color:var(--muted); }
-  .when { color:var(--muted); font-family:var(--mono); font-size:.78rem; margin-left:.4rem; }
+  .sep { color:var(--faint); margin:0 .15rem; }
 
   .empty-msg { font-family:var(--sans); color:var(--muted); font-style:italic; padding:1rem 0; }
 
@@ -86,7 +88,9 @@
   <div class="doc-head-inner">
     <h1 class="doc-title">Rell Performance Reports</h1>
     <p class="doc-strap">
-      Runs of benchmarks and profile CI jobs publish HTML reports to per-branch GitLab Pages deployments.
+      Runs of benchmarks and profile CI jobs publish HTML reports to per-commit GitLab Pages deployments.
+      Each benchmark deployment also exposes the raw kotlinx-benchmark JSON at
+      <code>&lt;deployment&gt;/data/main.json</code> for programmatic regression analysis.
     </p>
   </div>
 </header>
