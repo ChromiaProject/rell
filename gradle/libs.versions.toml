@@ -81,10 +81,11 @@ testcontainers-junit-jupiter = { module = "org.testcontainers:testcontainers-jun
 
 flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version.ref = "flatbuffers" }
 
-# GraalVM Truffle (JIT-friendly tree interpreter framework)
+# GraalVM Truffle
 truffle-api = { module = "org.graalvm.truffle:truffle-api", version.ref = "truffle" }
 truffle-dsl-processor = { module = "org.graalvm.truffle:truffle-dsl-processor", version.ref = "truffle" }
 truffle-runtime = { module = "org.graalvm.truffle:truffle-runtime", version.ref = "truffle" }
+graalvm-polyglot = { module = "org.graalvm.polyglot:polyglot", version.ref = "truffle" }
 
 # versions from junit-bom
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }

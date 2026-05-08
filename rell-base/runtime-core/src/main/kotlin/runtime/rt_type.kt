@@ -57,8 +57,8 @@ fun rtValueToGtv(rType: R_Type, value: Rt_Value, pretty: Boolean): Gtv? {
 private val enumValuesCache = ConcurrentHashMap<R_EnumDefinition, ImmList<Rt_Value>>()
 
 fun R_EnumDefinition.rtValues(): ImmList<Rt_Value> = enumValuesCache.getOrPut(this) {
-    val rtTypeRef = lazy { rTypeStub(type) }
-    attrs.mapToImmList { Rt_RR_EnumValue(rtTypeRef, RR_EnumAttr(it.rName, it.value)) }
+    val rtType = rTypeStub(type)
+    attrs.mapToImmList { Rt_RR_EnumValue(rtType, RR_EnumAttr(it.rName, it.value)) }
 }
 
 fun R_EnumDefinition.rtGetValue(attr: R_EnumAttr): Rt_Value {

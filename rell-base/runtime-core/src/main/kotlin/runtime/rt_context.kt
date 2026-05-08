@@ -449,6 +449,23 @@ class Rt_DefinitionContext(val exeCtx: Rt_ExecutionContext, val dbUpdateAllowed:
     val appCtx = exeCtx.appCtx
     val globalCtx = appCtx.globalCtx
     val sqlCtx = exeCtx.sqlCtx
+
+    @Volatile
+    private var cachedCallCtx: Rt_CallContext? = null
+
+    /**
+     * Lazy-cached [Rt_CallContext] wrapping this defCtx. Sys-fn dispatch on the Truffle hot
+     * path issues one `Rt_CallContext` per invocation; the wrapper is purely a read-only view
+     * over `this` (every field is `val`-derived from defCtx / exeCtx / appCtx, all immutable
+     * for the lifetime of the execution), so the same instance is reusable across calls.
+     */
+    fun toCallContext(): Rt_CallContext {
+        val cached = cachedCallCtx
+        if (cached != null) return cached
+        val fresh = Rt_CallContext(this)
+        cachedCallCtx = fresh
+        return fresh
+    }
 }
 
 interface Rt_OpContext {

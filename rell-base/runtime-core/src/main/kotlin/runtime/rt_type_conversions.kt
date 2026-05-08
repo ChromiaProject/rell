@@ -84,7 +84,7 @@ class Rt_SqlAdapter_Enum(
         return Rt_SqlNull.check(v == 0, row, name, nullable) ?: run {
             val attr = if (v < 0 || v >= attrs.size) null else attrs[v]
             requireNotNull(attr) { "$name: $v" }
-            Rt_RR_EnumValue(lazyRtType, attr)
+            Rt_RR_EnumValue(lazyRtType.value, attr)
         }
     }
     override fun metaName(sqlCtx: Rt_SqlContext): String = "enum:$name"

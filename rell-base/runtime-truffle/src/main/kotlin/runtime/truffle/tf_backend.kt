@@ -43,7 +43,7 @@ import net.postchain.rell.base.utils.toImmMap
 class Tf_Backend(
     override val rrApp: RR_App,
     override val stdlib: Rt_StdlibEnv = Rt_StdlibEnv.global(),
-) : Rt_Interpreter {
+): Rt_Interpreter {
 
     /**
      * Wrapped tree-walker. All "fallback" code paths route through this.

@@ -24,16 +24,52 @@ import net.postchain.rell.base.runtime.truffle.Tf_Backend
  *
  * Tuple/Wildcard declarators or non-trivial type adapters fall back to [Tf_VarStmtNode].
  */
-internal class Tf_VarSimpleStmtNode(
+internal open class Tf_VarSimpleStmtNode(
     ptr: RR_VarPtr,
     @field:Child private var initExpr: Tf_ExprNode?,
 ) : Tf_ExprNode() {
-    @CompilationFinal private val slot: Int = ptr.offset
+    @CompilationFinal protected val slot: Int = ptr.offset
 
     override fun execute(frame: VirtualFrame): Rt_Value {
         val value = initExpr?.execute(frame) ?: return Rt_UnitValue
         frame.setObject(slot, value)
         return Rt_UnitValue
+    }
+
+    /**
+     * `var x = expr` for a slot the FrameDescriptor reserved as
+     * [com.oracle.truffle.api.frame.FrameSlotKind.Long]. Calls the rhs's typed `executeLong`
+     * — no intermediate [Rt_IntValue] allocation — and writes through
+     * [com.oracle.truffle.api.frame.VirtualFrame.setLong].
+     *
+     * The rhs falls back to a boxing `execute` + unbox via [asInteger] when its node doesn't
+     * override `executeLong`; that path is correct but loses the primitive chain. Most rhs
+     * shapes the bench cares about (var read, integer arithmetic, integer constants) override
+     * `executeLong` directly.
+     */
+    internal class IntVarSimple(
+        ptr: RR_VarPtr,
+        @field:Child private var initExpr: Tf_ExprNode,
+    ) : Tf_ExprNode() {
+        @CompilationFinal private val slot: Int = ptr.offset
+
+        override fun execute(frame: VirtualFrame): Rt_Value {
+            frame.setLong(slot, initExpr.executeLong(frame))
+            return Rt_UnitValue
+        }
+    }
+
+    /** Boolean counterpart to [IntVarSimple]. */
+    internal class BoolVarSimple(
+        ptr: RR_VarPtr,
+        @field:Child private var initExpr: Tf_ExprNode,
+    ) : Tf_ExprNode() {
+        @CompilationFinal private val slot: Int = ptr.offset
+
+        override fun execute(frame: VirtualFrame): Rt_Value {
+            frame.setBoolean(slot, initExpr.executeBoolean(frame))
+            return Rt_UnitValue
+        }
     }
 }
 
@@ -88,15 +124,44 @@ internal class Tf_VarStmtNode(
  * PE folds this to one `frame.setObject(slot, value)` plus the rhs evaluation,
  * no dispatch, no `checkPtr` block-uid validation, no overwrite check.
  */
-internal class Tf_AssignVarStmtNode(
+internal open class Tf_AssignVarStmtNode(
     ptr: RR_VarPtr,
     @field:Child private var valueExpr: Tf_ExprNode,
 ) : Tf_ExprNode() {
-    @CompilationFinal private val slot: Int = ptr.offset
+    @CompilationFinal protected val slot: Int = ptr.offset
 
     override fun execute(frame: VirtualFrame): Rt_Value {
         frame.setObject(slot, valueExpr.execute(frame))
         return Rt_UnitValue
+    }
+
+    /**
+     * Typed `acc = expr` for a [com.oracle.truffle.api.frame.FrameSlotKind.Long] slot. Mirrors
+     * [Tf_VarSimpleStmtNode.IntVarSimple] but for plain reassignment (no compound op).
+     */
+    internal class IntAssignVar(
+        ptr: RR_VarPtr,
+        @field:Child private var valueExpr: Tf_ExprNode,
+    ) : Tf_ExprNode() {
+        @CompilationFinal private val slot: Int = ptr.offset
+
+        override fun execute(frame: VirtualFrame): Rt_Value {
+            frame.setLong(slot, valueExpr.executeLong(frame))
+            return Rt_UnitValue
+        }
+    }
+
+    /** Boolean counterpart to [IntAssignVar]. */
+    internal class BoolAssignVar(
+        ptr: RR_VarPtr,
+        @field:Child private var valueExpr: Tf_ExprNode,
+    ) : Tf_ExprNode() {
+        @CompilationFinal private val slot: Int = ptr.offset
+
+        override fun execute(frame: VirtualFrame): Rt_Value {
+            frame.setBoolean(slot, valueExpr.executeBoolean(frame))
+            return Rt_UnitValue
+        }
     }
 }
 
@@ -112,11 +177,11 @@ internal class Tf_AssignVarStmtNode(
  * and re-dispatches the op via `evaluateBinaryOp`'s op-key HashMap. Bench's tight
  * `i += 1` was hot in profiling for that reason.
  */
-internal class Tf_AssignVarCompoundIntStmtNode(
+internal open class Tf_AssignVarCompoundIntStmtNode(
     ptr: RR_VarPtr,
     @field:Child private var combined: Tf_ExprNode,
 ) : Tf_ExprNode() {
-    @CompilationFinal private val slot: Int = ptr.offset
+    @CompilationFinal protected val slot: Int = ptr.offset
 
     override fun execute(frame: VirtualFrame): Rt_Value {
         // `combined` is a `Tf_BinaryNode.IntAdd/IntSub/IntMul/IntDiv/IntMod` whose `left`
@@ -125,6 +190,24 @@ internal class Tf_AssignVarCompoundIntStmtNode(
         val newLong = combined.executeLong(frame)
         frame.setObject(slot, Rt_IntValue.get(newLong))
         return Rt_UnitValue
+    }
+
+    /**
+     * Compound integer assignment to a [com.oracle.truffle.api.frame.FrameSlotKind.Long] slot
+     * — `i += 1`, `acc *= rhs`, etc. The combined binary node's `executeLong` chain stays
+     * primitive end-to-end, and the result writes via [com.oracle.truffle.api.frame.VirtualFrame.setLong]
+     * with no [Rt_IntValue] flyweight on the way out.
+     */
+    internal class TypedSlot(
+        ptr: RR_VarPtr,
+        @field:Child private var combined: Tf_ExprNode,
+    ) : Tf_ExprNode() {
+        @CompilationFinal private val slot: Int = ptr.offset
+
+        override fun execute(frame: VirtualFrame): Rt_Value {
+            frame.setLong(slot, combined.executeLong(frame))
+            return Rt_UnitValue
+        }
     }
 }
 

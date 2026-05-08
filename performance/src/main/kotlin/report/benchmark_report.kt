@@ -351,17 +351,16 @@ private fun FlowContent.renderResults(
                                 if (unit.isNotEmpty()) span(classes = "unit") { +" $unit" }
                             }
                         }
-                        if (methods.size == 2) th(classes = "num") { +"Ratio" }
                     }
                 }
                 tbody {
                     pivot.forEach { (sample, byMethod) ->
-                        val winner = methods
-                            .mapNotNull { m -> byMethod[m]?.primaryMetric?.score?.let { m to it } }
-                            .filter { it.second > 0 }
-                            .minByOrNull { it.second }
-                            ?.first
-                            ?.takeIf { byMethod.values.count { it.primaryMetric.score > 0 } > 1 }
+                        val positiveScores = methods.mapNotNull { m ->
+                            byMethod[m]?.primaryMetric?.score?.takeIf { it > 0 }?.let { m to it }
+                        }
+                        val best = positiveScores.minByOrNull { it.second }
+                        val winner = best?.first?.takeIf { positiveScores.size > 1 }
+                        val bestScore = best?.second?.takeIf { positiveScores.size > 1 }
                         tr {
                             td(classes = "name") { +sampleTitle(sample) }
                             methods.forEach { method ->
@@ -370,22 +369,15 @@ private fun FlowContent.renderResults(
                                 td(classes = cls) {
                                     if (r != null) {
                                         val m = r.primaryMetric
-                                        +"%.3f".formatRoot(m.score)
-                                        span(classes = "err") { +" ± %.3f".formatRoot(m.scoreError) }
-                                    } else {
-                                        +"—"
-                                    }
-                                }
-                            }
-                            if (methods.size == 2) {
-                                td(classes = "num") {
-                                    val a = byMethod[methods[0]]?.primaryMetric?.score
-                                    val b = byMethod[methods[1]]?.primaryMetric?.score
-                                    if (a != null && b != null && a > 0 && b > 0) {
-                                        val ratio = if (a < b) b / a else a / b
-                                        val faster = if (a < b) methods[0] else methods[1]
-                                        span(classes = "ratio") { +"%.2f×".formatRoot(ratio) }
-                                        span(classes = "ratio-note") { +" $faster" }
+                                        +formatScoreBench(m.score)
+                                        span(classes = "err") { +" ± ${formatScoreBench(m.scoreError)}" }
+                                        if (bestScore != null && winner != null && method != winner && m.score > 0) {
+                                            span(classes = "ratio-note") {
+                                                +" "
+                                                span(classes = "ratio") { +"×%.2f".formatRoot(m.score / bestScore) }
+                                                +" $winner"
+                                            }
+                                        }
                                     } else {
                                         +"—"
                                     }
@@ -499,6 +491,13 @@ private fun niceCeilingBench(v: Double): Double {
         else -> 10.0
     }
     return nice * mag
+}
+
+private fun formatScoreBench(v: Double): String {
+    if (v == 0.0 || !v.isFinite()) return "%.1f".formatRoot(v)
+    val abs = kotlin.math.abs(v)
+    val decimals = if (abs >= 0.1) 1 else kotlin.math.ceil(-kotlin.math.log10(abs)).toInt().coerceAtLeast(1)
+    return "%.${decimals}f".formatRoot(v)
 }
 
 private fun formatTickBench(v: Double): String =

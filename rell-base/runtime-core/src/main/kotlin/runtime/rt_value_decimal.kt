@@ -14,10 +14,45 @@ import net.postchain.rell.base.sql.PreparedStatementParams
 import net.postchain.rell.base.sql.ResultSetRow
 import net.postchain.rell.base.utils.immSetOf
 import java.math.BigDecimal
+import java.math.BigInteger
 import kotlin.reflect.full.createType
 
-@ConsistentCopyVisibility
-data class Rt_DecimalValue private constructor(val value: BigDecimal): Rt_ValueBase() {
+private val BIG_INT_LONG_MIN: BigInteger = BigInteger.valueOf(Long.MIN_VALUE)
+private val BIG_INT_LONG_MAX: BigInteger = BigInteger.valueOf(Long.MAX_VALUE)
+
+abstract class Rt_DecimalValue: Rt_ValueBase() {
+    abstract val value: BigDecimal
+
+    /**
+     * Fast `abs()` hook. Default uses `BigDecimal.abs()` and rebuilds via [Companion.get]; the
+     * long-mantissa Truffle leaf overrides this to do `Math.abs` on the mantissa, avoiding the
+     * BigDecimal materialisation. Hot in `decimal.abs(...)` inner-loop calls.
+     */
+    open fun fastAbs(): Rt_DecimalValue = get(value.abs())
+
+    /**
+     * Fast `floor()` hook (round toward negative infinity, scale 0). Default uses
+     * `BigDecimal.setScale(0, FLOOR)`; long-scale leaves can divide the mantissa by 10^scale and
+     * apply the toward-`-inf` correction in plain Long arithmetic.
+     */
+    open fun fastFloor(): Rt_DecimalValue = get(value.setScale(0, java.math.RoundingMode.FLOOR))
+
+    /**
+     * Fast `to_integer()` hook. Truncates toward zero; throws `decimal.to_integer:overflow` if
+     * the value falls outside Long range. Default uses `BigDecimal.toBigInteger()` and
+     * range-checks; long-scale leaves can divide-and-return when bounds are guaranteed.
+     */
+    open fun fastToInteger(): Long {
+        val v = value
+        val bi = v.toBigInteger()
+        if (bi < BIG_INT_LONG_MIN || bi > BIG_INT_LONG_MAX) {
+            var s = v.round(java.math.MathContext(20, java.math.RoundingMode.DOWN))
+            s = Lib_DecimalMath.stripTrailingZeros(s)
+            throw Rt_Exception.common("decimal.to_integer:overflow:$s", "Value out of range: $s")
+        }
+        return bi.toLong()
+    }
+
     override val name
         get() = Companion.name
 
@@ -27,6 +62,19 @@ data class Rt_DecimalValue private constructor(val value: BigDecimal): Rt_ValueB
     override fun toFormatArg() = value
     override fun strCode(showTupleFieldNames: Boolean) = "dec[${str()}]"
     override fun str(format: Rt_StrFormat) = Lib_DecimalMath.toString(value)
+
+    /**
+     * Open hook for the leaf-level fast-equals shortcut. Default falls through to
+     * BigDecimal-equality on `value`. Long-mantissa Truffle leaves override to compare
+     * `(mantissa, scale)` directly when both sides share the leaf and scale, avoiding
+     * the volatile `cachedBd` load and BigDecimal materialisation.
+     */
+    protected open fun valueEquals(other: Rt_DecimalValue): Boolean = value == other.value
+
+    final override fun equals(other: Any?): Boolean =
+        other === this || (other is Rt_DecimalValue && valueEquals(other))
+
+    final override fun hashCode(): Int = value.hashCode()
 
     companion object:
         Rt_GtvCompatibleValueClass<Rt_DecimalValue>,
@@ -46,7 +94,7 @@ data class Rt_DecimalValue private constructor(val value: BigDecimal): Rt_ValueB
         override val comparator: Comparator<Rt_Value> =
             Comparator { a, b -> a.asDecimal().compareTo(b.asDecimal()) }
 
-        val ZERO = Rt_DecimalValue(BigDecimal.ZERO)
+        val ZERO: Rt_DecimalValue = Rt_BigDecimalValue(BigDecimal.ZERO)
 
         fun get(v: BigDecimal): Rt_DecimalValue =
             getOrNull(v) ?: throw errOverflow("decimal:overflow", "Decimal value out of range")
@@ -56,7 +104,7 @@ data class Rt_DecimalValue private constructor(val value: BigDecimal): Rt_ValueB
                 return ZERO
             }
             val t = Lib_DecimalMath.scale(v)
-            return if (t == null) null else Rt_DecimalValue(t)
+            return if (t == null) null else Rt_BigDecimalValue(t)
         }
 
         fun get(s: String): Rt_DecimalValue {
@@ -70,7 +118,7 @@ data class Rt_DecimalValue private constructor(val value: BigDecimal): Rt_ValueB
 
         fun get(v: Long): Rt_DecimalValue = get(BigDecimal(v))
 
-        internal fun errOverflow(code: String, msg: String): Rt_Exception {
+        fun errOverflow(code: String, msg: String): Rt_Exception {
             val p = Lib_DecimalMath.DECIMAL_INT_DIGITS
             return Rt_Exception.common(code, "$msg (allowed range is -10^$p..10^$p, exclusive)")
         }
@@ -79,7 +127,6 @@ data class Rt_DecimalValue private constructor(val value: BigDecimal): Rt_ValueB
             GtvFactory.gtv(Lib_DecimalMath.toString(value.value))
 
         override fun toNative(value: Rt_DecimalValue): Any = value.value
-
         override fun fromNative(value: Any?): Rt_DecimalValue = get(value as BigDecimal)
 
         override fun toSqlValue(value: Rt_DecimalValue): Any = value.value
@@ -111,3 +158,5 @@ data class Rt_DecimalValue private constructor(val value: BigDecimal): Rt_ValueB
         }
     }
 }
+
+private data class Rt_BigDecimalValue(override val value: BigDecimal): Rt_DecimalValue()

@@ -187,7 +187,7 @@ class Rt_EnumType(
     override val klass = Rt_RR_EnumValue::class
 
     private val rtValues: List<Rt_Value> by lazy {
-        def.attrs.map { attr -> Rt_RR_EnumValue(lazyOf(this), attr) }
+        def.attrs.map { attr -> Rt_RR_EnumValue(this, attr) }
     }
 
     override val sqlAdapter: Rt_SqlCompatibleValueClass<*> by lazy {

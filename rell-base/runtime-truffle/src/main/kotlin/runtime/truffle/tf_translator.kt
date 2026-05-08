@@ -9,25 +9,20 @@ import com.oracle.truffle.api.frame.FrameDescriptor
 import com.oracle.truffle.api.frame.FrameSlotKind
 import com.oracle.truffle.api.frame.VirtualFrame
 import net.postchain.rell.base.model.DefinitionId
+import net.postchain.rell.base.model.ErrorPos
 import net.postchain.rell.base.model.FilePos
-import net.postchain.rell.base.model.rr.RR_Expr
-import net.postchain.rell.base.model.rr.RR_FrameDescriptor
-import net.postchain.rell.base.model.rr.RR_FunctionCall
-import net.postchain.rell.base.model.rr.RR_FunctionCallTarget
-import net.postchain.rell.base.model.rr.RR_IterableAdapterKind
-import net.postchain.rell.base.model.rr.RR_MemberCalculator
-import net.postchain.rell.base.model.rr.RR_PrimitiveKind
-import net.postchain.rell.base.model.rr.RR_Statement
-import net.postchain.rell.base.model.rr.RR_Type
-import net.postchain.rell.base.model.rr.RR_TypeAdapter
-import net.postchain.rell.base.model.rr.RR_VarDeclarator
-import net.postchain.rell.base.model.rr.RR_WhenChooser
+import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.Rt_BooleanValue
+import net.postchain.rell.base.runtime.Rt_DecimalValue
 import net.postchain.rell.base.runtime.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_TextValue
 import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.Rt_ValueClass
 import net.postchain.rell.base.runtime.truffle.nodes.*
+import net.postchain.rell.base.runtime.truffle.values.Tf_LongScaleDecimal
+import net.postchain.rell.base.runtime.truffle.values.Tf_StructShapeRegistry
+import net.postchain.rell.base.runtime.truffle.values.Tf_TruffleStringText
 
 /**
  * Translates [RR_Statement] / [RR_Expr] trees into Truffle node subtrees, then wraps the
@@ -55,6 +50,27 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
      */
     private var blockDepth: Int = 0
 
+    /**
+     * Per-body slot-kind table being built during the current top-level translation. Lives
+     * for the duration of a single `buildBodyTarget` / `buildExprAsBodyTarget` call so the
+     * dispatch logic in `translateStmt` / `translateExpr` can consult it via [slotKindAt]
+     * without threading the table through every helper signature. `null` outside a body —
+     * defensive against accidental reuse from a half-built target.
+     */
+    private var currentSlotKinds: ByteArray? = null
+
+    /** Lookup of the slot kind at [offset]; returns [TF_SLOT_KIND_OBJECT] when unset. */
+    private fun slotKindAt(offset: Int): Byte {
+        val table = currentSlotKinds ?: return TF_SLOT_KIND_OBJECT
+        return if (offset in table.indices) table[offset] else TF_SLOT_KIND_OBJECT
+    }
+
+    /** True if the slot at [offset] is reserved as `FrameSlotKind.Long`. */
+    private fun isLongSlot(offset: Int): Boolean = slotKindAt(offset) == TF_SLOT_KIND_LONG
+
+    /** True if the slot at [offset] is reserved as `FrameSlotKind.Boolean`. */
+    private fun isBoolSlot(offset: Int): Boolean = slotKindAt(offset) == TF_SLOT_KIND_BOOLEAN
+
     // -------------------------------------------------------------------------
     // Statement translation
     // -------------------------------------------------------------------------
@@ -73,6 +89,7 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                 blockDepth = depth
             }
         }
+
         is RR_Statement.Expr -> Tf_ExprStmtNode(translateExpr(stmt.expr))
         is RR_Statement.ReplExpr -> Tf_ReplExprStmtNode(translateExpr(stmt.expr))
         is RR_Statement.If -> Tf_IfStmtNode(
@@ -96,9 +113,21 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
             // `var i = 3` shape compiles with `decl.adapter = Direct`, and treating it as
             // null avoids tripping the fallback bridge unnecessarily.
             val noOpAdapter = decl is RR_VarDeclarator.Simple &&
-                (decl.adapter == null || decl.adapter === RR_TypeAdapter.Direct)
+                    (decl.adapter == null || decl.adapter === RR_TypeAdapter.Direct)
             if (noOpAdapter) {
-                Tf_VarSimpleStmtNode(decl.ptr, initExpr)
+                // Dispatch to typed initialiser when the slot was promoted to Long/Boolean
+                // and the initialiser is non-null. Null-init keeps the Object path: a typed
+                // simple-init with no rhs would write nothing and leave the slot in `Illegal`,
+                // breaking subsequent `frame.getLong` reads.
+                when {
+                    initExpr != null && isLongSlot(decl.ptr.offset) ->
+                        Tf_VarSimpleStmtNode.IntVarSimple(decl.ptr, initExpr)
+
+                    initExpr != null && isBoolSlot(decl.ptr.offset) ->
+                        Tf_VarSimpleStmtNode.BoolVarSimple(decl.ptr, initExpr)
+
+                    else -> Tf_VarSimpleStmtNode(decl.ptr, initExpr)
+                }
             } else {
                 Tf_VarStmtNode(decl, initExpr, backend)
             }
@@ -111,16 +140,28 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
             // ~4K samples in `Tf_AssignStmtNode.store`/`execute` before this).
             if (dst is RR_Expr.Var) {
                 if (op == null) {
-                    Tf_AssignVarStmtNode(dst.ptr, translateExpr(stmt.expr))
+                    when {
+                        isLongSlot(dst.ptr.offset) ->
+                            Tf_AssignVarStmtNode.IntAssignVar(dst.ptr, translateExpr(stmt.expr))
+
+                        isBoolSlot(dst.ptr.offset) ->
+                            Tf_AssignVarStmtNode.BoolAssignVar(dst.ptr, translateExpr(stmt.expr))
+
+                        else -> Tf_AssignVarStmtNode(dst.ptr, translateExpr(stmt.expr))
+                    }
                 } else {
                     val intOp = intCompoundOp(op)
                     if (intOp != null && isInt(dst.type) && isInt(stmt.expr.type)) {
                         // Synthesise `oldValue op rhs` using a typed binary node so the loop
                         // body stays on the primitive `executeLong` path.
-                        val lhsRead = Tf_VarReadNode(dst.ptr)
+                        val lhsRead = makeVarReadNode(dst.ptr)
                         val rhsNode = translateExpr(stmt.expr)
                         val combined = intOp(lhsRead, rhsNode, null)
-                        Tf_AssignVarCompoundIntStmtNode(dst.ptr, combined)
+                        if (isLongSlot(dst.ptr.offset)) {
+                            Tf_AssignVarCompoundIntStmtNode.TypedSlot(dst.ptr, combined)
+                        } else {
+                            Tf_AssignVarCompoundIntStmtNode(dst.ptr, combined)
+                        }
                     } else {
                         Tf_AssignStmtNode(dst, translateExpr(stmt.expr), op, backend)
                     }
@@ -162,14 +203,26 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
     // -------------------------------------------------------------------------
 
     fun translateExpr(expr: RR_Expr): Tf_ExprNode = when (expr) {
-        is RR_Expr.Var -> Tf_VarReadNode(expr.ptr)
+        is RR_Expr.Var -> makeVarReadNode(expr.ptr)
         is RR_Expr.ConstantValue -> {
             when (val rtValue = delegate.toRtValue(expr.value, expr.type)) {
                 is Rt_IntValue if isInt(expr.type) -> Tf_ConstantNode.IntConst(rtValue.value)
                 is Rt_BooleanValue if isBool(expr.type) -> Tf_ConstantNode.BoolConst(rtValue.value)
+                // Pre-materialise text constants as Tf_TruffleStringText so downstream
+                // text nodes can take their TruffleString fast paths (concat, substring,
+                // encoding round-trips) without an intermediate Java-String → TruffleString
+                // bounce on the hot path.
+                is Rt_TextValue -> Tf_ConstantNode.Generic(Tf_TruffleStringText.fromJavaString(rtValue.value))
+                // Pre-materialise decimal constants as Tf_LongScaleDecimal when the value fits
+                // a long mantissa. Eliminates per-iteration BigDecimal-backed Rt_BigDecimalValue
+                // reads on common literals (`0.5`, `2.5`, `0.21132487`, etc.) — every loop
+                // iteration that reads such a constant now touches a primitive-backed value
+                // directly, and the long-scale arithmetic fast path engages immediately.
+                is Rt_DecimalValue -> Tf_ConstantNode.Generic(Tf_LongScaleDecimal.tryFrom(rtValue.value) ?: rtValue)
                 else -> Tf_ConstantNode.Generic(rtValue)
             }
         }
+
         is RR_Expr.If -> {
             val condNode = translateExpr(expr.cond)
             val trueNode = translateExpr(expr.trueExpr)
@@ -190,6 +243,7 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                 else -> Tf_ElvisNode(leftNode, rightNode)
             }
         }
+
         is RR_Expr.NotNull -> {
             val innerNode = translateExpr(expr.expr)
             when {
@@ -198,6 +252,7 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                 else -> Tf_NotNullNode(innerNode, expr.errPos)
             }
         }
+
         is RR_Expr.TupleLiteral -> Tf_TupleLiteralNode(
             delegate.resolveType(expr.type),
             Array(expr.exprs.size) { translateExpr(expr.exprs[it]) },
@@ -237,6 +292,7 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                 else -> Tf_StructMemberNode(baseNode, expr.attrIndex)
             }
         }
+
         is RR_Expr.ListSubscript -> Tf_ListSubscriptNode(
             translateExpr(expr.base),
             translateExpr(expr.index),
@@ -313,9 +369,23 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
         is RR_Expr.StructCreate -> {
             val structDef = backend.rrApp.allStructs[expr.structDefIndex]
             val attrCount = structDef.struct.attributesList.size
+            // Tf_StructCreateNode.executeSomNoConstraints relies on attrs covering every
+            // attribute exactly once (no fill-with-Rt_NullValue pass). The R_StructExpr.init
+            // invariant currently guarantees this, but if a future RR-IR shape ever produced
+            // a partial attrs list we would silently leave SOM primitive slots at their zero
+            // defaults. Fail compilation up front instead.
+            require(expr.attrs.size == attrCount) {
+                "StructCreate for '${structDef.struct.name}': expected $attrCount attribute" +
+                        " expressions, got ${expr.attrs.size}"
+            }
             val attrIndices = IntArray(expr.attrs.size) { i -> expr.attrs[i].attrIndex }
             val attrExprs = Array(expr.attrs.size) { i -> translateExpr(expr.attrs[i].expr) }
             val attrNames = Array(attrCount) { i -> structDef.struct.attributesList[i].name }
+            // Per-Rell-struct-type SOM shape, lazily built and cached process-wide. Returns
+            // null when SOM isn't available (no polyglot registration); the node falls back to
+            // canonical Rt_HeapStruct construction in that case.
+            val rrType = expr.type as? RR_Type.Struct
+            val shape = rrType?.let { Tf_StructShapeRegistry.shapeFor(backend.rrApp, it) }
             Tf_StructCreateNode(
                 expr.structDefIndex,
                 delegate.resolveType(expr.type),
@@ -323,6 +393,7 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                 attrExprs,
                 attrCount,
                 attrNames,
+                shape,
                 backend,
             )
         }
@@ -346,11 +417,13 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                             baseNode, argNodes, mapping, expr.safe, identity, call.callPos,
                             target.fnDefIndex, call, resultIsInt, resultIsBool,
                         )
+
                     is RR_FunctionCallTarget.AbstractUser ->
                         translateUserFnCall(
                             baseNode, argNodes, mapping, expr.safe, identity, call.callPos,
                             target.fnDefIndex, call, resultIsInt, resultIsBool,
                         )
+
                     is RR_FunctionCallTarget.SysGlobal ->
                         translateSysGlobalCall(
                             argNodes, mapping, identity, call.callPos,
@@ -359,6 +432,7 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                             baseNode, argNodes, target, mapping, expr.safe, identity,
                             call.callPos, backend, resultIsInt, resultIsBool,
                         )
+
                     is RR_FunctionCallTarget.SysMember ->
                         translateSysMemberCall(
                             baseNode, argNodes, mapping, expr.safe, identity, call.callPos,
@@ -367,6 +441,7 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                             baseNode, argNodes, target, mapping, expr.safe, identity,
                             call.callPos, backend, resultIsInt, resultIsBool,
                         )
+
                     else -> Tf_FunctionCallNode.makeGeneric(
                         baseNode, argNodes, target, mapping, expr.safe, identity,
                         call.callPos, backend, resultIsInt, resultIsBool,
@@ -422,6 +497,19 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                 }
                 if (intCmp != null) return intCmp
             }
+            if (cmpInfo.cmpType == "R_CmpType_Decimal") {
+                // Long-mantissa fast path for decimal compares — sidesteps `evaluateCmpBinaryOp`
+                // → `asDecimal().compareTo` and the BigDecimal materialisation that costs the
+                // most on Simplex-noise-style hot loops.
+                val decCmp: Tf_BinaryNode? = when (cmpInfo.cmpOp) {
+                    "R_CmpOp_Lt" -> Tf_BinaryNode.DecimalLt(left, right)
+                    "R_CmpOp_Le" -> Tf_BinaryNode.DecimalLe(left, right)
+                    "R_CmpOp_Gt" -> Tf_BinaryNode.DecimalGt(left, right)
+                    "R_CmpOp_Ge" -> Tf_BinaryNode.DecimalGe(left, right)
+                    else -> null
+                }
+                if (decCmp != null) return decCmp
+            }
             // Comparison results are always boolean — pick the typed Generic variant so
             // callers reading via `executeBoolean` skip the default `asBoolean` typeError chain.
             return makeBinaryGeneric(left, right, expr.op, cmpInfo, expr.errPos, expr.type)
@@ -433,16 +521,31 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
         // dispatch + `Rt_IntValue.equals`, which dominated the profile (~30%) before
         // this specialisation.
         val bothInt = isInt(expr.left.type) && isInt(expr.right.type)
+        val bothDecimal = isDecimal(expr.left.type) && isDecimal(expr.right.type)
         return when (expr.op) {
             "R_BinaryOp_Add_Integer" -> Tf_BinaryNode.IntAdd(left, right, expr.errPos)
             "R_BinaryOp_Sub_Integer" -> Tf_BinaryNode.IntSub(left, right, expr.errPos)
             "R_BinaryOp_Mul_Integer" -> Tf_BinaryNode.IntMul(left, right, expr.errPos)
             "R_BinaryOp_Div_Integer" -> Tf_BinaryNode.IntDiv(left, right, expr.errPos)
             "R_BinaryOp_Mod_Integer" -> Tf_BinaryNode.IntMod(left, right, expr.errPos)
-            "R_BinaryOp_Eq" -> if (bothInt) Tf_BinaryNode.IntEq(left, right)
-                else makeBinaryGeneric(left, right, expr.op, null, expr.errPos, expr.type)
-            "R_BinaryOp_Ne" -> if (bothInt) Tf_BinaryNode.IntNe(left, right)
-                else makeBinaryGeneric(left, right, expr.op, null, expr.errPos, expr.type)
+            "R_BinaryOp_Add_Decimal" -> Tf_BinaryNode.DecimalAdd(left, right, expr.errPos)
+            "R_BinaryOp_Sub_Decimal" -> Tf_BinaryNode.DecimalSub(left, right, expr.errPos)
+            "R_BinaryOp_Mul_Decimal" -> Tf_BinaryNode.DecimalMul(left, right, expr.errPos)
+            "R_BinaryOp_Div_Decimal" -> Tf_BinaryNode.DecimalDiv(left, right, expr.errPos)
+            "R_BinaryOp_Mod_Decimal" -> Tf_BinaryNode.DecimalMod(left, right, expr.errPos)
+            "R_BinaryOp_Concat_Text" -> Tf_BinaryNode.TextConcat(left, right)
+            "R_BinaryOp_Eq" -> when {
+                bothInt -> Tf_BinaryNode.IntEq(left, right)
+                bothDecimal -> Tf_BinaryNode.DecimalEq(left, right)
+                else -> makeBinaryGeneric(left, right, expr.op, null, expr.errPos, expr.type)
+            }
+
+            "R_BinaryOp_Ne" -> when {
+                bothInt -> Tf_BinaryNode.IntNe(left, right)
+                bothDecimal -> Tf_BinaryNode.DecimalNe(left, right)
+                else -> makeBinaryGeneric(left, right, expr.op, null, expr.errPos, expr.type)
+            }
+
             "R_BinaryOp_And" -> Tf_BinaryNode.BoolAnd(left, right)
             "R_BinaryOp_Or" -> Tf_BinaryNode.BoolOr(left, right)
             else -> makeBinaryGeneric(left, right, expr.op, null, expr.errPos, expr.type)
@@ -458,9 +561,9 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
     private fun makeBinaryGeneric(
         left: Tf_ExprNode,
         right: Tf_ExprNode,
-        op: net.postchain.rell.base.model.rr.RR_BinaryOp,
-        cmpInfo: net.postchain.rell.base.model.rr.RR_CmpBinaryOp?,
-        errPos: net.postchain.rell.base.model.ErrorPos?,
+        op: RR_BinaryOp,
+        cmpInfo: RR_CmpBinaryOp?,
+        errPos: ErrorPos?,
         resultType: RR_Type,
     ): Tf_ExprNode = when {
         isInt(resultType) -> Tf_BinaryNode.GenericInt(left, right, op, cmpInfo, errPos)
@@ -474,6 +577,42 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
     private fun isBool(t: RR_Type): Boolean =
         t is RR_Type.Primitive && t.kind === RR_PrimitiveKind.BOOLEAN
 
+    private fun isDecimal(t: RR_Type): Boolean =
+        t is RR_Type.Primitive && t.kind === RR_PrimitiveKind.DECIMAL
+
+    private fun makeVarReadNode(ptr: RR_VarPtr): Tf_ExprNode = when {
+        isLongSlot(ptr.offset) -> Tf_VarReadNode.IntVar(ptr)
+        isBoolSlot(ptr.offset) -> Tf_VarReadNode.BoolVar(ptr)
+        else -> Tf_VarReadNode(ptr)
+    }
+
+    /**
+     * Extract a [RR_Type.Struct] from a base expression type, transparently unwrapping
+     * [RR_Type.Nullable]. Returns `null` for any type that isn't ultimately a struct (defensive
+     * — the [RR_MemberCalculator.StructAttr] frontend invariant should already ensure this).
+     */
+    private tailrec fun unwrapStructType(t: RR_Type): RR_Type.Struct? = when (t) {
+        is RR_Type.Struct -> t
+        is RR_Type.Nullable -> unwrapStructType(t.value)
+        else -> null
+    }
+
+    /**
+     * Look up the SOM [com.oracle.truffle.api.staticobject.StaticProperty] for a given struct
+     * attribute. Used by `Tf_MemberAccessNode.StructAttr` translation to capture a translate-time
+     * handle that the hot-path reader uses to skip the virtual `asStruct().get(idx)` dispatch
+     * when the runtime value is a [net.postchain.rell.base.runtime.truffle.values.Tf_DynStruct].
+     */
+    private fun somPropertyForStructAttr(
+        baseType: RR_Type,
+        attrIndex: Int,
+    ): com.oracle.truffle.api.staticobject.StaticProperty? {
+        val structType = unwrapStructType(baseType) ?: return null
+        val shape = Tf_StructShapeRegistry
+            .shapeFor(backend.rrApp, structType) ?: return null
+        return shape.properties[attrIndex]
+    }
+
     /**
      * For a Rell binary-op key that's also valid as a compound assignment (`+=` / `-=` /
      * `*=` / `/=` / `%=` over integers), return the constructor of the matching typed
@@ -482,8 +621,8 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
      * integer-typed compound form (e.g. `R_BinaryOp_And`, big-integer arithmetic).
      */
     private fun intCompoundOp(
-        op: net.postchain.rell.base.model.rr.RR_BinaryOp,
-    ): ((Tf_ExprNode, Tf_ExprNode, net.postchain.rell.base.model.ErrorPos?) -> Tf_ExprNode)? = when (op) {
+        op: RR_BinaryOp,
+    ): ((Tf_ExprNode, Tf_ExprNode, ErrorPos?) -> Tf_ExprNode)? = when (op) {
         "R_BinaryOp_Add_Integer" -> Tf_BinaryNode::IntAdd
         "R_BinaryOp_Sub_Integer" -> Tf_BinaryNode::IntSub
         "R_BinaryOp_Mul_Integer" -> Tf_BinaryNode::IntMul
@@ -594,8 +733,8 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
         // translator honest if a malformed RR ever lands here.
         var fastPath = paramVars.size == params.size && argTypes.size == paramVars.size
         if (fastPath) {
-            for (i in params.indices) {
-                if (params[i].sizeConstraint != null) {
+            for (param in params) {
+                if (param.sizeConstraint != null) {
                     fastPath = false
                     break
                 }
@@ -628,10 +767,12 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                 baseNode, argNodes, mapping, safe, identity, callPos,
                 fnDefIndex, fastPath, frameDescriptor, defId, paramOffsets, backend,
             )
+
             resultIsBool -> Tf_FunctionCallNode.UserFnBool(
                 baseNode, argNodes, mapping, safe, identity, callPos,
                 fnDefIndex, fastPath, frameDescriptor, defId, paramOffsets, backend,
             )
+
             else -> Tf_FunctionCallNode.UserFn(
                 baseNode, argNodes, mapping, safe, identity, callPos,
                 fnDefIndex, fastPath, frameDescriptor, defId, paramOffsets, backend,
@@ -698,9 +839,11 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
             resultIsInt -> Tf_SysCallNode.SysMemberInt(
                 baseNode, argNodes, fn, displayName, callPos, mapping, identity, safe,
             )
+
             resultIsBool -> Tf_SysCallNode.SysMemberBool(
                 baseNode, argNodes, fn, displayName, callPos, mapping, identity, safe,
             )
+
             else -> Tf_SysCallNode.SysMember(
                 baseNode, argNodes, fn, displayName, callPos, mapping, identity, safe,
             )
@@ -734,18 +877,28 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
         val resultIsInt = isInt(expr.type)
         val resultIsBool = isBool(expr.type)
         return when (val calc = expr.calculator) {
-            is RR_MemberCalculator.StructAttr -> when {
-                resultIsInt -> Tf_MemberAccessNode.StructAttr.IntAttr(baseNode, calc.attrIndex, safe)
-                resultIsBool -> Tf_MemberAccessNode.StructAttr.BoolAttr(baseNode, calc.attrIndex, safe)
-                else -> Tf_MemberAccessNode.StructAttr(baseNode, calc.attrIndex, safe)
+            is RR_MemberCalculator.StructAttr -> {
+                // Capture the SOM StaticProperty handle for the static base struct type, so the
+                // hot-path reader can do a direct SOM slot load when the runtime value is a
+                // Tf_DynStruct. Falls through to the virtual `asStruct().get(idx)` path for
+                // tree-walk-allocated Rt_HeapStruct values.
+                val somProperty = somPropertyForStructAttr(expr.base.type, calc.attrIndex)
+                when {
+                    resultIsInt -> Tf_MemberAccessNode.StructAttr.IntAttr(baseNode, calc.attrIndex, safe, somProperty)
+                    resultIsBool -> Tf_MemberAccessNode.StructAttr.BoolAttr(baseNode, calc.attrIndex, safe, somProperty)
+                    else -> Tf_MemberAccessNode.StructAttr(baseNode, calc.attrIndex, safe, somProperty)
+                }
             }
+
             is RR_MemberCalculator.TupleAttr -> when {
                 resultIsInt -> Tf_MemberAccessNode.TupleAttr.IntAttr(baseNode, calc.attrIndex, safe)
                 resultIsBool -> Tf_MemberAccessNode.TupleAttr.BoolAttr(baseNode, calc.attrIndex, safe)
                 else -> Tf_MemberAccessNode.TupleAttr(baseNode, calc.attrIndex, safe)
             }
+
             is RR_MemberCalculator.VirtualTupleAttr ->
                 Tf_MemberAccessNode.VirtualTupleAttr(baseNode, calc.fieldIndex, safe)
+
             is RR_MemberCalculator.VirtualStructAttr ->
                 Tf_MemberAccessNode.VirtualStructAttr(baseNode, calc.attrDefIndex, safe)
 
@@ -794,9 +947,11 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                     resultIsInt -> Tf_MemberAccessNode.SysMemberFnCall.IntResult(
                         baseNode, argNodes, fn, displayName, call.callPos, mapping, identity, safe,
                     )
+
                     resultIsBool -> Tf_MemberAccessNode.SysMemberFnCall.BoolResult(
                         baseNode, argNodes, fn, displayName, call.callPos, mapping, identity, safe,
                     )
+
                     else -> Tf_MemberAccessNode.SysMemberFnCall(
                         baseNode, argNodes, fn, displayName, call.callPos, mapping, identity, safe,
                     )
@@ -836,21 +991,36 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
         rrFrame: RR_FrameDescriptor,
         defId: DefinitionId,
         paramOffsets: IntArray? = null,
+        paramTypes: Array<RR_Type>? = null,
     ): RootCallTarget {
-        val tfBody = translateStmt(body)
-        val descriptor = buildFrameDescriptor(rrFrame, defId)
-        val rootNode = if (paramOffsets != null) {
-            Tf_FunctionRootNode(
-                language = null,
-                name = describe(body),
-                body = tfBody,
-                frameDescriptor = descriptor,
-                paramOffsets = paramOffsets,
-            )
-        } else {
-            Tf_RootNode(language = null, name = describe(body), body = tfBody, frameDescriptor = descriptor)
+        // Slot-kind classification has to happen before translating the body — the dispatch
+        // helpers (`makeVarReadNode`, the Var/Assign builders) consult `currentSlotKinds` while
+        // walking the statement tree.
+        val slotKinds = collectSlotKinds(body, rrFrame.size, paramOffsets, paramTypes)
+        val priorSlotKinds = currentSlotKinds
+        currentSlotKinds = slotKinds
+        try {
+            val tfBody = translateStmt(body)
+            val descriptor = buildFrameDescriptor(rrFrame, defId, slotKinds)
+            val paramSlotKinds = paramOffsets?.let { offsets ->
+                ByteArray(offsets.size) { slotKinds[offsets[it]] }
+            }
+            val rootNode = if (paramOffsets != null) {
+                Tf_FunctionRootNode(
+                    language = null,
+                    name = describe(body),
+                    body = tfBody,
+                    frameDescriptor = descriptor,
+                    paramOffsets = paramOffsets,
+                    paramSlotKinds = paramSlotKinds!!,
+                )
+            } else {
+                Tf_RootNode(language = null, name = describe(body), body = tfBody, frameDescriptor = descriptor)
+            }
+            return rootNode.callTarget
+        } finally {
+            currentSlotKinds = priorSlotKinds
         }
-        return rootNode.callTarget
     }
 
     /**
@@ -860,11 +1030,85 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
      * completes void.
      */
     fun buildExprAsBodyTarget(expr: RR_Expr, rrFrame: RR_FrameDescriptor, defId: DefinitionId): RootCallTarget {
-        val exprNode = translateExpr(expr)
-        val wrap = ExprAsReturnStmtNode(exprNode)
-        val descriptor = buildFrameDescriptor(rrFrame, defId)
-        val rootNode = Tf_ExprBodyRootNode(language = null, name = describeExpr(expr), body = wrap, frameDescriptor = descriptor)
-        return rootNode.callTarget
+        // Constant initialisers don't declare locals — the body is a single expression — so
+        // the slot-kind table is uniformly Object. We still build the descriptor with the
+        // table so [Tf_VirtualFrameStorage] sees a stable `slotKinds` length.
+        val slotKinds = ByteArray(rrFrame.size)
+        val priorSlotKinds = currentSlotKinds
+        currentSlotKinds = slotKinds
+        try {
+            val exprNode = translateExpr(expr)
+            val wrap = ExprAsReturnStmtNode(exprNode)
+            val descriptor = buildFrameDescriptor(rrFrame, defId, slotKinds)
+            val rootNode = Tf_ExprBodyRootNode(
+                language = null,
+                name = describeExpr(expr),
+                body = wrap,
+                frameDescriptor = descriptor,
+            )
+            return rootNode.callTarget
+        } finally {
+            currentSlotKinds = priorSlotKinds
+        }
+    }
+
+    private fun collectSlotKinds(
+        body: RR_Statement,
+        size: Int,
+        paramOffsets: IntArray?,
+        paramTypes: Array<RR_Type>?,
+    ): ByteArray {
+        val kinds = ByteArray(size) // initialised to TF_SLOT_KIND_OBJECT (= 0)
+        if (paramOffsets != null && paramTypes != null) {
+            for (i in paramOffsets.indices) {
+                kinds.assignSlotKind(paramOffsets[i], TF_SLOT_KIND_OBJECT)
+            }
+        }
+        collectFromStmt(body, kinds)
+        return kinds
+    }
+
+    /** Recursive descent over [RR_Statement] populating [kinds] from each declarator. */
+    private fun collectFromStmt(stmt: RR_Statement, kinds: ByteArray) {
+        when (stmt) {
+            is RR_Statement.Var -> collectFromDeclarator(stmt.declarator, kinds)
+            is RR_Statement.Block -> for (s in stmt.stmts) collectFromStmt(s, kinds)
+            is RR_Statement.If -> {
+                collectFromStmt(stmt.trueStmt, kinds)
+                collectFromStmt(stmt.falseStmt, kinds)
+            }
+
+            is RR_Statement.While -> collectFromStmt(stmt.body, kinds)
+            is RR_Statement.For -> {
+                collectFromDeclarator(stmt.varDeclarator, kinds)
+                collectFromStmt(stmt.body, kinds)
+            }
+
+            is RR_Statement.When -> for (s in stmt.stmts) collectFromStmt(s, kinds)
+            is RR_Statement.Guard -> collectFromStmt(stmt.body, kinds)
+            is RR_Statement.Lambda -> collectFromStmt(stmt.body, kinds)
+            // No nested var-decls in the remaining shapes — return/expr/break/continue/etc.
+            else -> {}
+        }
+    }
+
+    /** Recursive descent over [RR_VarDeclarator] populating [kinds] with each Simple slot's kind. */
+    private fun collectFromDeclarator(decl: RR_VarDeclarator, kinds: ByteArray) {
+        when (decl) {
+            is RR_VarDeclarator.Simple -> kinds.assignSlotKind(decl.ptr.offset, TF_SLOT_KIND_OBJECT)
+            is RR_VarDeclarator.Tuple -> for (sub in decl.subDeclarators) collectFromDeclarator(sub, kinds)
+            RR_VarDeclarator.Wildcard -> {}
+        }
+    }
+
+    private fun ByteArray.assignSlotKind(offset: Int, kind: Byte) {
+        if (offset !in indices) return
+        val existing = this[offset]
+        this[offset] = when (existing) {
+            TF_SLOT_KIND_OBJECT -> kind
+            kind -> kind
+            else -> TF_SLOT_KIND_OBJECT
+        }
     }
 
     /**
@@ -886,11 +1130,23 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
      *   instance. The aux slot is independent of the indexed-slot range — adding it does not
      *   shift any `RR_VarPtr.offset` ↔ slot-index mapping.
      */
-    private fun buildFrameDescriptor(rrFrame: RR_FrameDescriptor, defId: DefinitionId): FrameDescriptor {
+    private fun buildFrameDescriptor(
+        rrFrame: RR_FrameDescriptor,
+        defId: DefinitionId,
+        slotKinds: ByteArray,
+    ): FrameDescriptor {
         val builder = FrameDescriptor.newBuilder(rrFrame.size)
-        builder.info(Tf_FrameInfo(defId, rrFrame))
-        if (rrFrame.size > 0) {
-            builder.addSlots(rrFrame.size, FrameSlotKind.Object)
+        builder.info(Tf_FrameInfo(defId, rrFrame, slotKinds))
+        // Add slots one at a time so each slot's reserved kind reflects [slotKinds]. Truffle's
+        // batch `addSlots(size, kind)` would force all slots to the same kind. The build-time
+        // loop is amortised — descriptor build runs once per definition.
+        for (i in 0..<rrFrame.size) {
+            val kind = when (slotKinds[i]) {
+                TF_SLOT_KIND_LONG -> FrameSlotKind.Long
+                TF_SLOT_KIND_BOOLEAN -> FrameSlotKind.Boolean
+                else -> FrameSlotKind.Object
+            }
+            builder.addSlot(kind, null, null)
         }
         val descriptor = builder.build()
         // Reserve aux slot 0 for the Rt_CallFrame lazy cache, slot 1 for the body's

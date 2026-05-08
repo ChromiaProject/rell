@@ -8,23 +8,13 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.ExplodeLoop
+import com.oracle.truffle.api.staticobject.StaticProperty
 import net.postchain.rell.base.model.ErrorPos
 import net.postchain.rell.base.model.FilePos
-import net.postchain.rell.base.runtime.R_SysFunction
-import net.postchain.rell.base.runtime.R_SysFunctionUtils
-import net.postchain.rell.base.runtime.Rt_BooleanValue
-import net.postchain.rell.base.runtime.Rt_CallContext
-import net.postchain.rell.base.runtime.Rt_DefinitionContext
-import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.runtime.Rt_IntValue
-import net.postchain.rell.base.runtime.Rt_NullValue
-import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.runtime.asStruct
-import net.postchain.rell.base.runtime.asTuple
-import net.postchain.rell.base.runtime.asVirtualStruct
-import net.postchain.rell.base.runtime.asVirtualTuple
+import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.truffle.Tf_FrameInfo
 import net.postchain.rell.base.runtime.truffle.Tf_Unchecked
+import net.postchain.rell.base.runtime.truffle.values.Tf_DynStruct
 
 /**
  * Native: direct dispatch for [net.postchain.rell.base.model.rr.RR_Expr.MemberAccess].
@@ -41,7 +31,7 @@ import net.postchain.rell.base.runtime.truffle.Tf_Unchecked
  * (`DataAttribute`, `DataAttributeExpr`, `ExprEval`, non-sys `FunctionCall.Full`, `Partial`) keep
  * routing through fallback — they are rare on the FT4 hot path.
  */
-internal sealed class Tf_MemberAccessNode : Tf_ExprNode() {
+internal sealed class Tf_MemberAccessNode: Tf_ExprNode() {
     /**
      * Common safe-navigation prelude. Returns `Rt_NullValue` if `safe` and the base evaluates
      * to null; the caller then short-circuits without further work.
@@ -60,32 +50,76 @@ internal sealed class Tf_MemberAccessNode : Tf_ExprNode() {
      * Native: `s.attr` for struct values reached via `RR_Expr.MemberAccess` (the
      * `RR_MemberCalculator.StructAttr` shape). Distinct from [Tf_StructMemberNode] which serves
      * the dedicated `RR_Expr.StructMember` IR shape; both end up calling `asStruct().get(idx)`.
+     *
+     * Fast path: when [somProperty] is non-null (the translator captures the SOM
+     * [StaticProperty] for the static struct type) AND the runtime base is a [Tf_DynStruct],
+     * read directly from the SOM-generated slot — one `getfield`-equivalent after PE. The
+     * generic [execute] returns an `Rt_Value` and routes through [Tf_DynStruct.get] for
+     * slot-kind-aware boxing; the typed [IntAttr.executeLong] / [BoolAttr.executeBoolean]
+     * subclasses skip the box and read the primitive slot directly.
+     * Slow path: virtual `asStruct().get(attrIndex)` against
+     * [net.postchain.rell.base.runtime.Rt_HeapStruct] or any other
+     * [net.postchain.rell.base.runtime.Rt_StructValue] subclass.
      */
     internal open class StructAttr(
         @field:Child private var base: Tf_ExprNode,
-        @field:CompilationFinal private val attrIndex: Int,
+        @field:CompilationFinal protected val attrIndex: Int,
         @field:CompilationFinal private val safe: Boolean,
-    ) : Tf_MemberAccessNode() {
+        @field:CompilationFinal protected val somProperty: StaticProperty?,
+    ): Tf_MemberAccessNode() {
         override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
+            if (somProperty != null && baseValue is Tf_DynStruct) {
+                return baseValue.get(attrIndex)
+            }
             return baseValue.asStruct().get(attrIndex)
+        }
+
+        /**
+         * Evaluate the base for typed-primitive subclasses ([IntAttr]/[BoolAttr]). The translator
+         * only picks the typed subclasses for non-nullable primitive results, which forbids
+         * `safe == true` (a safe-call expression always has a nullable static type), so the
+         * `Rt_NullValue` fallback below is dead today. Kept as a defensive sentinel — `prop.getLong`
+         * would throw an obscure `ClassCastException` against `Rt_NullValue` if the safe-call
+         * invariant ever loosened. See [IntAttr]/[BoolAttr] for the assumption.
+         */
+        protected fun evaluateBaseRaw(frame: VirtualFrame): Rt_Value {
+            assert(!safe) { "typed primitive attr access invoked under safe-call" }
+            return evaluateBase(frame, base, safe) ?: Rt_NullValue
         }
 
         internal class IntAttr(
             base: Tf_ExprNode,
             attrIndex: Int,
             safe: Boolean,
-        ) : StructAttr(base, attrIndex, safe) {
-            override fun executeLong(frame: VirtualFrame): Long = Tf_Unchecked.cast<Rt_IntValue>(execute(frame)).value
+            somProperty: StaticProperty?,
+        ): StructAttr(base, attrIndex, safe, somProperty) {
+            override fun executeLong(frame: VirtualFrame): Long {
+                val baseValue = evaluateBaseRaw(frame)
+                val prop = somProperty
+                if (prop != null && baseValue is Tf_DynStruct) {
+                    // Direct primitive read: PE folds `prop.getLong(baseValue)` to a single
+                    // field load against the generated SOM class — no Rt_IntValue allocation.
+                    return prop.getLong(baseValue)
+                }
+                return Tf_Unchecked.cast<Rt_IntValue>(baseValue.asStruct().get(attrIndex)).value
+            }
         }
 
         internal class BoolAttr(
             base: Tf_ExprNode,
             attrIndex: Int,
             safe: Boolean,
-        ) : StructAttr(base, attrIndex, safe) {
-            override fun executeBoolean(frame: VirtualFrame): Boolean =
-                Tf_Unchecked.cast<Rt_BooleanValue>(execute(frame)).value
+            somProperty: StaticProperty?,
+        ): StructAttr(base, attrIndex, safe, somProperty) {
+            override fun executeBoolean(frame: VirtualFrame): Boolean {
+                val baseValue = evaluateBaseRaw(frame)
+                val prop = somProperty
+                if (prop != null && baseValue is Tf_DynStruct) {
+                    return prop.getBoolean(baseValue)
+                }
+                return Tf_Unchecked.cast<Rt_BooleanValue>(baseValue.asStruct().get(attrIndex)).value
+            }
         }
     }
 
@@ -94,7 +128,7 @@ internal sealed class Tf_MemberAccessNode : Tf_ExprNode() {
         @field:Child private var base: Tf_ExprNode,
         @field:CompilationFinal private val attrIndex: Int,
         @field:CompilationFinal private val safe: Boolean,
-    ) : Tf_MemberAccessNode() {
+    ): Tf_MemberAccessNode() {
         override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
             return baseValue.asTuple()[attrIndex]
@@ -104,16 +138,15 @@ internal sealed class Tf_MemberAccessNode : Tf_ExprNode() {
             base: Tf_ExprNode,
             attrIndex: Int,
             safe: Boolean,
-        ) : TupleAttr(base, attrIndex, safe) {
-            override fun executeLong(frame: VirtualFrame): Long =
-                Tf_Unchecked.cast<Rt_IntValue>(execute(frame)).value
+        ): TupleAttr(base, attrIndex, safe) {
+            override fun executeLong(frame: VirtualFrame): Long = Tf_Unchecked.cast<Rt_IntValue>(execute(frame)).value
         }
 
         internal class BoolAttr(
             base: Tf_ExprNode,
             attrIndex: Int,
             safe: Boolean,
-        ) : TupleAttr(base, attrIndex, safe) {
+        ): TupleAttr(base, attrIndex, safe) {
             override fun executeBoolean(frame: VirtualFrame): Boolean =
                 Tf_Unchecked.cast<Rt_BooleanValue>(execute(frame)).value
         }
@@ -124,7 +157,7 @@ internal sealed class Tf_MemberAccessNode : Tf_ExprNode() {
         @field:Child private var base: Tf_ExprNode,
         @field:CompilationFinal private val fieldIndex: Int,
         @field:CompilationFinal private val safe: Boolean,
-    ) : Tf_MemberAccessNode() {
+    ): Tf_MemberAccessNode() {
         override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
             return baseValue.asVirtualTuple().get(fieldIndex)
@@ -136,11 +169,9 @@ internal sealed class Tf_MemberAccessNode : Tf_ExprNode() {
         @field:Child private var base: Tf_ExprNode,
         @field:CompilationFinal private val attrDefIndex: Int,
         @field:CompilationFinal private val safe: Boolean,
-    ) : Tf_MemberAccessNode() {
-        override fun execute(frame: VirtualFrame): Rt_Value {
-            val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
-            return baseValue.asVirtualStruct().get(attrDefIndex)
-        }
+    ): Tf_MemberAccessNode() {
+        override fun execute(frame: VirtualFrame): Rt_Value =
+            evaluateBase(frame, base, safe)?.asVirtualStruct()?.get(attrDefIndex) ?: Rt_NullValue
     }
 
     // -------------------------------------------------------------------------
@@ -148,14 +179,41 @@ internal sealed class Tf_MemberAccessNode : Tf_ExprNode() {
     // -------------------------------------------------------------------------
 
     /**
+     * Inline cache for [buildCallCtx] — see `Tf_SysCallNode.cachedCallCtx` for the rationale.
+     */
+    private var cachedCallExeCtx: Rt_ExecutionContext? = null
+    private var cachedCallDbUpdate: Boolean = false
+    private var cachedCallCtx: Rt_CallContext? = null
+
+    /**
      * Build the `Rt_CallContext` for a member sys-fn call without lazy-allocating a callee
-     * [net.postchain.rell.base.runtime.Rt_CallFrame]. Mirrors [Tf_SysCallNode.buildCallCtx].
+     * [net.postchain.rell.base.runtime.Rt_CallFrame]. Mirrors [Tf_SysCallNode.buildCallCtx];
+     * single-element cache eliminates the per-call wrapper allocation in steady state.
      */
     protected fun buildCallCtx(frame: VirtualFrame): Rt_CallContext {
-        val info = Tf_Unchecked.cast<Tf_FrameInfo>(frame.frameDescriptor.info)
         val caller = tfPropagateRtFrame(frame)
-        val defCtx = Rt_DefinitionContext(caller.exeCtx, caller.dbUpdateAllowed(), info.defId)
-        return Rt_CallContext(defCtx)
+        val exeCtx = caller.exeCtx
+        val dbUpdate = caller.dbUpdateAllowed()
+        val cached = cachedCallCtx
+        if (cached != null && cachedCallExeCtx === exeCtx && cachedCallDbUpdate == dbUpdate) {
+            return cached
+        }
+        return refreshCallCtxCache(frame, exeCtx, dbUpdate)
+    }
+
+    @TruffleBoundary
+    private fun refreshCallCtxCache(
+        frame: VirtualFrame,
+        exeCtx: Rt_ExecutionContext,
+        dbUpdate: Boolean,
+    ): Rt_CallContext {
+        val info = Tf_Unchecked.cast<Tf_FrameInfo>(frame.frameDescriptor.info)
+        val defCtx = Rt_DefinitionContext(exeCtx, dbUpdate, info.defId)
+        val callCtx = defCtx.toCallContext()
+        cachedCallExeCtx = exeCtx
+        cachedCallDbUpdate = dbUpdate
+        cachedCallCtx = callCtx
+        return callCtx
     }
 
     /**
@@ -183,11 +241,10 @@ internal sealed class Tf_MemberAccessNode : Tf_ExprNode() {
         @field:CompilationFinal private val fn: R_SysFunction,
         @field:CompilationFinal private val displayName: String,
         @field:CompilationFinal private val safe: Boolean,
-    ) : Tf_MemberAccessNode() {
+    ): Tf_MemberAccessNode() {
         override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
-            val callCtx = buildCallCtx(frame)
-            return invokeSysFn(callCtx, fn, displayName, listOf(baseValue))
+            return invokeSysFn(buildCallCtx(frame), fn, displayName, listOf(baseValue))
         }
 
         internal class IntResult(
@@ -195,9 +252,8 @@ internal sealed class Tf_MemberAccessNode : Tf_ExprNode() {
             fn: R_SysFunction,
             displayName: String,
             safe: Boolean,
-        ) : SysFn(base, fn, displayName, safe) {
-            override fun executeLong(frame: VirtualFrame): Long =
-                Tf_Unchecked.cast<Rt_IntValue>(execute(frame)).value
+        ): SysFn(base, fn, displayName, safe) {
+            override fun executeLong(frame: VirtualFrame): Long = Tf_Unchecked.cast<Rt_IntValue>(execute(frame)).value
         }
 
         internal class BoolResult(
@@ -205,7 +261,7 @@ internal sealed class Tf_MemberAccessNode : Tf_ExprNode() {
             fn: R_SysFunction,
             displayName: String,
             safe: Boolean,
-        ) : SysFn(base, fn, displayName, safe) {
+        ): SysFn(base, fn, displayName, safe) {
             override fun executeBoolean(frame: VirtualFrame): Boolean =
                 Tf_Unchecked.cast<Rt_BooleanValue>(execute(frame)).value
         }
@@ -236,18 +292,15 @@ internal sealed class Tf_MemberAccessNode : Tf_ExprNode() {
         @field:CompilationFinal(dimensions = 1) private val mapping: IntArray,
         @field:CompilationFinal private val identityMapping: Boolean,
         @field:CompilationFinal private val safe: Boolean,
-    ) : Tf_MemberAccessNode() {
+    ): Tf_MemberAccessNode() {
 
         @ExplodeLoop
         override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
 
-            val evaluated = arrayOfNulls<Rt_Value>(args.size)
-            for (i in args.indices) {
-                evaluated[i] = args[i].execute(frame)
-            }
-            val mapped: List<Rt_Value> = buildArgList(baseValue, evaluated)
+            val mapped: List<Rt_Value> = buildArgList(frame, baseValue)
             val callCtx = buildCallCtx(frame)
+
             return try {
                 invokeSysFn(callCtx, fn, displayName, mapped)
             } catch (e: Rt_Exception) {
@@ -255,18 +308,35 @@ internal sealed class Tf_MemberAccessNode : Tf_ExprNode() {
             }
         }
 
+        /**
+         * Identity case: evaluate args directly into a pre-sized `Array<Rt_Value>` (slot 0 holds
+         * `baseValue`, slots 1..n hold args) and wrap it in a [Tf_ArrayBackedList]. Skips the
+         * `ArrayList` wrapper plus its `grow` cost — the dominant SysMemberFnCall arg-eval cost on
+         * stdlib-heavy workloads (~2% on `bench_locations`).
+         */
         @ExplodeLoop
-        private fun buildArgList(baseValue: Rt_Value, evaluated: Array<Rt_Value?>): List<Rt_Value> = buildList(mapping.size + 1) {
-            add(baseValue)
+        private fun buildArgList(frame: VirtualFrame, baseValue: Rt_Value): List<Rt_Value> {
             if (identityMapping) {
-                for (i in evaluated.indices) {
-                    add(Tf_Unchecked.cast(evaluated[i]))
+                val args = this.args
+                val out = arrayOfNulls<Rt_Value>(args.size + 1)
+                out[0] = baseValue
+                for (i in args.indices) {
+                    out[i + 1] = args[i].execute(frame)
                 }
-            } else {
-                for (i in mapping.indices) {
-                    add(Tf_Unchecked.cast(evaluated[mapping[i]]))
-                }
+                @Suppress("UNCHECKED_CAST")
+                return Tf_ArrayBackedList(out as Array<Rt_Value>)
             }
+
+            val evaluated = Array(args.size) { args[it].execute(frame) }
+
+            val mapping = this.mapping
+            val out = arrayOfNulls<Rt_Value>(mapping.size + 1)
+            out[0] = baseValue
+            for (i in mapping.indices) {
+                out[i + 1] = Tf_Unchecked.cast(evaluated[mapping[i]])
+            }
+            @Suppress("UNCHECKED_CAST")
+            return Tf_ArrayBackedList(out as Array<Rt_Value>)
         }
 
         @TruffleBoundary
@@ -282,7 +352,7 @@ internal sealed class Tf_MemberAccessNode : Tf_ExprNode() {
             mapping: IntArray,
             identityMapping: Boolean,
             safe: Boolean,
-        ) : SysMemberFnCall(base, args, fn, displayName, callPos, mapping, identityMapping, safe) {
+        ): SysMemberFnCall(base, args, fn, displayName, callPos, mapping, identityMapping, safe) {
             override fun executeLong(frame: VirtualFrame): Long = Tf_Unchecked.cast<Rt_IntValue>(execute(frame)).value
         }
 
@@ -295,7 +365,7 @@ internal sealed class Tf_MemberAccessNode : Tf_ExprNode() {
             mapping: IntArray,
             identityMapping: Boolean,
             safe: Boolean,
-        ) : SysMemberFnCall(base, args, fn, displayName, callPos, mapping, identityMapping, safe) {
+        ): SysMemberFnCall(base, args, fn, displayName, callPos, mapping, identityMapping, safe) {
             override fun executeBoolean(frame: VirtualFrame): Boolean =
                 Tf_Unchecked.cast<Rt_BooleanValue>(execute(frame)).value
         }

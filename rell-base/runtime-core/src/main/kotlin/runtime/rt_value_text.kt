@@ -17,8 +17,14 @@ import org.jooq.impl.SQLDataType
 import java.util.regex.Pattern
 import kotlin.reflect.full.createType
 
-@ConsistentCopyVisibility
-data class Rt_TextValue private constructor(val value: String): Rt_ValueBase() {
+/**
+ * Abstract base for text values. Concrete leaves choose their physical layout:
+ * [Rt_JavaStringText] for the canonical Java-String-backed representation used by the tree-walk
+ * interpreter and as the spill target for non-specialised paths.
+ */
+abstract class Rt_TextValue: Rt_ValueBase() {
+    abstract val value: String
+
     override val name
         get() = Companion.name
 
@@ -32,6 +38,11 @@ data class Rt_TextValue private constructor(val value: String): Rt_ValueBase() {
     }
 
     override fun str(format: Rt_StrFormat): String = value
+
+    final override fun equals(other: Any?): Boolean =
+        other === this || (other is Rt_TextValue && value == other.value)
+
+    final override fun hashCode(): Int = value.hashCode()
 
     companion object:
         Rt_GtvCompatibleValueClass<Rt_TextValue>,
@@ -50,10 +61,10 @@ data class Rt_TextValue private constructor(val value: String): Rt_ValueBase() {
         override val comparator: Comparator<Rt_Value> =
             Comparator { a, b -> a.asString().compareTo(b.asString()) }
 
-        val EMPTY: Rt_TextValue = Rt_TextValue("")
+        val EMPTY: Rt_TextValue = Rt_JavaStringText("")
 
         fun get(s: String): Rt_TextValue {
-            return if (s.isEmpty()) EMPTY else Rt_TextValue(s)
+            return if (s.isEmpty()) EMPTY else Rt_JavaStringText(s)
         }
 
         override fun toGtv(value: Rt_TextValue, pretty: Boolean): Gtv = GtvString(value.value)
@@ -128,3 +139,8 @@ data class Rt_TextValue private constructor(val value: String): Rt_ValueBase() {
         }
     }
 }
+
+/**
+ * Java-String-backed text leaf.
+ */
+data class Rt_JavaStringText(override val value: String): Rt_TextValue()

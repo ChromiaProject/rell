@@ -12,94 +12,116 @@ import net.postchain.rell.base.model.R_Struct
 import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.base.runtime.utils.Rt_ValueRecursionDetector
 
-class Rt_StructValue private constructor(
-    override val type: Rt_ValueClass<*>,
-    /** R_StructType for lazy name/validator resolution. Null on pure-RR path. */
-    private val rStructType: R_StructType?,
-    /** Attribute names for str/strCode formatting. Null when unknown (rare fallback). */
-    private val attrNames: List<String>?,
-    private val attributes: MutableList<Rt_Value>,
-): Rt_ValueBase() {
-    constructor(type: R_StructType, attributes: MutableList<Rt_Value>): this(
-        rTypeStub(type),
-        type,
-        null,
-        attributes,
-    )
+/**
+ * Abstract base for struct values. Concrete leaves choose their physical layout:
+ * [Rt_HeapStruct] for the canonical ArrayList-backed representation used by the tree-walk
+ * interpreter and by paths that have not been specialised on the Truffle side; the Truffle
+ * backend will add SOM-generated leaves with primitive fields per attribute for the JIT hot
+ * path. Layout-vs-capability separation: layout lives on the leaf class, all capability
+ * dispatch (str/strCode/strPretty/equals/hashCode/Gtv conversion) routes through the abstract
+ * API ([size], [get], [effectiveNamesOrNull]) defined here.
+ *
+ * Constructor-style callers `Rt_StructValue(type, attrs)` continue to compile via the
+ * `operator fun invoke` overloads on the companion — they materialize an [Rt_HeapStruct].
+ */
+abstract class Rt_StructValue protected constructor(): Rt_ValueBase() {
+    // Defaults throw rather than being declared `abstract` so the Truffle Static Object Model
+    // can subclass through this hierarchy — its `validateClasses` walks the entire superclass
+    // chain and rejects any class with abstract methods (so the SOM-generated final subclass
+    // has a clean, instantiable parent). Concrete leaves ([Rt_HeapStruct],
+    // [net.postchain.rell.base.runtime.truffle.values.Tf_DynStruct]) override unconditionally.
 
-    constructor(rtType: Rt_ValueClass<*>, attributes: MutableList<Rt_Value>): this(rtType, null, null, attributes)
-    constructor(rtType: Rt_ValueClass<*>, attrNames: List<String>, attributes: MutableList<Rt_Value>): this(
-        rtType,
-        null,
-        attrNames,
-        attributes,
-    )
+    override val type: Rt_ValueClass<*>
+        get() = error("Rt_StructValue.type not provided by ${javaClass.name}")
 
-    /** Lazily resolved effective names — prefers explicit [attrNames], falls back to [rStructType]. */
-    private val effectiveNames: List<String>?
-        get() =
-            attrNames ?: rStructType?.struct?.attributesList?.map { it.name }
+    /** Number of attributes in the struct. Concrete leaves override. */
+    open fun size(): Int = error("Rt_StructValue.size not provided by ${javaClass.name}")
+
+    /** Read the [index]-th attribute. Concrete leaves override. */
+    open fun get(index: Int): Rt_Value =
+        error("Rt_StructValue.get not provided by ${javaClass.name}")
+
+    /** Write the [index]-th attribute. Implementations may apply per-attribute validators. */
+    open fun set(index: Int, value: Rt_Value) {
+        error("Rt_StructValue.set not provided by ${javaClass.name}")
+    }
+
+    /**
+     * Best-effort attribute names; null when the layout doesn't carry them (rare fallback). Used
+     * by [str]/[strCode]/[strPretty] and by the Gtv conversion to emit pretty/dictionary form.
+     */
+    open val effectiveNamesOrNull: List<String>?
+        get() = null
+
+    fun attributeNames(): List<String> = effectiveNamesOrNull ?: List(size()) { it.toString() }
 
     override val name
         get() = Companion.name
 
-    override fun equals(other: Any?) = other === this || (other is Rt_StructValue && attributes == other.attributes)
+    override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other !is Rt_StructValue) return false
+        val n = size()
+        if (n != other.size()) return false
+        for (i in 0 until n) if (get(i) != other.get(i)) return false
+        return true
+    }
+
     // Hash by type.name, not type.hashCode(): different Rt_ValueClass implementations
     // (Rt_StructType uses defIndex, Rt_GenericRrType-based stubs use name.hashCode(), etc.)
     // produce inconsistent hashes for the "same" struct type built via different routes,
     // breaking HashMap/HashSet semantics.
-    override fun hashCode() = type.name.hashCode() * 31 + attributes.hashCode()
+    override fun hashCode(): Int {
+        var h = type.name.hashCode() * 31
+        val n = size()
+        for (i in 0 until n) h = h * 31 + get(i).hashCode()
+        return h
+    }
 
     override fun str(format: Rt_StrFormat): String {
-        val names = effectiveNames
+        val names = effectiveNamesOrNull
+        val n = size()
         return STR_RECURSION_DETECTOR.calculate(this) {
             if (names != null) {
-                "${type.name}{${attributes.indices.joinToString(",") { "${names[it]}=${attributes[it].str(format)}" }}}"
+                "${type.name}{${(0 until n).joinToString(",") { "${names[it]}=${get(it).str(format)}" }}}"
             } else {
-                "${type.name}{${attributes.joinToString(",") { it.str(format) }}}"
+                "${type.name}{${(0 until n).joinToString(",") { get(it).str(format) }}}"
             }
         } ?: "${type.name}{...}"
     }
 
     override fun strCode(showTupleFieldNames: Boolean): String {
-        val names = effectiveNames
+        val names = effectiveNamesOrNull
+        val n = size()
         return STR_RECURSION_DETECTOR.calculate(this) {
             if (names != null) {
-                "${type.name}[${attributes.indices.joinToString(",") { "${names[it]}=${attributes[it].strCode()}" }}]"
+                "${type.name}[${(0 until n).joinToString(",") { "${names[it]}=${get(it).strCode()}" }}]"
             } else {
-                "${type.name}[${attributes.joinToString(",") { it.strCode() }}]"
+                "${type.name}[${(0 until n).joinToString(",") { get(it).strCode() }}]"
             }
         } ?: "${type.name}[...]"
     }
 
     override fun strPretty(indent: Int): String {
         val indentStr = "    ".repeat(indent)
-        val name = type.name
+        val typeName = type.name
+        val n = size()
         return STR_RECURSION_DETECTOR.calculate(this) {
-            val attrs = attributes.withIndex().joinToString(",") { (i, attr) ->
-                val n = effectiveNames?.getOrNull(i) ?: "$i"
-                val v = attr.strPretty(indent + 1)
-                "\n$indentStr    $n = $v"
+            val attrs = (0 until n).joinToString(",") { i ->
+                val nm = effectiveNamesOrNull?.getOrNull(i) ?: "$i"
+                val v = get(i).strPretty(indent + 1)
+                "\n$indentStr    $nm = $v"
             }
-            "$name{$attrs\n$indentStr}"
-        } ?: "$name{...}"
+            "$typeName{$attrs\n$indentStr}"
+        } ?: "$typeName{...}"
     }
 
-    /** Internal accessors used by [Companion.gtvConversion] which encodes via per-attribute conversions. */
-    internal val attributesView: List<Rt_Value>
-        get() = attributes
+    /** Internal accessors used by [Companion.gtvConversion]. Materialises a list view; leaves with array-backed storage may override for efficiency. */
+    internal open val attributesView: List<Rt_Value>
+        get() = List(size()) { get(it) }
 
     internal val effectiveNamesView: List<String>?
-        get() = effectiveNames
-
-    fun get(index: Int): Rt_Value = attributes[index]
-    fun size(): Int = attributes.size
-    fun attributeNames(): List<String> = effectiveNames ?: List(attributes.size) { it.toString() }
-
-    fun set(index: Int, value: Rt_Value) {
-        rStructType?.struct?.attributesList?.get(index)?.validator?.check(value)?.raise()
-        attributes[index] = value
-    }
+        get() = effectiveNamesOrNull
 
     class Builder(private val type: R_StructType) {
         private val v0: Rt_Value = Rt_RangeValue(0, 0, 0)
@@ -129,6 +151,23 @@ class Rt_StructValue private constructor(
             get() = "struct"
 
         override val klass = Rt_StructValue::class
+
+        /**
+         * Construct a heap-backed struct value with the given R_-level type and attribute list.
+         * Preserves the legacy `Rt_StructValue(type, attrs)` call syntax by routing through the
+         * companion's `invoke` operator; the actual instance is an [Rt_HeapStruct].
+         */
+        operator fun invoke(type: R_StructType, attributes: MutableList<Rt_Value>): Rt_StructValue =
+            Rt_HeapStruct(type, attributes)
+
+        operator fun invoke(rtType: Rt_ValueClass<*>, attributes: MutableList<Rt_Value>): Rt_StructValue =
+            Rt_HeapStruct(rtType, attributes)
+
+        operator fun invoke(
+            rtType: Rt_ValueClass<*>,
+            attrNames: List<String>,
+            attributes: MutableList<Rt_Value>,
+        ): Rt_StructValue = Rt_HeapStruct(rtType, attrNames, attributes)
 
         /** Decode a Gtv array as struct attribute values, validating size against [minCount]..struct.attributesList.size. */
         fun gtvToAttrValues(
@@ -242,7 +281,7 @@ class Rt_StructValue private constructor(
             for (attr in type.struct.attributesList) {
                 attr.validator?.check(attributes[attr.index])?.raise()
             }
-            return Rt_StructValue(type, attributes)
+            return Rt_HeapStruct(type, attributes)
         }
 
         private val STR_RECURSION_DETECTOR = Rt_ValueRecursionDetector()
@@ -281,4 +320,60 @@ class Rt_StructValue private constructor(
             } ?: "$typeName[...]"
         }
     }
+}
+
+/**
+ * Object[]-backed struct leaf. Canonical representation used by the tree-walk interpreter and
+ * the spill target for paths the Truffle backend has not specialised onto a SOM-generated layout.
+ * Instances are constructed via [Rt_StructValue.invoke] / [Rt_StructValue.createValidated] /
+ * [Rt_StructValue.Builder] — the constructors below are kept `public` to preserve the previous
+ * private-constructor / multi-secondary-constructor surface.
+ *
+ * Backed by a flat `Array<Rt_Value>` rather than `ArrayList<Rt_Value>`: one fewer object per
+ * struct (no ArrayList wrapper around the same `Object[]`), no `grow` cost on construction
+ * (size is fixed at attribute count), and a cheaper `get(i)` (no virtual List dispatch).
+ */
+class Rt_HeapStruct private constructor(
+    override val type: Rt_ValueClass<*>,
+    /** R_StructType for lazy name/validator resolution. Null on pure-RR path. */
+    private val rStructType: R_StructType?,
+    /** Attribute names for str/strCode formatting. Null when unknown (rare fallback). */
+    private val attrNamesArg: List<String>?,
+    private val attributes: Array<Rt_Value>,
+): Rt_StructValue() {
+    constructor(type: R_StructType, attributes: MutableList<Rt_Value>): this(
+        rTypeStub(type),
+        type,
+        null,
+        attributes.toTypedArray(),
+    )
+
+    constructor(rtType: Rt_ValueClass<*>, attributes: MutableList<Rt_Value>): this(
+        rtType,
+        null,
+        null,
+        attributes.toTypedArray(),
+    )
+
+    constructor(rtType: Rt_ValueClass<*>, attrNames: List<String>, attributes: MutableList<Rt_Value>): this(
+        rtType,
+        null,
+        attrNames,
+        attributes.toTypedArray(),
+    )
+
+    override val effectiveNamesOrNull: List<String>?
+        get() = attrNamesArg ?: rStructType?.struct?.attributesList?.map { it.name }
+
+    override fun size(): Int = attributes.size
+
+    override fun get(index: Int): Rt_Value = attributes[index]
+
+    override fun set(index: Int, value: Rt_Value) {
+        rStructType?.struct?.attributesList?.get(index)?.validator?.check(value)?.raise()
+        attributes[index] = value
+    }
+
+    override val attributesView: List<Rt_Value>
+        get() = attributes.asList()
 }

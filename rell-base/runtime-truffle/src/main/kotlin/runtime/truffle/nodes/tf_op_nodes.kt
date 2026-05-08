@@ -13,6 +13,8 @@ import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.DirectCallNode
 import com.oracle.truffle.api.nodes.ExplodeLoop
 import com.oracle.truffle.api.nodes.IndirectCallNode
+import com.oracle.truffle.api.strings.TruffleString
+import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import net.postchain.rell.base.model.DefinitionId
 import net.postchain.rell.base.model.ErrorPos
 import net.postchain.rell.base.model.FilePos
@@ -20,6 +22,25 @@ import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.truffle.Tf_Backend
 import net.postchain.rell.base.runtime.truffle.Tf_Unchecked
+import net.postchain.rell.base.runtime.truffle.values.*
+import java.math.BigDecimal
+import kotlin.math.abs
+import kotlin.math.sign
+
+/**
+ * Maximum scale delta for which scale-alignment via `10^Δ` stays in Long. `10^18` ≈ 1.11e18
+ * fits Long; `10^19` exceeds Long.MAX. Used by both [Tf_BinaryNode.DecimalArith]'s long-mantissa
+ * Add/Sub fast path and [Tf_BinaryNode.DecimalCmp]'s long-mantissa scale-aligned compare.
+ */
+private const val DECIMAL_MAX_ALIGN_DELTA: Int = 18
+
+private val DECIMAL_POW10: LongArray = LongArray(DECIMAL_MAX_ALIGN_DELTA + 1).also {
+    var p = 1L
+    for (i in 0..DECIMAL_MAX_ALIGN_DELTA) {
+        it[i] = p
+        if (i < DECIMAL_MAX_ALIGN_DELTA) p *= 10L
+    }
+}
 
 /**
  * Native: binary operator. The translator picks a specialised subclass per op shape so the
@@ -33,7 +54,7 @@ import net.postchain.rell.base.runtime.truffle.Tf_Unchecked
  * - [Generic] is the catch-all for collection/text/big-int/decimal arithmetic and unusual
  *   comparison shapes; it stays on the existing dispatch tables.
  */
-internal sealed class Tf_BinaryNode : Tf_ExprNode() {
+internal sealed class Tf_BinaryNode: Tf_ExprNode() {
 
     /**
      * Integer arithmetic — `+ - * / %`. One concrete subclass per op so PE never sees a
@@ -48,7 +69,7 @@ internal sealed class Tf_BinaryNode : Tf_ExprNode() {
         @field:Child protected var left: Tf_ExprNode,
         @field:Child protected var right: Tf_ExprNode,
         @field:CompilationFinal protected val errPos: ErrorPos?,
-    ) : Tf_BinaryNode() {
+    ): Tf_BinaryNode() {
         protected abstract val opCode: String
         protected abstract fun op(l: Long, r: Long): Long
 
@@ -58,18 +79,20 @@ internal sealed class Tf_BinaryNode : Tf_ExprNode() {
             return try {
                 op(l, r)
             } catch (_: ArithmeticException) {
-                throw Rt_Exception.common("expr:$opCode:overflow:$l:$r", "Integer overflow: $l $opCode $r")
+                val e = Rt_Exception.common(
+                    "expr:$opCode:overflow:$l:$r",
+                    "Integer overflow: $l $opCode $r",
+                )
+                if (errPos != null) tfRethrowAt(frame, errPos, e) else throw e
+            } catch (e: Rt_Exception) {
+                if (errPos != null) tfRethrowAt(frame, errPos, e) else throw e
             }
         }
 
-        final override fun execute(frame: VirtualFrame): Rt_Value = try {
-            Rt_IntValue.get(executeLong(frame))
-        } catch (e: Rt_Exception) {
-            if (errPos != null) tfRethrowAt(frame, errPos, e) else throw e
-        }
+        final override fun execute(frame: VirtualFrame): Rt_Value = Rt_IntValue.get(executeLong(frame))
     }
 
-    internal class IntAdd(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?) :
+    internal class IntAdd(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
         IntArith(left, right, errPos) {
         override val opCode
             get() = "+"
@@ -77,7 +100,7 @@ internal sealed class Tf_BinaryNode : Tf_ExprNode() {
         override fun op(l: Long, r: Long): Long = LongMath.checkedAdd(l, r)
     }
 
-    internal class IntSub(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?) :
+    internal class IntSub(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
         IntArith(left, right, errPos) {
         override val opCode
             get() = "-"
@@ -85,7 +108,7 @@ internal sealed class Tf_BinaryNode : Tf_ExprNode() {
         override fun op(l: Long, r: Long): Long = LongMath.checkedSubtract(l, r)
     }
 
-    internal class IntMul(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?) :
+    internal class IntMul(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
         IntArith(left, right, errPos) {
         override val opCode
             get() = "*"
@@ -93,7 +116,7 @@ internal sealed class Tf_BinaryNode : Tf_ExprNode() {
         override fun op(l: Long, r: Long): Long = LongMath.checkedMultiply(l, r)
     }
 
-    internal class IntDiv(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?) :
+    internal class IntDiv(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
         IntArith(left, right, errPos) {
         override val opCode
             get() = "/"
@@ -104,7 +127,7 @@ internal sealed class Tf_BinaryNode : Tf_ExprNode() {
         }
     }
 
-    internal class IntMod(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?) :
+    internal class IntMod(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
         IntArith(left, right, errPos) {
         override val opCode
             get() = "%"
@@ -128,34 +151,35 @@ internal sealed class Tf_BinaryNode : Tf_ExprNode() {
     internal abstract class IntBoolBinary(
         @field:Child protected var left: Tf_ExprNode,
         @field:Child protected var right: Tf_ExprNode,
-    ) : Tf_BinaryNode() {
+    ): Tf_BinaryNode() {
         protected abstract fun op(l: Long, r: Long): Boolean
         final override fun executeBoolean(frame: VirtualFrame): Boolean =
             op(left.executeLong(frame), right.executeLong(frame))
+
         final override fun execute(frame: VirtualFrame): Rt_Value = Rt_BooleanValue.get(executeBoolean(frame))
     }
 
-    internal class IntLt(left: Tf_ExprNode, right: Tf_ExprNode) : IntBoolBinary(left, right) {
+    internal class IntLt(left: Tf_ExprNode, right: Tf_ExprNode): IntBoolBinary(left, right) {
         override fun op(l: Long, r: Long): Boolean = l < r
     }
 
-    internal class IntLe(left: Tf_ExprNode, right: Tf_ExprNode) : IntBoolBinary(left, right) {
+    internal class IntLe(left: Tf_ExprNode, right: Tf_ExprNode): IntBoolBinary(left, right) {
         override fun op(l: Long, r: Long): Boolean = l <= r
     }
 
-    internal class IntGt(left: Tf_ExprNode, right: Tf_ExprNode) : IntBoolBinary(left, right) {
+    internal class IntGt(left: Tf_ExprNode, right: Tf_ExprNode): IntBoolBinary(left, right) {
         override fun op(l: Long, r: Long): Boolean = l > r
     }
 
-    internal class IntGe(left: Tf_ExprNode, right: Tf_ExprNode) : IntBoolBinary(left, right) {
+    internal class IntGe(left: Tf_ExprNode, right: Tf_ExprNode): IntBoolBinary(left, right) {
         override fun op(l: Long, r: Long): Boolean = l >= r
     }
 
-    internal class IntEq(left: Tf_ExprNode, right: Tf_ExprNode) : IntBoolBinary(left, right) {
+    internal class IntEq(left: Tf_ExprNode, right: Tf_ExprNode): IntBoolBinary(left, right) {
         override fun op(l: Long, r: Long): Boolean = l == r
     }
 
-    internal class IntNe(left: Tf_ExprNode, right: Tf_ExprNode) : IntBoolBinary(left, right) {
+    internal class IntNe(left: Tf_ExprNode, right: Tf_ExprNode): IntBoolBinary(left, right) {
         override fun op(l: Long, r: Long): Boolean = l != r
     }
 
@@ -163,7 +187,7 @@ internal sealed class Tf_BinaryNode : Tf_ExprNode() {
     internal class BoolAnd(
         @field:Child private var left: Tf_ExprNode,
         @field:Child private var right: Tf_ExprNode,
-    ) : Tf_BinaryNode() {
+    ): Tf_BinaryNode() {
         override fun executeBoolean(frame: VirtualFrame): Boolean =
             left.executeBoolean(frame) && right.executeBoolean(frame)
 
@@ -174,7 +198,7 @@ internal sealed class Tf_BinaryNode : Tf_ExprNode() {
     internal class BoolOr(
         @field:Child private var left: Tf_ExprNode,
         @field:Child private var right: Tf_ExprNode,
-    ) : Tf_BinaryNode() {
+    ): Tf_BinaryNode() {
         override fun executeBoolean(frame: VirtualFrame): Boolean =
             left.executeBoolean(frame) || right.executeBoolean(frame)
 
@@ -201,7 +225,7 @@ internal sealed class Tf_BinaryNode : Tf_ExprNode() {
         @field:CompilationFinal private val op: RR_BinaryOp,
         @field:CompilationFinal private val cmpInfo: RR_CmpBinaryOp?,
         @field:CompilationFinal private val errPos: ErrorPos?,
-    ) : Tf_BinaryNode() {
+    ): Tf_BinaryNode() {
         final override fun execute(frame: VirtualFrame): Rt_Value {
             val l = left.execute(frame)
             val sc = shortCircuit(l)
@@ -222,6 +246,514 @@ internal sealed class Tf_BinaryNode : Tf_ExprNode() {
             if (cmpInfo != null) evaluateCmpBinaryOp(cmpInfo, l, r) else evaluateBinaryOp(op, l, r)
     }
 
+    /**
+     * Decimal arithmetic — `+ - * / %`. Specialises away the op-key HashMap dispatch in
+     * `evaluateBinaryOp` (one [TruffleBoundary]-bracketed call per node, instead of a
+     * boundary-free dispatch table that the inliner would otherwise expand fully). For Add and
+     * Sub, opens a primitive long-mantissa fast path when both operands are
+     * [Tf_LongScaleDecimal] with matching scale.
+     *
+     * Long-scale fast path safety: `Lib_DecimalMath.scale` canonicalises every produced decimal
+     * to scale = `DECIMAL_FRAC_DIGITS` (= 20) for non-zero values, so any pair of values that
+     * have travelled through the canonical factory will agree on scale and the equal-scale
+     * Add/Sub stays purely in primitives. Mul produces scale = l + r and Div/Mod need rounding,
+     * neither of which fits cleanly in primitives at Rell's configured precision; both go
+     * straight to the BigDecimal slow path but still benefit from the dispatch elimination.
+     *
+     * After the BigDecimal slow path, ops where re-encoding can pay off
+     * ([DecimalMul]/[DecimalDiv]) override [reencodeCanonical] to attempt
+     * [Tf_LongScaleDecimal.tryFromCanonical]. Add/Sub/Mod skip re-encoding: the slow path there
+     * fires precisely because long-mantissa arithmetic overflowed, so the canonical result
+     * almost never fits `Long` again, and the strip-and-test cost dwarfs the rare hit.
+     */
+    internal abstract class DecimalArith(
+        @field:Child protected var left: Tf_ExprNode,
+        @field:Child protected var right: Tf_ExprNode,
+        @field:CompilationFinal protected val errPos: ErrorPos?,
+    ): Tf_BinaryNode() {
+        protected abstract val opCode: String
+
+        /**
+         * Long-mantissa fast path. Returns a [Tf_LongScaleDecimal] when the operation can stay
+         * in primitives without overflow or scale change; `null` defers to the BigDecimal slow
+         * path. Default implementation: no fast path.
+         */
+        protected open fun fastLongScale(l: Tf_LongScaleDecimal, r: Tf_LongScaleDecimal): Rt_DecimalValue? = null
+
+        /** BigDecimal slow path. Subclasses delegate to [Lib_DecimalMath]; div0 is checked here. */
+        protected abstract fun slowOp(l: BigDecimal, r: BigDecimal): BigDecimal
+
+        /**
+         * Re-encode the canonical slow-path result as [Tf_LongScaleDecimal] when worthwhile.
+         * Default returns `null` — the result wraps as a generic `Rt_BigDecimalValue` and any
+         * subsequent op pays the slow path. [DecimalMul]/[DecimalDiv] override to opt into
+         * `tryFromCanonical`, since those produce small-magnitude results often enough that
+         * keeping them on the long-scale chain is worth the unscaled-bitLength check.
+         */
+        protected open fun reencodeCanonical(canonical: BigDecimal): Rt_DecimalValue? = null
+
+        final override fun execute(frame: VirtualFrame): Rt_Value {
+            val lv: Rt_DecimalValue = Tf_Unchecked.cast(left.execute(frame))
+            val rv: Rt_DecimalValue = Tf_Unchecked.cast(right.execute(frame))
+            if (lv is Tf_LongScaleDecimal && rv is Tf_LongScaleDecimal) {
+                fastLongScale(lv, rv)?.let {
+                    return it
+                }
+            }
+            return try {
+                slowPath(lv.value, rv.value)
+            } catch (e: Rt_Exception) {
+                if (errPos != null) tfRethrowAt(frame, errPos, e) else throw e
+            }
+        }
+
+        @TruffleBoundary
+        private fun slowPath(l: BigDecimal, r: BigDecimal): Rt_Value {
+            val raw = slowOp(l, r)
+            // Canonicalise: `Lib_DecimalMath.scale` rounds HALF_UP to `DECIMAL_FRAC_DIGITS=20`
+            // (the canonical Rell scale) and range-checks. Slow-op subclasses (e.g. `multiply`)
+            // return the un-canonicalised BigDecimal — we MUST use the canonical result here,
+            // otherwise scale-21+ products keep their excess digits and diverge from the
+            // tree-walker which always canonicalises.
+            val canonical = Lib_DecimalMath.scale(raw) ?: throw Rt_DecimalValue.errOverflow(
+                "expr:$opCode:overflow",
+                "Decimal overflow: operator '$opCode'",
+            )
+            // Prefer Tf_LongScaleDecimal at natural scale when the unscaled mantissa fits Long
+            // — that's what keeps the value participating in further long-scale fast paths.
+            // Add/Sub/Mod opt out via the default `reencodeCanonical` (returns null), since
+            // arriving at this slow path almost always means the result won't fit Long anyway.
+            return reencodeCanonical(canonical) ?: Rt_DecimalValue.get(canonical)
+        }
+
+        /**
+         * Shared Add/Sub fast path with scale alignment. When operand scales differ, the
+         * smaller-scale mantissa is multiplied by `10^(Δscale)` to align against the larger
+         * scale (overflow-checked). The result keeps the larger scale.
+         *
+         * Falls back to the BigDecimal slow path when:
+         * - the scale delta is too large for `10^Δ` to fit Long (>18),
+         * - alignment overflows Long, or
+         * - the final add/sub overflows Long.
+         */
+        protected fun fastLongScaleAddSub(
+            l: Tf_LongScaleDecimal,
+            r: Tf_LongScaleDecimal,
+            subtract: Boolean,
+        ): Rt_DecimalValue? {
+            val lm: Long
+            val rm: Long
+            val resultScale: Int
+            when {
+                l.scale == r.scale -> {
+                    lm = l.mantissa
+                    rm = r.mantissa
+                    resultScale = l.scale
+                }
+
+                l.scale < r.scale -> {
+                    val delta = r.scale - l.scale
+                    if (delta > DECIMAL_MAX_ALIGN_DELTA) return null
+                    lm = try {
+                        Math.multiplyExact(l.mantissa, DECIMAL_POW10[delta])
+                    } catch (_: ArithmeticException) {
+                        return null
+                    }
+                    rm = r.mantissa
+                    resultScale = r.scale
+                }
+
+                else -> {
+                    val delta = l.scale - r.scale
+                    if (delta > DECIMAL_MAX_ALIGN_DELTA) return null
+                    rm = try {
+                        Math.multiplyExact(r.mantissa, DECIMAL_POW10[delta])
+                    } catch (_: ArithmeticException) {
+                        return null
+                    }
+                    lm = l.mantissa
+                    resultScale = l.scale
+                }
+            }
+            return try {
+                val resultMantissa = if (subtract) Math.subtractExact(lm, rm) else Math.addExact(lm, rm)
+                Tf_LongScaleDecimal(resultMantissa, resultScale)
+            } catch (_: ArithmeticException) {
+                null
+            }
+        }
+    }
+
+    internal class DecimalAdd(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
+        DecimalArith(left, right, errPos) {
+        override val opCode get() = "+"
+
+        override fun fastLongScale(l: Tf_LongScaleDecimal, r: Tf_LongScaleDecimal): Rt_DecimalValue? =
+            fastLongScaleAddSub(l, r, subtract = false)
+
+        override fun slowOp(l: BigDecimal, r: BigDecimal): BigDecimal = Lib_DecimalMath.add(l, r)
+    }
+
+    internal class DecimalSub(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
+        DecimalArith(left, right, errPos) {
+        override val opCode
+            get() = "-"
+
+        override fun fastLongScale(l: Tf_LongScaleDecimal, r: Tf_LongScaleDecimal): Rt_DecimalValue? =
+            fastLongScaleAddSub(l, r, subtract = true)
+
+        override fun slowOp(l: BigDecimal, r: BigDecimal): BigDecimal = Lib_DecimalMath.subtract(l, r)
+    }
+
+    internal class DecimalMul(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
+        DecimalArith(left, right, errPos) {
+        override val opCode
+            get() = "*"
+
+        /**
+         * Long-mantissa Mul fast path. Two regimes:
+         *
+         * 1. `newScale = s1 + s2 <= DECIMAL_FRAC_DIGITS=20` → return `(m1*m2, newScale)` directly.
+         *    `Math.multiplyExact` rejects overflow into the slow path.
+         *
+         * 2. `newScale > 20` → drop `k = newScale - 20` trailing fractional digits with
+         *    Long-arithmetic HALF_UP rounding (away from zero), keeping the result at canonical
+         *    scale 20. Required for cross-leaf parity with the slow path's
+         *    `Lib_DecimalMath.scale(...)` (BigDecimal `setScale(20, HALF_UP)`); without rounding
+         *    here, products like `0.0…054` would diverge from the canonical `0.0…05`.
+         *
+         *    Bails when `k > DECIMAL_MAX_ALIGN_DELTA=18` (`10^k` exceeds Long), or when the mantissa
+         *    product itself overflows. Both cases drop to the BigDecimal slow path which can
+         *    still narrow back to long-scale via `tryFrom` after canonicalisation.
+         *
+         * Negative-scale guard mirrors Add/Sub: scales below `-DECIMAL_INT_DIGITS` would fail
+         * `Lib_DecimalMath.scale` anyway, so reject up front.
+         */
+        override fun fastLongScale(l: Tf_LongScaleDecimal, r: Tf_LongScaleDecimal): Rt_DecimalValue? {
+            val newScale = l.scale + r.scale
+            if (newScale < -Lib_DecimalMath.DECIMAL_INT_DIGITS) return null
+            val product: Long = try {
+                Math.multiplyExact(l.mantissa, r.mantissa)
+            } catch (_: ArithmeticException) {
+                return null
+            }
+            if (newScale <= Lib_DecimalMath.DECIMAL_FRAC_DIGITS) {
+                return Tf_LongScaleDecimal(product, newScale)
+            }
+            val k = newScale - Lib_DecimalMath.DECIMAL_FRAC_DIGITS
+            if (k > DECIMAL_MAX_ALIGN_DELTA) return null
+            val divisor = DECIMAL_POW10[k]
+            val quotient = product / divisor
+            val remainder = product % divisor
+
+            // HALF_UP away-from-zero: round when |remainder| * 2 >= divisor. The doubled
+            // remainder fits Long because |remainder| < divisor <= 10^18 and 2 * 10^18 < Long.MAX.
+            val rounded = if (abs(remainder) * 2L >= divisor) {
+                val delta = if (product >= 0L) 1L else -1L
+                try {
+                    Math.addExact(quotient, delta)
+                } catch (_: ArithmeticException) {
+                    return null
+                }
+            } else {
+                quotient
+            }
+            return Tf_LongScaleDecimal(rounded, Lib_DecimalMath.DECIMAL_FRAC_DIGITS)
+        }
+
+        override fun slowOp(l: BigDecimal, r: BigDecimal): BigDecimal = Lib_DecimalMath.multiply(l, r)
+
+        override fun reencodeCanonical(canonical: BigDecimal): Rt_DecimalValue? =
+            Tf_LongScaleDecimal.tryFromCanonical(canonical)
+    }
+
+    internal class DecimalDiv(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
+        DecimalArith(left, right, errPos) {
+        override val opCode
+            get() = "/"
+
+        /**
+         * Long-mantissa Div fast path — produces a result at canonical scale
+         * `DECIMAL_FRAC_DIGITS=20` with HALF_UP rounding, matching `Lib_DecimalMath.divide`'s
+         * `BigDecimal.divide(b, 20, HALF_UP)`.
+         *
+         * Strategy: pre-multiply `l.mantissa` by `10^shift` where
+         * `shift = 20 - l.scale + r.scale`, then do a single Long division. The numerator is
+         * `lm * 10^(20 + rs - ls)` and the denominator is `rm`; the integer quotient is the
+         * mantissa of the canonical result before rounding.
+         *
+         * HALF_UP rounding without overflow: |rem| < |rm|, so the half-threshold
+         * `(|rm| + 1) ushr 1` is computed with unsigned shift to avoid the doubling-overflow
+         * trap on near-`Long.MAX_VALUE` divisors. The +/-1 round step direction matches the
+         * sign of the true rational quotient (`sign(scaledLm) XOR sign(rm)`).
+         *
+         * Bails to the BigDecimal slow path when:
+         * - `r.mantissa == 0` (slow path raises the canonical div-by-zero error),
+         * - `r.mantissa == Long.MIN_VALUE` (`Math.abs` would wrap),
+         * - `shift` is negative or > [DECIMAL_MAX_ALIGN_DELTA],
+         * - scaling `l.mantissa` overflows Long,
+         * - the rounded quotient overflows Long.
+         */
+        override fun fastLongScale(l: Tf_LongScaleDecimal, r: Tf_LongScaleDecimal): Rt_DecimalValue? {
+            val rm = r.mantissa
+            if (rm == 0L) return null
+            if (rm == Long.MIN_VALUE) return null
+
+            val shift = Lib_DecimalMath.DECIMAL_FRAC_DIGITS - l.scale + r.scale
+            if (shift !in 0..DECIMAL_MAX_ALIGN_DELTA) return null
+
+            val scaledLm = try {
+                Math.multiplyExact(l.mantissa, DECIMAL_POW10[shift])
+            } catch (_: ArithmeticException) {
+                return null
+            }
+
+            // Guard the silent `Long.MIN_VALUE / -1` overflow that Java's `/` swallows: the
+            // true quotient is +2^63 which doesn't fit Long. (All other Long-div cases are
+            // overflow-free.)
+            if (scaledLm == Long.MIN_VALUE && rm == -1L) return null
+
+            val quotient = scaledLm / rm
+            val remainder = scaledLm % rm
+            if (remainder == 0L) {
+                return Tf_LongScaleDecimal(quotient, Lib_DecimalMath.DECIMAL_FRAC_DIGITS)
+            }
+
+            // |remainder| < |rm|, and rm != Long.MIN_VALUE, so both abs() calls are safe.
+            // (|remainder| < |rm| < 2^63 implies remainder != Long.MIN_VALUE.)
+            val absRm = abs(rm)
+            val absRem = abs(remainder)
+            // HALF_UP: round when 2*|rem| >= |rm|, equivalently |rem| >= ceil(|rm|/2).
+            // Use `(absRm + 1) ushr 1` so the +1 wrap on absRm == Long.MAX_VALUE still yields
+            // the correct ceil(2^63 / 2) = 2^62 — Kotlin's `ushr` treats the operand as
+            // unsigned, so the sign-bit carry from the wrap is preserved as the high bit.
+            val halfUp = (absRm + 1L) ushr 1
+            val rounded = if (absRem >= halfUp) {
+                // Round away from zero; sign matches sign(scaledLm) XOR sign(rm).
+                // scaledLm != 0 here (otherwise remainder would be 0), so the comparisons
+                // are well-defined.
+                val roundUp = (scaledLm > 0L) == (rm > 0L)
+                try {
+                    if (roundUp) Math.addExact(quotient, 1L) else Math.subtractExact(quotient, 1L)
+                } catch (_: ArithmeticException) {
+                    return null
+                }
+            } else {
+                quotient
+            }
+
+            return Tf_LongScaleDecimal(rounded, Lib_DecimalMath.DECIMAL_FRAC_DIGITS)
+        }
+
+        override fun slowOp(l: BigDecimal, r: BigDecimal): BigDecimal {
+            if (r.signum() == 0) throw Rt_Exception.common("expr:/:div0", "Division by zero: /")
+            return Lib_DecimalMath.divide(l, r)
+        }
+
+        override fun reencodeCanonical(canonical: BigDecimal): Rt_DecimalValue? =
+            Tf_LongScaleDecimal.tryFromCanonical(canonical)
+    }
+
+    internal class DecimalMod(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
+        DecimalArith(left, right, errPos) {
+        override val opCode get() = "%"
+
+        /**
+         * Long-mantissa Mod fast path. Aligns operand scales like
+         * [fastLongScaleAddSub], then takes the Long remainder — Java `%` returns a value
+         * with the sign of the dividend, matching `BigDecimal.remainder`'s contract exactly.
+         *
+         * Result scale = `max(l.scale, r.scale)`; no canonicalisation to scale 20 is needed
+         * because `Tf_LongScaleDecimal.value` re-pads on materialisation.
+         *
+         * Bails to the BigDecimal slow path when:
+         * - `r.mantissa == 0` (slow path raises the canonical div-by-zero error),
+         * - the alignment delta exceeds [DECIMAL_MAX_ALIGN_DELTA],
+         * - scaling either mantissa to the aligned scale overflows Long.
+         */
+        override fun fastLongScale(l: Tf_LongScaleDecimal, r: Tf_LongScaleDecimal): Rt_DecimalValue? {
+            if (r.mantissa == 0L) return null
+
+            val lm: Long
+            val rm: Long
+            val resultScale: Int
+            when {
+                l.scale == r.scale -> {
+                    lm = l.mantissa
+                    rm = r.mantissa
+                    resultScale = l.scale
+                }
+
+                l.scale < r.scale -> {
+                    val delta = r.scale - l.scale
+                    if (delta > DECIMAL_MAX_ALIGN_DELTA) return null
+                    lm = try {
+                        Math.multiplyExact(l.mantissa, DECIMAL_POW10[delta])
+                    } catch (_: ArithmeticException) {
+                        return null
+                    }
+                    rm = r.mantissa
+                    resultScale = r.scale
+                }
+
+                else -> {
+                    val delta = l.scale - r.scale
+                    if (delta > DECIMAL_MAX_ALIGN_DELTA) return null
+                    rm = try {
+                        Math.multiplyExact(r.mantissa, DECIMAL_POW10[delta])
+                    } catch (_: ArithmeticException) {
+                        return null
+                    }
+                    lm = l.mantissa
+                    resultScale = l.scale
+                }
+            }
+            // |lm % rm| < |rm|, so the result always fits Long without overflow.
+            return Tf_LongScaleDecimal(lm % rm, resultScale)
+        }
+
+        override fun slowOp(l: BigDecimal, r: BigDecimal): BigDecimal {
+            if (r.signum() == 0) throw Rt_Exception.common("expr:%:div0", "Division by zero: %")
+            return Lib_DecimalMath.remainder(l, r)
+        }
+    }
+
+    /**
+     * Decimal comparison (`< <= > >= == !=`). Mirrors [IntBoolBinary]'s typed
+     * `executeBoolean` shape: a single primitive [Int] sign result feeds the per-op predicate.
+     *
+     * Long-mantissa fast path (no `BigDecimal` materialisation, no `Tf_LongScaleDecimal.value`
+     * volatile load, no allocation) when both sides are [Tf_LongScaleDecimal]:
+     * - same scale → compare mantissas directly with `Long.compare`.
+     * - different scale, |Δ| ≤ 18 → multiply the smaller-scale mantissa by `10^Δ` to align,
+     *   then compare. If alignment overflows Long, sign of the larger-scale mantissa decides
+     *   (an overflowed alignment means the smaller-scale value's magnitude exceeds the
+     *   larger-scale one, so the smaller-scale side is "bigger" in absolute terms — but its
+     *   sign determines which way).
+     * - |Δ| > 18 → fall through to the BigDecimal compare.
+     *
+     * This is the dominant cost driver in compare-heavy hot loops (Simplex noise's
+     * `simplex_2d` does ~10 decimal compares per call × 8 octaves × 25 cells × 20 reps).
+     * Without this node, `Generic.evaluate` routes through `evaluateCmpBinaryOp` which calls
+     * `asDecimal().compareTo(asDecimal())` — and `asDecimal()` on a long-scale leaf reads
+     * `.value`, triggering `BigDecimal.valueOf(...).setScale(20)` per side per compare.
+     */
+    internal abstract class DecimalCmp(
+        @field:Child protected var left: Tf_ExprNode,
+        @field:Child protected var right: Tf_ExprNode,
+    ): Tf_BinaryNode() {
+        protected abstract fun fromSign(sign: Int): Boolean
+
+        final override fun executeBoolean(frame: VirtualFrame): Boolean {
+            val lv = Tf_Unchecked.cast<Rt_DecimalValue>(left.execute(frame))
+            val rv = Tf_Unchecked.cast<Rt_DecimalValue>(right.execute(frame))
+            val sign = compareLongScaleOrFallback(lv, rv)
+            return fromSign(sign)
+        }
+
+        final override fun execute(frame: VirtualFrame): Rt_Value =
+            Rt_BooleanValue.get(executeBoolean(frame))
+
+        private fun compareLongScaleOrFallback(lv: Rt_DecimalValue, rv: Rt_DecimalValue): Int {
+            if (lv is Tf_LongScaleDecimal && rv is Tf_LongScaleDecimal) {
+                val fast = compareLongScale(lv, rv)
+                if (fast != null) return fast
+            }
+            return slowCompare(lv, rv)
+        }
+
+        @TruffleBoundary
+        private fun slowCompare(lv: Rt_DecimalValue, rv: Rt_DecimalValue): Int =
+            lv.value.compareTo(rv.value)
+
+        companion object {
+            /**
+             * Same-scale or scale-aligned long-scale compare. Returns the comparison sign or
+             * `null` to defer to the BigDecimal slow path.
+             */
+            internal fun compareLongScale(l: Tf_LongScaleDecimal, r: Tf_LongScaleDecimal): Int? {
+                if (l.scale == r.scale) return l.mantissa.compareTo(r.mantissa)
+                val delta = abs(l.scale - r.scale)
+                if (delta > DECIMAL_MAX_ALIGN_DELTA) return null
+                val pow = DECIMAL_POW10[delta]
+                val (lm, rm) = if (l.scale < r.scale) {
+                    val aligned = try {
+                        Math.multiplyExact(l.mantissa, pow)
+                    } catch (_: ArithmeticException) {
+                        // Aligned overflow: |l| × 10^Δ > Long.MAX, i.e. |l| > |r|. Sign of `l`
+                        // determines order; `r`'s sign is irrelevant when `l` is many orders of
+                        // magnitude larger.
+                        return l.mantissa.sign.toLong().compareTo(0L)
+                    }
+                    aligned to r.mantissa
+                } else {
+                    val aligned = try {
+                        Math.multiplyExact(r.mantissa, pow)
+                    } catch (_: ArithmeticException) {
+                        // Symmetric: |r| dominates, so `-sign(r)` is the answer (l < r when r > 0).
+                        return 0L.compareTo(r.mantissa.sign.toLong())
+                    }
+                    l.mantissa to aligned
+                }
+                return lm.compareTo(rm)
+            }
+        }
+    }
+
+    internal class DecimalLt(left: Tf_ExprNode, right: Tf_ExprNode): DecimalCmp(left, right) {
+        override fun fromSign(sign: Int): Boolean = sign < 0
+    }
+
+    internal class DecimalLe(left: Tf_ExprNode, right: Tf_ExprNode): DecimalCmp(left, right) {
+        override fun fromSign(sign: Int): Boolean = sign <= 0
+    }
+
+    internal class DecimalGt(left: Tf_ExprNode, right: Tf_ExprNode): DecimalCmp(left, right) {
+        override fun fromSign(sign: Int): Boolean = sign > 0
+    }
+
+    internal class DecimalGe(left: Tf_ExprNode, right: Tf_ExprNode): DecimalCmp(left, right) {
+        override fun fromSign(sign: Int): Boolean = sign >= 0
+    }
+
+    internal class DecimalEq(left: Tf_ExprNode, right: Tf_ExprNode): DecimalCmp(left, right) {
+        override fun fromSign(sign: Int): Boolean = sign == 0
+    }
+
+    internal class DecimalNe(left: Tf_ExprNode, right: Tf_ExprNode): DecimalCmp(left, right) {
+        override fun fromSign(sign: Int): Boolean = sign != 0
+    }
+
+    /**
+     * Native: text concatenation (`R_BinaryOp_Concat_Text`). Eliminates the op-key HashMap
+     * dispatch in `evaluateBinaryOp` and produces a [Tf_TruffleStringText] result so downstream
+     * text nodes (substring, encoding, further concat) stay on the TruffleString fast path.
+     *
+     * Fast path: when both operands are [Tf_TruffleStringText], dispatches through a cached
+     * [TruffleString.ConcatNode] (`@Child`), giving Truffle a
+     * proper PE-friendly call site that can do zero-copy / lazy concat where applicable.
+     * Slow path: materialise both sides to Java `String`, concat, wrap.
+     */
+    internal class TextConcat(
+        @field:Child private var left: Tf_ExprNode,
+        @field:Child private var right: Tf_ExprNode,
+    ): Tf_BinaryNode() {
+        @field:Child
+        private var concatNode: TruffleString.ConcatNode =
+            TruffleString.ConcatNode.create()
+
+        override fun execute(frame: VirtualFrame): Rt_Value {
+            val l = Tf_Unchecked.cast<Rt_TextValue>(left.execute(frame))
+            val r = Tf_Unchecked.cast<Rt_TextValue>(right.execute(frame))
+            if (l is Tf_TruffleStringText && r is Tf_TruffleStringText) {
+                return Tf_TruffleStringText(
+                    concatNode.execute(l.ts, r.ts, Tf_TruffleStringText.ENCODING, false),
+                )
+            }
+            return Tf_TruffleStringText.fromJavaString(l.value + r.value)
+        }
+    }
+
     /** Generic binary node whose result is statically integer-typed — unboxes on `executeLong`. */
     internal class GenericInt(
         left: Tf_ExprNode,
@@ -229,9 +761,8 @@ internal sealed class Tf_BinaryNode : Tf_ExprNode() {
         op: RR_BinaryOp,
         cmpInfo: RR_CmpBinaryOp?,
         errPos: ErrorPos?,
-    ) : Generic(left, right, op, cmpInfo, errPos) {
-        override fun executeLong(frame: VirtualFrame): Long =
-            Tf_Unchecked.cast<Rt_IntValue>(execute(frame)).value
+    ): Generic(left, right, op, cmpInfo, errPos) {
+        override fun executeLong(frame: VirtualFrame): Long = Tf_Unchecked.cast<Rt_IntValue>(execute(frame)).value
     }
 
     /** Generic binary node whose result is statically boolean-typed — unboxes on `executeBoolean`. */
@@ -241,7 +772,7 @@ internal sealed class Tf_BinaryNode : Tf_ExprNode() {
         op: RR_BinaryOp,
         cmpInfo: RR_CmpBinaryOp?,
         errPos: ErrorPos?,
-    ) : Generic(left, right, op, cmpInfo, errPos) {
+    ): Generic(left, right, op, cmpInfo, errPos) {
         override fun executeBoolean(frame: VirtualFrame): Boolean =
             Tf_Unchecked.cast<Rt_BooleanValue>(execute(frame)).value
     }
@@ -259,31 +790,28 @@ internal sealed class Tf_BinaryNode : Tf_ExprNode() {
  * - [Generic] for `Minus_BigInteger` / `Minus_Decimal`, which still go through the
  *   `evaluateUnaryOp` dispatch table — the savings on those paths would be minor.
  */
-internal sealed class Tf_UnaryNode : Tf_ExprNode() {
-
+internal sealed class Tf_UnaryNode: Tf_ExprNode() {
     internal class IntMinus(
         @field:Child private var expr: Tf_ExprNode,
         @field:CompilationFinal private val errPos: ErrorPos,
-    ) : Tf_UnaryNode() {
+    ): Tf_UnaryNode() {
         override fun executeLong(frame: VirtualFrame): Long {
             val v = expr.executeLong(frame)
             return try {
                 LongMath.checkedSubtract(0L, v)
             } catch (_: ArithmeticException) {
-                throw Rt_Exception.common("expr:-:overflow:$v", "Integer overflow: -($v)")
+                tfRethrowAt(
+                    frame,
+                    errPos,
+                    Rt_Exception.common("expr:-:overflow:$v", "Integer overflow: -($v)"),
+                )
             }
         }
 
-        override fun execute(frame: VirtualFrame): Rt_Value = try {
-            Rt_IntValue.get(executeLong(frame))
-        } catch (e: Rt_Exception) {
-            tfRethrowAt(frame, errPos, e)
-        }
+        override fun execute(frame: VirtualFrame): Rt_Value = Rt_IntValue.get(executeLong(frame))
     }
 
-    internal class Not(
-        @field:Child private var expr: Tf_ExprNode,
-    ) : Tf_UnaryNode() {
+    internal class Not(@field:Child private var expr: Tf_ExprNode): Tf_UnaryNode() {
         override fun executeBoolean(frame: VirtualFrame): Boolean = !expr.executeBoolean(frame)
         override fun execute(frame: VirtualFrame): Rt_Value = Rt_BooleanValue.get(executeBoolean(frame))
     }
@@ -292,7 +820,7 @@ internal sealed class Tf_UnaryNode : Tf_ExprNode() {
         @field:Child private var expr: Tf_ExprNode,
         @field:CompilationFinal private val op: RR_UnaryOp,
         @field:CompilationFinal private val errPos: ErrorPos,
-    ) : Tf_UnaryNode() {
+    ): Tf_UnaryNode() {
         override fun execute(frame: VirtualFrame): Rt_Value {
             val v = expr.execute(frame)
             return try {
@@ -321,7 +849,7 @@ internal sealed class Tf_UnaryNode : Tf_ExprNode() {
 internal class Tf_TypeAdapterNode(
     @field:Child private var expr: Tf_ExprNode,
     @field:CompilationFinal private val adapter: RR_TypeAdapter,
-) : Tf_ExprNode() {
+): Tf_ExprNode() {
     override fun execute(frame: VirtualFrame): Rt_Value =
         applyTypeAdapter(adapter, expr.execute(frame))
 
@@ -331,7 +859,7 @@ internal class Tf_TypeAdapterNode(
      */
     internal class DirectInt(
         @field:Child private var inner: Tf_ExprNode,
-    ) : Tf_ExprNode() {
+    ): Tf_ExprNode() {
         override fun executeLong(frame: VirtualFrame): Long = inner.executeLong(frame)
         override fun execute(frame: VirtualFrame): Rt_Value = Rt_IntValue.get(executeLong(frame))
     }
@@ -339,7 +867,7 @@ internal class Tf_TypeAdapterNode(
     /** `Direct` boolean adapter — pass-through on the typed boolean path. See [DirectInt]. */
     internal class DirectBool(
         @field:Child private var inner: Tf_ExprNode,
-    ) : Tf_ExprNode() {
+    ): Tf_ExprNode() {
         override fun executeBoolean(frame: VirtualFrame): Boolean = inner.executeBoolean(frame)
         override fun execute(frame: VirtualFrame): Rt_Value = Rt_BooleanValue.get(executeBoolean(frame))
     }
@@ -353,7 +881,7 @@ internal class Tf_TypeAdapterNode(
  */
 internal class Tf_ErrorNode(
     @field:CompilationFinal private val message: String,
-) : Tf_ExprNode() {
+): Tf_ExprNode() {
     override fun execute(frame: VirtualFrame): Rt_Value = error("RR_Expr.Error reached at runtime: $message")
 }
 
@@ -361,7 +889,7 @@ internal class Tf_ErrorNode(
  * Native: full function call. Two specialised shapes:
  *
  * - [UserFn] for `RegularUser` / `AbstractUser` targets — invokes the callee through a
- *   [DirectCallNode] wrapping the cached Truffle [com.oracle.truffle.api.RootCallTarget],
+ *   [DirectCallNode] wrapping the cached Truffle [RootCallTarget],
  *   so Graal's PE can inline the callee body into the caller. This is the entire reason
  *   to be running on Truffle: cross-call inlining + per-callsite specialisation.
  *
@@ -373,7 +901,7 @@ internal class Tf_ErrorNode(
  * Identity mapping is detected at translate time and the runtime skips the permutation in
  * that case.
  */
-internal sealed class Tf_FunctionCallNode : Tf_ExprNode() {
+internal sealed class Tf_FunctionCallNode: Tf_ExprNode() {
     /**
      * User-function call site. Dispatches via [DirectCallNode] resolved lazily on the first
      * execution from a `@CompilationFinal` [RootCallTarget].
@@ -416,7 +944,7 @@ internal sealed class Tf_FunctionCallNode : Tf_ExprNode() {
         // must be written. Pre-extracted from `fnBase.paramVars[i].ptr.offset` at translate time.
         @field:CompilationFinal(dimensions = 1) private val paramOffsets: IntArray,
         private val backend: Tf_Backend,
-    ) : Tf_FunctionCallNode() {
+    ): Tf_FunctionCallNode() {
 
         @field:Child
         private var directCall: DirectCallNode? = null
@@ -437,6 +965,17 @@ internal sealed class Tf_FunctionCallNode : Tf_ExprNode() {
          * — and recursive functions like `fib` would loop. Resolving on first execute, behind
          * a `transferToInterpreterAndInvalidate()`, lets PE see a `@CompilationFinal` non-null
          * `DirectCallNode` on every subsequent call.
+         *
+         * [DirectCallNode.forceInlining] is requested up-front to push the runtime past the
+         * default inlining cutoff for non-trivial chains. `traceTruffle` shows the bench's
+         * `is_rule_violated → evaluate_int_variable_rule → variable_value` chain hitting
+         * `Cutoff` (`Forced false`) at depth 3, where `variable_value` then routes through
+         * `OptimizedCallTarget.callDirect → profileArguments → callBoundary` and the args
+         * array allocated in [buildInnerCallArgs] / [buildInnerCallArgsIdentity] escapes
+         * across the boundary. The hint is best-effort: the runtime still rejects forced
+         * inlining for the recursion guard (`OptimizedCallTarget.callDirect`'s "Recursive"
+         * early return) and the graph-size budget, so `fib`-style self-recursion is
+         * unaffected.
          */
         private fun resolveCall(): DirectCallNode {
             val existing = directCall
@@ -453,6 +992,7 @@ internal sealed class Tf_FunctionCallNode : Tf_ExprNode() {
                 cachedFnName = fnBase.defName.appLevelName
             }
             val node = DirectCallNode.create(backend.functionTarget(fn))
+            node.forceInlining()
             directCall = insert(node)
             return node
         }
@@ -465,17 +1005,23 @@ internal sealed class Tf_FunctionCallNode : Tf_ExprNode() {
             // String/Throwable construction chain we're trying to keep out of PE.
             if (safe && baseValue === Rt_NullValue) return Rt_NullValue
 
-            val evaluated = arrayOfNulls<Rt_Value>(args.size)
-            for (i in args.indices) {
-                evaluated[i] = args[i].execute(frame)
-            }
-
             val call = resolveCall()
-            val callArgs: Array<Any?> = if (fastPath) {
-                buildInnerCallArgs(frame, evaluated)
-            } else {
-                buildOuterCallArgsSlow(frame, evaluated)
-                    ?: return reportSetupError(frame)
+            val callArgs: Array<Any?> = try {
+                if (fastPath && identityMapping) {
+                    // Identity + fast path: evaluate args directly into the inner-call slots.
+                    // Skips the per-call `Array<Rt_Value?>(args.size)` intermediate. paramOffsets.size
+                    // and args.size agree under identityMapping (translator invariant).
+                    buildInnerCallArgsIdentity(frame)
+                } else {
+                    val evaluated = Array(args.size) { args[it].execute(frame) }
+                    if (fastPath) {
+                        buildInnerCallArgs(frame, evaluated)
+                    } else {
+                        buildOuterCallArgsSlow(frame, evaluated)
+                    }
+                }
+            } catch (e: Rt_Exception) {
+                tfRethrowNested(frame, ErrorPos(callPos), e)
             }
 
             return try {
@@ -527,7 +1073,7 @@ internal sealed class Tf_FunctionCallNode : Tf_ExprNode() {
         @ExplodeLoop
         private fun buildInnerCallArgs(
             frame: VirtualFrame,
-            evaluated: Array<Rt_Value?>,
+            evaluated: Array<Rt_Value>,
         ): Array<Any?> {
             val callArgs = arrayOfNulls<Any>(2 + paramOffsets.size)
             // arguments[0] stays null — the inner-entry sentinel.
@@ -540,47 +1086,35 @@ internal sealed class Tf_FunctionCallNode : Tf_ExprNode() {
             // and aborting tier-1 compilation with `SourceStackTraceBailoutException`.
             callArgs[1] = tfPropagateRtFrame(frame)
             for (i in paramOffsets.indices) {
-                // `evaluated[mapping[i]]!!` would compile to `Intrinsics.checkNotNull`, which
-                // drags the JDK String/Locale chain into PE. Cast through Tf_Unchecked instead.
-                val argValue: Rt_Value = Tf_Unchecked.cast(evaluated[mapping[i]])
-                callArgs[2 + i] = argValue
+                callArgs[2 + i] = evaluated[mapping[i]]
             }
             return callArgs
         }
 
-        @CompilationFinal
-        @Volatile
-        private var pendingError: Rt_Exception? = null
+        @ExplodeLoop
+        private fun buildInnerCallArgsIdentity(frame: VirtualFrame): Array<Any?> {
+            val callArgs = arrayOfNulls<Any>(2 + paramOffsets.size)
+            callArgs[1] = tfPropagateRtFrame(frame)
 
-        /**
-         * Slow-path callee-frame setup. Reached only when the translator could not prove
-         * fast-path eligibility — either an arg-to-param type mismatch (e.g. nullable widen)
-         * or a param with an `RR_SizeConstraint`. The wrapped helpers' Java bytecode shape
-         * is unrelated to the call's payload and would balloon the compiled graph if let
-         * into PE, hence the [TruffleBoundary]. Returns null when validation throws so
-         * callers can take a cold error path without baking try/catch state into the hot
-         * graph.
-         *
-         * The slow path keeps the legacy [Rt_CallFrame] construction (so size-constraint /
-         * type-adapter validation runs through `delegate.validateParams` /
-         * `delegate.setParams` exactly as before) and packages it as the **outer-entry**
-         * arguments shape `calleeRtFrame`. The callee root
-         * [net.postchain.rell.base.runtime.truffle.Tf_FunctionRootNode] sees
-         * `arg0 != null` and takes the outer-entry branch — pulling `values[]` into the
-         * [VirtualFrame] for the body's first reads, just like a top-level driver call.
-         */
+            for (i in paramOffsets.indices) {
+                callArgs[2 + i] = args[i].execute(frame)
+            }
+
+            return callArgs
+        }
+
         @TruffleBoundary
         private fun buildOuterCallArgsSlow(
             frame: VirtualFrame,
-            evaluated: Array<Rt_Value?>,
-        ): Array<Any?>? {
+            evaluated: Array<Rt_Value>,
+        ): Array<Any?> {
             val caller = tfRtFrame(frame)
             val mapped = if (identityMapping) {
-                Tf_Unchecked.cast<Array<Rt_Value>>(evaluated).asList()
+                evaluated.asList()
             } else {
                 buildList(mapping.size) {
                     for (i in mapping.indices) {
-                        add(evaluated[mapping[i]]!!)
+                        add(evaluated[mapping[i]])
                     }
                 }
             }
@@ -588,27 +1122,15 @@ internal sealed class Tf_FunctionCallNode : Tf_ExprNode() {
             val fnBase: RR_FunctionBase = Tf_Unchecked.cast(cachedFnBase)
             val fnName: String = Tf_Unchecked.cast(cachedFnName)
 
-            return try {
-                backend.delegate.validateParams(fnBase.params, mapped)
-                val callee = backend.delegate.createFrame(
-                    caller.exeCtx,
-                    frameDescriptor,
-                    caller.dbUpdateAllowed(),
-                    defId,
-                )
-                backend.delegate.setParams(callee, fnBase.paramVars, mapped, fnName)
-                arrayOf(callee)
-            } catch (e: Rt_Exception) {
-                pendingError = e
-                null
-            }
-        }
-
-        @TruffleBoundary
-        private fun reportSetupError(frame: VirtualFrame): Rt_Value {
-            val e = pendingError ?: error("setupCalleeFrame returned null without recording error")
-            pendingError = null
-            tfRtFrame(frame).error(ErrorPos(callPos), e, true)
+            backend.delegate.validateParams(fnBase.params, mapped)
+            val callee = backend.delegate.createFrame(
+                caller.exeCtx,
+                frameDescriptor,
+                caller.dbUpdateAllowed(),
+                defId,
+            )
+            backend.delegate.setParams(callee, fnBase.paramVars, mapped, fnName)
+            return arrayOf(callee)
         }
     }
 
@@ -631,7 +1153,7 @@ internal sealed class Tf_FunctionCallNode : Tf_ExprNode() {
         defId: DefinitionId,
         paramOffsets: IntArray,
         backend: Tf_Backend,
-    ) : UserFn(
+    ): UserFn(
         base, args, mapping, safe, identityMapping, callPos, fnDefIndex,
         fastPath, frameDescriptor, defId, paramOffsets, backend,
     ) {
@@ -653,7 +1175,7 @@ internal sealed class Tf_FunctionCallNode : Tf_ExprNode() {
         defId: DefinitionId,
         paramOffsets: IntArray,
         backend: Tf_Backend,
-    ) : UserFn(
+    ): UserFn(
         base, args, mapping, safe, identityMapping, callPos, fnDefIndex,
         fastPath, frameDescriptor, defId, paramOffsets, backend,
     ) {
@@ -676,23 +1198,21 @@ internal sealed class Tf_FunctionCallNode : Tf_ExprNode() {
         @field:CompilationFinal private val identityMapping: Boolean,
         @field:CompilationFinal private val callPos: FilePos,
         private val backend: Tf_Backend,
-    ) : Tf_FunctionCallNode() {
+    ): Tf_FunctionCallNode() {
 
         @ExplodeLoop
         final override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = base?.execute(frame)
             if (safe && baseValue === Rt_NullValue) return Rt_NullValue
 
-            val evaluated = arrayOfNulls<Rt_Value>(args.size)
-            for (i in args.indices) {
-                evaluated[i] = args[i].execute(frame)
-            }
+            val evaluated = Array(args.size) { args[it].execute(frame) }
+
             val mapped: List<Rt_Value> = if (identityMapping) {
                 Tf_Unchecked.cast<Array<Rt_Value>>(evaluated).asList()
             } else {
                 buildList(mapping.size) {
-                    for (i in mapping.indices) {
-                        add(evaluated[mapping[i]]!!)
+                    for (i in mapping) {
+                        add(evaluated[i])
                     }
                 }
             }
@@ -710,7 +1230,7 @@ internal sealed class Tf_FunctionCallNode : Tf_ExprNode() {
         identityMapping: Boolean,
         callPos: FilePos,
         backend: Tf_Backend,
-    ) : Generic(base, args, target, mapping, safe, identityMapping, callPos, backend) {
+    ): Generic(base, args, target, mapping, safe, identityMapping, callPos, backend) {
         override fun executeLong(frame: VirtualFrame): Long =
             Tf_Unchecked.cast<Rt_IntValue>(execute(frame)).value
     }
@@ -725,7 +1245,7 @@ internal sealed class Tf_FunctionCallNode : Tf_ExprNode() {
         identityMapping: Boolean,
         callPos: FilePos,
         backend: Tf_Backend,
-    ) : Generic(base, args, target, mapping, safe, identityMapping, callPos, backend) {
+    ): Generic(base, args, target, mapping, safe, identityMapping, callPos, backend) {
         override fun executeBoolean(frame: VirtualFrame): Boolean =
             Tf_Unchecked.cast<Rt_BooleanValue>(execute(frame)).value
     }
@@ -766,6 +1286,25 @@ internal sealed class Tf_FunctionCallNode : Tf_ExprNode() {
  *
  * Per-attribute size constraints (`@max_size`, etc.) are checked through the wrapped impl;
  * this stays reference-correct without re-implementing the constraint dispatch tree here.
+ * Constraints are translator-time visible: when none of the struct's attributes carries one we
+ * pin [hasSizeConstraints] to `false` and skip the temporary value array entirely — each
+ * attribute expression evaluates straight into the SOM instance (or the heap-struct array on
+ * the fallback path). When at least one attribute has a constraint we keep the two-pass shape:
+ * evaluate everything into a temporary array, run the constraint checks (which need the full
+ * value set since constraints can reference sibling attributes via the wrapped impl), then
+ * scatter into final storage.
+ *
+ * Storage: when [shape] is non-null, materialises a SOM-generated [Tf_DynStruct] instance and
+ * writes attributes through SOM property handles — no `ArrayList` / `Object[]` indirection per
+ * struct, and Graal's escape analysis can virtualise the allocation when the struct doesn't
+ * escape its frame. Primitive `integer` / `boolean` attributes write through typed
+ * `setLong` / `setBoolean` slots when the underlying expression node provides
+ * `executeLong` / `executeBoolean`, eliminating the [Rt_IntValue] / [Rt_BooleanValue] box on
+ * the create path.
+ *
+ * When SOM is unavailable in the current runtime (the polyglot registration hasn't been wired
+ * up), [shape] is null and construction falls back to the canonical [Rt_HeapStruct] path via
+ * `Rt_StructValue`'s companion `invoke` operator.
  */
 internal class Tf_StructCreateNode(
     @field:CompilationFinal private val structDefIndex: Int,
@@ -774,32 +1313,152 @@ internal class Tf_StructCreateNode(
     @field:Children private val attrExprs: Array<Tf_ExprNode>,
     @field:CompilationFinal private val attrCount: Int,
     @field:CompilationFinal(dimensions = 1) private val attrNames: Array<String>,
+    @field:CompilationFinal private val shape: Tf_StructShape?,
     private val backend: Tf_Backend,
-) : Tf_ExprNode() {
-    @ExplodeLoop
+): Tf_ExprNode() {
+    /**
+     * Translator-time check: any attribute carries an `RR_SizeConstraint`. When `false` the
+     * temp `Array<Rt_Value?>` is bypassed — every attribute expression evaluates straight into
+     * its destination slot (SOM property or heap-struct array element). The struct's attribute
+     * list never changes after compilation so this is safe to pin `@CompilationFinal`.
+     */
+    @field:CompilationFinal
+    private val hasSizeConstraints: Boolean = run {
+        val attrs = backend.rrApp.allStructs[structDefIndex].struct.attributesList
+        attrs.any { it.sizeConstraint != null }
+    }
+
+    /**
+     * Cached SOM factory. Pinned `@CompilationFinal` and pulled out of [shape] up front so PE
+     * folds the `factory.create(...)` call to a direct constructor invocation rather than a
+     * virtual `getFactory()` / `factory.create` lookup chain on every iteration.
+     */
+    @field:CompilationFinal
+    private val somFactory: Tf_StructFactory? = shape?.factory
+
     override fun execute(frame: VirtualFrame): Rt_Value {
+        val somShape = shape
+        val factory = somFactory
+        if (somShape == null || factory == null) {
+            return executeHeapFallback(frame)
+        }
+        return if (hasSizeConstraints) {
+            executeSomWithConstraints(frame, somShape, factory)
+        } else {
+            executeSomNoConstraints(frame, somShape, factory)
+        }
+    }
+
+    /**
+     * SOM fast path with no size constraints — single pass, no temp array. Each attribute
+     * expression evaluates straight into the corresponding SOM slot via typed setters when
+     * the slot kind matches the expected primitive shape. The R_StructExpr invariant
+     * (`R_StructExpr.init`) guarantees `attrIndices` covers every attribute, so no
+     * fill-unwritten-slots pass is needed here.
+     */
+    @ExplodeLoop
+    private fun executeSomNoConstraints(
+        frame: VirtualFrame,
+        somShape: Tf_StructShape,
+        factory: Tf_StructFactory,
+    ): Rt_Value {
+        val instance = factory.create(somShape.rrType, rtType, somShape)
+
+        for (i in attrIndices.indices) {
+            writeAttr(frame, somShape, instance, attrIndices[i], attrExprs[i])
+        }
+
+        return instance
+    }
+
+    /**
+     * SOM path with size constraints: evaluate everything into a temp array, run constraint
+     * checks (which may inspect sibling values), then scatter into the SOM instance.
+     */
+    @ExplodeLoop
+    private fun executeSomWithConstraints(
+        frame: VirtualFrame,
+        somShape: Tf_StructShape,
+        factory: Tf_StructFactory,
+    ): Rt_Value {
         val attrValues = arrayOfNulls<Rt_Value>(attrCount)
+
         for (i in attrIndices.indices) {
             attrValues[attrIndices[i]] = attrExprs[i].execute(frame)
         }
 
-        val values = ArrayList<Rt_Value>(attrCount)
-        for (i in 0 until attrCount) {
-            values += attrValues[i] ?: Rt_NullValue
+        runSizeConstraints(attrValues)
+
+        val instance = factory.create(somShape.rrType, rtType, somShape)
+
+        for (i in 0..<attrCount) {
+            scatterValue(somShape, instance, i, attrValues[i] ?: Rt_NullValue)
         }
 
-        // Apply size-constraint validation via the wrapped impl. The constraint list lives
-        // on the struct definition, which the impl already has indexed; rather than mirror
-        // the lookup here we delegate the per-attr `checkSizeConstraint` calls.
-        val structDef = backend.rrApp.allStructs[structDefIndex]
-        for (i in 0 until attrCount) {
-            structDef.struct.attributesList[i].sizeConstraint?.let {
-                backend.delegate.checkSizeConstraint(it, values[i])
-            }
+        return instance
+    }
+
+    @ExplodeLoop
+    private fun executeHeapFallback(frame: VirtualFrame): Rt_Value {
+        val attrValues = arrayOfNulls<Rt_Value>(attrCount)
+
+        for (i in attrIndices.indices) {
+            attrValues[attrIndices[i]] = attrExprs[i].execute(frame)
+        }
+
+        if (hasSizeConstraints) runSizeConstraints(attrValues)
+
+        val values = ArrayList<Rt_Value>(attrCount)
+
+        for (i in 0..<attrCount) {
+            values += attrValues[i] ?: Rt_NullValue
         }
 
         return Rt_StructValue(rtType, attrNames.asList(), values)
     }
+
+    private fun runSizeConstraints(attrValues: Array<Rt_Value?>) {
+        val structDef = backend.rrApp.allStructs[structDefIndex]
+        for (i in 0..<attrCount) {
+            structDef.struct.attributesList[i].sizeConstraint?.let {
+                backend.delegate.checkSizeConstraint(it, attrValues[i] ?: Rt_NullValue)
+            }
+        }
+    }
+
+    /**
+     * Direct write: pick the typed primitive write when the slot kind is `long` / `boolean` and
+     * the underlying expression node has a typed override (every primitive-typed expression in
+     * the runtime overrides `executeLong` / `executeBoolean`), else fall back to a boxed write.
+     * The default `executeLong` / `executeBoolean` on `Tf_ExprNode` boxes-then-unboxes, which
+     * preserves correctness even if the translator hasn't picked a typed subclass for the
+     * particular expression.
+     */
+    private fun writeAttr(
+        frame: VirtualFrame,
+        somShape: Tf_StructShape,
+        instance: Tf_DynStruct,
+        slotIdx: Int,
+        attrExpr: Tf_ExprNode,
+    ) {
+        val prop = somShape.properties[slotIdx]
+        when (somShape.slotKindAt(slotIdx)) {
+            TF_SLOT_LONG -> prop.setLong(instance, attrExpr.executeLong(frame))
+            TF_SLOT_BOOLEAN -> prop.setBoolean(instance, attrExpr.executeBoolean(frame))
+            else -> prop.setObject(instance, attrExpr.execute(frame))
+        }
+    }
+
+    /** Slot-kind-aware scatter for the post-constraint path; takes a pre-evaluated `Rt_Value`. */
+    private fun scatterValue(somShape: Tf_StructShape, instance: Tf_DynStruct, slotIdx: Int, value: Rt_Value) {
+        val prop = somShape.properties[slotIdx]
+        when (somShape.slotKindAt(slotIdx)) {
+            TF_SLOT_LONG -> prop.setLong(instance, value.asInteger())
+            TF_SLOT_BOOLEAN -> prop.setBoolean(instance, value.asBoolean())
+            else -> prop.setObject(instance, value)
+        }
+    }
+
 }
 
 /**
@@ -813,8 +1472,7 @@ internal class Tf_StructCreateNode(
  * Both dispatch shapes are common enough to warrant separate sealed implementations rather than
  * a runtime mode field; this lets PE specialise each chooser site cleanly.
  */
-internal sealed class Tf_WhenChooserNode : Tf_ExprNode() {
-
+internal sealed class Tf_WhenChooserNode: Tf_ExprNode() {
     /** Returns the matched branch index, or -1 when no branch matched and there is no else. */
     abstract fun chooseIndex(frame: VirtualFrame): Int
 
@@ -827,13 +1485,16 @@ internal sealed class Tf_WhenChooserNode : Tf_ExprNode() {
         @field:Children private val condExprs: Array<Tf_ExprNode>,
         @field:CompilationFinal(dimensions = 1) private val condIndices: IntArray,
         @field:CompilationFinal private val elseIndex: Int,
-    ) : Tf_WhenChooserNode() {
+    ): Tf_WhenChooserNode() {
         @ExplodeLoop
         override fun chooseIndex(frame: VirtualFrame): Int {
             val key = keyExpr.execute(frame)
-            for (i in condExprs.indices) {
-                if (key == condExprs[i].execute(frame)) return condIndices[i]
+
+            for (idx in condExprs.indices) {
+                if (key == condExprs[idx].execute(frame))
+                    return condIndices[idx]
             }
+
             return elseIndex
         }
     }
@@ -843,7 +1504,7 @@ internal sealed class Tf_WhenChooserNode : Tf_ExprNode() {
         @field:CompilationFinal(dimensions = 1) private val keys: Array<Rt_Value>,
         @field:CompilationFinal(dimensions = 1) private val values: IntArray,
         @field:CompilationFinal private val elseIndex: Int,
-    ) : Tf_WhenChooserNode() {
+    ): Tf_WhenChooserNode() {
         @ExplodeLoop
         override fun chooseIndex(frame: VirtualFrame): Int {
             val key = keyExpr.execute(frame)
@@ -867,7 +1528,7 @@ internal sealed class Tf_WhenChooserNode : Tf_ExprNode() {
 internal open class Tf_WhenExprNode(
     @field:Child private var chooser: Tf_WhenChooserNode,
     @field:Children private val branches: Array<Tf_ExprNode>,
-) : Tf_ExprNode() {
+): Tf_ExprNode() {
     override fun execute(frame: VirtualFrame): Rt_Value {
         val idx = chooser.chooseIndex(frame)
         check(idx >= 0) { "when expression: no matching branch and no else" }
@@ -877,7 +1538,7 @@ internal open class Tf_WhenExprNode(
     internal class IntWhen(
         @field:Child private var chooser: Tf_WhenChooserNode,
         @field:Children private val branches: Array<Tf_ExprNode>,
-    ) : Tf_ExprNode() {
+    ): Tf_ExprNode() {
         override fun executeLong(frame: VirtualFrame): Long {
             val idx = chooser.chooseIndex(frame)
             check(idx >= 0) { "when expression: no matching branch and no else" }
@@ -890,7 +1551,7 @@ internal open class Tf_WhenExprNode(
     internal class BoolWhen(
         @field:Child private var chooser: Tf_WhenChooserNode,
         @field:Children private val branches: Array<Tf_ExprNode>,
-    ) : Tf_ExprNode() {
+    ): Tf_ExprNode() {
         override fun executeBoolean(frame: VirtualFrame): Boolean {
             val idx = chooser.chooseIndex(frame)
             check(idx >= 0) { "when expression: no matching branch and no else" }

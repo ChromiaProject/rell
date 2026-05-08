@@ -153,8 +153,8 @@ internal class Tf_BlockStmtNode_0 : Tf_BlockStmtNode() {
             rt.enterBlockSet(blockUid, blockOffset, blockSize)
             var status = STATUS_FALLTHROUGH
             try {
-                for (i in children.indices) {
-                    val s = children[i].executeStmt(frame)
+                for (i in children) {
+                    val s = i.executeStmt(frame)
                     if (s != STATUS_FALLTHROUGH) {
                         nonFallthroughProfile.enter()
                         status = s
@@ -171,8 +171,8 @@ internal class Tf_BlockStmtNode_0 : Tf_BlockStmtNode() {
             }
             return status
         } else {
-            for (i in children.indices) {
-                val s = children[i].executeStmt(frame)
+            for (i in children) {
+                val s = i.executeStmt(frame)
                 if (s != STATUS_FALLTHROUGH) {
                     nonFallthroughProfile.enter()
                     return s
@@ -199,8 +199,8 @@ internal class Tf_BlockStmtNode_1 : Tf_BlockStmtNode() {
             rt.enterBlockSet(blockUid, blockOffset, blockSize)
             var status = STATUS_FALLTHROUGH
             try {
-                for (i in children.indices) {
-                    val s = children[i].executeStmt(frame)
+                for (i in children) {
+                    val s = i.executeStmt(frame)
                     if (s != STATUS_FALLTHROUGH) {
                         nonFallthroughProfile.enter()
                         status = s
@@ -213,8 +213,8 @@ internal class Tf_BlockStmtNode_1 : Tf_BlockStmtNode() {
             }
             return status
         } else {
-            for (i in children.indices) {
-                val s = children[i].executeStmt(frame)
+            for (i in children) {
+                val s = i.executeStmt(frame)
                 if (s != STATUS_FALLTHROUGH) {
                     nonFallthroughProfile.enter()
                     return s
@@ -241,8 +241,8 @@ internal class Tf_BlockStmtNode_2 : Tf_BlockStmtNode() {
             rt.enterBlockSet(blockUid, blockOffset, blockSize)
             var status = STATUS_FALLTHROUGH
             try {
-                for (i in children.indices) {
-                    val s = children[i].executeStmt(frame)
+                for (child in children) {
+                    val s = child.executeStmt(frame)
                     if (s != STATUS_FALLTHROUGH) {
                         nonFallthroughProfile.enter()
                         status = s
@@ -255,8 +255,8 @@ internal class Tf_BlockStmtNode_2 : Tf_BlockStmtNode() {
             }
             return status
         } else {
-            for (i in children.indices) {
-                val s = children[i].executeStmt(frame)
+            for (child in children) {
+                val s = child.executeStmt(frame)
                 if (s != STATUS_FALLTHROUGH) {
                     nonFallthroughProfile.enter()
                     return s
@@ -283,8 +283,8 @@ internal class Tf_BlockStmtNode_3 : Tf_BlockStmtNode() {
             rt.enterBlockSet(blockUid, blockOffset, blockSize)
             var status = STATUS_FALLTHROUGH
             try {
-                for (i in children.indices) {
-                    val s = children[i].executeStmt(frame)
+                for (child in children) {
+                    val s = child.executeStmt(frame)
                     if (s != STATUS_FALLTHROUGH) {
                         nonFallthroughProfile.enter()
                         status = s
@@ -297,8 +297,8 @@ internal class Tf_BlockStmtNode_3 : Tf_BlockStmtNode() {
             }
             return status
         } else {
-            for (i in children.indices) {
-                val s = children[i].executeStmt(frame)
+            for (child in children) {
+                val s = child.executeStmt(frame)
                 if (s != STATUS_FALLTHROUGH) {
                     nonFallthroughProfile.enter()
                     return s
@@ -325,8 +325,8 @@ internal class Tf_BlockStmtNode_4 : Tf_BlockStmtNode() {
             rt.enterBlockSet(blockUid, blockOffset, blockSize)
             var status = STATUS_FALLTHROUGH
             try {
-                for (i in children.indices) {
-                    val s = children[i].executeStmt(frame)
+                for (child in children) {
+                    val s = child.executeStmt(frame)
                     if (s != STATUS_FALLTHROUGH) {
                         nonFallthroughProfile.enter()
                         status = s
@@ -339,8 +339,8 @@ internal class Tf_BlockStmtNode_4 : Tf_BlockStmtNode() {
             }
             return status
         } else {
-            for (i in children.indices) {
-                val s = children[i].executeStmt(frame)
+            for (child in children) {
+                val s = child.executeStmt(frame)
                 if (s != STATUS_FALLTHROUGH) {
                     nonFallthroughProfile.enter()
                     return s
@@ -367,8 +367,8 @@ internal class Tf_BlockStmtNode_5 : Tf_BlockStmtNode() {
             rt.enterBlockSet(blockUid, blockOffset, blockSize)
             var status = STATUS_FALLTHROUGH
             try {
-                for (i in children.indices) {
-                    val s = children[i].executeStmt(frame)
+                for (i in children) {
+                    val s = i.executeStmt(frame)
                     if (s != STATUS_FALLTHROUGH) {
                         nonFallthroughProfile.enter()
                         status = s
@@ -381,8 +381,8 @@ internal class Tf_BlockStmtNode_5 : Tf_BlockStmtNode() {
             }
             return status
         } else {
-            for (i in children.indices) {
-                val s = children[i].executeStmt(frame)
+            for (i in children) {
+                val s = i.executeStmt(frame)
                 if (s != STATUS_FALLTHROUGH) {
                     nonFallthroughProfile.enter()
                     return s
@@ -581,11 +581,7 @@ internal class Tf_ForStmtNode(
     @CompilationFinal private val blockSize: Int = frameBlock.size
 
     /**
-     * `for` loops always need slow-path block-state: each iteration's loop-variable bind
-     * runs through `initializeDeclarator` which writes to [Rt_CallFrame.values] under
-     * `frame.setUnchecked(ptr, value, false)` — that requires `curBlockUid` to match the
-     * declarator's block. So we keep the per-iteration enter/exit unconditionally and
-     * bubble `needsBlockState = true` to any enclosing block.
+     * `for` loops always need slow-path block-state.
      */
     override val needsBlockState: Boolean
         get() = true

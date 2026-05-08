@@ -19,6 +19,12 @@ dependencies {
 
     implementation(libs.truffle.api)
 
+    // Polyglot SDK: needed so `Tf_Language` can be registered as a discoverable
+    // `TruffleLanguage`, which in turn populates the `polyglotLanguageInstance` field
+    // that `StaticShape.Builder` queries when generating SOM-backed struct subclasses.
+    // Without this, SOM falls back to the heap-array struct path.
+    implementation(libs.graalvm.polyglot)
+
     // Pull truffle-runtime onto the runtime classpath so the Graal-compiled code path engages
     // when running under GraalVM CE. On stock HotSpot this still works, just without partial
     // evaluation (interpreter mode).

@@ -20,15 +20,19 @@ import kotlin.test.*
  * - common Gtv constants intern.
  */
 class RtValueContractTest {
-    /** @ConsistentCopyVisibility + private constructor → synthesized copy() must inherit private visibility. */
+    /**
+     * `@ConsistentCopyVisibility` + `private constructor` → synthesised `copy()` must inherit
+     * private visibility. `Rt_DecimalValue` and `Rt_TextValue` no longer use this pattern (they
+     * are sealed bases with concrete leaves), but the four below remain validated data classes
+     * whose factory invariants (range checks, intern-on-canonical) would be bypassed by a
+     * public `copy()`.
+     */
     @Test fun copyOfValidatedDataClassesIsNotPublic() {
         val classes = listOf(
-            Rt_DecimalValue::class.java,
-            Rt_BigIntegerValue::class.java,
-            Rt_TextValue::class.java,
             Rt_IntValue::class.java,
             Rt_RowidValue::class.java,
             Rt_GtvValue::class.java,
+            Rt_BigIntegerValue::class.java,
         )
         for (cls in classes) {
             val copyMethods = cls.declaredMethods.filter { it.name == "copy" }

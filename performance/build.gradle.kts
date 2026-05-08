@@ -84,6 +84,10 @@ benchmark {
             outputTimeUnit = "ms"
             mode = "avgt"
             reportFormat = "json"
+            // Optional regex filter — invoke as `./gradlew :performance:mainBenchmark
+            // -PbenchmarkInclude="MnaBenchmark"` to scope a run to one suite. The kotlinx-benchmark
+            // plugin lacks a -P override, so the filter is wired here as a project property.
+            (project.findProperty("benchmarkInclude") as? String)?.let { include(it) }
         }
     }
 

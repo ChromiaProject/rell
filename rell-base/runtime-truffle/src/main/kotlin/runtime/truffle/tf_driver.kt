@@ -13,6 +13,8 @@ import com.oracle.truffle.api.nodes.ExplodeLoop
 import com.oracle.truffle.api.nodes.RootNode
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.Rt_BooleanValue
+import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.truffle.nodes.Tf_ExprNode
 
 /**
@@ -47,7 +49,10 @@ internal class Tf_Driver(private val backend: Tf_Backend) {
     fun buildFunctionTarget(fn: RR_FunctionDefinition): RootCallTarget {
         val base = fn.fnBase
         val paramOffsets = IntArray(base.paramVars.size) { base.paramVars[it].ptr.offset }
-        return translator.buildBodyTarget(base.body, base.frame, fn.base.defId, paramOffsets)
+        // Per-param declared types — the translator uses these to seed slot-kind classification
+        // for parameter slots (e.g. an `integer` param becomes a `Long` slot).
+        val paramTypes = Array(base.paramVars.size) { base.paramVars[it].type }
+        return translator.buildBodyTarget(base.body, base.frame, fn.base.defId, paramOffsets, paramTypes)
     }
 
     fun callFunction(
@@ -173,6 +178,16 @@ internal open class Tf_RootNode(
      */
     @field:CompilationFinal protected val frameSize: Int = frameDescriptor.numberOfSlots
 
+    /**
+     * Per-slot kind table mirroring the FrameDescriptor's reserved kinds — `@CompilationFinal`
+     * with `dimensions = 1` so PE folds each slot's classifier into the unrolled
+     * [pullParamsInline] body. Sourced from the descriptor's [Tf_FrameInfo] so
+     * driver-built test descriptors without a Tf_FrameInfo fall through to all-Object.
+     */
+    @field:CompilationFinal(dimensions = 1)
+    protected val slotKinds: ByteArray =
+        (frameDescriptor.info as? Tf_FrameInfo)?.slotKinds ?: ByteArray(frameSize)
+
     override fun execute(frame: VirtualFrame): Any {
         // Outer entry: arguments[0] is the pre-built Rt_CallFrame supplied by the driver.
         // Cache it in the aux slot so any downstream `tfRtFrame(frame)` call returns this
@@ -213,14 +228,22 @@ internal open class Tf_RootNode(
      */
     @ExplodeLoop
     protected fun pullParamsInline(frame: VirtualFrame, rt: Rt_CallFrame) {
-        for (i in 0 until frameSize) {
-            val v = rt.getUncheckedAt(i)
-            if (v != null) frame.setObject(i, v)
+        for (i in 0..<frameSize) {
+            val value = rt.getUncheckedAt(i) ?: continue
+            // Dispatch on the slot's reserved kind — a `setObject` on a `Long`/`Boolean` slot
+            // throws `FrameSlotTypeException` at runtime, so we must unbox primitive-typed
+            // values before writing. The slot-kind array is `@CompilationFinal` per index, so
+            // PE folds the dispatch entirely and each unrolled iteration becomes one typed
+            // store after compilation.
+            when (slotKinds[i]) {
+                TF_SLOT_KIND_LONG -> frame.setLong(i, Tf_Unchecked.cast<Rt_IntValue>(value).value)
+                TF_SLOT_KIND_BOOLEAN -> frame.setBoolean(i, Tf_Unchecked.cast<Rt_BooleanValue>(value).value)
+                else -> frame.setObject(i, value)
+            }
         }
     }
 
     override fun getName(): String = name
-
     override fun isCloningAllowed(): Boolean = true
 }
 
@@ -236,8 +259,7 @@ internal open class Tf_RootNode(
  */
 internal fun readReturnOrUnit(frame: VirtualFrame, status: Int): Rt_Value {
     if (status != STATUS_RETURN) return Rt_UnitValue
-    val v = frame.getAuxiliarySlot(TF_RETURN_VALUE_AUX_SLOT) ?: return Rt_UnitValue
-    return Tf_Unchecked.cast(v)
+    return Tf_Unchecked.cast(frame.getAuxiliarySlot(TF_RETURN_VALUE_AUX_SLOT) ?: return Rt_UnitValue)
 }
 
 /**
@@ -269,6 +291,18 @@ internal class Tf_FunctionRootNode(
     body: Tf_ExprNode,
     frameDescriptor: FrameDescriptor,
     @field:CompilationFinal(dimensions = 1) private val paramOffsets: IntArray,
+    /**
+     * Per-parameter slot-kind table aligned with [paramOffsets]: `paramSlotKinds[i]` is the
+     * kind of `paramOffsets[i]`. We pre-extract this at translate time so the inner-entry
+     * write loop dispatches on a `@CompilationFinal` byte rather than reading
+     * `frame.frameDescriptor.getSlotKind(...)` per iteration. PE constant-folds the dispatch
+     * for each unrolled `i`.
+     *
+     * The caller (`Tf_FunctionCallNode.UserFn.buildInnerCallArgs*`) hands us already-boxed
+     * `Rt_Value` argument values — the type system enforces correctness at the call site, so
+     * unboxing here is a `Tf_Unchecked.cast` to the corresponding primitive value class.
+     */
+    @field:CompilationFinal(dimensions = 1) private val paramSlotKinds: ByteArray,
 ) : Tf_RootNode(language, name, body, frameDescriptor) {
 
     @ExplodeLoop
@@ -284,10 +318,16 @@ internal class Tf_FunctionRootNode(
             // caller's frame) to build a fresh callee context.
             for (i in paramOffsets.indices) {
                 // arguments[2 + i] is the i-th evaluated arg. Tf_Unchecked.cast keeps PE
-                // out of Kotlin's `Intrinsics.checkNotNull` chain even though the slot is
-                // statically Object-typed.
+                // out of Kotlin's `Intrinsics.checkNotNull` chain.
                 val argValue: Rt_Value = Tf_Unchecked.cast(arguments[2 + i])
-                frame.setObject(paramOffsets[i], argValue)
+                val slot = paramOffsets[i]
+                when (paramSlotKinds[i]) {
+                    TF_SLOT_KIND_LONG ->
+                        frame.setLong(slot, Tf_Unchecked.cast<Rt_IntValue>(argValue).value)
+                    TF_SLOT_KIND_BOOLEAN ->
+                        frame.setBoolean(slot, Tf_Unchecked.cast<Rt_BooleanValue>(argValue).value)
+                    else -> frame.setObject(slot, argValue)
+                }
             }
             // needsBridge stays meaningful: a body with slow-path nodes has those nodes
             // synchronise [VirtualFrame] <-> [Rt_CallFrame.values] internally via
@@ -329,10 +369,16 @@ internal class Tf_ExprBodyRootNode(
     @field:CompilationFinal private val needsBridge: Boolean = body.needsBlockState
     @field:CompilationFinal private val frameSize: Int = frameDescriptor.numberOfSlots
 
+    /** See [Tf_RootNode.slotKinds]. */
+    @field:CompilationFinal(dimensions = 1)
+    private val slotKinds: ByteArray =
+        (frameDescriptor.info as? Tf_FrameInfo)?.slotKinds ?: ByteArray(frameSize)
+
     override fun execute(frame: VirtualFrame): Any {
         val rt = Tf_Unchecked.cast<Rt_CallFrame>(frame.arguments[0])
         frame.setAuxiliarySlot(TF_RT_FRAME_AUX_SLOT, rt)
         val status: Int
+
         if (needsBridge) {
             try {
                 status = body.executeStmt(frame)
@@ -342,14 +388,19 @@ internal class Tf_ExprBodyRootNode(
             pullParamsInline(frame, rt)
             status = body.executeStmt(frame)
         }
+
         return readReturnOrUnit(frame, status)
     }
 
     @ExplodeLoop
     private fun pullParamsInline(frame: VirtualFrame, rt: Rt_CallFrame) {
-        for (i in 0 until frameSize) {
-            val v = rt.getUncheckedAt(i)
-            if (v != null) frame.setObject(i, v)
+        for (i in 0..<frameSize) {
+            val value = rt.getUncheckedAt(i) ?: continue
+            when (slotKinds[i]) {
+                TF_SLOT_KIND_LONG -> frame.setLong(i, Tf_Unchecked.cast<Rt_IntValue>(value).value)
+                TF_SLOT_KIND_BOOLEAN -> frame.setBoolean(i, Tf_Unchecked.cast<Rt_BooleanValue>(value).value)
+                else -> frame.setObject(i, value)
+            }
         }
     }
 

@@ -42,12 +42,32 @@ import net.postchain.rell.base.runtime.truffle.Tf_Unchecked
  * the static type info we already have at translate time. Forcing the cast directly
  * via [Tf_Unchecked.cast] lets PE specialise on the value-class shape.
  */
-internal class Tf_VarReadNode(ptr: RR_VarPtr): Tf_ExprNode() {
-    @field:CompilationFinal private val slot: Int = ptr.offset
+internal open class Tf_VarReadNode(ptr: RR_VarPtr): Tf_ExprNode() {
+    @field:CompilationFinal protected val slot: Int = ptr.offset
 
     override fun execute(frame: VirtualFrame): Rt_Value = Tf_Unchecked.cast(frame.getObject(slot))
     override fun executeLong(frame: VirtualFrame): Long = Tf_Unchecked.cast<Rt_IntValue>(frame.getObject(slot)).value
     override fun executeBoolean(frame: VirtualFrame): Boolean = Tf_Unchecked.cast<Rt_BooleanValue>(frame.getObject(slot)).value
+
+    /**
+     * Typed read of a slot that the FrameDescriptor reserved as [com.oracle.truffle.api.frame.FrameSlotKind.Long].
+     *
+     * `executeLong` is one [com.oracle.truffle.api.frame.VirtualFrame.getLong] — no `Tf_Unchecked.cast`,
+     * no `Rt_IntValue` allocation, no boxing on either end. The boxing entry point exists only
+     * for the rare context that asks for an `Rt_Value` (e.g. when feeding a generic node), and
+     * routes through the canonical [Rt_IntValue.get] flyweight so small integers reuse the
+     * cached singletons — same as the boxing path on the Object-slot variant.
+     */
+    internal class IntVar(ptr: RR_VarPtr): Tf_VarReadNode(ptr) {
+        override fun execute(frame: VirtualFrame): Rt_Value = Rt_IntValue.get(frame.getLong(slot))
+        override fun executeLong(frame: VirtualFrame): Long = frame.getLong(slot)
+    }
+
+    /** Typed read of a slot reserved as [com.oracle.truffle.api.frame.FrameSlotKind.Boolean]. See [IntVar]. */
+    internal class BoolVar(ptr: RR_VarPtr): Tf_VarReadNode(ptr) {
+        override fun execute(frame: VirtualFrame): Rt_Value = Rt_BooleanValue.get(frame.getBoolean(slot))
+        override fun executeBoolean(frame: VirtualFrame): Boolean = frame.getBoolean(slot)
+    }
 }
 
 /**
@@ -186,8 +206,8 @@ internal class Tf_TupleLiteralNode(
     override fun execute(frame: VirtualFrame): Rt_Value = Rt_TupleValue(
         rtType,
         buildList(children.size) {
-            for (i in children.indices) {
-                add(children[i].execute(frame))
+            for (child in children) {
+                add(child.execute(frame))
             }
         },
     )
@@ -201,8 +221,8 @@ internal class Tf_ListLiteralNode(
     @ExplodeLoop
     override fun execute(frame: VirtualFrame): Rt_Value {
         val values = ArrayList<Rt_Value>(children.size)
-        for (i in children.indices) {
-            values += children[i].execute(frame)
+        for (i in children) {
+            values += i.execute(frame)
         }
         return Rt_ListValue(rtType, values)
     }
@@ -458,14 +478,14 @@ internal class Tf_VirtualMapSubscriptNode(
  * `Rt_RR_LazyValue` may outlive the call that produced it (e.g. it gets returned, stored in a
  * collection, or passed across a fallback boundary). On the Truffle path the live frame the
  * captured `Rt_CallFrame` points at is a [com.oracle.truffle.api.frame.VirtualFrame] that
- * Graal will free as soon as the call target returns. We therefore snapshot the frame's slot
- * contents into a **fresh heap-backed** [Rt_CallFrame] at capture time and hand the snapshot
- * to the lazy — its `force()` will then evaluate against the snapshot, decoupled from the
- * VirtualFrame's lifetime.
+ * Graal will free as soon as the call target returns.
+ * We therefore snapshot the frame's slot contents into a **fresh heap-backed** [Rt_CallFrame] at capture time and hand
+ * the snapshot to the lazy — its `force()` will then evaluate against the snapshot, decoupled from the
+ * `VirtualFrame`'s lifetime.
  *
- * The snapshot reuses [Rt_DefinitionContext] / [RR_FrameDescriptor] from the live frame, so
- * stack-trace metadata and block-uid validation stay identical between eager and lazy
- * resolution.
+ * The snapshot reuses [Rt_DefinitionContext] / [net.postchain.rell.base.model.rr.RR_FrameDescriptor] from the live
+ * frame,
+ * so stack-trace metadata and block-uid validation stay identical between eager and lazy resolution.
  */
 internal class Tf_LazyExprNode(
     @field:CompilationFinal private val rtType: Rt_ValueClass<*>,

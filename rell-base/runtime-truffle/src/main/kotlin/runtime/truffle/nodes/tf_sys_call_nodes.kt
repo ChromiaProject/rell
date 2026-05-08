@@ -17,6 +17,7 @@ import net.postchain.rell.base.runtime.Rt_BooleanValue
 import net.postchain.rell.base.runtime.Rt_CallContext
 import net.postchain.rell.base.runtime.Rt_DefinitionContext
 import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.runtime.Rt_ExecutionContext
 import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_NullValue
 import net.postchain.rell.base.runtime.Rt_Value
@@ -41,6 +42,21 @@ import net.postchain.rell.base.utils.LazyString
  */
 internal sealed class Tf_SysCallNode : Tf_ExprNode() {
     /**
+     * Inline cache for [buildCallCtx]: the (`exeCtx`, `dbUpdateAllowed`) pair feeding the
+     * `Rt_DefinitionContext` constructor is monomorphic per execution (one driver/exeCtx,
+     * `dbUpdateAllowed` flips only across guard-block boundaries), so a single-element cache
+     * recovers the steady-state to one comparison + reference return on the hot path.
+     *
+     * Plain non-`@CompilationFinal` fields: PE compiles the comparison and branch into the
+     * graph but doesn't fold the cache value, so refreshing the cache requires no
+     * deopt/invalidation cycle. The call-context construction itself happens behind a
+     * `@TruffleBoundary` slow path so the constructor's downstream code never enters PE.
+     */
+    private var cachedCallExeCtx: Rt_ExecutionContext? = null
+    private var cachedCallDbUpdate: Boolean = false
+    private var cachedCallCtx: Rt_CallContext? = null
+
+    /**
      * Build the `Rt_CallContext` for a sys-fn call without lazy-allocating a callee
      * [net.postchain.rell.base.runtime.Rt_CallFrame].
      *
@@ -49,15 +65,39 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
      * `defId` comes from the current frame descriptor's `Tf_FrameInfo` so the ctx's defId
      * matches what the slow path would have built.
      *
-     * The two object allocations here (`Rt_DefinitionContext` + `Rt_CallContext`) are the only
-     * runtime cost beyond the sys-fn body itself — a far cry from the slow path's
-     * `Rt_CallFrame` alloc + entire-frame `pushToLegacy`/`pullFromLegacy` mirror.
+     * Steady state: single-element cache hit returns the previously built `Rt_CallContext`
+     * with no allocation — both the `Rt_DefinitionContext` and its `Rt_CallContext` wrapper
+     * are reused as long as the live (`exeCtx`, `dbUpdateAllowed`) pair stays stable.
      */
     protected fun buildCallCtx(frame: VirtualFrame): Rt_CallContext {
-        val info = Tf_Unchecked.cast<Tf_FrameInfo>(frame.frameDescriptor.info)
         val caller = tfPropagateRtFrame(frame)
-        val defCtx = Rt_DefinitionContext(caller.exeCtx, caller.dbUpdateAllowed(), info.defId)
-        return Rt_CallContext(defCtx)
+        val exeCtx = caller.exeCtx
+        val dbUpdate = caller.dbUpdateAllowed()
+        val cached = cachedCallCtx
+        if (cached != null && cachedCallExeCtx === exeCtx && cachedCallDbUpdate == dbUpdate) {
+            return cached
+        }
+        return refreshCallCtxCache(frame, exeCtx, dbUpdate)
+    }
+
+    /**
+     * Cache-miss slow path: builds a fresh defCtx + callCtx and stores both. Behind a
+     * `@TruffleBoundary` so the `Rt_DefinitionContext` / `Rt_CallContext` constructors —
+     * which reach into `runtime-core` field-init chains — never enter PE.
+     */
+    @TruffleBoundary
+    private fun refreshCallCtxCache(
+        frame: VirtualFrame,
+        exeCtx: Rt_ExecutionContext,
+        dbUpdate: Boolean,
+    ): Rt_CallContext {
+        val info = Tf_Unchecked.cast<Tf_FrameInfo>(frame.frameDescriptor.info)
+        val defCtx = Rt_DefinitionContext(exeCtx, dbUpdate, info.defId)
+        val callCtx = defCtx.toCallContext()
+        cachedCallExeCtx = exeCtx
+        cachedCallDbUpdate = dbUpdate
+        cachedCallCtx = callCtx
+        return callCtx
     }
 
     /**
@@ -150,11 +190,7 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
 
         @ExplodeLoop
         override fun execute(frame: VirtualFrame): Rt_Value {
-            val evaluated = arrayOfNulls<Rt_Value>(args.size)
-            for (i in args.indices) {
-                evaluated[i] = args[i].execute(frame)
-            }
-            val mapped: List<Rt_Value> = buildArgList(evaluated)
+            val mapped: List<Rt_Value> = buildArgList(frame)
             val callCtx = buildCallCtx(frame)
             return try {
                 invokeSysFn(callCtx, fn, mapped)
@@ -164,16 +200,24 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
             }
         }
 
+        /**
+         * Identity case: evaluate args directly into a pre-sized `Array<Rt_Value>` and wrap it in
+         * a [Tf_ArrayBackedList] view — no `ArrayList`/`grow` cost, one allocation pair (the array
+         * + the wrapper). Non-identity case: keep a separate source-evaluated array because output
+         * positions may pull from any source (the mapping spec allows duplicates).
+         */
         @ExplodeLoop
-        private fun buildArgList(evaluated: Array<Rt_Value?>): List<Rt_Value> {
+        private fun buildArgList(frame: VirtualFrame): List<Rt_Value> {
             if (identityMapping) {
-                return Tf_Unchecked.cast<Array<Rt_Value>>(evaluated).asList()
+                val out = Array(args.size) { args[it].execute(frame) }
+                return Tf_ArrayBackedList(out)
             }
-            return buildList(mapping.size) {
-                for (i in mapping.indices) {
-                    add(Tf_Unchecked.cast(evaluated[mapping[i]]))
-                }
-            }
+
+            val evaluated = Array(args.size) { args[it].execute(frame) }
+
+            val mapping = this.mapping
+            val out = Array<Rt_Value>(mapping.size) { Tf_Unchecked.cast(evaluated[mapping[it]]) }
+            return Tf_ArrayBackedList(out)
         }
     }
 
@@ -232,11 +276,7 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
             // for why `==` is avoided on the hot path.
             if (safe && baseValue === Rt_NullValue) return Rt_NullValue
 
-            val evaluated = arrayOfNulls<Rt_Value>(args.size)
-            for (i in args.indices) {
-                evaluated[i] = args[i].execute(frame)
-            }
-            val mapped: List<Rt_Value> = buildArgList(baseValue, evaluated)
+            val mapped: List<Rt_Value> = buildArgList(frame, baseValue)
             val callCtx = buildCallCtx(frame)
             return try {
                 invokeSysFn(callCtx, fn, mapped)
@@ -246,21 +286,35 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
             }
         }
 
+        /**
+         * Identity case: evaluate args directly into a pre-sized `Array<Rt_Value>` (slot 0 holds
+         * `baseValue`, slots 1..n hold args) and wrap it in a [Tf_ArrayBackedList]. Eliminates the
+         * `ArrayList` / `grow` overhead that dominated sys-member arg-eval on stdlib-heavy
+         * workloads. The interpreter's SysMember path passes `[base] + args`; mirror that exactly.
+         */
         @ExplodeLoop
-        private fun buildArgList(baseValue: Rt_Value, evaluated: Array<Rt_Value?>): List<Rt_Value> {
-            // The interpreter's SysMember path passes `[base] + args`; mirror that exactly.
-            return buildList(mapping.size + 1) {
-                add(baseValue)
-                if (identityMapping) {
-                    for (i in evaluated.indices) {
-                        add(Tf_Unchecked.cast(evaluated[i]))
-                    }
-                } else {
-                    for (i in mapping.indices) {
-                        add(Tf_Unchecked.cast(evaluated[mapping[i]]))
-                    }
+        private fun buildArgList(frame: VirtualFrame, baseValue: Rt_Value): List<Rt_Value> {
+            if (identityMapping) {
+                val args = this.args
+                val out = arrayOfNulls<Rt_Value>(args.size + 1)
+                out[0] = baseValue
+                for (i in args.indices) {
+                    out[i + 1] = args[i].execute(frame)
                 }
+                @Suppress("UNCHECKED_CAST")
+                return Tf_ArrayBackedList(out as Array<Rt_Value>)
             }
+
+            val evaluated = Array(args.size) { args[it].execute(frame) }
+
+            val mapping = this.mapping
+            val out = arrayOfNulls<Rt_Value>(mapping.size + 1)
+            out[0] = baseValue
+            for (i in mapping.indices) {
+                out[i + 1] = Tf_Unchecked.cast(evaluated[mapping[i]])
+            }
+            @Suppress("UNCHECKED_CAST")
+            return Tf_ArrayBackedList(out as Array<Rt_Value>)
         }
     }
 

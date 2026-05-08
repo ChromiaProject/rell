@@ -20,7 +20,7 @@ import net.postchain.rell.base.runtime.Rt_Value
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
-@Warmup(iterations = 10, time = 2, timeUnit = BenchmarkTimeUnit.SECONDS)
+@Warmup(iterations = 5, time = 2, timeUnit = BenchmarkTimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 2, timeUnit = BenchmarkTimeUnit.SECONDS)
 @Fork(
     jvmArgsPrepend = [

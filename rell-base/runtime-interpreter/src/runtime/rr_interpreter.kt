@@ -484,7 +484,7 @@ class Rt_InterpreterImpl(
             val rtType = resolveType(RR_Type.Enum(cv.enumDefIndex))
             val enumDef = rrApp.allEnums[cv.enumDefIndex]
             val attr = enumDef.attrs[cv.enumValue]
-            Rt_RR_EnumValue(lazy { rtType }, attr)
+            Rt_RR_EnumValue(rtType, attr)
         }
 
         is RR_ConstantValue.Gtv -> {

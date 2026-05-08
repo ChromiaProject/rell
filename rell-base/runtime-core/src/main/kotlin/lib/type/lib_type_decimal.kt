@@ -141,9 +141,9 @@ object Lib_Type_Decimal {
                 """)
                 dbFunctionSimple("decimal.floor", "FLOOR")
                 body { a ->
-                    val v = a.asDecimal()
-                    val r = v.setScale(0, RoundingMode.FLOOR)
-                    Rt_DecimalValue.get(r)
+                    // Route through the virtual hook so the long-mantissa Truffle leaf can do
+                    // floor in plain Long arithmetic without materialising a BigDecimal.
+                    (a as Rt_DecimalValue).fastFloor()
                 }
             }
 
@@ -531,22 +531,13 @@ private object DecFns {
         TODO()
     }
 
-    private val BIG_INT_MIN = BigInteger.valueOf(Long.MIN_VALUE)
-    private val BIG_INT_MAX = BigInteger.valueOf(Long.MAX_VALUE)
-
     val ToInteger = C_SysFunctionBody.simple(
         Db_SysFunction.template("decimal.to_integer", 1, "TRUNC(#0)::BIGINT"),
         pure = true,
     ) { a ->
-        val v = a.asDecimal()
-        val bi = v.toBigInteger()
-        if (bi !in BIG_INT_MIN..BIG_INT_MAX) {
-            var s = v.round(MathContext(20, RoundingMode.DOWN))
-            s = Lib_DecimalMath.stripTrailingZeros(s)
-            throw Rt_Exception.common("decimal.to_integer:overflow:$s", "Value out of range: $s")
-        }
-        val r = bi.toLong()
-        Rt_IntValue.get(r)
+        // Route through the virtual hook so the long-mantissa Truffle leaf can return the
+        // truncated mantissa directly without `BigDecimal.toBigInteger()` + range check.
+        Rt_IntValue.get((a as Rt_DecimalValue).fastToInteger())
     }
 
     fun calcFromInteger(a: Rt_Value): Rt_Value {

@@ -30,9 +30,9 @@ internal object Lib_Math {
     }
 
     val Abs_Decimal = C_SysFunctionBody.simple(Db_SysFunction.simple("abs", "ABS"), pure = true) { a ->
-        val v = a.asDecimal()
-        val r = v.abs()
-        Rt_DecimalValue.get(r)
+        // Route through the virtual hook so long-mantissa Truffle leaves can skip the BigDecimal
+        // allocation. Default impl on Rt_DecimalValue keeps the legacy BigDecimal-based path.
+        (a as Rt_DecimalValue).fastAbs()
     }
 
     val Min_Integer = C_SysFunctionBody.simple(Db_SysFunction.simple("min", "LEAST"), pure = true) { a, b ->

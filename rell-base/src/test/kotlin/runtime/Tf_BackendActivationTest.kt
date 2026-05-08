@@ -4,10 +4,16 @@
 
 package net.postchain.rell.base.runtime
 
+import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.truffle.Tf_Backend
+import net.postchain.rell.base.runtime.truffle.Tf_Language
+import net.postchain.rell.base.runtime.truffle.Tf_PolyglotBootstrap
+import net.postchain.rell.base.runtime.truffle.values.Tf_StructShapeRegistry
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellTestUtils
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import kotlin.test.Test
 
@@ -68,5 +74,54 @@ class Tf_BackendActivationTest : BaseRellTest(useSql = false) {
 
     @Test fun testBackendValueIsRecognised() {
         assertEquals(true, RellTestUtils.BACKEND in setOf("interpreter", "truffle"))
+    }
+
+    /**
+     * Confirms the polyglot framework discovers `Tf_LanguageProvider` (via the
+     * `META-INF/services/com.oracle.truffle.api.provider.TruffleLanguageProvider` resource) and
+     * populates `Tf_Language.POLYGLOT_INSTANCE`. SOM struct shapes silently fall back to
+     * `Rt_HeapStruct` when this fails, so an explicit assertion guards against packaging
+     * regressions (e.g. the resources directory not being included in the test classpath).
+     *
+     * Skipped under the interpreter backend: SOM is Truffle-only.
+     */
+    @Test fun testPolyglotBootstrapPopulatesLanguageInstance() {
+        if (RellTestUtils.BACKEND != "truffle") return
+        val language = Tf_PolyglotBootstrap.ensure()
+        assertNotNull(
+            language,
+            "polyglot bootstrap returned null — Tf_LanguageProvider service not discovered" +
+                "; lastFailure=${Tf_PolyglotBootstrap.lastFailure?.let { it::class.qualifiedName + ": " + it.message }}",
+        )
+        assertSame(language, Tf_Language.POLYGLOT_INSTANCE.get())
+    }
+
+    /**
+     * End-to-end SOM activation: compiles a struct, builds a `Tf_StructShape` via the registry,
+     * and verifies a concrete shape is returned (not the heap-fallback `null`). Catches any
+     * regression that breaks the bootstrap → `StaticShape.newBuilder` chain — `StaticShape` walks
+     * the language's polyglot instance internally and silently NPE-trips the registry's catch
+     * block when the language isn't framework-managed.
+     */
+    @Test fun testStructShapeRegistryReturnsRealShape() {
+        if (RellTestUtils.BACKEND != "truffle") return
+        val sourceDir = net.postchain.rell.base.compiler.base.utils.C_SourceDir.mapDirOf(
+            RellTestUtils.MAIN_FILE to "struct s { x: integer; y: text; }",
+        )
+        val cRes = RellTestUtils.compileApp(
+            sourceDir,
+            net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection(
+                net.postchain.rell.base.utils.immListOf(net.postchain.rell.base.model.ModuleName.EMPTY),
+                net.postchain.rell.base.utils.immListOf(),
+            ),
+            RellTestUtils.DEFAULT_COMPILER_OPTIONS,
+        )
+        val rrApp = checkNotNull(cRes.rrApp) { "Compilation failed: ${cRes.errors}" }
+        val structIndex = rrApp.allStructs.indexOfFirst { it.struct.name == "s" }
+        assertTrue(structIndex >= 0, "struct 's' not in rrApp")
+        val rrType = RR_Type.Struct(structIndex)
+        val shape = Tf_StructShapeRegistry.shapeFor(rrApp, rrType)
+        assertNotNull(shape, "SOM shape construction returned null — SOM fallback engaged unexpectedly")
+        assertEquals(listOf("x", "y"), shape!!.attrNames)
     }
 }

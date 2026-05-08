@@ -140,7 +140,7 @@ class Rt_CallFrame(
         return ptrOffset
     }
 
-    fun callCtx() = Rt_CallContext(defCtx)
+    fun callCtx(): Rt_CallContext = defCtx.toCallContext()
 
     fun snapshot(): Rt_CallFrame {
         val heap = Rt_HeapFrameStorage(rrFrame.size)
