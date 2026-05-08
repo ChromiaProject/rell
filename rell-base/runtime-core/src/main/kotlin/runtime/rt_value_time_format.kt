@@ -7,7 +7,7 @@ package net.postchain.rell.base.runtime
 import org.apache.commons.lang3.time.FastDateFormat
 import java.util.*
 
-class Rt_TimeFormatValue(format: String): Rt_ValueBase() {
+class Rt_TimeFormatValue(format: String): Rt_Value {
     override val name
         get() = Companion.name
 

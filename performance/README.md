@@ -39,7 +39,7 @@ for an LLM to read and decide which subtrees / hot methods to optimise.
 
 Default output dir: `performance/reports/sample-<sample>-<query>/`. The top-N flat
 profile is also printed to stdout for quick inspection. `--sample` directories live
-under `performance/src/main/resources/`: `synthetic_bench`, `ft4_bench`, `mna_bench`.
+under `performance/src/main/resources/`: `synthetic_bench`, `ft4_bench`, `mna_bench`, `struct_bench`.
 
 ## Quick start — end-to-end profiler
 

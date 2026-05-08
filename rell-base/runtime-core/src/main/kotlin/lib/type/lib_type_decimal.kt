@@ -378,30 +378,19 @@ object Lib_DecimalMath {
         return BigDecimal(q, s)
     }
 
-    fun add(a: BigDecimal, b: BigDecimal): BigDecimal {
-        return a.add(b)
-    }
+    @JvmStatic
+    fun add(a: BigDecimal, b: BigDecimal): BigDecimal = a.add(b)
 
-    fun subtract(a: BigDecimal, b: BigDecimal): BigDecimal {
-        return a.subtract(b)
-    }
+    @JvmStatic
+    fun subtract(a: BigDecimal, b: BigDecimal): BigDecimal = a.subtract(b)
 
-    fun multiply(a: BigDecimal, b: BigDecimal): BigDecimal {
-        return a.multiply(b)
-    }
+    @JvmStatic
+    fun multiply(a: BigDecimal, b: BigDecimal): BigDecimal = a.multiply(b)
 
-    fun divide(a: BigDecimal, b: BigDecimal): BigDecimal {
-        val r = a.divide(b, DECIMAL_FRAC_DIGITS, RoundingMode.HALF_UP)
-        return r
-    }
+    @JvmStatic
+    fun divide(a: BigDecimal, b: BigDecimal): BigDecimal = a.divide(b, DECIMAL_FRAC_DIGITS, RoundingMode.HALF_UP)
 
-    fun remainder(a: BigDecimal, b: BigDecimal): BigDecimal {
-        return a.remainder(b)
-    }
-
-    fun power(a: BigDecimal, b: Int): BigDecimal {
-        TODO() // Need to handle rounding and precision carefully.
-    }
+    fun remainder(a: BigDecimal, b: BigDecimal): BigDecimal = a.remainder(b)
 
     fun toString(v: BigDecimal): String {
         val s = v.toPlainString()
@@ -519,8 +508,7 @@ private object DecFns {
             throw Rt_Exception.common("decimal.pow:negative_power:$power", "Negative power: $power")
         }
 
-        val r = Lib_DecimalMath.power(v, power.toInt())
-        Rt_DecimalValue.get(r)
+        TODO("decimal.pow: handle rounding/precision; previously delegated to removed Lib_DecimalMath.power")
     }
 
     val Sqrt = C_SysFunctionBody.simple(Db_SysFunction.simple("decimal.sqrt", "SQRT"), pure = true) { a ->

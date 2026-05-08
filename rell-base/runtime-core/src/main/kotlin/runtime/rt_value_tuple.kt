@@ -14,7 +14,7 @@ class Rt_TupleValue private constructor(
     override val type: Rt_ValueClass<*>,
     private val fieldNames: List<String?>?,
     val elements: List<Rt_Value>,
-): Rt_ValueBase() {
+): Rt_Value {
     constructor(rtType: Rt_ValueClass<*>, elements: List<Rt_Value>): this(rtType, null, elements)
 
     override val name

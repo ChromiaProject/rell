@@ -15,7 +15,7 @@ class Rt_RR_LazyValue(
     private val expr: RR_Expr,
     private val frame: Rt_Frame,
     private val interpreter: Rt_Interpreter,
-): Rt_ValueBase(), Rt_LazyResolvableValue {
+): Rt_Value, Rt_LazyResolvableValue {
     private var cachedValue: Rt_Value? = null
 
     override val name

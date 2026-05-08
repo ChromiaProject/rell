@@ -18,15 +18,15 @@ import net.postchain.rell.base.runtime.simple
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.checkNull
 
-abstract class Ld_PropertyValue {
-    abstract fun finish(type: R_Type): Finish
+sealed interface Ld_PropertyValue {
+    fun finish(type: R_Type): Finish
 
     class Finish(val prop: C_SysProperty, val pure: Boolean)
 
     private class Ld_PropertyValue_NamespaceProp(
         private val internalState: Ld_InternalFunctionBodyState,
         private val block: (Rt_CallContext, R_Type) -> Rt_Value,
-    ): Ld_PropertyValue() {
+    ): Ld_PropertyValue {
         override fun finish(type: R_Type): Finish {
             val internalBody = internalState.bodyContextN { ctx, args ->
                 Rt_Utils.checkEquals(args.size, 0)
@@ -42,7 +42,7 @@ abstract class Ld_PropertyValue {
     private class Ld_PropertyValue_SimpleTypeProp(
         private val pure: Boolean,
         private val valueGetter: (Rt_Value, R_Type) -> Rt_Value,
-    ): Ld_PropertyValue() {
+    ): Ld_PropertyValue {
         override fun finish(type: R_Type): Finish {
             val prop = object: C_SysProperty() {
                 override fun getFunction(type: R_Type): C_SysFunction {
@@ -56,9 +56,7 @@ abstract class Ld_PropertyValue {
         }
     }
 
-    private class Ld_PropertyValue_SpecialTypeProp(
-        private val body: C_SysFunctionBody,
-    ): Ld_PropertyValue() {
+    private class Ld_PropertyValue_SpecialTypeProp(private val body: C_SysFunctionBody): Ld_PropertyValue {
         override fun finish(type: R_Type): Finish {
             val fn = C_SysFunction.direct(body)
             val prop = object: C_SysProperty() {

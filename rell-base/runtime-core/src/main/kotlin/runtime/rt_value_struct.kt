@@ -13,70 +13,40 @@ import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.base.runtime.utils.Rt_ValueRecursionDetector
 
 /**
- * Abstract base for struct values. Concrete leaves choose their physical layout:
- * [Rt_HeapStruct] for the canonical ArrayList-backed representation used by the tree-walk
- * interpreter and by paths that have not been specialised on the Truffle side; the Truffle
- * backend will add SOM-generated leaves with primitive fields per attribute for the JIT hot
- * path. Layout-vs-capability separation: layout lives on the leaf class, all capability
- * dispatch (str/strCode/strPretty/equals/hashCode/Gtv conversion) routes through the abstract
- * API ([size], [get], [effectiveNamesOrNull]) defined here.
+ * Abstract base for struct values. The canonical leaf is [Rt_HeapStruct] (an Object[]-backed
+ * struct, used by both the tree-walk interpreter and the Truffle backend). The interface stays
+ * even though there is currently a single leaf because other `Rt_*` value types in the sealed
+ * hierarchy depend on the layout-vs-capability separation: capability dispatch
+ * (str/strCode/strPretty/equals/hashCode/Gtv conversion) routes through the abstract API
+ * ([size], [get], [effectiveNamesOrNull]) defined here, leaving room for future specialised
+ * struct layouts without churning capability code.
  *
  * Constructor-style callers `Rt_StructValue(type, attrs)` continue to compile via the
  * `operator fun invoke` overloads on the companion — they materialize an [Rt_HeapStruct].
  */
-abstract class Rt_StructValue protected constructor(): Rt_ValueBase() {
-    // Defaults throw rather than being declared `abstract` so the Truffle Static Object Model
-    // can subclass through this hierarchy — its `validateClasses` walks the entire superclass
-    // chain and rejects any class with abstract methods (so the SOM-generated final subclass
-    // has a clean, instantiable parent). Concrete leaves ([Rt_HeapStruct],
-    // [net.postchain.rell.base.runtime.truffle.values.Tf_DynStruct]) override unconditionally.
-
+interface Rt_StructValue: Rt_Value {
     override val type: Rt_ValueClass<*>
-        get() = error("Rt_StructValue.type not provided by ${javaClass.name}")
 
     /** Number of attributes in the struct. Concrete leaves override. */
-    open fun size(): Int = error("Rt_StructValue.size not provided by ${javaClass.name}")
+    fun size(): Int
 
     /** Read the [index]-th attribute. Concrete leaves override. */
-    open fun get(index: Int): Rt_Value =
-        error("Rt_StructValue.get not provided by ${javaClass.name}")
+    fun get(index: Int): Rt_Value
 
     /** Write the [index]-th attribute. Implementations may apply per-attribute validators. */
-    open fun set(index: Int, value: Rt_Value) {
-        error("Rt_StructValue.set not provided by ${javaClass.name}")
-    }
+    fun set(index: Int, value: Rt_Value)
 
     /**
      * Best-effort attribute names; null when the layout doesn't carry them (rare fallback). Used
      * by [str]/[strCode]/[strPretty] and by the Gtv conversion to emit pretty/dictionary form.
      */
-    open val effectiveNamesOrNull: List<String>?
+    val effectiveNamesOrNull: List<String>?
         get() = null
 
     fun attributeNames(): List<String> = effectiveNamesOrNull ?: List(size()) { it.toString() }
 
     override val name
         get() = Companion.name
-
-    override fun equals(other: Any?): Boolean {
-        if (other === this) return true
-        if (other !is Rt_StructValue) return false
-        val n = size()
-        if (n != other.size()) return false
-        for (i in 0 until n) if (get(i) != other.get(i)) return false
-        return true
-    }
-
-    // Hash by type.name, not type.hashCode(): different Rt_ValueClass implementations
-    // (Rt_StructType uses defIndex, Rt_GenericRrType-based stubs use name.hashCode(), etc.)
-    // produce inconsistent hashes for the "same" struct type built via different routes,
-    // breaking HashMap/HashSet semantics.
-    override fun hashCode(): Int {
-        var h = type.name.hashCode() * 31
-        val n = size()
-        for (i in 0 until n) h = h * 31 + get(i).hashCode()
-        return h
-    }
 
     override fun str(format: Rt_StrFormat): String {
         val names = effectiveNamesOrNull
@@ -117,10 +87,10 @@ abstract class Rt_StructValue protected constructor(): Rt_ValueBase() {
     }
 
     /** Internal accessors used by [Companion.gtvConversion]. Materialises a list view; leaves with array-backed storage may override for efficiency. */
-    internal open val attributesView: List<Rt_Value>
+    val attributesView: List<Rt_Value>
         get() = List(size()) { get(it) }
 
-    internal val effectiveNamesView: List<String>?
+    val effectiveNamesView: List<String>?
         get() = effectiveNamesOrNull
 
     class Builder(private val type: R_StructType) {
@@ -151,6 +121,29 @@ abstract class Rt_StructValue protected constructor(): Rt_ValueBase() {
             get() = "struct"
 
         override val klass = Rt_StructValue::class
+
+        /**
+         * Cross-leaf structural equality: two struct values are equal iff their effective type name
+         * matches and all attributes are pairwise equal. Hash by `type.name` (not `type.hashCode()`)
+         * because different `Rt_ValueClass` impls — `Rt_StructType` vs `Rt_GenericRrType`-backed
+         * stubs — can produce inconsistent hashes for the "same" struct type built via different
+         * routes, breaking `HashMap`/`HashSet` semantics.
+         */
+        fun structEquals(self: Rt_StructValue, other: Any?): Boolean {
+            if (other === self) return true
+            if (other !is Rt_StructValue) return false
+            val n = self.size()
+            if (n != other.size()) return false
+            for (i in 0 until n) if (self.get(i) != other.get(i)) return false
+            return true
+        }
+
+        fun structHashCode(self: Rt_StructValue): Int {
+            var h = self.type.name.hashCode() * 31
+            val n = self.size()
+            for (i in 0 until n) h = h * 31 + self.get(i).hashCode()
+            return h
+        }
 
         /**
          * Construct a heap-backed struct value with the given R_-level type and attribute list.
@@ -340,7 +333,7 @@ class Rt_HeapStruct private constructor(
     /** Attribute names for str/strCode formatting. Null when unknown (rare fallback). */
     private val attrNamesArg: List<String>?,
     private val attributes: Array<Rt_Value>,
-): Rt_StructValue() {
+): Rt_StructValue {
     constructor(type: R_StructType, attributes: MutableList<Rt_Value>): this(
         rTypeStub(type),
         type,
@@ -376,4 +369,7 @@ class Rt_HeapStruct private constructor(
 
     override val attributesView: List<Rt_Value>
         get() = attributes.asList()
+
+    override fun equals(other: Any?): Boolean = Rt_StructValue.structEquals(this, other)
+    override fun hashCode(): Int = Rt_StructValue.structHashCode(this)
 }

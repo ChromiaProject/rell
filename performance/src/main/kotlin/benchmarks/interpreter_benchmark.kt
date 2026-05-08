@@ -16,6 +16,14 @@ import net.postchain.rell.base.runtime.Rt_Value
 /**
  * Synthetic microbenchmark comparing the tree-walker, Truffle, and a Kotlin baseline on
  * primality + Collatz + recursive Fibonacci. Rell source in `synthetic_bench/main.rell`.
+ *
+ * The single sample exercises one part of the runtime hot-path:
+ *   - `collatz_primes_fib` → tight integer loop (`is_prime`, `collatz_steps`) plus a
+ *                            recursive `fib(20)`. No collections, no JDK BigInteger /
+ *                            BigDecimal — the bottleneck is `Rt_IntValue` boxing across
+ *                            user-fn calls and `if`/`while` dispatch overhead. The
+ *                            `kotlin` backend is a hand-compiled Kotlin reimplementation
+ *                            kept as a "what's the JVM ceiling on this code" baseline.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)

@@ -203,9 +203,7 @@ tasks.sourcesJar {
     dependsOn(generateFlatBuffersKotlin, generateSchemaHash)
 }
 
-kotlin.compilerOptions {
-    optIn.add("kotlin.ExperimentalUnsignedTypes")
-}
+kotlin.compilerOptions.optIn.add("kotlin.ExperimentalUnsignedTypes")
 
 dependencies {
     implementation(projects.rellBase.rrTree)

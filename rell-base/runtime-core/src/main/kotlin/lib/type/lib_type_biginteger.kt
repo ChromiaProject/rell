@@ -475,22 +475,17 @@ object Lib_BigIntegerMath {
         return res
     }
 
-    abstract class NumericType<T>(val zero: T, val one: T, val minusOne: T) {
+    sealed class NumericType<T>(val zero: T, val one: T, val minusOne: T) {
         abstract fun pow(base: T, exp: Int): T
         abstract fun errStr(value: T): String
     }
 
-    object NumericType_Long: NumericType<Long>(zero = 0, one = 1, minusOne = -1) {
-        override fun pow(base: Long, exp: Int): Long {
-            return LongMath.checkedPow(base, exp)
-        }
-
-        override fun errStr(value: Long): String {
-            return value.toString()
-        }
+    data object NumericType_Long: NumericType<Long>(zero = 0, one = 1, minusOne = -1) {
+        override fun pow(base: Long, exp: Int): Long = LongMath.checkedPow(base, exp)
+        override fun errStr(value: Long): String = value.toString()
     }
 
-    object NumericType_BigInteger: NumericType<BigInteger>(
+    data object NumericType_BigInteger: NumericType<BigInteger>(
         zero = BigInteger.ZERO,
         one = BigInteger.ONE,
         minusOne = BigInteger.ONE.negate(),

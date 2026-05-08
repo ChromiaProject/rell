@@ -45,9 +45,10 @@ val copyShadedDependencyClasses by tasks.registering(Copy::class) {
     into(unshadedClassesTarget)
 }
 
-kotlin.compilerOptions {
-    optIn.addAll("org.jetbrains.dokka.InternalDokkaApi", "org.jetbrains.dokka.plugability.DokkaPluginApiPreview")
-}
+kotlin.compilerOptions.optIn.addAll(
+    "org.jetbrains.dokka.InternalDokkaApi",
+    "org.jetbrains.dokka.plugability.DokkaPluginApiPreview",
+)
 
 tasks.compileKotlin {
     dependsOn(copyShadedDependencyClasses)
@@ -64,12 +65,15 @@ tasks.test {
 
 tasks.withType<JacocoReport> {
     dependsOn(tasks.test)
+
     afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.map {
-            fileTree(it).apply {
-                exclude("**/cli/*")
-            }
-        }))
+        classDirectories.setFrom(
+            files(
+                classDirectories.files.map {
+                    fileTree(it).apply { exclude("**/cli/*") }
+                },
+            ),
+        )
     }
 }
 

@@ -6,7 +6,7 @@ package net.postchain.rell.base.runtime
 
 import net.postchain.rell.base.lib.test.R_TestFailureType
 
-internal class Rt_TestFailureValue(val message: String): Rt_ValueBase() {
+internal class Rt_TestFailureValue(val message: String): Rt_Value {
     val messageValue = Rt_TextValue.get(message)
 
     override val name

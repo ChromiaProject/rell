@@ -14,7 +14,8 @@ import java.math.BigInteger
 import kotlin.reflect.full.createType
 
 @ConsistentCopyVisibility
-data class Rt_GtvValue private constructor(val value: Gtv): Rt_ValueBase() {
+@JvmRecord
+data class Rt_GtvValue private constructor(val value: Gtv): Rt_Value {
     override val name
         get() = Companion.name
 

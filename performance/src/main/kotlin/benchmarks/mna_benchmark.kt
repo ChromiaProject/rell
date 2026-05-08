@@ -16,6 +16,20 @@ import net.postchain.rell.base.runtime.Rt_Value
 /**
  * mna-blockchain-derived microbenchmarks (`decimal_pow`, `perlin_noise`, `locations`) on the
  * tree-walker vs. Truffle. Pure compute, DB-free; Rell source in `mna_bench/main.rell`.
+ *
+ * Each query exercises a different part of the runtime hot-path:
+ *   - `decimal_pow`  → high-precision `decimal.pow(...)` driven by Padé/Taylor expansion.
+ *                      ≳60% of wall time is JDK `BigInteger.divideMagnitude` /
+ *                      `BigInteger.<init>` / `BigDecimal.precision`. Runtime overhead is the
+ *                      minority share — small Rell-side wins translate to small ms/op deltas.
+ *   - `perlin_noise` → Simplex-noise + decimal scale math + BigDecimal compares.
+ *                      ~40-50% wall time in JDK BigDecimal/BigInteger arithmetic; the truffle
+ *                      backend's `Tf_LongScaleDecimal` / `Tf_Int128ScaleDecimal` leaves can
+ *                      shave a chunk off when the values stay in long/int128 range, but the
+ *                      remainder is still BigDecimal-bound.
+ *   - `locations`    → struct-of-collections shaping + early-exit lookups; little JDK math.
+ *                      Dominantly Rell-runtime overhead — the headline beneficiary of struct
+ *                      attribute / member-access specialization in the truffle backend.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)

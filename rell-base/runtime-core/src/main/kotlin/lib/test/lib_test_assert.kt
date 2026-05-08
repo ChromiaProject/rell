@@ -347,7 +347,7 @@ private object Lib_Test_Type_Failure {
 internal open class Rt_AssertError(
     val code: String,
     val msg: String,
-): Rt_Error() {
+): Rt_Error {
     final override fun code() = "asrt_err:$code"
     final override fun message() = msg
 

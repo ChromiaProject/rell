@@ -17,7 +17,7 @@ class Rt_FunctionValue(
     private val target: Rt_FunctionCallTarget,
     private val baseValue: Rt_Value?,
     exprValues: List<Rt_Value>,
-): Rt_ValueBase() {
+): Rt_Value {
     private val exprValues = let {
         checkEquals(exprValues.size, mapping.exprCount)
         exprValues.toImmList()

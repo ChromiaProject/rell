@@ -21,22 +21,22 @@ import net.postchain.rell.base.utils.*
 
 class Rt_GlobalConstantState(val constId: GlobalConstantId, val value: Rt_Value)
 
-abstract class Rt_ModuleArgsSource {
-    abstract fun getModuleArgs(exeCtx: Rt_ExecutionContext, moduleName: ModuleName): Rt_Value?
+sealed interface Rt_ModuleArgsSource {
+    fun getModuleArgs(exeCtx: Rt_ExecutionContext, moduleName: ModuleName): Rt_Value?
 
     companion object {
         val NULL: Rt_ModuleArgsSource = Rt_NullModuleArgsSource
     }
 }
 
-private object Rt_NullModuleArgsSource: Rt_ModuleArgsSource() {
+private object Rt_NullModuleArgsSource: Rt_ModuleArgsSource {
     override fun getModuleArgs(exeCtx: Rt_ExecutionContext, moduleName: ModuleName) = null
 }
 
 class Rt_GtvModuleArgsSource(
     private val gtvs: ImmMap<ModuleName, Gtv>,
     private val compilerOptions: C_CompilerOptions,
-): Rt_ModuleArgsSource() {
+): Rt_ModuleArgsSource {
     private val defaultValuesSupported = DEFAULT_VALUES_SWITCH.isActive(compilerOptions)
 
     override fun getModuleArgs(exeCtx: Rt_ExecutionContext, moduleName: ModuleName): Rt_Value? {

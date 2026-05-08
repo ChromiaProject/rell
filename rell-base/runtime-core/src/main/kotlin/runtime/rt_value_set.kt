@@ -8,7 +8,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 
 class Rt_SetValue(override val type: Rt_ValueClass<*>, internal val elements: MutableSet<Rt_Value>):
-    Rt_ValueBase(), Rt_CollectionValue {
+    Rt_Value, Rt_CollectionValue {
 
     override val collection: MutableCollection<Rt_Value> get() = elements
     override val name

@@ -6,6 +6,7 @@ package net.postchain.rell.base.runtime.truffle.nodes
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import com.oracle.truffle.api.frame.MaterializedFrame
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.Node
 import net.postchain.rell.base.model.ErrorPos
@@ -37,7 +38,11 @@ import net.postchain.rell.base.runtime.truffle.Tf_VirtualFrameStorage
 internal fun tfRtFrame(frame: VirtualFrame): Rt_CallFrame {
     val cached = frame.getAuxiliarySlot(TF_RT_FRAME_AUX_SLOT)
     if (cached != null) return Tf_Unchecked.cast(cached)
-    return tfLazyAllocRtFrame(frame)
+    // Materialise once on the slow path. The Truffle DSL forbids `VirtualFrame` parameters
+    // across `@TruffleBoundary` (DSL contract — non-materialised frames cannot cross a
+    // boundary), so we hand the boundary a [MaterializedFrame] instead. The materialisation
+    // cost is paid only on the first cache miss; the hot path (cache hit) never reaches here.
+    return tfLazyAllocRtFrame(frame.materialize())
 }
 
 /**
@@ -83,13 +88,19 @@ internal fun tfPropagateRtFrame(frame: VirtualFrame): Rt_CallFrame {
  * Slow path of [tfRtFrame] — runs only on the inner-entry path the first time a slow-path node
  * demands an [Rt_CallFrame].
  *
+ * Takes a [MaterializedFrame] rather than a [VirtualFrame] because the Truffle Bytecode DSL
+ * annotation processor rejects `@TruffleBoundary` methods that take a `VirtualFrame` parameter
+ * (non-materialised frames cannot cross a boundary). [MaterializedFrame] is a Truffle subtype
+ * of [VirtualFrame] that the DSL accepts; the materialisation cost is paid only on the slow
+ * path (cache miss in [tfRtFrame]), so PE-virtualisation of the hot path is unaffected.
+ *
  * Note that [TruffleBoundary] is mandatory here: [Rt_DefinitionContext] / [Rt_CallFrame]
  * constructors live in `runtime-interpreter` (and `runtime-core`) and call into helpers whose
  * Java bytecode shape is unrelated to the call payload. Without the boundary, PE would inline
  * those constructors into every node that touches [tfRtFrame] and bloat the compiled graph.
  */
 @TruffleBoundary
-private fun tfLazyAllocRtFrame(frame: VirtualFrame): Rt_CallFrame {
+private fun tfLazyAllocRtFrame(frame: MaterializedFrame): Rt_CallFrame {
     val info = Tf_Unchecked.cast<Tf_FrameInfo>(frame.frameDescriptor.info)
     val caller = Tf_Unchecked.cast<Rt_CallFrame>(frame.arguments[1])
     val defCtx = Rt_DefinitionContext(caller.exeCtx, caller.dbUpdateAllowed(), info.defId)
@@ -101,6 +112,10 @@ private fun tfLazyAllocRtFrame(frame: VirtualFrame): Rt_CallFrame {
 /**
  * `@TruffleBoundary` slow-path: decorate an [Rt_Exception] with a Rell stack frame and rethrow.
  *
+ * Takes [Rt_CallFrame] rather than [VirtualFrame] because the Truffle Bytecode DSL annotation
+ * processor rejects `@TruffleBoundary` methods that take a `VirtualFrame` parameter. Callers
+ * extract the [Rt_CallFrame] via [tfRtFrame] *before* the boundary call.
+ *
  * Keeping this opaque to PE is critical. [Rt_CallFrame.error] builds a new stack list with
  * `ImmList<R_StackPos>.plus(stackPos)`, which routes through
  * `kotlinx.collections.immutable.toPersistentList`. That library is *third-party* and we can't
@@ -111,13 +126,13 @@ private fun tfLazyAllocRtFrame(frame: VirtualFrame): Rt_CallFrame {
  * into the compiled graph.
  */
 @TruffleBoundary
-internal fun tfRethrowAt(frame: VirtualFrame, errPos: ErrorPos, e: Rt_Exception): Nothing =
-    tfRtFrame(frame).error(errPos, e)
+internal fun tfRethrowAt(rt: Rt_CallFrame, errPos: ErrorPos, e: Rt_Exception): Nothing =
+    rt.error(errPos, e)
 
 /** See [tfRethrowAt]. Variant for nested-call sites that always append a stack frame. */
 @TruffleBoundary
-internal fun tfRethrowNested(frame: VirtualFrame, errPos: ErrorPos, e: Rt_Exception): Nothing =
-    tfRtFrame(frame).error(errPos, e, nested = true)
+internal fun tfRethrowNested(rt: Rt_CallFrame, errPos: ErrorPos, e: Rt_Exception): Nothing =
+    rt.error(errPos, e, nested = true)
 
 /**
  * Base class for Truffle expression nodes in the Rell backend.
@@ -242,12 +257,17 @@ internal class Tf_FallbackExprNode(
     override val needsBlockState: Boolean
         get() = true
 
+    /**
+     * Public override stays on `VirtualFrame` (the parent contract) and itself carries no
+     * `@TruffleBoundary`. The boundary lives on [executeBoundary] so the Truffle Bytecode DSL
+     * annotation processor's rule (`@TruffleBoundary` methods may not take a `VirtualFrame`
+     * parameter — non-materialised frames cannot cross a boundary) is satisfied while the
+     * surrounding JIT graph still treats the fallback body as opaque.
+     */
+    override fun execute(frame: VirtualFrame): Rt_Value = executeBoundary(tfRtFrame(frame))
+
     @TruffleBoundary
-    override fun execute(frame: VirtualFrame): Rt_Value {
-        val rt = tfRtFrame(frame)
-        val result = backend.delegate.evaluateExpr(expr, rt)
-        return result
-    }
+    private fun executeBoundary(rt: Rt_CallFrame): Rt_Value = backend.delegate.evaluateExpr(expr, rt)
 }
 
 /**
@@ -271,9 +291,14 @@ internal class Tf_FallbackStmtNode(
         return Rt_UnitValue
     }
 
+    /**
+     * Public override stays on `VirtualFrame`. Extracts [Rt_CallFrame] before the boundary
+     * call so the inner [executeStmtBoundary] satisfies the Truffle Bytecode DSL's rule that
+     * `@TruffleBoundary` methods may not take a `VirtualFrame` parameter.
+     */
     override fun executeStmt(frame: VirtualFrame): Int {
         val rt = tfRtFrame(frame)
-        return when (val res = runFallback(rt)) {
+        return when (val res = executeStmtBoundary(rt)) {
             null -> STATUS_FALLTHROUGH
             Rt_StatementResult.Break -> STATUS_BREAK
             Rt_StatementResult.Continue -> STATUS_CONTINUE
@@ -285,9 +310,11 @@ internal class Tf_FallbackStmtNode(
     }
 
     /**
-     * `@TruffleBoundary`: same reasoning as [Tf_FallbackExprNode] — `executeStmt` recursively
-     * dispatches into the tree-walker. Keep it out of the compiled graph.
+     * `@TruffleBoundary`: same reasoning as [Tf_FallbackExprNode.executeBoundary] —
+     * `executeStmt` recursively dispatches into the tree-walker. Keep it out of the compiled
+     * graph.
      */
     @TruffleBoundary
-    private fun runFallback(frame: Rt_CallFrame): Rt_StatementResult? = backend.delegate.executeStmt(stmt, frame)
+    private fun executeStmtBoundary(rt: Rt_CallFrame): Rt_StatementResult? =
+        backend.delegate.executeStmt(stmt, rt)
 }

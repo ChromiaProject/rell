@@ -49,18 +49,18 @@ internal class Tf_VirtualFrameStorage(@JvmField val virtualFrame: VirtualFrame) 
             // returns false and we fall through to the null branch below. Avoids
             // `FrameSlotTypeException` from a typed-getter on a freshly-cleared slot.
             if (virtualFrame.isLong(offset)) Rt_IntValue.get(virtualFrame.getLong(offset)) else null
+
         TF_SLOT_KIND_BOOLEAN ->
             if (virtualFrame.isBoolean(offset)) Rt_BooleanValue.get(virtualFrame.getBoolean(offset)) else null
+
         else ->
             if (virtualFrame.isObject(offset)) Tf_Unchecked.cast(virtualFrame.getObject(offset)) else null
     }
 
-    override fun set(offset: Int, value: Rt_Value) {
-        when (slotKindAt(offset)) {
-            TF_SLOT_KIND_LONG -> virtualFrame.setLong(offset, Tf_Unchecked.cast<Rt_IntValue>(value).value)
-            TF_SLOT_KIND_BOOLEAN -> virtualFrame.setBoolean(offset, Tf_Unchecked.cast<Rt_BooleanValue>(value).value)
-            else -> virtualFrame.setObject(offset, value)
-        }
+    override fun set(offset: Int, value: Rt_Value) = when (slotKindAt(offset)) {
+        TF_SLOT_KIND_LONG -> virtualFrame.setLong(offset, Tf_Unchecked.cast<Rt_IntValue>(value).value)
+        TF_SLOT_KIND_BOOLEAN -> virtualFrame.setBoolean(offset, Tf_Unchecked.cast<Rt_BooleanValue>(value).value)
+        else -> virtualFrame.setObject(offset, value)
     }
 
     override fun clear(offset: Int) = virtualFrame.clear(offset)

@@ -17,7 +17,8 @@ import java.math.BigInteger
 import kotlin.reflect.full.createType
 
 @ConsistentCopyVisibility
-data class Rt_BigIntegerValue private constructor(val value: BigInteger): Rt_ValueBase() {
+@JvmRecord
+data class Rt_BigIntegerValue private constructor(val value: BigInteger): Rt_Value {
     override val name
         get() = Companion.name
 
@@ -47,6 +48,7 @@ data class Rt_BigIntegerValue private constructor(val value: BigInteger): Rt_Val
 
         val ZERO = Rt_BigIntegerValue(BigInteger.ZERO)
 
+        @JvmStatic
         fun get(v: BigInteger): Rt_BigIntegerValue {
             if (v.signum() == 0) {
                 return ZERO

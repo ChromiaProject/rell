@@ -152,7 +152,7 @@ object Lib_Type_Integer {
                 body { self, value ->
                     val v1 = self.asInteger()
                     val v2 = value.asDecimal()
-                    val r = BigDecimal(v1).min(v2)
+                    val r = BigDecimal.valueOf(v1).min(v2)
                     Rt_DecimalValue.get(r)
                 }
             }
@@ -194,7 +194,7 @@ object Lib_Type_Integer {
                 body { self, value ->
                     val v1 = self.asInteger()
                     val v2 = value.asDecimal()
-                    val r = BigDecimal(v1).max(v2)
+                    val r = BigDecimal.valueOf(v1).max(v2)
                     Rt_DecimalValue.get(r)
                 }
             }

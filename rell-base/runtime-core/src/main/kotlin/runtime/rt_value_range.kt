@@ -8,9 +8,9 @@ import com.google.common.math.LongMath
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
 
-
+@JvmRecord
 data class Rt_RangeValue(val start: Long, val end: Long, val step: Long):
-    Rt_ValueBase(), Iterable<Rt_Value>, Rt_IterableValue, Comparable<Rt_RangeValue> {
+    Rt_Value, Iterable<Rt_Value>, Rt_IterableValue, Comparable<Rt_RangeValue> {
     override val name
         get() = Companion.name
 

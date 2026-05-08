@@ -15,25 +15,25 @@ import org.jooq.DataType
 import org.jooq.impl.SQLDataType
 import kotlin.reflect.full.createType
 
-sealed class Rt_BooleanValue: Rt_ValueBase() {
-    abstract val value: Boolean
+sealed interface Rt_BooleanValue: Rt_Value {
+    val value: Boolean
 
-    final override val name
+    override val name
         get() = Companion.name
 
-    final override val type
+    override val type
         get() = Rt_PrimitiveTypes.BOOLEAN
 
-    final override fun toFormatArg() = value
-    final override fun strCode(showTupleFieldNames: Boolean) = if (value) "boolean[true]" else "boolean[false]"
-    final override fun str(format: Rt_StrFormat) = if (value) "true" else "false"
+    override fun toFormatArg() = value
+    override fun strCode(showTupleFieldNames: Boolean) = if (value) "boolean[true]" else "boolean[false]"
+    override fun str(format: Rt_StrFormat) = if (value) "true" else "false"
 
-    object TRUE: Rt_BooleanValue() {
+    object TRUE: Rt_BooleanValue {
         override val value
             get() = true
     }
 
-    object FALSE: Rt_BooleanValue() {
+    object FALSE: Rt_BooleanValue {
         override val value
             get() = false
     }
@@ -57,6 +57,7 @@ sealed class Rt_BooleanValue: Rt_ValueBase() {
         override val comparator: Comparator<Rt_Value> =
             Comparator { a, b -> a.asBoolean().compareTo(b.asBoolean()) }
 
+        @JvmStatic
         fun get(value: Boolean): Rt_BooleanValue = if (value) TRUE else FALSE
 
         override fun toGtv(value: Rt_BooleanValue, pretty: Boolean): Gtv =

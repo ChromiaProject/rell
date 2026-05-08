@@ -4,9 +4,7 @@
 
 package net.postchain.rell.base.runtime
 
-sealed class Rt_LazyValue(
-    final override val type: Rt_ValueClass<*>,
-): Rt_ValueBase(), Rt_LazyResolvableValue {
+sealed class Rt_LazyValue(final override val type: Rt_ValueClass<*>): Rt_Value, Rt_LazyResolvableValue {
     private var value: Rt_Value? = null
 
     final override val name

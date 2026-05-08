@@ -7,7 +7,7 @@ package net.postchain.rell.base.runtime
 import net.postchain.rell.base.lib.R_RellMetaType
 import net.postchain.rell.base.model.R_DefinitionMeta
 
-class Rt_RellMetaValue(private val meta: R_DefinitionMeta): Rt_ValueBase() {
+data class Rt_RellMetaValue(private val meta: R_DefinitionMeta): Rt_Value {
     val kindText: Rt_Value by lazy { Rt_TextValue.get(meta.kind) }
     val simpleName: Rt_Value by lazy { Rt_TextValue.get(meta.simpleName) }
     val moduleName: Rt_Value by lazy { Rt_TextValue.get(meta.moduleName) }

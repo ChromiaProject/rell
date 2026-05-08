@@ -18,7 +18,8 @@ import org.jooq.impl.SQLDataType
 import kotlin.reflect.full.createType
 
 @ConsistentCopyVisibility
-data class Rt_RowidValue private constructor(val value: Long): Rt_ValueBase() {
+@JvmRecord
+data class Rt_RowidValue private constructor(val value: Long): Rt_Value {
     init {
         check(value >= 0) { "Negative rowid value: $value" }
     }

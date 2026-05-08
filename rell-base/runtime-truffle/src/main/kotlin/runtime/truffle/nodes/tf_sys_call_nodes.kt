@@ -9,12 +9,14 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.ExplodeLoop
 import com.oracle.truffle.api.profiles.BranchProfile
+import net.postchain.rell.base.model.DefinitionId
 import net.postchain.rell.base.model.ErrorPos
 import net.postchain.rell.base.model.FilePos
 import net.postchain.rell.base.runtime.R_SysFunction
 import net.postchain.rell.base.runtime.R_SysFunctionUtils
 import net.postchain.rell.base.runtime.Rt_BooleanValue
 import net.postchain.rell.base.runtime.Rt_CallContext
+import net.postchain.rell.base.runtime.Rt_CallFrame
 import net.postchain.rell.base.runtime.Rt_DefinitionContext
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_ExecutionContext
@@ -77,7 +79,11 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
         if (cached != null && cachedCallExeCtx === exeCtx && cachedCallDbUpdate == dbUpdate) {
             return cached
         }
-        return refreshCallCtxCache(frame, exeCtx, dbUpdate)
+        // Extract defId from the frame descriptor *before* the boundary call. The Truffle
+        // Bytecode DSL annotation processor rejects `@TruffleBoundary` methods that take a
+        // `VirtualFrame` parameter (non-materialised frames cannot cross a boundary).
+        val info = Tf_Unchecked.cast<Tf_FrameInfo>(frame.frameDescriptor.info)
+        return refreshCallCtxCache(info.defId, exeCtx, dbUpdate)
     }
 
     /**
@@ -87,12 +93,11 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
      */
     @TruffleBoundary
     private fun refreshCallCtxCache(
-        frame: VirtualFrame,
+        defId: DefinitionId,
         exeCtx: Rt_ExecutionContext,
         dbUpdate: Boolean,
     ): Rt_CallContext {
-        val info = Tf_Unchecked.cast<Tf_FrameInfo>(frame.frameDescriptor.info)
-        val defCtx = Rt_DefinitionContext(exeCtx, dbUpdate, info.defId)
+        val defCtx = Rt_DefinitionContext(exeCtx, dbUpdate, defId)
         val callCtx = defCtx.toCallContext()
         cachedCallExeCtx = exeCtx
         cachedCallDbUpdate = dbUpdate
@@ -150,7 +155,7 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
      */
     @TruffleBoundary
     protected fun rethrowAfterDecorate(
-        frame: VirtualFrame,
+        rt: Rt_CallFrame,
         callCtx: Rt_CallContext,
         callPos: FilePos,
         displayName: String,
@@ -158,7 +163,7 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
     ): Nothing {
         val decorated = R_SysFunctionUtils.decorateSysFnException(callCtx, LazyString.of(displayName), e)
         if (decorated is Rt_Exception) {
-            tfRethrowNested(frame, ErrorPos(callPos), decorated)
+            tfRethrowNested(rt, ErrorPos(callPos), decorated)
         }
         throw decorated
     }
@@ -196,7 +201,7 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
                 invokeSysFn(callCtx, fn, mapped)
             } catch (e: Throwable) {
                 errorProfile.enter()
-                rethrowAfterDecorate(frame, callCtx, callPos, displayName, e)
+                rethrowAfterDecorate(tfRtFrame(frame), callCtx, callPos, displayName, e)
             }
         }
 
@@ -282,7 +287,7 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
                 invokeSysFn(callCtx, fn, mapped)
             } catch (e: Throwable) {
                 errorProfile.enter()
-                rethrowAfterDecorate(frame, callCtx, callPos, displayName, e)
+                rethrowAfterDecorate(tfRtFrame(frame), callCtx, callPos, displayName, e)
             }
         }
 

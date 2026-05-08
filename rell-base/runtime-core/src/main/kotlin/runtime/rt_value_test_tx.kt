@@ -17,7 +17,7 @@ import net.postchain.rell.base.utils.toImmList
 import java.util.*
 
 
-class Rt_TestBlockValue(txs: List<RawTestTxValue>): Rt_ValueBase() {
+class Rt_TestBlockValue(txs: List<RawTestTxValue>): Rt_Value {
     private val txs = txs.toMutableList()
 
     override val name
@@ -53,7 +53,7 @@ class Rt_TestBlockValue(txs: List<RawTestTxValue>): Rt_ValueBase() {
 internal class Rt_TestTxValue(
     ops: List<RawTestOpValue>,
     signers: List<BytesKeyPair>
-): Rt_ValueBase() {
+): Rt_Value {
     private val ops = ops.toMutableList()
     private val signers = signers.toMutableList()
 
@@ -103,7 +103,7 @@ internal class Rt_TestTxValue(
     }
 }
 
-class Rt_TestOpValue(val mountName: MountName, val args: ImmList<Gtv>): Rt_ValueBase() {
+class Rt_TestOpValue(val mountName: MountName, val args: ImmList<Gtv>): Rt_Value {
     val nameValue: Rt_Value by lazy {
         Rt_TextValue.get(mountName.str())
     }

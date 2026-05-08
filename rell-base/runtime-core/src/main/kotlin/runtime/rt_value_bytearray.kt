@@ -17,7 +17,7 @@ import org.jooq.impl.SQLDataType
 import kotlin.reflect.full.createType
 
 class Rt_ByteArrayValue private constructor(internal val value: ByteArray):
-    Rt_ValueBase(), Rt_IterableValue {
+    Rt_Value, Rt_IterableValue {
     override val name
         get() = Companion.name
 

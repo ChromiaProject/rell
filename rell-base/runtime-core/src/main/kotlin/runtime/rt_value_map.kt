@@ -21,7 +21,7 @@ fun rrTypeName(rrType: RR_Type): String = when (rrType) {
 }
 
 class Rt_MapValue(override val type: Rt_ValueClass<*>, map: MutableMap<Rt_Value, Rt_Value>):
-    Rt_ValueBase(), Rt_MutableMapBackedValue, Rt_IterableValue, Iterable<Rt_Value> {
+    Rt_Value, Rt_MutableMapBackedValue, Rt_IterableValue, Iterable<Rt_Value> {
     val map: Map<Rt_Value, Rt_Value> = map
     internal val mutableMap = map
 

@@ -25,7 +25,7 @@ import net.postchain.rell.base.utils.toIntExact
 class Rt_RR_EnumValue(
     override val type: Rt_ValueClass<*>,
     internal val rrAttr: RR_EnumAttr,
-): Rt_ValueBase() {
+): Rt_Value {
     private val typeName: String = type.name
 
     override val name

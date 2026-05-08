@@ -9,6 +9,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.ExplodeLoop
 import com.oracle.truffle.api.staticobject.StaticProperty
+import net.postchain.rell.base.model.DefinitionId
 import net.postchain.rell.base.model.ErrorPos
 import net.postchain.rell.base.model.FilePos
 import net.postchain.rell.base.runtime.*
@@ -198,17 +199,20 @@ internal sealed class Tf_MemberAccessNode: Tf_ExprNode() {
         if (cached != null && cachedCallExeCtx === exeCtx && cachedCallDbUpdate == dbUpdate) {
             return cached
         }
-        return refreshCallCtxCache(frame, exeCtx, dbUpdate)
+        // Extract defId from the frame descriptor *before* the boundary call. The Truffle
+        // Bytecode DSL annotation processor rejects `@TruffleBoundary` methods that take a
+        // `VirtualFrame` parameter (non-materialised frames cannot cross a boundary).
+        val info = Tf_Unchecked.cast<Tf_FrameInfo>(frame.frameDescriptor.info)
+        return refreshCallCtxCache(info.defId, exeCtx, dbUpdate)
     }
 
     @TruffleBoundary
     private fun refreshCallCtxCache(
-        frame: VirtualFrame,
+        defId: DefinitionId,
         exeCtx: Rt_ExecutionContext,
         dbUpdate: Boolean,
     ): Rt_CallContext {
-        val info = Tf_Unchecked.cast<Tf_FrameInfo>(frame.frameDescriptor.info)
-        val defCtx = Rt_DefinitionContext(exeCtx, dbUpdate, info.defId)
+        val defCtx = Rt_DefinitionContext(exeCtx, dbUpdate, defId)
         val callCtx = defCtx.toCallContext()
         cachedCallExeCtx = exeCtx
         cachedCallDbUpdate = dbUpdate
@@ -304,7 +308,7 @@ internal sealed class Tf_MemberAccessNode: Tf_ExprNode() {
             return try {
                 invokeSysFn(callCtx, fn, displayName, mapped)
             } catch (e: Rt_Exception) {
-                rethrowNested(frame, callPos, e)
+                rethrowNested(tfRtFrame(frame), callPos, e)
             }
         }
 
@@ -340,8 +344,8 @@ internal sealed class Tf_MemberAccessNode: Tf_ExprNode() {
         }
 
         @TruffleBoundary
-        private fun rethrowNested(frame: VirtualFrame, callPos: FilePos, e: Rt_Exception): Nothing =
-            tfRethrowNested(frame, ErrorPos(callPos), e)
+        private fun rethrowNested(rt: Rt_CallFrame, callPos: FilePos, e: Rt_Exception): Nothing =
+            tfRethrowNested(rt, ErrorPos(callPos), e)
 
         internal class IntResult(
             base: Tf_ExprNode,

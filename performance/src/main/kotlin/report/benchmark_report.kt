@@ -102,14 +102,14 @@ private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
     ),
     "decimal_pow" to SampleInfo(
         title = "decimal power · ln · exp",
-        description = "200 calls × 4 (base, exponent) shapes of power: integer exponent, non-integer exponent, fractional base near 1, and negative exponent.",
+        description = "200 calls × 4 (base, exponent) shapes of power: integer exponent, non-integer exponent, fractional base near 1, and negative exponent. Note: ≳60% of wall time is spent in JDK BigInteger / BigDecimal arithmetic — small Rell-runtime wins translate to small ms/op deltas here.",
         sources = listOf(
             SampleSource("mna-blockchain · math/math.rell", "$MNA_BLOB/math/math.rell"),
         ),
     ),
     "perlin_noise" to SampleInfo(
         title = "8-octave 2D Simplex noise",
-        description = "20 calls of sum_octave_2d on a 5×5 grid (500 simplex_2d samples per rep) with the canonical permutation tables.",
+        description = "20 calls of sum_octave_2d on a 5×5 grid (500 simplex_2d samples per rep) with the canonical permutation tables. Note: ~40-50% of wall time is JDK BigDecimal / BigInteger arithmetic; the truffle backend's int128/long-scale decimal leaves shave a chunk off when values stay in range.",
         sources = listOf(
             SampleSource("mna-blockchain · noise/functions.rell", "$MNA_BLOB/math/noise/functions.rell"),
             SampleSource("mna-blockchain · noise/simplex_2d.rell", "$MNA_BLOB/math/noise/simplex_2d.rell"),
@@ -122,6 +122,40 @@ private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
             SampleSource(
                 "mna-blockchain · griddables/griddables.rell",
                 "$MNA_BLOB/griddables/griddables.rell",
+            ),
+        ),
+    ),
+    "dto_mapping" to SampleInfo(
+        title = "nested DTO mapping",
+        description = "50 reps × 16 quests × (3 goals × 4 assets) × 4 rewards — triple-nested struct construction in a tight loop, mirroring the quests/community_quests get_*_dto path.",
+        sources = listOf(
+            SampleSource(
+                "mna-blockchain · quests/dto.rell",
+                "$MNA_BLOB/quests/dto.rell",
+            ),
+            SampleSource(
+                "mna-blockchain · quests/functions.rell",
+                "$MNA_BLOB/quests/functions.rell",
+            ),
+        ),
+    ),
+    "cursor_codec" to SampleInfo(
+        title = "page_cursor codec · paged_result",
+        description = "100 reps of cursor encode (to_bytes + base64) plus paged_result assembly over a 32-row pagination_result. Adapted from ft4-lib make_page; preserves the struct-ser hot path.",
+        sources = listOf(
+            SampleSource(
+                "ft4-lib · utils/pagination.rell",
+                "$FT4_BLOB/utils/pagination.rell",
+            ),
+        ),
+    ),
+    "multi_sig" to SampleInfo(
+        title = "multi-sig auth descriptor eval",
+        description = "500 reps of multi-sig signer-list evaluation: struct deserialization (to_struct from gtv), set/list intersection over the candidate signer set, and an early-exit signer loop.",
+        sources = listOf(
+            SampleSource(
+                "ft4-lib · core/accounts/auth_basic.rell",
+                "$FT4_BLOB/core/accounts/auth_basic.rell",
             ),
         ),
     ),
@@ -374,7 +408,7 @@ private fun FlowContent.renderResults(
                                         if (bestScore != null && winner != null && method != winner && m.score > 0) {
                                             span(classes = "ratio-note") {
                                                 +" "
-                                                span(classes = "ratio") { +"×%.2f".formatRoot(m.score / bestScore) }
+                                                span(classes = "ratio") { +"×%.1f".formatRoot(m.score / bestScore) }
                                                 +" $winner"
                                             }
                                         }

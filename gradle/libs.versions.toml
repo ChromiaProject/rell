@@ -83,7 +83,6 @@ flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version
 
 # GraalVM Truffle
 truffle-api = { module = "org.graalvm.truffle:truffle-api", version.ref = "truffle" }
-truffle-dsl-processor = { module = "org.graalvm.truffle:truffle-dsl-processor", version.ref = "truffle" }
 truffle-runtime = { module = "org.graalvm.truffle:truffle-runtime", version.ref = "truffle" }
 graalvm-polyglot = { module = "org.graalvm.polyglot:polyglot", version.ref = "truffle" }
 

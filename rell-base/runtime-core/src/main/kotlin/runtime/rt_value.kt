@@ -3,6 +3,7 @@
  */
 
 @file:Suppress("MayBeConstant")
+@file:JvmName("RtValueUtils")
 
 package net.postchain.rell.base.runtime
 
@@ -54,17 +55,6 @@ sealed interface Rt_Value {
 
 /** Top-level alias of [Rt_Value.StrFormat] for ergonomic unqualified use at call sites. */
 typealias Rt_StrFormat = Rt_Value.StrFormat
-
-/**
- * Common base for concrete [Rt_Value] implementations. Locks `toString` to route through
- * [str] so debugging never exposes the JVM identity of a value.
- */
-sealed class Rt_ValueBase: Rt_Value {
-    final override fun toString(): String {
-        CommonUtils.failIfUnitTest()
-        return str(Rt_Value.StrFormat.V1)
-    }
-}
 
 /** Iteration view over a value (range, list, set, map-as-tuples, byte-array-as-ints, ...). */
 interface Rt_IterableValue: Rt_Value, Iterable<Rt_Value> {

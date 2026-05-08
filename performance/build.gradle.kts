@@ -160,6 +160,14 @@ val smokeMna by tasks.registering(JavaExec::class) {
     mainClass = "net.postchain.rell.performance.benchmarks.MnaBenchmarkKt"
 }
 
+/** Same as `smokeFt4`, but for the cross-codebase struct workloads in StructBenchmark. */
+val smokeStruct by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Run each StructBenchmark workload once on the interpreter backend."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass = "net.postchain.rell.performance.benchmarks.StructBenchmarkKt"
+}
+
 val benchmarkHtmlReport by tasks.registering(JavaExec::class) {
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
     description = "Render the latest kotlinx-benchmark JSON result as HTML."

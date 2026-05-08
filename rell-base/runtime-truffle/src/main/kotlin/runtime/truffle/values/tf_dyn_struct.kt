@@ -38,10 +38,10 @@ open class Tf_DynStruct(
     val rrType: RR_Type.Struct,
     override val type: Rt_ValueClass<*>,
     val shape: Tf_StructShape,
-): Rt_StructValue() {
-    final override fun size(): Int = shape.properties.size
+): Rt_StructValue {
+    override fun size(): Int = shape.properties.size
 
-    final override fun get(index: Int): Rt_Value {
+    override fun get(index: Int): Rt_Value {
         val prop = shape.properties[index]
         return when (shape.slotKindAt(index)) {
             TF_SLOT_LONG -> Rt_IntValue.get(prop.getLong(this))
@@ -50,7 +50,7 @@ open class Tf_DynStruct(
         }
     }
 
-    final override fun set(index: Int, value: Rt_Value) {
+    override fun set(index: Int, value: Rt_Value) {
         // Mirror Rt_HeapStruct.set: per-attribute validators (e.g. text/byte_array size
         // constraints) must run on every external write, not just the assignTo path that
         // the interpreter happens to re-validate. Without this, a direct
@@ -85,6 +85,14 @@ open class Tf_DynStruct(
         shape.properties[index].setBoolean(this, value)
     }
 
-    final override val effectiveNamesOrNull: List<String>
+    override val effectiveNamesOrNull: List<String>
         get() = shape.attrNames
+
+    // The interface form of [Rt_StructValue] does not provide a default equals/hashCode (interfaces
+    // can't), and SOM's generated subclass leaves identity-based defaults in place — which would
+    // wreck the canonical struct semantics that callers rely on (HashMap keys, list equality, etc.).
+    // Mirror [Rt_HeapStruct] by routing to the companion's structural helpers.
+    override fun equals(other: Any?): Boolean = Rt_StructValue.structEquals(this, other)
+
+    override fun hashCode(): Int = Rt_StructValue.structHashCode(this)
 }

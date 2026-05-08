@@ -8,7 +8,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvNull
 import net.postchain.rell.base.model.rr.RR_Type
 
-object Rt_NullValue: Rt_ValueBase(), Rt_ValueClass<Rt_NullValue> {
+object Rt_NullValue: Rt_Value, Rt_ValueClass<Rt_NullValue> {
     override val name
         get() = NULL_NAME
 

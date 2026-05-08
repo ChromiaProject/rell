@@ -1,0 +1,350 @@
+// Struct-heavy compute workloads distilled from real Chromia codebases. Every helper kept
+// here is database-free, op_context-free and chain_context-free, so the same source compiles
+// and runs under both the tree-walker and the Truffle backend without extra plumbing.
+//
+//   - `dto_mapping`   — quests/community_quests-style nested DTO mapping
+//                       (chromaway/mna-blockchain → src/quests/dto.rell + functions.rell).
+//                       Triple-nested struct construction in tight loops.
+//   - `cursor_codec`  — paginated-query cursor encode/decode + page assembly
+//                       (chromaway/ft4-lib → src/lib/ft4/utils/pagination.rell).
+//                       Struct ↔ bytes via to_bytes/from_bytes + base64 + list slicing.
+//   - `multi_sig`     — multi-sig auth descriptor evaluation
+//                       (chromaway/ft4-lib → src/lib/ft4/core/accounts/auth_basic.rell).
+//                       Struct deserialization + set/list intersection + early-exit signer loop.
+
+// ----------------------------------------------------------------------------
+//  quests/dto.rell — nested DTO struct definitions
+// ----------------------------------------------------------------------------
+
+struct asset_info {
+    id: byte_array;
+    amount: integer;
+    should_consume: boolean;
+}
+
+struct reward_info {
+    id: byte_array;
+    amount: integer;
+}
+
+struct goal_info {
+    goal_index: integer;
+    assets: list<asset_info>;
+}
+
+struct quest_info {
+    quest_id: text;
+    name: text;
+    provider_id: text;
+    goals: list<goal_info>;
+    rewards: list<reward_info>;
+    required_pre_quests: list<text>;
+}
+
+// Input shape (would be loaded from entities in the real dapp). The benchmark treats it as
+// a pre-built in-memory data set so the mapping path runs without any DB plumbing.
+struct input_asset { id: byte_array; amount: integer; should_consume: boolean; }
+struct input_goal  { goal_index: integer; assets: list<input_asset>; }
+struct input_reward { id: byte_array; amount: integer; }
+struct input_quest {
+    quest_id: text;
+    name: text;
+    provider_id: text;
+    goals: list<input_goal>;
+    rewards: list<input_reward>;
+    required_pre_quests: list<text>;
+}
+
+// ----------------------------------------------------------------------------
+//  quests/functions.rell — get_quests_dto: input list → DTO list
+// ----------------------------------------------------------------------------
+
+function map_assets(inputs: list<input_asset>): list<asset_info> {
+    val out = list<asset_info>();
+    for (a in inputs) {
+        out.add(asset_info(id = a.id, amount = a.amount, should_consume = a.should_consume));
+    }
+    return out;
+}
+
+function map_goals(inputs: list<input_goal>): list<goal_info> {
+    val out = list<goal_info>();
+    for (g in inputs) {
+        out.add(goal_info(goal_index = g.goal_index, assets = map_assets(g.assets)));
+    }
+    return out;
+}
+
+function map_rewards(inputs: list<input_reward>): list<reward_info> {
+    val out = list<reward_info>();
+    for (r in inputs) {
+        out.add(reward_info(id = r.id, amount = r.amount));
+    }
+    return out;
+}
+
+function get_quests_dto(quests: list<input_quest>): list<quest_info> {
+    val out = list<quest_info>();
+    for (q in quests) {
+        out.add(quest_info(
+            quest_id = q.quest_id,
+            name = q.name,
+            provider_id = q.provider_id,
+            goals = map_goals(q.goals),
+            rewards = map_rewards(q.rewards),
+            required_pre_quests = q.required_pre_quests
+        ));
+    }
+    return out;
+}
+
+// 16 quests × (3 goals × 4 assets) × 4 rewards. ~1 KB of struct graph per call to
+// get_quests_dto so the per-iteration cost lands in the same ballpark as the ft4_bench
+// and mna_bench workloads.
+function bench_quests_input(): list<input_quest> {
+    val quests = list<input_quest>();
+    var qi = 0;
+    while (qi < 16) {
+        val goals = list<input_goal>();
+        var gi = 0;
+        while (gi < 3) {
+            val assets = list<input_asset>();
+            var ai = 0;
+            while (ai < 4) {
+                assets.add(input_asset(
+                    id = x"deadbeefcafebabe",
+                    amount = qi * 100 + gi * 10 + ai,
+                    should_consume = (ai % 2 == 0)
+                ));
+                ai += 1;
+            }
+            goals.add(input_goal(goal_index = gi, assets = assets));
+            gi += 1;
+        }
+        val rewards = list<input_reward>();
+        var ri = 0;
+        while (ri < 4) {
+            rewards.add(input_reward(id = x"feedface", amount = (qi + ri + 1) * 1000));
+            ri += 1;
+        }
+        val pre = list<text>();
+        var pi = 0;
+        while (pi < 2) {
+            pre.add("quest_" + (qi - pi - 1).to_text());
+            pi += 1;
+        }
+        quests.add(input_quest(
+            quest_id = "quest_" + qi.to_text(),
+            name = "Quest #" + qi.to_text(),
+            provider_id = "provider_" + (qi % 4).to_text(),
+            goals = goals,
+            rewards = rewards,
+            required_pre_quests = pre
+        ));
+        qi += 1;
+    }
+    return quests;
+}
+
+query bench_dto_mapping(reps: integer): integer {
+    val input = bench_quests_input();
+    var total = 0;
+    var i = 0;
+    while (i < reps) {
+        val mapped = get_quests_dto(input);
+        total += mapped.size();
+        for (q in mapped) {
+            total += q.goals.size();
+            for (g in q.goals) {
+                total += g.assets.size();
+            }
+            total += q.rewards.size();
+        }
+        i += 1;
+    }
+    return total;
+}
+
+// ----------------------------------------------------------------------------
+//  ft4/utils/pagination.rell — page_cursor + paged_result + make_page
+// ----------------------------------------------------------------------------
+
+struct page_cursor {
+    before_rowid: integer? = null;
+}
+
+struct pagination_result {
+    data: gtv;
+    rowid: integer;
+}
+
+struct paged_result {
+    next_cursor: text?;
+    data: list<gtv>;
+}
+
+function encode_cursor(page_cursor) = page_cursor.to_bytes().to_base64();
+
+function decode_cursor(cursor: text) = page_cursor.from_bytes(byte_array.from_base64(cursor));
+
+function null_page() = paged_result(next_cursor = null, data = list<gtv>());
+
+function before_rowid(page_cursor: text?): integer? {
+    if (page_cursor == null) return null;
+    return decode_cursor(page_cursor).before_rowid;
+}
+
+// Adapted from ft4-lib `make_page` — drops the get_module_args() / require() pieces so it
+// runs without the surrounding ft4 module, but preserves the struct-ser-heavy hot path:
+// build a `page_cursor`, encode it via to_bytes()+base64, project a `list<gtv>` out of the
+// pagination_result list, and wrap both into a `paged_result`.
+function make_page(pagination_results: list<pagination_result>, page_size: integer): paged_result {
+    if (pagination_results.size() == 0) return null_page();
+    if (pagination_results.size() < page_size + 1) {
+        val data = list<gtv>();
+        for (r in pagination_results) data.add(r.data);
+        return paged_result(next_cursor = null, data = data);
+    }
+    val trimmed = pagination_results.sub(0, pagination_results.size() - 1);
+    val next_id = pagination_results[pagination_results.size() - 2].rowid;
+    val data = list<gtv>();
+    for (r in trimmed) data.add(r.data);
+    return paged_result(
+        next_cursor = encode_cursor(page_cursor(before_rowid = next_id)),
+        data = data
+    );
+}
+
+function bench_pagination_input(size: integer): list<pagination_result> {
+    val out = list<pagination_result>();
+    var i = 0;
+    while (i < size) {
+        // GTV payload of similar shape to a real frontend row — small dict with a few keys.
+        val row = [
+            "id": i.to_gtv(),
+            "name": ("row_" + i.to_text()).to_gtv(),
+            "ts": (1700000000 + i * 60).to_gtv(),
+            "tags": [("t" + (i % 3).to_text()).to_gtv(), ("t" + (i % 5).to_text()).to_gtv()].to_gtv()
+        ];
+        out.add(pagination_result(data = row.to_gtv(), rowid = (i + 1) * 17));
+        i += 1;
+    }
+    return out;
+}
+
+query bench_cursor_codec(reps: integer): integer {
+    val page = bench_pagination_input(20);
+    var total = 0;
+    var i = 0;
+    while (i < reps) {
+        // Encode → decode → re-encode round trip on a fresh cursor each iteration.
+        val c = page_cursor(before_rowid = i);
+        val enc = encode_cursor(c);
+        val dec = decode_cursor(enc);
+        if (dec.before_rowid == i) total += 1;
+
+        // Build a paged_result over the synthetic page (full path: trim + cursor + project).
+        val paged = make_page(page, 10);
+        total += paged.data.size();
+
+        // Pull the next_cursor back through decode to exercise the inverse path too.
+        val next = before_rowid(paged.next_cursor);
+        if (next != null) total += 1;
+
+        i += 1;
+    }
+    return total;
+}
+
+// ----------------------------------------------------------------------------
+//  ft4/core/accounts/auth_basic.rell — multi_sig_args + check_multi_sig_auth
+// ----------------------------------------------------------------------------
+
+struct multi_sig_args {
+    flags: set<text>;
+    signers: list<byte_array>;
+    signatures_required: integer;
+}
+
+enum auth_status { VALID, MISSING_FLAGS, NOT_ENOUGH_SIGNATURES }
+
+function check_required_flags(flags: set<text>, required_flags: list<text>): boolean =
+    flags.contains_all(required_flags);
+
+// Adapted from ft4-lib `check_multi_sig_auth`: drops the op_context.is_signer() call and
+// reads the "did this pubkey sign?" answer from a pre-built set passed in. Preserves the
+// hot path: deserialize struct from bytes → flag intersection → early-exit signer loop.
+function check_multi_sig_auth(
+    args: byte_array,
+    required_flags: list<text>,
+    signers_in_tx: set<byte_array>
+): auth_status {
+    val descriptor = multi_sig_args.from_bytes(args);
+    if (not check_required_flags(descriptor.flags, required_flags)) {
+        return auth_status.MISSING_FLAGS;
+    }
+    var remaining = descriptor.signatures_required;
+    for (s in descriptor.signers) {
+        if (signers_in_tx.contains(s)) {
+            remaining -= 1;
+            if (remaining < 1) return auth_status.VALID;
+        }
+    }
+    return auth_status.NOT_ENOUGH_SIGNATURES;
+}
+
+function bench_multisig_descriptors(): list<byte_array> {
+    val out = list<byte_array>();
+    var i = 0;
+    while (i < 12) {
+        val flags = set<text>();
+        flags.add("A");
+        flags.add("T");
+        if (i % 2 == 0) flags.add("X");
+        val signers = list<byte_array>();
+        var s = 0;
+        // 5 signers per descriptor; pubkeys are 32-byte prefixes derived from `i` and `s`.
+        while (s < 5) {
+            signers.add(byte_array.from_list(list<integer>([i, s, 0, 0, 0, 0, 0, 0]).repeat(4)));
+            s += 1;
+        }
+        val descriptor = multi_sig_args(
+            flags = flags,
+            signers = signers,
+            signatures_required = 3
+        );
+        out.add(descriptor.to_bytes());
+        i += 1;
+    }
+    return out;
+}
+
+function bench_multisig_signers_in_tx(): set<byte_array> {
+    val out = set<byte_array>();
+    // Mark "signer index 0, 2, 4 of every descriptor" as having signed. Hits the early-exit
+    // path on even-index descriptors and the not-enough-signatures path on some others.
+    var i = 0;
+    while (i < 12) {
+        for (s in [0, 2, 4]) {
+            out.add(byte_array.from_list(list<integer>([i, s, 0, 0, 0, 0, 0, 0]).repeat(4)));
+        }
+        i += 1;
+    }
+    return out;
+}
+
+query bench_multi_sig(reps: integer): integer {
+    val descriptors = bench_multisig_descriptors();
+    val signed = bench_multisig_signers_in_tx();
+    val required = ["A", "T"];
+    var valid = 0;
+    var i = 0;
+    while (i < reps) {
+        for (args in descriptors) {
+            val st = check_multi_sig_auth(args, required, signed);
+            if (st == auth_status.VALID) valid += 1;
+        }
+        i += 1;
+    }
+    return valid;
+}

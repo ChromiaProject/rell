@@ -8,7 +8,7 @@ internal class Rt_TryCallResultValue(
     override val type: Rt_ValueClass<*>,
     val valueOrNull: Rt_Value?,
     val requireMessageOrNull: String?,
-): Rt_ValueBase() {
+): Rt_Value {
     init {
         check(valueOrNull != null || requireMessageOrNull != null) { "both value and require message are null" }
     }

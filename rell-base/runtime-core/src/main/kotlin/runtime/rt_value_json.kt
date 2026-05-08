@@ -18,7 +18,7 @@ import org.jooq.JSONB
 import org.jooq.impl.SQLDataType
 import org.postgresql.util.PGobject
 
-class Rt_JsonValue(val node: JsonNode): Rt_ValueBase() {
+class Rt_JsonValue(val node: JsonNode): Rt_Value {
     override val name
         get() = Companion.name
 

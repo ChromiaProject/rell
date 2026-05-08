@@ -9,7 +9,7 @@ import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.utils.immSetOf
 import kotlin.reflect.full.createType
 
-object Rt_UnitValue: Rt_ValueBase(), Rt_ValueClass<Rt_UnitValue>, Rt_NativeAdapter {
+object Rt_UnitValue: Rt_Value, Rt_ValueClass<Rt_UnitValue>, Rt_NativeAdapter {
     override val name
         get() = "unit"
 

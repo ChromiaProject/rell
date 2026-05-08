@@ -7,7 +7,7 @@ package net.postchain.rell.base.runtime
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvVirtual
 
-sealed class Rt_VirtualValue(val gtv: Gtv): Rt_ValueBase() {
+sealed class Rt_VirtualValue(val gtv: Gtv): Rt_Value {
     fun toFull(): Rt_Value {
         if (gtv is GtvVirtual) {
             val typeStr = type.name

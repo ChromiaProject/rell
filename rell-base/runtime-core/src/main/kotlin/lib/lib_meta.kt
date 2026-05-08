@@ -27,7 +27,8 @@ internal object Lib_Meta {
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell") {
-            comment("""
+            comment(
+                """
                 An API facilitating access to Rell definition metadata.
 
                 A `rell.meta` value can be constructed with a reference to a Rell definition - modules, entities,
@@ -37,10 +38,12 @@ internal object Lib_Meta {
 
                 This API also provides a factory method `rell.meta.current_module()` for creating a `rell.meta` value
                 about the current module.
-            """)
+            """,
+            )
             type("meta", rType = R_RellMetaType, since = SINCE0) {
                 constructor(C_SysFn_Meta, since = SINCE0) {
-                    comment("""
+                    comment(
+                        """
                         Construct a value of type `rell.meta`, which describes a definition.
 
                         `rell.meta` values describe the definition referenced in the argument to their constructor. The
@@ -65,11 +68,13 @@ internal object Lib_Meta {
                         ```
 
                         one can also construct a value of type `rell.meta` by writing `rell.meta(other_module)`.
-                    """)
+                    """,
+                    )
                 }
 
                 property("simple_name", type = "text", pure = true, since = SINCE0) {
-                    comment("""
+                    comment(
+                        """
                         The simple name of the definition represented by this meta value.
 
                         For example, an operation `my_op` defined in a module `a.b.c`, and nested inside namespaces `n`
@@ -77,7 +82,8 @@ internal object Lib_Meta {
 
                         Where the kind of definition described by this meta value is a module, `simple_name` is the
                         last part of the module's path; e.g. for a module `a.b.c`, the `simple_name` is `c`.
-                    """)
+                    """,
+                    )
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
                         v.simpleName
@@ -85,7 +91,8 @@ internal object Lib_Meta {
                 }
 
                 property("full_name", type = "text", pure = true, since = SINCE0) {
-                    comment("""
+                    comment(
+                        """
                         The full name of the definition represented by this meta value, including the names of the
                         module and namespace in which the definition occurs.
 
@@ -94,7 +101,8 @@ internal object Lib_Meta {
 
                         Where the kind of definition described by this meta value is a module, `full_name` is equal to
                         `module_name`.
-                    """)
+                    """,
+                    )
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
                         v.fullName
@@ -102,7 +110,8 @@ internal object Lib_Meta {
                 }
 
                 property("module_name", type = "text", pure = true, since = SINCE0) {
-                    comment("""
+                    comment(
+                        """
                         The name of the module to which the definition represented by this meta value belongs.
 
                         For example, an operation `my_op` defined in a module `a.b.c`, would have the module name
@@ -110,7 +119,8 @@ internal object Lib_Meta {
 
                         Where the kind of definition described by this meta value is a module, `module_name` is equal
                         to `full_name`.
-                    """)
+                    """,
+                    )
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
                         v.moduleName
@@ -118,7 +128,8 @@ internal object Lib_Meta {
                 }
 
                 property("mount_name", type = "text", pure = true, since = SINCE0) {
-                    comment("""
+                    comment(
+                        """
                         The effective mount name of the definition represented by this meta value, determined by:
                         - the name of the definition
                         - the names of any namespaces in which the definition occurs
@@ -126,7 +137,8 @@ internal object Lib_Meta {
                         - any `@mount` annotations on any namespaces in which the definition occurs
                         - any `@mount` annotations defined on the module in which the definition occurs, and any of its
                         parent modules
-                    """)
+                    """,
+                    )
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
                         v.mountName
@@ -134,14 +146,16 @@ internal object Lib_Meta {
                 }
 
                 property("kind_text", type = "text", pure = true, since = "0.13.10") {
-                    comment("""
+                    comment(
+                        """
                         Text representing the kind of the definition described by this meta value.
 
                         Possible values are `module`, `entity`, `object`, `operation` and `query`.
 
                         For example, an operation `my_op` defined in a module `a.b.c`, would have the kind text
                         `operation`.
-                    """)
+                    """,
+                    )
                     value { a ->
                         val v = Rt_RellMetaValue.get(a)
                         v.kindText
@@ -149,28 +163,29 @@ internal object Lib_Meta {
                 }
 
                 staticFunction("current_module", C_SysFn_Meta_CurrentModule, since = "0.13.10") {
-                    comment("""
+                    comment(
+                        """
                         Get a meta information value for the current module.
 
                         @return a value of type `rell.meta` representing the current module
-                    """)
+                    """,
+                    )
                 }
             }
         }
     }
 
-    fun makeMetaGetter(resultType: R_Type, getter: (R_DefinitionMeta) -> RR_ConstantValue?): C_SpecialLibGlobalFunctionBody {
-        return object: C_SysFn_BaseMeta(resultType) {
-            override fun getResultValue(meta: R_DefinitionMeta): RR_ConstantValue? {
-                val res = getter(meta)
-                return res
-            }
-        }
+    inline fun makeMetaGetter(
+        resultType: R_Type,
+        crossinline getter: (R_DefinitionMeta) -> RR_ConstantValue?,
+    ): C_SpecialLibGlobalFunctionBody = object: C_SysFn_BaseMeta(resultType) {
+        override fun getResultValue(meta: R_DefinitionMeta): RR_ConstantValue? = getter(meta)
     }
 }
 
-private abstract class C_SysFn_BaseMeta(private val resultType: R_Type): C_SpecialLibGlobalFunctionBody() {
-    final override fun paramCount() = 1 .. 1
+@PublishedApi
+internal abstract class C_SysFn_BaseMeta(private val resultType: R_Type): C_SpecialLibGlobalFunctionBody() {
+    final override fun paramCount() = 1..1
 
     protected abstract fun getResultValue(meta: R_DefinitionMeta): RR_ConstantValue?
 
@@ -204,7 +219,7 @@ private object C_SysFn_Meta: C_SysFn_BaseMeta(R_RellMetaType) {
 }
 
 private object C_SysFn_Meta_CurrentModule: C_SpecialLibGlobalFunctionBody() {
-    override fun paramCount() = 0 .. 0
+    override fun paramCount() = 0..0
 
     override fun compileCall(ctx: C_ExprContext, name: LazyPosString, args: ImmList<S_Expr>): V_Expr {
         checkEquals(args.size, 0)

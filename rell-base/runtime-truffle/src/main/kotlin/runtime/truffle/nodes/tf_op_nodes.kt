@@ -83,9 +83,9 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
                     "expr:$opCode:overflow:$l:$r",
                     "Integer overflow: $l $opCode $r",
                 )
-                if (errPos != null) tfRethrowAt(frame, errPos, e) else throw e
+                if (errPos != null) tfRethrowAt(tfRtFrame(frame), errPos, e) else throw e
             } catch (e: Rt_Exception) {
-                if (errPos != null) tfRethrowAt(frame, errPos, e) else throw e
+                if (errPos != null) tfRethrowAt(tfRtFrame(frame), errPos, e) else throw e
             }
         }
 
@@ -234,7 +234,7 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
             return try {
                 evaluate(l, r)
             } catch (e: Rt_Exception) {
-                if (errPos != null) tfRethrowAt(frame, errPos, e) else throw e
+                if (errPos != null) tfRethrowAt(tfRtFrame(frame), errPos, e) else throw e
             }
         }
 
@@ -275,10 +275,22 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
 
         /**
          * Long-mantissa fast path. Returns a [Tf_LongScaleDecimal] when the operation can stay
-         * in primitives without overflow or scale change; `null` defers to the BigDecimal slow
-         * path. Default implementation: no fast path.
+         * in primitives without overflow or scale change; `null` defers to the next tier.
+         * Default implementation: no fast path.
          */
         protected open fun fastLongScale(l: Tf_LongScaleDecimal, r: Tf_LongScaleDecimal): Rt_DecimalValue? = null
+
+        /**
+         * 128-bit-mantissa fast path. Engages after [fastLongScale] returns `null`, after
+         * widening the operands to [Tf_Int128ScaleDecimal]. Returns a fast-path result when
+         * the operation stays in 128-bit primitives, or `null` to defer to the BigDecimal slow
+         * path. Default implementation: no fast path.
+         *
+         * Workloads like `power(2.5, 17)` or `exp(x)` Taylor-series multiplications quickly
+         * produce mantissas exceeding `Long.MAX_VALUE` but still fit comfortably in 128 bits;
+         * this tier is what keeps them out of `BigInteger`/`BigDecimal` allocation.
+         */
+        protected open fun fastInt128Scale(l: Tf_Int128ScaleDecimal, r: Tf_Int128ScaleDecimal): Rt_DecimalValue? = null
 
         /** BigDecimal slow path. Subclasses delegate to [Lib_DecimalMath]; div0 is checked here. */
         protected abstract fun slowOp(l: BigDecimal, r: BigDecimal): BigDecimal
@@ -295,15 +307,36 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
         final override fun execute(frame: VirtualFrame): Rt_Value {
             val lv: Rt_DecimalValue = Tf_Unchecked.cast(left.execute(frame))
             val rv: Rt_DecimalValue = Tf_Unchecked.cast(right.execute(frame))
+            // Tier 1: long-scale fast path (both sides Tf_LongScaleDecimal).
             if (lv is Tf_LongScaleDecimal && rv is Tf_LongScaleDecimal) {
                 fastLongScale(lv, rv)?.let {
+                    return it
+                }
+                // Tier 2 (long-scale overflow path): widen both to 128-bit and retry.
+                fastInt128Scale(
+                    Tf_Int128ScaleDecimal.fromLongScale(lv),
+                    Tf_Int128ScaleDecimal.fromLongScale(rv),
+                )?.let {
+                    return it
+                }
+            } else if (lv is Tf_Int128ScaleDecimal && rv is Tf_Int128ScaleDecimal) {
+                // Tier 2 direct: both sides already at 128-bit.
+                fastInt128Scale(lv, rv)?.let {
+                    return it
+                }
+            } else if (lv is Tf_LongScaleDecimal && rv is Tf_Int128ScaleDecimal) {
+                fastInt128Scale(Tf_Int128ScaleDecimal.fromLongScale(lv), rv)?.let {
+                    return it
+                }
+            } else if (lv is Tf_Int128ScaleDecimal && rv is Tf_LongScaleDecimal) {
+                fastInt128Scale(lv, Tf_Int128ScaleDecimal.fromLongScale(rv))?.let {
                     return it
                 }
             }
             return try {
                 slowPath(lv.value, rv.value)
             } catch (e: Rt_Exception) {
-                if (errPos != null) tfRethrowAt(frame, errPos, e) else throw e
+                if (errPos != null) tfRethrowAt(tfRtFrame(frame), errPos, e) else throw e
             }
         }
 
@@ -382,6 +415,55 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
                 null
             }
         }
+
+        /**
+         * 128-bit Add/Sub fast path with scale alignment. Mirrors [fastLongScaleAddSub] but
+         * uses [add128] / [sub128] / [mul128by10Pow] for the 128-bit primitives. Bails when
+         * scale alignment overflows 128 bits or the final add/sub overflows.
+         *
+         * Limitation: scale-delta alignment uses [mul128by10Pow], which caps at `10^18` per
+         * step. When the smaller-scale mantissa doesn't have room above for an 18-digit shift,
+         * the result is the same `null` defer that long-scale already produced — but workloads
+         * that arrive here have already overflowed Long, so the high mantissa is non-zero and
+         * a single `* 10^18` stays in 128 bits unless it was already near 2^127.
+         */
+        protected fun fastInt128ScaleAddSub(
+            l: Tf_Int128ScaleDecimal,
+            r: Tf_Int128ScaleDecimal,
+            subtract: Boolean,
+        ): Rt_DecimalValue? {
+            val lhi: Long
+            val llo: Long
+            val rhi: Long
+            val rlo: Long
+            val resultScale: Int
+            when {
+                l.scale == r.scale -> {
+                    lhi = l.hi; llo = l.lo
+                    rhi = r.hi; rlo = r.lo
+                    resultScale = l.scale
+                }
+
+                l.scale < r.scale -> {
+                    val delta = r.scale - l.scale
+                    val aligned = mul128by10Pow(l.hi, l.lo, delta) ?: return null
+                    lhi = aligned[0]; llo = aligned[1]
+                    rhi = r.hi; rlo = r.lo
+                    resultScale = r.scale
+                }
+
+                else -> {
+                    val delta = l.scale - r.scale
+                    val aligned = mul128by10Pow(r.hi, r.lo, delta) ?: return null
+                    rhi = aligned[0]; rlo = aligned[1]
+                    lhi = l.hi; llo = l.lo
+                    resultScale = l.scale
+                }
+            }
+            val res = (if (subtract) sub128(lhi, llo, rhi, rlo) else add128(lhi, llo, rhi, rlo))
+                ?: return null
+            return Tf_Int128ScaleDecimal(res[0], res[1], resultScale)
+        }
     }
 
     internal class DecimalAdd(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
@@ -390,6 +472,9 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
 
         override fun fastLongScale(l: Tf_LongScaleDecimal, r: Tf_LongScaleDecimal): Rt_DecimalValue? =
             fastLongScaleAddSub(l, r, subtract = false)
+
+        override fun fastInt128Scale(l: Tf_Int128ScaleDecimal, r: Tf_Int128ScaleDecimal): Rt_DecimalValue? =
+            fastInt128ScaleAddSub(l, r, subtract = false)
 
         override fun slowOp(l: BigDecimal, r: BigDecimal): BigDecimal = Lib_DecimalMath.add(l, r)
     }
@@ -401,6 +486,9 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
 
         override fun fastLongScale(l: Tf_LongScaleDecimal, r: Tf_LongScaleDecimal): Rt_DecimalValue? =
             fastLongScaleAddSub(l, r, subtract = true)
+
+        override fun fastInt128Scale(l: Tf_Int128ScaleDecimal, r: Tf_Int128ScaleDecimal): Rt_DecimalValue? =
+            fastInt128ScaleAddSub(l, r, subtract = true)
 
         override fun slowOp(l: BigDecimal, r: BigDecimal): BigDecimal = Lib_DecimalMath.subtract(l, r)
     }
@@ -461,10 +549,99 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
             return Tf_LongScaleDecimal(rounded, Lib_DecimalMath.DECIMAL_FRAC_DIGITS)
         }
 
+        /**
+         * 128-bit Mul fast path. Mirrors [fastLongScale] but operates on 128-bit mantissas.
+         *
+         * Strategy: pick the side whose mantissa fits a signed Long as the multiplier
+         * (non-negative after sign normalisation), and multiply the other 128-bit operand by
+         * it via [mul128by64Unsigned]. Then either:
+         *
+         * - `newScale <= 20` → return the product directly at scale `newScale`.
+         * - `newScale > 20` → drop `k = newScale - 20` trailing fractional digits with HALF_UP
+         *   rounding (away from zero). Implemented as `k` repeated [div128By10] steps tracking
+         *   the last-stripped digit; HALF_UP rounds when the discarded digit is `>= 5`.
+         *
+         * When neither side fits a signed Long (i.e. both operands are genuinely 128-bit),
+         * defer to BigDecimal — the full 128 × 128 → 128 case is rare in the workloads that
+         * triggered the 128-bit tier (typically `c ** k` style where the multiplier stays
+         * small) and a correct overflow-checked 128 × 128 implementation is more code than
+         * the rare hit justifies.
+         */
+        override fun fastInt128Scale(l: Tf_Int128ScaleDecimal, r: Tf_Int128ScaleDecimal): Rt_DecimalValue? {
+            val newScale = l.scale + r.scale
+            if (newScale < -Lib_DecimalMath.DECIMAL_INT_DIGITS) return null
+
+            // Pick the side whose mantissa fits a signed Long. mul128by64Unsigned requires
+            // a non-negative multiplier, so when the picked side is negative we negate the
+            // 128-bit operand instead and use the absolute multiplier.
+            val rLong = r.asSignedLong()
+            val lLong = if (rLong == null) l.asSignedLong() else null
+            val bigHi: Long
+            val bigLo: Long
+            val mult: Long
+            when {
+                rLong != null -> {
+                    if (rLong == Long.MIN_VALUE) return null
+                    if (rLong >= 0L) {
+                        bigHi = l.hi; bigLo = l.lo; mult = rLong
+                    } else {
+                        val neg = neg128(l.hi, l.lo) ?: return null
+                        bigHi = neg[0]; bigLo = neg[1]; mult = -rLong
+                    }
+                }
+
+                lLong != null -> {
+                    if (lLong == Long.MIN_VALUE) return null
+                    if (lLong >= 0L) {
+                        bigHi = r.hi; bigLo = r.lo; mult = lLong
+                    } else {
+                        val neg = neg128(r.hi, r.lo) ?: return null
+                        bigHi = neg[0]; bigLo = neg[1]; mult = -lLong
+                    }
+                }
+
+                else -> return null
+            }
+
+            val product = mul128by64Unsigned(bigHi, bigLo, mult) ?: return null
+            val productNegative = product[0] < 0L
+            var pHi = product[0]
+            var pLo = product[1]
+
+            if (newScale <= Lib_DecimalMath.DECIMAL_FRAC_DIGITS) {
+                return Tf_Int128ScaleDecimal(pHi, pLo, newScale)
+            }
+            val k = newScale - Lib_DecimalMath.DECIMAL_FRAC_DIGITS
+            if (k > 18) return null
+
+            // HALF_UP rounding across 128 bits: divide by 10^k via repeated div-by-10 and
+            // capture the last discarded digit. HALF_UP rounds away from zero on `>= 5` —
+            // tie-breaks always go away from zero regardless of any earlier discarded digits.
+            var lastDigit = 0
+            repeat(k) {
+                val step = div128By10(pHi, pLo)
+                lastDigit = step.third
+                if (lastDigit < 0) lastDigit = -lastDigit
+                pHi = step.first
+                pLo = step.second
+            }
+            val rounded = if (lastDigit >= 5) {
+                // Round away from zero. Use the *original* product sign — after div-by-10
+                // the quotient may have rounded to (0, 0) for tiny negative products, but
+                // round-away-from-zero must still produce -1, not +1.
+                val delta = if (productNegative) longArrayOf(-1L, -1L) else longArrayOf(0L, 1L)
+                add128(pHi, pLo, delta[0], delta[1]) ?: return null
+            } else {
+                longArrayOf(pHi, pLo)
+            }
+            return Tf_Int128ScaleDecimal(rounded[0], rounded[1], Lib_DecimalMath.DECIMAL_FRAC_DIGITS)
+        }
+
         override fun slowOp(l: BigDecimal, r: BigDecimal): BigDecimal = Lib_DecimalMath.multiply(l, r)
 
         override fun reencodeCanonical(canonical: BigDecimal): Rt_DecimalValue? =
             Tf_LongScaleDecimal.tryFromCanonical(canonical)
+                ?: Tf_Int128ScaleDecimal.tryFromCanonical(canonical)
     }
 
     internal class DecimalDiv(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
@@ -612,6 +789,12 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
             return Tf_LongScaleDecimal(lm % rm, resultScale)
         }
 
+        // 128-bit Mod fast path: deferred. A correct 128 % 128 (or even 128 % 64) requires
+        // proper Knuth long division to handle scale alignment when one operand is a 128-bit
+        // mantissa, which is more code than the rare hit justifies. Mod is a marginal op in
+        // the workloads we're optimising (the dominant cost is power/exp via Mul), so falling
+        // through to BigDecimal here is acceptable.
+
         override fun slowOp(l: BigDecimal, r: BigDecimal): BigDecimal {
             if (r.signum() == 0) throw Rt_Exception.common("expr:%:div0", "Division by zero: %")
             return Lib_DecimalMath.remainder(l, r)
@@ -647,16 +830,32 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
         final override fun executeBoolean(frame: VirtualFrame): Boolean {
             val lv = Tf_Unchecked.cast<Rt_DecimalValue>(left.execute(frame))
             val rv = Tf_Unchecked.cast<Rt_DecimalValue>(right.execute(frame))
-            val sign = compareLongScaleOrFallback(lv, rv)
+            val sign = compareWithFallback(lv, rv)
             return fromSign(sign)
         }
 
         final override fun execute(frame: VirtualFrame): Rt_Value =
             Rt_BooleanValue.get(executeBoolean(frame))
 
-        private fun compareLongScaleOrFallback(lv: Rt_DecimalValue, rv: Rt_DecimalValue): Int {
+        private fun compareWithFallback(lv: Rt_DecimalValue, rv: Rt_DecimalValue): Int {
+            // Tier 1: long-scale fast compare.
             if (lv is Tf_LongScaleDecimal && rv is Tf_LongScaleDecimal) {
                 val fast = compareLongScale(lv, rv)
+                if (fast != null) return fast
+                // Tier 2 (long-scale alignment overflow): widen both to 128-bit and retry.
+                val fast128 = compareInt128Scale(
+                    Tf_Int128ScaleDecimal.fromLongScale(lv),
+                    Tf_Int128ScaleDecimal.fromLongScale(rv),
+                )
+                if (fast128 != null) return fast128
+            } else if (lv is Tf_Int128ScaleDecimal && rv is Tf_Int128ScaleDecimal) {
+                val fast = compareInt128Scale(lv, rv)
+                if (fast != null) return fast
+            } else if (lv is Tf_LongScaleDecimal && rv is Tf_Int128ScaleDecimal) {
+                val fast = compareInt128Scale(Tf_Int128ScaleDecimal.fromLongScale(lv), rv)
+                if (fast != null) return fast
+            } else if (lv is Tf_Int128ScaleDecimal && rv is Tf_LongScaleDecimal) {
+                val fast = compareInt128Scale(lv, Tf_Int128ScaleDecimal.fromLongScale(rv))
                 if (fast != null) return fast
             }
             return slowCompare(lv, rv)
@@ -669,7 +868,7 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
         companion object {
             /**
              * Same-scale or scale-aligned long-scale compare. Returns the comparison sign or
-             * `null` to defer to the BigDecimal slow path.
+             * `null` to defer to the next tier (128-bit, then BigDecimal).
              */
             internal fun compareLongScale(l: Tf_LongScaleDecimal, r: Tf_LongScaleDecimal): Int? {
                 if (l.scale == r.scale) return l.mantissa.compareTo(r.mantissa)
@@ -680,22 +879,50 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
                     val aligned = try {
                         Math.multiplyExact(l.mantissa, pow)
                     } catch (_: ArithmeticException) {
-                        // Aligned overflow: |l| × 10^Δ > Long.MAX, i.e. |l| > |r|. Sign of `l`
-                        // determines order; `r`'s sign is irrelevant when `l` is many orders of
-                        // magnitude larger.
-                        return l.mantissa.sign.toLong().compareTo(0L)
+                        // Aligned overflow: |l| × 10^Δ > Long.MAX. Defer to 128-bit tier
+                        // rather than answering by sign — at 128 bits the alignment may
+                        // succeed and produce a precise comparison even when long-scale
+                        // alignment overflowed.
+                        return null
                     }
                     aligned to r.mantissa
                 } else {
                     val aligned = try {
                         Math.multiplyExact(r.mantissa, pow)
                     } catch (_: ArithmeticException) {
-                        // Symmetric: |r| dominates, so `-sign(r)` is the answer (l < r when r > 0).
-                        return 0L.compareTo(r.mantissa.sign.toLong())
+                        return null
                     }
                     l.mantissa to aligned
                 }
                 return lm.compareTo(rm)
+            }
+
+            /**
+             * Same-scale or scale-aligned 128-bit compare. Returns the comparison sign or
+             * `null` to defer to the BigDecimal slow path (when scale-delta exceeds 18).
+             *
+             * When 128-bit alignment overflows, the side whose mantissa we tried to scale up
+             * dominates in magnitude — its (signed) sign decides the comparison:
+             * - if `l` was scaled up and overflowed: |l| > |r|, answer = sign(l).
+             * - if `r` was scaled up and overflowed: |r| > |l|, answer = -sign(r).
+             *
+             * Since `hi` carries the sign of a 128-bit signed integer, `sign(x) = 1 if x.hi >= 0
+             * && x.hi|x.lo != 0 else -1`. Zero would not have overflowed alignment, so the
+             * dominator side is non-zero here.
+             */
+            internal fun compareInt128Scale(l: Tf_Int128ScaleDecimal, r: Tf_Int128ScaleDecimal): Int? {
+                if (l.scale == r.scale) return cmp128(l.hi, l.lo, r.hi, r.lo)
+                val delta = abs(l.scale - r.scale)
+                if (delta > 18) return null
+                if (l.scale < r.scale) {
+                    val aligned = mul128by10Pow(l.hi, l.lo, delta)
+                        ?: return if (l.hi >= 0L) 1 else -1
+                    return cmp128(aligned[0], aligned[1], r.hi, r.lo)
+                } else {
+                    val aligned = mul128by10Pow(r.hi, r.lo, delta)
+                        ?: return if (r.hi >= 0L) -1 else 1
+                    return cmp128(l.hi, l.lo, aligned[0], aligned[1])
+                }
             }
         }
     }
@@ -801,7 +1028,7 @@ internal sealed class Tf_UnaryNode: Tf_ExprNode() {
                 LongMath.checkedSubtract(0L, v)
             } catch (_: ArithmeticException) {
                 tfRethrowAt(
-                    frame,
+                    tfRtFrame(frame),
                     errPos,
                     Rt_Exception.common("expr:-:overflow:$v", "Integer overflow: -($v)"),
                 )
@@ -826,7 +1053,7 @@ internal sealed class Tf_UnaryNode: Tf_ExprNode() {
             return try {
                 evaluate(v)
             } catch (e: Rt_Exception) {
-                tfRethrowAt(frame, errPos, e)
+                tfRethrowAt(tfRtFrame(frame), errPos, e)
             }
         }
 
@@ -1017,11 +1244,13 @@ internal sealed class Tf_FunctionCallNode: Tf_ExprNode() {
                     if (fastPath) {
                         buildInnerCallArgs(frame, evaluated)
                     } else {
-                        buildOuterCallArgsSlow(frame, evaluated)
+                        // Slow path crosses a `@TruffleBoundary` and needs an `Rt_CallFrame`
+                        // anyway — extract it here so the boundary helper sees no `VirtualFrame`.
+                        buildOuterCallArgsSlow(tfRtFrame(frame), evaluated)
                     }
                 }
             } catch (e: Rt_Exception) {
-                tfRethrowNested(frame, ErrorPos(callPos), e)
+                tfRethrowNested(tfRtFrame(frame), ErrorPos(callPos), e)
             }
 
             return try {
@@ -1037,7 +1266,7 @@ internal sealed class Tf_FunctionCallNode: Tf_ExprNode() {
                 // boundary, append the caller's `callPos` to the Rell-level stack via
                 // `frame.error(.., nested = true)`. Without this, only the bottom-most frame survives
                 // and `StackTraceTest`'s expected call chains collapse to a single entry.
-                tfRethrowNested(frame, ErrorPos(callPos), e)
+                tfRethrowNested(tfRtFrame(frame), ErrorPos(callPos), e)
             }
         }
 
@@ -1105,10 +1334,9 @@ internal sealed class Tf_FunctionCallNode: Tf_ExprNode() {
 
         @TruffleBoundary
         private fun buildOuterCallArgsSlow(
-            frame: VirtualFrame,
+            caller: Rt_CallFrame,
             evaluated: Array<Rt_Value>,
         ): Array<Any?> {
-            val caller = tfRtFrame(frame)
             val mapped = if (identityMapping) {
                 evaluated.asList()
             } else {
@@ -1491,7 +1719,9 @@ internal sealed class Tf_WhenChooserNode: Tf_ExprNode() {
             val key = keyExpr.execute(frame)
 
             for (idx in condExprs.indices) {
-                if (key == condExprs[idx].execute(frame))
+                // Use `equals` over `==` to avoid `Intrinsics.areEqual` on the Truffle hot path.
+                // `key` is non-null per the `Tf_ExprNode.execute` contract.
+                if (key.equals(condExprs[idx].execute(frame)))
                     return condIndices[idx]
             }
 
@@ -1509,7 +1739,9 @@ internal sealed class Tf_WhenChooserNode: Tf_ExprNode() {
         override fun chooseIndex(frame: VirtualFrame): Int {
             val key = keyExpr.execute(frame)
             for (i in keys.indices) {
-                if (keys[i] == key) return values[i]
+                // Use `equals` over `==` to avoid `Intrinsics.areEqual` on the Truffle hot path.
+                // `keys[i]` originates from `delegate.toRtValue(...)` at translate time, non-null.
+                if (keys[i].equals(key)) return values[i]
             }
             return elseIndex
         }

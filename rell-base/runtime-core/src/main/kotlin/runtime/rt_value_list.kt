@@ -9,7 +9,7 @@ import net.postchain.gtv.GtvArray
 import net.postchain.rell.base.model.ErrorPos
 
 class Rt_ListValue(override val type: Rt_ValueClass<*>, internal val elements: MutableList<Rt_Value> = mutableListOf()):
-    Rt_ValueBase(), Rt_CollectionValue {
+    Rt_Value, Rt_CollectionValue {
 
     override val collection: MutableCollection<Rt_Value> get() = elements
     override val name

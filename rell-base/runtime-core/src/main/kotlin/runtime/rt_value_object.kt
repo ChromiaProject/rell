@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.runtime
 
-class Rt_ObjectValue(override val type: Rt_ValueClass<*>): Rt_ValueBase() {
+class Rt_ObjectValue(override val type: Rt_ValueClass<*>): Rt_Value {
     val typeName: String get() = type.name
 
     override val name

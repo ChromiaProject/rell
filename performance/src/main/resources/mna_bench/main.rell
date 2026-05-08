@@ -307,6 +307,10 @@ function area_for_locations(
 // Decimal pow workload: alternates between integer-exponent (fast path: integer_power's
 // repeated-squaring loop) and non-integer-exponent (slow path: exp(exponent * ln(base)),
 // which exercises the Padé approximation of ln and the Taylor series expansion of exp).
+//
+// NOTE: ≳60% of wall time is spent inside JDK `BigInteger.divideMagnitude` /
+// `BigInteger.<init>` / `BigDecimal.precision`. Rell-runtime overhead is the minority
+// share — small Rell-side wins translate to small ms/op deltas.
 query bench_decimal_pow(reps: integer): integer {
     var total = 0;
     var i = 0;
@@ -329,6 +333,10 @@ query bench_decimal_pow(reps: integer): integer {
 // Each sum_octave_2d call dispatches into simplex_2d, which performs ~12 list-indexed
 // reads per sample plus mixed integer/decimal arithmetic — exactly the kind of hot
 // inner loop that Truffle's partial evaluator should specialise.
+//
+// NOTE: ~40-50% of wall time is JDK `BigDecimal` / `BigInteger` arithmetic. The truffle
+// backend's `Tf_LongScaleDecimal` / `Tf_Int128ScaleDecimal` leaves can shave a chunk off
+// when values stay in long/int128 range, but the remainder is BigDecimal-bound.
 query bench_perlin_noise(reps: integer): integer {
     val grad3 = GRAD3();
     val perm = PERM();

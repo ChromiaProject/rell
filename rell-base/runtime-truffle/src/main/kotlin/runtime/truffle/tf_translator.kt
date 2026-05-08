@@ -20,6 +20,7 @@ import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.Rt_ValueClass
 import net.postchain.rell.base.runtime.truffle.nodes.*
+import net.postchain.rell.base.runtime.truffle.values.Tf_Int128ScaleDecimal
 import net.postchain.rell.base.runtime.truffle.values.Tf_LongScaleDecimal
 import net.postchain.rell.base.runtime.truffle.values.Tf_StructShapeRegistry
 import net.postchain.rell.base.runtime.truffle.values.Tf_TruffleStringText
@@ -213,12 +214,17 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                 // encoding round-trips) without an intermediate Java-String → TruffleString
                 // bounce on the hot path.
                 is Rt_TextValue -> Tf_ConstantNode.Generic(Tf_TruffleStringText.fromJavaString(rtValue.value))
-                // Pre-materialise decimal constants as Tf_LongScaleDecimal when the value fits
-                // a long mantissa. Eliminates per-iteration BigDecimal-backed Rt_BigDecimalValue
-                // reads on common literals (`0.5`, `2.5`, `0.21132487`, etc.) — every loop
-                // iteration that reads such a constant now touches a primitive-backed value
-                // directly, and the long-scale arithmetic fast path engages immediately.
-                is Rt_DecimalValue -> Tf_ConstantNode.Generic(Tf_LongScaleDecimal.tryFrom(rtValue.value) ?: rtValue)
+                // Pre-materialise decimal constants as Tf_LongScaleDecimal (or, when the
+                // unscaled mantissa exceeds Long but fits 128 bits, Tf_Int128ScaleDecimal).
+                // Eliminates per-iteration BigDecimal-backed Rt_BigDecimalValue reads on
+                // common literals — every loop iteration that reads such a constant touches
+                // a primitive-backed value directly, and the long-scale or 128-bit fast paths
+                // engage immediately.
+                is Rt_DecimalValue -> Tf_ConstantNode.Generic(
+                    Tf_LongScaleDecimal.tryFrom(rtValue.value)
+                        ?: Tf_Int128ScaleDecimal.tryFrom(rtValue.value)
+                        ?: rtValue
+                )
                 else -> Tf_ConstantNode.Generic(rtValue)
             }
         }
@@ -299,11 +305,25 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
             expr.errPos,
         )
 
-        is RR_Expr.MapSubscript -> Tf_MapSubscriptNode(
-            translateExpr(expr.base),
-            translateExpr(expr.key),
-            expr.errPos,
-        )
+        is RR_Expr.MapSubscript -> {
+            val baseNode = translateExpr(expr.base)
+            val keyNode = translateExpr(expr.key)
+            val resultIsInt = isInt(expr.type)
+            val resultIsBool = isBool(expr.type)
+            if (isText(expr.key.type)) {
+                when {
+                    resultIsInt -> Tf_MapSubscriptNode.TextKey.IntResult(baseNode, keyNode, expr.errPos)
+                    resultIsBool -> Tf_MapSubscriptNode.TextKey.BoolResult(baseNode, keyNode, expr.errPos)
+                    else -> Tf_MapSubscriptNode.TextKey(baseNode, keyNode, expr.errPos)
+                }
+            } else {
+                when {
+                    resultIsInt -> Tf_MapSubscriptNode.Generic.IntResult(baseNode, keyNode, expr.errPos)
+                    resultIsBool -> Tf_MapSubscriptNode.Generic.BoolResult(baseNode, keyNode, expr.errPos)
+                    else -> Tf_MapSubscriptNode.Generic(baseNode, keyNode, expr.errPos)
+                }
+            }
+        }
 
         is RR_Expr.TextSubscript -> Tf_TextSubscriptNode(
             translateExpr(expr.base),
@@ -369,11 +389,10 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
         is RR_Expr.StructCreate -> {
             val structDef = backend.rrApp.allStructs[expr.structDefIndex]
             val attrCount = structDef.struct.attributesList.size
-            // Tf_StructCreateNode.executeSomNoConstraints relies on attrs covering every
-            // attribute exactly once (no fill-with-Rt_NullValue pass). The R_StructExpr.init
-            // invariant currently guarantees this, but if a future RR-IR shape ever produced
-            // a partial attrs list we would silently leave SOM primitive slots at their zero
-            // defaults. Fail compilation up front instead.
+            // Tf_StructCreateNode requires attrs cover every attribute exactly once (no
+            // fill-with-Rt_NullValue pass). The R_StructExpr.init invariant currently guarantees
+            // this; if a future RR-IR shape ever produced a partial attrs list we would silently
+            // leave attribute slots unset. Fail compilation up front instead.
             require(expr.attrs.size == attrCount) {
                 "StructCreate for '${structDef.struct.name}': expected $attrCount attribute" +
                         " expressions, got ${expr.attrs.size}"
@@ -436,7 +455,7 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                     is RR_FunctionCallTarget.SysMember ->
                         translateSysMemberCall(
                             baseNode, argNodes, mapping, expr.safe, identity, call.callPos,
-                            target.fnName, resultIsInt, resultIsBool,
+                            target.fnName, resultIsInt, resultIsBool, expr.base?.type,
                         ) ?: Tf_FunctionCallNode.makeGeneric(
                             baseNode, argNodes, target, mapping, expr.safe, identity,
                             call.callPos, backend, resultIsInt, resultIsBool,
@@ -576,6 +595,9 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
 
     private fun isBool(t: RR_Type): Boolean =
         t is RR_Type.Primitive && t.kind === RR_PrimitiveKind.BOOLEAN
+
+    private fun isText(t: RR_Type): Boolean =
+        t is RR_Type.Primitive && t.kind === RR_PrimitiveKind.TEXT
 
     private fun isDecimal(t: RR_Type): Boolean =
         t is RR_Type.Primitive && t.kind === RR_PrimitiveKind.DECIMAL
@@ -819,6 +841,10 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
      *   compiler emitted the wrong target shape. The fallback through `Generic` keeps the old
      *   "best-effort" behaviour rather than crashing.
      *
+     * Tries the native stdlib fast path ([translateNativeStdlibMemberCall]) first when the
+     * receiver type is known; on miss, falls through to the generic [Tf_SysCallNode.SysMember]
+     * dispatch.
+     *
      * Resolution happens once at translate time, same as [translateSysGlobalCall].
      */
     private fun translateSysMemberCall(
@@ -831,10 +857,19 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
         fnName: String,
         resultIsInt: Boolean,
         resultIsBool: Boolean,
+        receiverType: RR_Type?,
     ): Tf_ExprNode? {
         if (baseNode == null) return null
         val fn = backend.stdlib.sysFunctions[fnName] ?: return null
         val displayName = resolveSysFnDisplayName(fnName)
+
+        if (receiverType != null && identity) {
+            val native = translateNativeStdlibMemberCall(
+                baseNode, argNodes, callPos, displayName, safe, receiverType,
+            )
+            if (native != null) return native
+        }
+
         return when {
             resultIsInt -> Tf_SysCallNode.SysMemberInt(
                 baseNode, argNodes, fn, displayName, callPos, mapping, identity, safe,
@@ -847,6 +882,87 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
             else -> Tf_SysCallNode.SysMember(
                 baseNode, argNodes, fn, displayName, callPos, mapping, identity, safe,
             )
+        }
+    }
+
+    /**
+     * Pick a hand-rolled stdlib node for the most-frequent sys-member fast paths
+     * (`list.size()`, `set.size()`, `text.size()`, `list.get(i)`, `list.add(v)`, `set.add(v)`).
+     * Returns null on any miss — the caller defers to the generic
+     * [Tf_SysCallNode.SysMember] / [Tf_MemberAccessNode.SysMemberFnCall] dispatch.
+     *
+     * # How matching works
+     *
+     * The displayName has the shape `<receiverType.strCode()>.<simpleName>` for member calls
+     * and `prop:<qualifiedName>.<simpleName>` for sys-property reads. The simpleName
+     * portion is a Rell identifier — alphanumeric/underscore — and never contains `.` or
+     * any of the bracket characters in `<>()`. That makes `displayName.endsWith(".size")`
+     * a clean suffix match: an unrelated `.sizes` ends with `s`, not `.size`. Combined with
+     * a structural check on [receiverType] (e.g. `is RR_Type.List`) we don't need to parse
+     * the prefix — we get the same routing decision the full key parse would yield.
+     *
+     * Only identity-mapped, no-args / single-arg shapes are accepted; complex mappings stay
+     * on the generic path because the hand-rolled bodies don't implement the permutation.
+     */
+    private fun translateNativeStdlibMemberCall(
+        baseNode: Tf_ExprNode,
+        argNodes: Array<Tf_ExprNode>,
+        callPos: FilePos,
+        displayName: String,
+        safe: Boolean,
+        receiverType: RR_Type,
+    ): Tf_ExprNode? {
+        val unwrapped = unwrapNullable(receiverType)
+        return when {
+            argNodes.isEmpty() && displayName.endsWith(".size") -> when {
+                unwrapped is RR_Type.List -> Tf_StdlibMemberNode.ListSize(baseNode, safe)
+                unwrapped is RR_Type.Set -> Tf_StdlibMemberNode.SetSize(baseNode, safe)
+                unwrapped is RR_Type.Primitive && unwrapped.kind === RR_PrimitiveKind.TEXT ->
+                    Tf_StdlibMemberNode.TextSize(baseNode, safe)
+                else -> null
+            }
+
+            argNodes.size == 1 && displayName.endsWith(".get") && unwrapped is RR_Type.List ->
+                Tf_StdlibMemberNode.ListGet(baseNode, argNodes[0], callPos, displayName, safe)
+
+            argNodes.size == 1 && displayName.endsWith(".add") &&
+                (unwrapped is RR_Type.List || unwrapped is RR_Type.Set) ->
+                Tf_StdlibMemberNode.CollectionAdd(baseNode, argNodes[0], safe)
+
+            else -> null
+        }
+    }
+
+    /** Strip a single layer of [RR_Type.Nullable] for safe-call receiver matching. */
+    private tailrec fun unwrapNullable(t: RR_Type): RR_Type = when (t) {
+        is RR_Type.Nullable -> unwrapNullable(t.value)
+        else -> t
+    }
+
+    /**
+     * Pick a hand-rolled stdlib node for sys-property reads ([RR_MemberCalculator.SysFunction]).
+     * Currently covers `enum.name`; returns null on any miss so the caller defers to
+     * [Tf_MemberAccessNode.SysFn].
+     *
+     * Same suffix-match-on-displayName convention as [translateNativeStdlibMemberCall] — see
+     * that kdoc for the rationale.
+     */
+    private fun translateNativeStdlibProperty(
+        baseNode: Tf_ExprNode,
+        displayName: String,
+        safe: Boolean,
+        receiverType: RR_Type,
+    ): Tf_ExprNode? {
+        val unwrapped = unwrapNullable(receiverType)
+        return when {
+            displayName.endsWith(".name") && unwrapped is RR_Type.Enum ->
+                Tf_StdlibMemberNode.EnumName(baseNode, safe)
+
+            displayName.endsWith(".type") &&
+                unwrapped is RR_Type.Primitive && unwrapped.kind === RR_PrimitiveKind.GTV ->
+                Tf_StdlibMemberNode.GtvType(baseNode, safe)
+
+            else -> null
         }
     }
 
@@ -911,7 +1027,10 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                     Tf_FallbackExprNode(backend, expr)
                 } else {
                     val displayName = resolveSysFnDisplayName(calc.fnName)
-                    when {
+                    val native = translateNativeStdlibProperty(baseNode, displayName, safe, expr.base.type)
+                    if (native != null) {
+                        native
+                    } else when {
                         resultIsInt -> Tf_MemberAccessNode.SysFn.IntResult(baseNode, fn, displayName, safe)
                         resultIsBool -> Tf_MemberAccessNode.SysFn.BoolResult(baseNode, fn, displayName, safe)
                         else -> Tf_MemberAccessNode.SysFn(baseNode, fn, displayName, safe)
@@ -943,7 +1062,12 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                 }
                 val argNodes = Array(argSize) { i -> translateExpr(call.args[i]) }
                 val displayName = resolveSysFnDisplayName(target.fnName)
-                when {
+                val native = if (identity) {
+                    translateNativeStdlibMemberCall(
+                        baseNode, argNodes, call.callPos, displayName, safe, expr.base.type,
+                    )
+                } else null
+                native ?: when {
                     resultIsInt -> Tf_MemberAccessNode.SysMemberFnCall.IntResult(
                         baseNode, argNodes, fn, displayName, call.callPos, mapping, identity, safe,
                     )

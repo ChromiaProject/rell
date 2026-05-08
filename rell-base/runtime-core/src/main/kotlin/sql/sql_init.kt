@@ -54,11 +54,11 @@ class SqlInitLogging(
     }
 }
 
-abstract class SqlInitProjExt: ProjExt {
-    abstract fun initExtra(exeCtx: Rt_ExecutionContext)
+interface SqlInitProjExt: ProjExt {
+    fun initExtra(exeCtx: Rt_ExecutionContext)
 }
 
-object NullSqlInitProjExt: SqlInitProjExt() {
+object NullSqlInitProjExt: SqlInitProjExt {
     override fun initExtra(exeCtx: Rt_ExecutionContext) {
         // Do nothing.
     }
@@ -466,7 +466,6 @@ private class SqlEntityIniter private constructor(
     }
 
     private fun processNewAttrs(entity: RR_EntityDefinition, metaEntityId: Int, newAttrs: List<String>) {
-        val metaName = entity.sqlMapping.metaName
         val attrsStr = newAttrs.joinToString()
 
         val recs = recordsExist(exeCtx.sysSqlExec, sqlCtx, entity)

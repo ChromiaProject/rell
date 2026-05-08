@@ -22,8 +22,8 @@ import kotlin.reflect.full.createType
  * [Rt_JavaStringText] for the canonical Java-String-backed representation used by the tree-walk
  * interpreter and as the spill target for non-specialised paths.
  */
-abstract class Rt_TextValue: Rt_ValueBase() {
-    abstract val value: String
+interface Rt_TextValue: Rt_Value {
+    val value: String
 
     override val name
         get() = Companion.name
@@ -38,11 +38,6 @@ abstract class Rt_TextValue: Rt_ValueBase() {
     }
 
     override fun str(format: Rt_StrFormat): String = value
-
-    final override fun equals(other: Any?): Boolean =
-        other === this || (other is Rt_TextValue && value == other.value)
-
-    final override fun hashCode(): Int = value.hashCode()
 
     companion object:
         Rt_GtvCompatibleValueClass<Rt_TextValue>,
@@ -63,9 +58,8 @@ abstract class Rt_TextValue: Rt_ValueBase() {
 
         val EMPTY: Rt_TextValue = Rt_JavaStringText("")
 
-        fun get(s: String): Rt_TextValue {
-            return if (s.isEmpty()) EMPTY else Rt_JavaStringText(s)
-        }
+        @JvmStatic
+        fun get(s: String): Rt_TextValue = if (s.isEmpty()) EMPTY else Rt_JavaStringText(s)
 
         override fun toGtv(value: Rt_TextValue, pretty: Boolean): Gtv = GtvString(value.value)
 
@@ -143,4 +137,8 @@ abstract class Rt_TextValue: Rt_ValueBase() {
 /**
  * Java-String-backed text leaf.
  */
-data class Rt_JavaStringText(override val value: String): Rt_TextValue()
+@JvmRecord
+data class Rt_JavaStringText(override val value: String): Rt_TextValue {
+    override fun equals(other: Any?): Boolean = other === this || (other is Rt_TextValue && value == other.value)
+    override fun hashCode(): Int = value.hashCode()
+}

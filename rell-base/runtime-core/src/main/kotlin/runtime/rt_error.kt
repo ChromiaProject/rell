@@ -72,21 +72,22 @@ class Rt_Exception(
     }
 
     companion object {
+        @JvmStatic
         fun common(code: String, msg: String) = Rt_Exception(Rt_CommonError(code, msg))
     }
 }
 
-abstract class Rt_Error {
-    abstract fun code(): String
-    abstract fun message(): String
+interface Rt_Error {
+    fun code(): String
+    fun message(): String
 }
 
-class Rt_CommonError(val code: String, private val msg: String): Rt_Error() {
+class Rt_CommonError(val code: String, private val msg: String): Rt_Error {
     override fun code() = "rt_err:$code"
     override fun message() = msg
 }
 
-class Rt_RequireError(val userMsg: String?): Rt_Error() {
+class Rt_RequireError(val userMsg: String?): Rt_Error {
     override fun code() = "req_err:" + if (userMsg != null) "[$userMsg]" else "null"
     override fun message() = userMsg ?: "Requirement error"
 
@@ -95,7 +96,7 @@ class Rt_RequireError(val userMsg: String?): Rt_Error() {
     }
 }
 
-class Rt_ValueTypeError(val expected: String, val actual: String): Rt_Error() {
+class Rt_ValueTypeError(val expected: String, val actual: String): Rt_Error {
     override fun code() = "rtv_err:$expected:$actual"
     override fun message() = "Value type mismatch: $actual instead of $expected"
 
@@ -104,7 +105,7 @@ class Rt_ValueTypeError(val expected: String, val actual: String): Rt_Error() {
     }
 }
 
-class Rt_GtvError(val code: String, val msg: String): Rt_Error() {
+class Rt_GtvError(val code: String, val msg: String): Rt_Error {
     override fun code() = "gtv_err:$code"
     override fun message() = msg
 
@@ -113,6 +114,4 @@ class Rt_GtvError(val code: String, val msg: String): Rt_Error() {
     }
 }
 
-fun R_AttrValidator.Error.raise(): Nothing {
-    throw Rt_Exception.common(code, msg)
-}
+fun R_AttrValidator.Error.raise(): Nothing = throw Rt_Exception.common(code, msg)

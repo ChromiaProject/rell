@@ -18,6 +18,7 @@ data class RR_EnumDefinition(
 
 @JvmRecord
 data class RR_EnumAttr(val name: Name, val value: Int) {
+    @get:JvmName("nameStr")
     val nameStr: String
         get() = name.str
 }

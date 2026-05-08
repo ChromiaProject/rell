@@ -72,6 +72,7 @@ object Lib_Rell {
 
     val TRY_CALL_RESULT_TYPE = MODULE.getTypeDef("try_call_result")
 
+    @JvmField
     val GTV_TYPE_ENUM: R_EnumDefinition = MODULE.lModule.getEnum("gtv_type").rEnum
 
     // Doesn't belong here logically, but shall be here for explicit initialization.

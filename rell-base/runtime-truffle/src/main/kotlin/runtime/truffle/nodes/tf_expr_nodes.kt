@@ -155,7 +155,9 @@ internal open class Tf_ElvisNode(
 ): Tf_ExprNode() {
     override fun execute(frame: VirtualFrame): Rt_Value {
         val l = left.execute(frame)
-        return if (l != Rt_NullValue) l else right.execute(frame)
+        // Reference inequality — `Rt_NullValue` is a singleton; `!==` avoids `Intrinsics.areEqual`
+        // (which the `!=` operator compiles to and which drags in the JDK string-construction chain).
+        return if (l !== Rt_NullValue) l else right.execute(frame)
     }
 
     internal class IntElvis(left: Tf_ExprNode, right: Tf_ExprNode) : Tf_ElvisNode(left, right) {
@@ -373,21 +375,96 @@ internal class Tf_ListSubscriptNode(
     }
 }
 
-/** Native: map subscript m&#91;k&#93;. */
-internal class Tf_MapSubscriptNode(
-    @field:Child private var base: Tf_ExprNode,
-    @field:Child private var key: Tf_ExprNode,
-    @field:CompilationFinal private val errPos: ErrorPos,
-): Tf_ExprNode() {
+/**
+ * Native: map subscript `m[k]`.
+ *
+ * The translator picks [TextKey] when the key's static type is `text`. The cast through
+ * [Tf_Unchecked.cast] gives PE the monomorphic key shape so the [HashMap] lookup site
+ * specialises on `Rt_TextValue`'s `equals`/`hashCode` (both bottom out in `String.equals`
+ * / `String.hashCode`) rather than going through the megamorphic `Rt_Value` virtual call.
+ *
+ * Result-typed subclasses ([Generic.IntResult] / [Generic.BoolResult] /
+ * [TextKey.IntResult] / [TextKey.BoolResult]) override `executeLong` / `executeBoolean` so
+ * the typed callers skip the default `asInteger()` / `asBoolean()` `typeError` branch.
+ */
+internal sealed class Tf_MapSubscriptNode: Tf_ExprNode() {
+    internal open class Generic(
+        @field:Child protected var base: Tf_ExprNode,
+        @field:Child protected var key: Tf_ExprNode,
+        @field:CompilationFinal protected val errPos: ErrorPos,
+    ): Tf_MapSubscriptNode() {
 
-    override fun execute(frame: VirtualFrame): Rt_Value {
-        val map = base.execute(frame).asMap()
-        val k = key.execute(frame)
-        return map[k] ?: tfRtFrame(frame).error(
-            errPos,
-            "fn_map_get_novalue:${k.strCode()}",
-            "Key not in map: ${k.str()}",
-        )
+        override fun execute(frame: VirtualFrame): Rt_Value {
+            val map = base.execute(frame).asMap()
+            val k = key.execute(frame)
+            return map[k] ?: tfRtFrame(frame).error(
+                errPos,
+                "fn_map_get_novalue:${k.strCode()}",
+                "Key not in map: ${k.str()}",
+            )
+        }
+
+        internal class IntResult(
+            base: Tf_ExprNode,
+            key: Tf_ExprNode,
+            errPos: ErrorPos,
+        ): Generic(base, key, errPos) {
+            override fun executeLong(frame: VirtualFrame): Long =
+                Tf_Unchecked.cast<Rt_IntValue>(execute(frame)).value
+        }
+
+        internal class BoolResult(
+            base: Tf_ExprNode,
+            key: Tf_ExprNode,
+            errPos: ErrorPos,
+        ): Generic(base, key, errPos) {
+            override fun executeBoolean(frame: VirtualFrame): Boolean =
+                Tf_Unchecked.cast<Rt_BooleanValue>(execute(frame)).value
+        }
+    }
+
+    /**
+     * `text`-keyed map subscript.
+     *
+     * The key expression already produces an `Rt_TextValue` — the win here is monomorphising
+     * the lookup site for PE: by routing the key through [Tf_Unchecked.cast] the compiled
+     * graph sees a single shape, so the `HashMap.get` chain (bucket-walk → `equals`)
+     * inlines `Rt_TextValue.equals` directly into the caller. Without the cast, PE conservatively
+     * keeps the megamorphic `Rt_Value.equals`/`hashCode` virtual dispatch.
+     */
+    internal open class TextKey(
+        @field:Child protected var base: Tf_ExprNode,
+        @field:Child protected var key: Tf_ExprNode,
+        @field:CompilationFinal protected val errPos: ErrorPos,
+    ): Tf_MapSubscriptNode() {
+
+        override fun execute(frame: VirtualFrame): Rt_Value {
+            val map = base.execute(frame).asMap()
+            val k = Tf_Unchecked.cast<Rt_TextValue>(key.execute(frame))
+            return map[k] ?: tfRtFrame(frame).error(
+                errPos,
+                "fn_map_get_novalue:${k.strCode()}",
+                "Key not in map: ${k.str()}",
+            )
+        }
+
+        internal class IntResult(
+            base: Tf_ExprNode,
+            key: Tf_ExprNode,
+            errPos: ErrorPos,
+        ): TextKey(base, key, errPos) {
+            override fun executeLong(frame: VirtualFrame): Long =
+                Tf_Unchecked.cast<Rt_IntValue>(execute(frame)).value
+        }
+
+        internal class BoolResult(
+            base: Tf_ExprNode,
+            key: Tf_ExprNode,
+            errPos: ErrorPos,
+        ): TextKey(base, key, errPos) {
+            override fun executeBoolean(frame: VirtualFrame): Boolean =
+                Tf_Unchecked.cast<Rt_BooleanValue>(execute(frame)).value
+        }
     }
 }
 
@@ -495,21 +572,25 @@ internal class Tf_LazyExprNode(
     override val needsBlockState: Boolean
         get() = true
 
-    override fun execute(frame: VirtualFrame): Rt_Value = capture(frame)
+    override fun execute(frame: VirtualFrame): Rt_Value = capture(tfRtFrame(frame))
 
     /**
      * `@TruffleBoundary`: the snapshot copy iterates every slot in the frame and constructs a
      * fresh [Rt_CallFrame]. Inlining this into the compiled graph would drag the whole
      * interpreter constructor chain into PE — and we never need it on the JIT-compiled path
      * (lazy capture is by definition a slow-path event).
+     *
+     * Takes [Rt_CallFrame] rather than [VirtualFrame] because the Truffle Bytecode DSL annotation
+     * processor rejects `@TruffleBoundary` methods that take a `VirtualFrame` parameter. The
+     * caller extracts via [tfRtFrame] before the boundary call.
      */
     @com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
-    private fun capture(frame: VirtualFrame): Rt_Value {
+    private fun capture(rt: Rt_CallFrame): Rt_Value {
         // `snapshotIfEphemeral` clones the VirtualFrame-backed `Rt_CallFrame` into a fresh
         // heap-backed one so the lazy outlives the current call's VirtualFrame. For the rare
         // outer-entry case where the caller-supplied frame is already heap-backed, the call
         // is a no-op and just returns `live` unchanged.
-        val snapshot = tfRtFrame(frame).snapshotIfEphemeral()
+        val snapshot = rt.snapshotIfEphemeral()
         return Rt_RR_LazyValue(rtType, innerExpr, snapshot, backend.delegate)
     }
 }

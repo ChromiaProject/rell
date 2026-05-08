@@ -42,12 +42,12 @@ class ProfileSampleCommand : CliktCommand(name = "profile-sample") {
 
     private val sample by option(
         "--sample",
-        help = "Sample directory under performance/src/main/resources (e.g. ft4_bench, mna_bench, synthetic_bench).",
+        help = "Sample directory under performance/src/main/resources (e.g. ft4_bench, mna_bench, struct_bench, synthetic_bench).",
     ).required()
 
     private val query by option(
         "--query",
-        help = "Query name to call. Defaults: bench (synthetic_bench), bench_gtv_text (ft4_bench), bench_decimal_pow (mna_bench).",
+        help = "Query name to call. Defaults: bench (synthetic_bench), bench_gtv_text (ft4_bench), bench_decimal_pow (mna_bench), bench_dto_mapping (struct_bench).",
     )
 
     private val arg by option(
@@ -172,6 +172,7 @@ private fun defaultQuery(sample: String): String = when (sample) {
     "synthetic_bench" -> "bench"
     "ft4_bench" -> "bench_gtv_text"
     "mna_bench" -> "bench_decimal_pow"
+    "struct_bench" -> "bench_dto_mapping"
     else -> error("Unknown sample `$sample`; pass --query explicitly.")
 }
 
@@ -184,6 +185,9 @@ private fun defaultArg(sample: String, query: String): Long = when (sample to qu
     "mna_bench" to "bench_decimal_pow" -> 200L
     "mna_bench" to "bench_perlin_noise" -> 20L
     "mna_bench" to "bench_locations" -> 200L
+    "struct_bench" to "bench_dto_mapping" -> 50L
+    "struct_bench" to "bench_cursor_codec" -> 100L
+    "struct_bench" to "bench_multi_sig" -> 500L
     else -> 100L
 }
 

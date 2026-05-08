@@ -20,7 +20,10 @@ import net.postchain.rell.base.runtime.Rt_TextValue
  * Encoding is fixed to UTF-16 to align with Java/Kotlin String semantics; cross-encoding
  * specialisations would belong in dedicated nodes.
  */
-data class Tf_TruffleStringText(val ts: TruffleString): Rt_TextValue() {
+data class Tf_TruffleStringText(val ts: TruffleString): Rt_TextValue {
+    override fun equals(other: Any?): Boolean = other === this || (other is Rt_TextValue && value == other.value)
+    override fun hashCode(): Int = value.hashCode()
+
     @Volatile
     private var cachedJavaString: String? = null
 

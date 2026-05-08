@@ -40,7 +40,7 @@ abstract class R_Definition(base: R_DefinitionBase): DocDefinition() {
     final override fun toString() = "${javaClass.simpleName}[$appLevelName]"
 }
 
-class R_DefinitionMeta(
+data class R_DefinitionMeta(
     val kind: String,
     val moduleName: String,
     val fullName: String,

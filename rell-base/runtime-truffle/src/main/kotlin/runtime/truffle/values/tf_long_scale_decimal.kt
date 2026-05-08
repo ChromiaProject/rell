@@ -29,7 +29,10 @@ import java.math.BigDecimal
  * (`Lib_DecimalMath.scale` returns non-null) before encoding. On `Long` overflow during arithmetic
  * the caller must use [Rt_DecimalValue.get].
  */
-data class Tf_LongScaleDecimal(val mantissa: Long, val scale: Int): Rt_DecimalValue() {
+data class Tf_LongScaleDecimal(val mantissa: Long, val scale: Int): Rt_DecimalValue {
+    override fun equals(other: Any?): Boolean = other === this || (other is Rt_DecimalValue && valueEquals(other))
+    override fun hashCode(): Int = value.hashCode()
+
     // Plain field, no @Volatile: the race is benign — two threads racing on first read both
     // compute an equal BigDecimal (`Lib_DecimalMath.scale` is deterministic and idempotent),
     // and no consumer relies on cachedBd's publication ordering. Volatile defeats JIT field
