@@ -10,6 +10,7 @@ import net.postchain.gtv.GtvString
 import net.postchain.gtv.GtvType
 import net.postchain.rell.base.model.R_EnumDefinition
 import net.postchain.rell.base.model.rr.RR_EnumAttr
+import net.postchain.rell.base.utils.toIntExact
 
 /**
  * Enum value for the deserialized (RR_-only) path, where no `R_EnumType` is available.
@@ -30,8 +31,8 @@ class Rt_RR_EnumValue(
     override val name
         get() = Companion.name
 
-    override fun strCode(showTupleFieldNames: Boolean) = "$typeName[${rrAttr.name}]"
-    override fun str(format: Rt_StrFormat) = rrAttr.name
+    override fun strCode(showTupleFieldNames: Boolean) = "$typeName[${rrAttr.nameStr}]"
+    override fun str(format: Rt_StrFormat) = rrAttr.nameStr
 
     override fun equals(other: Any?): Boolean {
         if (other === this) return true
@@ -62,11 +63,11 @@ class Rt_RR_EnumValue(
         fun gtvConversion(
             typeName: String,
             rtByName: (String) -> Rt_Value?,
-            rtByValue: (Long) -> Rt_Value?,
+            rtByValue: (Int) -> Rt_Value?,
         ): Rt_GtvCompatibleValueClass<*> = object: Rt_UntypedGtvConversion(typeName) {
             override fun toGtv(value: Rt_Value, pretty: Boolean): Gtv {
                 val attr = (value as Rt_RR_EnumValue).rrAttr
-                return if (pretty) GtvString(attr.name) else GtvInteger(attr.value.toLong())
+                return if (pretty) GtvString(attr.nameStr) else GtvInteger(attr.value.toLong())
             }
 
             override fun fromGtv(ctx: GtvToRtContext, gtv: Gtv): Rt_Value {
@@ -77,7 +78,7 @@ class Rt_RR_EnumValue(
                     )
                 } else {
                     val v = GtvRtUtils.gtvToInteger(ctx, gtv, typeName)
-                    rtByValue(v) ?: throw GtvRtUtils.errGtvType(
+                    rtByValue(v.toIntExact()) ?: throw GtvRtUtils.errGtvType(
                         ctx, typeName, "enum:bad_value:$v", "invalid value: $v",
                     )
                 }

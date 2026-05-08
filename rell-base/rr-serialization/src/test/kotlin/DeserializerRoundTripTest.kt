@@ -85,7 +85,7 @@ class DeserializerRoundTripTest: BaseSerializerTest() {
             assertEquals(oe.base.defId, de.base.defId, "enum[$i].defId")
             assertEquals(oe.attrs.size, de.attrs.size, "enum[$i].attrs.size")
             for (j in oe.attrs.indices) {
-                assertEquals(oe.attrs[j].rName, de.attrs[j].rName, "enum[$i].attr[$j].name")
+                assertEquals(oe.attrs[j].name, de.attrs[j].name, "enum[$i].attr[$j].name")
                 assertEquals(oe.attrs[j].value, de.attrs[j].value, "enum[$i].attr[$j].value")
             }
         }

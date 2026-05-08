@@ -619,7 +619,7 @@ class EntityTest: BaseRellTest() {
     private fun chkEntity(code: String, exp: String) {
         val act = tst.processApp(code) { app ->
             val interp = RellTestUtils.forCompilation(app.rrApp, app.compilationSysFns)
-            val e = app.rrApp.moduleMap.getValue(ModuleName.EMPTY).entities.getValue("data")
+            val e = app.rrApp.module(ModuleName.EMPTY)!!.entities.getValue("data")
             entityToString(e, interp)
         }
         assertEquals(exp, act)

@@ -107,9 +107,9 @@ class ProfileSampleCommand : CliktCommand(name = "profile-sample") {
         // Compile the sample, get the query, share the existing benchmark scaffolding.
         val harness = SampleHarness()
         val rrApp = harness.setUpBackend(backend, resourcePath)
-        val q = rrApp.moduleMap.getValue(ModuleName.EMPTY).queries[queryName]
+        val q = rrApp.module(ModuleName.EMPTY)!!.queries[queryName]
             ?: error("Query `$queryName` not found in $resourcePath. Available: " +
-                rrApp.moduleMap.getValue(ModuleName.EMPTY).queries.keys.joinToString())
+                rrApp.module(ModuleName.EMPTY)!!.queries.keys.joinToString())
         val args: List<Rt_Value> = listOf(Rt_IntValue.get(argValue))
 
         // Warm-up phase — do not start the profiler until JIT / Truffle have settled.

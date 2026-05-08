@@ -12,7 +12,7 @@ import net.postchain.rell.base.model.Name
  * Carries the attribute type, mutability, key/index membership, SQL column mapping,
  * optional default value expression, and optional size constraint for validation.
  */
-data class RR_Attribute(
+@JvmRecord data class RR_Attribute(
     val index: Int,
     val rName: Name,
     val type: RR_Type,
@@ -40,7 +40,7 @@ enum class RR_SizeConstraintKind {
  * Min/max size constraint for `text` and `byte_array` attributes,
  * validated at runtime on `create` and `update`.
  */
-data class RR_SizeConstraint(
+@JvmRecord data class RR_SizeConstraint(
     val min: Long?,
     val max: Long?,
     val kind: RR_SizeConstraintKind,

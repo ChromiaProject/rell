@@ -143,7 +143,7 @@ class RellCompiledApp(
     fun createInterpreter(): Rt_Interpreter = Rt_InterpreterImpl.forCompilation(rrApp, compilationSysFns)
 
     fun getRRTestFunctions(moduleName: ModuleName, matcher: UnitTestMatcher): List<RR_FunctionDefinition> {
-        val rrModule = rrApp.moduleMap[moduleName] ?: return emptyList()
+        val rrModule = rrApp.module(moduleName) ?: return emptyList()
         return UnitTestRunner.getRRTestFunctions(rrModule, matcher)
     }
 

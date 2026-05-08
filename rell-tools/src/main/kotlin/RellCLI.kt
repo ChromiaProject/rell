@@ -118,7 +118,7 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
 
         if (batch || (entryModule != null && entryRoutine != null)) {
             val compiled = RellToolsUtils.compileApp(sourceDir, entryModule, quiet, compilerOptions)
-            val module = if (entryModule == null) null else compiled.rrApp.moduleMap[entryModule]
+            val module = if (entryModule == null) null else compiled.rrApp.module(entryModule)
             if (module != null && module.test) {
                 runSingleModuleTests(argsEx, compiled, module, entryRoutine)
             } else {
@@ -126,7 +126,7 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
             }
         } else if (entryModule != null) {
             val compiled = RellToolsUtils.compileApp(sourceDir, entryModule, quiet, compilerOptions)
-            val module = compiled.rrApp.moduleMap[entryModule]
+            val module = compiled.rrApp.module(entryModule)
             if (module != null && module.test) {
                 runSingleModuleTests(argsEx, compiled, module, entryRoutine)
             } else {
@@ -363,7 +363,7 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
     private fun findEntryPoint(appCtx: Rt_AppContext, moduleName: ModuleName, routineName: QualifiedName): RellEntryPoint {
         val rrApp = appCtx.rrApp
         val interpreter = appCtx.interpreter
-        val rrModule = rrApp.moduleMap[moduleName]
+        val rrModule = rrApp.module(moduleName)
             ?: throw RellCliBasicException("Module not found: '$moduleName'")
 
         val name = routineName.str()

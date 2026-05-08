@@ -201,14 +201,10 @@ class R_EnumDefinition(
 
     private val attrMap = attrs.associateByToImmMap { it.name }
 
-    fun attr(name: String): R_EnumAttr? {
-        return attrMap[name]
-    }
+    fun attr(name: String): R_EnumAttr? = attrMap[name]
 
-    fun attr(value: Long): R_EnumAttr? {
-        return if (value < 0 || value >= attrs.size) null else {
-            attrs[value.toInt()]
-        }
+    fun attr(value: Int): R_EnumAttr? = if (value < 0 || value >= attrs.size) null else {
+        attrs[value]
     }
 
     override fun getDocMembers0() = attrMap

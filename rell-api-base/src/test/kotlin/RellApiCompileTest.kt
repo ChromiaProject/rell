@@ -246,7 +246,7 @@ internal class RellApiCompileTest: BaseRellApiTest() {
 
         val res = apiRes.cRes
         val ctErr = handleCompilationError(res)
-        return if (ctErr != null) listOf(ctErr) else res.rrApp!!.moduleMap.keys.map { it.str() }.sorted()
+        return if (ctErr != null) listOf(ctErr) else res.rrApp!!.modules.map { it.name.str() }.sorted()
     }
 
     @Test fun testCompileGtv() {

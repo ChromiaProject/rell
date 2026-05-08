@@ -138,7 +138,7 @@ internal fun Rt_Interpreter.buildMetaGtv(): Gtv {
                 mapOf("attributes" to it.struct.attributesList.map { a -> attrMeta(a) }.g()).g()
             }
             addDefs(m, "enums", mod.enums) {
-                mapOf("values" to it.attrs.map { a -> mapOf("name" to a.name.g()).g() }.g()).g()
+                mapOf("values" to it.attrs.map { a -> mapOf("name" to a.nameStr.g()).g() }.g()).g()
             }
             addDefs(m, "operations", mod.operations) {
                 mapOf(

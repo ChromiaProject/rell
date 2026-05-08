@@ -10,29 +10,31 @@ import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.mapKeysToImmMap
 import net.postchain.rell.base.utils.toImmList
 
+@JvmRecord
 data class RR_EntityDefinition(
-        val base: RR_DefinitionBase,
-        val rName: Name,
-        val flags: EntityFlags,
-        val sqlMapping: RR_EntitySqlMapping,
-        val external: RR_ExternalEntity?,
-        val type: RR_Type,
-        val keys: ImmList<Key>,
-        val indexes: ImmList<Index>,
-        val attributes: ImmMap<Name, RR_Attribute>,
+    val base: RR_DefinitionBase,
+    val rName: Name,
+    val flags: EntityFlags,
+    val sqlMapping: RR_EntitySqlMapping,
+    val external: RR_ExternalEntity?,
+    val type: RR_Type,
+    val keys: ImmList<Key>,
+    val indexes: ImmList<Index>,
+    val attributes: ImmMap<Name, RR_Attribute>,
 ) {
-    val mountName: MountName get() = sqlMapping.mountName
+    val mountName: MountName
+        get() = sqlMapping.mountName
 
     /** Derived view of [attributes] keyed by `Name.str`. */
-    val strAttributes: ImmMap<String, RR_Attribute> by lazy {
-        attributes.mapKeysToImmMap { it.key.str }
-    }
+    val strAttributes: ImmMap<String, RR_Attribute>
+        get() = attributes.mapKeysToImmMap { it.key.str }
 }
 
 /**
  * SQL mapping for an `entity`: mount name, rowid column, and the [kind] discriminator
  * that tells the interpreter how to derive the actual table name at runtime.
  */
+@JvmRecord
 data class RR_EntitySqlMapping(
     val mountName: MountName,
     val metaName: String,
@@ -64,16 +66,19 @@ enum class RR_EntitySqlMappingKind {
  * @param chainName name of the external chain
  * @param metaCheck whether metadata compatibility should be checked
  */
+@JvmRecord
 data class RR_ExternalEntity(
     val chainName: String,
     val metaCheck: Boolean,
 )
 
+@JvmRecord
 data class RR_ObjectDefinition(
     val base: RR_DefinitionBase,
     val rEntity: RR_EntityDefinition,
 )
 
+@JvmRecord
 data class RR_StructFlags(
     val typeFlags: TypeFlags,
     val cyclic: Boolean,
@@ -86,12 +91,14 @@ data class RR_StructFlags(
  * @param definition the app-level name of the mirrored definition, e.g. "lib:user"
  * @param mutable whether this is a mutable mirror struct
  */
+@JvmRecord
 data class RR_MirrorStructInfo(
     val definitionType: String,
     val definition: String,
     val mutable: Boolean,
 )
 
+@JvmRecord
 data class RR_Struct(
     val name: String,
     val attributes: ImmMap<Name, RR_Attribute>,
@@ -99,22 +106,24 @@ data class RR_Struct(
     val mirrorInfo: RR_MirrorStructInfo? = null,
 ) {
     /** Derived view of [attributes] in attribute-index order. */
-    val attributesList: ImmList<RR_Attribute> by lazy { attributes.values.toImmList() }
+    val attributesList: ImmList<RR_Attribute>
+        get() = attributes.values.toImmList()
 
     /** Derived view of [attributes] keyed by `Name.str`. */
-    val strAttributes: ImmMap<String, RR_Attribute> by lazy {
-        attributes.mapKeysToImmMap { it.key.str }
-    }
+    val strAttributes: ImmMap<String, RR_Attribute>
+        get() = attributes.mapKeysToImmMap { it.key.str }
 
     override fun toString() = name
 }
 
+@JvmRecord
 data class RR_StructDefinition(
     val base: RR_DefinitionBase,
     val struct: RR_Struct,
     val hasDefaultConstructor: Boolean,
 )
 
+@JvmRecord
 data class RR_GlobalConstantDefinition(
     val base: RR_DefinitionBase,
     val constId: GlobalConstantId,
@@ -125,11 +134,13 @@ data class RR_GlobalConstantDefinition(
 )
 
 /** Variable slot for a function/operation/query parameter: type + frame pointer. */
+@JvmRecord
 data class RR_ParamVar(
     val type: RR_Type,
     val ptr: RR_VarPtr,
 )
 
+@JvmRecord
 data class RR_OperationDefinition(
     val base: RR_DefinitionBase,
     val mountName: MountName,
@@ -146,6 +157,7 @@ sealed interface RR_QueryBody {
     val params: ImmList<RR_FunctionParam>
 }
 
+@JvmRecord
 data class RR_UserQueryBody(
     override val retType: RR_Type,
     override val params: ImmList<RR_FunctionParam>,
@@ -154,12 +166,14 @@ data class RR_UserQueryBody(
     val frame: RR_FrameDescriptor,
 ): RR_QueryBody
 
+@JvmRecord
 data class RR_SysQueryBody(
     override val retType: RR_Type,
     override val params: ImmList<RR_FunctionParam>,
     val fnName: String,
 ): RR_QueryBody
 
+@JvmRecord
 data class RR_QueryDefinition(
     val base: RR_DefinitionBase,
     val mountName: MountName,
@@ -173,6 +187,7 @@ data class RR_QueryDefinition(
  * Compiled function body: parameters, result type, parameter variable slots, statement body, and frame layout.
  * Shared by `function`, `operation`, and `query` definitions, as well as abstract override bodies.
  */
+@JvmRecord
 data class RR_FunctionBase(
     val defId: DefinitionId,
     val defName: DefinitionName,
@@ -185,6 +200,7 @@ data class RR_FunctionBase(
     override fun toString() = defName.appLevelName
 }
 
+@JvmRecord
 data class RR_FunctionDefinition(
     val base: RR_DefinitionBase,
     val fnBase: RR_FunctionBase,

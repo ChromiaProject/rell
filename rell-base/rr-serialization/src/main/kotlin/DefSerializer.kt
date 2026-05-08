@@ -84,7 +84,7 @@ fun SerializerContext.serializeStructDefinition(struct: RR_StructDefinition): In
 fun SerializerContext.serializeEnumDefinition(enum: RR_EnumDefinition): Int {
     val defName = serializeDefinitionName(enum.base.defName)
     val attrs = enum.attrs.map { attr ->
-        val attrName = createString(attr.rName.str)
+        val attrName = createString(attr.name.str)
         FbEnumAttr.createEnumAttr(builder, attrName, attr.value)
     }.toIntArray()
     val attrsVec = builder.createVectorOfTables(attrs)

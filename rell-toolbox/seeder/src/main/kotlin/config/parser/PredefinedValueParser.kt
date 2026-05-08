@@ -151,7 +151,7 @@ object PredefinedValueParser {
                 "predefined values must be strings, but found: ${node.nodeType}"
             )
         }
-        val enumAttrNames = enumDef.attrs.map { it.name }
+        val enumAttrNames = enumDef.attrs.map { it.nameStr }
         if (node.asText() !in enumAttrNames) {
             val validationErrorMessage = enumAttrNames.joinToString(prefix = "[", postfix = "]")
             throw ConfigurationValidationException(

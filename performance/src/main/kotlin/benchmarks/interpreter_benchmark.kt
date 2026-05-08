@@ -50,7 +50,7 @@ class InterpreterBenchmark : RellBackendBenchmark() {
     fun setUp() {
         if (backend == "kotlin") return
         val rrApp = setUpBackend(backend, "synthetic_bench/main.rell")
-        query = rrApp.moduleMap.getValue(ModuleName.EMPTY).queries.getValue("bench")
+        query = rrApp.module(ModuleName.EMPTY)!!.queries.getValue("bench")
     }
 
     @Benchmark

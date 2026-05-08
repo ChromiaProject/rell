@@ -13,6 +13,7 @@ import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.RellVersions
+import net.postchain.rell.base.utils.associateByToImmMap
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.immListOf
 
@@ -100,7 +101,8 @@ private object SysQueryFns {
             }
 
             return GtvBuilder().apply {
-                ctx.appCtx.rrApp.moduleMap
+                ctx.appCtx.rrApp.modules
+                    .associateByToImmMap { it.name }
                     .filterKeys { modulesArg.containsOrEmpty(it) }
                     .values
                     .forEach { module ->

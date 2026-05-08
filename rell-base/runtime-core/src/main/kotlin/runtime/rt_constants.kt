@@ -41,7 +41,7 @@ class Rt_GtvModuleArgsSource(
 
     override fun getModuleArgs(exeCtx: Rt_ExecutionContext, moduleName: ModuleName): Rt_Value? {
         val rrApp = exeCtx.appCtx.rrApp
-        val rrModule = rrApp.moduleMap[moduleName]
+        val rrModule = rrApp.module(moduleName)
         val rrStructDef = Rt_Utils.checkNotNull(rrModule?.moduleArgs) {
             val msg = "No ${C_Constants.MODULE_ARGS_STRUCT} struct defined for module '$moduleName'"
             "expr:no_module_args_def:$moduleName" to msg

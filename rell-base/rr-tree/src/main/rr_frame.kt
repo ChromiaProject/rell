@@ -5,6 +5,7 @@
 package net.postchain.rell.base.model.rr
 
 /** Serializable variable slot reference. Interpreter maps to actual offset. */
+@JvmRecord
 data class RR_VarPtr(
     val blockUid: Long,
     val offset: Int,
@@ -13,6 +14,7 @@ data class RR_VarPtr(
 }
 
 /** Serializable frame block descriptor. */
+@JvmRecord
 data class RR_FrameBlock(
     val parentUid: Long?,
     val uid: Long,
@@ -21,6 +23,7 @@ data class RR_FrameBlock(
 )
 
 /** Serializable frame layout descriptor for a function/query/operation body. */
+@JvmRecord
 data class RR_FrameDescriptor(
     val size: Int,
     val rootBlock: RR_FrameBlock,

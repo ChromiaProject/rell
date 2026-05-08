@@ -45,7 +45,7 @@ class MnaBenchmark : RellBackendBenchmark() {
     fun setUp() {
         val rrApp = setUpBackend(backend, "mna_bench/main.rell")
         val (queryName, repsArg) = workloadConfig(sample)
-        query = rrApp.moduleMap.getValue(ModuleName.EMPTY).queries.getValue(queryName)
+        query = rrApp.module(ModuleName.EMPTY)!!.queries.getValue(queryName)
         args = listOf(Rt_IntValue.get(repsArg))
     }
 

@@ -19,6 +19,7 @@ import net.postchain.rell.base.model.rr.RR_ConstantValue
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.mapToImmList
+import net.postchain.rell.base.utils.toIntExact
 
 object Lib_Type_Enum {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -50,7 +51,7 @@ object Lib_Type_Enum {
                     comment("Get the declared name of the given enum member constant.")
                     value { a ->
                         val attr = a.asEnum()
-                        Rt_TextValue.get(attr.name)
+                        Rt_TextValue.get(attr.nameStr)
                     }
                 }
 
@@ -137,11 +138,13 @@ object Lib_Type_Enum {
                         val enumType = fnBodyMeta.rResultType as R_EnumType
                         val enum = enumType.enum
                         body { a ->
-                            val value = a.asInteger()
+                            val value = a.asInteger().toIntExact()
+
                             val attr = enum.attr(value) ?: throw Rt_Exception.common(
                                 "enum_badvalue:${enum.appLevelName}:$value",
                                 "Enum '${enum.simpleName}' has no value $value",
                             )
+
                             enum.rtGetValue(attr)
                         }
                     }

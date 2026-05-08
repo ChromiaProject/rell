@@ -696,7 +696,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
         val rrApp = processCompilationResult(cResult, errorHandler)
 
         for (moduleName in rellCfg.modules) {
-            val module = rrApp.moduleMap[moduleName]
+            val module = rrApp.module(moduleName)
             if (module != null && module.test) {
                 throw UserMistake("Test module specified as a main module: '$moduleName'")
             }

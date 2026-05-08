@@ -111,7 +111,7 @@ class FieldValueGenerator(
     }
 
     private fun getOrdinalValue(enumValue: String, enumDef: RR_EnumDefinition): Int =
-        requireNotNull(enumDef.attrs.find { it.name == enumValue }?.value) {
+        requireNotNull(enumDef.attrs.find { it.nameStr == enumValue }?.value) {
             "Enum value '$enumValue' not found in enum type '${enumDef.base.appLevelName}'"
         }
 

@@ -183,7 +183,7 @@ fun deserializeEnumDefinition(fb: FbEnumDefinition): RR_EnumDefinition {
     val base = deserializeDefinitionBase(defName)
     val attrs = (0 until fb.attrsLength).mapToImmList { i ->
         val a = fb.attrs(i)
-        RR_EnumAttr(rName = Name.of(a.name), value = a.value)
+        RR_EnumAttr(name = Name.of(a.name), value = a.value)
     }
     return RR_EnumDefinition(base = base, attrs = attrs)
 }

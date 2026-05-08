@@ -8,13 +8,13 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.ImmSet
-import net.postchain.rell.base.utils.associateByToImmMap
 
 /**
  * Immutable, serializable runtime application model.
  * Contains all definitions (entities, structs, enums, objects, operations, queries, functions)
  * and their compiled bodies as pure data, ready for interpretation or FlatBuffers serialization.
  */
+@JvmRecord
 data class RR_App(
     val modules: ImmList<RR_Module>,
     val operations: ImmMap<MountName, RR_OperationDefinition>,
@@ -51,28 +51,30 @@ data class RR_App(
      */
     val functionExtensions: ImmList<RR_FunctionExtensions>,
 ) {
-    val moduleMap: ImmMap<ModuleName, RR_Module> by lazy {
-        modules.associateByToImmMap { it.name }
-    }
+    fun module(name: ModuleName): RR_Module? = modules.find { it.name == name }
 }
 
+@JvmRecord
 data class RR_AppSqlDefs(
     val entities: ImmList<RR_EntityDefinition>,
     val objects: ImmList<RR_ObjectDefinition>,
     val topologicalEntities: ImmList<RR_EntityDefinition>,
 )
 
+@JvmRecord
 data class RR_ExternalChainRef(val name: String, val index: Int)
 
 /**
  * Set of extensions registered for a single extendable function.
  * The position in `RR_App.functionExtensions` matches `extendableUidId`.
  */
+@JvmRecord
 data class RR_FunctionExtensions(
     val uid: Int,
     val extensions: ImmList<RR_FunctionBase>,
 )
 
+@JvmRecord
 data class RR_Module(
     val name: ModuleName,
     val directory: Boolean,
@@ -93,7 +95,7 @@ data class RR_Module(
     val imports: ImmSet<ModuleName>,
     val moduleArgs: RR_StructDefinition?,
 ) {
-    val key = ModuleKey(name, externalChain)
+    val key: ModuleKey get() = ModuleKey(name, externalChain)
 
     override fun toString() = name.toString()
 }

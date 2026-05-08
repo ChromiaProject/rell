@@ -12,9 +12,6 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotNull
 import net.postchain.rell.base.model.rr.RR_Type
-import net.postchain.rell.toolbox.seeder.schema.Entity
-import net.postchain.rell.toolbox.seeder.schema.SchemaReader
-import net.postchain.rell.toolbox.seeder.schema.SchemaReaderException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -182,7 +179,7 @@ class SchemaReaderTest {
         assertThat(enumType).isInstanceOf(RR_Type.Enum::class.java)
         val enumDef = shirtSizeAttr.enumDefinition
         assertThat(enumDef).isNotNull()
-        assertThat(enumDef!!.attrs.map { it.name }).containsExactlyInAnyOrder("small", "medium", "large")
+        assertThat(enumDef!!.attrs.map { it.nameStr }).containsExactlyInAnyOrder("small", "medium", "large")
     }
 
     @Test

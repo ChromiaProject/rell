@@ -89,7 +89,7 @@ class RR_ResolveTest {
         assertEquals(1, app.allEnums.size)
         val e = app.allEnums[0]
         assertEquals(3, e.attrs.size)
-        assertEquals("RED", e.attrs[0].rName.str)
+        assertEquals("RED", e.attrs[0].name.str)
     }
 
     // --- Object resolution ---
@@ -265,7 +265,7 @@ class RR_ResolveTest {
             query bar(): text = 'x';
             operation baz() {}
         """)
-        val mod = app.moduleMap[ModuleName.EMPTY]
+        val mod = app.module(ModuleName.EMPTY)
         assertNotNull(mod)
         assertTrue(mod.entities.containsKey("user"))
         assertTrue(mod.functions.containsKey("foo"))

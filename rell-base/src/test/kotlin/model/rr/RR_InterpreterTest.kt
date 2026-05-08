@@ -40,7 +40,7 @@ class Rt_InterpreterTest {
         val sqlCtx = Rt_NullSqlContext.create(sqlDefs)
         val exeCtx = Rt_ExecutionContext(appCtx, Rt_NullOpContext, sqlCtx, NoConnSqlExecutor)
 
-        val fn = rrApp.moduleMap[ModuleName.EMPTY]!!.functions[fnName]!!
+        val fn = rrApp.module(ModuleName.EMPTY)!!.functions[fnName]!!
         return interpreter.callFunction(fn, exeCtx, args)
     }
 
@@ -65,7 +65,7 @@ class Rt_InterpreterTest {
         val sqlCtx = Rt_NullSqlContext.create(sqlDefs)
         val exeCtx = Rt_ExecutionContext(appCtx, Rt_NullOpContext, sqlCtx, NoConnSqlExecutor)
 
-        val query = rrApp.moduleMap[ModuleName.EMPTY]!!.queries[queryName]!!
+        val query = rrApp.module(ModuleName.EMPTY)!!.queries[queryName]!!
         return interpreter.callQuery(query, exeCtx, args)
     }
 
