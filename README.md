@@ -33,7 +33,22 @@ Rell is the relational blockchain programming language for [Chromia](https://chr
 
 ## Run
 
+### Try Rell with `chr` (latest release)
+
+Install the Chromia development environment (or just the `chr` CLI) as described in:
+https://docs.chromia.com/get-started/installation
+
+Then start the REPL from the latest released Rell via:
+
+```shell
+chr repl
+```
+
+This path uses the published release directly.
+
 ### REPL
+
+This command runs from your local checkout and may take longer because it builds the repo locally.
 
 ```shell
 ./work/rell.sh
