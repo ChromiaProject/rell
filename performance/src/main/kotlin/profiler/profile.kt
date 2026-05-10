@@ -173,7 +173,12 @@ class ProfileCommand : CliktCommand(name = "profile") {
         val pb = ProcessBuilder("bash", (repoRoot() / "work" / "local-chr.sh").toString(), "--version")
             .directory(repoRoot().toFile()).inheritIO()
         applyJavaHome(pb.environment(), localProps)
-        val rc = pb.start().also { it.waitFor(15, TimeUnit.MINUTES) }.exitValue()
+        val proc = pb.start()
+        if (!proc.waitFor(45, TimeUnit.MINUTES)) {
+            proc.destroyForcibly()
+            die("profile", "Build did not finish within 45 minutes — aborted")
+        }
+        val rc = proc.exitValue()
         if (rc != 0) die("profile", "Build failed with exit code $rc")
         if (!chrBin.exists()) die("profile", "chr binary not found at $chrBin")
         return chrBin
