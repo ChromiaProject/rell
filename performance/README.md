@@ -21,25 +21,61 @@ GraalVM is required for execution - for proper performance of Truffle.
 ## Profile a single sample query
 
 `profileSample` runs **one** Rell query under in-process async-profiler — no node, no
-workload, no HTML. Output is plain text (`flat.txt`, `tree.txt`, `collapsed.txt`) sized
-for an LLM to read and decide which subtrees / hot methods to optimise.
+workload, no HTML. Output is plain text (`flat.txt`, `tree.txt`, `butterfly.txt`,
+`collapsed.txt`) sized for an LLM to read and decide which subtrees / hot methods to
+optimise.
 
 ```bash
-# Defaults: synthetic_bench/bench, interpreter, 200 reps after 30 warmups, top-30 flat.
+# Defaults: synthetic_bench/bench, interpreter, 200 reps after 30 warmups, top-30 flat,
+# butterfly view of those leaves, source line numbers on.
 ./gradlew :performance:profileSample --args="--sample synthetic_bench"
 
 # Pick another sample + query, smaller arg, Truffle backend.
 ./gradlew :performance:profileSample \
     --args="--sample mna_bench --query bench_decimal_pow --arg 50 --backend truffle"
 
-# Custom output dir, all five formats.
+# All formats, deeper butterfly with looser pruning.
 ./gradlew :performance:profileSample \
-    --args="--sample ft4_bench --formats flat,tree,collapsed,flamegraph,jfr --output-dir /tmp/prof"
+    --args="--sample ft4_bench --formats flat,tree,butterfly,collapsed,flamegraph,jfr \
+            --butterfly-depth 8 --butterfly-min-pct 2.0 --output-dir /tmp/prof"
 ```
 
-Default output dir: `performance/reports/sample-<sample>-<query>/`. The top-N flat
-profile is also printed to stdout for quick inspection. `--sample` directories live
-under `performance/src/main/resources/`: `synthetic_bench`, `ft4_bench`, `mna_bench`, `struct_bench`.
+Default output dir: `performance/reports/sample-<sample>-<query>-<backend>/`. The top-N
+flat profile is also printed to stdout for quick inspection. `--sample` directories live
+under `performance/src/main/resources/`: `synthetic_bench`, `ft4_bench`, `mna_bench`,
+`struct_bench`.
+
+### Outputs
+
+| File              | What it is                                                                 |
+|-------------------|----------------------------------------------------------------------------|
+| `flat.txt`        | Top-N hot methods by self time (async-profiler text format, method-level). |
+| `tree.txt`        | Forward call tree (root → leaf) with inclusive time per node.              |
+| `butterfly.txt`   | Per hot leaf: an IDEA-style backtrace tree of its callers, with `Class.method:line` from the JFR. |
+| `collapsed.txt`   | Raw `frame1;frame2;…;leaf SAMPLES` — input format if you want to re-process. |
+| `flamegraph.html` | Interactive flame graph (when `--formats` includes `flamegraph`).          |
+| `profile.jfr`     | JFR recording (when `--formats` includes `jfr`).                           |
+
+All textual outputs are post-processed: lambda class IDs (`$$Lambda.0x000000d8013d6a68`)
+and HotSpot stub hashes (`_c2b66d3dc5c51f3293f46f234daa5dad1f2cb57e`) are stripped so two
+runs of the same workload diff cleanly.
+
+### Why butterfly.txt is the headline output
+
+A flat profile says `java.util.ArrayList.add` is 10% of self time, but not *which* Rell
+call site allocates. The butterfly view groups callers per hot leaf — for the top-`--top`
+methods it walks back through the stacks, aggregating by immediate caller (and caller's
+caller, …) to `--butterfly-depth` levels, pruning branches under `--butterfly-min-pct`
+of the leaf's self time. The result reads like IntelliJ IDEA's "Backtraces" panel:
+each leaf row is followed by indented `<-` rows pointing at the actual code that drives it.
+
+### Sampling-accuracy flags
+
+The Gradle task already passes `-XX:+UnlockDiagnosticVMOptions
+-XX:+DebugNonSafepoints -XX:+PreserveFramePointer` and
+`-XX:CompileCommand=dontinline,…ProfileSampleHotLoop.runOnce`. Without these, hot
+tight-loop methods get attributed to the next safepoint poll and the rep loop
+folds into a single inlined frame — both of which silently corrupt the profile.
 
 ## Quick start — end-to-end profiler
 

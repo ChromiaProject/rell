@@ -1233,24 +1233,30 @@ internal sealed class Tf_FunctionCallNode: Tf_ExprNode() {
             if (safe && baseValue === Rt_NullValue) return Rt_NullValue
 
             val call = resolveCall()
-            val callArgs: Array<Any?> = try {
-                if (fastPath && identityMapping) {
-                    // Identity + fast path: evaluate args directly into the inner-call slots.
-                    // Skips the per-call `Array<Rt_Value?>(args.size)` intermediate. paramOffsets.size
-                    // and args.size agree under identityMapping (translator invariant).
-                    buildInnerCallArgsIdentity(frame)
+            val callArgs: Array<Any?> = if (fastPath && identityMapping) {
+                // Identity + fast path: evaluate args directly into the inner-call slots.
+                // Skips the per-call `Array<Rt_Value?>(args.size)` intermediate. paramOffsets.size
+                // and args.size agree under identityMapping (translator invariant).
+                // Arg-expression failures propagate without `callPos` wrapping — matches the
+                // tree-walker, which never wraps caller-side arg evaluation (the arg expression
+                // itself, e.g. a `ParameterDefaultValue`, owns its own stack-frame attribution).
+                buildInnerCallArgsIdentity(frame)
+            } else {
+                val evaluated = Array(args.size) { args[it].execute(frame) }
+                if (fastPath) {
+                    buildInnerCallArgs(frame, evaluated)
                 } else {
-                    val evaluated = Array(args.size) { args[it].execute(frame) }
-                    if (fastPath) {
-                        buildInnerCallArgs(frame, evaluated)
-                    } else {
-                        // Slow path crosses a `@TruffleBoundary` and needs an `Rt_CallFrame`
-                        // anyway — extract it here so the boundary helper sees no `VirtualFrame`.
+                    // Slow path crosses a `@TruffleBoundary` and needs an `Rt_CallFrame`
+                    // anyway — extract it here so the boundary helper sees no `VirtualFrame`.
+                    // Wrap only `validateParams` / `setupCalleeFrameSlow` (post-eval) with
+                    // `callPos`, mirroring the tree-walker's `callTarget` catch around
+                    // `validateParams` + `setParams`. Arg evaluation above stays unwrapped.
+                    try {
                         buildOuterCallArgsSlow(tfRtFrame(frame), evaluated)
+                    } catch (e: Rt_Exception) {
+                        tfRethrowNested(tfRtFrame(frame), ErrorPos(callPos), e)
                     }
                 }
-            } catch (e: Rt_Exception) {
-                tfRethrowNested(tfRtFrame(frame), ErrorPos(callPos), e)
             }
 
             return try {

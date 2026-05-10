@@ -9,21 +9,29 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.clikt.parameters.types.double
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
 import com.github.ajalt.clikt.parameters.types.path
 import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.model.rr.RR_QueryDefinition
+import net.postchain.rell.base.runtime.Rt_ExecutionContext
 import net.postchain.rell.base.runtime.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_Interpreter
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.performance.benchmarks.RellBackendBenchmark
+import one.convert.Arguments as JfrConverterArgs
+import one.convert.Main as JfrConverterMain
 import one.profiler.AsyncProfiler
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.createDirectories
 import kotlin.io.path.div
+import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 /**
@@ -85,21 +93,39 @@ class ProfileSampleCommand : CliktCommand(name = "profile-sample") {
 
     private val formats by option(
         "--formats",
-        help = "Comma-separated subset of: flat, tree, collapsed, flamegraph, jfr (default: flat,tree,collapsed).",
-    ).split(",").default(listOf("flat", "tree", "collapsed"))
+        help = "Comma-separated subset of: flat, tree, butterfly, collapsed, flamegraph, jfr " +
+            "(default: flat,tree,butterfly,collapsed).",
+    ).split(",").default(listOf("flat", "tree", "butterfly", "collapsed"))
 
     private val topMethods by option(
         "--top",
-        help = "Number of hot methods to print to stdout / write to flat.txt (default: 30).",
+        help = "Number of hot methods to print to stdout / write to flat.txt and to seed butterfly " +
+            "view (default: 30).",
     ).int().default(30)
+
+    private val lines by option(
+        "--lines",
+        help = "Include source line numbers in frames (default: on). Requires `-XX:+DebugNonSafepoints` " +
+            "for accurate attribution; the Gradle task already passes it.",
+    ).flag("--no-lines", default = true)
+
+    private val butterflyDepth by option(
+        "--butterfly-depth",
+        help = "Maximum caller depth printed per hot leaf in butterfly.txt (default: 6).",
+    ).int().default(6)
+
+    private val callerThresholdPct by option(
+        "--butterfly-min-pct",
+        help = "Prune butterfly callers contributing less than N%% of the leaf's self time " +
+            "(default: 5.0).",
+    ).double().default(5.0)
 
     override fun run() {
         val resourcePath = "$sample/main.rell"
         val queryName = query ?: defaultQuery(sample)
         val argValue = arg ?: defaultArg(sample, queryName)
-        val outDir = (outputDir ?: (perfDir() / "reports" / "sample-$sample-$queryName")).also {
-            it.createDirectories()
-        }
+        val outDir = (outputDir ?: (perfDir() / "reports" / "sample-$sample-$queryName-$backend"))
+            .also { it.createDirectories() }
 
         log("profile-sample", "sample=$sample query=$queryName arg=$argValue backend=$backend reps=$reps")
         log("profile-sample", "output dir: $outDir")
@@ -114,53 +140,117 @@ class ProfileSampleCommand : CliktCommand(name = "profile-sample") {
 
         // Warm-up phase — do not start the profiler until JIT / Truffle have settled.
         log("profile-sample", "warmup × $warmups...")
-        repeat(warmups) { harness.interpreter.callQuery(q, harness.exeCtx, args) }
+        repeat(warmups) { ProfileSampleHotLoop.runOnce(harness.interpreter, q, harness.exeCtx, args) }
 
+        // async-profiler text dumps don't include source line numbers — its formatter writes
+        // `class.method` only. We always capture the full JFR snapshot and let `jfr-converter`
+        // (which has --lines support) re-render the line-attributed collapsed and flamegraph.
+        // Flat / tree text dumps stay on async-profiler since they have a stable familiar
+        // format and the per-call-site detail is captured in butterfly.txt anyway.
+        val jfrFile = outDir / "profile.jfr"
         val profiler = AsyncProfiler.getInstance()
         log("profile-sample", "async-profiler ${profiler.version}")
-        profiler.execute("start,event=$event,interval=$intervalNs,total")
+        // JFR is configured at start time; the file is finalized on stop.
+        profiler.execute(
+            "start,event=$event,interval=$intervalNs,total," +
+                "jfr,file=${jfrFile.absolutePathString()}",
+        )
 
         log("profile-sample", "measure × $reps...")
-        repeat(reps) { harness.interpreter.callQuery(q, harness.exeCtx, args) }
+        repeat(reps) { ProfileSampleHotLoop.runOnce(harness.interpreter, q, harness.exeCtx, args) }
 
         val totalSamples = profiler.samples
         log("profile-sample", "captured $totalSamples samples")
 
-        for (fmt in formats) writeFormat(profiler, fmt, outDir)
+        val asprofFlatTopN: String? = if ("flat" in formats) {
+            normalizeFrames(profiler.execute("flat=$topMethods,total")).also {
+                (outDir / "flat.txt").writeText(it)
+            }
+        } else null
+
+        if ("tree" in formats) {
+            (outDir / "tree.txt").writeText(normalizeFrames(profiler.execute("tree,total")))
+        }
+
         profiler.stop()
 
+        // From here on we work off the JFR file via jfr-converter. It carries source line
+        // numbers, lambda normalization, and BCI when DebugNonSafepoints is on (the Gradle
+        // task sets it).
+        val collapsedText = renderCollapsedFromJfr(jfrFile)
+        if ("collapsed" in formats) (outDir / "collapsed.txt").writeText(collapsedText)
+        if ("butterfly" in formats) {
+            val text = Butterfly.render(
+                collapsedText = collapsedText,
+                topLeaves = topMethods,
+                maxDepth = butterflyDepth,
+                callerThresholdPct = callerThresholdPct,
+            )
+            (outDir / "butterfly.txt").writeText(text)
+        }
+        if ("flamegraph" in formats) {
+            val flameOut = outDir / "flamegraph.html"
+            convertJfr(jfrFile, flameOut, "html")
+            // The flamegraph HTML embeds the same frame strings as the collapsed output, so
+            // run normalization over it for consistent diff-ability.
+            flameOut.writeText(normalizeFrames(flameOut.readText()))
+        }
+        if ("jfr" !in formats) jfrFile.toFile().delete()
+
         // Always print the top-N flat methods to stdout — the most LLM-grokkable summary.
-        val flat = profiler.dumpFlat(topMethods)
+        val flatStdout = asprofFlatTopN ?: normalizeFrames(profiler.execute("flat=$topMethods,total"))
         println()
         println("─── top $topMethods hot methods (flat profile) ──────────────────────────────")
-        println(flat)
+        println(flatStdout)
         println()
         log("profile-sample", "wrote artifacts to $outDir")
     }
 
-    private fun writeFormat(profiler: AsyncProfiler, format: String, outDir: Path) {
-        when (format.trim().lowercase()) {
-            "flat" -> {
-                val text = profiler.dumpFlat(topMethods)
-                (outDir / "flat.txt").writeText(text)
-            }
-            "tree" -> {
-                // `tree=N` limits the depth of nesting in the textual call tree; we want full
-                // depth here because the profile is short and the tree is the headline output.
-                val text = profiler.execute("tree,total")
-                (outDir / "tree.txt").writeText(text)
-            }
-            "collapsed" -> {
-                profiler.execute("collapsed,total,file=${(outDir / "collapsed.txt").absolutePathString()}")
-            }
-            "flamegraph" -> {
-                profiler.execute("flamegraph,file=${(outDir / "flamegraph.html").absolutePathString()}")
-            }
-            "jfr" -> {
-                profiler.execute("jfr,file=${(outDir / "profile.jfr").absolutePathString()}")
-            }
-            else -> log("profile-sample", "WARNING: unknown format `$format` — skipped")
+    /**
+     * Render the JFR recording at [jfrFile] as a collapsed-stack text buffer with source-line
+     * attribution. We use a temp file because [JfrConverterMain.convert] writes to disk only.
+     */
+    private fun renderCollapsedFromJfr(jfrFile: Path): String {
+        val tmp = jfrFile.resolveSibling(".collapsed-with-lines.tmp.txt")
+        try {
+            convertJfr(jfrFile, tmp, "collapsed")
+            return normalizeFrames(tmp.readText())
+        } finally {
+            tmp.toFile().delete()
         }
+    }
+
+    private fun convertJfr(jfrFile: Path, output: Path, format: String) {
+        val flagList = buildList {
+            add("--output"); add(format)
+            add("--total")
+            if (lines) add("--lines")
+            // `--dot` matches async-profiler's text-dump style (`java.util.Arrays`) so the
+            // butterfly view diffs cleanly against `flat.txt` / `tree.txt`.
+            add("--dot")
+            // `--norm` collapses a few stable hidden-class patterns; our regex-based
+            // normalizeFrames() handles the rest (HotSpot stub hashes, etc.).
+            add("--norm")
+        }
+        val args = JfrConverterArgs(*flagList.toTypedArray())
+        JfrConverterMain.convert(jfrFile.absolutePathString(), output.absolutePathString(), args)
+    }
+}
+
+/**
+ * Hot loop wrapper kept out-of-line. The Gradle task pins `-XX:CompileCommand=dontinline` on
+ * `runOnce` so each rep stays as a distinct stack frame at sample time — without this, the
+ * JIT can fold the loop body and async-profiler attributes samples to the wrong caller.
+ */
+internal object ProfileSampleHotLoop {
+    @JvmStatic
+    fun runOnce(
+        interp: Rt_Interpreter,
+        q: RR_QueryDefinition,
+        ctx: Rt_ExecutionContext,
+        args: List<Rt_Value>,
+    ) {
+        interp.callQuery(q, ctx, args)
     }
 }
 

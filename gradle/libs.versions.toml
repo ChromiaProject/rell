@@ -2,6 +2,7 @@
 kotlin = "2.3.0"
 postchain = "3.49.10"
 kotlinx-benchmark = "0.4.16"
+async-profiler = "4.4"
 
 flatbuffers = "25.2.10"
 jooq = "3.19.15"
@@ -131,11 +132,10 @@ kotlinx-html = { module = "org.jetbrains.kotlinx:kotlinx-html-jvm", version.ref 
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
-# benchmarks / profiler
+# Performance
 kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinx-benchmark" }
-# Java API for async-profiler — typed `one.profiler.AsyncProfiler` for in-process profiling
-# of single sample queries (no Attach API dance, the lib is loaded into the current JVM).
-async-profiler = { module = "tools.profiler:async-profiler", version = "4.0" }
+async-profiler = { module = "tools.profiler:async-profiler", version.ref = "async-profiler" }
+jfr-converter = { module = "tools.profiler:jfr-converter", version.ref = "async-profiler" }
 
 [bundles]
 lsp4j = ["lsp4j", "lsp4j-debug", "lsp4j-websocket"]

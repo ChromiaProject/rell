@@ -38,6 +38,10 @@ dependencies {
     implementation(libs.postgresql)
     // In-process `one.profiler.AsyncProfiler` for the `profile-sample` CLI.
     implementation(libs.async.profiler)
+    // `one.convert.Main` re-renders the JFR file produced by async-profiler into a collapsed /
+    // flame-graph output that retains source-line attribution — essential for the butterfly
+    // view, where the LLM needs the actual call-site line, not just the method name.
+    implementation(libs.jfr.converter)
 }
 
 val prepareSamples by tasks.registering(Copy::class) {
@@ -227,12 +231,31 @@ val workload by tasks.registering(JavaExec::class) {
 
 val profileSample by tasks.registering(JavaExec::class) {
     group = "performance"
-    description = "Profile a single sample query under async-profiler in-process; emits flat/tree/collapsed text."
+    description = "Profile a single sample query under async-profiler in-process; emits flat/tree/butterfly/collapsed text."
     classpath = sourceSets["main"].runtimeClasspath
     mainClass = "net.postchain.rell.performance.profiler.ProfileSampleKt"
     javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
     // -Djdk.attach.allowAttachSelf=true is unnecessary because AsyncProfiler.getInstance()
     // uses System.load on the bundled native lib (no Attach-API self-attach involved).
+    //
+    // Sampling-accuracy flags:
+    //  - DebugNonSafepoints: emit debug info at every site (not just safepoint polls), so
+    //    async-profiler attributes samples to the *actual* leaf instead of the next safepoint.
+    //    Without it, hot tight loops get charged to the wrong method.
+    //  - PreserveFramePointer: keep RBP as the frame pointer so async-profiler's stack unwind
+    //    (which uses libunwind / FP walking, not Java stackmaps) sees correct caller chains.
+    //  - UnlockDiagnosticVMOptions: unlocks DebugNonSafepoints.
+    //
+    // Hot-loop framing:
+    //  - dontinline,*ProfileSampleHotLoop.runOnce*: keep `runOnce` as a real frame at sample
+    //    time. With C2/Graal aggressive inlining the rep loop folds into a single mega-frame
+    //    and the profile loses the per-call call site.
+    jvmArgs = listOf(
+        "-XX:+UnlockDiagnosticVMOptions",
+        "-XX:+DebugNonSafepoints",
+        "-XX:+PreserveFramePointer",
+        "-XX:CompileCommand=dontinline,net/postchain/rell/performance/profiler/ProfileSampleHotLoop.runOnce",
+    )
 }
 
 val profile by tasks.registering(JavaExec::class) {
