@@ -1,8 +1,8 @@
 #!/bin/sh
 # Renders performance/ci-index/index.html with a server-side list of currently-available
-# benchmark / profile pages deployments. The project is private, so anonymous browser
-# fetches against the Environments API return 401 — we bake the data here at publish time
-# and ship a fully static page.
+# benchmark / profile pages deployments. The Environments API requires authentication
+# even on public projects, so anonymous browser fetches return 401 — we bake the data
+# here at publish time and ship a fully static page.
 #
 # Auth: requires GITLAB_TOKEN (a project/group access token with `read_api` scope) exposed
 # as a masked CI variable on dev. CI_JOB_TOKEN can't read the Environments API — it's not
@@ -23,8 +23,17 @@ envs_json=$(glab api --paginate \
 # path-prefixed Pages deployment is removed (expiry, manual delete), so the env-only view
 # would link to 404s. The /pages endpoint is the authoritative list of currently-served
 # deployments — match by path_prefix to drop ones whose content is gone.
-pages_json=$(glab api "projects/${CI_PROJECT_ID}/pages")
-active_prefixes=$(printf '%s' "$pages_json" | jq -c '[.deployments[].path_prefix | select(. != null)]')
+#
+# Best-effort: /projects/:id/pages requires Maintainer role, while GITLAB_TOKEN only needs
+# `read_api` (Reporter) for the Environments API. On 403, fall back to no filtering — new
+# deployments use `expire_in: never` so they don't rot, and stale historical entries will
+# age out as their environments are removed.
+if pages_json=$(glab api "projects/${CI_PROJECT_ID}/pages" 2>/dev/null); then
+  active_prefixes=$(printf '%s' "$pages_json" | jq -c '[.deployments[].path_prefix | select(. != null)]')
+else
+  echo "warning: /projects/${CI_PROJECT_ID}/pages unavailable (token likely lacks Maintainer); skipping liveness filter" >&2
+  active_prefixes=null
+fi
 
 # Env names follow the schema `benchmarks/<branch>/<sha>` and `profile/<branch>/<sha>` —
 # per-commit so that same-branch reruns don't clobber each other (regression analysis
@@ -48,7 +57,7 @@ table=$(printf '%s' "$envs_json" | jq -r --argjson active "$active_prefixes" '
           when: ((.updated_at // .created_at) | (.[0:10] // ""))
         }
     )
-  | map(select(env_prefix(.kind; .branch; .sha) as $p | $active | index($p)))
+  | map(select($active == null or (env_prefix(.kind; .branch; .sha) as $p | $active | index($p))))
   | group_by([.branch, .sha])
   | map({
       branch: .[0].branch,

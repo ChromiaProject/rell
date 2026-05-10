@@ -126,7 +126,8 @@ object RellToolsUtils: KLogging() {
     }
 
     fun printVersionInfo() {
-        val ver = Rt_RellVersion.getInstance()?.buildDescriptor ?: "Rell version unknown"
+        val ver = Rt_RellVersion.getInstance()?.buildDescriptor
+            ?: "rell: ${RellVersions.VERSION_STR}; postchain: unknown; branch: unknown; commit: unknown (unknown); dirty: unknown"
         logger.info(ver)
     }
 }
