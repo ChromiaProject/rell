@@ -281,6 +281,10 @@ pages:benchmarks:
     - echo "Benchmark JSON   - $CI_PAGES_URL/data/main.json"
   pages:
     path_prefix: "bench-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    # Path-prefixed Pages deployments default to a 24h expiry on GitLab.com, after which the
+    # report URL 404s while the environment record persists. Pin to `never` so historical
+    # benchmark reports stay reachable for regression comparison across commits.
+    expire_in: never
   environment:
     name: "benchmarks/$CI_COMMIT_REF_SLUG/$CI_COMMIT_SHORT_SHA"
     url: "$CI_PAGES_URL/report.html"
@@ -309,6 +313,8 @@ pages:profile:
     - echo "Profile report - $CI_PAGES_URL/report.html"
   pages:
     path_prefix: "profile-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    # See `pages:benchmarks` for the rationale — keep historical profile reports reachable.
+    expire_in: never
   environment:
     name: "profile/$CI_COMMIT_REF_SLUG/$CI_COMMIT_SHORT_SHA"
     url: "$CI_PAGES_URL/report.html"

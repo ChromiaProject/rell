@@ -19,13 +19,22 @@ template=$(dirname "$0")/index.html
 envs_json=$(glab api --paginate \
   "projects/${CI_PROJECT_ID}/environments?states=available&per_page=100")
 
+# Cross-reference with the live Pages deployments. Environment records persist after a
+# path-prefixed Pages deployment is removed (expiry, manual delete), so the env-only view
+# would link to 404s. The /pages endpoint is the authoritative list of currently-served
+# deployments — match by path_prefix to drop ones whose content is gone.
+pages_json=$(glab api "projects/${CI_PROJECT_ID}/pages")
+active_prefixes=$(printf '%s' "$pages_json" | jq -c '[.deployments[].path_prefix | select(. != null)]')
+
 # Env names follow the schema `benchmarks/<branch>/<sha>` and `profile/<branch>/<sha>` —
 # per-commit so that same-branch reruns don't clobber each other (regression analysis
 # between commits needs both deployments coexisting). Group by (branch, sha) into one
 # row per commit; sort newest first within each branch, with dev/master pinned to the top.
 # Each benchmark deployment also exposes /data/main.json for programmatic ingestion.
-table=$(printf '%s' "$envs_json" | jq -r '
+table=$(printf '%s' "$envs_json" | jq -r --argjson active "$active_prefixes" '
   def branch_rank(b): if b == "dev" then 0 elif b == "master" then 1 else 2 end;
+  # path_prefix mirrors the CI config: `benchmarks/dev/<sha>` → `bench-dev-<sha>`.
+  def env_prefix(k; b; s): (if k == "benchmarks" then "bench" else "profile" end) + "-" + b + "-" + s;
 
   map(select(.name | test("^(benchmarks|profile)/[^/]+/[^/]+$")))
   | map(select(.external_url != null))
@@ -39,6 +48,7 @@ table=$(printf '%s' "$envs_json" | jq -r '
           when: ((.updated_at // .created_at) | (.[0:10] // ""))
         }
     )
+  | map(select(env_prefix(.kind; .branch; .sha) as $p | $active | index($p)))
   | group_by([.branch, .sha])
   | map({
       branch: .[0].branch,
