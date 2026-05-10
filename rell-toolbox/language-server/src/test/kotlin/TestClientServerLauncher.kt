@@ -7,6 +7,7 @@ package net.postchain.rell.toolbox.lsp
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.server.LauncherType
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
+import org.eclipse.lsp4j.Diagnostic
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.InitializedParams
 import org.eclipse.lsp4j.WorkspaceFolder
@@ -19,6 +20,7 @@ import java.io.IOException
 import java.net.Socket
 import java.net.SocketTimeoutException
 import java.net.URI
+import java.time.Duration
 
 class TestClientServerLauncher(private val koinApp: KoinApplication) {
     private lateinit var thread: Thread
@@ -53,8 +55,28 @@ class TestClientServerLauncher(private val koinApp: KoinApplication) {
         await().until { server.initialized.isDone }
 
         if (clearDiagnostic) {
+            // Initial-indexing diagnostics are queued via `initialized.thenAccept`
+            // in DiagnosticsPublisher and only sent once the `initialized` future
+            // completes. `complete()` flips `isDone` before its dependent stages
+            // finish, so the test thread can race ahead of the in-flight
+            // notifications. Wait for the published-diagnostics snapshot to settle
+            // before clearing, otherwise late arrivals repopulate the map.
+            awaitDiagnosticsQuiescent()
             testClient.clearDiagnostics()
         }
+    }
+
+    private fun awaitDiagnosticsQuiescent() {
+        var prev: Map<String, List<Diagnostic>>? = null
+        await()
+            .pollDelay(Duration.ofMillis(50))
+            .pollInterval(Duration.ofMillis(50))
+            .until {
+                val snapshot = testClient.diagnostics.toMap()
+                val stable = prev == snapshot
+                prev = snapshot
+                stable
+            }
     }
 
     private fun connectToServer(attempt: Int = 0): Socket {
