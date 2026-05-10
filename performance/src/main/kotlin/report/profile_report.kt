@@ -435,7 +435,10 @@ private fun HTML.renderProfileReport(
         renderDocHead("Postchain Node Profile", listOf("rell" to rellVer, "postchain" to postchainVer))
         main {
             renderSection("System Information") { renderSystemInfo(sysinfo) }
-            renderSection("Workload") { renderMetrics(workloadTime, numTx, totalQueries, totalSamples, event) }
+            renderSection("Workload") {
+                renderDappInfo()
+                renderMetrics(workloadTime, numTx, totalQueries, totalSamples, event)
+            }
             renderSection("Filters", "Applies to Component Breakdown and Hot Methods below") {
                 renderFilters(breakdown, threadSummary)
             }
@@ -514,6 +517,49 @@ private fun DL.renderVersionRows(versions: ObjectNode?) {
     for (k in order) versions.get(k)?.let { v -> dlRow(labels.getValue(k), v.asText(""), mono = true) }
     versions.properties().forEach { (k, v) ->
         if (k !in order) dlRow(k, v.asText(""), mono = true)
+    }
+}
+
+private const val DAPP_SOURCE_URL = "$RELL_BLOB/performance/dapp/src/main.rell"
+
+private fun FlowContent.renderDappInfo() = div(classes = "dapp-info") {
+    p(classes = "dapp-info-desc") {
+        +"Social-posts schema — "
+        code { +"user" }
+        +" (mutable bio), "
+        code { +"post" }
+        +" (authored, timestamped), "
+        code { +"tag" }
+        +", "
+        code { +"post_tag" }
+        +". The workload runs "
+        code { +"create_user" }
+        +", "
+        code { +"create_post" }
+        +", "
+        code { +"update_bio" }
+        +", then a mix of read queries ("
+        code { +"count_users" }
+        +", "
+        code { +"list_users" }
+        +", "
+        code { +"get_user" }
+        +", "
+        code { +"get_posts_by_user" }
+        +", "
+        code { +"search_posts" }
+        +", "
+        code { +"get_user_post_count" }
+        +")."
+    }
+    ul(classes = "dapp-info-sources") {
+        li {
+            a(href = DAPP_SOURCE_URL) {
+                attributes["target"] = "_blank"
+                attributes["rel"] = "noopener"
+                +"rell · performance/dapp/src/main.rell"
+            }
+        }
     }
 }
 
@@ -994,6 +1040,26 @@ private fun String.xmlEscape(): String =
 private val PROFILE_EXTRA_CSS = """
 .sysinfo-block h3.cmd { text-transform: none; letter-spacing: 0; color: var(--ink); font-weight: 500; }
 .sysinfo-block h3.cmd .cmd-prompt { color: var(--accent); margin-right: .35rem; font-weight: 600; }
+
+.dapp-info {
+  background: var(--surface); border: 1px solid var(--rule);
+  padding: .9rem 1rem; margin-bottom: 1rem;
+}
+.dapp-info-desc {
+  font-family: var(--sans); font-size: .82rem; line-height: 1.5;
+  color: var(--ink-soft); margin: 0 0 .5rem;
+}
+.dapp-info-desc code {
+  font-family: var(--mono); font-size: .78rem; color: var(--ink);
+  background: rgba(24,17,12,0.04); padding: 0 .3rem;
+}
+.dapp-info-sources {
+  list-style: none; padding: 0; margin: 0;
+  border-top: 1px dashed var(--rule-hair); padding-top: .45rem;
+  font-family: var(--mono); font-size: .72rem;
+}
+.dapp-info-sources li { margin: .12rem 0; overflow-wrap: anywhere; }
+.dapp-info-sources a { color: var(--accent); }
 
 .filters-panel {
   display: flex; flex-direction: column;

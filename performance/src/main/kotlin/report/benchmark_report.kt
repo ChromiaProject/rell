@@ -53,9 +53,8 @@ private data class SampleInfo(
     val sources: List<SampleSource>,
 )
 
-private const val RELL_BLOB = "https://gitlab.com/chromaway/rell/-/blob/dev"
 private const val FT4_BLOB = "https://gitlab.com/chromaway/ft4-lib/-/blob/development/rell/src/lib/ft4"
-private const val MNA_BLOB = "https://bitbucket.org/chromawallet/mna-blockchain/src/development/rell/src"
+private const val RELL_BENCH_BLOB = "$RELL_BLOB/performance/src/main/resources"
 
 /** Keys must match the JMH `sample` parameter values in the JSON. */
 private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
@@ -64,8 +63,8 @@ private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
         description = "Sums Collatz sequence lengths for every prime in [2, 100_000], then adds the 20th Fibonacci number.",
         sources = listOf(
             SampleSource(
-                "synthetic_bench/main.rell",
-                "$RELL_BLOB/performance/src/main/resources/synthetic_bench/main.rell",
+                "rell · synthetic_bench/main.rell",
+                "$RELL_BENCH_BLOB/synthetic_bench/main.rell",
             ),
         ),
     ),
@@ -102,41 +101,30 @@ private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
     ),
     "decimal_pow" to SampleInfo(
         title = "decimal power · ln · exp",
-        description = "200 calls × 4 (base, exponent) shapes of power: integer exponent, non-integer exponent, fractional base near 1, and negative exponent. Note: ≳60% of wall time is spent in JDK BigInteger / BigDecimal arithmetic — small Rell-runtime wins translate to small ms/op deltas here.",
+        description = "200 calls × 4 (base, exponent) shapes of power: integer exponent, non-integer exponent, fractional base near 1, and negative exponent. Note: ≳60% of wall time is spent in JDK BigInteger / BigDecimal arithmetic — small Rell-runtime wins translate to small ms/op deltas here. Distilled from chromaway/mna-blockchain (closed source).",
         sources = listOf(
-            SampleSource("mna-blockchain · math/math.rell", "$MNA_BLOB/math/math.rell"),
+            SampleSource("rell · mna_bench/main.rell", "$RELL_BENCH_BLOB/mna_bench/main.rell"),
         ),
     ),
     "perlin_noise" to SampleInfo(
         title = "8-octave 2D Simplex noise",
-        description = "20 calls of sum_octave_2d on a 5×5 grid (500 simplex_2d samples per rep) with the canonical permutation tables. Note: ~40-50% of wall time is JDK BigDecimal / BigInteger arithmetic; the truffle backend's int128/long-scale decimal leaves shave a chunk off when values stay in range.",
+        description = "20 calls of sum_octave_2d on a 5×5 grid (500 simplex_2d samples per rep) with the canonical permutation tables. Note: ~40-50% of wall time is JDK BigDecimal / BigInteger arithmetic; the truffle backend's int128/long-scale decimal leaves shave a chunk off when values stay in range. Distilled from chromaway/mna-blockchain (closed source).",
         sources = listOf(
-            SampleSource("mna-blockchain · noise/functions.rell", "$MNA_BLOB/math/noise/functions.rell"),
-            SampleSource("mna-blockchain · noise/simplex_2d.rell", "$MNA_BLOB/math/noise/simplex_2d.rell"),
+            SampleSource("rell · mna_bench/main.rell", "$RELL_BENCH_BLOB/mna_bench/main.rell"),
         ),
     ),
     "locations" to SampleInfo(
         title = "rotate · area_for_locations",
-        description = "200 reps × 4 cardinal rotations of a 64-point list<location>; each rotated copy is collected into a set<location> and reduced via area_for_locations.",
+        description = "200 reps × 4 cardinal rotations of a 64-point list<location>; each rotated copy is collected into a set<location> and reduced via area_for_locations. Distilled from chromaway/mna-blockchain (closed source).",
         sources = listOf(
-            SampleSource(
-                "mna-blockchain · griddables/griddables.rell",
-                "$MNA_BLOB/griddables/griddables.rell",
-            ),
+            SampleSource("rell · mna_bench/main.rell", "$RELL_BENCH_BLOB/mna_bench/main.rell"),
         ),
     ),
     "dto_mapping" to SampleInfo(
         title = "nested DTO mapping",
-        description = "50 reps × 16 quests × (3 goals × 4 assets) × 4 rewards — triple-nested struct construction in a tight loop, mirroring the quests/community_quests get_*_dto path.",
+        description = "50 reps × 16 quests × (3 goals × 4 assets) × 4 rewards — triple-nested struct construction in a tight loop, mirroring the quests/community_quests get_*_dto path. Distilled from chromaway/mna-blockchain (closed source).",
         sources = listOf(
-            SampleSource(
-                "mna-blockchain · quests/dto.rell",
-                "$MNA_BLOB/quests/dto.rell",
-            ),
-            SampleSource(
-                "mna-blockchain · quests/functions.rell",
-                "$MNA_BLOB/quests/functions.rell",
-            ),
+            SampleSource("rell · struct_bench/main.rell", "$RELL_BENCH_BLOB/struct_bench/main.rell"),
         ),
     ),
     "cursor_codec" to SampleInfo(

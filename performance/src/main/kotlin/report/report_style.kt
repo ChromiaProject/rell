@@ -14,6 +14,8 @@ import kotlin.math.abs
 internal const val ACCENT_HEX = "#C1440E"
 internal const val INK_HEX = "#0F0F10"
 
+internal const val RELL_BLOB = "https://gitlab.com/chromaway/rell/-/blob/dev"
+
 internal fun HEAD.linkWebFonts() {
     link(rel = "preconnect", href = "https://fonts.googleapis.com")
     link(rel = "preconnect", href = "https://fonts.gstatic.com") { attributes["crossorigin"] = "" }
