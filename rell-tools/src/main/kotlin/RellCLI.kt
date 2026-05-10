@@ -78,8 +78,7 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
 
     override fun run() {
         if (version) {
-            val ver = Rt_RellVersion.getInstance()?.buildDescriptor ?: "Version unknown"
-            println(ver)
+            println(Rt_RellVersion.getInstance().buildDescriptor)
             throw RellCliExitException(0)
         }
 

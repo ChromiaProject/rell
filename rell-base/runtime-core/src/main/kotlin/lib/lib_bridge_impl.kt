@@ -93,5 +93,5 @@ internal object C_LibBridgeImpl : C_LibBridge {
 
     override fun newResolverRuntime(): RR_ResolverRuntime = Rt_ResolverRuntime()
 
-    override fun getRellVersionInfo(): Map<*, String>? = Rt_RellVersion.getInstance()?.properties
+    override fun getRellVersionInfo(): Map<*, String> = Rt_RellVersion.getInstance().properties
 }

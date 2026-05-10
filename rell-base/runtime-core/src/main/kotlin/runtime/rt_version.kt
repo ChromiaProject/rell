@@ -45,9 +45,8 @@ class Rt_RellVersion private constructor(
             "kotlin.version" to Rt_RellVersionProperty.KOTLIN_VERSION,
         )
 
-        fun getInstance(): Rt_RellVersion? {
-            val raw = getBuildProperties() ?: return null
-
+        fun getInstance(): Rt_RellVersion {
+            val raw = getBuildProperties() ?: FALLBACK_PROPERTIES
 
             val properties = getRtProperties(raw)
 
@@ -58,6 +57,24 @@ class Rt_RellVersion private constructor(
             val buildDescriptor = getBuildDescriptor(properties)
             return Rt_RellVersion(properties.toImmMap(), rtProperties, buildDescriptor)
         }
+
+        // Used when `rell-base-maven.properties` is not on the classpath — e.g. running
+        // tests from IntelliJ without a Gradle build, or when the gradle-git-properties
+        // plugin's output is missing from the umbrella jar in CI. Values are format-valid
+        // sentinels: known strings that match `rell.get_build`'s output schema so callers
+        // (and the CLI tests that assert on it) keep working, but are clearly synthetic.
+        private val FALLBACK_PROPERTIES = immMapOf(
+            "git.branch" to "unknown",
+            "git.build.version" to RellVersions.VERSION_STR,
+            "git.commit.id" to "0".repeat(40),
+            "git.commit.id.abbrev" to "0".repeat(7),
+            "git.commit.message.short" to "unknown",
+            "git.commit.message.full" to "unknown",
+            "git.commit.time" to "1970-01-01T00:00:00+0000",
+            "git.dirty" to "false",
+            "postchain.version" to "0.0.0",
+            "kotlin.version" to KotlinVersion.CURRENT.toString(),
+        )
 
         private fun getRtProperties(raw: Map<String, String>): Map<Rt_RellVersionProperty, String> = buildMap {
             for ((rawKey, prop) in PROPS) {

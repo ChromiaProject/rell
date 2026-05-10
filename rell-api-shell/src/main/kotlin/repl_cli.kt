@@ -15,7 +15,6 @@ import net.postchain.rell.base.runtime.Rt_GtvModuleArgsSource
 import net.postchain.rell.base.runtime.Rt_RellVersion
 import net.postchain.rell.base.runtime.Rt_RellVersionProperty
 import net.postchain.rell.base.sql.SqlManager
-import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.toImmMap
 import java.io.File
 
@@ -84,8 +83,7 @@ public object ReplShell {
     }
 
     private fun getVersionInfo(): String {
-        val ver = Rt_RellVersion.getInstance()?.properties?.get(Rt_RellVersionProperty.RELL_VERSION)
-            ?: RellVersions.VERSION_STR
+        val ver = Rt_RellVersion.getInstance().properties.getValue(Rt_RellVersionProperty.RELL_VERSION)
         return "Rell $ver"
     }
 }

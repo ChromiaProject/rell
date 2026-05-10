@@ -32,9 +32,7 @@ class Rt_GlobalContext(
 ) {
     private val rellVersion = Rt_RellVersion.getInstance()
 
-    fun rellVersion(): Rt_RellVersion {
-        return rellVersion ?: throw Rt_Exception.common("fn:rell.git_info:no_data", "Version information not found")
-    }
+    fun rellVersion(): Rt_RellVersion = rellVersion
 }
 
 interface Rt_SqlContext {
