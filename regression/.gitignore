@@ -1,0 +1,6 @@
+# Local-only project list, possibly containing private/internal Chromia repos.
+private.json
+
+# Per-run state: cloned source trees, captured logs, rendered HTML.
+workdir/
+reports/

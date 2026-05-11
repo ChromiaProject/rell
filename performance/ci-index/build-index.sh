@@ -35,20 +35,25 @@ else
   active_prefixes=null
 fi
 
-# Env names follow the schema `benchmarks/<branch>/<sha>` and `profile/<branch>/<sha>` —
-# per-commit so that same-branch reruns don't clobber each other (regression analysis
-# between commits needs both deployments coexisting). Group by (branch, sha) into one
-# row per commit; sort newest first within each branch, with dev/master pinned to the top.
-# Each benchmark deployment also exposes /data/main.json for programmatic ingestion.
+# Env names follow the schema `benchmarks/<branch>/<sha>`, `profile/<branch>/<sha>` and
+# `regression/<branch>/<sha>` — per-commit so that same-branch reruns don't clobber each
+# other (regression analysis between commits needs both deployments coexisting). Group by
+# (branch, sha) into one row per commit; sort newest first within each branch, with dev/master
+# pinned to the top. Each benchmark deployment also exposes /data/main.json for programmatic
+# ingestion.
 table=$(printf '%s' "$envs_json" | jq -r --argjson active "$active_prefixes" '
   def branch_rank(b): if b == "dev" then 0 elif b == "master" then 1 else 2 end;
-  # path_prefix mirrors the CI config: `benchmarks/dev/<sha>` → `bench-dev-<sha>`.
-  def env_prefix(k; b; s): (if k == "benchmarks" then "bench" else "profile" end) + "-" + b + "-" + s;
+  # path_prefix mirrors the CI config: `benchmarks/dev/<sha>` → `bench-dev-<sha>`,
+  # `profile/dev/<sha>` → `profile-dev-<sha>`, `regression/dev/<sha>` → `regression-dev-<sha>`.
+  def env_prefix(k; b; s):
+    (if k == "benchmarks" then "bench"
+     elif k == "regression" then "regression"
+     else "profile" end) + "-" + b + "-" + s;
 
-  map(select(.name | test("^(benchmarks|profile)/[^/]+/[^/]+$")))
+  map(select(.name | test("^(benchmarks|profile|regression)/[^/]+/[^/]+$")))
   | map(select(.external_url != null))
   | map(
-      (.name | capture("^(?<k>benchmarks|profile)/(?<b>[^/]+)/(?<s>[^/]+)$")) as $c
+      (.name | capture("^(?<k>benchmarks|profile|regression)/(?<b>[^/]+)/(?<s>[^/]+)$")) as $c
       | {
           kind: $c.k,
           branch: $c.b,
@@ -64,7 +69,8 @@ table=$(printf '%s' "$envs_json" | jq -r --argjson active "$active_prefixes" '
       sha: .[0].sha,
       when: (map(.when) | max),
       benchmarks: (map(select(.kind == "benchmarks")) | first),
-      profile:    (map(select(.kind == "profile"))    | first)
+      profile:    (map(select(.kind == "profile"))    | first),
+      regression: (map(select(.kind == "regression")) | first)
     })
   | sort_by([branch_rank(.branch), .branch, (.when // ""), .sha])
   | reverse
@@ -72,7 +78,7 @@ table=$(printf '%s' "$envs_json" | jq -r --argjson active "$active_prefixes" '
   | if length == 0 then
       "<p class=\"empty-msg\">No reports published yet.</p>"
     else
-      "<table><thead><tr><th>Branch</th><th>Commit</th><th>When</th><th>Benchmarks</th><th>Profile</th></tr></thead><tbody>"
+      "<table><thead><tr><th>Branch</th><th>Commit</th><th>When</th><th>Benchmarks</th><th>Profile</th><th>Regression</th></tr></thead><tbody>"
       + (map(
           "<tr>"
           + "<td class=\"branch\">" + (.branch | @html) + "</td>"
@@ -88,6 +94,10 @@ table=$(printf '%s' "$envs_json" | jq -r --argjson active "$active_prefixes" '
           + (.profile as $p
               | if $p == null then "<td class=\"empty\">—</td>"
                 else "<td><a href=\"" + ($p.url | @html) + "\">report</a></td>"
+                end)
+          + (.regression as $r
+              | if $r == null then "<td class=\"empty\">—</td>"
+                else "<td><a href=\"" + ($r.url | @html) + "\">report</a></td>"
                 end)
           + "</tr>"
         ) | join(""))

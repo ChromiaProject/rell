@@ -87,11 +87,14 @@
 <body>
 <header class="doc-head">
   <div class="doc-head-inner">
-    <h1 class="doc-title">Rell Performance Reports</h1>
+    <h1 class="doc-title">Rell Quality Reports</h1>
     <p class="doc-strap">
-      Runs of benchmarks and profile CI jobs publish HTML reports to per-commit GitLab Pages deployments.
-      Each benchmark deployment also exposes the raw kotlinx-benchmark JSON at
-      <code>&lt;deployment&gt;/data/main.json</code> for programmatic regression analysis.
+      Manually-triggered CI jobs publish per-commit GitLab Pages HTML reports for three suites:
+      <strong>Benchmarks</strong> (JMH microbenchmarks, also exposes raw JSON at
+      <code>&lt;deployment&gt;/data/main.json</code> for programmatic regression analysis),
+      <strong>Profile</strong> (end-to-end async-profiler run against a Chromia node + workload), and
+      <strong>Regression</strong> (clone a curated list of external Rell projects and verify the local
+      Rell compiler still builds them).
     </p>
   </div>
 </header>

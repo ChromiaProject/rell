@@ -1,0 +1,7 @@
+{
+  "_comment": [
+    "Copy this file to private.json. Schema matches public.json — see README.md."
+  ],
+  "projects": [
+  ]
+}

@@ -151,6 +151,29 @@ cache:
         path: "**/build/reports/jacoco/test/jacocoTestReport.xml"
     expire_in: 1 week
 
+.local-chr-cache:
+  extends: .setup
+  cache:
+    - key: "$CI_COMMIT_REF_SLUG"
+      fallback_keys: [ dev ]
+      paths: [ .gradle ]
+      policy: pull-push
+    - key: "local-chr-m2-$CI_COMMIT_REF_SLUG"
+      fallback_keys: [ local-chr-m2-dev ]
+      paths:
+        - .m2
+        - chromia-cli-local
+        - chromia-cli-tools-local
+      policy: pull-push
+  before_script:
+    - !reference [ .setup, before_script ]
+    # Symlink ~/.m2 into the project dir so cached deps survive. Remove the existing
+    # ~/.m2 first — the GraalVM base image ships an empty one as a real directory,
+    # which would cause `ln -s` to nest the symlink inside it.
+    - rm -rf "$HOME/.m2"
+    - mkdir -p "$CI_PROJECT_DIR/.m2/repository"
+    - ln -s "$CI_PROJECT_DIR/.m2" "$HOME/.m2"
+
 build:
   extends: .setup
   stage: build
@@ -238,6 +261,11 @@ pages:index:after-profile:
   stage: index
   needs: [ pages:profile ]
 
+pages:index:after-regression:
+  extends: .pages-index
+  stage: index
+  needs: [ pages:regression ]
+
 # Manual benchmark / profile runs that publish HTML reports to GitLab Pages under per-commit
 # path prefixes (`bench-<slug>-<sha>` / `profile-<slug>-<sha>`). Including the short SHA in
 # the prefix and environment name means same-branch reruns no longer clobber each other —
@@ -296,7 +324,7 @@ pages:benchmarks:
 # Extends `.setup` for the Postgres-via-DIND wiring; the pg_stats collector and chr node
 # both need a reachable Postgres (POSTCHAIN_DB_URL points at the DIND service).
 pages:profile:
-  extends: .setup
+  extends: .local-chr-cache
   stage: benchmarks
   tags: [ saas-linux-medium-amd64 ]
   interruptible: true
@@ -317,6 +345,50 @@ pages:profile:
     expire_in: never
   environment:
     name: "profile/$CI_COMMIT_REF_SLUG/$CI_COMMIT_SHORT_SHA"
+    url: "$CI_PAGES_URL/report.html"
+  artifacts:
+    when: always
+    paths: [ public ]
+    expire_in: 30 days
+
+# Manual regression toolkit: clone every public Rell project and verify the local Rell build
+# compiles them. Deliberately not on the default pipeline — full runs take tens of minutes (one
+# bootstrap-once chromia-cli build + sequential per-project chr install). The public-only flavour
+# is wired here; `private.json` is gitignored and never reaches the runner.
+#
+# Extends `.setup` for git/bash/curl install and the GRADLE_FLAGS_WEAK profile via WEAK_RUNNER;
+# Postgres comes up unused but is cheap (~10s) and reusing `.setup` keeps memory tuning consistent
+# with the other Pages jobs.
+#
+# URL: https://<group>.gitlab.io/<project>/regression-<branch-slug>-<sha>/report.html
+# The reports index (performance/ci-index/) lists every regression deployment alongside the
+# existing benchmark and profile deployments. Expect a non-zero failure count — historical /
+# FT3-era projects are marked `expectedFailure:true` in public.json so they don't show up as
+# regressions, but the job is `allow_failure: true` regardless so a single compile blowup
+# doesn't red the pipeline.
+pages:regression:
+  extends: .local-chr-cache
+  stage: benchmarks
+  tags: [ saas-linux-medium-amd64 ]
+  interruptible: true
+  variables:
+    WEAK_RUNNER: "true"
+  rules:
+    - when: manual
+      allow_failure: true
+  needs: []
+  script:
+    - ./gradlew $GRADLE_FLAGS :regression:regressionPublic
+    - mkdir -p public
+    - cp -r regression/reports/. public/
+    - echo "Regression report - $CI_PAGES_URL/report.html"
+  pages:
+    path_prefix: "regression-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    # See `pages:benchmarks` for the rationale — keep historical regression reports reachable
+    # for cross-commit comparison rather than having them age out after 24h.
+    expire_in: never
+  environment:
+    name: "regression/$CI_COMMIT_REF_SLUG/$CI_COMMIT_SHORT_SHA"
     url: "$CI_PAGES_URL/report.html"
   artifacts:
     when: always

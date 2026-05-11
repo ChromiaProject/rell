@@ -1,0 +1,69 @@
+{
+  "_comment": [
+    "Projects in this file are clone-able anonymously and are run by the manual CI job `pages:regression`.",
+    "Each entry has to be a Rell project with valid chromia.yml",
+    "",
+    "Per-project schema:",
+    "  name             — workdir directory + report row label (required)",
+    "  url              — git repo URL (required)",
+    "  ref              — branch / tag / commit; omit for repo's default branch",
+    "  rellPath         — directory containing chromia.yml, relative to repo root (default: \".\")",
+    "  commands         — list of chr invocations to run sequentially; non-zero exit short-circuits.",
+    "                     Default: [[\"install\"], [\"build\"]]. Set [[\"install\"]] for libs that aren't meant to be",
+    "                     built standalone.",
+    "  expectedFailure  — known-bad against verified Rell builds",
+    "  notes            — free-form, rendered in the report"
+  ],
+  "projects": [
+    {
+      "name": "ft4-lib",
+      "url": "https://gitlab.com/chromaway/ft4-lib.git",
+      "ref": "development",
+      "notes": "Chromia FT4 token-fungibles library; reference codebase for the perf module's bench samples."
+    },
+    {
+      "name": "directory-chain",
+      "url": "https://gitlab.com/chromaway/core/directory-chain.git",
+      "notes": "Chromia directory service blockchain."
+    },
+    {
+      "name": "filechain",
+      "url": "https://gitlab.com/chromaway/filehub/filechain.git",
+      "notes": "FileHub on-chain storage blockchain."
+    },
+    {
+      "name": "filehub",
+      "url": "https://gitlab.com/chromaway/filehub/filehub.git",
+      "notes": "FileHub gateway."
+    },
+    {
+      "name": "postchain-eif",
+      "url": "https://gitlab.com/chromaway/postchain-eif.git",
+      "rellPath": "postchain-eif-rell/rell",
+      "notes": "Postchain Ethereum Interoperability Framework. chromia.yml lives under postchain-eif-rell/rell/."
+    },
+    {
+      "name": "auth-server-ft4",
+      "url": "https://bitbucket.org/chromawallet/auth-server-ft4.git",
+      "notes": "FT4-aware auth server."
+    },
+    {
+      "name": "ft3-lib",
+      "url": "https://bitbucket.org/chromawallet/ft3-lib.git",
+      "notes": "Predecessor of FT4. Currently passes install — left as-is to surface future regressions."
+    },
+    {
+      "name": "lib-pagination-utils",
+      "url": "https://bitbucket.org/chromawallet/lib-pagination-utils.git",
+      "rellPath": "rell",
+      "commands": [["install"]],
+      "notes": "Pagination helper library; chromia.yml lives under rell/. chromia.yml's `module: core` points at a non-existent module (modules live at src/core/pagination/), and that misconfiguration is present on every commit since the file was introduced — so `chr build` has never worked here. Run install only; the project is consumed as a library by downstream chains."
+    },
+    {
+      "name": "originals-governance",
+      "url": "https://bitbucket.org/chromawallet/originals-governance.git",
+      "rellPath": "rell",
+      "notes": "Chromia Originals governance dapp; chromia.yml lives under rell/."
+    }
+  ]
+}

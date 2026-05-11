@@ -13,6 +13,7 @@
 /postchain.pid
 /.test
 /chromia-cli-local/
+/chromia-cli-tools-local/
 /libdoc/
 .gradle/
 .kotlin/

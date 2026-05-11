@@ -27,6 +27,7 @@ apiValidation {
         "codegen-python", "codegen-mermaid", "rellgen",
         "rell-dokka-plugin",
         "performance",
+        "regression",
     )
 }
 

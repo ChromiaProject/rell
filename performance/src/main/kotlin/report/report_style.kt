@@ -13,12 +13,12 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.math.abs
 
-internal const val ACCENT_HEX = "#C1440E"
-internal const val INK_HEX = "#0F0F10"
+const val ACCENT_HEX = "#C1440E"
+const val INK_HEX = "#0F0F10"
 
-internal const val RELL_BLOB = "https://gitlab.com/chromaway/rell/-/blob/dev"
+const val RELL_BLOB = "https://gitlab.com/chromaway/rell/-/blob/dev"
 
-internal fun HEAD.linkWebFonts() {
+fun HEAD.linkWebFonts() {
     link(rel = "preconnect", href = "https://fonts.googleapis.com")
     link(rel = "preconnect", href = "https://fonts.gstatic.com") { attributes["crossorigin"] = "" }
 
@@ -29,11 +29,11 @@ internal fun HEAD.linkWebFonts() {
     )
 }
 
-internal fun HEAD.titleWithTimestamp(prefix: String, generatedAt: Instant) {
+fun HEAD.titleWithTimestamp(prefix: String, generatedAt: Instant) {
     title("$prefix — ${generatedAt.toHuman()}")
 }
 
-internal fun FlowContent.renderDocHead(title: String, metaPairs: List<Pair<String, String>> = emptyList()) {
+fun FlowContent.renderDocHead(title: String, metaPairs: List<Pair<String, String>> = emptyList()) {
     header(classes = "doc-head") {
         div(classes = "doc-head-inner") {
             h1(classes = "doc-title") { +title }
@@ -51,7 +51,7 @@ internal fun FlowContent.renderDocHead(title: String, metaPairs: List<Pair<Strin
     }
 }
 
-internal fun FlowContent.renderColophon(meta: String, generatedAt: Instant) = footer(classes = "colophon") {
+fun FlowContent.renderColophon(meta: String, generatedAt: Instant) = footer(classes = "colophon") {
     div(classes = "colophon-inner") {
         span { a(href = "https://gitlab.com/chromaway/rell") { +"chromaway/rell" } }
         span(classes = "colophon-spacer") {}
@@ -61,7 +61,7 @@ internal fun FlowContent.renderColophon(meta: String, generatedAt: Instant) = fo
     }
 }
 
-internal inline fun FlowContent.renderSection(
+inline fun FlowContent.renderSection(
     title: String,
     strap: String = "",
     crossinline body: FlowContent.() -> Unit,
@@ -73,7 +73,7 @@ internal inline fun FlowContent.renderSection(
     div(classes = "section-body") { body() }
 }
 
-internal fun FlowContent.metric(label: String, value: String, unit: String, sub: String) = div(classes = "metric") {
+fun FlowContent.metric(label: String, value: String, unit: String, sub: String) = div(classes = "metric") {
     div(classes = "metric-label") { +label }
     div(classes = "metric-value") {
         +value
@@ -82,13 +82,13 @@ internal fun FlowContent.metric(label: String, value: String, unit: String, sub:
     div(classes = "metric-sub") { +sub }
 }
 
-internal inline fun FlowContent.sysinfoBlock(title: String, crossinline body: DL.() -> Unit) =
+inline fun FlowContent.sysinfoBlock(title: String, crossinline body: DL.() -> Unit) =
     div(classes = "sysinfo-block") {
         h3 { +title }
         dl { body() }
     }
 
-internal fun DL.dlRow(key: String, value: String, mono: Boolean = false) {
+fun DL.dlRow(key: String, value: String, mono: Boolean = false) {
     dt { +key }
     dd {
         if (mono) attributes["class"] = "mono"
@@ -104,7 +104,7 @@ internal fun DL.dlRow(key: String, value: String, mono: Boolean = false) {
 // a JSON snapshot written at profile time; benchmark-side input is read from the live JVM
 // during HTML generation, since JMH's JSON does not carry vendor or host metadata.
 
-internal data class HostInfo(
+data class HostInfo(
     val hostname: String,
     val os: String,
     val arch: String,
@@ -135,7 +135,7 @@ internal data class HostInfo(
     }
 }
 
-internal data class JvmInfo(
+data class JvmInfo(
     val vendor: String,
     val vendorVersion: String,
     val runtimeVersion: String,
@@ -167,7 +167,7 @@ internal data class JvmInfo(
     fun vendorLabel(): String = if (vendorVersion.isBlank()) vendor else "$vendor $vendorVersion"
 }
 
-internal fun FlowContent.hostBlock(info: HostInfo) = sysinfoBlock("Host") {
+fun FlowContent.hostBlock(info: HostInfo) = sysinfoBlock("Host") {
     dlRow("Hostname", info.hostname)
     dlRow("OS", info.os)
     dlRow("Arch", info.arch)
@@ -175,19 +175,19 @@ internal fun FlowContent.hostBlock(info: HostInfo) = sysinfoBlock("Host") {
     dlRow("Memory", "%.1f GiB".formatRoot(info.memoryGiB))
 }
 
-internal fun FlowContent.jvmBlock(info: JvmInfo, pathLabel: String = "JAVA_HOME") = sysinfoBlock("JVM") {
+fun FlowContent.jvmBlock(info: JvmInfo, pathLabel: String = "JAVA_HOME") = sysinfoBlock("JVM") {
     dlRow("Vendor", info.vendorLabel())
     dlRow("Version", info.runtimeVersion, mono = true)
     dlRow("VM", "${info.vmName} ${info.vmVersion}".trim(), mono = true)
     dlRow(pathLabel, info.path, mono = true)
 }
 
-internal fun Instant.toHuman(): String =
+fun Instant.toHuman(): String =
     atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd · HH:mm z"))
 
-internal fun String.formatRoot(vararg args: Any?): String = format(Locale.ROOT, *args)
+fun String.formatRoot(vararg args: Any?): String = format(Locale.ROOT, *args)
 
-internal fun Long.humanBytes(): String {
+fun Long.humanBytes(): String {
     if (this == 0L) return "0 B"
 
     var v = this.toDouble()
@@ -204,7 +204,7 @@ internal fun Long.humanBytes(): String {
 
 @Suppress("CssUnresolvedCustomProperty", "CssUnusedSymbol", "CssNoGenericFontName")
 @Language("CSS")
-internal val BASE_CSS: String = """
+val BASE_CSS: String = """
 :root {
   --ink:        #0F0F10;
   --ink-soft:   #2B2B2F;

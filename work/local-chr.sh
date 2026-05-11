@@ -17,6 +17,14 @@ CHR_REPO_DIR="./chromia-cli-local"
 CHR_EXECUTABLE="$CHR_REPO_DIR/chromia-cli/target/chromia-cli-dev-dist/bin/chr"
 GIT_BRANCH="update-rell-0.16.0-snapshot"
 
+# chromia-cli-tools ships chromia-build-tools, which chromia-cli consumes from the
+# local Maven repo. The branch tracked here carries the Rell 0.16 API fixes that the
+# released 0.11.3 jar does not have.
+CHR_TOOLS_REPO_URL="https://gitlab.com/chromaway/core-tools/chromia-cli-tools.git"
+CHR_TOOLS_DIR="./chromia-cli-tools-local"
+CHR_TOOLS_BRANCH="update-rell-0.16.0-snapshot"
+CHR_TOOLS_VERSION="dev"  # value of <revision> in chromia-cli-tools/pom.xml
+
 # Parse arguments for --rebuild and --skip-publish
 REBUILD=false
 SKIP_PUBLISH=false
@@ -32,23 +40,33 @@ for arg in "$@"; do
     fi
 done
 
-setup_repository() {
-    if [ -d "$CHR_REPO_DIR/.git" ]; then
-        echo "Updating chromia-cli repository to latest $GIT_BRANCH..."
+sync_repo() {
+    local repo_dir="$1"
+    local repo_url="$2"
+    local branch="$3"
+    local label="$4"
+
+    if [ -d "$repo_dir/.git" ]; then
+        echo "Updating $label repository to latest $branch..."
         REPO_ROOT=$(pwd)
-        cd "$CHR_REPO_DIR"
-        git fetch --depth 1 origin "$GIT_BRANCH"
-        git checkout "$GIT_BRANCH"
-        git reset --hard "origin/$GIT_BRANCH"
+        cd "$repo_dir"
+        git fetch --depth 1 origin "$branch"
+        git checkout "$branch"
+        git reset --hard "origin/$branch"
         cd "$REPO_ROOT"
     else
-        if [ -d "$CHR_REPO_DIR" ]; then
-            echo "Existing $CHR_REPO_DIR has no .git; removing for fresh clone..."
-            rm -rf "$CHR_REPO_DIR"
+        if [ -d "$repo_dir" ]; then
+            echo "Existing $repo_dir has no .git; removing for fresh clone..."
+            rm -rf "$repo_dir"
         fi
-        echo "Cloning chromia-cli repository ($GIT_BRANCH)..."
-        git clone --depth 1 --branch "$GIT_BRANCH" "$CHR_REPO_URL" "$CHR_REPO_DIR"
+        echo "Cloning $label repository ($branch)..."
+        git clone --depth 1 --branch "$branch" "$repo_url" "$repo_dir"
     fi
+}
+
+setup_repository() {
+    sync_repo "$CHR_REPO_DIR" "$CHR_REPO_URL" "$GIT_BRANCH" "chromia-cli"
+    sync_repo "$CHR_TOOLS_DIR" "$CHR_TOOLS_REPO_URL" "$CHR_TOOLS_BRANCH" "chromia-cli-tools"
 }
 
 update_rell_version() {
@@ -57,10 +75,25 @@ update_rell_version() {
     RELL_VERSION=$(./gradlew -q properties | grep "^version:" | awk '{print $2}')
     echo "Local Rell version: $RELL_VERSION"
 
-    # Update chromia-cli with the correct Rell version (core + dokka plugin)
+    # Update chromia-cli with the correct Rell version (core + dokka plugin) and point it
+    # at the locally-installed chromia-cli-tools snapshot.
     cd "$CHR_REPO_DIR"
     ./mvnw versions:set-property -Dproperty=rell.version -DnewVersion="$RELL_VERSION"
     ./mvnw versions:set-property -Dproperty=rell.dokka.version -DnewVersion="$RELL_VERSION"
+    ./mvnw versions:set-property -Dproperty=chromia.cli.tools.version -DnewVersion="$CHR_TOOLS_VERSION"
+    cd "$REPO_ROOT"
+}
+
+install_chromia_cli_tools() {
+    REPO_ROOT=$(pwd)
+    cd "$CHR_TOOLS_DIR"
+
+    # Sync Rell version inside chromia-cli-tools so chromia-build-tools compiles against
+    # the same snapshot we just published.
+    ./mvnw versions:set-property -Dproperty=rell.version -DnewVersion="$RELL_VERSION"
+
+    echo "Installing chromia-cli-tools ($CHR_TOOLS_VERSION) to local Maven..."
+    ./mvnw -DskipTests -DskipITs install
     cd "$REPO_ROOT"
 }
 
@@ -113,8 +146,9 @@ if ! command -v java &> /dev/null; then
 fi
 
 if [ "$REBUILD" = true ]; then
-    echo "Rebuild option detected. Removing existing chromia-cli..."
+    echo "Rebuild option detected. Removing existing chromia-cli and chromia-cli-tools..."
     rm -rf "$CHR_REPO_DIR"
+    rm -rf "$CHR_TOOLS_DIR"
 fi
 
 echo "Setting up repository..."
@@ -127,8 +161,9 @@ if [ "$SKIP_PUBLISH" != true ]; then
     # Clean first to guarantee a fresh build — Gradle's build cache can miss source changes
     echo "Publishing Rell artifacts to local Maven with Gradle..."
     ./gradlew publishToMavenLocal
+    install_chromia_cli_tools
 else
-    echo "Skipping publishToMavenLocal (requested)"
+    echo "Skipping publishToMavenLocal + chromia-cli-tools install (requested)"
 fi
 
 if [ ! -x "$CHR_EXECUTABLE" ]; then

@@ -62,3 +62,4 @@ include("rell-dokka-plugin")
 include("rell-base:rr-serialization")
 
 include("performance")
+include("regression")
