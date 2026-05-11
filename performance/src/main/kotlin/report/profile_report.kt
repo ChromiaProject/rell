@@ -475,23 +475,14 @@ private fun FlowContent.renderSystemInfo(sysinfo: ObjectNode?) {
     val versions = sysinfo.get("versions") as? ObjectNode
     val asProfiler = sysinfo.get("async_profiler")?.asText("—") ?: "—"
     div(classes = "sysinfo-grid") {
-        div(classes = "sysinfo-block") {
-            h3 { +"Host" }
-            dl {
-                dlRow("Hostname", sysinfo.get("hostname")?.asText("—") ?: "—")
-                dlRow("OS", sysinfo.get("os")?.asText("—") ?: "—")
-                dlRow("Arch", sysinfo.get("arch")?.asText("—") ?: "—")
-                dlRow("CPUs", (sysinfo.get("cpus")?.asInt(0) ?: 0).toString())
-                dlRow("Memory", "${sysinfo.get("memory_gib")?.asDouble(0.0) ?: 0} GiB")
-            }
-        }
-        div(classes = "sysinfo-block") {
-            h3 { +"JDK" }
-            dl {
-                dlRow("JAVA_HOME", sysinfo.get("java_home")?.asText("—") ?: "—", mono = true)
-                dlRow("Version", sysinfo.get("java_version")?.asText("—") ?: "—", mono = true)
-                dlRow("async-profiler", asProfiler, mono = true)
-            }
+        hostBlock(HostInfo.fromJson(sysinfo))
+        sysinfoBlock("JVM") {
+            val jvm = JvmInfo.fromJson(sysinfo)
+            dlRow("Vendor", jvm.vendorLabel())
+            dlRow("Version", jvm.runtimeVersion, mono = true)
+            dlRow("VM", "${jvm.vmName} ${jvm.vmVersion}".trim(), mono = true)
+            dlRow("JAVA_HOME", jvm.path, mono = true)
+            dlRow("async-profiler", asProfiler, mono = true)
         }
         div(classes = "sysinfo-block") {
             h3(classes = "cmd") {

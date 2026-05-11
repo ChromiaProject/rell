@@ -3,8 +3,10 @@
  */
 package net.postchain.rell.performance.report
 
+import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.html.*
 import org.intellij.lang.annotations.Language
+import java.net.InetAddress
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -92,6 +94,92 @@ internal fun DL.dlRow(key: String, value: String, mono: Boolean = false) {
         if (mono) attributes["class"] = "mono"
         +value
     }
+}
+
+// ─── Shared system-info model ────────────────────────────────────────────────────────────
+//
+// Both the profiler and benchmark reports render a Host + JVM pair, plus a report-specific
+// third block (chr versions / JMH harness). HostInfo and JvmInfo capture the shared fields
+// so both reports display identical labels and ordering. Profiler-side input comes from
+// a JSON snapshot written at profile time; benchmark-side input is read from the live JVM
+// during HTML generation, since JMH's JSON does not carry vendor or host metadata.
+
+internal data class HostInfo(
+    val hostname: String,
+    val os: String,
+    val arch: String,
+    val cpus: Int,
+    val memoryGiB: Double,
+) {
+    companion object {
+        fun fromSystem(): HostInfo {
+            val osBean = java.lang.management.ManagementFactory.getOperatingSystemMXBean()
+            val totalBytes = (osBean as? com.sun.management.OperatingSystemMXBean)?.totalMemorySize
+                ?: Runtime.getRuntime().maxMemory()
+            return HostInfo(
+                hostname = runCatching { InetAddress.getLocalHost().hostName }.getOrDefault("—"),
+                os = "${System.getProperty("os.name")} ${System.getProperty("os.version")}",
+                arch = System.getProperty("os.arch") ?: "—",
+                cpus = Runtime.getRuntime().availableProcessors(),
+                memoryGiB = totalBytes / (1024.0 * 1024 * 1024),
+            )
+        }
+
+        fun fromJson(node: JsonNode?): HostInfo = HostInfo(
+            hostname = node?.get("hostname")?.asText("—") ?: "—",
+            os = node?.get("os")?.asText("—") ?: "—",
+            arch = node?.get("arch")?.asText("—") ?: "—",
+            cpus = node?.get("cpus")?.asInt(0) ?: 0,
+            memoryGiB = node?.get("memory_gib")?.asDouble(0.0) ?: 0.0,
+        )
+    }
+}
+
+internal data class JvmInfo(
+    val vendor: String,
+    val vendorVersion: String,
+    val runtimeVersion: String,
+    val vmName: String,
+    val vmVersion: String,
+    val path: String,
+) {
+    companion object {
+        fun fromSystem(jvmPath: String? = null): JvmInfo = JvmInfo(
+            vendor = System.getProperty("java.vendor") ?: "—",
+            vendorVersion = System.getProperty("java.vendor.version") ?: "",
+            runtimeVersion = System.getProperty("java.runtime.version") ?: "—",
+            vmName = System.getProperty("java.vm.name") ?: "—",
+            vmVersion = System.getProperty("java.vm.version") ?: "—",
+            path = jvmPath ?: System.getProperty("java.home") ?: "—",
+        )
+
+        fun fromJson(node: JsonNode?): JvmInfo = JvmInfo(
+            vendor = node?.get("java_vendor")?.asText("—") ?: "—",
+            vendorVersion = node?.get("java_vendor_version")?.asText("") ?: "",
+            runtimeVersion = node?.get("java_version")?.asText("—") ?: "—",
+            vmName = node?.get("java_vm_name")?.asText("—") ?: "—",
+            vmVersion = node?.get("java_vm_version")?.asText("—") ?: "—",
+            path = node?.get("java_home")?.asText("—") ?: "—",
+        )
+    }
+
+    /** "Eclipse Adoptium 21.0.5+11" or just "Eclipse Adoptium" when vendor.version is blank. */
+    fun vendorLabel(): String = if (vendorVersion.isBlank()) vendor else "$vendor $vendorVersion"
+}
+
+internal fun FlowContent.hostBlock(info: HostInfo) = sysinfoBlock("Host") {
+    dlRow("Hostname", info.hostname)
+    dlRow("OS", info.os)
+    dlRow("Arch", info.arch)
+    dlRow("CPUs", info.cpus.toString())
+    dlRow("Memory", "%.1f GiB".formatRoot(info.memoryGiB))
+}
+
+internal fun FlowContent.jvmBlock(info: JvmInfo, pathLabel: String = "JAVA_HOME") = sysinfoBlock("JVM") {
+    dlRow("Vendor", info.vendorLabel())
+    dlRow("Version", info.runtimeVersion, mono = true)
+    dlRow("VM", "${info.vmName} ${info.vmVersion}".trim(), mono = true)
+    dlRow(pathLabel, info.path, mono = true)
 }
 
 internal fun Instant.toHuman(): String =

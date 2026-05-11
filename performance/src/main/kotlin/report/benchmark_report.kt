@@ -272,13 +272,20 @@ private fun FlowContent.renderGroup(benchmarkClass: String, results: List<JmhRes
 }
 
 private fun FlowContent.renderEnvironment(head: JmhResult) = renderSection("environment") {
+    // Host + JVM info come from System.getProperty / InetAddress at report-generation time.
+    // The benchmarkHtmlReport task pins to JDK 21 via javaToolchains, the same toolchain that
+    // runs mainBenchmark — so vendor/host read here reflect the JVM that actually executed JMH.
+    // JMH's JSON carries jvm path, jdkVersion, vmName, vmVersion but no vendor, hence the
+    // System.getProperty path for vendor and the JMH-JSON path for the version strings.
+    val host = HostInfo.fromSystem()
+    val jvm = JvmInfo.fromSystem(jvmPath = head.jvm).copy(
+        runtimeVersion = head.jdkVersion ?: System.getProperty("java.runtime.version") ?: "—",
+        vmName = head.vmName ?: System.getProperty("java.vm.name") ?: "—",
+        vmVersion = head.vmVersion ?: System.getProperty("java.vm.version") ?: "—",
+    )
     div(classes = "sysinfo-grid") {
-        sysinfoBlock("JVM") {
-            dlRow("Name", head.vmName ?: "—")
-            dlRow("Version", head.vmVersion ?: "—")
-            dlRow("JDK", head.jdkVersion ?: "—")
-            dlRow("Path", head.jvm ?: "—", mono = true)
-        }
+        hostBlock(host)
+        jvmBlock(jvm, pathLabel = "Path")
         sysinfoBlock("Harness") {
             dlRow("JMH", head.jmhVersion ?: "—")
             dlRow("Mode", head.mode.ifBlank { "—" })

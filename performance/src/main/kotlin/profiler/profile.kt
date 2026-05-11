@@ -292,6 +292,10 @@ class ProfileCommand : CliktCommand(name = "profile") {
         info.put("memory_gib", "%.1f".format(Locale.ROOT, maxMemBytes / (1024.0 * 1024 * 1024)).toDouble())
         info.put("java_home", javaHome ?: "(system default)")
         info.put("java_version", System.getProperty("java.runtime.version") ?: "unknown")
+        info.put("java_vendor", System.getProperty("java.vendor") ?: "unknown")
+        info.put("java_vendor_version", System.getProperty("java.vendor.version") ?: "")
+        info.put("java_vm_name", System.getProperty("java.vm.name") ?: "unknown")
+        info.put("java_vm_version", System.getProperty("java.vm.version") ?: "unknown")
         info.put("async_profiler", asprofAgentPath()?.fileName?.toString() ?: "unknown")
         val versionsNode = nf.objectNode()
         versions.forEach { (k, v) -> versionsNode.put(k, v) }
