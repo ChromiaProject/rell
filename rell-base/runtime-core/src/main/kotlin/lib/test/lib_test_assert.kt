@@ -60,7 +60,7 @@ internal object Lib_Test_Assert {
                 param("illegal", type = "T", comment = "the unexpected value")
                 body { actualValue, expectedValue ->
                     val equalsValue = evaluateBinaryOp("R_BinaryOp_Eq", actualValue, expectedValue)
-                    if (equalsValue.asBoolean()) {
+                    if ((equalsValue as Rt_BooleanValue).value) {
                         val code = "assert_not_equals:${actualValue.strCode()}"
                         throw Rt_AssertError.exception(code, "expected not <${actualValue.str(Rt_StrFormat.V2)}>")
                     }
@@ -140,7 +140,7 @@ internal object Lib_Test_Assert {
                 generic("T")
                 param("fn", type = "() -> T", comment = "the function value to invoke")
                 bodyContext { _, arg ->
-                    val fn = arg.asFunction()
+                    val fn = (arg as Rt_FunctionValue)
                     calcAssertFails(fn, null)
                 }
             }
@@ -174,8 +174,8 @@ internal object Lib_Test_Assert {
                 }
                 param("fn", type = "() -> T", comment = "the function value to invoke")
                 bodyContext { _, arg1, arg2 ->
-                    val expected = arg1.asString()
-                    val fn = arg2.asFunction()
+                    val expected = (arg1 as Rt_TextValue).value
+                    val fn = (arg2 as Rt_FunctionValue)
                     calcAssertFails(fn, expected)
                 }
             }
@@ -273,7 +273,7 @@ internal object Lib_Test_Assert {
         actual: Rt_Value,
     ): Rt_Value {
         val equalsValue = evaluateBinaryOp("R_BinaryOp_Eq", actual, expected)
-        if (!equalsValue.asBoolean()) {
+        if (!(equalsValue as Rt_BooleanValue).value) {
             val code = "$fn:${actual.strCode()}:${expected.strCode()}"
             val expectedStr = Rt_AssertEqualsError.valueToStr(expected, 500)
             val actualStr = Rt_AssertEqualsError.valueToStr(actual, 500)
@@ -283,7 +283,7 @@ internal object Lib_Test_Assert {
     }
 
     private fun calcAssertBoolean(expected: Boolean, arg: Rt_Value): Rt_Value {
-        val v = arg.asBoolean()
+        val v = (arg as Rt_BooleanValue).value
         if (v != expected) {
             throw Rt_AssertError.exception("assert_boolean:$expected", "expected $expected")
         }

@@ -12,13 +12,7 @@ import net.postchain.rell.base.model.DefinitionId
 import net.postchain.rell.base.model.ErrorPos
 import net.postchain.rell.base.model.FilePos
 import net.postchain.rell.base.model.rr.*
-import net.postchain.rell.base.runtime.Rt_BooleanValue
-import net.postchain.rell.base.runtime.Rt_DecimalValue
-import net.postchain.rell.base.runtime.Rt_IntValue
-import net.postchain.rell.base.runtime.Rt_TextValue
-import net.postchain.rell.base.runtime.Rt_UnitValue
-import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.runtime.Rt_ValueClass
+import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.truffle.nodes.*
 import net.postchain.rell.base.runtime.truffle.values.Tf_Int128ScaleDecimal
 import net.postchain.rell.base.runtime.truffle.values.Tf_LongScaleDecimal
@@ -574,7 +568,7 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
     /**
      * Pick a [Tf_BinaryNode.Generic] variant typed by result. The typed variants override
      * `executeLong`/`executeBoolean` so callers reading the result through the typed path
-     * skip the default `execute().asInteger()` / `asBoolean()` chain — eliminating the
+     * skip the default `(execute() as Rt_IntValue).value` / `asBoolean()` chain — eliminating the
      * `typeError` dead branch from PE-traced graphs.
      */
     private fun makeBinaryGeneric(

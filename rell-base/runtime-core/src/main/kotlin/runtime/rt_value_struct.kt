@@ -120,8 +120,6 @@ interface Rt_StructValue: Rt_Value {
         override val name
             get() = "struct"
 
-        override val klass = Rt_StructValue::class
-
         /**
          * Cross-leaf structural equality: two struct values are equal iff their effective type name
          * matches and all attributes are pairwise equal. Hash by `type.name` (not `type.hashCode()`)

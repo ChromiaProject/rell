@@ -46,9 +46,6 @@ class Rt_VirtualMapValue(
     companion object: Rt_ValueClass<Rt_VirtualMapValue> {
         override val name
             get() = "virtual_map"
-
-        override val klass = Rt_VirtualMapValue::class
-
         fun gtvConversion(type: R_VirtualMapType): Rt_GtvCompatibleValueClass<*> = gtvConversionOf { ctx, gtv ->
             decodeVirtualMap(ctx, type, deserializeVirtual(ctx, gtv))
         }

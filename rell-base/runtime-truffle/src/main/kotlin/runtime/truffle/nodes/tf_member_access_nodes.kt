@@ -73,7 +73,7 @@ internal sealed class Tf_MemberAccessNode: Tf_ExprNode() {
             if (somProperty != null && baseValue is Tf_DynStruct) {
                 return baseValue.get(attrIndex)
             }
-            return baseValue.asStruct().get(attrIndex)
+            return (baseValue as Rt_StructValue).get(attrIndex)
         }
 
         /**
@@ -103,7 +103,7 @@ internal sealed class Tf_MemberAccessNode: Tf_ExprNode() {
                     // field load against the generated SOM class — no Rt_IntValue allocation.
                     return prop.getLong(baseValue)
                 }
-                return Tf_Unchecked.cast<Rt_IntValue>(baseValue.asStruct().get(attrIndex)).value
+                return Tf_Unchecked.cast<Rt_IntValue>((baseValue as Rt_StructValue).get(attrIndex)).value
             }
         }
 
@@ -119,7 +119,7 @@ internal sealed class Tf_MemberAccessNode: Tf_ExprNode() {
                 if (prop != null && baseValue is Tf_DynStruct) {
                     return prop.getBoolean(baseValue)
                 }
-                return Tf_Unchecked.cast<Rt_BooleanValue>(baseValue.asStruct().get(attrIndex)).value
+                return Tf_Unchecked.cast<Rt_BooleanValue>((baseValue as Rt_StructValue).get(attrIndex)).value
             }
         }
     }
@@ -132,7 +132,7 @@ internal sealed class Tf_MemberAccessNode: Tf_ExprNode() {
     ): Tf_MemberAccessNode() {
         override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
-            return baseValue.asTuple()[attrIndex]
+            return (baseValue as Rt_TupleValue).elements[attrIndex]
         }
 
         internal class IntAttr(
@@ -161,7 +161,7 @@ internal sealed class Tf_MemberAccessNode: Tf_ExprNode() {
     ): Tf_MemberAccessNode() {
         override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
-            return baseValue.asVirtualTuple().get(fieldIndex)
+            return (baseValue as Rt_VirtualTupleValue).get(fieldIndex)
         }
     }
 
@@ -172,7 +172,7 @@ internal sealed class Tf_MemberAccessNode: Tf_ExprNode() {
         @field:CompilationFinal private val safe: Boolean,
     ): Tf_MemberAccessNode() {
         override fun execute(frame: VirtualFrame): Rt_Value =
-            evaluateBase(frame, base, safe)?.asVirtualStruct()?.get(attrDefIndex) ?: Rt_NullValue
+            (evaluateBase(frame, base, safe) as? Rt_VirtualStructValue)?.get(attrDefIndex) ?: Rt_NullValue
     }
 
     // -------------------------------------------------------------------------

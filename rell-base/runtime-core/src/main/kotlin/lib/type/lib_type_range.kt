@@ -9,9 +9,9 @@ import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_RangeValue
 import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.runtime.asInteger
 
 object Lib_Type_Range {
     val NAMESPACE = Ld_NamespaceDsl.make {
@@ -42,7 +42,7 @@ object Lib_Type_Range {
                 """)
                 param("end", "integer", comment = "end value (exclusive) for this range")
                 body { a ->
-                    calcRange(0, a.asInteger(), 1)
+                    calcRange(0, (a as Rt_IntValue).value, 1)
                 }
             }
 
@@ -72,7 +72,7 @@ object Lib_Type_Range {
                 param("end", "integer", comment = "end value for this range (exclusive)")
                 param("step", "integer", arity = L_ParamArity.ZERO_ONE, comment = "step size for this range")
                 bodyOpt2 { a, b, c ->
-                    calcRange(a.asInteger(), b.asInteger(), c?.asInteger() ?: 1)
+                    calcRange((a as Rt_IntValue).value, (b as Rt_IntValue).value, (c as? Rt_IntValue)?.value ?: 1)
                 }
             }
         }

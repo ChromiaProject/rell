@@ -5,12 +5,7 @@
 package net.postchain.rell.toolbox.seeder.schema
 
 import assertk.assertThat
-import assertk.assertions.containsExactly
-import assertk.assertions.containsExactlyInAnyOrder
-import assertk.assertions.isEmpty
-import assertk.assertions.isEqualTo
-import assertk.assertions.isInstanceOf
-import assertk.assertions.isNotNull
+import assertk.assertions.*
 import net.postchain.rell.base.model.rr.RR_Type
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

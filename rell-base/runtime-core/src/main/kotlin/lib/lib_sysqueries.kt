@@ -11,11 +11,7 @@ import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.RellVersions
-import net.postchain.rell.base.utils.associateByToImmMap
-import net.postchain.rell.base.utils.checkEquals
-import net.postchain.rell.base.utils.immListOf
+import net.postchain.rell.base.utils.*
 
 // Not a normal library, only provides queries that are not bound to a namespace, but are accessible via their mount names.
 
@@ -87,15 +83,15 @@ private object SysQueryFns {
 
         override fun call(ctx: Rt_CallContext, args: List<Rt_Value>): Rt_Value {
             checkEquals(args.size, 2)
-            val kindsArg = args[0].asList().map { it.asString() }.toSet()
-            val modulesArg = args[1].asList().map { ModuleName.ofOpt(it.asString()) }.toSet()
+            val kindsArg = (args[0] as Rt_ListValue).elements.map { (it as Rt_TextValue).value }.toSet()
+            val modulesArg = (args[1] as Rt_ListValue).elements.map { ModuleName.ofOpt((it as Rt_TextValue).value) }.toSet()
             if (kindsArg.isNotEmpty() && kindsArg.any { it !in ALLOWED_KINDS }) {
                 val invalidKinds = kindsArg.filterNot { it in ALLOWED_KINDS }
                 throw Rt_Exception.common("rell.get_mount_names:bad_kind:${invalidKinds.joinToString(",")}",
                     "Invalid kind(s): $invalidKinds. Supported kinds are $ALLOWED_KINDS")
             }
             if (modulesArg.isNotEmpty() && modulesArg.any { it == null }) {
-                val invalidModules = args[1].asList().filter { ModuleName.ofOpt(it.asString()) == null }.map { it.str() }
+                val invalidModules = (args[1] as Rt_ListValue).elements.filter { ModuleName.ofOpt((it as Rt_TextValue).value) == null }.map { it.str() }
                 throw Rt_Exception.common("rell.get_mount_names:bad_module:${invalidModules.joinToString(",")}",
                     "Invalid module name(s): $invalidModules.")
             }
@@ -164,7 +160,7 @@ private object SysQueryFns {
 
         private fun validateArgs(args: List<Rt_Value>): Pair<Set<ModuleName>, Set<String>> {
             checkEquals(args.size, 1)
-            val modules = args[0].asList().map { it.asString() to ModuleName.ofOpt(it.asString()) }
+            val modules = (args[0] as Rt_ListValue).elements.map { val s = (it as Rt_TextValue).value; s to ModuleName.ofOpt(s) }
 
             val validModules = modules.mapNotNull { it.second }.toSet()
             val invalidModules = modules.filter { it.second == null }.map { it.first }.toSet()

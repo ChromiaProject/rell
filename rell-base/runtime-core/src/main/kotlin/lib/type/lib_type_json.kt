@@ -47,7 +47,7 @@ object Lib_Type_Json {
                 param("value", type = "text", comment = "the JSON text to decode")
                 dbFunctionCast("json", "JSONB")
                 body { value ->
-                    val jsonString = value.asString()
+                    val jsonString = (value as Rt_TextValue).value
                     val jsonValue = try {
                         Rt_JsonValue.parse(jsonString)
                     } catch (_: IllegalArgumentException) {
@@ -68,7 +68,7 @@ object Lib_Type_Json {
                 """)
                 alias("str", since = SINCE0)
                 dbFunctionCast("json.to_text", "TEXT")
-                body { json -> Rt_TextValue.get(json.asJson().str) }
+                body { json -> Rt_TextValue.get((json as Rt_JsonValue).str) }
             }
 
             function("get", result = "json", pure = true, since = "0.14.16") {
@@ -82,8 +82,8 @@ object Lib_Type_Json {
                 param("index", type = "integer", comment = "the array index")
                 dbFunctionSimple("json.get", SqlConstants.FN_JSON_ARRAY_GET)
                 body { array, index ->
-                    val arrayValue = array.asJson().node
-                    val indexValue = index.asInteger().toIntExact()
+                    val arrayValue = (array as Rt_JsonValue).node
+                    val indexValue = (index as Rt_IntValue).value.toIntExact()
                     when (val result = JsonUtils.arrayGet(arrayValue, indexValue, fnSimpleName)) {
                         is JsonUtils.Success -> Rt_JsonValue(result.value)
                         is JsonUtils.Failure -> throw Rt_Exception.common(result.codeMsg.code, result.codeMsg.msg)
@@ -102,8 +102,8 @@ object Lib_Type_Json {
                 param("key", type = "text", comment = "the object key")
                 dbFunctionSimple("json.get", SqlConstants.FN_JSON_OBJECT_GET)
                 body { obj, key ->
-                    val objValue = obj.asJson().node
-                    val keyValue = key.asString()
+                    val objValue = (obj as Rt_JsonValue).node
+                    val keyValue = (key as Rt_TextValue).value
                     when (val result = JsonUtils.objectGet(objValue, keyValue, fnSimpleName)) {
                         is JsonUtils.Success -> Rt_JsonValue(result.value)
                         is JsonUtils.Failure -> throw Rt_Exception.common(result.codeMsg.code, result.codeMsg.msg)
@@ -119,8 +119,8 @@ object Lib_Type_Json {
                 param("index", type = "integer", comment = "the array index")
                 dbFunctionSimple("json.get_or_null", SqlConstants.FN_JSON_ARRAY_GET_OR_NULL)
                 body { array, index ->
-                    val arrayValue = array.asJson().node
-                    val indexValue = index.asInteger().toIntExact()
+                    val arrayValue = (array as Rt_JsonValue).node
+                    val indexValue = (index as Rt_IntValue).value.toIntExact()
                     when (val result = JsonUtils.arrayGet(arrayValue, indexValue, fnSimpleName)) {
                         is JsonUtils.Success -> Rt_JsonValue(result.value)
                         else -> Rt_NullValue
@@ -136,8 +136,8 @@ object Lib_Type_Json {
                 param("key", type = "text", comment = "the object key")
                 dbFunctionTemplate("json.get_or_null", 2, "(#0 -> #1)")
                 body { obj, key ->
-                    val objValue = obj.asJson().node
-                    val keyValue = key.asString()
+                    val objValue = (obj as Rt_JsonValue).node
+                    val keyValue = (key as Rt_TextValue).value
                     when (val result = JsonUtils.objectGet(objValue, keyValue, fnSimpleName)) {
                         is JsonUtils.Success -> Rt_JsonValue(result.value)
                         else -> Rt_NullValue
@@ -319,7 +319,7 @@ object Lib_Type_Json {
                 """)
                 dbFunctionSimple("json.size", SqlConstants.FN_JSON_SIZE)
                 body { json ->
-                    val jsonNode = json.asJson().node
+                    val jsonNode = (json as Rt_JsonValue).node
                     if (jsonNode.isContainerNode) {
                         Rt_IntValue.get(jsonNode.size().toLong())
                     } else {
@@ -336,7 +336,7 @@ object Lib_Type_Json {
                     @throws exception if this JSON value is not an object
                 """)
                 bodyContext { ctx, json ->
-                    val jsonNode = json.asJson().node
+                    val jsonNode = (json as Rt_JsonValue).node
                     if (jsonNode.isObject) {
                         val set: MutableSet<Rt_Value> = mutableSetOf()
                         for (name in jsonNode.fieldNames()) {
@@ -362,7 +362,7 @@ private fun asTypeBody(
     getType: (JsonNode) -> Rt_Value,
 ): Ld_BodyResult = with(m) {
     body { json ->
-        val jsonValue = json.asJson().node
+        val jsonValue = (json as Rt_JsonValue).node
         when {
             checkType(jsonValue) -> getType(jsonValue)
             nullOnError -> Rt_NullValue
@@ -378,7 +378,7 @@ private fun asTypeBody(
 }
 
 private fun isTypeBody(m: Ld_FunctionDsl, checkType: (JsonNode) -> Boolean): Ld_BodyResult = with(m) {
-    body { json -> Rt_BooleanValue.get(checkType(json.asJson().node)) }
+    body { json -> Rt_BooleanValue.get(checkType((json as Rt_JsonValue).node)) }
 }
 
 object JsonUtils {

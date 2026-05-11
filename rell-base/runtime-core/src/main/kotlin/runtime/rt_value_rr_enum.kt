@@ -24,7 +24,7 @@ import net.postchain.rell.base.utils.toIntExact
  */
 class Rt_RR_EnumValue(
     override val type: Rt_ValueClass<*>,
-    internal val rrAttr: RR_EnumAttr,
+    val rrAttr: RR_EnumAttr,
 ): Rt_Value {
     private val typeName: String = type.name
 
@@ -46,9 +46,6 @@ class Rt_RR_EnumValue(
     companion object: Rt_ValueClass<Rt_RR_EnumValue> {
         override val name
             get() = "enum"
-
-        override val klass = Rt_RR_EnumValue::class
-
         fun gtvConversion(enum: R_EnumDefinition): Rt_GtvCompatibleValueClass<*> = gtvConversion(
             typeName = enum.type.strCode(),
             rtByName = { n -> enum.attr(n)?.let { enum.rtGetValue(it) } },

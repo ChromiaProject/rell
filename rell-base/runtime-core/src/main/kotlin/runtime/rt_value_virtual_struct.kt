@@ -52,9 +52,6 @@ class Rt_VirtualStructValue(
     companion object: Rt_ValueClass<Rt_VirtualStructValue> {
         override val name
             get() = "virtual_struct"
-
-        override val klass = Rt_VirtualStructValue::class
-
         fun gtvConversion(type: R_VirtualStructType): Rt_GtvCompatibleValueClass<*> = gtvConversionOf { ctx, gtv ->
             decodeVirtualStruct(ctx, type, deserializeVirtual(ctx, gtv))
         }

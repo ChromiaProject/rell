@@ -12,24 +12,8 @@ import com.oracle.truffle.api.nodes.Node
 import net.postchain.rell.base.model.ErrorPos
 import net.postchain.rell.base.model.rr.RR_Expr
 import net.postchain.rell.base.model.rr.RR_Statement
-import net.postchain.rell.base.runtime.Rt_CallFrame
-import net.postchain.rell.base.runtime.Rt_DefinitionContext
-import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.runtime.Rt_StatementResult
-import net.postchain.rell.base.runtime.Rt_UnitValue
-import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.runtime.asBoolean
-import net.postchain.rell.base.runtime.asInteger
-import net.postchain.rell.base.runtime.truffle.STATUS_BREAK
-import net.postchain.rell.base.runtime.truffle.STATUS_CONTINUE
-import net.postchain.rell.base.runtime.truffle.STATUS_FALLTHROUGH
-import net.postchain.rell.base.runtime.truffle.STATUS_RETURN
-import net.postchain.rell.base.runtime.truffle.TF_RETURN_VALUE_AUX_SLOT
-import net.postchain.rell.base.runtime.truffle.TF_RT_FRAME_AUX_SLOT
-import net.postchain.rell.base.runtime.truffle.Tf_Backend
-import net.postchain.rell.base.runtime.truffle.Tf_FrameInfo
-import net.postchain.rell.base.runtime.truffle.Tf_Unchecked
-import net.postchain.rell.base.runtime.truffle.Tf_VirtualFrameStorage
+import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.truffle.*
 
 /**
  * Bridge from a Truffle [VirtualFrame] back to a legacy [Rt_CallFrame] view, lazy-allocating
@@ -185,7 +169,7 @@ internal abstract class Tf_ExprNode : Node() {
      * the type is provably `integer` (e.g. the operands of an integer arithmetic node), so
      * the unbox-on-default path is a safety net rather than a normal occurrence.
      */
-    open fun executeLong(frame: VirtualFrame): Long = execute(frame).asInteger()
+    open fun executeLong(frame: VirtualFrame): Long = (execute(frame) as Rt_IntValue).value
 
     /**
      * Typed boolean execute path. Same idea as [executeLong] — control-flow conditions
@@ -193,7 +177,7 @@ internal abstract class Tf_ExprNode : Node() {
      * intermediate [net.postchain.rell.base.runtime.Rt_BooleanValue] when the operand is a comparison node, a boolean
      * constant, etc.
      */
-    open fun executeBoolean(frame: VirtualFrame): Boolean = execute(frame).asBoolean()
+    open fun executeBoolean(frame: VirtualFrame): Boolean = (execute(frame) as Rt_BooleanValue).value
 
     /**
      * Translator-time signal: `true` if this node (or any descendant) takes a slow path

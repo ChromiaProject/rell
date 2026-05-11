@@ -29,8 +29,8 @@ internal object C_LibBridgeImpl : C_LibBridge {
     init {
         C_LibBridge.instance = this
         // Register runtime size extractors used by model/r_attr_validator.kt
-        R_SizeExtractors.BYTE_ARRAY = { (it as Rt_Value).asByteArray().size }
-        R_SizeExtractors.TEXT = { (it as Rt_Value).asString().length }
+        R_SizeExtractors.BYTE_ARRAY = { ((it as Rt_Value) as Rt_ByteArrayValue).value.size }
+        R_SizeExtractors.TEXT = { ((it as Rt_Value) as Rt_TextValue).value.length }
         // Register SQL context bridge: untyped Any → Rt_SqlContext / Rt_ChainSqlMapping access
         registerSqlBridge()
     }

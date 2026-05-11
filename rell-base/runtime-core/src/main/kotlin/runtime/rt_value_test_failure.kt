@@ -21,7 +21,5 @@ internal class Rt_TestFailureValue(val message: String): Rt_Value {
     companion object: Rt_ValueClass<Rt_TestFailureValue> {
         override val name
             get() = "rell.test.failure"
-
-        override val klass = Rt_TestFailureValue::class
     }
 }

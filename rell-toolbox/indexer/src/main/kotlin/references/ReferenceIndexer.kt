@@ -5,13 +5,13 @@
 package net.postchain.rell.toolbox.indexer.references
 
 import net.postchain.rell.base.compiler.ast.S_Pos
+import net.postchain.rell.base.compiler.parser.antlr.AntlrPos
 import net.postchain.rell.base.utils.ide.*
 import net.postchain.rell.toolbox.common.Location
 import net.postchain.rell.toolbox.common.Position
 import net.postchain.rell.toolbox.common.Range
 import net.postchain.rell.toolbox.indexer.IdeSymbolInfoWithInterval
 import net.postchain.rell.toolbox.indexer.Resource
-import net.postchain.rell.base.compiler.parser.antlr.AntlrPos
 import org.antlr.v4.runtime.misc.Interval
 import java.io.File
 import java.net.URI

@@ -8,9 +8,9 @@ import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.compiler.base.core.C_Compiler
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.testutils.GtvTestUtils
 import net.postchain.rell.base.testutils.RellTestUtils
-import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.utils.RellVersions
 import kotlin.test.Test
 import kotlin.test.assertEquals

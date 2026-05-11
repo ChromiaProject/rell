@@ -32,7 +32,7 @@ object Lib_Type_BigInteger {
         Db_SysFunction.simple("big_integer(text)", SqlConstants.FN_BIGINTEGER_FROM_TEXT),
         pure = true
     ) { a ->
-        val s = a.asString()
+        val s = (a as Rt_TextValue).value
         Rt_BigIntegerValue.get(s)
     }
 
@@ -89,7 +89,7 @@ object Lib_Type_BigInteger {
                 """)
                 param("value", type = "byte_array", comment = "the byte array to convert")
                 body { a ->
-                    val bytes = a.asByteArray()
+                    val bytes = (a as Rt_ByteArrayValue).value
                     val bigInt = BigInteger(bytes)
                     Rt_BigIntegerValue.get(bigInt)
                 }
@@ -106,7 +106,7 @@ object Lib_Type_BigInteger {
                 """)
                 param("value", type = "byte_array", comment = "the byte array to convert")
                 body { a ->
-                    val bytes = a.asByteArray()
+                    val bytes = (a as Rt_ByteArrayValue).value
                     val bigInt = BigInteger(1, bytes)
                     Rt_BigIntegerValue.get(bigInt)
                 }
@@ -134,8 +134,8 @@ object Lib_Type_BigInteger {
                     comment("the radix with which to interpret `value`")
                 }
                 body { a, b ->
-                    val s = a.asString()
-                    val r = b.asInteger()
+                    val s = (a as Rt_TextValue).value
+                    val r = (b as Rt_IntValue).value
                     if (r < Character.MIN_RADIX || r > Character.MAX_RADIX) {
                         throw Rt_Exception.common("fn:big_integer.from_text:radix:$r", "Invalid radix: $r")
                     }
@@ -155,7 +155,7 @@ object Lib_Type_BigInteger {
                 """)
                 param("value", type = "text", comment = "the hexadecimal text to be parsed")
                 body { a ->
-                    val s = a.asString()
+                    val s = (a as Rt_TextValue).value
                     calcFromText(s, 16, "from_hex")
                 }
             }
@@ -187,8 +187,8 @@ object Lib_Type_BigInteger {
                 param("value", "decimal", comment = "the decimal value to compare against")
                 dbFunctionSimple("big_integer.min", "LEAST")
                 body { a, b ->
-                    val v1 = a.asBigInteger()
-                    val v2 = b.asDecimal()
+                    val v1 = (a as Rt_BigIntegerValue).value
+                    val v2 = (b as Rt_DecimalValue).value
                     val r = v1.toBigDecimal().min(v2)
                     Rt_DecimalValue.get(r)
                 }
@@ -213,8 +213,8 @@ object Lib_Type_BigInteger {
                 param("value", "decimal", comment = "the decimal value to compare against")
                 dbFunctionSimple("big_integer.max", "GREATEST")
                 body { a, b ->
-                    val v1 = a.asBigInteger()
-                    val v2 = b.asDecimal()
+                    val v1 = (a as Rt_BigIntegerValue).value
+                    val v2 = (b as Rt_DecimalValue).value
                     val r = v1.toBigDecimal().max(v2)
                     Rt_DecimalValue.get(r)
                 }
@@ -233,8 +233,8 @@ object Lib_Type_BigInteger {
                 param(name = "exponent", type = "integer", comment = "the exponent")
                 dbFunctionSimple(fnSimpleName, SqlConstants.FN_BIGINTEGER_POWER)
                 body { a, b ->
-                    val base = a.asBigInteger()
-                    val exp = b.asInteger()
+                    val base = (a as Rt_BigIntegerValue).value
+                    val exp = (b as Rt_IntValue).value
 
                     val res = Lib_BigIntegerMath.genericPower(
                         fnSimpleName,
@@ -256,7 +256,7 @@ object Lib_Type_BigInteger {
                 """)
                 dbFunctionSimple("big_integer.sign", "SIGN")
                 body { a ->
-                    val v = a.asBigInteger()
+                    val v = (a as Rt_BigIntegerValue).value
                     val r = v.signum()
                     Rt_IntValue.get(r.toLong())
                 }
@@ -279,7 +279,7 @@ object Lib_Type_BigInteger {
                     - `2L.pow(100).to_bytes()` returns `x'10000000000000000000000000'`
                 """)
                 body { a ->
-                    val bigInt = a.asBigInteger()
+                    val bigInt = (a as Rt_BigIntegerValue).value
                     val bytes = bigInt.toByteArray()
                     Rt_ByteArrayValue.get(bytes)
                 }
@@ -305,7 +305,7 @@ object Lib_Type_BigInteger {
                     @throws exception if this `big_integer` is negative
                 """)
                 body { a ->
-                    val bigInt = a.asBigInteger()
+                    val bigInt = (a as Rt_BigIntegerValue).value
                     Rt_Utils.check(bigInt.signum() >= 0) {
                         "fn:big_integer.to_bytes_unsigned:negative" to "Value is negative"
                     }
@@ -334,7 +334,7 @@ object Lib_Type_BigInteger {
                     than `0x19`.
                 """)
                 body { a ->
-                    val v = a.asBigInteger()
+                    val v = (a as Rt_BigIntegerValue).value
                     val s = v.toString(16)
                     Rt_TextValue.get(s)
                 }
@@ -348,7 +348,7 @@ object Lib_Type_BigInteger {
                 """)
                 dbFunctionTemplate("big_integer.to_integer", 1, "(#0)::BIGINT")
                 body { a ->
-                    val v = a.asBigInteger()
+                    val v = (a as Rt_BigIntegerValue).value
                     if (v < Rt_IntValue.MIN_VALUE_AS_BIGINT || v > Rt_IntValue.MAX_VALUE_AS_BIGINT) {
                         val s = v.toBigDecimal().round(MathContext(20, RoundingMode.DOWN))
                         throw Rt_Exception.common("big_integer.to_integer:overflow:$s", "Value out of range: $s")
@@ -363,7 +363,7 @@ object Lib_Type_BigInteger {
                 comment("Convert this `big_integer` to a base 10 text representation.")
                 dbFunctionTemplate("decimal.to_text", 1, "(#0)::TEXT")
                 body { a ->
-                    val v = a.asBigInteger()
+                    val v = (a as Rt_BigIntegerValue).value
                     val r = v.toString()
                     Rt_TextValue.get(r)
                 }
@@ -384,8 +384,8 @@ object Lib_Type_BigInteger {
                     comment("the radix (base) to use for the text representation")
                 }
                 body { a, b ->
-                    val v = a.asBigInteger()
-                    val r = b.asInteger()
+                    val v = (a as Rt_BigIntegerValue).value
+                    val r = (b as Rt_IntValue).value
                     if (r < Character.MIN_RADIX || r > Character.MAX_RADIX) {
                         throw Rt_Exception.common("fn:big_integer.to_text:radix:$r", "Invalid radix: $r")
                     }
@@ -406,7 +406,7 @@ object Lib_Type_BigInteger {
     }
 
     fun calcFromInteger(a: Rt_Value): Rt_Value {
-        val i = a.asInteger()
+        val i = (a as Rt_IntValue).value
         return Rt_BigIntegerValue.get(i)
     }
 }

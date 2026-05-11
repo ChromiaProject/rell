@@ -5,16 +5,11 @@ package net.postchain.rell.performance.profiler
 
 import java.io.File
 import java.nio.file.Path
-import kotlin.io.path.exists
-import kotlin.io.path.fileSize
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.Locale
-import kotlin.io.path.div
-import kotlin.io.path.isExecutable
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.useLines
+import java.util.*
+import kotlin.io.path.*
 import kotlin.math.abs
 import kotlin.system.exitProcess
 

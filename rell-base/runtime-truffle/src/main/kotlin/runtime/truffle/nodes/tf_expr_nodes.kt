@@ -286,7 +286,7 @@ internal class Tf_StatementExprNode(@field:Child private var body: Tf_ExprNode):
  * The constant ID is precomputed at translate time. The value itself is initialised lazily by
  * the app context's constants table — we just look it up.
  *
- * Typed subclasses ([IntConst]/[BoolConst]) skip the default `execute().asInteger()` chain
+ * Typed subclasses ([IntConst]/[BoolConst]) skip the default `(execute() as Rt_IntValue).value` chain
  * when the constant's declared type is statically integer or boolean.
  */
 internal open class Tf_GlobalConstantNode(
@@ -325,7 +325,7 @@ internal class Tf_ObjectValueNode(@CompilationFinal private val rtType: Rt_Value
  *
  * The translator picks [IntAttr] / [BoolAttr] when the attribute's type is statically integer
  * or boolean, so the typed `executeLong`/`executeBoolean` path skips the default
- * `execute().asInteger()` / `asBoolean()` chain whose `typeError` branch dominates PE-traced
+ * `(execute() as Rt_IntValue).value` / `asBoolean()` chain whose `typeError` branch dominates PE-traced
  * graphs.
  */
 internal open class Tf_StructMemberNode(
@@ -334,7 +334,7 @@ internal open class Tf_StructMemberNode(
 ): Tf_ExprNode() {
     override fun execute(frame: VirtualFrame): Rt_Value {
         val b = base.execute(frame)
-        return if (b === Rt_NullValue) Rt_NullValue else b.asStruct().get(attrIndex)
+        return if (b === Rt_NullValue) Rt_NullValue else (b as Rt_StructValue).get(attrIndex)
     }
 
     /**
@@ -368,7 +368,7 @@ internal class Tf_ListSubscriptNode(
 ): Tf_ExprNode() {
 
     override fun execute(frame: VirtualFrame): Rt_Value {
-        val list = base.execute(frame).asList()
+        val list = (base.execute(frame) as Rt_ListValue).elements
         val idx = index.executeLong(frame)
         Rt_ListValue.checkIndex(tfRtFrame(frame), errPos, list.size, idx)
         return list[idx.toInt()]
@@ -395,7 +395,7 @@ internal sealed class Tf_MapSubscriptNode: Tf_ExprNode() {
     ): Tf_MapSubscriptNode() {
 
         override fun execute(frame: VirtualFrame): Rt_Value {
-            val map = base.execute(frame).asMap()
+            val map = (base.execute(frame) as Rt_MapBackedValue).mapView
             val k = key.execute(frame)
             return map[k] ?: tfRtFrame(frame).error(
                 errPos,
@@ -439,7 +439,7 @@ internal sealed class Tf_MapSubscriptNode: Tf_ExprNode() {
     ): Tf_MapSubscriptNode() {
 
         override fun execute(frame: VirtualFrame): Rt_Value {
-            val map = base.execute(frame).asMap()
+            val map = (base.execute(frame) as Rt_MapBackedValue).mapView
             val k = Tf_Unchecked.cast<Rt_TextValue>(key.execute(frame))
             return map[k] ?: tfRtFrame(frame).error(
                 errPos,
@@ -476,7 +476,7 @@ internal class Tf_TextSubscriptNode(
 ): Tf_ExprNode() {
 
     override fun execute(frame: VirtualFrame): Rt_Value {
-        val text = base.execute(frame).asString()
+        val text = (base.execute(frame) as Rt_TextValue).value
         val idx = index.executeLong(frame)
         if (idx < 0 || idx >= text.length) tfRtFrame(frame).error(
             errPos,
@@ -497,7 +497,7 @@ internal class Tf_ByteArraySubscriptNode(
     override fun execute(frame: VirtualFrame): Rt_Value = Rt_IntValue.get(executeLong(frame))
 
     override fun executeLong(frame: VirtualFrame): Long {
-        val ba = base.execute(frame).asByteArray()
+        val ba = (base.execute(frame) as Rt_ByteArrayValue).value
         val idx = index.executeLong(frame)
         if (idx < 0 || idx >= ba.size) tfRtFrame(frame).error(
             errPos,
@@ -514,7 +514,7 @@ internal class Tf_VirtualListSubscriptNode(
     @field:Child private var index: Tf_ExprNode,
 ): Tf_ExprNode() {
     override fun execute(frame: VirtualFrame): Rt_Value {
-        val list = base.execute(frame).asVirtualList()
+        val list = (base.execute(frame) as Rt_VirtualListValue)
         val idx = index.executeLong(frame)
         return list.get(idx)
     }
@@ -528,7 +528,7 @@ internal class Tf_VirtualMapSubscriptNode(
 ): Tf_ExprNode() {
 
     override fun execute(frame: VirtualFrame): Rt_Value {
-        val map = base.execute(frame).asMap()
+        val map = (base.execute(frame) as Rt_MapBackedValue).mapView
         val k = key.execute(frame)
         return map[k] ?: tfRtFrame(frame).error(
             errPos,

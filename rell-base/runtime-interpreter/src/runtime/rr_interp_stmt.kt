@@ -32,7 +32,7 @@ fun Rt_InterpreterImpl.initializeDeclarator(
     }
 
     is RR_VarDeclarator.Tuple -> {
-        val tuple = value.asTuple()
+        val tuple = (value as Rt_TupleValue).elements
         for ((i, sub) in decl.subDeclarators.withIndex()) {
             initializeDeclarator(sub, frame, tuple[i])
         }
@@ -62,7 +62,7 @@ fun Rt_InterpreterImpl.assignTo(
             val baseValue = evaluateExpr(dstExpr.base, frame)
             // Safe navigation: if base is null, skip the assignment (matches R_ model's ?. behavior)
             if (baseValue == Rt_NullValue) return
-            val struct = baseValue.asStruct()
+            val struct = (baseValue as Rt_StructValue)
             val finalValue = if (op != null) {
                 val old = struct.get(dstExpr.attrIndex)
                 evaluateBinaryOp(op, old, value)
@@ -79,8 +79,8 @@ fun Rt_InterpreterImpl.assignTo(
         }
 
         is RR_Expr.ListSubscript -> {
-            val list = evaluateExpr(dstExpr.base, frame).asList()
-            val idx = evaluateExpr(dstExpr.index, frame).asInteger()
+            val list = (evaluateExpr(dstExpr.base, frame) as Rt_ListValue).elements
+            val idx = (evaluateExpr(dstExpr.index, frame) as Rt_IntValue).value
             if (idx < 0 || idx >= list.size) frame.error(
                 dstExpr.errPos,
                 "list:index:${list.size}:$idx",
@@ -94,7 +94,7 @@ fun Rt_InterpreterImpl.assignTo(
         }
 
         is RR_Expr.MapSubscript -> {
-            val map = evaluateExpr(dstExpr.base, frame).asMutableMap()
+            val map = (evaluateExpr(dstExpr.base, frame) as Rt_MutableMapBackedValue).mutableMapView
             val key = evaluateExpr(dstExpr.key, frame)
             val finalValue = if (op != null) {
                 val old = map[key] ?: frame.error(
@@ -114,7 +114,7 @@ fun Rt_InterpreterImpl.assignTo(
 
             when (val calc = dstExpr.calculator) {
                 is RR_MemberCalculator.StructAttr -> {
-                    val struct = baseValue.asStruct()
+                    val struct = (baseValue as Rt_StructValue)
                     val finalValue = if (op != null) {
                         val old = struct.get(calc.attrIndex)
                         evaluateBinaryOp(op, old, value)

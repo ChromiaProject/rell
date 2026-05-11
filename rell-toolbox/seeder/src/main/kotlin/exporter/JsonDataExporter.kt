@@ -6,8 +6,8 @@ package net.postchain.rell.toolbox.seeder.exporter
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import net.postchain.rell.toolbox.seeder.generator.GeneratedData
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import java.nio.file.Path
 
 class JsonDataExporter : BaseDataExporter() {

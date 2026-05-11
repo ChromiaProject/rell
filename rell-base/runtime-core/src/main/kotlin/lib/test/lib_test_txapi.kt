@@ -142,7 +142,7 @@ private class BlockCommonFunctions(
             param("expected_message", "text", comment = "the expected substring of the error message")
             bodyContext { ctx, arg1, arg2 ->
                 val blk = getRunBlock(ctx, arg1, runMustFailFullName)
-                val expected = arg2.asString()
+                val expected = (arg2 as Rt_TextValue).value
                 runMustFail(ctx, blk, expected)
             }
         }
@@ -186,7 +186,7 @@ private class TxCommonFunctions(private val txGetter: (self: Rt_Value) -> Rt_Tes
                 comment("the list of keypairs with which to sign $objectArticleText transaction")
             }
             body { arg1, arg2 ->
-                signByKeyPairs(arg1, arg2.asList())
+                signByKeyPairs(arg1, (arg2 as Rt_ListValue).elements)
             }
         }
     }
@@ -211,7 +211,7 @@ private class TxCommonFunctions(private val txGetter: (self: Rt_Value) -> Rt_Tes
                 comment("the list of private keys with which to sign $objectArticleText transaction")
             }
             body { arg1, arg2 ->
-                signByByteArrays(arg1, arg2.asList())
+                signByByteArrays(arg1, (arg2 as Rt_ListValue).elements)
             }
         }
     }
@@ -241,7 +241,7 @@ private class TxCommonFunctions(private val txGetter: (self: Rt_Value) -> Rt_Tes
     private fun signByByteArrays(self: Rt_Value, byteArrays: List<Rt_Value>): Rt_Value {
         val tx = txGetter(self)
         for (v in byteArrays) {
-            val bs = v.asByteArray()
+            val bs = (v as Rt_ByteArrayValue).value
             val keyPair = privKeyToKeyPair(bs)
             tx.sign(keyPair)
         }
@@ -306,7 +306,7 @@ internal object Lib_Type_Block {
                         comment("the list of test transactions with which to initialize this test block builder")
                     }
                     body { arg ->
-                        Rt_TestBlockValue(arg.asList().map { asTestTx(it).toRaw() })
+                        Rt_TestBlockValue((arg as Rt_ListValue).elements.map { asTestTx(it).toRaw() })
                     }
                 }
 
@@ -329,7 +329,7 @@ internal object Lib_Type_Block {
                         comment("the list of test operation calls")
                     }
                     body { arg ->
-                        newOps(arg.asList())
+                        newOps((arg as Rt_ListValue).elements)
                     }
                 }
 
@@ -382,7 +382,7 @@ internal object Lib_Type_Block {
                         comment("the list of transactions to be added to this test block builder")
                     }
                     body { arg1, arg2 ->
-                        addTxs(arg1, arg2.asList())
+                        addTxs(arg1, (arg2 as Rt_ListValue).elements)
                     }
                 }
 
@@ -406,7 +406,7 @@ internal object Lib_Type_Block {
                         comment("the list of test operation calls to include in the transaction")
                     }
                     body { arg1, arg2 ->
-                        addOps(arg1, arg2.asList())
+                        addOps(arg1, (arg2 as Rt_ListValue).elements)
                     }
                 }
 
@@ -480,7 +480,7 @@ private object Lib_Type_Tx {
                         comment("the list of test operation calls to include in this transaction")
                     }
                     body { arg ->
-                        val ops = arg.asList().map { asTestOp(it).toRaw() }
+                        val ops = (arg as Rt_ListValue).elements.map { asTestOp(it).toRaw() }
                         newTx(ops)
                     }
                 }
@@ -522,7 +522,7 @@ private object Lib_Type_Tx {
                         comment("the list of test operation calls to include in the built transaction")
                     }
                     bodyContext { ctx, arg ->
-                        val list = arg.asList()
+                        val list = (arg as Rt_ListValue).elements
                         val ops = list.map { structToOpRaw(ctx, it) }
                         newTx(ops)
                     }
@@ -618,7 +618,7 @@ private object Lib_Type_Tx {
                     comment("Add a list of test operation calls to this test transaction builder.")
                     param("ops", type = "list<rell.test.op>", comment = "the list of operations to add")
                     body { arg1, arg2 ->
-                        addOps(arg1, arg2.asList())
+                        addOps(arg1, (arg2 as Rt_ListValue).elements)
                     }
                 }
 
@@ -656,7 +656,7 @@ private object Lib_Type_Tx {
                         comment("the list of test operation calls to add to this transaction builder")
                     }
                     bodyContext { ctx, arg1, arg2 ->
-                        addOpStructs(ctx, arg1, arg2.asList())
+                        addOpStructs(ctx, arg1, (arg2 as Rt_ListValue).elements)
                     }
                 }
 
@@ -913,13 +913,13 @@ private object Lib_Type_Op {
                         }
                     }
                     body { a ->
-                        val sv = a.asStruct()
+                        val sv = (a as Rt_StructValue)
                         // Validate by struct type name rather than R_StructType identity, so the pure-RR path works.
                         checkEquals(sv.type.name, Lib_Rell.GTX_OPERATION_STRUCT_TYPE.name)
                         val rtName = sv.get(0)
-                        val rtArgs = sv.get(1).asList()
-                        val mountName = MountName.of(rtName.asString())
-                        val gtvArgs = rtArgs.mapToImmList { it.asGtv() }
+                        val rtArgs = (sv.get(1) as Rt_ListValue).elements
+                        val mountName = MountName.of((rtName as Rt_TextValue).value)
+                        val gtvArgs = rtArgs.mapToImmList { (it as Rt_GtvValue).value }
                         Rt_TestOpValue(mountName, gtvArgs)
                     }
                 }
@@ -942,7 +942,7 @@ private object Lib_Type_Op {
                     param("name", type = "text", comment = "the name of the operation")
                     param("args", type = "list<gtv>", comment = "the arguments to the operation")
                     body { arg1, arg2 ->
-                        newOp(arg1, arg2.asList())
+                        newOp(arg1, (arg2 as Rt_ListValue).elements)
                     }
                 }
 
@@ -1088,8 +1088,8 @@ private object Lib_Type_Op {
     }
 
     private fun newOp(nameArg: Rt_Value, tailArgs: List<Rt_Value>): Rt_Value {
-        val nameStr = nameArg.asString()
-        val args = tailArgs.mapToImmList { it.asGtv() }
+        val nameStr = (nameArg as Rt_TextValue).value
+        val args = tailArgs.mapToImmList { (it as Rt_GtvValue).value }
 
         val name = MountName.ofOpt(nameStr)
         Rt_Utils.check(name != null && !name.isEmpty()) {

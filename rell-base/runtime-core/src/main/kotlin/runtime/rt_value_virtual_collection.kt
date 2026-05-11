@@ -12,7 +12,5 @@ sealed class Rt_VirtualCollectionValue(gtv: Gtv): Rt_VirtualValue(gtv) {
     companion object: Rt_ValueClass<Rt_VirtualCollectionValue> {
         override val name
             get() = "virtual_collection"
-
-        override val klass = Rt_VirtualCollectionValue::class
     }
 }

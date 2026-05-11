@@ -8,9 +8,9 @@ import net.postchain.rell.base.compiler.base.core.C_Compiler
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.R_App
 import net.postchain.rell.base.model.R_Module
-import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 import java.io.File

@@ -11,10 +11,10 @@ import net.postchain.rell.base.model.R_BooleanType
 import net.postchain.rell.base.model.R_DecimalType
 import net.postchain.rell.base.model.R_IntegerType
 import net.postchain.rell.base.model.R_TextType
-import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.generator.DataGeneratorContext
 import net.postchain.rell.toolbox.seeder.generator.UniqueProducer
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail

@@ -5,11 +5,11 @@
 package net.postchain.rell.toolbox.seeder.config.parser
 
 import com.fasterxml.jackson.databind.JsonNode
+import net.postchain.rell.toolbox.seeder.config.AttributeConfig
+import net.postchain.rell.toolbox.seeder.config.EntityConfig
 import net.postchain.rell.toolbox.seeder.schema.Attribute
 import net.postchain.rell.toolbox.seeder.schema.Entity
 import net.postchain.rell.toolbox.seeder.schema.RellSchema
-import net.postchain.rell.toolbox.seeder.config.AttributeConfig
-import net.postchain.rell.toolbox.seeder.config.EntityConfig
 
 class EntityConfigParser {
     private val attributeConfigParser = AttributeConfigParser()

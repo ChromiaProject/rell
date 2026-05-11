@@ -43,7 +43,7 @@ object Lib_Type_Set {
                     val elemR = typeArgR("T")
                     bodyContext { ctx, arg ->
                         val setType = Rt_SetType(ctx.exeCtx.appCtx.interpreter.resolveRType(elemR))
-                        val iterable = arg.asIterable()
+                        val iterable = (arg as Rt_IterableValue)
                         val set = mutableSetOf<Rt_Value>()
                         iterable.forEach { set.add(it) }
                         Rt_SetValue(setType, set)

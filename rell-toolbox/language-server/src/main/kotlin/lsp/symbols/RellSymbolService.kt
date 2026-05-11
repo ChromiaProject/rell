@@ -5,12 +5,12 @@
 package net.postchain.rell.toolbox.lsp.symbols
 
 import net.postchain.rell.base.compiler.ast.S_Pos
+import net.postchain.rell.base.compiler.parser.antlr.AntlrPos
 import net.postchain.rell.base.utils.ide.*
 import net.postchain.rell.toolbox.indexer.IdeSymbolInfoWithInterval
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.editing.Document
-import net.postchain.rell.base.compiler.parser.antlr.AntlrPos
 import org.antlr.v4.runtime.misc.Interval
 import org.eclipse.lsp4j.*
 import java.net.URI

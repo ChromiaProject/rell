@@ -7,7 +7,10 @@ package net.postchain.rell.base.lib
 import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_PrimitiveType
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_NullValue
+import net.postchain.rell.base.runtime.Rt_TextValue
+import net.postchain.rell.base.runtime.Rt_TimeFormatValue
 import java.text.ParseException
 
 internal object Lib_RellTimeFormat {
@@ -65,7 +68,7 @@ internal object Lib_RellTimeFormat {
                     """)
                     param("pattern", "text", arity = L_ParamArity.ONE, comment = "the time format pattern text")
                     body { format ->
-                        val formatString = format.asString()
+                        val formatString = (format as Rt_TextValue).value
                         Rt_TimeFormatValue(formatString)
                     }
                 }
@@ -77,8 +80,8 @@ internal object Lib_RellTimeFormat {
                     """)
                     param("ms", "integer", arity = L_ParamArity.ONE, comment = "the unix timestamp")
                     body { self, ms ->
-                        val formatValue = self.asRellTimeFormat()
-                        val msValue = ms.asInteger()
+                        val formatValue = (self as Rt_TimeFormatValue)
+                        val msValue = (ms as Rt_IntValue).value
                         Rt_TextValue.get(formatValue.msToText(msValue))
                     }
                 }
@@ -91,8 +94,8 @@ internal object Lib_RellTimeFormat {
                     """)
                     param("text", "text", arity = L_ParamArity.ONE, comment = "the time-formatted text")
                     body { self, text ->
-                        val formatValue = self.asRellTimeFormat()
-                        val textValue = text.asString()
+                        val formatValue = (self as Rt_TimeFormatValue)
+                        val textValue = (text as Rt_TextValue).value
                         Rt_IntValue.get(formatValue.textToMs(textValue))
                     }
                 }
@@ -106,8 +109,8 @@ internal object Lib_RellTimeFormat {
                     param("text", "text", arity = L_ParamArity.ONE, comment = "the time-formatted text")
                     body { self, text ->
                         try {
-                            val formatValue = self.asRellTimeFormat()
-                            val textValue = text.asString()
+                            val formatValue = (self as Rt_TimeFormatValue)
+                            val textValue = (text as Rt_TextValue).value
                             Rt_IntValue.get(formatValue.textToMs(textValue))
                         } catch (_: ParseException) {
                             Rt_NullValue
@@ -117,7 +120,7 @@ internal object Lib_RellTimeFormat {
 
                 function("to_text", "text", since = "0.14.14") {
                     comment("Get the format text of this time format value.")
-                    body { self -> Rt_TextValue.get(self.asRellTimeFormat().toText()) }
+                    body { self -> Rt_TextValue.get((self as Rt_TimeFormatValue).toText()) }
                 }
             }
 
@@ -131,8 +134,8 @@ internal object Lib_RellTimeFormat {
                 param("pattern", "text", arity = L_ParamArity.ONE, comment = "the time format pattern text")
                 param("ms", "integer", arity = L_ParamArity.ONE, comment = "the unix timestamp")
                 body { format, ms ->
-                    val formatString = format.asString()
-                    val msValue = ms.asInteger()
+                    val formatString = (format as Rt_TextValue).value
+                    val msValue = (ms as Rt_IntValue).value
                     Rt_TextValue.get(Rt_TimeFormatValue(formatString).msToText(msValue))
                 }
             }
@@ -148,8 +151,8 @@ internal object Lib_RellTimeFormat {
                 param("pattern", "text", arity = L_ParamArity.ONE, comment = "the time format pattern text")
                 param("text", "text", arity = L_ParamArity.ONE, comment = "the time-formatted text")
                 body { format, text ->
-                    val formatString = format.asString()
-                    val dateString = text.asString()
+                    val formatString = (format as Rt_TextValue).value
+                    val dateString = (text as Rt_TextValue).value
                     Rt_IntValue.get(Rt_TimeFormatValue(formatString).textToMs(dateString))
                 }
             }
@@ -166,8 +169,8 @@ internal object Lib_RellTimeFormat {
                 param("text", "text", arity = L_ParamArity.ONE, comment = "the time-formatted text")
                 body { format, text ->
                     try {
-                        val formatString = format.asString()
-                        val dateString = text.asString()
+                        val formatString = (format as Rt_TextValue).value
+                        val dateString = (text as Rt_TextValue).value
                         Rt_IntValue.get(Rt_TimeFormatValue(formatString).textToMs(dateString))
                     } catch (_: ParseException) {
                         Rt_NullValue

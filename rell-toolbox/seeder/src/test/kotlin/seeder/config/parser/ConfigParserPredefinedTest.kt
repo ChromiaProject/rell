@@ -7,9 +7,9 @@ package net.postchain.rell.toolbox.seeder.config.parser
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
-import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.config.dsl.configFile
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -334,8 +334,8 @@ class ConfigParserPredefinedTest {
         val fieldAttr = entityConfig.attributes[fieldName] as AttributeConfig.PredefinedValues
 
         // Need to caste the fieldAttr to float, doing other way around changes precision
-        fieldAttr.values.map {
-            val casted = (it as Double).toFloat()
+        for (value in fieldAttr.values) {
+            val casted = (value as Double).toFloat()
             assertThat(predefinedValues).contains(casted)
         }
     }

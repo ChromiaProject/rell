@@ -55,8 +55,8 @@ internal class Rt_Comparator<T>(
 
 internal class Rt_ListComparator(private val elemComparator: Comparator<Rt_Value>): Comparator<Rt_Value> {
     override fun compare(a: Rt_Value, b: Rt_Value): Int {
-        val l1 = a.asList()
-        val l2 = b.asList()
+        val l1 = (a as Rt_ListValue).elements
+        val l2 = (b as Rt_ListValue).elements
         val n1 = l1.size
         val n2 = l2.size
         for (i in 0 until min(n1, n2)) {
@@ -71,8 +71,8 @@ internal class Rt_ListComparator(private val elemComparator: Comparator<Rt_Value
 
 internal class Rt_TupleComparator(private val elemComparators: ImmList<Comparator<Rt_Value>>): Comparator<Rt_Value> {
     override fun compare(a: Rt_Value, b: Rt_Value): Int {
-        val t1 = a.asTuple()
-        val t2 = b.asTuple()
+        val t1 = (a as Rt_TupleValue).elements
+        val t2 = (b as Rt_TupleValue).elements
         for ((i, element) in elemComparators.withIndex()) {
             val c = element.compare(t1[i], t2[i])
             if (c != 0) {

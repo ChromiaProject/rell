@@ -9,8 +9,8 @@ import net.postchain.gtv.GtvEncoder
 import net.postchain.gtv.builder.GtvBuilder
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
-import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.utils.*
 import java.nio.file.Path

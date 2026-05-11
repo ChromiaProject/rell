@@ -18,9 +18,6 @@ data class Rt_EntityValue(override val type: Rt_ValueClass<*>, val rowid: Long):
     companion object: Rt_ValueClass<Rt_EntityValue> {
         override val name
             get() = "entity"
-
-        override val klass = Rt_EntityValue::class
-
         fun gtvConversion(
             rtType: Lazy<Rt_ValueClass<*>>,
             typeName: String,

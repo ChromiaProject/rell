@@ -49,7 +49,7 @@ internal fun Rt_InterpreterImpl.evaluateRegularCreate(expr: RR_Expr.RegularCreat
     val select = SqlSelectRt(pSql, listOf(resolveType(entityDef.type)).toImmList())
     val rows = select.execute(frame.userSqlExec)
     val result = rows.single().single()
-    emitCreateSnapshot(frame, entityDef, result.asObjectId(), attrValues)
+    emitCreateSnapshot(frame, entityDef, (result as Rt_EntityValue).rowid, attrValues)
     return result
 }
 
@@ -59,7 +59,7 @@ internal fun Rt_InterpreterImpl.evaluateStructEntityCreate(
 ): Rt_Value {
     frame.checkDbUpdateAllowed()
     val entityDef = rrApp.allEntities[expr.entityDefIndex]
-    val structValue = evaluateExpr(expr.structExpr, frame).asStruct()
+    val structValue = (evaluateExpr(expr.structExpr, frame) as Rt_StructValue)
 
     val attrs = entityDef.strAttributes.values.toList()
     val pSql = buildInsertSql(
@@ -73,7 +73,7 @@ internal fun Rt_InterpreterImpl.evaluateStructEntityCreate(
     val result = rows.single().single()
     if (frame.exeCtx.opCtx.hasSnapshotContext()) {
         val attrValues = attrs.mapIndexed { i, attr -> attr.name to structValue.get(i) }.toMap()
-        emitCreateSnapshot(frame, entityDef, result.asObjectId(), attrValues)
+        emitCreateSnapshot(frame, entityDef, (result as Rt_EntityValue).rowid, attrValues)
     }
     return result
 }
@@ -119,7 +119,7 @@ internal fun Rt_InterpreterImpl.evaluateStructListCreate(
 ): Rt_Value {
     frame.checkDbUpdateAllowed()
     val entityDef = rrApp.allEntities[expr.entityDefIndex]
-    val list = evaluateExpr(expr.listExpr, frame).asList()
+    val list = (evaluateExpr(expr.listExpr, frame) as Rt_ListValue).elements
     if (list.isEmpty()) return Rt_ListValue(resolveType(expr.resultListType), mutableListOf())
 
     val rowidCol = entityDef.sqlMapping.rowidColumn
@@ -171,7 +171,7 @@ internal fun Rt_InterpreterImpl.evaluateStructListCreate(
         val q = JOOQ_CTX.insertQuery(tableRef)
         for ((idx, item) in pageItems.withIndex()) {
             if (idx > 0) q.newRecord()
-            val structValue = item.asStruct()
+            val structValue = (item as Rt_StructValue)
             val row = LinkedHashMap<Field<*>, Field<*>>()
             if (useFastRowid) {
                 row[rowidColField] = ANY_PARAM_PLACEHOLDER
@@ -194,9 +194,9 @@ internal fun Rt_InterpreterImpl.evaluateStructListCreate(
             val rowid = row.single()
             allResults.add(rowid)
             if (snapshotEnabled) {
-                val structValue = pageItems[idx].asStruct()
+                val structValue = (pageItems[idx] as Rt_StructValue)
                 emitCreateSnapshotWith(
-                    frame, snapshotMetaNameGtv!!, rowid.asObjectId(), snapshotConvs,
+                    frame, snapshotMetaNameGtv!!, (rowid as Rt_EntityValue).rowid, snapshotConvs,
                 ) { i -> structValue.get(i) }
             }
         }
@@ -340,9 +340,9 @@ private fun Rt_InterpreterImpl.executeUpdateSqlInner(stmt: RR_Statement.Update, 
 private fun Rt_InterpreterImpl.executeExprManyUpdate(stmt: RR_Statement.Update, frame: Rt_CallFrame) {
     val value = stmt.lambdaExpr?.let { evaluateExpr(it, frame) } ?: return
     val lst = if (stmt.isExprSet) {
-        value.asSet().toMutableList()
+        (value as Rt_SetValue).elements.toMutableList()
     } else {
-        value.asList().toSet().toMutableList()
+        (value as Rt_ListValue).elements.toSet().toMutableList()
     }
     if (lst.isEmpty()) return
     val partSize = frame.defCtx.globalCtx.sqlUpdatePortionSize
@@ -367,9 +367,9 @@ private fun Rt_InterpreterImpl.executeExprManyUpdate(stmt: RR_Statement.Update, 
 private fun Rt_InterpreterImpl.executeExprManyDelete(stmt: RR_Statement.Delete, frame: Rt_CallFrame) {
     val value = stmt.lambdaExpr?.let { evaluateExpr(it, frame) } ?: return
     val lst = if (stmt.isExprSet) {
-        value.asSet().toMutableList()
+        (value as Rt_SetValue).elements.toMutableList()
     } else {
-        value.asList().toSet().toMutableList()
+        (value as Rt_ListValue).elements.toSet().toMutableList()
     }
     if (lst.isEmpty()) return
     val partSize = frame.defCtx.globalCtx.sqlUpdatePortionSize
@@ -555,7 +555,7 @@ private fun Rt_InterpreterImpl.emitUpdateSnapshot(
     val metaName = entityDef.sqlMapping.metaName
     val metaNameGtv = GtvFactory.gtv(metaName)
     for (row in rows) {
-        val rowid0 = row[0].asRowid()
+        val rowid0 = (row[0] as Rt_RowidValue).value
         val rowid = if (rowid0 != 0L) rowid0 else opCtx.objectSnapshotId(metaName)
 
         val attrValues = LinkedHashMap<String, Gtv>(attrs.size)
@@ -582,8 +582,8 @@ private fun emitDeleteSnapshot(
 fun checkAttrSizeConstraint(constraint: RR_SizeConstraint, value: Rt_Value) {
     if (value == Rt_NullValue) return
     val size = when (constraint.kind) {
-        RR_SizeConstraintKind.BYTE_ARRAY -> value.asByteArray().size
-        RR_SizeConstraintKind.TEXT -> value.asString().length
+        RR_SizeConstraintKind.BYTE_ARRAY -> (value as Rt_ByteArrayValue).value.size
+        RR_SizeConstraintKind.TEXT -> (value as Rt_TextValue).value.length
     }
     val min = constraint.min
     val max = constraint.max

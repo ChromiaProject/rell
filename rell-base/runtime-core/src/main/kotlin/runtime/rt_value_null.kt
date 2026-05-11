@@ -11,8 +11,6 @@ import net.postchain.rell.base.model.rr.RR_Type
 object Rt_NullValue: Rt_Value, Rt_ValueClass<Rt_NullValue> {
     override val name
         get() = NULL_NAME
-
-    override val klass = Rt_NullValue::class
     override val rrType: RR_Type = RR_Type.Null
     override val comparator: Comparator<Rt_Value> = Comparator { _, _ -> 0 }
 

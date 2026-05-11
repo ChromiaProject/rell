@@ -7,10 +7,12 @@ package net.postchain.rell.base.runtime
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 
-class Rt_SetValue(override val type: Rt_ValueClass<*>, internal val elements: MutableSet<Rt_Value>):
+class Rt_SetValue(override val type: Rt_ValueClass<*>, val elements: MutableSet<Rt_Value>):
     Rt_Value, Rt_CollectionValue {
 
-    override val collection: MutableCollection<Rt_Value> get() = elements
+    override val collection: MutableCollection<Rt_Value>
+        get() = elements
+
     override val name
         get() = Companion.name
 
@@ -34,9 +36,6 @@ class Rt_SetValue(override val type: Rt_ValueClass<*>, internal val elements: Mu
     companion object: Rt_ValueClass<Rt_SetValue> {
         override val name
             get() = "set"
-
-        override val klass = Rt_SetValue::class
-
         fun strCode(type: Rt_ValueClass<*>, elements: Set<Rt_Value>, showTupleFieldNames: Boolean): String =
             "${type.name}[${elements.joinToString(",") { it.strCode(false) }}]"
 

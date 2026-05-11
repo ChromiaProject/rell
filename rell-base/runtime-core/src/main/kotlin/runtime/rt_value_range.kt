@@ -44,12 +44,10 @@ data class Rt_RangeValue(val start: Long, val end: Long, val step: Long):
     companion object: Rt_ValueClass<Rt_RangeValue> {
         override val name
             get() = "range"
-
-        override val klass = Rt_RangeValue::class
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.RANGE)
 
         override val comparator: Comparator<Rt_Value> =
-            Comparator { a, b -> a.asRange().compareTo(b.asRange()) }
+            Comparator { a, b -> (a as Rt_RangeValue).compareTo((b as Rt_RangeValue)) }
 
         private fun valueMod(v: Long, m: Long): Long {
             val r = v % m

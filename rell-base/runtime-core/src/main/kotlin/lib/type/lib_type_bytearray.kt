@@ -21,7 +21,7 @@ object Lib_Type_ByteArray {
     val DB_SUBSCRIPT: Db_SysFunction = Db_SysFunction.template("byte_array.[]", 2, "GET_BYTE(#0, (#1)::INT)")
 
     private val FromHex = C_SysFunctionBody.simple(pure = true) { a ->
-        val s = a.asString()
+        val s = (a as Rt_TextValue).value
         val bytes = Rt_Utils.wrapErr("fn:byte_array.from_hex") {
             CommonUtils.hexToBytes(s)
         }
@@ -29,10 +29,10 @@ object Lib_Type_ByteArray {
     }
 
     private val FromList = C_SysFunctionBody.simple(pure = true) { a ->
-        val s = a.asList()
+        val s = (a as Rt_ListValue).elements
         val r = ByteArray(s.size)
         for (i in s.indices) {
-            val b = s[i].asInteger()
+            val b = (s[i] as Rt_IntValue).value
             if (b !in 0..255) throw Rt_Exception.common("fn:byte_array.from_list:$b", "Byte value out of range: $b")
             r[i] = b.toByte()
         }
@@ -100,7 +100,7 @@ object Lib_Type_ByteArray {
                 """)
                 param("value", type = "text", comment = "the base-64 string")
                 body { value ->
-                    val s = value.asString()
+                    val s = (value as Rt_TextValue).value
                     val bytes = Rt_Utils.wrapErr("fn:byte_array.from_base64") {
                         Base64.getDecoder().decode(s)
                     }
@@ -116,7 +116,7 @@ object Lib_Type_ByteArray {
                 """)
                 dbFunctionTemplate("byte_array.empty", 1, "(LENGTH(#0) = 0)")
                 body { array ->
-                    val byteArray = array.asByteArray()
+                    val byteArray = (array as Rt_ByteArrayValue).value
                     Rt_BooleanValue.get(byteArray.isEmpty())
                 }
             }
@@ -126,7 +126,7 @@ object Lib_Type_ByteArray {
                 alias("len", C_MessageType.ERROR, since = SINCE0)
                 dbFunctionTemplate("byte_array.size", 1, "LENGTH(#0)")
                 body { array ->
-                    val byteArray = array.asByteArray()
+                    val byteArray = (array as Rt_ByteArrayValue).value
                     Rt_IntValue.get(byteArray.size.toLong())
                 }
             }
@@ -134,7 +134,7 @@ object Lib_Type_ByteArray {
             function("decode", "text", pure = true, since = SINCE0) {
                 deprecated(newName = "text.from_bytes")
                 body { a ->
-                    val ba = a.asByteArray()
+                    val ba = (a as Rt_ByteArrayValue).value
                     Rt_TextValue.get(String(ba))
                 }
             }
@@ -149,7 +149,7 @@ object Lib_Type_ByteArray {
                     Each byte in the array is converted to a single integer `0 <= x < 256` in the returned list.
                 """)
                 body { a ->
-                    val ba = a.asByteArray()
+                    val ba = (a as Rt_ByteArrayValue).value
                     val list = MutableList<Rt_Value>(ba.size) { Rt_IntValue.get(ba[it].toLong() and 0xFF) }
                     Rt_ListValue(LIST_OF_INTEGER, list)
                 }
@@ -171,8 +171,8 @@ object Lib_Type_ByteArray {
                 """)
                 param("n", "integer", comment = "the number of times to repeat this byte_array")
                 body { a, b ->
-                    val bs = a.asByteArray()
-                    val n = b.asInteger()
+                    val bs = (a as Rt_ByteArrayValue).value
+                    val n = (b as Rt_IntValue).value
                     val s = bs.size
                     val total = Lib_Type_List.rtCheckRepeatArgs(s, n, "byte_array")
                     if (bs.isEmpty() || n == 1L) a else {
@@ -185,7 +185,7 @@ object Lib_Type_ByteArray {
             function("reversed", "byte_array", pure = true, since = "0.11.0") {
                 comment("Returns a reversed copy of this `byte_array`.")
                 body { a ->
-                    val bs = a.asByteArray()
+                    val bs = (a as Rt_ByteArrayValue).value
                     if (bs.size <= 1) a else {
                         val n = bs.size
                         val res = ByteArray(n) { bs[n - 1 - it] }
@@ -202,8 +202,8 @@ object Lib_Type_ByteArray {
                 param("start", "integer", comment = "the start index of the sub-array")
                 dbFunctionTemplate("byte_array.sub/1", 2, "${SqlConstants.FN_BYTEA_SUBSTR1}(#0, (#1)::INT)")
                 body { a, b ->
-                    val ba = a.asByteArray()
-                    val start = b.asInteger()
+                    val ba = (a as Rt_ByteArrayValue).value
+                    val start = (b as Rt_IntValue).value
                     calcSub(ba, start, ba.size.toLong())
                 }
             }
@@ -220,9 +220,9 @@ object Lib_Type_ByteArray {
                 param("end", "integer", comment = "the end index of the sub-array")
                 dbFunctionTemplate("byte_array.sub/2", 3, "${SqlConstants.FN_BYTEA_SUBSTR2}(#0, (#1)::INT, (#2)::INT)")
                 body { a, b, c ->
-                    val ba = a.asByteArray()
-                    val start = b.asInteger()
-                    val end = c.asInteger()
+                    val ba = (a as Rt_ByteArrayValue).value
+                    val start = (b as Rt_IntValue).value
+                    val end = (c as Rt_IntValue).value
                     calcSub(ba, start, end)
                 }
             }
@@ -235,7 +235,7 @@ object Lib_Type_ByteArray {
                 """)
                 dbFunctionTemplate("byte_array.to_hex", 1, "ENCODE(#0, 'HEX')")
                 body { a ->
-                    val ba = a.asByteArray()
+                    val ba = (a as Rt_ByteArrayValue).value
                     val r = CommonUtils.bytesToHex(ba)
                     Rt_TextValue.get(r)
                 }
@@ -249,7 +249,7 @@ object Lib_Type_ByteArray {
                 """)
                 dbFunctionTemplate("byte_array.to_base64", 1, "ENCODE(#0, 'BASE64')")
                 body { a ->
-                    val ba = a.asByteArray()
+                    val ba = (a as Rt_ByteArrayValue).value
                     val r = Base64.getEncoder().encodeToString(ba)
                     Rt_TextValue.get(r)
                 }

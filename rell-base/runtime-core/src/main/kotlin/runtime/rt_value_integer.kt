@@ -36,8 +36,6 @@ data class Rt_IntValue private constructor(val value: Long): Rt_Value {
 
         override val name
             get() = "integer"
-
-        override val klass = Rt_IntValue::class
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.INTEGER)
         override val nativeTypes = immSetOf(Long::class.createType())
 
@@ -45,7 +43,7 @@ data class Rt_IntValue private constructor(val value: Long): Rt_Value {
             get() = SQLDataType.BIGINT
 
         override val comparator: Comparator<Rt_Value> =
-            Comparator { a, b -> a.asInteger().compareTo(b.asInteger()) }
+            Comparator { a, b -> (a as Rt_IntValue).value.compareTo((b as Rt_IntValue).value) }
 
         const val MAX_VALUE = Long.MAX_VALUE
         const val MIN_VALUE = Long.MIN_VALUE

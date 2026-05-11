@@ -8,24 +8,10 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.profiles.BranchProfile
+import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.model.ErrorPos
 import net.postchain.rell.base.model.FilePos
-import net.postchain.rell.base.runtime.Rt_BooleanValue
-import net.postchain.rell.base.runtime.Rt_CallFrame
-import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.runtime.Rt_IntValue
-import net.postchain.rell.base.runtime.Rt_NullValue
-import net.postchain.rell.base.runtime.Rt_RequireError
-import net.postchain.rell.base.runtime.Rt_TextValue
-import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.runtime.asCollection
-import net.postchain.rell.base.runtime.asEnum
-import net.postchain.rell.base.runtime.asGtv
-import net.postchain.rell.base.runtime.asList
-import net.postchain.rell.base.runtime.asSet
-import net.postchain.rell.base.runtime.asString
-import net.postchain.rell.base.lib.Lib_Rell
-import net.postchain.rell.base.runtime.rtGetValueOrNull
+import net.postchain.rell.base.runtime.*
 
 /**
  * Native: hand-rolled Truffle nodes for the most-frequent stdlib member calls. Each node
@@ -33,16 +19,6 @@ import net.postchain.rell.base.runtime.rtGetValueOrNull
  * (`Tf_SysCallNode$SysMember.execute → buildArgList → buildCallCtx → @TruffleBoundary →
  * R_SysFunctionUtils.call → callAndCatch → fn.call → asXxx().method`) collapses to a
  * single primitive operation on the success path.
- *
- * Coverage chosen by profiling on the FT4/MNA bench workloads (post-commit `0b7650f3b`):
- *
- * - `list.size()`, `set.size()`, `text.size()` — pure size reads, dominate `bench_locations`
- *   and `bench_rule_serde` arg-list build cost.
- * - `list.get(i)` — bounds check + indexed read, hot on rule-evaluation paths.
- * - `list.add(v)`, `set.add(v)` — collection mutators that the stdlib resolves through
- *   `collection.add` (parent type), so a single body shape covers both via [Rt_Value.asCollection].
- * - `enum.name` — sys-property access, hits the [Tf_MemberAccessNode.SysFn] dispatch on
- *   every enum-keyed dictionary lookup in FT4.
  *
  * # Bit-identical with the stdlib fallback
  *
@@ -100,7 +76,7 @@ internal sealed class Tf_StdlibMemberNode: Tf_ExprNode() {
     // -------------------------------------------------------------------------
 
     /**
-     * Native: `list.size()` — `(base.asList()).size.toLong()` boxed to [Rt_IntValue].
+     * Native: `list.size()` — `((base as Rt_ListValue).elements).size.toLong()` boxed to [Rt_IntValue].
      * Mirrors `Lib_Type_Collection`'s `size` body inherited by `list`. Pure: never throws.
      */
     internal class ListSize(
@@ -109,19 +85,19 @@ internal sealed class Tf_StdlibMemberNode: Tf_ExprNode() {
     ): Tf_StdlibMemberNode() {
         override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
-            return Rt_IntValue.get(baseValue.asList().size.toLong())
+            return Rt_IntValue.get((baseValue as Rt_ListValue).elements.size.toLong())
         }
 
         override fun executeLong(frame: VirtualFrame): Long {
             // Translator only picks the typed entry under non-nullable result type, so
             // `safe == true` cannot reach this path — see [Tf_MemberAccessNode.StructAttr.IntAttr].
             val baseValue = base.execute(frame)
-            return baseValue.asList().size.toLong()
+            return (baseValue as Rt_ListValue).elements.size.toLong()
         }
     }
 
     /**
-     * Native: `set.size()` — `(base.asSet()).size.toLong()` boxed to [Rt_IntValue].
+     * Native: `set.size()` — `((base as Rt_SetValue).elements).size.toLong()` boxed to [Rt_IntValue].
      * Mirrors `Lib_Type_Collection`'s `size` body inherited by `set`. Pure: never throws.
      */
     internal class SetSize(
@@ -130,12 +106,12 @@ internal sealed class Tf_StdlibMemberNode: Tf_ExprNode() {
     ): Tf_StdlibMemberNode() {
         override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
-            return Rt_IntValue.get(baseValue.asSet().size.toLong())
+            return Rt_IntValue.get((baseValue as Rt_SetValue).elements.size.toLong())
         }
 
         override fun executeLong(frame: VirtualFrame): Long {
             val baseValue = base.execute(frame)
-            return baseValue.asSet().size.toLong()
+            return (baseValue as Rt_SetValue).elements.size.toLong()
         }
     }
 
@@ -149,12 +125,12 @@ internal sealed class Tf_StdlibMemberNode: Tf_ExprNode() {
     ): Tf_StdlibMemberNode() {
         override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
-            return Rt_IntValue.get(baseValue.asString().length.toLong())
+            return Rt_IntValue.get((baseValue as Rt_TextValue).value.length.toLong())
         }
 
         override fun executeLong(frame: VirtualFrame): Long {
             val baseValue = base.execute(frame)
-            return baseValue.asString().length.toLong()
+            return (baseValue as Rt_TextValue).value.length.toLong()
         }
     }
 
@@ -185,7 +161,7 @@ internal sealed class Tf_StdlibMemberNode: Tf_ExprNode() {
 
         override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
-            val list = baseValue.asList()
+            val list = (baseValue as Rt_ListValue).elements
             val i = index.executeLong(frame)
             if (i < 0 || i >= list.size) {
                 errorProfile.enter()
@@ -212,35 +188,21 @@ internal sealed class Tf_StdlibMemberNode: Tf_ExprNode() {
     // collection.add(v) — list & set, pure-success (no exception path in stdlib body)
     // -------------------------------------------------------------------------
 
-    /**
-     * Native: `list.add(v)` / `set.add(v)` — single-arg append from `collection.add`. Body
-     * is `Rt_BooleanValue.get(self.asCollection().add(value))`, identical to the stdlib's
-     * `Lib_Type_Collection.add` registration that both `list` and `set` inherit. Routing
-     * through [Rt_Value.asCollection] handles both receiver shapes uniformly:
-     *
-     * - `MutableList.add(v)` always returns `true` (so this matches the user-visible
-     *   "list.add returns boolean like Java" contract).
-     * - `MutableSet.add(v)` returns `true` only when the element was not already present.
-     *
-     * Pure-success: `MutableCollection.add` doesn't throw `Rt_Exception`. We skip the
-     * decorated-rethrow wrapper that [ListGet] needs.
-     */
     internal class CollectionAdd(
         @field:Child private var base: Tf_ExprNode,
         @field:Child private var value: Tf_ExprNode,
         @field:CompilationFinal private val safe: Boolean,
     ): Tf_StdlibMemberNode() {
-
         override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
             val v = value.execute(frame)
-            return Rt_BooleanValue.get(baseValue.asCollection().add(v))
+            return Rt_BooleanValue.get((baseValue as Rt_CollectionValue).collection.add(v))
         }
 
         override fun executeBoolean(frame: VirtualFrame): Boolean {
             val baseValue = base.execute(frame)
             val v = value.execute(frame)
-            return baseValue.asCollection().add(v)
+            return (baseValue as Rt_CollectionValue).collection.add(v)
         }
     }
 
@@ -249,7 +211,7 @@ internal sealed class Tf_StdlibMemberNode: Tf_ExprNode() {
     // -------------------------------------------------------------------------
 
     /**
-     * Native: `enum.name` — sys-property dispatch. Body is `Rt_TextValue.get(self.asEnum().name)`,
+     * Native: `enum.name` — sys-property dispatch. Body is `Rt_TextValue.get((self as Rt_RR_EnumValue).rrAttr.name)`,
      * identical to `Lib_Type_Enum`'s `enum_ext.name` extension. Pure: `RR_EnumAttr.name`
      * is a non-null cached field, so this never throws under correct typing.
      *
@@ -262,7 +224,7 @@ internal sealed class Tf_StdlibMemberNode: Tf_ExprNode() {
     ): Tf_StdlibMemberNode() {
         override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
-            return Rt_TextValue.get(baseValue.asEnum().nameStr)
+            return Rt_TextValue.get((baseValue as Rt_RR_EnumValue).rrAttr.nameStr)
         }
     }
 
@@ -292,7 +254,7 @@ internal sealed class Tf_StdlibMemberNode: Tf_ExprNode() {
     ): Tf_StdlibMemberNode() {
         override fun execute(frame: VirtualFrame): Rt_Value {
             val baseValue = evaluateBase(frame, base, safe) ?: return Rt_NullValue
-            return resolve(baseValue.asGtv().type.ordinal)
+            return resolve((baseValue as Rt_GtvValue).value.type.ordinal)
         }
 
         @TruffleBoundary

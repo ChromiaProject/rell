@@ -7,9 +7,9 @@ package net.postchain.rell.toolbox.seeder.generator
 import assertk.assertThat
 import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.isEqualTo
-import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.seeder.config.dsl.configFile
 import net.postchain.rell.toolbox.seeder.config.parser.ConfigurationParser
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

@@ -124,7 +124,7 @@ object Lib_Type_Decimal {
                 """)
                 dbFunctionSimple("decimal.ceil", "CEIL")
                 body { a ->
-                    val v = a.asDecimal()
+                    val v = (a as Rt_DecimalValue).value
                     val r = v.setScale(0, RoundingMode.CEILING)
                     Rt_DecimalValue.get(r)
                 }
@@ -179,7 +179,7 @@ object Lib_Type_Decimal {
                 """)
                 dbFunctionTemplate("decimal.round", 1, "ROUND(#0)")
                 body { a ->
-                    val v = a.asDecimal()
+                    val v = (a as Rt_DecimalValue).value
                     val r = v.setScale(0, RoundingMode.HALF_UP)
                     Rt_DecimalValue.get(r)
                 }
@@ -208,8 +208,8 @@ object Lib_Type_Decimal {
                 // Argument #2 has to be cast to INT, as PostgreSQL doesn't allow BIGINT.
                 dbFunctionTemplate("decimal.round", 2, "ROUND(#0,(#1)::INT)")
                 body { a, b ->
-                    val v = a.asDecimal()
-                    var scale = b.asInteger()
+                    val v = (a as Rt_DecimalValue).value
+                    var scale = (b as Rt_IntValue).value
                     scale = max(scale, -Lib_DecimalMath.DECIMAL_INT_DIGITS.toLong())
                     scale = min(scale, Lib_DecimalMath.DECIMAL_FRAC_DIGITS.toLong())
                     val r = v.setScale(scale.toInt(), RoundingMode.HALF_UP)
@@ -229,7 +229,7 @@ object Lib_Type_Decimal {
                 alias("signum", C_MessageType.ERROR, since = SINCE0)
                 dbFunctionSimple("decimal.sign", "SIGN")
                 body { a ->
-                    val v = a.asDecimal()
+                    val v = (a as Rt_DecimalValue).value
                     val r = v.signum()
                     Rt_IntValue.get(r.toLong())
                 }
@@ -245,7 +245,7 @@ object Lib_Type_Decimal {
                 """)
                 dbFunctionTemplate("decimal.to_big_integer", 1, "TRUNC(#0)")
                 body { a ->
-                    val v = a.asDecimal()
+                    val v = (a as Rt_DecimalValue).value
                     val bi = v.toBigInteger()
                     Rt_BigIntegerValue.get(bi)
                 }
@@ -266,7 +266,7 @@ object Lib_Type_Decimal {
                 comment("Convert this decimal to a base 10 text representation.")
                 dbFunction(ToText_Db)
                 body { a ->
-                    val v = a.asDecimal()
+                    val v = (a as Rt_DecimalValue).value
                     val r = Lib_DecimalMath.toString(v)
                     Rt_TextValue.get(r)
                 }
@@ -291,8 +291,8 @@ object Lib_Type_Decimal {
                     """)
                 }
                 body { a, b ->
-                    val v = a.asDecimal()
-                    val sci = b.asBoolean()
+                    val v = (a as Rt_DecimalValue).value
+                    val sci = (b as Rt_BooleanValue).value
                     val r = if (sci) {
                         Lib_DecimalMath.toSciString(v)
                     } else {
@@ -502,8 +502,8 @@ object Lib_DecimalMath {
 
 private object DecFns {
     val Pow = C_SysFunctionBody.simple(Db_SysFunction.simple("decimal.pow", "POW"), pure = true) { a, b ->
-        val v = a.asDecimal()
-        val power = b.asInteger()
+        val v = (a as Rt_DecimalValue).value
+        val power = (b as Rt_IntValue).value
         if (power < 0) {
             throw Rt_Exception.common("decimal.pow:negative_power:$power", "Negative power: $power")
         }
@@ -512,7 +512,7 @@ private object DecFns {
     }
 
     val Sqrt = C_SysFunctionBody.simple(Db_SysFunction.simple("decimal.sqrt", "SQRT"), pure = true) { a ->
-        val v = a.asDecimal()
+        val v = (a as Rt_DecimalValue).value
         if (v < BigDecimal.ZERO) {
             throw Rt_Exception.common("decimal.sqrt:negative:$v", "Negative value")
         }
@@ -529,7 +529,7 @@ private object DecFns {
     }
 
     fun calcFromInteger(a: Rt_Value): Rt_Value {
-        val i = a.asInteger()
+        val i = (a as Rt_IntValue).value
         return Rt_DecimalValue.get(i)
     }
 
@@ -542,7 +542,7 @@ private object DecFns {
     val FromBigInteger_Db = Db_SysFunction.template("decimal(big_integer)", 1, "#0")
 
     val FromBigInteger = C_SysFunctionBody.simple(FromBigInteger_Db, pure = true) { a ->
-        val bigInt = a.asBigInteger()
+        val bigInt = (a as Rt_BigIntegerValue).value
         val bigDec = bigInt.toBigDecimal()
         Rt_DecimalValue.get(bigDec)
     }
@@ -551,7 +551,7 @@ private object DecFns {
         Db_SysFunction.simple("decimal(text)", SqlConstants.FN_DECIMAL_FROM_TEXT),
         pure = true
     ) { a ->
-        val s = a.asString()
+        val s = (a as Rt_TextValue).value
         Rt_DecimalValue.get(s)
     }
 }

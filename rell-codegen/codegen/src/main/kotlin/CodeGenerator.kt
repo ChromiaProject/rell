@@ -6,7 +6,6 @@
 
 package net.postchain.rell.codegen
 
-
 import net.postchain.rell.api.base.InternalRellApi
 import net.postchain.rell.api.base.RellApiBaseInternal
 import net.postchain.rell.api.base.RellApiCompile

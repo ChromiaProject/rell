@@ -4,9 +4,9 @@
 
 package net.postchain.rell.gtx
 
-import net.postchain.rell.base.testutils.TestFixtures
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestUtils
+import net.postchain.rell.base.testutils.TestFixtures
 import net.postchain.rell.gtx.testutils.BaseGtxTest
 import kotlin.test.Test
 

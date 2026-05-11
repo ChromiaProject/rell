@@ -35,8 +35,6 @@ data class Rt_BigIntegerValue private constructor(val value: BigInteger): Rt_Val
         Rt_SqlCompatibleValueClass<Rt_BigIntegerValue> {
         override val name
             get() = "big_integer"
-
-        override val klass = Rt_BigIntegerValue::class
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.BIG_INTEGER)
         override val nativeTypes = immSetOf(BigInteger::class.createType())
 
@@ -44,7 +42,7 @@ data class Rt_BigIntegerValue private constructor(val value: BigInteger): Rt_Val
             get() = Lib_BigIntegerMath.SQL_TYPE
 
         override val comparator: Comparator<Rt_Value> =
-            Comparator { a, b -> a.asBigInteger().compareTo(b.asBigInteger()) }
+            Comparator { a, b -> (a as Rt_BigIntegerValue).value.compareTo((b as Rt_BigIntegerValue).value) }
 
         val ZERO = Rt_BigIntegerValue(BigInteger.ZERO)
 

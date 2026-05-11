@@ -25,7 +25,6 @@ import net.postchain.rell.base.runtime.truffle.Tf_Unchecked
 import net.postchain.rell.base.runtime.truffle.values.*
 import java.math.BigDecimal
 import kotlin.math.abs
-import kotlin.math.sign
 
 /**
  * Maximum scale delta for which scale-alignment via `10^Δ` stays in Long. `10^18` ≈ 1.11e18
@@ -216,7 +215,7 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
      *
      * The translator picks [GenericInt] / [GenericBool] / [Generic] by result type — typed
      * variants override `executeLong`/`executeBoolean` to unbox via [Tf_Unchecked.cast],
-     * dropping the default `execute().asInteger()` / `asBoolean()` chain (whose `typeError`
+     * dropping the default `(execute() as Rt_IntValue).value` / `asBoolean()` chain (whose `typeError`
      * branch dominated PE-traced graphs even though it was never live at runtime).
      */
     internal open class Generic(
@@ -1370,7 +1369,7 @@ internal sealed class Tf_FunctionCallNode: Tf_ExprNode() {
 
     /**
      * User-function call whose return type is statically integer. Overrides [executeLong]
-     * to drop the default `execute(frame).asInteger()` chain — `asInteger`'s `typeError`
+     * to drop the default `(execute(frame) as Rt_IntValue).value` chain — `asInteger`'s `typeError`
      * branch dominates PE-traced graphs (~6.5K samples in profiling) even though it's
      * unreachable when the type system already proved the return type.
      */
@@ -1687,8 +1686,8 @@ internal class Tf_StructCreateNode(
     private fun scatterValue(somShape: Tf_StructShape, instance: Tf_DynStruct, slotIdx: Int, value: Rt_Value) {
         val prop = somShape.properties[slotIdx]
         when (somShape.slotKindAt(slotIdx)) {
-            TF_SLOT_LONG -> prop.setLong(instance, value.asInteger())
-            TF_SLOT_BOOLEAN -> prop.setBoolean(instance, value.asBoolean())
+            TF_SLOT_LONG -> prop.setLong(instance, (value as Rt_IntValue).value)
+            TF_SLOT_BOOLEAN -> prop.setBoolean(instance, (value as Rt_BooleanValue).value)
             else -> prop.setObject(instance, value)
         }
     }

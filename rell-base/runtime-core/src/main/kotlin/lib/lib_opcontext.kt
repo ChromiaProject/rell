@@ -67,7 +67,7 @@ object Lib_OpContext {
             param("pubkey", type = "byte_array", comment = "the public key to check")
             validate { ctx -> checkCtx(ctx.exprCtx, ctx.callPos, allowTest = true) }
             bodyContext { ctx, a ->
-                val bytes = a.asByteArray().toBytes()
+                val bytes = (a as Rt_ByteArrayValue).value.toBytes()
                 val r = ctx.exeCtx.opCtx.isSigner(bytes)
                 Rt_BooleanValue.get(r)
             }
@@ -223,7 +223,7 @@ object Lib_OpContext {
                 param("pubkey", type = "byte_array", comment = "the public key to check")
                 validate(::checkCtx)
                 bodyContext { ctx, a ->
-                    val bytes = a.asByteArray().toBytes()
+                    val bytes = (a as Rt_ByteArrayValue).value.toBytes()
                     val r = ctx.exeCtx.opCtx.isSigner(bytes)
                     Rt_BooleanValue.get(r)
                 }
@@ -283,8 +283,8 @@ object Lib_OpContext {
                 param("data", type = "gtv", comment = "arguments to the event processor")
                 validate(::checkCtx)
                 bodyContext { ctx, arg1, arg2 ->
-                    val type = arg1.asString()
-                    val data = arg2.asGtv()
+                    val type = (arg1 as Rt_TextValue).value
+                    val data = (arg2 as Rt_GtvValue).value
                     ctx.exeCtx.opCtx.emitEvent(type, data)
                     Rt_UnitValue
                 }

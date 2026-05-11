@@ -4,8 +4,8 @@
 
 package net.postchain.rell.toolbox.seeder.exporter
 
-import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import net.postchain.rell.toolbox.seeder.generator.GeneratedData
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import java.nio.file.Path
 
 interface DataExporter {

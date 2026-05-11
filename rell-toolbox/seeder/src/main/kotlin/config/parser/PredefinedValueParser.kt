@@ -25,7 +25,7 @@ object PredefinedValueParser {
             type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BYTE_ARRAY -> parseByteArrayValues(nodes)
             type is RR_Type.Enum -> parseEnumValues(attribute, nodes)
             else -> throw ConfigurationValidationException(
-                "predefined values type is not supported for type ${attribute.typeStr()}"
+                "predefined values type is not supported for type ${attribute.typeStr()}",
             )
         }
     }
@@ -33,7 +33,7 @@ object PredefinedValueParser {
     private fun parseBooleanValues(nodes: JsonNode): List<Boolean> = nodes.map {
         if (!it.isBoolean) {
             throw ConfigurationValidationException(
-                "predefined values must be boolean, but found: ${it.nodeType}"
+                "predefined values must be boolean, but found: ${it.nodeType}",
             )
         }
         it.asBoolean()
@@ -44,20 +44,20 @@ object PredefinedValueParser {
             it.isInt -> it.asInt()
             it.isTextual -> {
                 it.asText().toIntOrNull() ?: throw ConfigurationValidationException(
-                    "predefined values must be of number type, but found: ${it.nodeType}"
+                    "predefined values must be of number type, but found: ${it.nodeType}",
                 )
             }
 
             it.isBigInteger -> throw ConfigurationValidationException(
-                "predefined value '${it.asText()}' exceeds integer type range, may cause an overflow"
+                "predefined value '${it.asText()}' exceeds integer type range, may cause an overflow",
             )
 
             it.isBigDecimal || it.isDouble || it.isFloat -> throw ConfigurationValidationException(
-                "predefined values requires integer, but found: ${it.nodeType}"
+                "predefined values requires integer, but found: ${it.nodeType}",
             )
 
             else -> throw ConfigurationValidationException(
-                "predefined values must be numbers, but found: ${it.nodeType}"
+                "predefined values must be numbers, but found: ${it.nodeType}",
             )
         }
     }
@@ -66,14 +66,14 @@ object PredefinedValueParser {
         when {
             it.isTextual -> {
                 it.asText().toBigIntegerOrNull() ?: throw ConfigurationValidationException(
-                    "predefined values must be valid number, but found: ${it.nodeType}"
+                    "predefined values must be valid number, but found: ${it.nodeType}",
                 )
             }
 
             it.isInt -> it.asInt().toBigInteger()
             it.isBigInteger -> it.asInt().toBigInteger()
             else -> throw ConfigurationValidationException(
-                "predefined values must be numbers or texts, but found: ${it.nodeType}"
+                "predefined values must be numbers or texts, but found: ${it.nodeType}",
             )
         }
     }
@@ -81,7 +81,7 @@ object PredefinedValueParser {
     private fun parseDecimalValues(nodes: JsonNode): List<Double> = nodes.map {
         if (!it.isNumber) {
             throw ConfigurationValidationException(
-                "predefined values must be numbers, but found: ${it.nodeType}"
+                "predefined values must be numbers, but found: ${it.nodeType}",
             )
         }
         it.asDouble()
@@ -90,12 +90,12 @@ object PredefinedValueParser {
     private fun parseRowIdValues(nodes: JsonNode): List<Int> = nodes.map {
         if (!it.isInt) {
             throw ConfigurationValidationException(
-                "predefined values must be of type integer, but found ${it.nodeType}"
+                "predefined values must be of type integer, but found ${it.nodeType}",
             )
         }
         if (it.asInt() < 0) {
             throw ConfigurationValidationException(
-                "predefined values must be greater or equal to 0 value was '$it'"
+                "predefined values must be greater or equal to 0 value was '$it'",
             )
         }
         it.asInt()
@@ -104,7 +104,7 @@ object PredefinedValueParser {
     private fun parseTextualValues(nodes: JsonNode) = nodes.map {
         if (!it.isTextual) {
             throw ConfigurationValidationException(
-                "predefined values must be strings, but found: ${it.nodeType}"
+                "predefined values must be strings, but found: ${it.nodeType}",
             )
         }
         it.asText()
@@ -115,7 +115,7 @@ object PredefinedValueParser {
             it.isObject -> it.toString()
             it.isArray -> it.toString()
             else -> throw ConfigurationValidationException(
-                "predefined values must be object or array, but found: ${it.nodeType}"
+                "predefined values must be object or array, but found: ${it.nodeType}",
             )
         }
     }
@@ -123,18 +123,18 @@ object PredefinedValueParser {
     private fun parseByteArrayValues(nodes: JsonNode): List<Any> = nodes.map {
         if (!it.isTextual) {
             throw ConfigurationValidationException(
-                "predefined values must be strings, but found: ${it.nodeType}"
+                "predefined values must be strings, but found: ${it.nodeType}",
             )
         }
         if (!it.asText().matches(Regex("[0-9A-Fa-f]+"))) {
             throw ConfigurationValidationException(
-                "invalid hexadecimal value. Only characters 0-9, A-F, and a-f are allowed, but found '${it.asText()}'"
+                "invalid hexadecimal value. Only characters 0-9, A-F, and a-f are allowed, but found '${it.asText()}'",
             )
         }
 
         if (it.asText().length % 2 != 0) {
             throw ConfigurationValidationException(
-                "invalid hexadecimal value. Length must be even, but found ${it.asText().length}"
+                "invalid hexadecimal value. Length must be even, but found ${it.asText().length}",
             )
         }
         it.asText()
@@ -148,14 +148,14 @@ object PredefinedValueParser {
             ?: throw ConfigurationValidationException("Expected enum type for attribute '${attribute.name}'")
         if (!node.isTextual) {
             throw ConfigurationValidationException(
-                "predefined values must be strings, but found: ${node.nodeType}"
+                "predefined values must be strings, but found: ${node.nodeType}",
             )
         }
         val enumAttrNames = enumDef.attrs.map { it.nameStr }
         if (node.asText() !in enumAttrNames) {
             val validationErrorMessage = enumAttrNames.joinToString(prefix = "[", postfix = "]")
             throw ConfigurationValidationException(
-                "enum value '${node.asText()}' is not in enum set $validationErrorMessage"
+                "enum value '${node.asText()}' is not in enum set $validationErrorMessage",
             )
         }
         node.asText()

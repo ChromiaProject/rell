@@ -26,9 +26,6 @@ class Rt_TimeFormatValue(format: String): Rt_Value {
     companion object: Rt_ValueClass<Rt_TimeFormatValue> {
         override val name
             get() = "rell.time.format"
-
-        override val klass = Rt_TimeFormatValue::class
-
         private val UTC_TIME_ZONE: TimeZone = TimeZone.getTimeZone("UTC")
         private const val LEGAL_UNQUOTED_ALPHA = "yMwWDdEuaHhmsS"
         private val LEGAL_QUOTED_ALPHA: Set<Char> = (('A'..'Z') + ('a'..'z')).toSet()

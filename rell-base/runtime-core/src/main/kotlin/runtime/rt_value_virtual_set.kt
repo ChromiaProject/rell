@@ -35,9 +35,6 @@ class Rt_VirtualSetValue(
     companion object: Rt_ValueClass<Rt_VirtualSetValue> {
         override val name
             get() = "virtual_set"
-
-        override val klass = Rt_VirtualSetValue::class
-
         fun gtvConversion(type: R_VirtualSetType): Rt_GtvCompatibleValueClass<*> = gtvConversionOf { ctx, gtv ->
             decodeVirtualSet(ctx, type, deserializeVirtual(ctx, gtv))
         }

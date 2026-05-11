@@ -6,10 +6,10 @@ package net.postchain.rell.api.gtx.lib
 
 import net.postchain.common.exception.TransactionIncorrect
 import net.postchain.rell.api.gtx.testutils.PostchainRellTestProjExt
-import net.postchain.rell.base.testutils.chkFromGtv
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
+import net.postchain.rell.base.testutils.chkFromGtv
 import kotlin.test.Test
 
 internal class LibRellTestTxTest: BaseRellTest() {

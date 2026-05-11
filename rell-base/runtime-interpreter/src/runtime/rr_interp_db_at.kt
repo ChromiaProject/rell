@@ -502,12 +502,12 @@ internal fun Rt_InterpreterImpl.generateDbAtOrderBy(
 internal fun Rt_InterpreterImpl.evaluateAtExtras(extras: RR_AtExtras, frame: Rt_CallFrame): Rt_AtExprExtras {
     if (extras.limit == null && extras.offset == null) return Rt_AtExprExtras.NULL
     val limit = extras.limit?.let {
-        val v = evaluateExpr(it, frame).asInteger()
+        val v = (evaluateExpr(it, frame) as Rt_IntValue).value
         if (v < 0) throw Rt_Exception.common("expr:at:limit:negative:$v", "Negative limit: $v")
         v
     }
     val offset = if (limit != null && limit <= 0L) null else extras.offset?.let {
-        val v = evaluateExpr(it, frame).asInteger()
+        val v = (evaluateExpr(it, frame) as Rt_IntValue).value
         if (v < 0) throw Rt_Exception.common("expr:at:offset:negative:$v", "Negative offset: $v")
         v
     }
@@ -526,10 +526,10 @@ internal fun Rt_InterpreterImpl.iterableForColAt(
     paramType: RR_Type,
     fromValue: Rt_Value,
 ): Iterable<Rt_Value> = when (from.iterableAdapter) {
-    RR_IterableAdapterKind.DIRECT -> fromValue.asIterable()
+    RR_IterableAdapterKind.DIRECT -> (fromValue as Rt_IterableValue)
     RR_IterableAdapterKind.LEGACY_MAP -> {
         val tupleType = resolveType(paramType)
-        fromValue.asMap().entries.map { (k, v) -> Rt_TupleValue(tupleType, listOf(k, v)) }
+        (fromValue as Rt_MapBackedValue).mapView.entries.map { (k, v) -> Rt_TupleValue(tupleType, listOf(k, v)) }
     }
 }
 
@@ -584,7 +584,7 @@ private fun Rt_InterpreterImpl.evaluateColAtSimpleFilter(
         frame.block(expr.block) {
             for (item in iterable) {
                 frame.setUnchecked(expr.param.ptr, item, true)
-                if (!evaluateExpr(expr.where, frame).asBoolean()) continue
+                if (!(evaluateExpr(expr.where, frame) as Rt_BooleanValue).value) continue
                 val v = evaluateExpr(theField, frame)
                 // selectedFields[0] indexes into the row of fields; with a single field that is index 0.
                 val out = if (wrapInTuple) Rt_TupleValue(elementRtType, listOf(v)) else v
@@ -595,7 +595,7 @@ private fun Rt_InterpreterImpl.evaluateColAtSimpleFilter(
         frame.block(expr.block) {
             for (item in iterable) {
                 frame.setUnchecked(expr.param.ptr, item, true)
-                if (!evaluateExpr(expr.where, frame).asBoolean()) continue
+                if (!(evaluateExpr(expr.where, frame) as Rt_BooleanValue).value) continue
                 val rowValues = expr.what.fields.map { evaluateExpr(it.expr, frame) }
                 val selValues = selectedFields.map { rowValues[it] }
                 val out = if (wrapInTuple) Rt_TupleValue(elementRtType, selValues) else selValues[0]
@@ -642,7 +642,7 @@ private fun Rt_InterpreterImpl.evaluateColAtWithNativeSummarization(
                 for (item in iterable) {
                     if (earlyLimiting && limitRemaining <= 0L) break
                     frame.setUnchecked(expr.param.ptr, item, true)
-                    val matches = evaluateExpr(expr.where, frame).asBoolean()
+                    val matches = (evaluateExpr(expr.where, frame) as Rt_BooleanValue).value
                     if (!matches) continue
                     if (earlyLimiting && offsetRemaining > 0L) {
                         offsetRemaining--; continue
@@ -662,7 +662,7 @@ private fun Rt_InterpreterImpl.evaluateColAtWithNativeSummarization(
             frame.block(expr.block) {
                 for (item in iterable) {
                     frame.setUnchecked(expr.param.ptr, item, true)
-                    val matches = evaluateExpr(expr.where, frame).asBoolean()
+                    val matches = (evaluateExpr(expr.where, frame) as Rt_BooleanValue).value
                     if (!matches) continue
 
                     val values = expr.what.fields.map { evaluateExpr(it.expr, frame) }
@@ -685,7 +685,7 @@ private fun Rt_InterpreterImpl.evaluateColAtWithNativeSummarization(
             frame.block(expr.block) {
                 for (item in iterable) {
                     frame.setUnchecked(expr.param.ptr, item, true)
-                    val matches = evaluateExpr(expr.where, frame).asBoolean()
+                    val matches = (evaluateExpr(expr.where, frame) as Rt_BooleanValue).value
                     if (!matches) continue
 
                     val values = expr.what.fields.map { evaluateExpr(it.expr, frame) }
@@ -801,22 +801,22 @@ private fun Rt_InterpreterImpl.aggregateValue(
 
     RR_ColAtFieldSummarizationKind.LIST -> {
         val list = existing ?: Rt_ListValue(resolveType(info.collectionType!!), mutableListOf())
-        list.asList().add(newValue)
+        (list as Rt_ListValue).elements.add(newValue)
         list
     }
 
     RR_ColAtFieldSummarizationKind.SET -> {
         val set = existing ?: Rt_SetValue(resolveType(info.collectionType!!), mutableSetOf())
-        set.asSet().add(newValue)
+        (set as Rt_SetValue).elements.add(newValue)
         set
     }
 
     RR_ColAtFieldSummarizationKind.MAP -> {
         val map = existing ?: Rt_MapValue(resolveType(info.collectionType!!), mutableMapOf())
-        val entry = newValue.asTuple()
+        val entry = (newValue as Rt_TupleValue).elements
         val k = entry[0]
         val v = entry[1]
-        val prev = map.asMutableMap().put(k, v)
+        val prev = (map as Rt_MutableMapBackedValue).mutableMapView.put(k, v)
         if (prev != null) {
             throw Rt_Exception.common("aggregate:map:dupkey:${k.strCode()}", "Duplicate map key: ${k.str()}")
         }

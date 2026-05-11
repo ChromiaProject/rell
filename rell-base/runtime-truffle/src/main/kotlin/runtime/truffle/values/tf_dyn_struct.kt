@@ -5,14 +5,7 @@
 package net.postchain.rell.base.runtime.truffle.values
 
 import net.postchain.rell.base.model.rr.RR_Type
-import net.postchain.rell.base.runtime.Rt_BooleanValue
-import net.postchain.rell.base.runtime.Rt_IntValue
-import net.postchain.rell.base.runtime.Rt_StructValue
-import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.runtime.Rt_ValueClass
-import net.postchain.rell.base.runtime.asBoolean
-import net.postchain.rell.base.runtime.asInteger
-import net.postchain.rell.base.runtime.checkAttrSizeConstraint
+import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.truffle.Tf_Unchecked
 
 /**
@@ -59,8 +52,8 @@ open class Tf_DynStruct(
         shape.sizeConstraints[index]?.let { checkAttrSizeConstraint(it, value) }
         val prop = shape.properties[index]
         when (shape.slotKindAt(index)) {
-            TF_SLOT_LONG -> prop.setLong(this, value.asInteger())
-            TF_SLOT_BOOLEAN -> prop.setBoolean(this, value.asBoolean())
+            TF_SLOT_LONG -> prop.setLong(this, (value as Rt_IntValue).value)
+            TF_SLOT_BOOLEAN -> prop.setBoolean(this, (value as Rt_BooleanValue).value)
             else -> prop.setObject(this, value)
         }
     }

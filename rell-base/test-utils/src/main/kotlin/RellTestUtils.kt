@@ -22,6 +22,7 @@ import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.truffle.Tf_Backend
 import net.postchain.rell.base.sql.SqlManager
+import net.postchain.rell.base.testutils.RellTestUtils.BACKEND
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.serialization.deserializeRellApp
 import net.postchain.rell.serialization.serializeRellApp
@@ -168,10 +169,7 @@ object RellTestUtils {
     }
 
     fun rtErrToResult(e: Throwable): TestCallResult = when (e) {
-        is Rt_Exception -> when (e.err) {
-            is Rt_ValueTypeError -> throw e // Internal error, test shall crash.
-            else -> TestCallResult(e.err.code(), e.info.stack)
-        }
+        is Rt_Exception -> TestCallResult(e.err.code(), e.info.stack)
         else -> throw e
     }
 

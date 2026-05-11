@@ -10,6 +10,7 @@ import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.Rt_TryCallResultValue
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
 import net.postchain.rell.base.sql.SqlUtils.withSavepoint
@@ -101,7 +102,7 @@ internal object Lib_TryCall: KLogging() {
             param("fn", type = "() -> T", comment = "the function to be called")
             param("default", type = "T", lazy = true, comment = "the default value")
             bodyContext { ctx, fn, default ->
-                tryCall(ctx, fn, onFailure = { default.asLazyValue() })
+                tryCall(ctx, fn, onFailure = { (default as Rt_LazyResolvableValue).resolveLazy() })
             }
         }
 
@@ -182,7 +183,7 @@ internal object Lib_TryCall: KLogging() {
                     Check if this result represents an error.
                 """)
                 value { self ->
-                    Rt_BooleanValue.get(Rt_TryCallResultValue.get(self).isError)
+                    Rt_BooleanValue.get((self as Rt_TryCallResultValue).isError)
                 }
             }
 
@@ -197,7 +198,7 @@ internal object Lib_TryCall: KLogging() {
                 """,
             ) {
                 value { self ->
-                    Rt_TryCallResultValue.get(self).valueOrNull
+                    (self as Rt_TryCallResultValue).valueOrNull
                         ?: throw Rt_Exception.common("try_call_result:value:novalue", "Field 'value' has no value")
                 }
             }
@@ -212,7 +213,7 @@ internal object Lib_TryCall: KLogging() {
                 """,
             ) {
                 value { self ->
-                    Rt_TryCallResultValue.get(self).valueOrNull ?: Rt_NullValue
+                    (self as Rt_TryCallResultValue).valueOrNull ?: Rt_NullValue
                 }
             }
 
@@ -222,7 +223,7 @@ internal object Lib_TryCall: KLogging() {
                     or null if the function call did not throw an exception.
                 """)
                 value { self ->
-                    val msg = Rt_TryCallResultValue.get(self).requireMessageOrNull
+                    val msg = (self as Rt_TryCallResultValue).requireMessageOrNull
                     if (msg != null) Rt_TextValue.get(msg) else Rt_NullValue
                 }
             }
@@ -230,7 +231,7 @@ internal object Lib_TryCall: KLogging() {
     }
 
     private fun tryCallResultType(fn: Rt_Value): Rt_ValueClass<*> {
-        val fnType = fn.asFunction().type
+        val fnType = (fn as Rt_FunctionValue).type
         val rrFnType = checkNotNull(fnType.rrType as? RR_Type.Function) {
             "Expected function type, got ${fnType.name}"
         }
@@ -272,7 +273,7 @@ internal object Lib_TryCall: KLogging() {
         ctx: Rt_CallContext,
         onSuccess: (Rt_Value) -> Rt_Value = { it },
     ): Rt_Value {
-        val v = fn.asFunction().call(immListOf())
+        val v = (fn as Rt_FunctionValue).call(immListOf())
         return onSuccess(v)
     }
 

@@ -13,20 +13,8 @@ import com.oracle.truffle.api.profiles.BranchProfile
 import net.postchain.rell.base.model.rr.RR_FrameBlock
 import net.postchain.rell.base.model.rr.RR_IterableAdapterKind
 import net.postchain.rell.base.model.rr.RR_VarDeclarator
-import net.postchain.rell.base.runtime.Rt_CallFrame
-import net.postchain.rell.base.runtime.Rt_TupleValue
-import net.postchain.rell.base.runtime.Rt_UnitValue
-import net.postchain.rell.base.runtime.Rt_Value
-import net.postchain.rell.base.runtime.Rt_ValueClass
-import net.postchain.rell.base.runtime.asIterable
-import net.postchain.rell.base.runtime.asMap
-import net.postchain.rell.base.runtime.initializeDeclarator
-import net.postchain.rell.base.runtime.truffle.STATUS_BREAK
-import net.postchain.rell.base.runtime.truffle.STATUS_CONTINUE
-import net.postchain.rell.base.runtime.truffle.STATUS_FALLTHROUGH
-import net.postchain.rell.base.runtime.truffle.STATUS_RETURN
-import net.postchain.rell.base.runtime.truffle.TF_RETURN_VALUE_AUX_SLOT
-import net.postchain.rell.base.runtime.truffle.Tf_Backend
+import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.truffle.*
 
 /** Native: `;` no-op. */
 internal class Tf_EmptyStmtNode : Tf_ExprNode() {
@@ -597,8 +585,8 @@ internal class Tf_ForStmtNode(
     override fun executeStmt(frame: VirtualFrame): Int {
         val iterable = iterableExpr.execute(frame)
         val iterator: Iterable<Rt_Value> = when (iterableAdapter) {
-            RR_IterableAdapterKind.DIRECT -> iterable.asIterable()
-            RR_IterableAdapterKind.LEGACY_MAP -> iterable.asMap().entries.map { (k, v) ->
+            RR_IterableAdapterKind.DIRECT -> (iterable as Rt_IterableValue)
+            RR_IterableAdapterKind.LEGACY_MAP -> (iterable as Rt_MapBackedValue).mapView.entries.map { (k, v) ->
                 Rt_TupleValue(legacyMapTupleType, listOf(k, v))
             }
         }

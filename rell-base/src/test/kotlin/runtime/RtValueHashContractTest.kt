@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.runtime
 
-import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -20,13 +19,11 @@ import kotlin.test.assertTrue
  */
 class RtValueHashContractTest {
     private class FakeStructTypeByDefIndex(val defIndex: Int, override val name: String): Rt_ValueClass<Rt_StructValue> {
-        override val klass: KClass<Rt_StructValue> = Rt_StructValue::class
         override fun equals(other: Any?) = other is FakeStructTypeByDefIndex && defIndex == other.defIndex
         override fun hashCode() = defIndex
     }
 
     private class FakeStructTypeByName(override val name: String): Rt_ValueClass<Rt_StructValue> {
-        override val klass: KClass<Rt_StructValue> = Rt_StructValue::class
         override fun equals(other: Any?) = other is FakeStructTypeByName && name == other.name
         override fun hashCode() = name.hashCode()
     }
@@ -57,19 +54,16 @@ class RtValueHashContractTest {
     @Test fun virtualStructValueHashIsConsistentAcrossTypeClassRoutes() {
         val typeByDefIndex = object: Rt_ValueClass<Rt_VirtualStructValue> {
             override val name = "virtual<shared>"
-            override val klass: KClass<Rt_VirtualStructValue> = Rt_VirtualStructValue::class
             override fun equals(other: Any?) = other === this
             override fun hashCode() = 7
         }
         val typeByName = object: Rt_ValueClass<Rt_VirtualStructValue> {
             override val name = "virtual<shared>"
-            override val klass: KClass<Rt_VirtualStructValue> = Rt_VirtualStructValue::class
             override fun equals(other: Any?) = other === this
             override fun hashCode() = name.hashCode()
         }
         val innerType = object: Rt_ValueClass<Rt_StructValue> {
             override val name = "shared"
-            override val klass: KClass<Rt_StructValue> = Rt_StructValue::class
             override fun equals(other: Any?) = other === this
             override fun hashCode() = 0
         }

@@ -22,9 +22,6 @@ sealed class Rt_VirtualValue(val gtv: Gtv): Rt_Value {
     companion object: Rt_ValueClass<Rt_VirtualValue> {
         override val name
             get() = "virtual"
-
-        override val klass = Rt_VirtualValue::class
-
         fun toFull(v: Rt_Value): Rt_Value = if (v is Rt_VirtualValue) v.toFull() else v
     }
 }

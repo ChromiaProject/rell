@@ -147,7 +147,7 @@ internal object Lib_Require {
                 }
                 bodyN { args ->
                     Rt_Utils.checkRange(args.size, 0, 1)
-                    val msg = args.getOrNull(0)?.asLazyValue()?.asString()
+                    val msg = ((args.getOrNull(0) as? Rt_LazyResolvableValue)?.resolveLazy() as? Rt_TextValue)?.value
                     throw Rt_RequireError.exception(msg)
                 }
             }
@@ -158,7 +158,7 @@ internal object Lib_Require {
         bodyOpt1 { arg1, arg2 ->
             val res = condition.calculate(arg1)
             if (res == null) {
-                val msg = arg2?.asLazyValue()?.asString()
+                val msg = ((arg2 as? Rt_LazyResolvableValue)?.resolveLazy() as? Rt_TextValue)?.value
                 throw Rt_RequireError.exception(msg)
             }
             res
@@ -171,7 +171,7 @@ internal sealed interface Rt_RequireCondition {
 }
 
 private object Rt_RequireCondition_Boolean: Rt_RequireCondition {
-    override fun calculate(v: Rt_Value) = if (v.asBoolean()) Rt_UnitValue else null
+    override fun calculate(v: Rt_Value) = if ((v as Rt_BooleanValue).value) Rt_UnitValue else null
 }
 
 internal object Rt_RequireCondition_Nullable: Rt_RequireCondition {
@@ -179,9 +179,9 @@ internal object Rt_RequireCondition_Nullable: Rt_RequireCondition {
 }
 
 internal object Rt_RequireCondition_Collection: Rt_RequireCondition {
-    override fun calculate(v: Rt_Value) = if (v != Rt_NullValue && v.asCollection().isNotEmpty()) v else null
+    override fun calculate(v: Rt_Value) = if (v != Rt_NullValue && (v as Rt_CollectionValue).collection.isNotEmpty()) v else null
 }
 
 internal object Rt_RequireCondition_Map: Rt_RequireCondition {
-    override fun calculate(v: Rt_Value) = if (v != Rt_NullValue && v.asMap().isNotEmpty()) v else null
+    override fun calculate(v: Rt_Value) = if (v != Rt_NullValue && (v as Rt_MapBackedValue).mapView.isNotEmpty()) v else null
 }

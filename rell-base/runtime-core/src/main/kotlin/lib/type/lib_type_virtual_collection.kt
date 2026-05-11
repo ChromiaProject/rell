@@ -7,8 +7,7 @@ package net.postchain.rell.base.lib.type
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.runtime.Rt_BooleanValue
 import net.postchain.rell.base.runtime.Rt_IntValue
-import net.postchain.rell.base.runtime.asVirtualCollection
-
+import net.postchain.rell.base.runtime.Rt_VirtualCollectionValue
 object Lib_Type_VirtualCollection {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("virtual_collection", abstract = true, hidden = true, since = "0.9.0") {
@@ -22,14 +21,14 @@ object Lib_Type_VirtualCollection {
 
             function("empty", "boolean", pure = true, since = "0.9.0") {
                 body { a ->
-                    val col = a.asVirtualCollection()
+                    val col = (a as Rt_VirtualCollectionValue)
                     Rt_BooleanValue.get(col.size() == 0)
                 }
             }
 
             function("size", "integer", pure = true, since = "0.9.0") {
                 body { a ->
-                    val col = a.asVirtualCollection()
+                    val col = (a as Rt_VirtualCollectionValue)
                     Rt_IntValue.get(col.size().toLong())
                 }
             }

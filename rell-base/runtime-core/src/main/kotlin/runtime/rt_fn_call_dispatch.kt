@@ -6,6 +6,7 @@ package net.postchain.rell.base.runtime
 
 import net.postchain.rell.base.model.expr.R_PartialCallMapping
 import net.postchain.rell.base.model.rr.RR_FunctionCallTarget
+import net.postchain.rell.base.runtime.R_SysFunctionUtils.callAndCatch
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
 import net.postchain.rell.base.utils.LazyString
@@ -28,21 +29,21 @@ fun createFunctionValueFromTarget(
     args: List<Rt_Value>,
 ): Rt_Value =
     if (target.rrTarget is RR_FunctionCallTarget.FunctionValue && baseValue != null && baseValue != Rt_NullValue) {
-        baseValue.asFunction().combine(resType, mapping, args)
+        (baseValue as Rt_FunctionValue).combine(resType, mapping, args)
     } else {
         Rt_FunctionValue(resType, mapping, target, baseValue, args)
     }
 
 fun Rt_FunctionCallTarget.targetStr(baseValue: Rt_Value?, format: Rt_StrFormat): String {
     if (rrTarget is RR_FunctionCallTarget.FunctionValue && baseValue != null && baseValue != Rt_NullValue) {
-        return baseValue.asFunction().str(format)
+        return (baseValue as Rt_FunctionValue).str(format)
     }
     return rrTargetName()
 }
 
 fun Rt_FunctionCallTarget.targetStrCode(baseValue: Rt_Value?): String {
     if (rrTarget is RR_FunctionCallTarget.FunctionValue && baseValue != null && baseValue != Rt_NullValue) {
-        return baseValue.asFunction().strCode()
+        return (baseValue as Rt_FunctionValue).strCode()
     }
     return targetStr(baseValue, Rt_StrFormat.V1)
 }
@@ -155,7 +156,7 @@ class Rt_ExtendableFunctionCombiner_Boolean: Rt_ExtendableFunctionCombiner() {
     private var result: Rt_Value = Rt_BooleanValue.FALSE
 
     override fun addExtensionResult(value: Rt_Value): Boolean {
-        val v = value.asBoolean()
+        val v = (value as Rt_BooleanValue).value
         result = value
         return v
     }
@@ -180,7 +181,7 @@ class Rt_ExtendableFunctionCombiner_List(private val type: Rt_ValueClass<*>): Rt
 
     override fun addExtensionResult(value: Rt_Value): Boolean {
         check(!done)
-        val col = value.asCollection()
+        val col = (value as Rt_CollectionValue).collection
         result.addAll(col)
         return false
     }
@@ -198,7 +199,7 @@ class Rt_ExtendableFunctionCombiner_Map(private val mapType: Rt_ValueClass<*>): 
 
     override fun addExtensionResult(value: Rt_Value): Boolean {
         check(!done)
-        val map = value.asMap()
+        val map = (value as Rt_MapBackedValue).mapView
         for ((k, v) in map) {
             val v0 = result.put(k, v)
             if (v0 != null) {

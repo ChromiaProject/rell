@@ -5,8 +5,8 @@
 package net.postchain.rell.toolbox.indexer
 
 import net.postchain.rell.base.compiler.ast.S_Pos
-import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.compiler.parser.antlr.AntlrPos
+import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import org.antlr.v4.runtime.misc.Interval
 import java.util.*
 

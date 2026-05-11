@@ -7,7 +7,10 @@ package net.postchain.rell.base.runtime
 import net.postchain.rell.base.model.ErrorPos
 import net.postchain.rell.base.model.expr.R_PartialArgMapping
 import net.postchain.rell.base.model.expr.R_PartialCallMapping
-import net.postchain.rell.base.model.rr.*
+import net.postchain.rell.base.model.rr.RR_Expr
+import net.postchain.rell.base.model.rr.RR_FunctionCall
+import net.postchain.rell.base.model.rr.RR_MemberCalculator
+import net.postchain.rell.base.model.rr.RR_WhenChooser
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
@@ -141,10 +144,10 @@ internal fun Rt_InterpreterImpl.evaluateMemberCalculator(
     base: Rt_Value,
     frame: Rt_CallFrame,
 ): Rt_Value = when (calc) {
-    is RR_MemberCalculator.StructAttr -> base.asStruct().get(calc.attrIndex)
-    is RR_MemberCalculator.TupleAttr -> base.asTuple()[calc.attrIndex]
-    is RR_MemberCalculator.VirtualTupleAttr -> base.asVirtualTuple().get(calc.fieldIndex)
-    is RR_MemberCalculator.VirtualStructAttr -> base.asVirtualStruct().get(calc.attrDefIndex)
+    is RR_MemberCalculator.StructAttr -> (base as Rt_StructValue).get(calc.attrIndex)
+    is RR_MemberCalculator.TupleAttr -> (base as Rt_TupleValue).elements[calc.attrIndex]
+    is RR_MemberCalculator.VirtualTupleAttr -> (base as Rt_VirtualTupleValue).get(calc.fieldIndex)
+    is RR_MemberCalculator.VirtualStructAttr -> (base as Rt_VirtualStructValue).get(calc.attrDefIndex)
     is RR_MemberCalculator.DataAttribute -> {
         evaluateDataAttributeAccess(base, calc, frame)
     }
@@ -202,7 +205,7 @@ internal fun Rt_InterpreterImpl.evaluateDataAttributeAccess(
 
     // Special case: "rowid" is not a regular attribute — it's the row identity column
     if (calc.attrName == "rowid") {
-        val rowid = if (base is Rt_RowidValue) base.value else base.asObjectId()
+        val rowid = if (base is Rt_RowidValue) base.value else (base as Rt_EntityValue).rowid
         return Rt_RowidValue.get(rowid)
     }
 
@@ -212,7 +215,7 @@ internal fun Rt_InterpreterImpl.evaluateDataAttributeAccess(
     val rtResultType = resolveType(attr.type)
 
     // base may be an Rt_EntityValue (normal path) or Rt_RowidValue (from at-expression DB result).
-    val rowid = if (base is Rt_RowidValue) base.value else base.asObjectId()
+    val rowid = if (base is Rt_RowidValue) base.value else (base as Rt_EntityValue).rowid
     val table = entityDef.sqlMapping.table(frame.sqlCtx)
     val alias = "A00"
 

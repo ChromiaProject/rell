@@ -7,16 +7,12 @@ package net.postchain.rell.base.runtime.truffle.values
 import com.oracle.truffle.api.staticobject.DefaultStaticProperty
 import com.oracle.truffle.api.staticobject.StaticProperty
 import com.oracle.truffle.api.staticobject.StaticShape
-import net.postchain.rell.base.model.rr.RR_App
-import net.postchain.rell.base.model.rr.RR_PrimitiveKind
-import net.postchain.rell.base.model.rr.RR_SizeConstraint
-import net.postchain.rell.base.model.rr.RR_StructDefinition
-import net.postchain.rell.base.model.rr.RR_Type
+import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.Rt_ValueClass
 import net.postchain.rell.base.runtime.truffle.Tf_Language
 import net.postchain.rell.base.runtime.truffle.Tf_PolyglotBootstrap
-import java.util.Collections
-import java.util.IdentityHashMap
+import net.postchain.rell.base.runtime.truffle.values.Tf_StructShapeRegistry.shapeFor
+import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
 

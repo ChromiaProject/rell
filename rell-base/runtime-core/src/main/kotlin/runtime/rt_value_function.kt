@@ -61,9 +61,6 @@ class Rt_FunctionValue(
     companion object: Rt_ValueClass<Rt_FunctionValue> {
         override val name
             get() = "function"
-
-        override val klass = Rt_FunctionValue::class
-
         private val STR_RECURSION_DETECTOR = Rt_ValueRecursionDetector()
     }
 }

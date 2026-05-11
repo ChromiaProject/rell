@@ -8,7 +8,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 import net.postchain.rell.base.model.ErrorPos
 
-class Rt_ListValue(override val type: Rt_ValueClass<*>, internal val elements: MutableList<Rt_Value> = mutableListOf()):
+class Rt_ListValue(override val type: Rt_ValueClass<*>, val elements: MutableList<Rt_Value> = mutableListOf()):
     Rt_Value, Rt_CollectionValue {
 
     override val collection: MutableCollection<Rt_Value> get() = elements
@@ -35,9 +35,6 @@ class Rt_ListValue(override val type: Rt_ValueClass<*>, internal val elements: M
     companion object: Rt_ValueClass<Rt_ListValue> {
         override val name
             get() = "list"
-
-        override val klass = Rt_ListValue::class
-
         fun checkIndex(frame: Rt_Frame, errPos: ErrorPos, size: Int, index: Long) {
             val codeMsg = checkIndex0(size, index)
             if (codeMsg != null) {

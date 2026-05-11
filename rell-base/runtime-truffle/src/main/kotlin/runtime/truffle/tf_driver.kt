@@ -13,8 +13,6 @@ import com.oracle.truffle.api.nodes.ExplodeLoop
 import com.oracle.truffle.api.nodes.RootNode
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.runtime.Rt_BooleanValue
-import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.truffle.nodes.Tf_ExprNode
 
 /**

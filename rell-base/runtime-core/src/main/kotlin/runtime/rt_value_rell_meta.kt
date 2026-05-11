@@ -26,9 +26,6 @@ data class Rt_RellMetaValue(private val meta: R_DefinitionMeta): Rt_Value {
     companion object: Rt_ValueClass<Rt_RellMetaValue> {
         override val name
             get() = "rell.meta"
-
-        override val klass = Rt_RellMetaValue::class
-
         fun get(v: Rt_Value): Rt_RellMetaValue = cast(v)
     }
 }

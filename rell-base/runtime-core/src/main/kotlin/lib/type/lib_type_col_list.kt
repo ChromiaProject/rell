@@ -45,7 +45,7 @@ object Lib_Type_List {
                     val elemR = typeArgR("T")
                     bodyContext { ctx, arg ->
                         val listType = Rt_ListType(ctx.exeCtx.appCtx.interpreter.resolveRType(elemR))
-                        val iterable = arg.asIterable()
+                        val iterable = (arg as Rt_IterableValue)
                         val list = mutableListOf<Rt_Value>()
                         iterable.forEach { list.add(it) }
                         Rt_ListValue(listType, list)
@@ -60,8 +60,8 @@ object Lib_Type_List {
                 """)
                 param("index", "integer", comment = "the index of the element to retrieve")
                 body { self, index ->
-                    val list = self.asList()
-                    val i = index.asInteger()
+                    val list = (self as Rt_ListValue).elements
+                    val i = (index as Rt_IntValue).value
                     if (i < 0 || i >= list.size) {
                         throw Rt_Exception.common(
                             "fn:list.get:index:${list.size}:$i",
@@ -81,7 +81,7 @@ object Lib_Type_List {
                 alias("indexOf", deprecated = C_MessageType.ERROR, since = SINCE0)
                 param("value", "T", comment = "the element for which to search")
                 body { self, value ->
-                    val list = self.asList()
+                    val list = (self as Rt_ListValue).elements
                     Rt_IntValue.get(list.indexOf(value).toLong())
                 }
             }
@@ -96,8 +96,8 @@ object Lib_Type_List {
                 alias("removeAt", deprecated = C_MessageType.ERROR, since = SINCE0)
                 param("index", "integer", comment = "the index of the element to remove")
                 body { self, index ->
-                    val list = self.asList()
-                    val i = index.asInteger()
+                    val list = (self as Rt_ListValue).elements
+                    val i = (index as Rt_IntValue).value
 
                     if (i < 0 || i >= list.size) {
                         throw Rt_Exception.common(
@@ -127,8 +127,8 @@ object Lib_Type_List {
                 param("start", "integer", comment = "the starting index of the sublist (inclusive)")
                 body { self, start ->
                     val type = self.type
-                    val list = self.asList()
-                    val startIndex = start.asInteger()
+                    val list = (self as Rt_ListValue).elements
+                    val startIndex = (start as Rt_IntValue).value
                     calcSub(type, list, startIndex, list.size.toLong())
                 }
             }
@@ -148,9 +148,9 @@ object Lib_Type_List {
                 param("end", "integer", comment = "the end index of the sublist (exclusive)")
                 body { self, start, end ->
                     val type = self.type
-                    val list = self.asList()
-                    val startIndex = start.asInteger()
-                    val endIndex = end.asInteger()
+                    val list = (self as Rt_ListValue).elements
+                    val startIndex = (start as Rt_IntValue).value
+                    val endIndex = (end as Rt_IntValue).value
                     calcSub(type, list, startIndex, endIndex)
                 }
             }
@@ -166,8 +166,8 @@ object Lib_Type_List {
                 param("index", "integer", comment = "the index of the element to set")
                 param("value", "T", comment = "the value to set")
                 body { self, index, value ->
-                    val list = self.asList()
-                    val i = index.asInteger()
+                    val list = (self as Rt_ListValue).elements
+                    val i = (index as Rt_IntValue).value
 
                     if (i < 0 || i >= list.size) {
                         throw Rt_Exception.common(
@@ -198,8 +198,8 @@ object Lib_Type_List {
                 param("index", "integer", comment = "The index at which to add the element.")
                 param("value", "T", comment = "The value to add.")
                 body { self, index, value ->
-                    val list = self.asList()
-                    val i = index.asInteger()
+                    val list = (self as Rt_ListValue).elements
+                    val i = (index as Rt_IntValue).value
 
                     if (i < 0 || i > list.size) {
                         throw Rt_Exception.common(
@@ -233,9 +233,9 @@ object Lib_Type_List {
                 param("index", "integer", comment = "the starting index at which to add the elements")
                 param("values", "collection<-T>", comment = "the collection containing elements to add")
                 body { self, index, values ->
-                    val list = self.asList()
-                    val i = index.asInteger()
-                    val col = values.asCollection()
+                    val list = (self as Rt_ListValue).elements
+                    val i = (index as Rt_IntValue).value
+                    val col = (values as Rt_CollectionValue).collection
 
                     if (i < 0 || i > list.size) {
                         throw Rt_Exception.common("fn:list.add_all:index:${list.size}:$i", "Index out of range: $i (size ${list.size})")
@@ -252,7 +252,7 @@ object Lib_Type_List {
                 bodyMeta {
                     val comparator = Lib_Type_Collection.getSortComparatorRr(this, typeArgRrType("T"), typeArgR("T").name)
                     body { a ->
-                        val list = a.asList()
+                        val list = (a as Rt_ListValue).elements
                         list.sortWith(comparator)
                         Rt_UnitValue
                     }
@@ -276,8 +276,8 @@ object Lib_Type_List {
                 """)
                 param("n", "integer", comment = "the number of times to repeat this list")
                 body { self, n ->
-                    val list = self.asList()
-                    val nRepeats = n.asInteger()
+                    val list = (self as Rt_ListValue).elements
+                    val nRepeats = (n as Rt_IntValue).value
 
                     val total = rtCheckRepeatArgs(list.size, nRepeats, "list")
 
@@ -300,7 +300,7 @@ object Lib_Type_List {
                     `l = l.reversed();`.
                 """)
                 body { self ->
-                    val list = self.asList()
+                    val list = (self as Rt_ListValue).elements
                     list.reverse()
                     Rt_UnitValue
                 }
@@ -316,7 +316,7 @@ object Lib_Type_List {
                     - `[1, 2, 3].reversed()` returns `[3, 2, 1]`
                 """)
                 body { self ->
-                    val list = self.asList()
+                    val list = (self as Rt_ListValue).elements
                     val resList = list.toMutableList()
                     resList.reverse()
                     Rt_ListValue(self.type, resList)

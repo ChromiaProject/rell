@@ -14,8 +14,8 @@ import net.postchain.gtv.GtvNull
 import net.postchain.gtv.mapper.GtvObjectMapper
 import net.postchain.gtv.mapper.Name
 import net.postchain.gtv.mapper.Nullable
-import net.postchain.rell.base.model.R_FunctionParam
 import net.postchain.rell.base.model.MountName
+import net.postchain.rell.base.model.R_FunctionParam
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.utils.doc.DocSymbol
 import net.postchain.rell.codegen.deps.ClassName

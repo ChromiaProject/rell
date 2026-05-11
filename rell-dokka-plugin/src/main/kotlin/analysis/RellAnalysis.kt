@@ -14,9 +14,9 @@ import net.postchain.rell.api.base.RellApiBaseInternal
 import net.postchain.rell.api.base.RellApiCompile.Config
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.R_Definition
 import net.postchain.rell.base.model.R_FunctionDefinition
-import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.R_Module
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.mapToImmList

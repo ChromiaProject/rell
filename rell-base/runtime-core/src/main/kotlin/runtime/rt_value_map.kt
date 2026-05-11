@@ -80,9 +80,6 @@ class Rt_MapValue(override val type: Rt_ValueClass<*>, map: MutableMap<Rt_Value,
     companion object: Rt_ValueClass<Rt_MapValue> {
         override val name
             get() = "map"
-
-        override val klass = Rt_MapValue::class
-
         fun strCode(type: Rt_ValueClass<*>, showTupleFieldNames: Boolean, map: Map<Rt_Value, Rt_Value>): String {
             val entries = map.entries.joinToString(",") { (key, value) ->
                 key.strCode(false) + "=" + value.strCode(false)
@@ -131,7 +128,7 @@ class Rt_MapValue(override val type: Rt_ValueClass<*>, map: MutableMap<Rt_Value,
                 override fun toGtv(value: Rt_Value, pretty: Boolean): Gtv {
                     val map = (value as Rt_MapValue).map
                     return if (isTextKey) {
-                        val m = map.mapKeys { (k, _) -> k.asString() }
+                        val m = map.mapKeys { (k, _) -> (k as Rt_TextValue).value }
                             .mapValues { (_, v) -> valueConv.rtToGtv(v, pretty) }
                         GtvFactory.gtv(m)
                     } else {

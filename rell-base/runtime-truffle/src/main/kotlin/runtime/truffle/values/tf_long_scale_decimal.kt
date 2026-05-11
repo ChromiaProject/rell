@@ -6,6 +6,10 @@ package net.postchain.rell.base.runtime.truffle.values
 
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import net.postchain.rell.base.runtime.Rt_DecimalValue
+import net.postchain.rell.base.runtime.truffle.values.Tf_LongScaleDecimal.Companion.MAX_LONG_SCALE
+import net.postchain.rell.base.runtime.truffle.values.Tf_LongScaleDecimal.Companion.POW10_TABLE
+import net.postchain.rell.base.runtime.truffle.values.Tf_LongScaleDecimal.Companion.tryFrom
+import net.postchain.rell.base.runtime.truffle.values.Tf_LongScaleDecimal.Companion.tryFromCanonical
 import java.math.BigDecimal
 
 /**

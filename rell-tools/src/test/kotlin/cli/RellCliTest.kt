@@ -8,11 +8,7 @@ import net.postchain.rell.base.testutils.BaseResourcefulTest
 import net.postchain.rell.base.testutils.SqlTestUtils
 import net.postchain.rell.base.utils.RellVersions
 import org.junit.jupiter.api.Test
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.copyToRecursively
-import kotlin.io.path.createTempDirectory
-import kotlin.io.path.deleteRecursively
-import kotlin.io.path.div
+import kotlin.io.path.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

@@ -340,7 +340,7 @@ internal fun Rt_InterpreterImpl.buildStructGtvConversion(
     structDef: RR_StructDefinition,
 ): Rt_GtvCompatibleValueClass<*> = object: Rt_UntypedGtvConversion(structDef.base.appLevelName) {
     override fun toGtv(value: Rt_Value, pretty: Boolean): Gtv {
-        val rtStruct = value.asStruct()
+        val rtStruct = (value as Rt_StructValue)
         val attrs = structDef.struct.attributesList
         return if (pretty) {
             val gtvFields = attrs.mapIndexed { i, attr ->

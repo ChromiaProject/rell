@@ -144,39 +144,10 @@ class RtValueContractTest {
             calls++
             expected
         }
-        assertSame(expected, lazy.asLazyValue())
-        assertSame(expected, lazy.asLazyValue())
-        assertSame(expected, lazy.asLazyValue())
+        assertSame(expected, (lazy as Rt_LazyResolvableValue).resolveLazy())
+        assertSame(expected, (lazy as Rt_LazyResolvableValue).resolveLazy())
+        assertSame(expected, (lazy as Rt_LazyResolvableValue).resolveLazy())
         assertEquals(1, calls, "compute() must run exactly once")
     }
 
-    /** Rt_Value.asLazyValue on a non-lazy value must throw a typed Rt_Exception, not a ClassCastException. */
-    @Test fun asLazyValueOnNonLazyThrowsTyped() {
-        val ex = assertFails { Rt_IntValue.get(1).asLazyValue() }
-        assertTrue(ex is Rt_Exception, "Expected Rt_Exception, got ${ex::class}")
-    }
-
-    /**
-     * Defensive type-tightening: Rt_VirtualMapValue is read-only ([Rt_MapBackedValue], not
-     * [Rt_MutableMapBackedValue]). The compiler doesn't currently route a virtual map through
-     * `RR_Expr.MapSubscript` (only `RR_Expr.VirtualMapSubscript`), so a `MutableMap` cast would
-     * not actually be hit in production today. But `asMap() as MutableMap` succeeded at the cast
-     * and would fail later with a generic `UnsupportedOperationException` from the read-only view.
-     * `asMutableMap()` rejects up-front with a typed `Rt_Exception`, hardening against a future
-     * compiler change that would expose the path.
-     */
-    @Test fun asMutableMapRefusesReadOnlyVirtualMap() {
-        val virtual = Rt_VirtualMapValue(
-            gtv = GtvNull,
-            type = Rt_NullValue,
-            virtualEntryRtType = Rt_NullValue,
-            innerMapRtType = Rt_NullValue,
-            map = mapOf(Rt_IntValue.get(1) to Rt_IntValue.get(2)),
-        )
-
-        assertEquals(1, virtual.asMap().size)
-
-        val ex = assertFails { virtual.asMutableMap() }
-        assertTrue(ex is Rt_Exception, "Expected Rt_Exception, got ${ex::class}")
-    }
 }

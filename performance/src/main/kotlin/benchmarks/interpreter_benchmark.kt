@@ -7,11 +7,11 @@
 package net.postchain.rell.performance.benchmarks
 
 import kotlinx.benchmark.*
-import org.openjdk.jmh.annotations.Fork
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.rr.RR_QueryDefinition
 import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_Value
+import org.openjdk.jmh.annotations.Fork
 
 /**
  * Synthetic microbenchmark comparing the tree-walker, Truffle, and a Kotlin baseline on

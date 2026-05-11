@@ -50,7 +50,7 @@ object Lib_Type_Enum {
                 property("name", type = "text", pure = true, since = "0.7.0") {
                     comment("Get the declared name of the given enum member constant.")
                     value { a ->
-                        val attr = a.asEnum()
+                        val attr = (a as Rt_RR_EnumValue).rrAttr
                         Rt_TextValue.get(attr.nameStr)
                     }
                 }
@@ -60,7 +60,7 @@ object Lib_Type_Enum {
                     pure = true,
                     dbFn = Db_SysFunction.template("enum_value", 1, "(#0)")
                 ) { a ->
-                    val attr = a.asEnum()
+                    val attr = (a as Rt_RR_EnumValue).rrAttr
                     Rt_IntValue.get(attr.value.toLong())
                 }) {
                     comment("""
@@ -111,7 +111,7 @@ object Lib_Type_Enum {
                         val enumType = fnBodyMeta.rResultType as R_EnumType
                         val enum = enumType.enum
                         body { a ->
-                            val name = a.asString()
+                            val name = (a as Rt_TextValue).value
                             val attr = enum.attr(name) ?: throw Rt_Exception.common(
                                 "enum_badname:${enum.appLevelName}:$name",
                                 "Enum '${enum.simpleName}' has no value '$name'",
@@ -138,7 +138,7 @@ object Lib_Type_Enum {
                         val enumType = fnBodyMeta.rResultType as R_EnumType
                         val enum = enumType.enum
                         body { a ->
-                            val value = a.asInteger().toIntExact()
+                            val value = (a as Rt_IntValue).value.toIntExact()
 
                             val attr = enum.attr(value) ?: throw Rt_Exception.common(
                                 "enum_badvalue:${enum.appLevelName}:$value",

@@ -8,10 +8,10 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isTrue
 import net.postchain.rell.api.base.RellApiCompile
-import net.postchain.rell.toolbox.seeder.schema.RellSchema
-import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.seeder.config.dsl.configuration
 import net.postchain.rell.toolbox.seeder.generator.DataGenerator
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
+import net.postchain.rell.toolbox.seeder.schema.SchemaReader
 import net.postchain.rell.toolbox.testing.TestDataBuilder
 import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.BeforeEach

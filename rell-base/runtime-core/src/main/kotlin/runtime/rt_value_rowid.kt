@@ -40,8 +40,6 @@ data class Rt_RowidValue private constructor(val value: Long): Rt_Value {
         Rt_SqlCompatibleValueClass<Rt_RowidValue> {
         override val name
             get() = "rowid"
-
-        override val klass = Rt_RowidValue::class
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.ROWID)
         override val nativeTypes = immSetOf(Long::class.createType())
 
@@ -49,7 +47,7 @@ data class Rt_RowidValue private constructor(val value: Long): Rt_Value {
             get() = SQLDataType.BIGINT
 
         override val comparator: Comparator<Rt_Value> =
-            Comparator { a, b -> a.asRowid().compareTo(b.asRowid()) }
+            Comparator { a, b -> (a as Rt_RowidValue).value.compareTo((b as Rt_RowidValue).value) }
 
         private val VALUES: ImmList<Rt_RowidValue> = (0..1000).mapToImmList { Rt_RowidValue(it.toLong()) }
 

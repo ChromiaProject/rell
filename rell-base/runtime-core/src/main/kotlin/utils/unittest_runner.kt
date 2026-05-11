@@ -383,8 +383,8 @@ private fun getValueDiff(v1: Rt_Value, v2: Rt_Value): Map<List<String>, Pair<Rt_
 
     return when (val rrType = v1.type.rrType) {
         is RR_Type.Tuple -> {
-            val t1 = v1.asTuple()
-            val t2 = v2.asTuple()
+            val t1 = (v1 as Rt_TupleValue).elements
+            val t2 = (v2 as Rt_TupleValue).elements
             val res = mutableMapOf<List<String>, Pair<Rt_Value?, Rt_Value?>>()
             rrType.fields.forEachIndexed { i, field ->
                 val subV1 = t1[i]
@@ -398,11 +398,11 @@ private fun getValueDiff(v1: Rt_Value, v2: Rt_Value): Map<List<String>, Pair<Rt_
             }
             res.toImmMap()
         }
-        is RR_Type.List -> getValueDiffList(v1.asList(), v2.asList())
-        is RR_Type.Map -> getValueDiffMap(v1.asMap(), v2.asMap())
+        is RR_Type.List -> getValueDiffList((v1 as Rt_ListValue).elements, (v2 as Rt_ListValue).elements)
+        is RR_Type.Map -> getValueDiffMap((v1 as Rt_MapBackedValue).mapView, (v2 as Rt_MapBackedValue).mapView)
         is RR_Type.Struct -> {
-            val s1 = v1.asStruct()
-            val s2 = v2.asStruct()
+            val s1 = (v1 as Rt_StructValue)
+            val s2 = (v2 as Rt_StructValue)
             val attrNames = s1.attributeNames()
             val res = mutableMapOf<List<String>, Pair<Rt_Value?, Rt_Value?>>()
             for (i in 0 until s1.size()) {
@@ -417,8 +417,8 @@ private fun getValueDiff(v1: Rt_Value, v2: Rt_Value): Map<List<String>, Pair<Rt_
             res.toImmMap()
         }
         is RR_Type.Primitive -> if (rrType.kind == RR_PrimitiveKind.GTV) {
-            val g1 = v1.asGtv()
-            val g2 = v2.asGtv()
+            val g1 = (v1 as Rt_GtvValue).value
+            val g2 = (v2 as Rt_GtvValue).value
             when (g1.type) {
                 g2.type if g1.type == GtvType.ARRAY -> {
                     val list1 = g1.asArray().map { Rt_GtvValue.get(it) }

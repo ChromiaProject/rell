@@ -12,8 +12,8 @@ import net.postchain.rell.base.compiler.base.utils.C_CommonError
 import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
-import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.utils.*
@@ -246,9 +246,7 @@ private class ArrayGtvNode(path: String?, list: List<GtvNode>): GtvNode(path) {
     override fun type() = GtvType.ARRAY
     override fun toValue() = GtvFactory.gtv(list.map { it.toValue() })
 
-    fun contains(s: String): Boolean {
-        return list.any { it.type() == GtvType.STRING && it.toValue().asString() == s }
-    }
+    fun contains(s: String): Boolean = list.any { it.type() == GtvType.STRING && it.toValue().asString() == s }
 
     fun add(gtv: Gtv) {
         val path = subPath(path, list.size)

@@ -8,11 +8,7 @@ package net.postchain.rell.performance.profiler
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.main
-import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.flag
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
-import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.double
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.long
@@ -24,15 +20,11 @@ import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_Interpreter
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.performance.benchmarks.RellBackendBenchmark
-import one.convert.Arguments as JfrConverterArgs
-import one.convert.Main as JfrConverterMain
 import one.profiler.AsyncProfiler
 import java.nio.file.Path
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.createDirectories
-import kotlin.io.path.div
-import kotlin.io.path.readText
-import kotlin.io.path.writeText
+import kotlin.io.path.*
+import one.convert.Arguments as JfrConverterArgs
+import one.convert.Main as JfrConverterMain
 
 /**
  * Profile a single sample query in-process and emit LLM-parseable artifacts. No JMH framing,

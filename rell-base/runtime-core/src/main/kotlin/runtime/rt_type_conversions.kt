@@ -21,27 +21,21 @@ import org.jooq.impl.SQLDataType
 /**
  * Untyped base for GTV converters that can't pin a single [Rt_Value] subtype (entity / enum /
  * nullable / virtual / list / set / map / tuple / struct). Implements
- * [Rt_GtvCompatibleValueClass]<Rt_Value> directly with a degenerate `klass`/`cast`.
- * Subclasses override [toGtv] / [fromGtv] (the typed pair, which collapse to untyped here).
+ * [Rt_GtvCompatibleValueClass]<Rt_Value> directly. Subclasses override [toGtv] / [fromGtv]
+ * (the typed pair collapses to untyped here).
  */
 abstract class Rt_UntypedGtvConversion(
     final override val name: String,
-): Rt_GtvCompatibleValueClass<Rt_Value> {
-    final override val klass = Rt_Value::class
-    final override fun cast(v: Rt_Value): Rt_Value = v
-}
+): Rt_GtvCompatibleValueClass<Rt_Value>
 
 /**
  * Untyped base for SQL adapters that can't pin a single [Rt_Value] subtype (entity / enum /
- * nullable / no-SQL fallback). Implements [Rt_SqlCompatibleValueClass]<Rt_Value> directly with
- * a degenerate `klass`/`cast`. Each subclass overrides [toSqlValue] / [toSql] / [fromSql].
+ * nullable / no-SQL fallback). Implements [Rt_SqlCompatibleValueClass]<Rt_Value> directly.
+ * Each subclass overrides [toSqlValue] / [toSql] / [fromSql].
  */
 abstract class Rt_UntypedSqlAdapter(
     final override val name: String,
-): Rt_SqlCompatibleValueClass<Rt_Value> {
-    final override val klass = Rt_Value::class
-    final override fun cast(v: Rt_Value): Rt_Value = v
-}
+): Rt_SqlCompatibleValueClass<Rt_Value>
 
 class Rt_SqlAdapter_Entity(
     private val lazyRtType: Lazy<Rt_ValueClass<*>>,
@@ -52,9 +46,9 @@ class Rt_SqlAdapter_Entity(
     override val sqlType: DataType<Long>
         get() = SQLDataType.BIGINT
 
-    override fun toSqlValue(value: Rt_Value): Any = value.asObjectId()
+    override fun toSqlValue(value: Rt_Value): Any = (value as Rt_EntityValue).rowid
     override fun toSql(value: Rt_Value, params: PreparedStatementParams, idx: Int) {
-        params.setLong(idx, value.asObjectId())
+        params.setLong(idx, (value as Rt_EntityValue).rowid)
     }
     override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
         val v = row.getLong(idx)
@@ -75,9 +69,9 @@ class Rt_SqlAdapter_Enum(
     override val sqlType: DataType<Int>
         get() = SQLDataType.INTEGER
 
-    override fun toSqlValue(value: Rt_Value): Any = value.asEnum().value
+    override fun toSqlValue(value: Rt_Value): Any = (value as Rt_RR_EnumValue).rrAttr.value
     override fun toSql(value: Rt_Value, params: PreparedStatementParams, idx: Int) {
-        params.setInt(idx, value.asEnum().value)
+        params.setInt(idx, (value as Rt_RR_EnumValue).rrAttr.value)
     }
     override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value {
         val v = row.getInt(idx)
@@ -104,7 +98,7 @@ class Rt_SqlAdapter_Nullable(
     override fun toSqlValue(value: Rt_Value): Any = inner.rtToSqlValue(value)
 
     override fun toSql(value: Rt_Value, params: PreparedStatementParams, idx: Int) {
-        params.setBoolean(idx, value.asBoolean())
+        params.setBoolean(idx, (value as Rt_BooleanValue).value)
     }
 
     override fun fromSql(row: ResultSetRow, idx: Int, nullable: Boolean): Rt_Value =

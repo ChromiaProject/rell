@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.lib.type
 
+
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
@@ -12,7 +13,6 @@ import net.postchain.rell.base.model.R_MapType
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
-
 
 object Lib_Type_Map {
     private const val SINCE0 = "0.6.0"
@@ -73,10 +73,10 @@ object Lib_Type_Map {
                         val map = if (arg is Rt_MapValue) {
                             arg.map.toMutableMap()
                         } else {
-                            val iterable = arg.asIterable()
+                            val iterable = (arg as Rt_IterableValue)
                             val tmap = mutableMapOf<Rt_Value, Rt_Value>()
                             for (item in iterable) {
-                                val tup = item.asTuple()
+                                val tup = (item as Rt_TupleValue).elements
                                 val k = tup[0]
                                 val v = tup[1]
                                 val v0 = tmap.put(k, v)
@@ -99,7 +99,7 @@ object Lib_Type_Map {
                     - `map<K,V>().keys()` returns `set()` (where `K` and `V` are valid types).
                 """)
                 body { a ->
-                    val mapValue = a.asMapValue()
+                    val mapValue = (a as Rt_MapValue)
                     val r = mutableSetOf<Rt_Value>()
                     r.addAll(mapValue.map.keys)
                     val keySetType = (mapValue.type as? Rt_MapType)?.let { Rt_SetType(it.key) }
@@ -117,7 +117,7 @@ object Lib_Type_Map {
                     - `map<K,V>().values()` returns `[]` (where `K` and `V` are valid types).
                 """)
                 body { a ->
-                    val mapValue = a.asMapValue()
+                    val mapValue = (a as Rt_MapValue)
                     val r = mutableListOf<Rt_Value>()
                     r.addAll(mapValue.map.values)
                     val valueListType = (mapValue.type as? Rt_MapType)?.let { Rt_ListType(it.value) }
@@ -132,7 +132,7 @@ object Lib_Type_Map {
                     empty.
                 """)
                 body { a ->
-                    val map = a.asMutableMap()
+                    val map = (a as Rt_MutableMapBackedValue).mutableMapView
                     map.clear()
                     Rt_UnitValue
                 }
@@ -143,7 +143,7 @@ object Lib_Type_Map {
                 param("key", type = "K", comment = "the key to associate with the specified value")
                 param("value", type = "V", comment = "the value to associate with the specified key")
                 body { a, b, c ->
-                    val map = a.asMutableMap()
+                    val map = (a as Rt_MutableMapBackedValue).mutableMapView
                     map[b] = c
                     Rt_UnitValue
                 }
@@ -158,8 +158,8 @@ object Lib_Type_Map {
                 alias("putAll", C_MessageType.ERROR, since = SINCE0)
                 param("map", type = "map<-K,-V>", comment = "the map whose entries are used to update this map")
                 body { a, b ->
-                    val map1 = a.asMutableMap()
-                    val map2 = b.asMap()
+                    val map1 = (a as Rt_MutableMapBackedValue).mutableMapView
+                    val map2 = (b as Rt_MapBackedValue).mapView
                     map1.putAll(map2)
                     Rt_UnitValue
                 }
@@ -173,7 +173,7 @@ object Lib_Type_Map {
                 """)
                 param("key", type = "K", comment = "the key of the entry to remove")
                 body { a, b ->
-                    val map = a.asMutableMap()
+                    val map = (a as Rt_MutableMapBackedValue).mutableMapView
                     val v = map.remove(b)
                     v ?: throw Rt_Exception.common("fn:map.remove:novalue:${b.strCode()}", "Key not in map: ${b.str()}")
                 }
@@ -186,7 +186,7 @@ object Lib_Type_Map {
                 """)
                 param("key", type = "K", comment = "the key of the entry to remove")
                 body { a, b ->
-                    val map = a.asMutableMap()
+                    val map = (a as Rt_MutableMapBackedValue).mutableMapView
                     val v = map.remove(b)
                     v ?: Rt_NullValue
                 }
@@ -226,7 +226,7 @@ object Lib_Type_Map {
                 @return `true` if this map is empty, `false` otherwise
             """)
             body { a ->
-                val map = a.asMap()
+                val map = (a as Rt_MapBackedValue).mapView
                 Rt_BooleanValue.get(map.isEmpty())
             }
         }
@@ -235,7 +235,7 @@ object Lib_Type_Map {
             comment("Get the size (number of entries) of this map.")
             alias("len", C_MessageType.ERROR, since = SINCE0)
             body { a ->
-                val map = a.asMap()
+                val map = (a as Rt_MapBackedValue).mapView
                 Rt_IntValue.get(map.size.toLong())
             }
         }
@@ -247,7 +247,7 @@ object Lib_Type_Map {
             """)
             param("key", type = "K", comment = "the key to look up")
             body { self, a ->
-                val map = self.asMap()
+                val map = (self as Rt_MapBackedValue).mapView
                 val v = map[a]
                 v ?: throw Rt_Exception.common("fn:map.get:novalue:${a.strCode()}", "Key not in map: ${a.str()}")
             }
@@ -260,7 +260,7 @@ object Lib_Type_Map {
             """)
             param("key", type = "K", comment = "the key to look up")
             body { self, a ->
-                val map = self.asMap()
+                val map = (self as Rt_MapBackedValue).mapView
                 val r = map[a]
                 r ?: Rt_NullValue
             }
@@ -278,8 +278,8 @@ object Lib_Type_Map {
                 comment("the default value (lazily evaluated) to return if the key is not found")
             }
             body { self, a, b ->
-                val map = self.asMap()
-                map[a] ?: b.asLazyValue()
+                val map = (self as Rt_MapBackedValue).mapView
+                map[a] ?: (b as Rt_LazyResolvableValue).resolveLazy()
             }
         }
 
@@ -290,7 +290,7 @@ object Lib_Type_Map {
             """)
             param("key", type = "K", comment = "the key to look up")
             body { self, a ->
-                val map = self.asMap()
+                val map = (self as Rt_MapBackedValue).mapView
                 Rt_BooleanValue.get(a in map)
             }
         }

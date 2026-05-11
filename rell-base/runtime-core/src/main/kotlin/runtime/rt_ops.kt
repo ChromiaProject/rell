@@ -18,8 +18,8 @@ fun evaluateBinaryOp(key: String, left: Rt_Value, right: Rt_Value): Rt_Value = w
     "R_BinaryOp_NeRef" -> Rt_BooleanValue.get(left !== right)
 
     // Logical (full two-arg evaluation; short-circuit is handled separately)
-    "R_BinaryOp_And" -> Rt_BooleanValue.get(left.asBoolean() && right.asBoolean())
-    "R_BinaryOp_Or" -> Rt_BooleanValue.get(left.asBoolean() || right.asBoolean())
+    "R_BinaryOp_And" -> Rt_BooleanValue.get((left as Rt_BooleanValue).value && (right as Rt_BooleanValue).value)
+    "R_BinaryOp_Or" -> Rt_BooleanValue.get((left as Rt_BooleanValue).value || (right as Rt_BooleanValue).value)
 
     // Integer arithmetic
     "R_BinaryOp_Add_Integer" -> evalIntArith("+", left, right) { a, b -> LongMath.checkedAdd(a, b) }
@@ -64,8 +64,8 @@ fun evaluateBinaryOp(key: String, left: Rt_Value, right: Rt_Value): Rt_Value = w
     }
 
     // Concatenation / collection ops
-    "R_BinaryOp_Concat_Text" -> Rt_TextValue.get(left.asString() + right.asString())
-    "R_BinaryOp_Concat_ByteArray" -> Rt_ByteArrayValue.get(left.asByteArray() + right.asByteArray())
+    "R_BinaryOp_Concat_Text" -> Rt_TextValue.get((left as Rt_TextValue).value + (right as Rt_TextValue).value)
+    "R_BinaryOp_Concat_ByteArray" -> Rt_ByteArrayValue.get((left as Rt_ByteArrayValue).value + (right as Rt_ByteArrayValue).value)
     "R_BinaryOp_Concat_List" -> evalConcatList(left, right)
     "R_BinaryOp_Union_Set" -> evalUnionSet(left, right)
     "R_BinaryOp_Sub_List" -> evalSubList(left, right)
@@ -75,11 +75,11 @@ fun evaluateBinaryOp(key: String, left: Rt_Value, right: Rt_Value): Rt_Value = w
     "R_BinaryOp_Merge_Map" -> evalMergeMap(left, right)
 
     // In / contains
-    "R_BinaryOp_In_Collection" -> Rt_BooleanValue.get(right.asCollection().contains(left))
-    "R_BinaryOp_In_VirtualList" -> Rt_BooleanValue.get(right.asVirtualList().contains(left.asInteger()))
-    "R_BinaryOp_In_VirtualSet" -> Rt_BooleanValue.get(right.asVirtualSet().contains(left))
-    "R_BinaryOp_In_Map" -> Rt_BooleanValue.get(right.asMap().containsKey(left))
-    "R_BinaryOp_In_Range" -> Rt_BooleanValue.get(right.asRange().contains(left.asInteger()))
+    "R_BinaryOp_In_Collection" -> Rt_BooleanValue.get((right as Rt_CollectionValue).collection.contains(left))
+    "R_BinaryOp_In_VirtualList" -> Rt_BooleanValue.get((right as Rt_VirtualListValue).contains((left as Rt_IntValue).value))
+    "R_BinaryOp_In_VirtualSet" -> Rt_BooleanValue.get((right as Rt_VirtualSetValue).contains(left))
+    "R_BinaryOp_In_Map" -> Rt_BooleanValue.get((right as Rt_MapBackedValue).mapView.containsKey(left))
+    "R_BinaryOp_In_Range" -> Rt_BooleanValue.get((right as Rt_RangeValue).contains((left as Rt_IntValue).value))
 
     else -> {
         // Comparison operators: key = "Cmp_{CmpOpClass}_{CmpTypeClass}"
@@ -93,8 +93,8 @@ fun evaluateBinaryOp(key: String, left: Rt_Value, right: Rt_Value): Rt_Value = w
  * Returns a non-null value if the result is determined by the left operand alone.
  */
 fun shortCircuitBinaryOp(key: String, left: Rt_Value): Rt_Value? = when (key) {
-    "R_BinaryOp_And" -> if (!left.asBoolean()) Rt_BooleanValue.get(false) else null
-    "R_BinaryOp_Or" -> if (left.asBoolean()) Rt_BooleanValue.get(true) else null
+    "R_BinaryOp_And" -> if (!(left as Rt_BooleanValue).value) Rt_BooleanValue.get(false) else null
+    "R_BinaryOp_Or" -> if ((left as Rt_BooleanValue).value) Rt_BooleanValue.get(true) else null
     else -> null
 }
 
@@ -108,15 +108,15 @@ fun evaluateCmpBinaryOp(cmpInfo: RR_CmpBinaryOp, left: Rt_Value, right: Rt_Value
 }
 
 private fun compareByCmpType(cmpType: String, left: Rt_Value, right: Rt_Value): Int = when (cmpType) {
-    "R_CmpType_Boolean" -> left.asBoolean().compareTo(right.asBoolean())
-    "R_CmpType_Integer" -> left.asInteger().compareTo(right.asInteger())
-    "R_CmpType_BigInteger" -> left.asBigInteger().compareTo(right.asBigInteger())
-    "R_CmpType_Decimal" -> left.asDecimal().compareTo(right.asDecimal())
-    "R_CmpType_Text" -> left.asString().compareTo(right.asString())
-    "R_CmpType_ByteArray" -> compareByteArrays(left.asByteArray(), right.asByteArray())
-    "R_CmpType_Rowid" -> left.asRowid().compareTo(right.asRowid())
-    "R_CmpType_Entity" -> left.asObjectId().compareTo(right.asObjectId())
-    "R_CmpType_Enum" -> left.asEnum().value.compareTo(right.asEnum().value)
+    "R_CmpType_Boolean" -> (left as Rt_BooleanValue).value.compareTo((right as Rt_BooleanValue).value)
+    "R_CmpType_Integer" -> (left as Rt_IntValue).value.compareTo((right as Rt_IntValue).value)
+    "R_CmpType_BigInteger" -> (left as Rt_BigIntegerValue).value.compareTo((right as Rt_BigIntegerValue).value)
+    "R_CmpType_Decimal" -> (left as Rt_DecimalValue).value.compareTo((right as Rt_DecimalValue).value)
+    "R_CmpType_Text" -> (left as Rt_TextValue).value.compareTo((right as Rt_TextValue).value)
+    "R_CmpType_ByteArray" -> compareByteArrays((left as Rt_ByteArrayValue).value, (right as Rt_ByteArrayValue).value)
+    "R_CmpType_Rowid" -> (left as Rt_RowidValue).value.compareTo((right as Rt_RowidValue).value)
+    "R_CmpType_Entity" -> (left as Rt_EntityValue).rowid.compareTo((right as Rt_EntityValue).rowid)
+    "R_CmpType_Enum" -> (left as Rt_RR_EnumValue).rrAttr.value.compareTo((right as Rt_RR_EnumValue).rrAttr.value)
     else -> error("Unknown cmp type: $cmpType")
 }
 
@@ -147,8 +147,8 @@ private inline fun evalIntArith(
     right: Rt_Value,
     op: (Long, Long) -> Long,
 ): Rt_Value {
-    val a = left.asInteger()
-    val b = right.asInteger()
+    val a = (left as Rt_IntValue).value
+    val b = (right as Rt_IntValue).value
     val res = try {
         op(a, b)
     } catch (_: ArithmeticException) {
@@ -163,8 +163,8 @@ private inline fun evalBigIntArith(
     right: Rt_Value,
     op: (java.math.BigInteger, java.math.BigInteger) -> java.math.BigInteger,
 ): Rt_Value {
-    val a = left.asBigInteger()
-    val b = right.asBigInteger()
+    val a = (left as Rt_BigIntegerValue).value
+    val b = (right as Rt_BigIntegerValue).value
     val res = op(a, b)
     return Rt_BigIntegerValue.getOrNull(res) ?: throw Rt_DecimalValue.errOverflow(
         "expr:$code:overflow",
@@ -178,8 +178,8 @@ private inline fun evalDecArith(
     right: Rt_Value,
     op: (java.math.BigDecimal, java.math.BigDecimal) -> java.math.BigDecimal,
 ): Rt_Value {
-    val a = left.asDecimal()
-    val b = right.asDecimal()
+    val a = (left as Rt_DecimalValue).value
+    val b = (right as Rt_DecimalValue).value
     val res = op(a, b)
     return Rt_DecimalValue.getOrNull(res) ?: throw Rt_DecimalValue.errOverflow(
         "expr:$code:overflow",
@@ -190,8 +190,8 @@ private inline fun evalDecArith(
 // --- Collection operation helpers ---
 
 fun evalConcatList(left: Rt_Value, right: Rt_Value): Rt_Value {
-    val leftList = left.asList()
-    val rightCollection = right.asCollection()
+    val leftList = (left as Rt_ListValue).elements
+    val rightCollection = (right as Rt_CollectionValue).collection
     val out = ArrayList<Rt_Value>(leftList.size + rightCollection.size)
     out += leftList
     out += rightCollection
@@ -199,27 +199,27 @@ fun evalConcatList(left: Rt_Value, right: Rt_Value): Rt_Value {
 }
 
 fun evalUnionSet(left: Rt_Value, right: Rt_Value): Rt_Value {
-    val out: MutableSet<Rt_Value> = left.asSet().toMutableSet()
-    out += right.asCollection()
+    val out: MutableSet<Rt_Value> = (left as Rt_SetValue).elements.toMutableSet()
+    out += (right as Rt_CollectionValue).collection
     return Rt_SetValue(left.type, out)
 }
 
 fun evalSubList(left: Rt_Value, right: Rt_Value): Rt_Value {
-    val out = left.asList().toMutableList()
-    out.removeAll(right.asCollection().toSet())
+    val out = (left as Rt_ListValue).elements.toMutableList()
+    out.removeAll((right as Rt_CollectionValue).collection.toSet())
     return Rt_ListValue(left.type, out)
 }
 
 fun evalSubSet(left: Rt_Value, right: Rt_Value): Rt_Value {
-    val out: MutableSet<Rt_Value> = left.asSet().toMutableSet()
-    out.removeAll(right.asSet())
+    val out: MutableSet<Rt_Value> = (left as Rt_SetValue).elements.toMutableSet()
+    out.removeAll((right as Rt_SetValue).elements)
     return Rt_SetValue(left.type, out)
 }
 
 fun evalIntersectList(left: Rt_Value, right: Rt_Value): Rt_Value {
-    val leftList = left.asList()
+    val leftList = (left as Rt_ListValue).elements
     val out: MutableList<Rt_Value> = ArrayList(leftList.size)
-    for (it in leftList.filter { right.asCollection().contains(it) }) {
+    for (it in leftList.filter { (right as Rt_CollectionValue).collection.contains(it) }) {
         out += it
     }
     return Rt_ListValue(left.type, out)
@@ -227,7 +227,7 @@ fun evalIntersectList(left: Rt_Value, right: Rt_Value): Rt_Value {
 
 fun evalIntersectSet(left: Rt_Value, right: Rt_Value): Rt_Value {
     val out: MutableSet<Rt_Value> = mutableSetOf()
-    for (it in left.asSet().filter { right.asCollection().contains(it) }) {
+    for (it in (left as Rt_SetValue).elements.filter { (right as Rt_CollectionValue).collection.contains(it) }) {
         out += it
     }
     return Rt_SetValue(left.type, out)
@@ -235,8 +235,8 @@ fun evalIntersectSet(left: Rt_Value, right: Rt_Value): Rt_Value {
 
 fun evalMergeMap(left: Rt_Value, right: Rt_Value): Rt_Value {
     require(left is Rt_MapValue)
-    val out: MutableMap<Rt_Value, Rt_Value> = left.asMap().toMutableMap()
-    out.putAll(right.asMap())
+    val out: MutableMap<Rt_Value, Rt_Value> = (left as Rt_MapBackedValue).mapView.toMutableMap()
+    out.putAll((right as Rt_MapBackedValue).mapView)
     return Rt_MapValue(left.type, out)
 }
 
@@ -251,7 +251,7 @@ fun evalMergeMap(left: Rt_Value, right: Rt_Value): Rt_Value {
  */
 fun evaluateUnaryOp(key: String, operand: Rt_Value): Rt_Value = when (key) {
     "Minus_Integer" -> {
-        val v = operand.asInteger()
+        val v = (operand as Rt_IntValue).value
         val res = try {
             LongMath.checkedSubtract(0, v)
         } catch (_: ArithmeticException) {
@@ -260,9 +260,9 @@ fun evaluateUnaryOp(key: String, operand: Rt_Value): Rt_Value = when (key) {
         Rt_IntValue.get(res)
     }
 
-    "Minus_BigInteger" -> Rt_BigIntegerValue.get(operand.asBigInteger().negate())
-    "Minus_Decimal" -> Rt_DecimalValue.get(operand.asDecimal().negate())
-    "Not" -> Rt_BooleanValue.get(!operand.asBoolean())
+    "Minus_BigInteger" -> Rt_BigIntegerValue.get((operand as Rt_BigIntegerValue).value.negate())
+    "Minus_Decimal" -> Rt_DecimalValue.get((operand as Rt_DecimalValue).value.negate())
+    "Not" -> Rt_BooleanValue.get(!(operand as Rt_BooleanValue).value)
     else -> error("Unknown unary op key: $key")
 }
 
@@ -275,11 +275,11 @@ fun applyTypeAdapter(adapter: net.postchain.rell.base.model.rr.RR_TypeAdapter, v
     when (adapter) {
         is net.postchain.rell.base.model.rr.RR_TypeAdapter.Direct -> value
         is net.postchain.rell.base.model.rr.RR_TypeAdapter.IntegerToBigInteger ->
-            Rt_BigIntegerValue.get(value.asInteger().toBigInteger())
+            Rt_BigIntegerValue.get((value as Rt_IntValue).value.toBigInteger())
         is net.postchain.rell.base.model.rr.RR_TypeAdapter.IntegerToDecimal ->
-            Rt_DecimalValue.get(value.asInteger().toBigDecimal())
+            Rt_DecimalValue.get((value as Rt_IntValue).value.toBigDecimal())
         is net.postchain.rell.base.model.rr.RR_TypeAdapter.BigIntegerToDecimal ->
-            Rt_DecimalValue.get(value.asBigInteger().toBigDecimal())
+            Rt_DecimalValue.get((value as Rt_BigIntegerValue).value.toBigDecimal())
         is net.postchain.rell.base.model.rr.RR_TypeAdapter.Nullable ->
             if (value == Rt_NullValue) Rt_NullValue else applyTypeAdapter(adapter.inner, value)
     }

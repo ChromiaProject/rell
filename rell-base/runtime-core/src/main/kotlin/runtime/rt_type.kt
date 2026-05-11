@@ -79,8 +79,8 @@ fun R_EnumDefinition.rtGetValueOrNull(index: Int): Rt_Value? = rtValues().getOrN
  */
 internal fun createComparator(rrType: RR_Type): Comparator<Rt_Value>? = when (rrType) {
     is RR_Type.Primitive -> primitiveValueClass(rrType.kind)?.comparator
-    is RR_Type.Entity -> Rt_Comparator.create { it.asObjectId() }
-    is RR_Type.Enum -> Rt_Comparator.create { it.asEnum().value }
+    is RR_Type.Entity -> Rt_Comparator.create { (it as Rt_EntityValue).rowid }
+    is RR_Type.Enum -> Rt_Comparator.create { (it as Rt_RR_EnumValue).rrAttr.value }
     is RR_Type.Null -> Rt_Comparator.create { 0 }
     is RR_Type.Nullable -> createComparator(rrType.value)?.let { inner ->
         Comparator { a, b ->
@@ -264,13 +264,13 @@ fun rtValueToRRConstant(
     if (value === Rt_UnitValue) return RR_ConstantValue.Unit
     return when (rrType) {
         is RR_Type.Primitive -> when (rrType.kind) {
-            RR_PrimitiveKind.BOOLEAN -> RR_ConstantValue.Bool(value.asBoolean())
-            RR_PrimitiveKind.INTEGER -> RR_ConstantValue.Int(value.asInteger())
-            RR_PrimitiveKind.TEXT -> RR_ConstantValue.Text(value.asString())
-            RR_PrimitiveKind.BYTE_ARRAY -> RR_ConstantValue.ByteArray(value.asByteArray())
-            RR_PrimitiveKind.DECIMAL -> RR_ConstantValue.Decimal(value.asDecimal().toPlainString())
-            RR_PrimitiveKind.BIG_INTEGER -> RR_ConstantValue.BigInteger(value.asBigInteger().toString())
-            RR_PrimitiveKind.ROWID -> RR_ConstantValue.Rowid(value.asRowid())
+            RR_PrimitiveKind.BOOLEAN -> RR_ConstantValue.Bool((value as Rt_BooleanValue).value)
+            RR_PrimitiveKind.INTEGER -> RR_ConstantValue.Int((value as Rt_IntValue).value)
+            RR_PrimitiveKind.TEXT -> RR_ConstantValue.Text((value as Rt_TextValue).value)
+            RR_PrimitiveKind.BYTE_ARRAY -> RR_ConstantValue.ByteArray((value as Rt_ByteArrayValue).value)
+            RR_PrimitiveKind.DECIMAL -> RR_ConstantValue.Decimal((value as Rt_DecimalValue).value.toPlainString())
+            RR_PrimitiveKind.BIG_INTEGER -> RR_ConstantValue.BigInteger((value as Rt_BigIntegerValue).value.toString())
+            RR_PrimitiveKind.ROWID -> RR_ConstantValue.Rowid((value as Rt_RowidValue).value)
             else -> encodeToGtvConstant(rrType, value, gtvConversion)
         }
 

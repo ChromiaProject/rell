@@ -9,8 +9,6 @@ import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_RowidValue
-import net.postchain.rell.base.runtime.asInteger
-import net.postchain.rell.base.runtime.asRowid
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 
 object Lib_Type_Rowid {
@@ -69,7 +67,7 @@ object Lib_Type_Rowid {
                 """)
                 param("value", "integer", comment = "the row ID integer value")
                 body { value ->
-                    val intValue = value.asInteger()
+                    val intValue = (value as Rt_IntValue).value
                     Rt_Utils.check(intValue >= 0) { "rowid(integer):negative:$intValue" to "Negative value: $intValue" }
                     Rt_RowidValue.get(intValue)
                 }
@@ -80,7 +78,7 @@ object Lib_Type_Rowid {
                 comment("Get the integer value of this ROWID.")
                 dbFunctionTemplate("rowid.to_integer", 1, "#0")
                 body { rowid ->
-                    val v = rowid.asRowid()
+                    val v = (rowid as Rt_RowidValue).value
                     Rt_IntValue.get(v)
                 }
             }

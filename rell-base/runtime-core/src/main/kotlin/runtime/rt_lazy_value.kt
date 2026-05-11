@@ -27,8 +27,6 @@ sealed class Rt_LazyValue(final override val type: Rt_ValueClass<*>): Rt_Value, 
     companion object: Rt_ValueClass<Rt_LazyValue> {
         override val name
             get() = "lazy"
-
-        override val klass = Rt_LazyValue::class
     }
 }
 

@@ -10,8 +10,8 @@ import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider.Companion.createParameterInlayHint
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsProvider.Companion.isInRange
-import org.antlr.v4.runtime.tree.TerminalNode
 import org.antlr.v4.runtime.misc.Interval
+import org.antlr.v4.runtime.tree.TerminalNode
 import org.eclipse.lsp4j.InlayHint
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range

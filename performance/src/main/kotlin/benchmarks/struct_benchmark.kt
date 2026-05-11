@@ -7,11 +7,11 @@
 package net.postchain.rell.performance.benchmarks
 
 import kotlinx.benchmark.*
-import org.openjdk.jmh.annotations.Fork
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.rr.RR_QueryDefinition
 import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_Value
+import org.openjdk.jmh.annotations.Fork
 
 /**
  * Struct-heavy microbenchmarks distilled from real Chromia codebases (`dto_mapping`,
@@ -71,7 +71,7 @@ fun main() {
     val b = Blackhole("Today's password is swordfish. I understand instantiating Blackholes directly is dangerous.")
     for (sample in listOf("dto_mapping", "cursor_codec", "multi_sig")) {
         val bm = StructBenchmark()
-        bm.backend = "interpreter"
+        bm.backend = "truffle"
         bm.sample = sample
         bm.setUp()
         val start = System.nanoTime()

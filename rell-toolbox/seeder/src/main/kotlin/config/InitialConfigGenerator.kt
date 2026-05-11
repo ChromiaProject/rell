@@ -7,10 +7,10 @@ package net.postchain.rell.toolbox.seeder.config
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.utils.associateNotNullValues
+import net.postchain.rell.toolbox.seeder.config.serializer.ConfigurationSerializer
 import net.postchain.rell.toolbox.seeder.schema.Attribute
 import net.postchain.rell.toolbox.seeder.schema.Entity
 import net.postchain.rell.toolbox.seeder.schema.RellSchema
-import net.postchain.rell.toolbox.seeder.config.serializer.ConfigurationSerializer
 import java.nio.file.Path
 
 class InitialConfigGenerator {

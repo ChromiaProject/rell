@@ -39,7 +39,7 @@ class CLibFunctionLazyParamTest: BaseCLibTest() {
             function("sum", "text") {
                 param("a", "integer", arity = L_ParamArity.ONE_MANY, lazy = true)
                 bodyN { args ->
-                    val sum = args.sumOf { it.asLazyValue().asInteger() }
+                    val sum = args.sumOf { (((it as Rt_LazyResolvableValue).resolveLazy()) as Rt_IntValue).value }
                     Rt_TextValue.get("${args.size}:$sum")
                 }
             }
@@ -176,8 +176,8 @@ class CLibFunctionLazyParamTest: BaseCLibTest() {
                     param("a", type = "integer", lazy = true)
                     param("b", type = "integer", lazy = true)
                     body { arg1, arg2, arg3 ->
-                        val resValue = if (arg1.asBoolean()) arg2 else arg3
-                        resValue.asLazyValue()
+                        val resValue = if ((arg1 as Rt_BooleanValue).value) arg2 else arg3
+                        (resValue as Rt_LazyResolvableValue).resolveLazy()
                     }
                 }
             }
@@ -187,8 +187,8 @@ class CLibFunctionLazyParamTest: BaseCLibTest() {
                 param("b", "integer", lazy = true)
                 param("c", "integer", lazy = true)
                 body { a, b, c ->
-                    val resValue = if (a.asBoolean()) b else c
-                    resValue.asLazyValue()
+                    val resValue = if ((a as Rt_BooleanValue).value) b else c
+                    (resValue as Rt_LazyResolvableValue).resolveLazy()
                 }
             }
         }

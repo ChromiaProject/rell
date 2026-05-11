@@ -27,7 +27,7 @@ import java.security.MessageDigest
 
 internal object Lib_Crypto {
     val Sha256 = C_SysFunctionBody.simple(pure = true) { a ->
-        val ba = a.asByteArray()
+        val ba = (a as Rt_ByteArrayValue).value
         val md = MessageDigest.getInstance("SHA-256")
         Rt_ByteArrayValue.get(md.digest(ba))
     }
@@ -127,7 +127,7 @@ internal object Lib_Crypto {
                 """)
                 param(name = "input", type = "byte_array", comment = "the data to digest")
                 body { a ->
-                    val data = a.asByteArray()
+                    val data = (a as Rt_ByteArrayValue).value
                     val res = keccak256(data)
                     Rt_ByteArrayValue.get(res)
                 }
@@ -151,8 +151,8 @@ internal object Lib_Crypto {
                 }
                 param(name = "privkey", type = "byte_array", comment = "the 32-byte private key with which to sign")
                 body { a, b ->
-                    val dataHash = a.asByteArray()
-                    val privKey = b.asByteArray()
+                    val dataHash = (a as Rt_ByteArrayValue).value
+                    val privKey = (b as Rt_ByteArrayValue).value
                     checkByteArraySize(dataHash, 32, fnSimpleName, "datahash_size", "data hash")
                     checkPrivKeySize(privKey, fnSimpleName)
 
@@ -191,11 +191,11 @@ internal object Lib_Crypto {
                 param(name = "signature", type = "byte_array", comment = "the 64-byte signature to verify")
 
                 body { a, b, c ->
-                    val dataHash = a.asByteArray()
+                    val dataHash = (a as Rt_ByteArrayValue).value
                     checkByteArraySize(dataHash, 32, fnSimpleName, "datahash_size", "data hash")
 
                     val res = try {
-                        val signature = Signature(b.asByteArray(), c.asByteArray())
+                        val signature = Signature((b as Rt_ByteArrayValue).value, (c as Rt_ByteArrayValue).value)
                         PostchainGtvUtils.cryptoSystem.verifyDigest(dataHash, signature)
                     } catch (e: Exception) {
                         throw Rt_Exception.common("verify_signature", e.message ?: "Signature verification crashed")
@@ -270,10 +270,10 @@ internal object Lib_Crypto {
                 param(name = "rec_id", type = "integer", comment = "the recovery identifier, normally `0` or `1`")
                 param(name = "data_hash", type = "byte_array", comment = "the original (unsigned) 32-byte array")
                 body { a, b, c, d ->
-                    val r = a.asByteArray()
-                    val s = b.asByteArray()
-                    val recId = c.asInteger()
-                    val hash = d.asByteArray()
+                    val r = (a as Rt_ByteArrayValue).value
+                    val s = (b as Rt_ByteArrayValue).value
+                    val recId = (c as Rt_IntValue).value
+                    val hash = (d as Rt_ByteArrayValue).value
 
                     check(recId in 0..100000) { "recId out of range: $recId" }
                     val rVal = BigInteger(1, r)
@@ -326,8 +326,8 @@ internal object Lib_Crypto {
                 param(name = "data_hash", type = "byte_array", comment = "a 32-byte array to be signed")
                 param(name = "privkey", type = "byte_array", comment = "the 32-byte private key with which to sign")
                 body { a, b ->
-                    val dataHash = a.asByteArray()
-                    val privKey = b.asByteArray()
+                    val dataHash = (a as Rt_ByteArrayValue).value
+                    val privKey = (b as Rt_ByteArrayValue).value
                     checkByteArraySize(dataHash, 32, fnSimpleName, "datahash_size", "data hash")
                     checkPrivKeySize(privKey, fnSimpleName)
 
@@ -395,7 +395,7 @@ internal object Lib_Crypto {
                     comment("whether or not the public should be compressed; defaults to false (uncompressed)")
                 }
                 bodyOpt1 { arg1, arg2 ->
-                    val compressed = arg2?.asBoolean() ?: false
+                    val compressed = (arg2 as? Rt_BooleanValue)?.value ?: false
                     val point = privkeyToPubkeyPoint(arg1)
                     val bytes = pointToBytes(point, compressed)
                     Rt_ByteArrayValue.get(bytes)
@@ -448,7 +448,7 @@ internal object Lib_Crypto {
                     comment("whether the returned public key should be compressed, defaults to false")
                 }
                 bodyOpt1 { arg1, arg2 ->
-                    val compressed = arg2?.asBoolean() ?: false
+                    val compressed = (arg2 as? Rt_BooleanValue)?.value ?: false
                     val point = pubkeyToPoint(arg1)
                     val bytes = pointToBytes(point, compressed)
                     Rt_ByteArrayValue.get(bytes)
@@ -501,7 +501,7 @@ internal object Lib_Crypto {
                     comment("whether the returned public key should be compressed, defaults to false")
                 }
                 bodyOpt2 { arg1, arg2, arg3 ->
-                    val compressed = arg3?.asBoolean() ?: false
+                    val compressed = (arg3 as? Rt_BooleanValue)?.value ?: false
                     val point = xyToPoint(arg1, arg2)
                     val bytes = pointToBytes(point, compressed)
                     bytesToPoint(bytes) // Check that it's a valid public key.
@@ -526,7 +526,7 @@ internal object Lib_Crypto {
     }
 
     private fun privkeyToPubkeyPoint(privkeyValue: Rt_Value): ECPoint {
-        val privKey = privkeyValue.asByteArray()
+        val privKey = (privkeyValue as Rt_ByteArrayValue).value
         checkPrivKeySize(privKey, "privkey_to_pubkey")
         val d = BigInteger(1, privKey)
         return CURVE_PARAMS.g.multiply(d)
@@ -544,7 +544,7 @@ internal object Lib_Crypto {
     }
 
     private fun pubkeyToPoint(pubkeyValue: Rt_Value): ECPoint {
-        val bytes0 = pubkeyValue.asByteArray()
+        val bytes0 = (pubkeyValue as Rt_ByteArrayValue).value
         val bytes = if (bytes0.size == 64) (byteArrayOf(0x04) + bytes0) else bytes0
         return bytesToPoint(bytes, bytes0.size)
     }
@@ -561,8 +561,8 @@ internal object Lib_Crypto {
     }
 
     private fun xyToPoint(xValue: Rt_Value, yValue: Rt_Value): ECPoint {
-        val x = xValue.asBigInteger()
-        val y = yValue.asBigInteger()
+        val x = (xValue as Rt_BigIntegerValue).value
+        val y = (yValue as Rt_BigIntegerValue).value
         val point = try {
             CURVE_PARAMS.curve.createPoint(x, y)
         } catch (_: RuntimeException) {

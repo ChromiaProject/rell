@@ -45,8 +45,6 @@ interface Rt_TextValue: Rt_Value {
         Rt_SqlCompatibleValueClass<Rt_TextValue> {
         override val name
             get() = "text"
-
-        override val klass = Rt_TextValue::class
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.TEXT)
         override val nativeTypes = immSetOf(String::class.createType())
 
@@ -54,7 +52,7 @@ interface Rt_TextValue: Rt_Value {
             get() = SQLDataType.CLOB
 
         override val comparator: Comparator<Rt_Value> =
-            Comparator { a, b -> a.asString().compareTo(b.asString()) }
+            Comparator { a, b -> (a as Rt_TextValue).value.compareTo((b as Rt_TextValue).value) }
 
         val EMPTY: Rt_TextValue = Rt_JavaStringText("")
 

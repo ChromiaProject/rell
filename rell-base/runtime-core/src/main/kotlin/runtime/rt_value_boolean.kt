@@ -45,8 +45,6 @@ sealed interface Rt_BooleanValue: Rt_Value {
 
         override val name
             get() = "boolean"
-
-        override val klass = Rt_BooleanValue::class
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.BOOLEAN)
 
         override val nativeTypes = immSetOf(Boolean::class.createType())
@@ -55,7 +53,7 @@ sealed interface Rt_BooleanValue: Rt_Value {
             get() = SQLDataType.BOOLEAN
 
         override val comparator: Comparator<Rt_Value> =
-            Comparator { a, b -> a.asBoolean().compareTo(b.asBoolean()) }
+            Comparator { a, b -> (a as Rt_BooleanValue).value.compareTo((b as Rt_BooleanValue).value) }
 
         @JvmStatic
         fun get(value: Boolean): Rt_BooleanValue = if (value) TRUE else FALSE

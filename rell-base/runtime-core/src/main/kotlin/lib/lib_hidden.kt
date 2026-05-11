@@ -29,7 +29,7 @@ internal object Lib_RellHidden {
             function("crash", result = "unit", since = "0.13.2") {
                 param("message", "text")
                 body { a ->
-                    val s = a.asString()
+                    val s = (a as Rt_TextValue).value
                     throw RellInterpreterCrashException(s)
                 }
             }
@@ -38,8 +38,8 @@ internal object Lib_RellHidden {
                 param("code", "text")
                 param("msg", "text")
                 body { a, b ->
-                    val code = a.asString()
-                    val msg = b.asString()
+                    val code = (a as Rt_TextValue).value
+                    val msg = (b as Rt_TextValue).value
                     throw Rt_Exception.common("throw:$code", msg)
                 }
             }
@@ -63,7 +63,7 @@ internal object Lib_RellHidden {
             function("sleep", result = "unit", since = "0.15.1") {
                 param("ms", "integer")
                 bodyContext { ctx, ms ->
-                    val millis = ms.asInteger()
+                    val millis = (ms as Rt_IntValue).value
                     val seconds = millis.toDouble() / 1000.0
 
                     val pgSleep = DSL.function("pg_sleep", Any::class.java, DSL.value(seconds))

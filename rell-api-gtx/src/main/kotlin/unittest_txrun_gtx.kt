@@ -28,11 +28,7 @@ import net.postchain.rell.api.base.RellConfigGen
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.lib.test.Lib_Test_Events
 import net.postchain.rell.base.lib.test.RawTestTxValue
-import net.postchain.rell.base.runtime.Rt_TestBlockValue
-import net.postchain.rell.base.runtime.Rt_GtvValue
-import net.postchain.rell.base.runtime.Rt_TextValue
 import net.postchain.rell.base.model.ModuleName
-import net.postchain.rell.base.runtime.Rt_TupleValue
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.SqlInterceptor
 import net.postchain.rell.base.sql.SqlUtils.withSavepoint

@@ -18,7 +18,6 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_TextValue
-import net.postchain.rell.base.runtime.asInteger
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.testutils.VirtualTestUtils
 import net.postchain.rell.base.utils.ImmList
@@ -148,15 +147,15 @@ class CLibFunctionTypeExtTest: BaseCLibTest() {
             staticFunction("test_decode", result = "T") {
                 param("a", type = "integer")
                 body { a ->
-                    Rt_Utils.check(a.asInteger() != 0L) { "x=${a.strCode()}" to "x = ${a.str()}" }
-                    check(a.asInteger() >= 0)
+                    Rt_Utils.check((a as Rt_IntValue).value != 0L) { "x=${a.strCode()}" to "x = ${a.str()}" }
+                    check((a as Rt_IntValue).value >= 0)
                     a
                 }
             }
             function("test_encode", result = "T") {
                 param("a", type = "integer")
                 body { _, a ->
-                    val v = a.asInteger()
+                    val v = (a as Rt_IntValue).value
                     Rt_Utils.check(v != 0L) { "x=${a.strCode()}" to "x = ${a.str()}" }
                     check(v >= 0)
                     Rt_TextValue.get(a.str())

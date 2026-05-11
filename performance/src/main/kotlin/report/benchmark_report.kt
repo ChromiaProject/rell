@@ -12,13 +12,7 @@ import kotlinx.html.stream.appendHTML
 import org.intellij.lang.annotations.Language
 import java.nio.file.Path
 import java.time.Instant
-import kotlin.io.path.Path
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.createDirectories
-import kotlin.io.path.inputStream
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.name
-import kotlin.io.path.writeText
+import kotlin.io.path.*
 import kotlin.system.exitProcess
 
 private data class JmhMetric(

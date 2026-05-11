@@ -4,10 +4,10 @@
 
 package net.postchain.rell.toolbox.seeder.config.dsl
 
-import net.postchain.rell.toolbox.seeder.schema.Attribute
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.config.Distribution
 import net.postchain.rell.toolbox.seeder.config.EntityConfig
+import net.postchain.rell.toolbox.seeder.schema.Attribute
 
 class EntityConfigBuilder(private val name: String) {
     private val attributeConfigs = mutableMapOf<String, AttributeConfig>()

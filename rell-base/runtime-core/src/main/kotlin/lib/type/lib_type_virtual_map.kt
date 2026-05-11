@@ -34,7 +34,7 @@ object Lib_Type_VirtualMap {
                     val keyR = typeArgR("K")
                     bodyContext { ctx, a ->
                         val keySetType = Rt_SetType(ctx.exeCtx.appCtx.interpreter.resolveRType(keyR))
-                        val map = a.asMap()
+                        val map = (a as Rt_MapBackedValue).mapView
                         val r = map.keys.toMutableSet()
                         Rt_SetValue(keySetType, r)
                     }
@@ -46,7 +46,7 @@ object Lib_Type_VirtualMap {
                     val valueR = typeArgR("V")
                     bodyContext { ctx, a ->
                         val valueListType = Rt_ListType(ctx.exeCtx.appCtx.interpreter.resolveRType(valueR))
-                        val map = a.asMap()
+                        val map = (a as Rt_MapBackedValue).mapView
                         val r = map.values.toMutableList()
                         Rt_ListValue(valueListType, r)
                     }

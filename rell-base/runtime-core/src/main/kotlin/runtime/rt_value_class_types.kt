@@ -21,9 +21,6 @@ import net.postchain.rell.base.utils.mapToImmList
 class Rt_NullableType(val inner: Rt_ValueClass<*>): Rt_ValueClass<Rt_Value> {
     override val rrType: RR_Type = RR_Type.Nullable(inner.rrType!!)
     override val name = if (inner is Rt_FunctionType) "(${inner.name})?" else "${inner.name}?"
-    override val klass = Rt_Value::class
-    override fun cast(v: Rt_Value): Rt_Value = v
-
     override val gtvConversion: Rt_GtvCompatibleValueClass<*>? by lazy {
         inner.gtvConversion?.let { c -> Rt_NullValue.gtvConversionNullable(lazyOf(c)) }
     }
@@ -57,8 +54,6 @@ class Rt_NullableType(val inner: Rt_ValueClass<*>): Rt_ValueClass<Rt_Value> {
 class Rt_ListType(val element: Rt_ValueClass<*>): Rt_ValueClass<Rt_ListValue> {
     override val rrType: RR_Type = RR_Type.List(element.rrType!!)
     override val name = "list<${element.name}>"
-    override val klass = Rt_ListValue::class
-
     override val gtvConversion: Rt_GtvCompatibleValueClass<*>? by lazy {
         element.gtvConversion?.let { c ->
             Rt_ListValue.gtvConversion(name, lazyOf(c), lazyOf(this))
@@ -77,8 +72,6 @@ class Rt_ListType(val element: Rt_ValueClass<*>): Rt_ValueClass<Rt_ListValue> {
 class Rt_SetType(val element: Rt_ValueClass<*>): Rt_ValueClass<Rt_SetValue> {
     override val rrType: RR_Type = RR_Type.Set(element.rrType!!)
     override val name = "set<${element.name}>"
-    override val klass = Rt_SetValue::class
-
     override val gtvConversion: Rt_GtvCompatibleValueClass<*>? by lazy {
         element.gtvConversion?.let { c ->
             Rt_SetValue.gtvConversion(name, lazyOf(c), lazyOf(this))
@@ -93,8 +86,6 @@ class Rt_SetType(val element: Rt_ValueClass<*>): Rt_ValueClass<Rt_SetValue> {
 class Rt_MapType(val key: Rt_ValueClass<*>, val value: Rt_ValueClass<*>): Rt_ValueClass<Rt_MapValue> {
     override val rrType: RR_Type = RR_Type.Map(key.rrType!!, value.rrType!!)
     override val name = "map<${key.name},${value.name}>"
-    override val klass = Rt_MapValue::class
-
     override val gtvConversion: Rt_GtvCompatibleValueClass<*>? by lazy {
         val keyConv = key.gtvConversion
         val valConv = value.gtvConversion
@@ -119,8 +110,6 @@ class Rt_TupleType(
         val typeName = fieldClasses[i].name
         if (f.name != null) "${f.name}:$typeName" else typeName
     }
-    override val klass = Rt_TupleValue::class
-
     override val gtvConversion: Rt_GtvCompatibleValueClass<*>? by lazy {
         val convs = fieldClasses.map { it.gtvConversion }
         if (convs.any { it == null }) null else {
@@ -150,8 +139,6 @@ class Rt_EntityType(
     private val def get() = rrApp.allEntities[defIndex]
     override val rrType: RR_Type = RR_Type.Entity(defIndex)
     override val name: String get() = def.base.appLevelName
-    override val klass = Rt_EntityValue::class
-
     override val sqlAdapter: Rt_SqlCompatibleValueClass<*> by lazy {
         Rt_SqlAdapter_Entity(
             lazyRtType = lazyOf(this),
@@ -169,7 +156,7 @@ class Rt_EntityType(
     }
 
     override val comparator: Comparator<Rt_Value> = Comparator { a, b ->
-        a.asObjectId().compareTo(b.asObjectId())
+        (a as Rt_EntityValue).rowid.compareTo((b as Rt_EntityValue).rowid)
     }
 
     override fun toString() = name
@@ -184,8 +171,6 @@ class Rt_EnumType(
     private val def get() = rrApp.allEnums[defIndex]
     override val rrType: RR_Type = RR_Type.Enum(defIndex)
     override val name: String get() = def.base.appLevelName
-    override val klass = Rt_RR_EnumValue::class
-
     private val rtValues: List<Rt_Value> by lazy {
         def.attrs.map { attr -> Rt_RR_EnumValue(this, attr) }
     }
@@ -203,7 +188,7 @@ class Rt_EnumType(
     }
 
     override val comparator: Comparator<Rt_Value> = Comparator { a, b ->
-        a.asEnum().value.compareTo(b.asEnum().value)
+        (a as Rt_RR_EnumValue).rrAttr.value.compareTo((b as Rt_RR_EnumValue).rrAttr.value)
     }
 
     override fun toString() = name
@@ -219,8 +204,6 @@ class Rt_StructType(
     private val def get() = rrApp.allStructs[defIndex]
     override val rrType: RR_Type.Struct = RR_Type.Struct(defIndex)
     override val name: String get() = def.struct.name
-    override val klass = Rt_StructValue::class
-
     override val gtvConversion: Rt_GtvCompatibleValueClass<*> by lazy {
         structGtvConversion(rrType, def)
     }
@@ -233,8 +216,6 @@ class Rt_StructType(
 class Rt_ObjectType(rrApp: RR_App, defIndex: Int): Rt_ValueClass<Rt_ObjectValue> {
     override val rrType: RR_Type = RR_Type.Object(defIndex)
     override val name: String = rrApp.allObjects[defIndex].base.appLevelName
-    override val klass = Rt_ObjectValue::class
-
     override fun toString() = name
     override fun equals(other: Any?) = other is Rt_ObjectType && name == other.name
     override fun hashCode() = name.hashCode()
@@ -243,9 +224,6 @@ class Rt_ObjectType(rrApp: RR_App, defIndex: Int): Rt_ValueClass<Rt_ObjectValue>
 class Rt_OperationType(rrApp: RR_App, defIndex: Int): Rt_ValueClass<Rt_Value> {
     override val rrType: RR_Type = RR_Type.Operation(defIndex)
     override val name: String = rrApp.allOperations[defIndex].base.appLevelName
-    override val klass = Rt_Value::class
-    override fun cast(v: Rt_Value): Rt_Value = v
-
     override fun toString() = name
     override fun equals(other: Any?) = other is Rt_OperationType && name == other.name
     override fun hashCode() = name.hashCode()
@@ -258,8 +236,6 @@ class Rt_FunctionType(
     override val rrType: RR_Type =
         RR_Type.Function(params.mapToImmList { it.rrType!! }, result.rrType!!)
     override val name = "(${params.joinToString(",") { it.name }})->${result.name}"
-    override val klass = Rt_FunctionValue::class
-
     override fun toString() = name
     override fun equals(other: Any?) = other is Rt_FunctionType && name == other.name
     override fun hashCode() = name.hashCode()
@@ -271,8 +247,6 @@ class Rt_VirtualListType(
 ): Rt_ValueClass<Rt_VirtualListValue> {
     override val rrType: RR_Type = RR_Type.VirtualList(element.rrType!!)
     override val name = "virtual<list<${element.name}>>"
-    override val klass = Rt_VirtualListValue::class
-
     override val gtvConversion: Rt_GtvCompatibleValueClass<*>? by lazy { gtvConversionFactory() }
 
     override fun toString() = name
@@ -286,8 +260,6 @@ class Rt_VirtualSetType(
 ): Rt_ValueClass<Rt_VirtualSetValue> {
     override val rrType: RR_Type = RR_Type.VirtualSet(element.rrType!!)
     override val name = "virtual<set<${element.name}>>"
-    override val klass = Rt_VirtualSetValue::class
-
     override val gtvConversion: Rt_GtvCompatibleValueClass<*>? by lazy { gtvConversionFactory() }
 
     override fun toString() = name
@@ -302,8 +274,6 @@ class Rt_VirtualMapType(
 ): Rt_ValueClass<Rt_VirtualMapValue> {
     override val rrType: RR_Type = RR_Type.VirtualMap(key.rrType!!, value.rrType!!)
     override val name = "virtual<map<${key.name},${value.name}>>"
-    override val klass = Rt_VirtualMapValue::class
-
     override val gtvConversion: Rt_GtvCompatibleValueClass<*>? by lazy { gtvConversionFactory() }
 
     override fun toString() = name
@@ -322,8 +292,6 @@ class Rt_VirtualTupleType(
         val typeName = fieldClasses[i].name
         if (f.name != null) "${f.name}:$typeName" else typeName
     }}>"
-    override val klass = Rt_VirtualTupleValue::class
-
     override val gtvConversion: Rt_GtvCompatibleValueClass<*>? by lazy { gtvConversionFactory() }
 
     override fun toString() = name
@@ -338,8 +306,6 @@ class Rt_VirtualStructType(
 ): Rt_ValueClass<Rt_VirtualStructValue> {
     override val rrType: RR_Type = RR_Type.VirtualStruct(defIndex)
     override val name = "virtual<${rrApp.allStructs[defIndex].struct.name}>"
-    override val klass = Rt_VirtualStructValue::class
-
     override val gtvConversion: Rt_GtvCompatibleValueClass<*>? by lazy { gtvConversionFactory() }
 
     override fun toString() = name
@@ -350,9 +316,6 @@ class Rt_VirtualStructType(
 /** Stdlib library type — name-only carrier (no GTV/SQL/comparator). */
 class Rt_LibType(override val name: String): Rt_ValueClass<Rt_Value> {
     override val rrType: RR_Type = RR_Type.Generic(name, net.postchain.rell.base.utils.immListOf())
-    override val klass = Rt_Value::class
-    override fun cast(v: Rt_Value): Rt_Value = v
-
     override fun toString() = name
     override fun equals(other: Any?) = other is Rt_LibType && name == other.name
     override fun hashCode() = name.hashCode()
@@ -360,9 +323,6 @@ class Rt_LibType(override val name: String): Rt_ValueClass<Rt_Value> {
 
 /** Generic-RR fallback type — used for app-foreign types we can't classify further. */
 class Rt_GenericRrType(override val rrType: RR_Type, override val name: String): Rt_ValueClass<Rt_Value> {
-    override val klass = Rt_Value::class
-    override fun cast(v: Rt_Value): Rt_Value = v
-
     override fun toString() = name
     override fun equals(other: Any?) = other is Rt_GenericRrType && name == other.name
     override fun hashCode() = name.hashCode()

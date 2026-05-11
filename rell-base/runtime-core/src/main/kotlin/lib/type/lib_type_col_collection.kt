@@ -34,7 +34,7 @@ object Lib_Type_Collection {
                     @return `true` if this collection is empty, `false` otherwise
                 """)
                 body { self ->
-                    val col = self.asCollection()
+                    val col = (self as Rt_CollectionValue).collection
                     Rt_BooleanValue.get(col.isEmpty())
                 }
             }
@@ -43,7 +43,7 @@ object Lib_Type_Collection {
                 comment("Get the size (number of elements) of this collection.")
                 alias("len", deprecated = C_MessageType.ERROR, since = SINCE0)
                 body { self ->
-                    val col = self.asCollection()
+                    val col = (self as Rt_CollectionValue).collection
                     Rt_IntValue.get(col.size.toLong())
                 }
             }
@@ -55,7 +55,7 @@ object Lib_Type_Collection {
                 """)
                 param("value", "T", comment = "the element to look up")
                 body { self, value ->
-                    val col = self.asCollection()
+                    val col = (self as Rt_CollectionValue).collection
                     Rt_BooleanValue.get(col.contains(value))
                 }
             }
@@ -68,8 +68,8 @@ object Lib_Type_Collection {
                 alias("containsAll", deprecated = C_MessageType.ERROR, since = SINCE0)
                 param("values", type = "collection<-T>", comment = "the collection to check against")
                 body { self, values ->
-                    val col1 = self.asCollection()
-                    val col2 = values.asCollection()
+                    val col1 = (self as Rt_CollectionValue).collection
+                    val col2 = (values as Rt_CollectionValue).collection
                     Rt_BooleanValue.get(col1.containsAll(col2))
                 }
             }
@@ -84,7 +84,7 @@ object Lib_Type_Collection {
                 """)
                 param("value", "T", comment = "the element to add")
                 body { self, value ->
-                    val col = self.asCollection()
+                    val col = (self as Rt_CollectionValue).collection
                     Rt_BooleanValue.get(col.add(value))
                 }
             }
@@ -100,8 +100,8 @@ object Lib_Type_Collection {
                 alias("addAll", deprecated = C_MessageType.ERROR, since = SINCE0)
                 param("values", type = "collection<-T>", comment = "the collection of elements to add")
                 body { self, values ->
-                    val col = self.asCollection()
-                    Rt_BooleanValue.get(col.addAll(values.asCollection()))
+                    val col = (self as Rt_CollectionValue).collection
+                    Rt_BooleanValue.get(col.addAll((values as Rt_CollectionValue).collection))
                 }
             }
 
@@ -113,7 +113,7 @@ object Lib_Type_Collection {
                 """)
                 param("value", "T", comment = "the element to remove")
                 body { self, value ->
-                    val col = self.asCollection()
+                    val col = (self as Rt_CollectionValue).collection
                     Rt_BooleanValue.get(col.remove(value))
                 }
             }
@@ -126,8 +126,8 @@ object Lib_Type_Collection {
                 alias("removeAll", deprecated = C_MessageType.ERROR, since = SINCE0)
                 param("values", type = "collection<-T>", comment = "the collection of elements to remove")
                 body { self, values ->
-                    val col1 = self.asCollection()
-                    val col2 = values.asCollection()
+                    val col1 = (self as Rt_CollectionValue).collection
+                    val col2 = (values as Rt_CollectionValue).collection
                     Rt_BooleanValue.get(col1.removeAll(col2))
                 }
             }
@@ -140,8 +140,8 @@ object Lib_Type_Collection {
                 """)
                 param("values", type = "collection<-T>", comment = "the collection of elements to retain")
                 body { self, values ->
-                    val col1 = self.asCollection()
-                    val col2 = values.asCollection()
+                    val col1 = (self as Rt_CollectionValue).collection
+                    val col2 = (values as Rt_CollectionValue).collection
                     Rt_BooleanValue.get(col1.retainAll(col2))
                 }
             }
@@ -152,7 +152,7 @@ object Lib_Type_Collection {
                     collection is empty.
                 """)
                 body { self ->
-                    val col = self.asCollection()
+                    val col = (self as Rt_CollectionValue).collection
                     col.clear()
                     Rt_UnitValue
                 }
@@ -169,7 +169,7 @@ object Lib_Type_Collection {
                     bodyContext { ctx, self ->
                         val elemRt = ctx.exeCtx.appCtx.interpreter.resolveRType(elemR)
                         val listType = Rt_ListType(elemRt)
-                        val col = self.asCollection()
+                        val col = (self as Rt_CollectionValue).collection
                         val copy = ArrayList(col)
                         copy.sortWith(comparator)
                         Rt_ListValue(listType, copy)

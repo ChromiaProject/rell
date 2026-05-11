@@ -73,90 +73,90 @@ class Rt_InterpreterTest {
 
     @Test fun testIntegerConstant() {
         val result = evalFunction("function test(): integer = 42;")
-        assertEquals(42L, result.asInteger())
+        assertEquals(42L, (result as Rt_IntValue).value)
     }
 
     @Test fun testTextConstant() {
         val result = evalFunction("function test(): text = 'hello';")
-        assertEquals("hello", result.asString())
+        assertEquals("hello", (result as Rt_TextValue).value)
     }
 
     @Test fun testBooleanConstant() {
         val result = evalFunction("function test(): boolean = true;")
-        assertEquals(true, result.asBoolean())
+        assertEquals(true, (result as Rt_BooleanValue).value)
     }
 
     // --- Arithmetic ---
 
     @Test fun testIntegerAdd() {
         val result = evalFunction("function test(): integer = 1 + 2;")
-        assertEquals(3L, result.asInteger())
+        assertEquals(3L, (result as Rt_IntValue).value)
     }
 
     @Test fun testIntegerSub() {
         val result = evalFunction("function test(): integer = 10 - 3;")
-        assertEquals(7L, result.asInteger())
+        assertEquals(7L, (result as Rt_IntValue).value)
     }
 
     @Test fun testIntegerMul() {
         val result = evalFunction("function test(): integer = 4 * 5;")
-        assertEquals(20L, result.asInteger())
+        assertEquals(20L, (result as Rt_IntValue).value)
     }
 
     @Test fun testIntegerDiv() {
         val result = evalFunction("function test(): integer = 15 / 4;")
-        assertEquals(3L, result.asInteger())
+        assertEquals(3L, (result as Rt_IntValue).value)
     }
 
     @Test fun testIntegerMod() {
         val result = evalFunction("function test(): integer = 17 % 5;")
-        assertEquals(2L, result.asInteger())
+        assertEquals(2L, (result as Rt_IntValue).value)
     }
 
     @Test fun testUnaryMinus() {
         val result = evalFunction("function test(): integer = -(42);")
-        assertEquals(-42L, result.asInteger())
+        assertEquals(-42L, (result as Rt_IntValue).value)
     }
 
     @Test fun testNot() {
         val result = evalFunction("function test(): boolean = not true;")
-        assertEquals(false, result.asBoolean())
+        assertEquals(false, (result as Rt_BooleanValue).value)
     }
 
     // --- Comparison ---
 
     @Test fun testLessThan() {
         val result = evalFunction("function test(): boolean = 1 < 2;")
-        assertEquals(true, result.asBoolean())
+        assertEquals(true, (result as Rt_BooleanValue).value)
     }
 
     @Test fun testEquality() {
         val result = evalFunction("function test(): boolean = 3 == 3;")
-        assertEquals(true, result.asBoolean())
+        assertEquals(true, (result as Rt_BooleanValue).value)
     }
 
     @Test fun testInequality() {
         val result = evalFunction("function test(): boolean = 3 != 4;")
-        assertEquals(true, result.asBoolean())
+        assertEquals(true, (result as Rt_BooleanValue).value)
     }
 
     // --- Logical ---
 
     @Test fun testAnd() {
         val result = evalFunction("function test(): boolean = true and false;")
-        assertEquals(false, result.asBoolean())
+        assertEquals(false, (result as Rt_BooleanValue).value)
     }
 
     @Test fun testOr() {
         val result = evalFunction("function test(): boolean = false or true;")
-        assertEquals(true, result.asBoolean())
+        assertEquals(true, (result as Rt_BooleanValue).value)
     }
 
     // --- Control flow ---
 
     @Test fun testIfExpression() {
         val result = evalFunction("function test(): integer = if (true) 1 else 2;")
-        assertEquals(1L, result.asInteger())
+        assertEquals(1L, (result as Rt_IntValue).value)
     }
 
     @Test fun testIfStatement() {
@@ -166,7 +166,7 @@ class Rt_InterpreterTest {
                 return 20;
             }
         """)
-        assertEquals(10L, result.asInteger())
+        assertEquals(10L, (result as Rt_IntValue).value)
     }
 
     @Test fun testWhileLoop() {
@@ -181,7 +181,7 @@ class Rt_InterpreterTest {
                 return sum;
             }
         """)
-        assertEquals(10L, result.asInteger())
+        assertEquals(10L, (result as Rt_IntValue).value)
     }
 
     @Test fun testForLoop() {
@@ -194,7 +194,7 @@ class Rt_InterpreterTest {
                 return sum;
             }
         """)
-        assertEquals(15L, result.asInteger())
+        assertEquals(15L, (result as Rt_IntValue).value)
     }
 
     @Test fun testBreak() {
@@ -208,7 +208,7 @@ class Rt_InterpreterTest {
                 return sum;
             }
         """)
-        assertEquals(6L, result.asInteger())
+        assertEquals(6L, (result as Rt_IntValue).value)
     }
 
     @Test fun testContinue() {
@@ -222,7 +222,7 @@ class Rt_InterpreterTest {
                 return sum;
             }
         """)
-        assertEquals(12L, result.asInteger())
+        assertEquals(12L, (result as Rt_IntValue).value)
     }
 
     // --- Function calls ---
@@ -232,7 +232,7 @@ class Rt_InterpreterTest {
             function add(a: integer, b: integer): integer = a + b;
             function test(): integer = add(3, 4);
         """)
-        assertEquals(7L, result.asInteger())
+        assertEquals(7L, (result as Rt_IntValue).value)
     }
 
     @Test fun testRecursion() {
@@ -243,24 +243,24 @@ class Rt_InterpreterTest {
             }
             function test(): integer = fib(10);
         """)
-        assertEquals(55L, result.asInteger())
+        assertEquals(55L, (result as Rt_IntValue).value)
     }
 
     // --- System function calls ---
 
     @Test fun testSysFunctionMaxInteger() {
         val result = evalFunction("function test(): integer = max(123, 456);")
-        assertEquals(456L, result.asInteger())
+        assertEquals(456L, (result as Rt_IntValue).value)
     }
 
     @Test fun testSysFunctionMinInteger() {
         val result = evalFunction("function test(): integer = min(123, 456);")
-        assertEquals(123L, result.asInteger())
+        assertEquals(123L, (result as Rt_IntValue).value)
     }
 
     @Test fun testSysFunctionAbsInteger() {
         val result = evalFunction("function test(): integer = abs(-5);")
-        assertEquals(5L, result.asInteger())
+        assertEquals(5L, (result as Rt_IntValue).value)
     }
 
     // TODO: member function calls (e.g., .upper_case(), .size()) use R_MemberCalculator_CommonCall
@@ -269,7 +269,7 @@ class Rt_InterpreterTest {
 
     @Test fun testTextConcat() {
         val result = evalFunction("function test(): text = 'hello' + ' ' + 'world';")
-        assertEquals("hello world", result.asString())
+        assertEquals("hello world", (result as Rt_TextValue).value)
     }
 
     // --- Collections ---
@@ -277,12 +277,12 @@ class Rt_InterpreterTest {
     @Test fun testListLiteralSize() {
         // List.size() uses R_MemberCalculator_CommonCall which needs member calculator registry — test basic list instead.
         val result = evalFunction("function test(): integer = [1, 2, 3][0];")
-        assertEquals(1L, result.asInteger())
+        assertEquals(1L, (result as Rt_IntValue).value)
     }
 
     @Test fun testListSubscript() {
         val result = evalFunction("function test(): integer = [10, 20, 30][1];")
-        assertEquals(20L, result.asInteger())
+        assertEquals(20L, (result as Rt_IntValue).value)
     }
 
     // --- Variables ---
@@ -295,7 +295,7 @@ class Rt_InterpreterTest {
                 return x;
             }
         """)
-        assertEquals(20L, result.asInteger())
+        assertEquals(20L, (result as Rt_IntValue).value)
     }
 
     @Test fun testCompoundAssignment() {
@@ -306,7 +306,7 @@ class Rt_InterpreterTest {
                 return x;
             }
         """)
-        assertEquals(15L, result.asInteger())
+        assertEquals(15L, (result as Rt_IntValue).value)
     }
 
     // --- Nullable ---
@@ -318,7 +318,7 @@ class Rt_InterpreterTest {
                 return x ?: 42;
             }
         """)
-        assertEquals(42L, result.asInteger())
+        assertEquals(42L, (result as Rt_IntValue).value)
     }
 
     // --- Global constants ---
@@ -328,7 +328,7 @@ class Rt_InterpreterTest {
             val MAX: integer = 100;
             function test(): integer = MAX;
         """)
-        assertEquals(100L, result.asInteger())
+        assertEquals(100L, (result as Rt_IntValue).value)
     }
 
     @Test fun testGlobalConstantMax() {
@@ -336,7 +336,7 @@ class Rt_InterpreterTest {
             val X: integer = max(123, 456);
             function test(): integer = X;
         """)
-        assertEquals(456L, result.asInteger())
+        assertEquals(456L, (result as Rt_IntValue).value)
     }
 
     // --- Structs ---
@@ -348,7 +348,7 @@ class Rt_InterpreterTest {
 
     @Test fun testSimpleQuery() {
         val result = evalQuery("query test(): integer = 42;")
-        assertEquals(42L, result.asInteger())
+        assertEquals(42L, (result as Rt_IntValue).value)
     }
 
     // --- When expression ---
@@ -365,6 +365,6 @@ class Rt_InterpreterTest {
                 };
             }
         """)
-        assertEquals("two", result.asString())
+        assertEquals("two", (result as Rt_TextValue).value)
     }
 }

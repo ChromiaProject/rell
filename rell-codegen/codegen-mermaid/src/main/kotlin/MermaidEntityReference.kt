@@ -4,9 +4,9 @@
 
 package net.postchain.rell.codegen
 
+import net.postchain.rell.base.model.Key
 import net.postchain.rell.base.model.R_Attribute
 import net.postchain.rell.base.model.R_EntityDefinition
-import net.postchain.rell.base.model.Key
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.codegen.deps.DependencyFinder
 import net.postchain.rell.codegen.section.Entity

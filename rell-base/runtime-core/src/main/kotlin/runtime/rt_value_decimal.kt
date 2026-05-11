@@ -80,8 +80,6 @@ interface Rt_DecimalValue: Rt_Value {
 
         override val name
             get() = "decimal"
-
-        override val klass = Rt_DecimalValue::class
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.DECIMAL)
         override val nativeTypes = immSetOf(BigDecimal::class.createType())
 
@@ -89,7 +87,7 @@ interface Rt_DecimalValue: Rt_Value {
             get() = Lib_DecimalMath.DECIMAL_SQL_TYPE
 
         override val comparator: Comparator<Rt_Value> =
-            Comparator { a, b -> a.asDecimal().compareTo(b.asDecimal()) }
+            Comparator { a, b -> (a as Rt_DecimalValue).value.compareTo((b as Rt_DecimalValue).value) }
 
         val ZERO: Rt_DecimalValue = Rt_BigDecimalValue(BigDecimal.ZERO)
 

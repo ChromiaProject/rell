@@ -28,9 +28,8 @@ class ListVsMap<K> private constructor(private val entries: ImmList<Map.Entry<K,
     }
 }
 
-fun <T> chainToIterable(head: T?, nextGetter: (T) -> T?): Iterable<T> {
-    return if (head == null) emptyList() else ChainIterable(head, nextGetter)
-}
+fun <T> chainToIterable(head: T?, nextGetter: (T) -> T?): Iterable<T> =
+    if (head == null) emptyList() else ChainIterable(head, nextGetter)
 
 private class ChainIterable<T>(private val head: T, private val nextGetter: (T) -> T?): Iterable<T> {
     override fun iterator(): Iterator<T> = ChainIterator()
@@ -78,7 +77,7 @@ fun <T> Iterable<T?>.filterNotNullAllOrNull(): ImmList<T>? {
     return res.toImmList()
 }
 
-fun <T, R> Iterable<T>.mapNotNullAllOrNull(f: (T) -> R?): ImmList<R>? {
+inline fun <T, R> Iterable<T>.mapNotNullAllOrNull(f: (T) -> R?): ImmList<R>? {
     val res: MutableList<R> = ArrayList()
     for (value in this) {
         val resValue = f(value)
@@ -89,7 +88,7 @@ fun <T, R> Iterable<T>.mapNotNullAllOrNull(f: (T) -> R?): ImmList<R>? {
 }
 
 @Suppress("unused")
-fun <T, R> Iterable<T>.mapIndexedNotNullAllOrNull(f: (Int, T) -> R?): ImmList<R>? {
+inline fun <T, R> Iterable<T>.mapIndexedNotNullAllOrNull(f: (Int, T) -> R?): ImmList<R>? {
     val res: MutableList<R> = ArrayList()
     for (entry in this.withIndex()) {
         val index = res.size
@@ -100,7 +99,7 @@ fun <T, R> Iterable<T>.mapIndexedNotNullAllOrNull(f: (Int, T) -> R?): ImmList<R>
     return res.toImmList()
 }
 
-fun <T, K, V> Iterable<T>.associateNotNullValues(f: (T) -> Pair<K, V?>): ImmMap<K, V> {
+inline fun <T, K, V> Iterable<T>.associateNotNullValues(f: (T) -> Pair<K, V?>): ImmMap<K, V> {
     return mapNotNull {
         val (k, v) = f(it)
         if (v == null) null else (k to v)
@@ -112,7 +111,7 @@ fun <T, R> Iterable<T>.mapView(op: (T) -> R): Iterable<R> = asSequence().map(op)
 inline fun <T> Iterable<T>.foldSimple(op: (T, T) -> T): T = reduce(op)
 
 @Suppress("unused")
-fun <T> Iterable<T>.separated(block: (T, T) -> T): List<T> {
+inline fun <T> Iterable<T>.separated(block: (T, T) -> T): List<T> {
     val res = mutableListOf<T>()
     var prev: T? = null
     var first = true
@@ -128,14 +127,14 @@ fun <T> Iterable<T>.separated(block: (T, T) -> T): List<T> {
     return res.toImmList()
 }
 
-fun <K, V, R> Map<K, V>.mapValuesNotNull(f: (Map.Entry<K, V>) -> R?): Map<K, R> {
+inline fun <K, V, R> Map<K, V>.mapValuesNotNull(f: (Map.Entry<K, V>) -> R?): Map<K, R> {
     return mapNotNull {
         val r = f(it)
         if (r == null) null else (it.key to r)
     }.toImmMap()
 }
 
-fun <T> ImmList<T>.mapOrSame(f: (T) -> T): ImmList<T> {
+inline fun <T> ImmList<T>.mapOrSame(f: (T) -> T): ImmList<T> {
     var res: MutableList<T>? = null
 
     for (i in this.indices) {
@@ -153,13 +152,13 @@ fun <T> ImmList<T>.mapOrSame(f: (T) -> T): ImmList<T> {
     return res?.toImmList() ?: this
 }
 
-fun <T> List<T>.countWhile(predicate: (T) -> Boolean): Int {
+inline fun <T> List<T>.countWhile(predicate: (T) -> Boolean): Int {
     val i = this.indexOfFirst { !predicate(it) }
     return if (i >= 0) i else this.size
 }
 
 @Suppress("unused")
-fun <T> List<T>.countLastWhile(predicate: (T) -> Boolean): Int {
+inline fun <T> List<T>.countLastWhile(predicate: (T) -> Boolean): Int {
     val i = this.indexOfLast { !predicate(it) }
     return if (i >= 0) (this.size - 1 - i) else this.size
 }
@@ -167,7 +166,7 @@ fun <T> List<T>.countLastWhile(predicate: (T) -> Boolean): Int {
 @Suppress("unused")
 fun <T> List<T>.dropView(n: Int): List<T> = subList(n, size)
 
-fun <T, K, V> Iterable<T>.groupAdjacent(f: (T) -> Pair<K, V>): List<Pair<K, List<V>>> {
+inline fun <T, K, V> Iterable<T>.groupAdjacent(f: (T) -> Pair<K, V>): List<Pair<K, List<V>>> {
     val res = mutableListOf<Pair<K, List<V>>>()
     val group = mutableListOf<V>()
     var groupKey: K? = null
@@ -189,7 +188,7 @@ fun <T, K, V> Iterable<T>.groupAdjacent(f: (T) -> Pair<K, V>): List<Pair<K, List
     return res.toImmList()
 }
 
-fun <T: Any> MutableList<T?>.getOrSet(index: Int, f: () -> T): T {
+inline fun <T: Any> MutableList<T?>.getOrSet(index: Int, f: () -> T): T {
     var n = this.size
     while (n <= index) {
         add(null)
@@ -221,7 +220,7 @@ fun <T> Array<T>.toImmList(): ImmList<T> = toPersistentList()
 
 fun <T> ImmList<T>?.orEmpty(): ImmList<T> = this ?: immListOf()
 
-fun <T> ImmList(size: Int, init: (Int) -> T): ImmList<T> = List(size, init).toPersistentList()
+inline fun <T> ImmList(size: Int, init: (Int) -> T): ImmList<T> = List(size, init).toPersistentList()
 
 @Deprecated("redundant toImmList()", ReplaceWith("this"))
 fun <T> ImmList<T>.toImmList(): ImmList<T> = this

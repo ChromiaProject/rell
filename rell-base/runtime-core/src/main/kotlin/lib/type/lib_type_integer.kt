@@ -56,7 +56,7 @@ object Lib_Type_Integer {
                     comment("the radix to be used in parsing `value`; defaults to 10 if not provided")
                 }
                 bodyOpt1 { value, radix ->
-                    val r = radix?.asInteger() ?: 10
+                    val r = (radix as? Rt_IntValue)?.value ?: 10
                     calcFromText(value, r)
                 }
             }
@@ -79,7 +79,7 @@ object Lib_Type_Integer {
                     comment("the radix in which to interpret `value`, defaults to 10")
                 }
                 bodyOpt1 { value, radix ->
-                    val r = radix?.asInteger() ?: 10
+                    val r = (radix as? Rt_IntValue)?.value ?: 10
                     calcFromText(value, r)
                 }
             }
@@ -97,7 +97,7 @@ object Lib_Type_Integer {
                 alias("parseHex", C_MessageType.ERROR, since = "0.6.0")
                 param("value", "text", comment = "the hexadecimal text to be parsed")
                 body { value ->
-                    val s = value.asString()
+                    val s = (value as Rt_TextValue).value
                     val r = try {
                         java.lang.Long.parseUnsignedLong(s, 16)
                     } catch (_: NumberFormatException) {
@@ -134,8 +134,8 @@ object Lib_Type_Integer {
                 param("value", "big_integer", comment = "the value to compare against this integer")
                 dbFunctionSimple("min", "LEAST")
                 body { self, value ->
-                    val v1 = self.asInteger()
-                    val v2 = value.asBigInteger()
+                    val v1 = (self as Rt_IntValue).value
+                    val v2 = (value as Rt_BigIntegerValue).value
                     val r = BigInteger.valueOf(v1).min(v2)
                     Rt_BigIntegerValue.get(r)
                 }
@@ -150,8 +150,8 @@ object Lib_Type_Integer {
                 param("value", "decimal", comment = "the value to compare against this integer")
                 dbFunctionSimple("min", "LEAST")
                 body { self, value ->
-                    val v1 = self.asInteger()
-                    val v2 = value.asDecimal()
+                    val v1 = (self as Rt_IntValue).value
+                    val v2 = (value as Rt_DecimalValue).value
                     val r = BigDecimal.valueOf(v1).min(v2)
                     Rt_DecimalValue.get(r)
                 }
@@ -176,8 +176,8 @@ object Lib_Type_Integer {
                 param("value", "big_integer", comment = "the value to compare against this integer")
                 dbFunctionSimple("max", "GREATEST")
                 body { self, value ->
-                    val v1 = self.asInteger()
-                    val v2 = value.asBigInteger()
+                    val v1 = (self as Rt_IntValue).value
+                    val v2 = (value as Rt_BigIntegerValue).value
                     val r = BigInteger.valueOf(v1).max(v2)
                     Rt_BigIntegerValue.get(r)
                 }
@@ -192,8 +192,8 @@ object Lib_Type_Integer {
                 param("value", "decimal", comment = "the value to compare against this integer")
                 dbFunctionSimple("max", "GREATEST")
                 body { self, value ->
-                    val v1 = self.asInteger()
-                    val v2 = value.asDecimal()
+                    val v1 = (self as Rt_IntValue).value
+                    val v2 = (value as Rt_DecimalValue).value
                     val r = BigDecimal.valueOf(v1).max(v2)
                     Rt_DecimalValue.get(r)
                 }
@@ -216,8 +216,8 @@ object Lib_Type_Integer {
                 param(name = "exponent", type = "integer", comment = "the exponent")
                 dbFunctionSimple(fnSimpleName, SqlConstants.FN_INTEGER_POWER)
                 body { self, exponent ->
-                    val baseValue = self.asInteger()
-                    val expValue = exponent.asInteger()
+                    val baseValue = (self as Rt_IntValue).value
+                    val expValue = (exponent as Rt_IntValue).value
                     val resultValue = Lib_BigIntegerMath.genericPower(fnSimpleName, baseValue, expValue, Lib_BigIntegerMath.NumericType_Long)
                     Rt_IntValue.get(resultValue)
                 }
@@ -232,7 +232,7 @@ object Lib_Type_Integer {
                 alias("signum", C_MessageType.ERROR, since = SINCE0)
                 dbFunctionSimple("sign", "SIGN")
                 body { self ->
-                    val intValue = self.asInteger()
+                    val intValue = (self as Rt_IntValue).value
                     val result = intValue.sign.toLong()
                     Rt_IntValue.get(result)
                 }
@@ -253,7 +253,7 @@ object Lib_Type_Integer {
                 alias("str", since = SINCE0)
                 dbFunctionCast("int.to_text", "TEXT")
                 body { self ->
-                    val intValue = self.asInteger()
+                    val intValue = (self as Rt_IntValue).value
                     Rt_TextValue.get(intValue.toString())
                 }
             }
@@ -271,8 +271,8 @@ object Lib_Type_Integer {
                 alias("str", since = SINCE0)
                 param("radix", "integer", comment = "The radix (base) to use for the text representation.")
                 body { self, radix ->
-                    val intValue = self.asInteger()
-                    val radixValue = radix.asInteger()
+                    val intValue = (self as Rt_IntValue).value
+                    val radixValue = (radix as Rt_IntValue).value
                     if (radixValue < Character.MIN_RADIX || radixValue > Character.MAX_RADIX) {
                         throw Rt_Exception.common("fn_int_str_radix:$radixValue", "Invalid radix: $radixValue")
                     }
@@ -290,7 +290,7 @@ object Lib_Type_Integer {
                     `0x19`.
                 """)
                 body { self ->
-                    val v = self.asInteger()
+                    val v = (self as Rt_IntValue).value
                     Rt_TextValue.get(java.lang.Long.toHexString(v))
                 }
             }
@@ -302,7 +302,7 @@ object Lib_Type_Integer {
             throw Rt_Exception.common("fn:integer.from_text:radix:$radix", "Invalid radix: $radix")
         }
 
-        val s = a.asString()
+        val s = (a as Rt_TextValue).value
         val r = try {
             s.toLong(radix.toInt())
         } catch (_: NumberFormatException) {

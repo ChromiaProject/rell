@@ -9,7 +9,10 @@ import net.postchain.crypto.secp256k1_derivePubKey
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_StructType
 import net.postchain.rell.base.model.R_Type
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.Rt_ByteArrayValue
+import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.runtime.Rt_StructValue
+import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.BytesKeyPair
 import net.postchain.rell.base.utils.toImmMap
@@ -127,7 +130,7 @@ internal object Lib_Test_KeyPairs {
     }
 
     fun structToKeyPair(v: Rt_Value): BytesKeyPair {
-        val v2 = v.asStruct()
+        val v2 = (v as Rt_StructValue)
         // Validate by struct type name rather than R_StructType identity, so the pure-RR path works.
         val expectedTypeName = Lib_RellTest.KEYPAIR_TYPE.name
         val actualTypeName = v2.type.name
@@ -144,7 +147,7 @@ internal object Lib_Test_KeyPairs {
     }
 
     private fun toByteArray(v: Rt_Value, n: Int): ByteArray {
-        val bs = v.asByteArray()
+        val bs = (v as Rt_ByteArrayValue).value
         Rt_Utils.check(bs.size == n) { "keypair:wrong_byte_array_size:$n:${bs.size}" to
                 "Wrong byte array size: ${bs.size} instead of $n" }
         return bs

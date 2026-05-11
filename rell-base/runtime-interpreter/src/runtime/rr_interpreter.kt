@@ -163,7 +163,7 @@ class Rt_InterpreterImpl(
         is RR_Expr.Binary -> evaluateBinary(expr, frame)
         is RR_Expr.Unary -> evaluateUnary(expr, frame)
         is RR_Expr.If -> {
-            val cond = evaluateExpr(expr.cond, frame).asBoolean()
+            val cond = (evaluateExpr(expr.cond, frame) as Rt_BooleanValue).value
             evaluateExpr(if (cond) expr.trueExpr else expr.falseExpr, frame)
         }
 
@@ -276,21 +276,21 @@ class Rt_InterpreterImpl(
 
         // Subscript expressions
         is RR_Expr.ListSubscript -> {
-            val list = evaluateExpr(expr.base, frame).asList()
-            val idx = evaluateExpr(expr.index, frame).asInteger()
+            val list = (evaluateExpr(expr.base, frame) as Rt_ListValue).elements
+            val idx = (evaluateExpr(expr.index, frame) as Rt_IntValue).value
             Rt_ListValue.checkIndex(frame, expr.errPos, list.size, idx)
             list[idx.toInt()]
         }
 
         is RR_Expr.MapSubscript -> {
-            val map = evaluateExpr(expr.base, frame).asMap()
+            val map = (evaluateExpr(expr.base, frame) as Rt_MapBackedValue).mapView
             val key = evaluateExpr(expr.key, frame)
             map[key] ?: frame.error(expr.errPos, "fn_map_get_novalue:${key.strCode()}", "Key not in map: ${key.str()}")
         }
 
         is RR_Expr.TextSubscript -> {
-            val text = evaluateExpr(expr.base, frame).asString()
-            val idx = evaluateExpr(expr.index, frame).asInteger()
+            val text = (evaluateExpr(expr.base, frame) as Rt_TextValue).value
+            val idx = (evaluateExpr(expr.index, frame) as Rt_IntValue).value
             if (idx < 0 || idx >= text.length) frame.error(
                 expr.errPos,
                 "expr_text_subscript_index:${text.length}:$idx",
@@ -300,8 +300,8 @@ class Rt_InterpreterImpl(
         }
 
         is RR_Expr.ByteArraySubscript -> {
-            val ba = evaluateExpr(expr.base, frame).asByteArray()
-            val idx = evaluateExpr(expr.index, frame).asInteger()
+            val ba = (evaluateExpr(expr.base, frame) as Rt_ByteArrayValue).value
+            val idx = (evaluateExpr(expr.index, frame) as Rt_IntValue).value
             if (idx < 0 || idx >= ba.size) frame.error(
                 expr.errPos,
                 "expr_bytearray_subscript_index:${ba.size}:$idx",
@@ -311,20 +311,20 @@ class Rt_InterpreterImpl(
         }
 
         is RR_Expr.VirtualListSubscript -> {
-            val list = evaluateExpr(expr.base, frame).asVirtualList()
-            val index = evaluateExpr(expr.index, frame).asInteger()
+            val list = (evaluateExpr(expr.base, frame) as Rt_VirtualListValue)
+            val index = (evaluateExpr(expr.index, frame) as Rt_IntValue).value
             list.get(index)
         }
 
         is RR_Expr.VirtualMapSubscript -> {
-            val map = evaluateExpr(expr.base, frame).asMap()
+            val map = (evaluateExpr(expr.base, frame) as Rt_MapBackedValue).mapView
             val key = evaluateExpr(expr.key, frame)
             map[key] ?: frame.error(expr.errPos, "fn_map_get_novalue:${key.strCode()}", "Key not in map: ${key.str()}")
         }
 
         is RR_Expr.JsonArraySubscript -> {
-            val jsonNode = evaluateExpr(expr.base, frame).asJson().node
-            val index = evaluateExpr(expr.index, frame).asInteger().toInt()
+            val jsonNode = (evaluateExpr(expr.base, frame) as Rt_JsonValue).node
+            val index = (evaluateExpr(expr.index, frame) as Rt_IntValue).value.toInt()
             when (val result = JsonUtils.arrayGet(jsonNode, index, "subscript")) {
                 is JsonUtils.Success -> Rt_JsonValue(result.value)
                 is JsonUtils.Failure -> frame.error(expr.errPos, result.codeMsg.code, result.codeMsg.msg)
@@ -332,8 +332,8 @@ class Rt_InterpreterImpl(
         }
 
         is RR_Expr.JsonObjectSubscript -> {
-            val jsonNode = evaluateExpr(expr.base, frame).asJson().node
-            val key = evaluateExpr(expr.key, frame).asString()
+            val jsonNode = (evaluateExpr(expr.base, frame) as Rt_JsonValue).node
+            val key = (evaluateExpr(expr.key, frame) as Rt_TextValue).value
             when (val result = JsonUtils.objectGet(jsonNode, key, "subscript")) {
                 is JsonUtils.Success -> Rt_JsonValue(result.value)
                 is JsonUtils.Failure -> frame.error(expr.errPos, result.codeMsg.code, result.codeMsg.msg)
@@ -343,7 +343,7 @@ class Rt_InterpreterImpl(
         is RR_Expr.StructMember -> {
             val base = evaluateExpr(expr.base, frame)
             if (base == Rt_NullValue) Rt_NullValue
-            else base.asStruct().get(expr.attrIndex)
+            else (base as Rt_StructValue).get(expr.attrIndex)
         }
 
         is RR_Expr.ObjectValue -> {
@@ -388,14 +388,14 @@ class Rt_InterpreterImpl(
         }
 
         is RR_Statement.If -> {
-            val cond = evaluateExpr(stmt.cond, frame).asBoolean()
+            val cond = (evaluateExpr(stmt.cond, frame) as Rt_BooleanValue).value
             executeStmt(if (cond) stmt.trueStmt else stmt.falseStmt, frame)
         }
 
         is RR_Statement.When -> executeWhenStmt(stmt, frame)
         is RR_Statement.While -> {
             while (true) {
-                val cond = evaluateExpr(stmt.cond, frame).asBoolean()
+                val cond = (evaluateExpr(stmt.cond, frame) as Rt_BooleanValue).value
                 if (!cond) break
                 val res = frame.block(stmt.frameBlock) { executeStmt(stmt.body, frame) }
                 when (res) {
@@ -411,14 +411,14 @@ class Rt_InterpreterImpl(
         is RR_Statement.For -> {
             val iterable = evaluateExpr(stmt.expr, frame)
             val iterator = when (stmt.iterableAdapter) {
-                RR_IterableAdapterKind.DIRECT -> iterable.asIterable()
+                RR_IterableAdapterKind.DIRECT -> (iterable as Rt_IterableValue)
                 RR_IterableAdapterKind.LEGACY_MAP -> {
                     val rrType = when (val d = stmt.varDeclarator) {
                         is RR_VarDeclarator.Simple -> d.type
                         else -> RR_Type.Primitive(RR_PrimitiveKind.UNIT)
                     }
                     val tupleType = resolveType(rrType)
-                    iterable.asMap().entries.map { (k, v) ->
+                    (iterable as Rt_MapBackedValue).mapView.entries.map { (k, v) ->
                         Rt_TupleValue(tupleType, listOf(k, v))
                     }
                 }
@@ -758,8 +758,8 @@ class Rt_InterpreterImpl(
     fun checkSizeConstraint(constraint: RR_SizeConstraint, value: Rt_Value) {
         if (value == Rt_NullValue) return
         val size = when (constraint.kind) {
-            RR_SizeConstraintKind.BYTE_ARRAY -> value.asByteArray().size
-            RR_SizeConstraintKind.TEXT -> value.asString().length
+            RR_SizeConstraintKind.BYTE_ARRAY -> (value as Rt_ByteArrayValue).value.size
+            RR_SizeConstraintKind.TEXT -> (value as Rt_TextValue).value.length
         }
         val min = constraint.min
         val max = constraint.max
@@ -960,7 +960,7 @@ class Rt_InterpreterImpl(
 
         is RR_FunctionCallTarget.FunctionValue -> {
             checkNotNull(base)
-            val fnValue = base.asFunction()
+            val fnValue = (base as Rt_FunctionValue)
             fnValue.call(args)
         }
 

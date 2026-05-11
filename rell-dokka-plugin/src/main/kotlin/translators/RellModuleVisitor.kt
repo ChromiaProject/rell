@@ -12,7 +12,9 @@ import com.chromia.rell.dokka.dri.from
 import com.chromia.rell.dokka.dri.toBound
 import com.chromia.rell.dokka.dri.toPackageName
 import com.chromia.rell.dokka.model.*
-import com.chromia.rell.dokka.reflection.*
+import com.chromia.rell.dokka.reflection.getType
+import com.chromia.rell.dokka.reflection.getValue
+import com.chromia.rell.dokka.reflection.getValueGtv
 import net.postchain.rell.base.model.*
 import org.jetbrains.dokka.DokkaConfiguration
 import org.jetbrains.dokka.links.Callable

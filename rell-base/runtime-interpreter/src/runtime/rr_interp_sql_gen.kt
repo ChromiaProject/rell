@@ -249,7 +249,7 @@ internal class DbSqlGen private constructor(
 
             is RR_DbExpr.CollectionInterpreted -> {
                 val value = interpreter.evaluateExpr(expr.expr, frame)
-                val collection = value.asCollection()
+                val collection = (value as Rt_CollectionValue).collection
                 val items = collection.toList().map { v -> bind(v) }
                 tupleField(items)
             }
@@ -368,7 +368,7 @@ internal class DbSqlGen private constructor(
     }
 
     private fun inCollectionField(expr: RR_DbExpr.InCollection, frame: Rt_CallFrame): Field<Any?> {
-        val rightValue = interpreter.evaluateExpr(expr.right, frame).asCollection()
+        val rightValue = (interpreter.evaluateExpr(expr.right, frame) as Rt_CollectionValue).collection
         if (rightValue.isEmpty()) return boolField(expr.not)
         val left = dbExprToField(expr.left, frame)
         val items = rightValue.toList().map { v -> bind(v) }
@@ -442,7 +442,7 @@ internal class DbSqlGen private constructor(
         is RR_DbExpr.Interpreted -> {
             // Non-subquery (e.g. collection at). Evaluate at R-level, emit literal TRUE/FALSE.
             val value = interpreter.evaluateExpr(sub.expr, frame)
-            val exists = if (value === Rt_NullValue) false else value.asCollection().isNotEmpty()
+            val exists = if (value === Rt_NullValue) false else (value as Rt_CollectionValue).collection.isNotEmpty()
             boolField(if (expr.not) !exists else exists)
         }
 
@@ -650,7 +650,7 @@ internal class DbSqlGen private constructor(
     private fun tryEvaluateInterpretedBool(expr: RR_DbExpr, frame: Rt_CallFrame): Boolean? {
         val value = tryEvaluateDbExprFully(expr, frame) ?: return null
         return try {
-            value.asBoolean()
+            (value as Rt_BooleanValue).value
         } catch (_: Exception) {
             null
         }
@@ -1080,14 +1080,14 @@ private fun evaluateSqlBinaryOp(sqlOp: String, left: Rt_Value, right: Rt_Value):
         Rt_BooleanValue.get(cmp >= 0)
     }
 
-    "AND" -> Rt_BooleanValue.get(left.asBoolean() && right.asBoolean())
-    "OR" -> Rt_BooleanValue.get(left.asBoolean() || right.asBoolean())
+    "AND" -> Rt_BooleanValue.get((left as Rt_BooleanValue).value && (right as Rt_BooleanValue).value)
+    "OR" -> Rt_BooleanValue.get((left as Rt_BooleanValue).value || (right as Rt_BooleanValue).value)
     else -> null
 }
 
 private fun evaluateSqlUnaryOp(sqlOp: String, operand: Rt_Value): Rt_Value? = when (sqlOp) {
-    "NOT" -> Rt_BooleanValue.get(!operand.asBoolean())
-    "-" -> Rt_IntValue.get(-operand.asInteger())
+    "NOT" -> Rt_BooleanValue.get(!(operand as Rt_BooleanValue).value)
+    "-" -> Rt_IntValue.get(-(operand as Rt_IntValue).value)
     else -> null
 }
 

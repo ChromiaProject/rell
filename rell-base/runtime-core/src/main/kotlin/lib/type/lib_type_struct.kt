@@ -139,7 +139,7 @@ object Lib_Type_Struct {
 
                         bodyContext { ctx, a ->
                             val resRt = ctx.exeCtx.appCtx.interpreter.resolveRType(resR)
-                            val bytes = a.asByteArray()
+                            val bytes = (a as Rt_ByteArrayValue).value
                             Rt_Utils.wrapErr("fn:struct:from_bytes") {
                                 val gtv = PostchainGtvUtils.bytesToGtv(bytes)
                                 gtvToRt(ctx, resRt, gtv, pretty = false)
@@ -189,7 +189,7 @@ object Lib_Type_Struct {
     }
 
     fun decodeOperation(ctx: Rt_CallContext, v: Rt_Value): Pair<MountName, ImmList<Gtv>> {
-        val sv = v.asStruct()
+        val sv = (v as Rt_StructValue)
         val rtType = sv.type
         val interpreter = ctx.exeCtx.appCtx.interpreter
         val rrType = rtType.rrType as? RR_Type.Struct
@@ -255,7 +255,7 @@ object Lib_Type_Struct {
         returnMutable: Boolean,
         name: String,
     ): Rt_Value {
-        val v = arg.asStruct()
+        val v = (arg as Rt_StructValue)
         val rtType = v.type
         val interpreter = ctx.exeCtx.appCtx.interpreter
         val rrType = rtType.rrType as? RR_Type.Struct

@@ -36,7 +36,5 @@ class Rt_RR_LazyValue(
     companion object: Rt_ValueClass<Rt_RR_LazyValue> {
         override val name
             get() = "lazy"
-
-        override val klass = Rt_RR_LazyValue::class
     }
 }

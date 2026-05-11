@@ -12,8 +12,6 @@ import kotlin.reflect.full.createType
 object Rt_UnitValue: Rt_Value, Rt_ValueClass<Rt_UnitValue>, Rt_NativeAdapter {
     override val name
         get() = "unit"
-
-    override val klass = Rt_UnitValue::class
     override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.UNIT)
 
     override val type

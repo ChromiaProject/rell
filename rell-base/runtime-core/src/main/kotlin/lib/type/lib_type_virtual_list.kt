@@ -6,8 +6,8 @@ package net.postchain.rell.base.lib.type
 
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_VirtualListType
-import net.postchain.rell.base.runtime.asInteger
-import net.postchain.rell.base.runtime.asVirtualList
+import net.postchain.rell.base.runtime.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_VirtualListValue
 import net.postchain.rell.base.utils.doc.DocCode
 
 object Lib_Type_VirtualList {
@@ -30,8 +30,8 @@ object Lib_Type_VirtualList {
             function("get", result = "T2", pure = true, since = "0.9.0") {
                 param("index", type = "integer")
                 body { a, b ->
-                    val list = a.asVirtualList()
-                    val index = b.asInteger()
+                    val list = (a as Rt_VirtualListValue)
+                    val index = (b as Rt_IntValue).value
                     val res = list.get(index)
                     res
                 }

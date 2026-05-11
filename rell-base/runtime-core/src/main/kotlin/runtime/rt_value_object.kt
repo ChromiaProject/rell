@@ -16,7 +16,5 @@ class Rt_ObjectValue(override val type: Rt_ValueClass<*>): Rt_Value {
     companion object: Rt_ValueClass<Rt_ObjectValue> {
         override val name
             get() = "object"
-
-        override val klass = Rt_ObjectValue::class
     }
 }

@@ -12,14 +12,8 @@ import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
 import org.intellij.lang.annotations.Language
 import java.nio.file.Path
-import java.util.Locale
-import kotlin.io.path.bufferedWriter
-import kotlin.io.path.div
-import kotlin.io.path.exists
-import kotlin.io.path.inputStream
-import kotlin.io.path.outputStream
-import kotlin.io.path.readText
-import kotlin.io.path.useLines
+import java.util.*
+import kotlin.io.path.*
 
 // ─── Component classification ────────────────────────────────────────────────────────────
 

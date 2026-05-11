@@ -73,7 +73,7 @@ object Lib_Type_Iterable {
                 }
                 bodyContextN { _, args ->
                     Rt_Utils.checkRange(args.size, 1, 7)
-                    val joinedString = joinToTextCall(args[0].asIterable(), args)
+                    val joinedString = joinToTextCall((args[0] as Rt_IterableValue), args)
                     Rt_TextValue.get(joinedString)
                 }
             }
@@ -84,18 +84,18 @@ object Lib_Type_Iterable {
         self: Iterable<Rt_Value>,
         args: List<Rt_Value>
     ): String {
-        val separator = args.getOrNull(1)?.asString() ?: ", "
-        val prefix = args.getOrNull(2)?.asString() ?: ""
-        val postfix = args.getOrNull(3)?.asString() ?: ""
+        val separator = (args.getOrNull(1) as? Rt_TextValue)?.value ?: ", "
+        val prefix = (args.getOrNull(2) as? Rt_TextValue)?.value ?: ""
+        val postfix = (args.getOrNull(3) as? Rt_TextValue)?.value ?: ""
         val limit = extractLimit(args.getOrNull(4))
-        val truncated = args.getOrNull(5)?.asString() ?: "..."
-        val fnValue = args.getOrNull(6)?.asFunction()
+        val truncated = (args.getOrNull(5) as? Rt_TextValue)?.value ?: "..."
+        val fnValue = (args.getOrNull(6) as? Rt_FunctionValue)
         val transform = if (fnValue != null) {
             rtValue -> callTransformFunction(fnValue, rtValue)
         } else {
             ::defaultTransform
         }
-        return self.asIterable().joinToString(separator, prefix, postfix, limit, truncated, transform)
+        return self.joinToString(separator, prefix, postfix, limit, truncated, transform)
     }
 
     private fun defaultTransform(value: Rt_Value): String {
@@ -103,7 +103,7 @@ object Lib_Type_Iterable {
     }
 
     private fun callTransformFunction(transform: Rt_FunctionValue, rtValue: Rt_Value): String {
-        return transform.call(listOf(rtValue)).asString()
+        return (transform.call(listOf(rtValue)) as Rt_TextValue).value
     }
 
     private fun extractLimit(value: Rt_Value?): Int {
@@ -111,7 +111,7 @@ object Lib_Type_Iterable {
             return -1
         }
 
-        val limit = value.asInteger()
+        val limit = (value as Rt_IntValue).value
         Rt_Utils.checkRange(limit, 0, Int.MAX_VALUE.toLong()) {
             val code = "fn:join_to_text:incorrect_limit:$limit"
             val msg = "Limit needs to be an integer between 0 and ${Int.MAX_VALUE}"

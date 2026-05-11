@@ -114,7 +114,7 @@ object Lib_Type_Gtv {
                 alias("fromBytes", C_MessageType.ERROR, since = "0.6.1")
                 param("bytes", "byte_array", comment = "the byte array to decode")
                 body { a ->
-                    val bytes = a.asByteArray()
+                    val bytes = (a as Rt_ByteArrayValue).value
                     Rt_Utils.wrapErr("fn:gtv.from_bytes") {
                         val gtv = PostchainGtvUtils.bytesToGtv(bytes)
                         Rt_GtvValue.get(gtv)
@@ -130,7 +130,7 @@ object Lib_Type_Gtv {
                 """)
                 param("bytes", "byte_array", comment = "the byte array to decode")
                 body { a ->
-                    val bytes = a.asByteArray()
+                    val bytes = (a as Rt_ByteArrayValue).value
                     val gtv = try {
                         PostchainGtvUtils.bytesToGtv(bytes)
                     } catch (_: Throwable) {
@@ -154,7 +154,7 @@ object Lib_Type_Gtv {
                 alias("fromJSON", C_MessageType.ERROR, since = "0.6.1")
                 param("json", "text", comment = "the JSON text to decode")
                 body { a ->
-                    val str = a.asString()
+                    val str = (a as Rt_TextValue).value
                     Rt_Utils.wrapErr("fn:gtv.from_json(text)") {
                         val gtv = PostchainGtvUtils.jsonToGtv(str)
                         Rt_GtvValue.get(gtv)
@@ -172,7 +172,7 @@ object Lib_Type_Gtv {
                 alias("fromJSON", C_MessageType.ERROR, since = "0.6.1")
                 param("json", "json", comment = "the JSON to convert")
                 body { a ->
-                    val str = a.asJson().str
+                    val str = (a as Rt_JsonValue).str
                     Rt_Utils.wrapErr("fn:gtv.from_json(json)") {
                         val gtv = PostchainGtvUtils.jsonToGtv(str)
                         Rt_GtvValue.get(gtv)
@@ -211,7 +211,7 @@ object Lib_Type_Gtv {
                 """)
                 alias("toBytes", C_MessageType.ERROR, since = "0.6.1")
                 body { a ->
-                    val gtv = a.asGtv()
+                    val gtv = (a as Rt_GtvValue).value
                     val bytes = PostchainGtvUtils.gtvToBytes(gtv)
                     Rt_ByteArrayValue.get(bytes)
                 }
@@ -229,7 +229,7 @@ object Lib_Type_Gtv {
                 """)
                 alias("toJSON", C_MessageType.ERROR, since = "0.6.1")
                 body { a ->
-                    val gtv = a.asGtv()
+                    val gtv = (a as Rt_GtvValue).value
                     val json = PostchainGtvUtils.gtvToJson(gtv, true)
                     //TODO consider making a separate function toJSONStr() to avoid unnecessary conversion str -> json -> str.
                     Rt_JsonValue.parse(json)
@@ -249,7 +249,7 @@ object Lib_Type_Gtv {
                     ```
                 """)
                 value { a ->
-                    val gtv = a.asGtv()
+                    val gtv = (a as Rt_GtvValue).value
                     val ordinal = gtv.type.ordinal
                     Lib_Rell.GTV_TYPE_ENUM.rtGetValueOrNull(ordinal)
                         ?: throw Rt_Exception.common("gtv:type:unknown", "Unknown GTV type: ${gtv.type}")
@@ -388,7 +388,7 @@ object Lib_Type_Gtv {
 
             bodyContext { ctx, a ->
                 val resRt = ctx.exeCtx.appCtx.interpreter.resolveRType(resR)
-                val gtv = a.asGtv()
+                val gtv = (a as Rt_GtvValue).value
                 Rt_Utils.wrapErr({ "fn:[${resRt.name}]:from_gtv:$pretty" }) {
                     gtvToRt(ctx, resRt, gtv, pretty)
                 }
@@ -437,7 +437,7 @@ object Lib_Type_Gtv {
     }
 
     private fun calcHashVirtual(ctx: Rt_CallContext, value: Rt_Value, version: Rt_Value?, fnName: String): Rt_Value {
-        val virtual = value.asVirtual()
+        val virtual = (value as Rt_VirtualValue)
         val gtv = virtual.gtv
         val hash = Rt_Utils.wrapErr(fnName) {
             calcHash0(ctx, gtv, version)
@@ -447,7 +447,7 @@ object Lib_Type_Gtv {
 
     private fun calcHash0(ctx: Rt_CallContext, gtv: Gtv, version: Rt_Value?): ByteArray {
         val iVersion = if (version == null) null else {
-            val v = version.asInteger().toIntExactOrNull()
+            val v = (version as Rt_IntValue).value.toIntExactOrNull()
             requireNotNull(v) { "Hash version out of range: $version" }
         }
         return ctx.appCtx.gtvHashCalculator.hash(gtv, iVersion)

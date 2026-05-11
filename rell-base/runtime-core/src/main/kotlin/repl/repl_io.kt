@@ -53,8 +53,8 @@ object ReplValueFormatter {
     private fun formatDefault(v: Rt_Value): String? = if (v === Rt_UnitValue) null else v.str()
 
     private fun formatOneItemPerLine(v: Rt_Value): String? = when (v.type.rrType) {
-        is RR_Type.List, is RR_Type.Set -> collectionToLines(v.asCollection()) { it.str() }
-        is RR_Type.Map -> collectionToLines(v.asMap().entries) { "${it.key.str()}=${it.value.str()}" }
+        is RR_Type.List, is RR_Type.Set -> collectionToLines((v as Rt_CollectionValue).collection) { it.str() }
+        is RR_Type.Map -> collectionToLines((v as Rt_MapBackedValue).mapView.entries) { "${it.key.str()}=${it.value.str()}" }
         else -> v.str()
     }
 

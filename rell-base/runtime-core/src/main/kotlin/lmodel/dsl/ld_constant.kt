@@ -47,7 +47,7 @@ class Ld_Constant(
         is Rt_BigIntegerValue -> L_ConstantDocSource.BigInt(value.value)
         is Rt_DecimalValue -> L_ConstantDocSource.Decimal(value.value)
         is Rt_TextValue -> L_ConstantDocSource.Text(value.value)
-        is Rt_ByteArrayValue -> L_ConstantDocSource.Bytes(value.asByteArray())
+        is Rt_ByteArrayValue -> L_ConstantDocSource.Bytes(value.value)
         is Rt_RowidValue -> L_ConstantDocSource.Rowid(value.value)
         else -> L_ConstantDocSource.Complex(lazy { value.str(Rt_StrFormat.V2) })
     }

@@ -96,15 +96,6 @@ class Rt_RequireError(val userMsg: String?): Rt_Error {
     }
 }
 
-class Rt_ValueTypeError(val expected: String, val actual: String): Rt_Error {
-    override fun code() = "rtv_err:$expected:$actual"
-    override fun message() = "Value type mismatch: $actual instead of $expected"
-
-    companion object {
-        fun exception(expected: String, actual: String) = Rt_Exception(Rt_ValueTypeError(expected, actual))
-    }
-}
-
 class Rt_GtvError(val code: String, val msg: String): Rt_Error {
     override fun code() = "gtv_err:$code"
     override fun message() = msg

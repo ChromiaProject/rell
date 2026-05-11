@@ -45,8 +45,6 @@ class Rt_TestBlockValue(txs: List<RawTestTxValue>): Rt_Value {
     companion object: Rt_ValueClass<Rt_TestBlockValue> {
         override val name
             get() = "rell.test.block"
-
-        override val klass = Rt_TestBlockValue::class
     }
 }
 
@@ -86,9 +84,6 @@ internal class Rt_TestTxValue(
     companion object: Rt_ValueClass<Rt_TestTxValue> {
         override val name
             get() = "rell.test.tx"
-
-        override val klass = Rt_TestTxValue::class
-
         fun strCode(ops: List<RawTestOpValue>, signers: List<BytesKeyPair>): String {
             val opsList = ops.map { Rt_TestOpValue.strCode(it.name, it.args) }
             val signersList = signers.map { it.pub.toHex().substring(0, 6).lowercase() }
@@ -132,9 +127,6 @@ class Rt_TestOpValue(val mountName: MountName, val args: ImmList<Gtv>): Rt_Value
     companion object: Rt_ValueClass<Rt_TestOpValue> {
         override val name
             get() = "rell.test.op"
-
-        override val klass = Rt_TestOpValue::class
-
         fun strCode(name: MountName, args: List<Gtv>): String {
             val argsStr = args.joinToString(",") { Rt_GtvValue.get(it).str(Rt_StrFormat.V2) }
             return "op[$name($argsStr)]"

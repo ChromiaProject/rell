@@ -8,7 +8,6 @@ import net.postchain.rell.base.compiler.parser.antlr.RellParser.BaseExprContext
 import net.postchain.rell.base.compiler.parser.antlr.RellParser.ExpressionContext
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
-import net.postchain.rell.toolbox.formatter.util.BaseExprTail
 import net.postchain.rell.toolbox.formatter.util.ExpressionFormatter
 import net.postchain.rell.toolbox.formatter.util.LineAnalyzer
 import net.postchain.rell.toolbox.formatter.util.tails

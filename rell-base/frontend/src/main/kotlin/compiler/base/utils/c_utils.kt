@@ -4,6 +4,10 @@
 
 package net.postchain.rell.base.compiler.base.utils
 
+import com.github.h0tk3y.betterParse.lexer.TokenMatchesSequence
+import com.github.h0tk3y.betterParse.parser.ErrorResult
+import com.github.h0tk3y.betterParse.parser.ParseException
+import com.github.h0tk3y.betterParse.parser.Parsed
 import net.postchain.rell.base.compiler.ast.S_BasicPos
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_RellFile
@@ -16,30 +20,15 @@ import net.postchain.rell.base.compiler.base.expr.C_StmtContext
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.compiler.base.module.C_ModuleKey
 import net.postchain.rell.base.compiler.base.module.S_DefinitionContext
+import net.postchain.rell.base.compiler.base.utils.C_Parser.parse
 import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.compiler.parser.RellTokenizerException
 import net.postchain.rell.base.compiler.parser.S_Grammar
 import net.postchain.rell.base.compiler.parser.antlr.RellAntlrVisitor
 import net.postchain.rell.base.compiler.parser.antlr.RellLexer
 import net.postchain.rell.base.compiler.parser.antlr.RellParser
-import com.github.h0tk3y.betterParse.lexer.TokenMatchesSequence
-import com.github.h0tk3y.betterParse.parser.ErrorResult
-import com.github.h0tk3y.betterParse.parser.Parsed
-import com.github.h0tk3y.betterParse.parser.ParseException
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_ParameterDefaultValueExpr
-import org.antlr.v4.runtime.BailErrorStrategy
-import org.antlr.v4.runtime.BaseErrorListener
-import org.antlr.v4.runtime.CharStreams
-import org.antlr.v4.runtime.CommonTokenStream
-import org.antlr.v4.runtime.LexerNoViableAltException
-import org.antlr.v4.runtime.ParserRuleContext
-import org.antlr.v4.runtime.RecognitionException
-import org.antlr.v4.runtime.Recognizer
-import org.antlr.v4.runtime.Lexer
-import org.antlr.v4.runtime.Token
-import org.antlr.v4.runtime.atn.PredictionMode
-import org.antlr.v4.runtime.misc.ParseCancellationException
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.utils.*
@@ -48,6 +37,9 @@ import net.postchain.rell.base.utils.doc.DocDeclarationProto_Entity
 import net.postchain.rell.base.utils.doc.DocModifiers
 import net.postchain.rell.base.utils.ide.IdeFilePath
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
+import org.antlr.v4.runtime.*
+import org.antlr.v4.runtime.atn.PredictionMode
+import org.antlr.v4.runtime.misc.ParseCancellationException
 import java.util.*
 
 typealias C_CodeMsgSupplier = () -> C_CodeMsg

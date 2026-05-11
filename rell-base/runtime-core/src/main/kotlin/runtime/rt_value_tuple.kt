@@ -73,9 +73,6 @@ class Rt_TupleValue private constructor(
     companion object: Rt_ValueClass<Rt_TupleValue> {
         override val name
             get() = "tuple"
-
-        override val klass = Rt_TupleValue::class
-
         fun make(rtType: Rt_ValueClass<*>, vararg elements: Rt_Value): Rt_TupleValue =
             Rt_TupleValue(rtType, elements.toImmList())
 

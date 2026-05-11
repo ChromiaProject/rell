@@ -6,11 +6,7 @@ package net.postchain.rell.toolbox.compiler
 
 import net.postchain.rell.base.compiler.ast.S_RellFile
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
-import net.postchain.rell.base.compiler.base.utils.C_Error
-import net.postchain.rell.base.compiler.base.utils.C_Message
-import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.base.compiler.base.utils.C_ParserFilePath
-import net.postchain.rell.base.compiler.base.utils.C_SourceDir
+import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.parser.antlr.RellAntlrVisitor
 import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.base.utils.ide.IdeApi

@@ -53,9 +53,6 @@ class Rt_VirtualTupleValue(
     companion object: Rt_ValueClass<Rt_VirtualTupleValue> {
         override val name
             get() = "virtual_tuple"
-
-        override val klass = Rt_VirtualTupleValue::class
-
         fun gtvConversion(type: R_VirtualTupleType): Rt_GtvCompatibleValueClass<*> = gtvConversionOf { ctx, gtv ->
             decodeVirtualTuple(ctx, type, deserializeVirtual(ctx, gtv))
         }

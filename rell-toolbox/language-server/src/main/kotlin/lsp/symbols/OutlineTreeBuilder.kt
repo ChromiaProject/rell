@@ -6,11 +6,11 @@ package net.postchain.rell.toolbox.lsp.symbols
 
 import net.postchain.rell.base.compiler.ast.S_Name
 import net.postchain.rell.base.compiler.ast.S_Node
+import net.postchain.rell.base.compiler.parser.antlr.AntlrRellNodeAttachment
+import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.base.utils.ide.IdeOutlineNodeType
 import net.postchain.rell.base.utils.ide.IdeOutlineTreeBuilder
 import net.postchain.rell.base.utils.toImmList
-import net.postchain.rell.base.compiler.parser.antlr.AntlrRellNodeAttachment
-import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import org.antlr.v4.runtime.ParserRuleContext
 import org.eclipse.lsp4j.DocumentSymbol
 import org.eclipse.lsp4j.Position

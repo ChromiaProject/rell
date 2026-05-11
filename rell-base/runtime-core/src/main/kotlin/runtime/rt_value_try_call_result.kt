@@ -69,12 +69,5 @@ internal class Rt_TryCallResultValue(
     companion object: Rt_ValueClass<Rt_TryCallResultValue> {
         override val name
             get() = "try_call_result"
-
-        override val klass = Rt_TryCallResultValue::class
-
-        private const val VALUE_TYPE = "TRY_CALL_RESULT"
-
-        fun get(v: Rt_Value): Rt_TryCallResultValue =
-            v as? Rt_TryCallResultValue ?: throw Rt_ValueTypeError.exception(VALUE_TYPE, v.name)
     }
 }

@@ -61,8 +61,6 @@ data class Rt_GtvValue private constructor(val value: Gtv): Rt_Value {
 
         override val name
             get() = "gtv"
-
-        override val klass = Rt_GtvValue::class
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.GTV)
         override val nativeTypes = immSetOf(Gtv::class.createType())
 

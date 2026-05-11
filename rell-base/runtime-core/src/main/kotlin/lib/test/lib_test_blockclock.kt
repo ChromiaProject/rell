@@ -6,7 +6,10 @@ package net.postchain.rell.base.lib.test
 
 import com.google.common.math.LongMath
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.runtime.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_NullValue
+import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 
 internal object Lib_Test_BlockClock {
@@ -132,7 +135,7 @@ internal object Lib_Test_BlockClock {
                 bodyContext { ctx, a ->
                     val clock = ctx.exeCtx.testBlockClock
                     val res = clock.getBlockInterval()
-                    clock.setBlockInterval(a.asInteger())
+                    clock.setBlockInterval((a as Rt_IntValue).value)
                     Rt_IntValue.get(res)
                 }
             }
@@ -151,7 +154,7 @@ internal object Lib_Test_BlockClock {
                 """)
                 param(name = "time", type = "timestamp", comment = "timestamp to use on next block")
                 bodyContext { ctx, a ->
-                    ctx.exeCtx.testBlockClock.setNextBlockTime(a.asInteger())
+                    ctx.exeCtx.testBlockClock.setNextBlockTime((a as Rt_IntValue).value)
                     Rt_UnitValue
                 }
             }
@@ -175,7 +178,7 @@ internal object Lib_Test_BlockClock {
                 """)
                 param(name = "delta", type = "integer", comment = "the time delta between the previous and next block")
                 bodyContext { ctx, a ->
-                    ctx.exeCtx.testBlockClock.setNextBlockTimeDelta(a.asInteger())
+                    ctx.exeCtx.testBlockClock.setNextBlockTimeDelta((a as Rt_IntValue).value)
                     Rt_UnitValue
                 }
             }

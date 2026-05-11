@@ -16,7 +16,7 @@ import org.jooq.DataType
 import org.jooq.impl.SQLDataType
 import kotlin.reflect.full.createType
 
-class Rt_ByteArrayValue private constructor(internal val value: ByteArray):
+class Rt_ByteArrayValue private constructor(val value: ByteArray):
     Rt_Value, Rt_IterableValue {
     override val name
         get() = Companion.name
@@ -44,8 +44,6 @@ class Rt_ByteArrayValue private constructor(internal val value: ByteArray):
 
         override val name
             get() = "byte_array"
-
-        override val klass = Rt_ByteArrayValue::class
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.BYTE_ARRAY)
         override val nativeTypes = immSetOf(ByteArray::class.createType())
 
@@ -53,8 +51,8 @@ class Rt_ByteArrayValue private constructor(internal val value: ByteArray):
             get() = SQLDataType.BLOB
 
         override val comparator: Comparator<Rt_Value> = Comparator { a, b ->
-            val la = a.asByteArray()
-            val lb = b.asByteArray()
+            val la = (a as Rt_ByteArrayValue).value
+            val lb = (b as Rt_ByteArrayValue).value
             val len = minOf(la.size, lb.size)
             for (i in 0 until len) {
                 val c = (la[i].toInt() and 0xFF).compareTo(lb[i].toInt() and 0xFF)

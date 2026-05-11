@@ -7,8 +7,8 @@ package net.postchain.rell.toolbox.seeder.schema
 import net.postchain.rell.base.model.Index
 import net.postchain.rell.base.model.Key
 import net.postchain.rell.base.model.rr.RR_Attribute
-import net.postchain.rell.base.model.rr.RR_EnumDefinition
 import net.postchain.rell.base.model.rr.RR_EntityDefinition
+import net.postchain.rell.base.model.rr.RR_EnumDefinition
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.utils.ImmList
 

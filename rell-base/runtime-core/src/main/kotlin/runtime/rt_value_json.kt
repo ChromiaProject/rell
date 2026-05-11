@@ -38,8 +38,6 @@ class Rt_JsonValue(val node: JsonNode): Rt_Value {
 
         override val name
             get() = "json"
-
-        override val klass = Rt_JsonValue::class
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.JSON)
 
         override val sqlType: DataType<JSONB>

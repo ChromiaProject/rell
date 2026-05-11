@@ -5,9 +5,9 @@
 package net.postchain.rell.toolbox.seeder.generator
 
 import io.github.serpro69.kfaker.Faker
+import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.schema.Attribute
 import net.postchain.rell.toolbox.seeder.schema.Entity
-import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 
 data class DataGeneratorContext(
     val attribute: Attribute,

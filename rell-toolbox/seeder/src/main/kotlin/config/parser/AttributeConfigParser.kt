@@ -9,11 +9,11 @@ import net.postchain.rell.base.model.R_IntegerType
 import net.postchain.rell.base.model.R_TextType
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
-import net.postchain.rell.toolbox.seeder.schema.Attribute
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.config.Distribution
 import net.postchain.rell.toolbox.seeder.generator.pattern.DataPatternGenerator
 import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGeneratorFactory
+import net.postchain.rell.toolbox.seeder.schema.Attribute
 import java.math.BigInteger
 
 class AttributeConfigParser {

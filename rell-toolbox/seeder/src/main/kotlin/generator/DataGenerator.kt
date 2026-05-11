@@ -4,9 +4,9 @@
 
 package net.postchain.rell.toolbox.seeder.generator
 
-import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import net.postchain.rell.toolbox.seeder.config.Configuration
 import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGeneratorFactory
+import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import kotlin.random.Random
 
 class DataGenerator(

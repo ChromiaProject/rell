@@ -45,9 +45,6 @@ class Rt_VirtualListValue(
     companion object: Rt_ValueClass<Rt_VirtualListValue> {
         override val name
             get() = "virtual_list"
-
-        override val klass = Rt_VirtualListValue::class
-
         fun gtvConversion(type: R_VirtualListType): Rt_GtvCompatibleValueClass<*> = gtvConversionOf { ctx, gtv ->
             decodeVirtualList(ctx, type, deserializeVirtual(ctx, gtv))
         }
