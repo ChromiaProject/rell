@@ -16,14 +16,16 @@ sentry {
     authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }
 
-tasks.processResources {
+val generateMainResources by tasks.registering(Copy::class) {
     val projectVersion = project.version.toString()
     inputs.property("projectVersion", projectVersion)
-    eachFile {
-        if (name == "sentry.properties") {
-            expand("version" to projectVersion)
-        }
-    }
+    from(layout.projectDirectory.dir("src/main/templates"))
+    into(layout.buildDirectory.dir("generated/resources/main"))
+    expand("version" to projectVersion)
+}
+
+sourceSets.main {
+    resources.srcDir(generateMainResources)
 }
 
 dependencies {

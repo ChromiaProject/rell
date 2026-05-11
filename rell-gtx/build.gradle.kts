@@ -19,13 +19,16 @@ artifacts {
     add("testArtifacts", testJar)
 }
 
-tasks.processTestResources {
+val generateTestResources by tasks.registering(Copy::class) {
     val rellVersion = project.version.toString().removeSuffix("-SNAPSHOT")
-    eachFile {
-        if (name == "snapshot_config.xml") {
-            expand("rellVersion" to rellVersion)
-        }
-    }
+    inputs.property("rellVersion", rellVersion)
+    from(layout.projectDirectory.dir("src/test/templates"))
+    into(layout.buildDirectory.dir("generated/resources/test"))
+    expand("rellVersion" to rellVersion)
+}
+
+sourceSets.test {
+    resources.srcDir(generateTestResources)
 }
 
 dependencies {
