@@ -8,7 +8,7 @@ import assertk.assertThat
 import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
-import com.chromia.cli.model.RellLibraryModel
+import net.postchain.rell.toolbox.chromia.model.RellLibraryModel
 import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir

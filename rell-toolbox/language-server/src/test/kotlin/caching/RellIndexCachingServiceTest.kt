@@ -32,8 +32,13 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.io.IOException
 import java.net.URI
-import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.div
+import kotlin.io.path.exists
+import kotlin.io.path.readBytes
+import kotlin.io.path.writeBytes
+import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 
@@ -45,7 +50,7 @@ class RellIndexCachingServiceTest {
     private lateinit var cachingService: RellIndexCachingService
     private lateinit var workspaceFolderUri: URI
     private lateinit var dummyWorkspaceIndexer: WorkspaceIndexer
-    private lateinit var cacheFile: File
+    private lateinit var cacheFile: Path
 
     private val rellLinter = RellLinter()
     private val formattingStyleLinter = FormattingStyleLinter()
@@ -63,13 +68,13 @@ class RellIndexCachingServiceTest {
             )
         )
         cachingService = spyk(RellIndexCachingService(indexSerializer))
-        workspaceFolderUri = Files.createDirectories(tempDir.resolve("src")).toUri()
+        workspaceFolderUri = (tempDir / "src").createDirectories().toUri()
         val sourceFiles = listOf(
             SourceFile("dummy.rell", "module; function dummy() {}"),
             SourceFile("dummy2.rell", "module; function dummy2() {}")
         )
         dummyWorkspaceIndexer = createDummyWorkspaceIndexer(workspaceFolderUri, sourceFiles)
-        cacheFile = tempDir.resolve("dummy.cache").toFile()
+        cacheFile = tempDir / "dummy.cache"
         every { cachingService.getCacheFile(workspaceFolderUri) } returns cacheFile
     }
 
@@ -118,8 +123,8 @@ class RellIndexCachingServiceTest {
 
     @Test
     fun `Should return null when reading from cache file fails`() {
-        withMockedStatic("kotlin.io.FilesKt__FileReadWriteKt") {
-            val mockFile = mockk<File>()
+        withMockedStatic("java.nio.file.Files") {
+            val mockFile = mockk<Path>()
             every { cachingService.getCacheFile(workspaceFolderUri) } returns mockFile
             every { mockFile.exists() } returns true
             every { mockFile.readBytes() } throws IOException()
@@ -129,7 +134,8 @@ class RellIndexCachingServiceTest {
         }
     }
 
-    private fun withMockedStatic(staticName: String, block: () -> Unit) {
+    @Suppress("SameParameterValue")
+    private inline fun withMockedStatic(staticName: String, block: () -> Unit) {
         mockkStatic(staticName)
         block()
         unmockkStatic(staticName)
@@ -137,8 +143,8 @@ class RellIndexCachingServiceTest {
 
     @Test
     fun `Should not throw when writing to disk fails`() {
-        withMockedStatic("kotlin.io.FilesKt__FileReadWriteKt") {
-            val mockFile = mockk<File>()
+        withMockedStatic("java.nio.file.Files") {
+            val mockFile = mockk<Path>()
             every { cachingService.getCacheFile(workspaceFolderUri) } returns mockFile
             every { indexSerializer.serializeAsBytes(any()) } returns byteArrayOf(1, 2, 3)
             every { mockFile.writeBytes(any()) } throws IOException()
@@ -158,7 +164,7 @@ class RellIndexCachingServiceTest {
     @Test
     fun `Should cleanup old caches`() {
         cachingService.saveWorkspaceIndexers(listOf(dummyWorkspaceIndexer))
-        every { cachingService.getCacheFolder() } returns cacheFile.parentFile
+        every { cachingService.getCacheFolder() } returns cacheFile.parent
         assertThat(cacheFile.exists()).isTrue()
         Thread.sleep(100)
         cachingService.cleanupOldCaches(1.milliseconds)
@@ -168,7 +174,7 @@ class RellIndexCachingServiceTest {
     @Test
     fun `Should invalidate caches`() {
         cachingService.saveWorkspaceIndexers(listOf(dummyWorkspaceIndexer))
-        every { cachingService.getCacheFolder() } returns cacheFile.parentFile
+        every { cachingService.getCacheFolder() } returns cacheFile.parent
         assertThat(cacheFile.exists()).isTrue()
         val result = cachingService.invalidateCaches()
         assertThat(cacheFile.exists()).isFalse()
@@ -181,7 +187,7 @@ class RellIndexCachingServiceTest {
             workspaceFolderUri,
             listOf(SourceFile("dummy.rell", "module; function dummy() {}"))
         )
-        every { cachingService.getCacheFolder() } returns cacheFile.parentFile
+        every { cachingService.getCacheFolder() } returns cacheFile.parent
 
         cachingService.saveWorkspaceIndexers(listOf(singleFileIndexer))
 
@@ -190,13 +196,13 @@ class RellIndexCachingServiceTest {
 
     @Test
     fun `Should delete old cache folder if found`(@TempDir tempDir: Path) {
-        val oldCacheFolder = tempDir.resolve("oldCacheFolder").toFile()
-        oldCacheFolder.mkdirs()
-        val testFile = oldCacheFolder.resolve("testFile.txt")
+        val oldCacheFolder = tempDir.resolve("oldCacheFolder")
+        oldCacheFolder.createDirectories()
+        val testFile = oldCacheFolder / "testFile.txt"
         testFile.writeText("test")
 
-        val newCacheFolder = tempDir.resolve("newCacheFolder").toFile()
-        newCacheFolder.mkdirs()
+        val newCacheFolder = tempDir.resolve("newCacheFolder")
+        newCacheFolder.createDirectories()
 
         every { cachingService.getCacheFolder() } returns newCacheFolder
         every { cachingService.getOldCacheFolder() } returns oldCacheFolder
@@ -204,7 +210,7 @@ class RellIndexCachingServiceTest {
         assertThat(oldCacheFolder.exists()).isTrue()
         assertThat(newCacheFolder.exists()).isTrue()
 
-        workspaceFolderUri = Files.createDirectories(tempDir.resolve("src")).toUri()
+        workspaceFolderUri = (tempDir / "src").createDirectories().toUri()
         val sourceFiles = listOf(
             SourceFile("dummy.rell", "module; function dummy() {}"),
             SourceFile("dummy2.rell", "module; function dummy2() {}")

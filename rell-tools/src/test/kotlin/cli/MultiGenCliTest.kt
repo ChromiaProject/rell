@@ -28,7 +28,7 @@ class MultiGenCliTest {
     fun testRunSimpleGenerate() {
         val dir = runMultigen("multigen.sh -d work/testproj/src -o %s work/testproj/config/run-simple.xml")
 
-        val files = dir.listDirectoryEntries().map { it.name }.toSet()
+        val files = dir.useDirectoryEntries { s -> s.map(Path::name).toSet() }
         assertTrue("node-config.properties" in files)
         assertTrue("private.properties" in files)
         assertTrue("blockchains" in files)
@@ -46,7 +46,7 @@ class MultiGenCliTest {
     fun testRunxmlDocsSample() {
         val dir = runMultigen("multigen.sh -d work/runxml-docs-sample/src -o %s work/runxml-docs-sample/run.xml")
 
-        val files = dir.listDirectoryEntries().map { it.name }.toSet()
+        val files = dir.useDirectoryEntries { it.map(Path::name).toSet() }
         assertTrue("node-config.properties" in files)
         assertTrue("private.properties" in files)
         assertTrue("blockchains" in files)

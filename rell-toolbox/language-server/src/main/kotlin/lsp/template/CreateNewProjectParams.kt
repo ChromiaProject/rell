@@ -4,9 +4,6 @@
 
 package net.postchain.rell.toolbox.lsp.template
 
-import com.chromia.build.tools.template.TemplateOptions
-import com.chromia.build.tools.template.TemplateProject
-
 data class CreateNewProjectParams(
     val template: TemplateProject,
     val projectName: String,

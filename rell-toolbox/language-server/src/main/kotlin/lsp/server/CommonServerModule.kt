@@ -18,6 +18,8 @@ import net.postchain.rell.toolbox.lsp.references.RellReferenceService
 import net.postchain.rell.toolbox.lsp.symbols.RellCompletionSymbolService
 import net.postchain.rell.toolbox.lsp.symbols.RellSymbolService
 import net.postchain.rell.toolbox.lsp.template.ProjectTemplateService
+import net.postchain.rell.toolbox.lsp.template.RemoteTemplateRepository
+import net.postchain.rell.toolbox.lsp.template.TemplateRepository
 import net.postchain.rell.toolbox.lsp.testrunner.RellTestRunner
 import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
 import org.koin.core.module.dsl.singleOf
@@ -26,6 +28,7 @@ import org.koin.dsl.module
 val commonServerModule = module {
     singleOf(::RellSymbolService)
     singleOf(::RellCompletionSymbolService)
+    single<TemplateRepository> { RemoteTemplateRepository() }
     singleOf(::ProjectTemplateService)
     singleOf(::RellLinter)
     singleOf(::FormattingStyleLinter)

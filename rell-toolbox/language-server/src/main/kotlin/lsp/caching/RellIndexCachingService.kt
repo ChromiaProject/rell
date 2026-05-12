@@ -7,20 +7,22 @@ package net.postchain.rell.toolbox.lsp.caching
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.indexer.sha256
-import java.io.File
 import java.net.URI
-import java.nio.file.Files
+import java.nio.file.Path
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.milliseconds
 
 class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
-
     private val scheduledExecutorService = Executors.newScheduledThreadPool(1, IndexPersisterThreadFactory())
 
     fun getWorkspaceIndexer(workspaceFolderUri: URI): WorkspaceIndexer? {
         val cacheFile = getCacheFile(workspaceFolderUri)
+
         if (!cacheFile.exists()) {
             return null
         }
@@ -31,7 +33,7 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
         } catch (e: Exception) {
             logger.warn(e) { "Failed to deserialize index cache file: $cacheFile" }
             try {
-                cacheFile.delete()
+                cacheFile.deleteIfExists()
             } catch (e: Exception) {
                 logger.warn(e) { "Failed to delete cache file: $cacheFile" }
             }
@@ -39,11 +41,11 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
         }
     }
 
-    internal fun getCacheFile(workspaceFolderUri: URI): File {
+    internal fun getCacheFile(workspaceFolderUri: URI): Path {
         val path = workspaceFolderUri.path.toString()
         val hash = sha256(path)
         val fileName = "index-$hash.cache"
-        return getCacheFolder().resolve(fileName)
+        return getCacheFolder() / fileName
     }
 
     internal fun saveWorkspaceIndexers(indexers: Collection<WorkspaceIndexer>) {
@@ -62,69 +64,68 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
         }
     }
 
-    fun persistOnDiskPeriodically(indexers: Collection<WorkspaceIndexer>, period: Duration) {
-        scheduledExecutorService.scheduleAtFixedRate({
-            saveWorkspaceIndexers(indexers)
-        }, 0, period.inWholeMilliseconds, TimeUnit.MILLISECONDS)
-    }
+    fun persistOnDiskPeriodically(indexers: Collection<WorkspaceIndexer>, period: Duration): ScheduledFuture<*> =
+        scheduledExecutorService.scheduleAtFixedRate(
+            /* command = */
+            {
+                saveWorkspaceIndexers(indexers)
+            },
+            /* initialDelay = */ 0,
+            /* period = */ period.inWholeMilliseconds,
+            /* unit = */ TimeUnit.MILLISECONDS,
+        )
 
     fun shutdown() {
         scheduledExecutorService.shutdown()
     }
 
     fun cleanupOldCaches(timeToLive: Duration = CACHE_FILE_TTL) {
-        val cacheFolder = getCacheFolder()
-        val cacheFiles = cacheFolder.listFiles()
-        cacheFiles?.forEach { cacheFile ->
-            deleteOldCacheFile(cacheFile, timeToLive)
-        }
-    }
-
-    private fun deleteOldCacheFile(cacheFile: File, timeToLive: Duration) {
-        if (cacheFile.extension == "cache") {
-            val lastModified = cacheFile.lastModified()
-            val now = System.currentTimeMillis()
-            val age = now - lastModified
-            if (age > timeToLive.inWholeMilliseconds) {
-                try {
-                    cacheFile.delete()
-                } catch (e: Exception) {
-                    logger.warn(e) { "Failed to delete cache file: $cacheFile" }
-                }
+        getCacheFolder().useDirectoryEntries { cacheFiles ->
+            for (cacheFile in cacheFiles) {
+                deleteOldCacheFile(cacheFile, timeToLive)
             }
         }
     }
 
-    fun getCacheFolder(): File {
-        val xdgCache = System.getenv("XDG_CACHE_HOME")?.let { File(it) }
+    private fun deleteOldCacheFile(cacheFile: Path, timeToLive: Duration) {
+        if (cacheFile.extension != "cache") return
 
-        val userHome = System.getProperty("user.home")
-        val fallbackCache = File(userHome).resolve(".cache")
+        val age = (System.currentTimeMillis() - cacheFile.getLastModifiedTime().toMillis()).milliseconds
+        if (age <= timeToLive) return
 
-        val defaultCache = xdgCache ?: fallbackCache
-        val lspCacheFolder = defaultCache.resolve(RELL_LSP_CACHE_FOLDER_NAME)
-        if (!lspCacheFolder.exists()) {
-            Files.createDirectories(lspCacheFolder.toPath())
+        try {
+            cacheFile.deleteIfExists()
+        } catch (e: Exception) {
+            logger.warn(e) { "Failed to delete cache file: $cacheFile" }
         }
+    }
+
+    fun getCacheFolder(): Path {
+        val xdgCache = System.getenv("XDG_CACHE_HOME")?.let(::Path)
+        val fallbackCache = Path(System.getProperty("user.home")) / ".cache"
+        val defaultCache = xdgCache ?: fallbackCache
+        val lspCacheFolder = defaultCache / RELL_LSP_CACHE_FOLDER_NAME
+
+        if (!lspCacheFolder.exists()) {
+            lspCacheFolder.createDirectories()
+        }
+
         return lspCacheFolder
     }
 
-    fun getOldCacheFolder() = File(System.getProperty("user.home"))
-        .resolve(OLD_RELL_LSP_CACHE_FOLDER_NAME)
+    fun getOldCacheFolder() = Path(System.getProperty("user.home")) / OLD_RELL_LSP_CACHE_FOLDER_NAME
 
-    fun cleanOldCacheFolder() {
+    @OptIn(ExperimentalPathApi::class) fun cleanOldCacheFolder() {
         getOldCacheFolder()
             .takeIf { it.exists() }
             ?.deleteRecursively()
     }
 
-    fun invalidateCaches(): Boolean {
-        return try {
-            getCacheFolder().deleteRecursively()
-        } catch (e: Exception) {
-            logger.warn { "Failed to invalidate caches: ${e.message}" }
-            false
-        }
+    fun invalidateCaches(): Boolean = try {
+        getCacheFolder().toFile().deleteRecursively()
+    } catch (e: Exception) {
+        logger.warn { "Failed to invalidate caches: ${e.message}" }
+        false
     }
 
     companion object {

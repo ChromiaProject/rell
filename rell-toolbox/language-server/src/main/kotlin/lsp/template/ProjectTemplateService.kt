@@ -4,14 +4,12 @@
 
 package net.postchain.rell.toolbox.lsp.template
 
-import com.chromia.build.tools.template.DevContainerSupport
-import com.chromia.build.tools.template.TemplateFactoryProvider
-import com.chromia.build.tools.template.TemplateOptions
-import com.chromia.build.tools.template.TemplateProject
-import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.div
+import kotlin.io.path.exists
 
-class ProjectTemplateService {
-
+class ProjectTemplateService(private val templateRepository: TemplateRepository = RemoteTemplateRepository()) {
     fun getAvailableTemplates(): List<NewProjectTemplate> = TemplateProject.entries.map {
         NewProjectTemplate(it.name, it.displayName)
     }
@@ -19,26 +17,25 @@ class ProjectTemplateService {
     fun createNewProjectTemplate(
         template: TemplateProject,
         projectName: String,
-        targetDir: File,
-        options: TemplateOptions? = null
-    ): File {
-        val projectDir = targetDir.resolve(projectName)
+        targetDir: Path,
+        options: TemplateOptions? = null,
+    ): Path {
+        val projectDir = targetDir / projectName
+
         check(!projectDir.exists()) {
             "There already exist a directory called \"$projectName\" in the working directory, aborting."
         }
-        projectDir.mkdirs()
 
-        val factory = TemplateFactoryProvider.getFactory(template)
+        projectDir.createDirectories()
 
+        val factory = TemplateFactoryProvider.getFactory(template, templateRepository.templatesRoot())
         factory.createProjectFromTemplate(projectDir, projectName, options)
         return projectDir
     }
 
-    fun addToProject(targetDir: File, options: TemplateOptions) {
+    fun addToProject(targetDir: Path, options: TemplateOptions) {
         if (options.includeDevContainer) {
-            DevContainerSupport().addToProject(targetDir)
+            DevContainerSupport(templateRepository.templatesRoot()).addToProject(targetDir)
         }
-        // This method can be implemented to add dev container support if needed.
-        // Currently, it is a placeholder for future implementation.
     }
 }

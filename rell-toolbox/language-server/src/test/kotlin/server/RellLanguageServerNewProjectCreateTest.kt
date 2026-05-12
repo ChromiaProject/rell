@@ -8,20 +8,24 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
 import assertk.assertions.isTrue
-import com.chromia.build.tools.template.DevContainerSupport
-import com.chromia.build.tools.template.TemplateOptions
-import com.chromia.build.tools.template.TemplateProject
 import net.postchain.rell.toolbox.lsp.TestClient
 import net.postchain.rell.toolbox.lsp.TestClientServerLauncher
 import net.postchain.rell.toolbox.lsp.TestServerModule
 import net.postchain.rell.toolbox.lsp.template.AddToProjectParams
 import net.postchain.rell.toolbox.lsp.template.CreateNewProjectParams
+import net.postchain.rell.toolbox.lsp.template.DevContainerSupport
+import net.postchain.rell.toolbox.lsp.template.TemplateOptions
+import net.postchain.rell.toolbox.lsp.template.TemplateProject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.listDirectoryEntries
 
 class RellLanguageServerNewProjectCreateTest {
     private lateinit var clientServerLauncher: TestClientServerLauncher
@@ -31,7 +35,7 @@ class RellLanguageServerNewProjectCreateTest {
     private val serverModule = TestServerModule()
 
     @TempDir
-    lateinit var tempDir: File
+    lateinit var tempDir: Path
 
     @BeforeEach
     fun setupBeforeEach() {
@@ -52,26 +56,27 @@ class RellLanguageServerNewProjectCreateTest {
 
     @Test
     fun `New project is successfully created`() {
-        clientServerLauncher.initializeServer(tempDir.toURI())
+        clientServerLauncher.initializeServer(tempDir.toUri())
         val template = TemplateProject.PLAIN
         val projectName = "new-project"
-        val targetDirUri = tempDir.toURI()
+        val targetDirUri = tempDir.toUri()
         val params = CreateNewProjectParams(template, projectName, targetDirUri.toString())
 
         val projectDir = server.createNewProject(params).join()
 
-        val expectedProjectDir = File(tempDir, projectName)
+        val expectedProjectDir = tempDir.resolve(projectName)
         assertThat(expectedProjectDir.exists()).isTrue()
-        assertThat(expectedProjectDir.isDirectory).isTrue()
-        assertThat(projectDir).isEqualTo(expectedProjectDir.absolutePath)
+        assertThat(expectedProjectDir.isDirectory()).isTrue()
+        assertThat(projectDir).isEqualTo(expectedProjectDir.toAbsolutePath().toString())
     }
 
     @Test
     fun `Dev container is included with new project`() {
-        clientServerLauncher.initializeServer(tempDir.toURI())
+        clientServerLauncher.initializeServer(tempDir.toUri())
         val template = TemplateProject.PLAIN
         val projectName = "new-project"
-        val targetDirUri = tempDir.toURI()
+        val targetDirUri = tempDir.toUri()
+
         val params = CreateNewProjectParams(
             template,
             projectName,
@@ -81,22 +86,21 @@ class RellLanguageServerNewProjectCreateTest {
 
         val projectDir = server.createNewProject(params).join()
 
-        val expectedProjectDir = File(tempDir, projectName)
-        assertThat(projectDir).isEqualTo(expectedProjectDir.absolutePath)
-        val devContainerDir = File(expectedProjectDir, DevContainerSupport.DEV_CONTAINER_FOLDER_NAME)
+        val expectedProjectDir = tempDir.resolve(projectName)
+        assertThat(projectDir).isEqualTo(expectedProjectDir.toAbsolutePath().toString())
+        val devContainerDir = expectedProjectDir.resolve(DevContainerSupport.DEV_CONTAINER_FOLDER_NAME)
         assertThat(devContainerDir.exists()).isTrue()
-        assertThat(devContainerDir.isDirectory).isTrue()
-        assertThat(devContainerDir.listFiles()).isNotEmpty()
+        assertThat(devContainerDir.isDirectory()).isTrue()
+        assertThat(devContainerDir.listDirectoryEntries()).isNotEmpty()
     }
 
     @Test
     fun `New project creation fails when directory already exists created`() {
-        clientServerLauncher.initializeServer(tempDir.toURI())
+        clientServerLauncher.initializeServer(tempDir.toUri())
         val template = TemplateProject.PLAIN
         val projectName = "new-project"
-        val targetDirUri = tempDir.toURI()
-        val existingDir = tempDir.resolve(projectName)
-        existingDir.mkdirs()
+        val targetDirUri = tempDir.toUri()
+        tempDir.resolve(projectName).createDirectories()
         val params = CreateNewProjectParams(template, projectName, targetDirUri.toString())
         val exception = assertThrows<IllegalStateException> {
             server.createNewProject(params).join()
@@ -108,22 +112,22 @@ class RellLanguageServerNewProjectCreateTest {
 
     @Test
     fun `Project template list isn't empty`() {
-        clientServerLauncher.initializeServer(tempDir.toURI())
+        clientServerLauncher.initializeServer(tempDir.toUri())
         val templates = server.listNewProjectTemplates().join()
         assertThat(templates).isNotEmpty()
     }
 
     @Test
     fun `Adding feature to existing project is successful`() {
-        clientServerLauncher.initializeServer(tempDir.toURI())
-        val targetDirUri = tempDir.toURI()
+        clientServerLauncher.initializeServer(tempDir.toUri())
+        val targetDirUri = tempDir.toUri()
         val params = AddToProjectParams(targetDirUri.toString(), options = TemplateOptions(includeDevContainer = true))
 
         server.addToProject(params).join()
 
-        val expectedDir = File(tempDir, DevContainerSupport.DEV_CONTAINER_FOLDER_NAME)
+        val expectedDir = tempDir.resolve(DevContainerSupport.DEV_CONTAINER_FOLDER_NAME)
         assertThat(expectedDir.exists()).isTrue()
-        assertThat(expectedDir.isDirectory).isTrue()
-        assertThat(expectedDir.listFiles()).isNotEmpty()
+        assertThat(expectedDir.isDirectory()).isTrue()
+        assertThat(expectedDir.listDirectoryEntries()).isNotEmpty()
     }
 }

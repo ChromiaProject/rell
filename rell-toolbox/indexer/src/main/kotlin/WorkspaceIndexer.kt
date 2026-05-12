@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.indexer
 
-import com.chromia.cli.model.ChromiaModel
+import net.postchain.rell.toolbox.chromia.model.ChromiaModel
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath

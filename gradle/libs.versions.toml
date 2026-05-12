@@ -21,7 +21,6 @@ junit = "6.0.2"
 # rell-toolbox dependencies
 antlr = "4.13.1"
 commons-collections4 = "4.3"
-chromia-build-tools = "0.11.3"
 ec4j = "0.3.0"
 fury-core = "0.4.1"
 java-diff-utils = "4.12"
@@ -95,7 +94,6 @@ junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params" }
 # rell-toolbox libraries
 antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
 antlr-runtime = { module = "org.antlr:antlr4-runtime", version.ref = "antlr" }
-chromia-build-tools = { module = "com.chromia.cli.tools:chromia-build-tools", version.ref = "chromia-build-tools" }
 commons-collections4 = { module = "org.apache.commons:commons-collections4", version.ref = "commons-collections4" }
 ec4j = { module = "org.ec4j.core:ec4j-core", version.ref = "ec4j" }
 fury-core = { module = "org.furyio:fury-core", version.ref = "fury-core" }

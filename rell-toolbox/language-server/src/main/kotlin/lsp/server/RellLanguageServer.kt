@@ -28,6 +28,7 @@ import org.eclipse.lsp4j.services.LanguageClient
 import org.eclipse.lsp4j.services.LanguageClientAware
 import org.eclipse.lsp4j.services.LanguageServer
 import java.io.File
+import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -156,21 +157,21 @@ class RellLanguageServer(
 
     @JsonRequest(useSegment = false, value = "rell/createNewProject")
     fun createNewProject(params: CreateNewProjectParams): CompletableFuture<String> {
-        val targetDir = File(parseFileUri(params.targetDirUri) ?: return CompletableFuture.completedFuture(null))
-        val projectDir =
-            projectTemplateService.createNewProjectTemplate(
-                params.template,
-                params.projectName,
-                targetDir,
-                params.options
-            )
-        return CompletableFuture.completedFuture(projectDir.absolutePath)
+        val parsedUri = parseFileUri(params.targetDirUri) ?: return CompletableFuture.completedFuture(null)
+        val targetDir: Path = Path.of(parsedUri)
+        val projectDir = projectTemplateService.createNewProjectTemplate(
+            params.template,
+            params.projectName,
+            targetDir,
+            params.options,
+        )
+        return CompletableFuture.completedFuture(projectDir.toAbsolutePath().toString())
     }
 
     @JsonRequest(useSegment = false, value = "rell/addToProject")
     fun addToProject(params: AddToProjectParams): CompletableFuture<Void> {
-        val targetDir = File(parseFileUri(params.targetDirUri) ?: return CompletableFuture.completedFuture(null))
-        projectTemplateService.addToProject(targetDir, params.options)
+        val parsedUri = parseFileUri(params.targetDirUri) ?: return CompletableFuture.completedFuture(null)
+        projectTemplateService.addToProject(Path.of(parsedUri), params.options)
         return CompletableFuture.completedFuture(null)
     }
 

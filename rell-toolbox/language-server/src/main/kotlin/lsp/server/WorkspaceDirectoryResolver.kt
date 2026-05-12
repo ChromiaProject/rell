@@ -7,10 +7,10 @@ package net.postchain.rell.toolbox.lsp.server
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import java.io.File
 import java.net.URI
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.toPath
 
 object WorkspaceDirectoryResolver {
 
@@ -37,10 +37,11 @@ object WorkspaceDirectoryResolver {
 
     fun findSourceDirPathFromConfig(chromiaModelPath: Path): Path {
         val configSourcePath = ChromiaModelProvider.loadChromiaModelFromFile(chromiaModelPath)?.compile?.source
+
         return if (configSourcePath != null && configSourcePath.exists()) {
             configSourcePath.normalize()
         } else {
-            Paths.get(findSourceDirURI(chromiaModelPath.parent.toUri()))
+            findSourceDirURI(chromiaModelPath.parent.toUri()).toPath()
         }
     }
 
@@ -59,7 +60,7 @@ object WorkspaceDirectoryResolver {
     private fun findSrcParentDirectory(uri: URI): File? {
         if (!uri.path.endsWith(".rell")) return null
 
-        val path = Paths.get(uri)
+        val path = uri.toPath()
         var depth = 0
         var currentPath = path
         while (currentPath.parent != null && depth < MAX_DEPTH) {
@@ -73,6 +74,5 @@ object WorkspaceDirectoryResolver {
         return null
     }
 
-    private fun Path.isValid(other: Path) =
-        Files.exists(this) && Files.isDirectory(this) && other.startsWith(this)
+    private fun Path.isValid(other: Path) = this.exists() && this.isDirectory() && other.startsWith(this)
 }

@@ -50,16 +50,18 @@ fun provisionAsprof(version: String = System.getenv("PROFILER_VERSION") ?: DEFAU
 
         if (ext == "zip") extractZip(archive, extractDir) else extractTarGz(archive, extractDir)
 
-        val sub = extractDir.listDirectoryEntries().firstOrNull { it.isDirectory() }
+        val sub = extractDir.useDirectoryEntries { s -> s.find { it.isDirectory() } }
             ?: error("Extracted archive did not contain any top-level directory")
 
-        for (item in sub.listDirectoryEntries()) {
-            val dest = installDir.resolve(item.name)
-            if (dest.exists()) dest.deleteRecursively()
-            // Use copyToRecursively rather than moveTo: tmp may be on a different
-            // filesystem (e.g. tmpfs in CI), and Files.move can't copy-and-delete
-            // a non-empty directory across devices.
-            item.copyToRecursively(dest, followLinks = false)
+        sub.useDirectoryEntries { s ->
+            for (item in s) {
+                val dest = installDir / item.name
+                if (dest.exists()) dest.deleteRecursively()
+                // Use copyToRecursively rather than moveTo: tmp may be on a different
+                // filesystem (e.g. tmpfs in CI), and Files.move can't copy-and-delete
+                // a non-empty directory across devices.
+                item.copyToRecursively(dest, followLinks = false)
+            }
         }
 
         try {

@@ -4,12 +4,14 @@
 
 package net.postchain.rell.toolbox.chromia
 
-import com.chromia.cli.model.ChromiaModel
-import com.chromia.cli.model.parseModel
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.File
+import net.postchain.rell.toolbox.chromia.model.ChromiaModel
+import net.postchain.rell.toolbox.chromia.model.parseModel
 import java.net.URI
 import java.nio.file.Path
+import kotlin.io.path.div
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.toPath
 
 class ChromiaModelProvider(private val workspaceRootUri: URI?) {
 
@@ -39,7 +41,7 @@ class ChromiaModelProvider(private val workspaceRootUri: URI?) {
     fun loadChromiaModel(): ChromiaModel? {
         if (workspaceRootUri == null) return null
         val chromiaModelFile = findChromiaModelFile(workspaceRootUri) ?: return null
-        return loadChromiaModelFromFile(chromiaModelFile.toPath())
+        return loadChromiaModelFromFile(chromiaModelFile)
     }
 
     fun updateChromiaModel(workspaceRootUri: URI?, chromiaModel: ChromiaModel?) {
@@ -47,16 +49,16 @@ class ChromiaModelProvider(private val workspaceRootUri: URI?) {
         chromiaModelCache = chromiaModel
     }
 
-    private fun findChromiaModelFile(workspaceRootUri: URI?): File? {
+    private fun findChromiaModelFile(workspaceRootUri: URI?): Path? {
         if (workspaceRootUri == null) return null
-        val workspaceFolder = File(workspaceRootUri)
+        val workspaceFolder = workspaceRootUri.toPath()
 
-        val directPath = workspaceFolder.resolve("chromia.yml")
-        val rellPath = workspaceFolder.resolve("rell/chromia.yml")
+        val directPath = workspaceFolder / "chromia.yml"
+        val rellPath = workspaceFolder / "rell/chromia.yml"
 
         return when {
-            directPath.isFile -> directPath
-            rellPath.isFile -> rellPath
+            directPath.isRegularFile() -> directPath
+            rellPath.isRegularFile() -> rellPath
             else -> null
         }
     }

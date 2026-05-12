@@ -8,15 +8,17 @@ import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.isEqualTo
 import assertk.assertions.isTrue
-import com.chromia.build.tools.template.TemplateProject
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.name
 
 class ProjectTemplateServiceTest {
-
-    private val service = ProjectTemplateService()
+    private val service = ProjectTemplateService(LocalDirTemplateRepository(TestTemplateFixture.materialize()))
 
     @Test
     fun `getAvailableTemplates returns all available templates`() {
@@ -36,23 +38,22 @@ class ProjectTemplateServiceTest {
     }
 
     @Test
-    fun `createNewProjectTemplate creates project directory`(@TempDir targetDir: File) {
+    fun `createNewProjectTemplate creates project directory`(@TempDir targetDir: Path) {
         val template = TemplateProject.PLAIN
         val projectName = "new-project"
 
         val projectDir = service.createNewProjectTemplate(template, projectName, targetDir)
 
         assertThat(projectDir.exists()).isTrue()
-        assertThat(projectDir.isDirectory).isTrue()
+        assertThat(projectDir.isDirectory()).isTrue()
         assertThat(projectDir.name).isEqualTo(projectName)
     }
 
     @Test
-    fun `createNewProjectTemplate throws exception if directory already exists`(@TempDir targetDir: File) {
+    fun `createNewProjectTemplate throws exception if directory already exists`(@TempDir targetDir: Path) {
         val template = TemplateProject.PLAIN_MULTI
         val projectName = "existing-project"
-        val existingDir = targetDir.resolve(projectName)
-        existingDir.mkdirs()
+        targetDir.resolve(projectName).createDirectories()
 
         val exception = assertThrows<IllegalStateException> {
             service.createNewProjectTemplate(template, projectName, targetDir)

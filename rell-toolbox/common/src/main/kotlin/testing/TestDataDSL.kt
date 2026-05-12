@@ -4,14 +4,11 @@
 
 package net.postchain.rell.toolbox.testing
 
-import com.chromia.build.tools.keystore.ChromiaKeyStore
-import com.chromia.cli.model.RellLibraryModel
 import net.postchain.crypto.KeyPair
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
+import net.postchain.rell.toolbox.chromia.model.RellLibraryModel
 import java.io.File
 import java.net.URI
 import java.nio.file.Path
-import kotlin.io.path.absolutePathString
 
 class TestDataBuilder {
 
@@ -26,7 +23,6 @@ class TestDataBuilder {
     private val createdSourceFiles = mutableMapOf<String, File>()
     private val configBuilder = ConfigBuilder()
     private var secretBuilder: SecretBuilder? = null
-    private var keysStoreBuilder: KeyStoreBuilder? = null
     private var linterConfigBuilder: LinterConfigBuilder? = null
     private var formatterConfigBuilder: FormatterConfigBuilder? = null
     private var srcDir: File? = null
@@ -95,7 +91,6 @@ class TestDataBuilder {
         }
         configFile = configBuilder.createFile(target)
         secretBuilder?.createFile(target)
-        keysStoreBuilder?.createFiles(target)
         linterConfigBuilder?.createFile(target)
         formatterConfigBuilder?.createFile(target)
     }
@@ -116,11 +111,6 @@ class TestDataBuilder {
     fun secret(init: SecretBuilder.() -> Unit = {}) {
         secretBuilder = SecretBuilder()
         init(secretBuilder!!)
-    }
-
-    fun keyStore(init: KeyStoreBuilder.() -> Unit = {}) {
-        keysStoreBuilder = KeyStoreBuilder()
-        init(keysStoreBuilder!!)
     }
 
     fun linter(init: LinterConfigBuilder.() -> Unit = {}) {
@@ -247,23 +237,6 @@ class SecretBuilder {
             """
            pubkey=${TestDataBuilder.keyPair.pubKey.hex()}
            privkey=${TestDataBuilder.keyPair.privKey.hex()}
-            """.trimIndent()
-        )
-    }
-}
-
-class KeyStoreBuilder {
-    private val keyIdName: String = "keyIdUsedForTesting"
-    fun createFiles(target: Path) {
-        EnvironmentVariables("CHROMIA_HOME", target.absolutePathString()).execute {
-            ChromiaKeyStore(keyIdName).saveKeyPair(TestDataBuilder.keyPair)
-        }
-
-        File(target.toFile(), "/config").also {
-            it.parentFile.mkdirs()
-        }.writeText(
-            """
-           key.id = $keyIdName
             """.trimIndent()
         )
     }

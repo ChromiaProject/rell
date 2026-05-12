@@ -6,9 +6,9 @@ package net.postchain.rell.toolbox.lsp.server
 
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import java.net.URI
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
+import kotlin.io.path.toPath
+import kotlin.io.path.walk
 
 class IndexRoot(val chromiaConfigPath: Path, val sourceRootPath: Path) {
     val sourceRootUri: URI by lazy {
@@ -22,25 +22,16 @@ class IndexRoot(val chromiaConfigPath: Path, val sourceRootPath: Path) {
     }
 
     companion object {
-        fun findIndexRoots(workspaceFolderUri: URI): List<IndexRoot> {
-            val workspacePath = Paths.get(workspaceFolderUri)
-
-            val chromiaConfigFiles = findChromiaConfigFiles(workspacePath)
-            return chromiaConfigFiles.map {
-                fromChromiaConfig(it)
-            }
-        }
+        fun findIndexRoots(workspaceFolderUri: URI): List<IndexRoot> =
+            findChromiaConfigFiles(workspacePath = workspaceFolderUri.toPath())
+                .map(::fromChromiaConfig)
+                .toList()
 
         fun fromChromiaConfig(chromiaConfigPath: Path): IndexRoot =
             IndexRoot(chromiaConfigPath, WorkspaceDirectoryResolver.findSourceDirPathFromConfig(chromiaConfigPath))
 
-        private fun findChromiaConfigFiles(workspacePath: Path): List<Path> {
-            return Files.walk(workspacePath)
-                .filter { path ->
-                    val fileName = path.fileName.toString()
-                    fileName == ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME
-                }
-                .toList()
-        }
+        private fun findChromiaConfigFiles(workspacePath: Path) = workspacePath
+            .walk()
+            .filter { it.fileName.toString() == ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME }
     }
 }

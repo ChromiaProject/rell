@@ -11,6 +11,9 @@ import net.postchain.rell.toolbox.lsp.launcher.StdioServerLauncher
 import net.postchain.rell.toolbox.lsp.server.LauncherType
 import net.postchain.rell.toolbox.lsp.server.commonServerModule
 import net.postchain.rell.toolbox.lsp.server.utils.TestLspSystemPropertiesProvider
+import net.postchain.rell.toolbox.lsp.template.LocalDirTemplateRepository
+import net.postchain.rell.toolbox.lsp.template.TemplateRepository
+import net.postchain.rell.toolbox.lsp.template.TestTemplateFixture
 import org.koin.core.KoinApplication
 import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
@@ -37,6 +40,10 @@ class TestServerModule {
 
         single<LspSystemPropertiesProvider> {
             TestLspSystemPropertiesProvider(includeDefinition, issueCaching, resolveCompletion)
+        }
+
+        single<TemplateRepository>(createdAtStart = true) {
+            LocalDirTemplateRepository(TestTemplateFixture.materialize())
         }
 
         single { params ->
