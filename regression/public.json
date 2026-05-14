@@ -63,7 +63,14 @@
       "name": "originals-governance",
       "url": "https://bitbucket.org/chromawallet/originals-governance.git",
       "rellPath": "rell",
-      "notes": "Chromia Originals governance dapp; chromia.yml lives under rell/."
+      "patches": [
+        {
+          "file": "rell/chromia.yml",
+          "replace": "ssh://git@bitbucket.org/chromawallet/lib-pagination-utils.git",
+          "with": "https://bitbucket.org/chromawallet/lib-pagination-utils.git"
+        }
+      ],
+      "notes": "Chromia Originals governance dapp; chromia.yml lives under rell/. lib-pagination-utils is referenced via ssh://git@bitbucket.org/... — CI runners have no Bitbucket SSH host key (and no account key to authenticate with), so we rewrite the registry to HTTPS pre-install. The library is public so anonymous HTTPS clones work."
     }
   ]
 }
