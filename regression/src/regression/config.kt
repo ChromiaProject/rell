@@ -24,8 +24,14 @@ data class ProjectSpec(
     val url: String,
     val ref: String? = null,
     val rellPath: String = ".",
-    /* Sequence of chr invocations executed from each project's rellPath. */
-    val commands: List<List<String>> = listOf(listOf("install"), listOf("build")),
+    /*
+     * Sequence of chr invocations executed from each project's rellPath. The default chains
+     * `install` → `build` → `test`, so the regression run also exercises each project's own
+     * test suite (e.g. ft4-lib's `tests.*` modules) against the locally-bootstrapped `chr`.
+     * Override with `[["install"], ["build"]]` for projects without a `test:` block in
+     * chromia.yml — chr exits non-zero with "No tests to run" otherwise.
+     */
+    val commands: List<List<String>> = listOf(listOf("install"), listOf("build"), listOf("test")),
     // Pre-compile text patches applied to files in the cloned tree before chr is invoked.
     // Use these to work around upstream regressions that the project's owners haven't picked
     // up yet — e.g. chromia-build-tools tightened its blockchain-name regex to reject hyphens,

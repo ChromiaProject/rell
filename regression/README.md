@@ -1,23 +1,25 @@
 # Rell Regression Toolkit
 
 Clones a curated set of public (and optionally private) Rell projects and verifies that the
-**local Rell build** still compiles them. Runs are long &mdash; the suite is not wired into the
-default CI pipeline; it ships as a manually-triggered job (`pages:regression`) and a
-collection of Gradle tasks for local use.
+**local Rell build** still compiles *and runs the projects' own tests* against them. Runs are
+long &mdash; the suite is not wired into the default CI pipeline; it ships as a manually-triggered
+job (`pages:regression`) and a collection of Gradle tasks for local use.
 
-The main goal is narrow on purpose: *does Rell compile this project?* Currently, the toolkit is **not** a behavioural
-test runner &mdash; it does not start blockchains, exercise integration tests, or compare on-chain output.
+The default pipeline per project is `chr install` &rarr; `chr build` &rarr; `chr test`, all
+invoked against the locally-bootstrapped `chr` (built from the Rell snapshot in this repo via
+`work/local-chr.sh`). Projects without a `test:` block in their chromia.yml override `commands`
+to drop the test step &mdash; otherwise `chr test` exits with "No tests to run".
 
 ## Quick start
 
 ```bash
 # 1. Make sure the bootstrap-once chr build will succeed (see work/local-chr.sh prerequisites).
-# 2. End-to-end: clone every project, compile each, render the HTML.
+# 2. End-to-end: clone every project, compile + test each, render the HTML.
 ./gradlew :regression:regression
 
 # Or, step-by-step:
 ./gradlew :regression:regressionClone     # clone (or pull) every repo into regression/workdir
-./gradlew :regression:regressionCompile   # run `chr install && chr build` against each
+./gradlew :regression:regressionCompile   # run install/build/test against each; writes results.json
 ./gradlew :regression:regressionReport    # rebuild the HTML from cached results.json
 ```
 
@@ -38,9 +40,10 @@ Each entry:
   "url": "https://gitlab.com/chromaway/ft4-lib",  // git clone URL
   "ref": "development",                           // optional; default = repository default branch
   "rellPath": ".",                                // dir containing chromia.yml, relative to repo root
-  "commands": [["install"], ["build"]],           // chr invocations run sequentially from rellPath;
+  "commands": [["install"], ["build"], ["test"]], // chr invocations run sequentially from rellPath;
                                                   // non-zero exit short-circuits.
-                                                  // Default: [["install"], ["build"]].
+                                                  // Default: [["install"], ["build"], ["test"]].
+                                                  // Drop ["test"] for projects without a test: block.
   "expectedFailure": false,                       // ok to fail; reported as "expected fail"
   "notes": "Reference Chromia FT4 token-fungibles library."
 }

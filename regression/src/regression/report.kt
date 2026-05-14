@@ -5,55 +5,15 @@ package net.postchain.rell.regression
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.ajalt.clikt.core.Context
-import kotlinx.html.FlowContent
-import kotlinx.html.TBODY
-import kotlinx.html.a
-import kotlinx.html.body
-import kotlinx.html.code
-import kotlinx.html.details
-import kotlinx.html.div
-import kotlinx.html.head
-import kotlinx.html.html
-import kotlinx.html.li
-import kotlinx.html.main
-import kotlinx.html.meta
-import kotlinx.html.pre
-import kotlinx.html.span
+import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
-import kotlinx.html.style
-import kotlinx.html.summary
-import kotlinx.html.table
-import kotlinx.html.tbody
-import kotlinx.html.td
-import kotlinx.html.th
-import kotlinx.html.thead
-import kotlinx.html.tr
-import kotlinx.html.ul
-import kotlinx.html.unsafe
-import net.postchain.rell.performance.report.BASE_CSS
-import net.postchain.rell.performance.report.HostInfo
-import net.postchain.rell.performance.report.JvmInfo
-import net.postchain.rell.performance.report.dlRow
-import net.postchain.rell.performance.report.formatRoot
-import net.postchain.rell.performance.report.hostBlock
-import net.postchain.rell.performance.report.jvmBlock
-import net.postchain.rell.performance.report.linkWebFonts
-import net.postchain.rell.performance.report.metric
-import net.postchain.rell.performance.report.renderColophon
-import net.postchain.rell.performance.report.renderDocHead
-import net.postchain.rell.performance.report.renderSection
-import net.postchain.rell.performance.report.sysinfoBlock
-import net.postchain.rell.performance.report.titleWithTimestamp
+import net.postchain.rell.performance.report.*
 import org.intellij.lang.annotations.Language
 import java.nio.file.Path
 import java.time.Instant
-import kotlin.io.path.createDirectories
-import kotlin.io.path.div
-import kotlin.io.path.exists
-import kotlin.io.path.inputStream
-import kotlin.io.path.writeText
+import kotlin.io.path.*
 
-class ReportCommand : RegressionSubcommand("report") {
+class ReportCommand: RegressionSubcommand("report") {
     override fun help(context: Context) =
         "Render reports/report.html from reports/results.json. Run :regressionCompile first to produce the JSON."
 
@@ -96,8 +56,8 @@ fun renderHtml(results: ResultsFile, reportsDir: Path) {
                     renderProjectSections(results)
                     renderMethodology()
                 }
-                // Total compile time goes here, not in the key metrics — reviewers don't act on it,
-                // they act on the failed/expected-fail/passed counts above.
+                // Total compile time goes in the colophon, not the key metrics — reviewers
+                // act on per-project status in the cohort tables below, not on the running total.
                 renderColophon(
                     "results.json · ${"%.1f".formatRoot(totalSeconds)}s total chr time",
                     generatedAt,
@@ -123,18 +83,12 @@ private fun FlowContent.renderEnvironment(results: ResultsFile) = renderSection(
 }
 
 private fun FlowContent.renderSummary(results: ResultsFile) = renderSection("summary") {
-    val counts = results.results.groupingBy { it.status }.eachCount()
-    val passed = counts[Status.PASSED] ?: 0
-    val failed = counts[Status.FAILED] ?: 0
-    val expectedFail = counts[Status.EXPECTED_FAIL] ?: 0
+    val passed = results.results.count { it.status == Status.PASSED }
     val total = results.results.size
     val rate = if (total > 0) 100.0 * passed / total else 0.0
 
     div(classes = "metrics") {
         metric("Projects", total.toString(), "", "in scope")
-        metric("Passed", passed.toString(), "", "compile ok")
-        metric("Failed", failed.toString(), "", "non-zero chr exit")
-        metric("Expected fail", expectedFail.toString(), "", "historical / FT3-era")
         metric("Pass rate", "%.0f".formatRoot(rate), "%", "of total")
     }
 }
@@ -168,8 +122,8 @@ private fun FlowContent.renderProjectSections(results: ResultsFile) {
 
 private fun FlowContent.renderCohortTable(cohort: String, rows: List<CompileResult>) = renderSection(
     title = "$cohort projects",
-    strap = "${rows.size} project${if (rows.size == 1) "" else "s"} · click a failed row " +
-        "to read the last few lines of chr stderr.",
+    strap = "${rows.size} project${if (rows.size == 1) "" else "s"} · click a failed " +
+            "pipeline stage to read the last few lines of chr stderr.",
 ) {
     div(classes = "table-scroll") {
         table(classes = "regression") {
@@ -177,9 +131,9 @@ private fun FlowContent.renderCohortTable(cohort: String, rows: List<CompileResu
                 tr {
                     th { +"Project" }
                     th { +"Status" }
-                    th(classes = "num") { +"Duration" }
                     th { +"Source" }
-                    th { +"Detail" }
+                    th { +"Pipeline" }
+                    th(classes = "num") { +"Duration" }
                 }
             }
             tbody {
@@ -196,9 +150,6 @@ private fun TBODY.renderRow(r: CompileResult) {
             if (r.notes.isNotBlank()) div(classes = "row-notes") { +r.notes }
         }
         td { renderStatusBadge(r) }
-        td(classes = "num") {
-            r.durationMs?.let { +"%.1f s".formatRoot(it / 1000.0) } ?: run { +"—" }
-        }
         td(classes = "source") {
             a(href = r.url) {
                 attributes["target"] = "_blank"
@@ -214,16 +165,20 @@ private fun TBODY.renderRow(r: CompileResult) {
                 code { +it.take(10) }
             }
         }
-        td(classes = "detail") {
-            if (r.errorSummary != null) {
+        td(classes = "pipeline-cell") { renderPipeline(r) }
+        td(classes = "num") {
+            r.durationMs?.let { +"%.1f s".formatRoot(it / 1000.0) } ?: run { +"—" }
+        }
+    }
+    // Failure log lives on a second row that spans the table — gives the chr stderr excerpt
+    // room to wrap without being squeezed into the pipeline cell. Collapsed by default so the
+    // table stays scannable; user expands on demand.
+    if (r.errorSummary != null) {
+        tr(classes = "log-row row-${r.status.cssClass()}") {
+            td(classes = "log-cell") {
+                attributes["colspan"] = "5"
                 details {
-                    summary {
-                        +"chr exit ${r.exitCode}${if (r.timedOut) " · timed out" else ""}"
-                        r.failedStep?.let { step ->
-                            +" "
-                            span(classes = "failed-step") { +"@ chr ${step.joinToString(" ")}" }
-                        }
-                    }
+                    summary { +"chr log excerpt (last lines)" }
                     pre(classes = "log-excerpt") { +r.errorSummary }
                     r.logRelPath?.let {
                         div(classes = "log-link") {
@@ -231,10 +186,6 @@ private fun TBODY.renderRow(r: CompileResult) {
                         }
                     }
                 }
-            } else if (r.status == Status.PASSED) {
-                +"chr exit 0"
-            } else {
-                +"—"
             }
         }
     }
@@ -244,6 +195,94 @@ private fun FlowContent.renderStatusBadge(r: CompileResult) {
     span(classes = "badge badge-${r.status.cssClass()}") {
         +r.status.label()
     }
+}
+
+// GitLab-style pipeline strip: clone → install → build → test, one stage per chr command.
+// Each stage carries an icon (✓ / ✗ / ⊘ / ·) that mirrors whether it ran, succeeded, was the
+// failure point, or got skipped because an earlier step short-circuited the pipeline.
+private enum class StageState { PASS, FAIL, XFAIL, SKIPPED }
+
+private fun FlowContent.renderPipeline(r: CompileResult) {
+    span(classes = "pipeline") {
+        val stages = mutableListOf<Pair<String, StageState>>()
+
+        val cloneState = if (r.status == Status.CLONE_FAILED) StageState.FAIL else StageState.PASS
+        stages += "clone" to cloneState
+
+        if (r.commands.isEmpty()) {
+            // results.json predates the commands field; fall back to a single placeholder so
+            // the cell isn't blank, but don't pretend we know which steps ran.
+            stages += "chr" to (when (r.status) {
+                Status.PASSED -> StageState.PASS
+                Status.EXPECTED_FAIL -> StageState.XFAIL
+                Status.CLONE_FAILED -> StageState.SKIPPED
+                Status.FAILED -> StageState.FAIL
+            })
+        } else if (r.status == Status.CLONE_FAILED) {
+            // Never got to chr — render every command as skipped to make the gap explicit.
+            for (it in r.commands) {
+                stages += it.joinToString(" ") to StageState.SKIPPED
+            }
+        } else {
+            val failedIdx = r.failedStep?.let { r.commands.indexOf(it) } ?: -1
+            for ((idx, step) in r.commands.withIndex()) {
+                val label = step.joinToString(" ")
+                val state = when {
+                    // No failedStep means either everything passed, or the run never started
+                    // chr (patch error, missing chromia.yml). In the latter case status is
+                    // FAILED/EXPECTED_FAIL with durationMs == 0 — show the first stage as the
+                    // failure point and the rest as skipped.
+                    failedIdx < 0 -> when (r.status) {
+                        Status.PASSED -> StageState.PASS
+                        Status.EXPECTED_FAIL -> if (idx == 0) StageState.XFAIL else StageState.SKIPPED
+                        Status.FAILED -> if (idx == 0) StageState.FAIL else StageState.SKIPPED
+                    }
+
+                    idx < failedIdx -> StageState.PASS
+                    idx == failedIdx -> if (r.status == Status.EXPECTED_FAIL) StageState.XFAIL else StageState.FAIL
+                    else -> StageState.SKIPPED
+                }
+
+                stages += label to state
+            }
+        }
+
+        // Compact mode: each stage is a colored dot. Full label + state surface via a
+        // CSS-driven tooltip (`data-tip`) that fires immediately on :hover — the native
+        // `title` attribute carries a multi-hundred-millisecond browser delay that's
+        // noticeably slow next to GitLab-style pipeline indicators.
+        stages.forEachIndexed { i, (label, state) ->
+            if (i > 0) span(classes = "sep") { +"·" }
+
+            span(classes = "stage stage-${state.cssClass()}") {
+                attributes["data-tip"] = "$label — ${state.label()}"
+                unsafe { +state.iconSvg() }
+            }
+        }
+    }
+}
+
+// Inline-SVG icons in the spirit of heroicons-mini. Vector glyphs are flatter and crisper
+// at small sizes than Unicode check/cross codepoints.
+private fun StageState.iconSvg(): String = when (this) {
+    StageState.PASS -> """<svg class="stage-glyph" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 1 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z"/></svg>"""
+    StageState.FAIL -> """<svg class="stage-glyph" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/></svg>"""
+    StageState.XFAIL -> """<svg class="stage-glyph" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z"/></svg>"""
+    StageState.SKIPPED -> """<svg class="stage-glyph" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="2" fill="currentColor"/></svg>"""
+}
+
+private fun StageState.cssClass(): String = when (this) {
+    StageState.PASS -> "pass"
+    StageState.FAIL -> "fail"
+    StageState.XFAIL -> "xfail"
+    StageState.SKIPPED -> "skipped"
+}
+
+private fun StageState.label(): String = when (this) {
+    StageState.PASS -> "passed"
+    StageState.FAIL -> "failed"
+    StageState.XFAIL -> "expected fail"
+    StageState.SKIPPED -> "skipped"
 }
 
 private fun FlowContent.renderMethodology() = renderSection("methodology") {
@@ -258,19 +297,16 @@ private fun FlowContent.renderMethodology() = renderSection("methodology") {
             +")."
         }
         li {
-            +"A row reports "
-            code { +"FAILED" }
-            +" only when "
-            code { +"expectedFailure" }
-            +" is not set in the project's JSON entry. Historical / FT3-era projects are marked "
             code { +"expectedFailure: true" }
-            +" so they don't show up as regressions; if such a project starts compiling again it flips to "
+            +" suppresses "
+            code { +"FAILED" }
+            +" for historical entries and flips to "
             code { +"UNEXPECTED_PASS" }
-            +"."
+            +" if the project starts compiling again."
         }
         li {
-            +"Per-project compile timeout: "
-            code { +"20 min" }
+            +"Per-project timeout: "
+            code { +"30 min" }
             +". Bootstrap timeout (one-time chromia-cli build): "
             code { +"60 min" }
             +"."
@@ -313,24 +349,58 @@ table.regression td.source {
 }
 table.regression td.source .ref { color: var(--muted); font-size: .72rem; }
 table.regression td.source code { font-size: .72rem; color: var(--muted); background: var(--bg-alt); padding: 0 4px; border-radius: 2px; }
-table.regression td.detail { font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); }
-table.regression td.detail details > summary {
-  cursor: pointer; color: var(--accent); font-weight: 600;
-  list-style: none;
+table.regression td.pipeline-cell { font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); }
+
+table.regression tr.log-row > td { border-top: 0; padding-top: 0; }
+table.regression td.log-cell { padding: 0 .8rem .8rem .8rem; }
+table.regression td.log-cell details > summary {
+  cursor: pointer; list-style: none;
+  font-family: var(--mono); font-size: .7rem; color: var(--accent); font-weight: 600;
 }
-table.regression td.detail details > summary::-webkit-details-marker { display: none; }
-table.regression td.detail details > summary::before { content: "▸ "; color: var(--faint); font-weight: 400; }
-table.regression td.detail details[open] > summary::before { content: "▾ "; }
-table.regression td.detail .log-excerpt {
+table.regression td.log-cell details > summary::-webkit-details-marker { display: none; }
+table.regression td.log-cell details > summary::before { content: "▸ "; color: var(--faint); font-weight: 400; }
+table.regression td.log-cell details[open] > summary::before { content: "▾ "; }
+table.regression td.log-cell .log-excerpt {
   margin-top: .5rem; padding: .6rem .8rem;
   background: var(--bg-alt); border-left: 2px solid var(--accent);
   font-family: var(--mono); font-size: .72rem; color: var(--ink);
   white-space: pre-wrap; word-break: break-word; line-height: 1.45;
   max-height: 320px; overflow: auto;
 }
-table.regression td.detail .log-link { margin-top: .35rem; font-size: .7rem; }
+table.regression td.log-cell .log-link { margin-top: .35rem; font-size: .7rem; }
 
 table.regression tr.row-fail { background: rgba(193,68,14,0.04); }
+table.regression tr.log-row.row-fail { background: rgba(193,68,14,0.04); }
+
+.pipeline {
+  display: inline-flex; align-items: center; gap: 3px;
+  vertical-align: middle;
+}
+.pipeline .stage {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--rule);
+  line-height: 1; cursor: help; position: relative;
+}
+.pipeline .stage .stage-glyph { width: 11px; height: 11px; display: block; }
+/* Instant CSS tooltip — no native title attribute delay. Reveals on hover/focus.
+   The stage sits in position: relative so the ::after positions over its dot. */
+.pipeline .stage[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  padding: 3px 7px; border-radius: 3px;
+  background: var(--ink); color: var(--bg);
+  font-family: var(--mono); font-size: .7rem; font-weight: 500;
+  white-space: nowrap; pointer-events: none;
+  opacity: 0; transition: opacity 60ms linear;
+  z-index: 10;
+}
+.pipeline .stage[data-tip]:hover::after,
+.pipeline .stage[data-tip]:focus::after { opacity: 1; }
+.pipeline .stage-pass    { color: #1F6B4A; border-color: rgba(31,107,74,0.4); background: rgba(31,107,74,0.10); }
+.pipeline .stage-fail    { color: var(--accent); border-color: rgba(193,68,14,0.4); background: rgba(193,68,14,0.12); }
+.pipeline .stage-xfail   { color: var(--muted); border-color: var(--rule); background: var(--bg-alt); }
+.pipeline .stage-skipped { color: var(--faint); border-color: var(--faint); background: transparent; }
+.pipeline .sep { color: var(--faint); font-size: .6rem; line-height: 1; }
 
 .badge {
   display: inline-block; padding: 2px 8px; border-radius: 2px;
@@ -342,11 +412,6 @@ table.regression tr.row-fail { background: rgba(193,68,14,0.04); }
 .badge-fail  { color: var(--accent); border-color: rgba(193,68,14,0.4); background: rgba(193,68,14,0.08); }
 .badge-xfail { color: var(--muted); border-color: var(--rule); background: var(--bg-alt); }
 .badge-clone { color: var(--muted); border-color: var(--rule); background: transparent; }
-
-table.regression .failed-step {
-  color: var(--muted); font-family: var(--mono); font-size: .68rem;
-  font-weight: 500; letter-spacing: .02em; margin-left: .35rem;
-}
 
 ul.method { padding-left: 1.2rem; color: var(--ink-soft); font-size: .88rem; }
 ul.method li { margin-bottom: .55rem; line-height: 1.55; }

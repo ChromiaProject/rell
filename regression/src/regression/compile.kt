@@ -18,7 +18,9 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-private val PER_PROJECT_TIMEOUT: Duration = Duration.ofMinutes(20)
+// 30 min covers install + build + test for the heaviest project (ft4-lib has 8+ test modules
+// spread across two test chains). Bump if a new entry routinely times out.
+private val PER_PROJECT_TIMEOUT: Duration = Duration.ofMinutes(30)
 private val BOOTSTRAP_TIMEOUT: Duration = Duration.ofMinutes(60)
 
 class CompileCommand : RegressionSubcommand("compile") {

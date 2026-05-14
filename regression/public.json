@@ -9,8 +9,9 @@
     "  ref              — branch / tag / commit; omit for repo's default branch",
     "  rellPath         — directory containing chromia.yml, relative to repo root (default: \".\")",
     "  commands         — list of chr invocations to run sequentially; non-zero exit short-circuits.",
-    "                     Default: [[\"install\"], [\"build\"]]. Set [[\"install\"]] for libs that aren't meant to be",
-    "                     built standalone.",
+    "                     Default: [[\"install\"], [\"build\"], [\"test\"]]. Override to drop `test`",
+    "                     when chromia.yml has no `test:` block (chr exits with \"No tests to run\"),",
+    "                     or to [[\"install\"]] for library-only projects.",
     "  expectedFailure  — known-bad against verified Rell builds",
     "  notes            — free-form, rendered in the report"
   ],
@@ -19,58 +20,56 @@
       "name": "ft4-lib",
       "url": "https://gitlab.com/chromaway/ft4-lib.git",
       "ref": "development",
-      "notes": "Chromia FT4 token-fungibles library; reference codebase for the perf module's bench samples."
+      "notes": "FT4 token-fungibles library. Default pipeline; tests run against `ft4_rell_test` and `ft4_rell_auth` chains. Currently fails `chr test` on the local snapshot due to a Rell regression in `Rt_InterpreterImpl.setParams` (rr_interpreter.kt:805) — NPE when calling functions with arguments. Confirmed passing on chr 0.32.1 / Rell 0.15.3 (0/398 failed)."
     },
     {
       "name": "directory-chain",
       "url": "https://gitlab.com/chromaway/core/directory-chain.git",
-      "notes": "Chromia directory service blockchain."
+      "notes": "Chromia directory service blockchain. Default pipeline; tests live under `economy_chain.test`. Hits the same Rell regression as ft4-lib (`Rt_InterpreterImpl.setParams` NPE) on the local snapshot."
     },
     {
       "name": "filechain",
       "url": "https://gitlab.com/chromaway/filehub/filechain.git",
-      "notes": "FileHub on-chain storage blockchain."
+      "commands": [["install"], ["build"]],
+      "notes": "FileHub on-chain storage blockchain. No `test:` block — `chr test` skipped."
     },
     {
       "name": "filehub",
       "url": "https://gitlab.com/chromaway/filehub/filehub.git",
-      "notes": "FileHub gateway."
+      "expectedFailure": true,
+      "notes": "FileHub gateway. Default pipeline; top-level `tests` module. `chr test` fails to compile against the current ft4 dev branch (`Unknown name: 'ft_auth_operation_for'` — upstream ft4 API rename that filehub hasn't picked up). Marked expectedFailure until the rename lands here."
     },
     {
       "name": "postchain-eif",
       "url": "https://gitlab.com/chromaway/postchain-eif.git",
       "rellPath": "postchain-eif-rell/rell",
-      "notes": "Postchain Ethereum Interoperability Framework. chromia.yml lives under postchain-eif-rell/rell/."
+      "notes": "Ethereum Interoperability Framework. chromia.yml under postchain-eif-rell/rell/. `test.failOnError: false` upstream keeps individual failures from aborting the suite. Hits the same Rell regression as ft4-lib (`Rt_InterpreterImpl.setParams` NPE) on the local snapshot."
     },
     {
       "name": "auth-server-ft4",
       "url": "https://bitbucket.org/chromawallet/auth-server-ft4.git",
-      "notes": "FT4-aware auth server."
+      "commands": [["install"], ["build"]],
+      "notes": "FT4-aware auth server. No `test:` block — `chr test` skipped."
     },
     {
       "name": "ft3-lib",
       "url": "https://bitbucket.org/chromawallet/ft3-lib.git",
-      "notes": "Predecessor of FT4. Currently passes install — left as-is to surface future regressions."
+      "expectedFailure": true,
+      "notes": "Predecessor of FT4. Historical/FT3-era; install+build pass but `chr test` hits the same downstream Rell issues as the FT4-tracking projects. Left listed to surface future regressions; not maintained forward."
     },
     {
       "name": "lib-pagination-utils",
       "url": "https://bitbucket.org/chromawallet/lib-pagination-utils.git",
       "rellPath": "rell",
       "commands": [["install"]],
-      "notes": "Pagination helper library; chromia.yml lives under rell/. chromia.yml's `module: core` points at a non-existent module (modules live at src/core/pagination/), and that misconfiguration is present on every commit since the file was introduced — so `chr build` has never worked here. Run install only; the project is consumed as a library by downstream chains."
+      "notes": "Pagination helper. chromia.yml's `module: core` points at a non-existent module (real modules at src/core/pagination/), so `chr build` has never worked. Consumed as a library; install-only."
     },
     {
       "name": "originals-governance",
       "url": "https://bitbucket.org/chromawallet/originals-governance.git",
       "rellPath": "rell",
-      "patches": [
-        {
-          "file": "rell/chromia.yml",
-          "replace": "ssh://git@bitbucket.org/chromawallet/lib-pagination-utils.git",
-          "with": "https://bitbucket.org/chromawallet/lib-pagination-utils.git"
-        }
-      ],
-      "notes": "Chromia Originals governance dapp; chromia.yml lives under rell/. lib-pagination-utils is referenced via ssh://git@bitbucket.org/... — CI runners have no Bitbucket SSH host key (and no account key to authenticate with), so we rewrite the registry to HTTPS pre-install. The library is public so anonymous HTTPS clones work."
+      "commands": [["install"], ["build"]],
+      "notes": "Originals governance dapp. No `test:` block. (Earlier runs needed an ssh→https patch for the lib-pagination-utils registry; upstream now ships the https URL, so no patch is required.)"
     }
   ]
 }
