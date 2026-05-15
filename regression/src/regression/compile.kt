@@ -190,6 +190,12 @@ fun compileAll(projects: List<ProjectSpec>, workdir: Path, reportsDir: Path): Re
  * (or no patches), or a human-readable error string on the first failure. Each patch is a
  * literal find-and-replace — applied with `replace(...)`, not regex — so the user gets
  * predictable behaviour and no escaping surprises.
+ *
+ * Idempotent: if the `replace` literal is absent **and** the `with` literal is already present,
+ * the patch is treated as already-applied (e.g. upstream merged the change, or a prior run
+ * applied the patch on a workdir that the clone phase couldn't reset because of a network
+ * error). This matches the user's intent without papering over a real mismatch — failure
+ * still fires when neither string is in the file.
  */
 private fun applyPatches(project: ProjectSpec, clonedRoot: Path): String? {
     if (project.patches.isEmpty()) return null
@@ -200,7 +206,11 @@ private fun applyPatches(project: ProjectSpec, clonedRoot: Path): String? {
         }
         val original = file.readText()
         if (!original.contains(patch.replace)) {
-            return "patch #${idx + 1}: literal `${patch.replace}` not found in ${patch.file}"
+            if (original.contains(patch.with)) {
+                log("compile", "  patch: ${patch.file}: `${patch.replace}` already replaced by `${patch.with}` — skip")
+                continue
+            }
+            return "patch #${idx + 1}: neither `${patch.replace}` nor `${patch.with}` found in ${patch.file}"
         }
         val patched = original.replace(patch.replace, patch.with)
         file.writeText(patched)

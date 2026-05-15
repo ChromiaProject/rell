@@ -589,9 +589,17 @@ class Rt_InterpreterImpl(
             RR_Type.Entity(idx)
         }
         is R_StructType -> {
-            val idx = rType.struct.rrDefIndex.takeIf { it >= 0 }
-                ?: rrApp.allStructs.indexOfFirst { it.struct.name == rType.struct.name }
-            require(idx >= 0) { "Struct not in rrApp: ${rType.struct.name}" }
+            // R_Struct.rrDefIndex is a `var` that gets re-written every time the R_Struct
+            // is registered in a fresh rrApp. Lib structs (`gtx_transaction`, `gtx_operation`,
+            // …) are singletons reused across compilations, so the cached index may point at
+            // a different struct in *this* rrApp. Validate by name before trusting it, and
+            // fall back to a name lookup when the slot has been reshuffled.
+            val cached = rType.struct.rrDefIndex
+            val structName = rType.struct.name
+            val idx = if (cached >= 0 && cached < rrApp.allStructs.size
+                && rrApp.allStructs[cached].struct.name == structName
+            ) cached else rrApp.allStructs.indexOfFirst { it.struct.name == structName }
+            require(idx >= 0) { "Struct not in rrApp: $structName" }
             RR_Type.Struct(idx)
         }
         is R_EnumType -> {
@@ -622,9 +630,12 @@ class Rt_InterpreterImpl(
             RR_TupleField(it.name?.str, rrTypeOfR(it.type))
         })
         is R_VirtualStructType -> {
+            // Same stale-index hazard as R_StructType — see comment there.
             val name = rType.innerType.struct.name
-            val idx = rType.innerType.struct.rrDefIndex.takeIf { it >= 0 }
-                ?: rrApp.allStructs.indexOfFirst { it.struct.name == name }
+            val cached = rType.innerType.struct.rrDefIndex
+            val idx = if (cached >= 0 && cached < rrApp.allStructs.size
+                && rrApp.allStructs[cached].struct.name == name
+            ) cached else rrApp.allStructs.indexOfFirst { it.struct.name == name }
             require(idx >= 0) { "Virtual struct not in rrApp: $name" }
             RR_Type.VirtualStruct(idx)
         }
@@ -802,8 +813,12 @@ class Rt_InterpreterImpl(
         }
         for (i in paramVars.indices) {
             val paramType = paramVars[i].type
-            val argType = args[i].type.rrType!!
-            if (!isAssignableRR(paramType, argType)) {
+            val argType = args[i].type.rrType
+            if (argType != null
+                && paramType is RR_Type.Primitive
+                && argType is RR_Type.Primitive
+                && paramType != argType
+            ) {
                 val name = fnName ?: "?"
                 val expected = rrTypeName(paramType)
                 val actual = rrTypeName(argType)

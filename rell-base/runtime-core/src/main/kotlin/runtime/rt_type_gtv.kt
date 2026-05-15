@@ -6,6 +6,7 @@ package net.postchain.rell.base.runtime
 
 import net.postchain.gtv.Gtv
 import net.postchain.rell.base.model.*
+import net.postchain.rell.base.model.rr.RR_EnumAttr
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.utils.mapToImmList
@@ -24,14 +25,46 @@ class Rt_LazyGtvAdapter(
 }
 
 /**
- * Lightweight pre-interpreter [Rt_ValueClass] derived from an [R_Type]. Carries only `rrType`
+ * Lightweight pre-interpreter [Rt_ValueClass] derived from an [R_Type]. Carries `rrType`
  * and `name`; intended for compile-time GTV encode/decode paths where the runtime
- * [Rt_Interpreter] is not yet available. At runtime, [Rt_Interpreter.resolveType] produces
- * fully-capable type-classes; this stub is sufficient because pre-interpreter consumers only
- * read `name` (and never call back into capabilities of the surrounding rtType).
+ * [Rt_Interpreter] is not yet available.
+ *
+ * For [R_EnumType] we materialize a capability-bearing stub: enum values produced by
+ * [R_EnumDefinition.rtValues] are interned and reused at runtime (e.g. as SQL bind
+ * parameters via the at-expression path), so the surrounding `type` must carry a usable
+ * [Rt_SqlCompatibleValueClass] and [Rt_GtvCompatibleValueClass]. Without it, binding an
+ * enum-typed column blew up with `No SQL adapter for type: <enum>`.
+ *
+ * Other R_Types stay on [Rt_GenericRrType] — their pre-interpreter consumers only read
+ * `name` (and never call back into capabilities of the surrounding rtType).
  */
-internal fun rTypeStub(rType: R_Type): Rt_ValueClass<*> =
-    Rt_GenericRrType(rTypeToRRType(rType), rType.name)
+internal fun rTypeStub(rType: R_Type): Rt_ValueClass<*> = when (rType) {
+    is R_EnumType -> Rt_R_EnumStubType(rType)
+    else -> Rt_GenericRrType(rTypeToRRType(rType), rType.name)
+}
+
+/**
+ * Capability-bearing R-driven enum stub. Mirrors the runtime [Rt_EnumType] (built via the
+ * RR registry in the interpreter) for callers that only hold an [R_EnumDefinition] — the
+ * enum values cache, GTV decoders, etc. — without forcing a full interpreter context.
+ */
+private class Rt_R_EnumStubType(rType: R_EnumType): Rt_ValueClass<Rt_Value> {
+    override val name: String = rType.name
+    override val rrType: RR_Type = rTypeToRRType(rType)
+    private val attrs = rType.enum.attrs.mapToImmList { RR_EnumAttr(it.rName, it.value) }
+    private val enumDef = rType.enum
+
+    override val sqlAdapter: Rt_SqlCompatibleValueClass<*> by lazy {
+        Rt_SqlAdapter_Enum(lazyRtType = lazyOf(this), typeName = name, attrs = attrs)
+    }
+    override val gtvConversion: Rt_GtvCompatibleValueClass<*> by lazy {
+        Rt_RR_EnumValue.gtvConversion(enumDef)
+    }
+
+    override fun toString() = name
+    override fun equals(other: Any?) = other is Rt_R_EnumStubType && name == other.name
+    override fun hashCode() = name.hashCode()
+}
 
 /**
  * Build a GTV conversion from an [R_Type], recursively. Mirrors `Rt_InterpreterImpl.buildRtType`'s

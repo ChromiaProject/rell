@@ -20,12 +20,12 @@
       "name": "ft4-lib",
       "url": "https://gitlab.com/chromaway/ft4-lib.git",
       "ref": "development",
-      "notes": "FT4 token-fungibles library. Default pipeline; tests run against `ft4_rell_test` and `ft4_rell_auth` chains. Currently fails `chr test` on the local snapshot due to a Rell regression in `Rt_InterpreterImpl.setParams` (rr_interpreter.kt:805) — NPE when calling functions with arguments. Confirmed passing on chr 0.32.1 / Rell 0.15.3 (0/398 failed)."
+      "notes": "FT4 token-fungibles library. Default pipeline; tests run against `ft4_rell_test` and `ft4_rell_auth` chains."
     },
     {
       "name": "directory-chain",
       "url": "https://gitlab.com/chromaway/core/directory-chain.git",
-      "notes": "Chromia directory service blockchain. Default pipeline; tests live under `economy_chain.test`. Hits the same Rell regression as ft4-lib (`Rt_InterpreterImpl.setParams` NPE) on the local snapshot."
+      "notes": "Chromia directory service blockchain. Default pipeline; tests live under `economy_chain.test`."
     },
     {
       "name": "filechain",
@@ -43,7 +43,7 @@
       "name": "postchain-eif",
       "url": "https://gitlab.com/chromaway/postchain-eif.git",
       "rellPath": "postchain-eif-rell/rell",
-      "notes": "Ethereum Interoperability Framework. chromia.yml under postchain-eif-rell/rell/. `test.failOnError: false` upstream keeps individual failures from aborting the suite. Hits the same Rell regression as ft4-lib (`Rt_InterpreterImpl.setParams` NPE) on the local snapshot."
+      "notes": "Ethereum Interoperability Framework. chromia.yml under postchain-eif-rell/rell/. `test.failOnError: false` upstream keeps individual failures from aborting the suite."
     },
     {
       "name": "auth-server-ft4",

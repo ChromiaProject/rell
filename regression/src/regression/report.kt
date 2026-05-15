@@ -83,13 +83,13 @@ private fun FlowContent.renderEnvironment(results: ResultsFile) = renderSection(
 }
 
 private fun FlowContent.renderSummary(results: ResultsFile) = renderSection("summary") {
-    val passed = results.results.count { it.status == Status.PASSED }
+    val passed = results.results.count { it.status == Status.PASSED || it.status == Status.EXPECTED_FAIL }
     val total = results.results.size
     val rate = if (total > 0) 100.0 * passed / total else 0.0
 
     div(classes = "metrics") {
         metric("Projects", total.toString(), "", "in scope")
-        metric("Pass rate", "%.0f".formatRoot(rate), "%", "of total")
+        metric("Pass rate", "%.0f".formatRoot(rate), "%", "incl. expected fails")
     }
 }
 
