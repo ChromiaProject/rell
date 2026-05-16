@@ -54,6 +54,24 @@ for sha in $(printf '%s' "$envs_json" | jq -r '
   fi
 done
 
+# Verify which benchmark/profile deployments actually serve `data/main.json`. Older runs
+# predate the structured-data export, so the derived URL would 404 — and the compare tool
+# must never offer a profile selection that can't be fetched. Probe each candidate over HTTP
+# (Pages is served anonymously, the same assumption the browser app relies on) and keep only
+# the URLs that resolve; jq attaches `data` only for these.
+verified_data="[]"
+for url in $(printf '%s' "$envs_json" | jq -r '
+  [ .[] | select(.name | test("^(benchmarks|profile)/[^/]+/[^/]+$"))
+        | select(.external_url != null)
+        | (.external_url | sub("/report\\.html$"; "")) + "/data/main.json" ] | unique | .[]'); do
+  code=$(curl -o /dev/null -s -L -w '%{http_code}' --max-time 15 "$url" || echo "000")
+  if [ "$code" = "200" ]; then
+    verified_data=$(printf '%s' "$verified_data" | jq --arg u "$url" '. + [$u]')
+  else
+    echo "note: no data/main.json at $url (HTTP $code) — omitting from manifest" >&2
+  fi
+done
+
 generated_at=$(date -u +"%Y-%m-%d %H:%M UTC")
 
 # Env names follow the schema `benchmarks/<branch>/<sha>`, `profile/<branch>/<sha>` and
@@ -62,10 +80,12 @@ generated_at=$(date -u +"%Y-%m-%d %H:%M UTC")
 # into one entry per commit; sort newest first within each branch, dev/master pinned to the
 # top. `data` is the deployment's machine-readable JSON (kotlinx-benchmark scores for
 # benchmarks, the profile summary written by writeProfileData() for profiles) — the app
-# fetches those to diff two commits.
+# fetches those to diff two commits. It is attached only for deployments whose data URL was
+# verified above; deployments that predate the export are left with just a `url`.
 printf '%s' "$envs_json" | jq \
   --argjson active "$active_prefixes" \
   --argjson titles "$commit_titles" \
+  --argjson verified "$verified_data" \
   --arg ts "$generated_at" '
   def branch_rank(b): if b == "dev" then 0 elif b == "master" then 1 else 2 end;
   # path_prefix mirrors the CI config: `benchmarks/dev/<sha>` -> `bench-dev-<sha>`,
@@ -77,9 +97,13 @@ printf '%s' "$envs_json" | jq \
   # Every deployment serves its report at `<root>/report.html`; the parseable JSON sits at
   # `<root>/data/main.json`.
   def data_url(u): (u | sub("/report\\.html$"; "")) + "/data/main.json";
+  # `data` is attached only when `withData` is set (benchmarks / profiles, not regression)
+  # AND the data URL was confirmed reachable by the HTTP probe — `index` is null (falsy)
+  # for an unverified URL, so the deployment falls through to a `url`-only entry.
   def link(entry; withData):
     if entry == null then null
-    elif withData then { url: entry.url, data: data_url(entry.url) }
+    elif withData and (data_url(entry.url) as $d | $verified | index($d))
+      then { url: entry.url, data: data_url(entry.url) }
     else { url: entry.url }
     end;
 

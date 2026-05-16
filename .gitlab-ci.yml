@@ -242,7 +242,7 @@ dependency-check:
   rules:
     - if: $CI_COMMIT_BRANCH == "dev"
   script:
-    - apk add --no-cache jq
+    - apk add --no-cache jq curl
     - mkdir -p public
     - performance/ci-index/build-index.sh public
   pages: true

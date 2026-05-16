@@ -294,7 +294,7 @@ function runCompare(profiles) {
   const out = $("diff");
   if (!base || !target) return;
   if (base === target) {
-    out.innerHTML = '<p class="warn">Base and target are the same run — nothing to diff.</p>';
+    out.innerHTML = '<p class="warn">Base and target are the same run.</p>';
     return;
   }
   out.innerHTML = '<p class="empty-msg">Fetching profile data…</p>';
