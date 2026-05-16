@@ -232,7 +232,6 @@ private data class Hotspot(
     val ownPct: Double,
 )
 
-@Suppress("SameParameterValue")
 private fun computeHotspots(stacks: List<Stack>, topN: Int = 30): List<Hotspot> {
     val inclusive = HashMap<Pair<String, String>, Long>()
     val own = HashMap<Pair<String, String>, Long>()
@@ -320,6 +319,9 @@ fun generateProfileReport(runDir: Path) {
     val breakdown = computeBreakdown(stacks)
     val componentHotspots = computeComponentHotspots(stacks, topN = 3)
     val hotspots = computeHotspots(stacks, topN = 15)
+    // Deeper hotspot list for the machine-readable `data/main.json`: the client-side report
+    // index needs enough methods to match across two runs when diffing profiles.
+    val hotspotsData = computeHotspots(stacks, topN = 200)
     val hotspotsFull = computeHotspotsFilterable(stacks, maxMethods = 300)
     val threadSummary = computeThreadSummary(stacks)
 
@@ -370,7 +372,101 @@ fun generateProfileReport(runDir: Path) {
             )
         }
     }
+
+    writeProfileData(
+        runDir = runDir,
+        mapper = mapper,
+        breakdown = breakdown,
+        hotspots = hotspotsData,
+        threadSummary = threadSummary,
+        workload = workload,
+        sysinfo = sysinfo,
+        totalSamples = totalSamples,
+        numTx = numTx,
+    )
 }
+
+/**
+ * Writes `<runDir>/data/main.json` — a compact, machine-readable summary of the run.
+ *
+ * Mirrors the role of the kotlinx-benchmark `data/main.json` on the benchmark deployment: the
+ * CI `pages:profile` job copies the whole run directory under the Pages deployment, so this
+ * file is anonymously fetchable at `<deployment>/data/main.json`. The client-side report
+ * index diffs two of these to produce commit-to-commit profile comparisons without scraping
+ * the HTML report.
+ *
+ * Only run-share percentages (`pct`) are exposed for the profile section, not raw timings:
+ * two single-shot profiler runs differ in absolute sample counts and duration, so the share
+ * of the profile each component / method holds is the only honestly comparable quantity.
+ */
+@Suppress("LongParameterList")
+private fun writeProfileData(
+    runDir: Path,
+    mapper: ObjectMapper,
+    breakdown: Map<String, Long>,
+    hotspots: List<Hotspot>,
+    threadSummary: List<ThreadSummary>,
+    workload: ObjectNode?,
+    sysinfo: ObjectNode?,
+    totalSamples: Long,
+    numTx: Int,
+) {
+    val root = mapper.createObjectNode()
+    root.put("schema", "rell-profile/1")
+    root.put("generated_at", sysinfo?.get("timestamp")?.asText("").orEmpty())
+    sysinfo?.let { root.set<ObjectNode>("system", it) }
+
+    val workloadNode = root.putObject("workload")
+    workload?.let { w ->
+        for (field in listOf("total_time_s", "num_users", "posts_per_user", "total_posts")) {
+            w.get(field)?.let { workloadNode.set<ObjectNode>(field, it) }
+        }
+        (w.get("phases") as? ObjectNode)?.let { workloadNode.set<ObjectNode>("phases", it) }
+    }
+    workloadNode.put("num_tx", numTx)
+
+    val profileNode = root.putObject("profile")
+    profileNode.put("event", sysinfo?.get("profiler_event")?.asText("").orEmpty())
+    profileNode.put("total_samples", totalSamples)
+
+    val total = totalSamples.coerceAtLeast(1).toDouble()
+    val breakdownArr = profileNode.putArray("breakdown")
+    for ((component, samples) in breakdown.entries.sortedByDescending { it.value }) {
+        breakdownArr.addObject().apply {
+            put("component", component)
+            put("samples", samples)
+            put("pct", pct2(samples, total))
+        }
+    }
+
+    val threadsArr = profileNode.putArray("threads")
+    for (t in threadSummary) {
+        threadsArr.addObject().apply {
+            put("category", t.cat)
+            put("label", t.label)
+            put("samples", t.samples)
+            put("pct", t.pct)
+        }
+    }
+
+    val hotspotsArr = profileNode.putArray("hotspots")
+    for (h in hotspots) {
+        hotspotsArr.addObject().apply {
+            put("method", h.method)
+            put("component", h.component)
+            put("samples", h.samples)
+            put("own_samples", h.ownSamples)
+            put("pct", h.pct)
+            put("own_pct", h.ownPct)
+        }
+    }
+
+    val dataDir = (runDir / "data").also { it.createDirectories() }
+    mapper.writerWithDefaultPrettyPrinter().writeValue((dataDir / "main.json").toFile(), root)
+}
+
+/** Percentage of [total], rounded to two decimals — matches the rounding used across the report. */
+private fun pct2(value: Long, total: Double): Double = (10000.0 * value / total).toInt() / 100.0
 
 private fun readJsonObject(path: Path, mapper: ObjectMapper): ObjectNode? = try {
     if (path.exists()) mapper.readTree(path.inputStream()) as? ObjectNode else null

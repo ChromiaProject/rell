@@ -1,20 +1,24 @@
 #!/bin/sh
-# Renders performance/ci-index/index.html with a server-side list of currently-available
-# benchmark / profile pages deployments. The Environments API requires authentication
-# even on public projects, so anonymous browser fetches return 401 — we bake the data
-# here at publish time and ship a fully static page.
+# Builds the Rell performance reports index: a static client-side app (index.html) plus a
+# manifest.json describing every currently-available benchmark / profile / regression Pages
+# deployment. The Environments API requires authentication even on public projects, so the
+# manifest is baked here at publish time; the browser app then fetches it — and the
+# per-deployment data/main.json files it points at — anonymously.
 #
 # Auth: requires GITLAB_TOKEN (a project/group access token with `read_api` scope) exposed
 # as a masked CI variable on dev. CI_JOB_TOKEN can't read the Environments API — it's not
 # on GitLab's allowlist for that endpoint and returns 403.
 #
 # Inputs (from GitLab CI):  CI_PROJECT_ID, GITLAB_TOKEN.
-# Outputs: writes the rendered HTML to stdout.
+# Usage:   build-index.sh <output-dir>
+# Outputs: writes <output-dir>/index.html (the app) and <output-dir>/manifest.json (the data).
 set -eu
 
 : "${GITLAB_TOKEN:?GITLAB_TOKEN is required (project access token with read_api)}"
 
-template=$(dirname "$0")/index.html
+out_dir=${1:?usage: build-index.sh <output-dir>}
+script_dir=$(dirname "$0")
+mkdir -p "$out_dir"
 
 envs_json=$(glab api --paginate \
   "projects/${CI_PROJECT_ID}/environments?states=available&per_page=100")
@@ -35,78 +39,83 @@ else
   active_prefixes=null
 fi
 
+# Resolve each deployment's commit SHA to its commit title via the Commits API, so the index
+# shows commit messages rather than bare SHAs. `read_api` scope covers repository commits.
+# One call per unique commit — fine for a manually-published index. A SHA that no longer
+# resolves (force-push, deleted branch) is simply left without a title.
+commit_titles="{}"
+for sha in $(printf '%s' "$envs_json" | jq -r '
+  [ .[] | select(.name | test("^(benchmarks|profile|regression)/[^/]+/[^/]+$"))
+        | (.name | capture("/(?<s>[^/]+)$")).s ] | unique | .[]'); do
+  title=$(glab api "projects/${CI_PROJECT_ID}/repository/commits/${sha}" 2>/dev/null \
+            | jq -r '.title // empty' 2>/dev/null || true)
+  if [ -n "$title" ]; then
+    commit_titles=$(printf '%s' "$commit_titles" | jq --arg s "$sha" --arg t "$title" '. + {($s): $t}')
+  fi
+done
+
+generated_at=$(date -u +"%Y-%m-%d %H:%M UTC")
+
 # Env names follow the schema `benchmarks/<branch>/<sha>`, `profile/<branch>/<sha>` and
 # `regression/<branch>/<sha>` — per-commit so that same-branch reruns don't clobber each
-# other (regression analysis between commits needs both deployments coexisting). Group by
-# (branch, sha) into one row per commit; sort newest first within each branch, with dev/master
-# pinned to the top. Each benchmark deployment also exposes /data/main.json for programmatic
-# ingestion.
-table=$(printf '%s' "$envs_json" | jq -r --argjson active "$active_prefixes" '
+# other (diffing two profiles needs both deployments coexisting). Group by (branch, sha)
+# into one entry per commit; sort newest first within each branch, dev/master pinned to the
+# top. `data` is the deployment's machine-readable JSON (kotlinx-benchmark scores for
+# benchmarks, the profile summary written by writeProfileData() for profiles) — the app
+# fetches those to diff two commits.
+printf '%s' "$envs_json" | jq \
+  --argjson active "$active_prefixes" \
+  --argjson titles "$commit_titles" \
+  --arg ts "$generated_at" '
   def branch_rank(b): if b == "dev" then 0 elif b == "master" then 1 else 2 end;
-  # path_prefix mirrors the CI config: `benchmarks/dev/<sha>` → `bench-dev-<sha>`,
-  # `profile/dev/<sha>` → `profile-dev-<sha>`, `regression/dev/<sha>` → `regression-dev-<sha>`.
+  # path_prefix mirrors the CI config: `benchmarks/dev/<sha>` -> `bench-dev-<sha>`,
+  # `profile/dev/<sha>` -> `profile-dev-<sha>`, `regression/dev/<sha>` -> `regression-dev-<sha>`.
   def env_prefix(k; b; s):
     (if k == "benchmarks" then "bench"
      elif k == "regression" then "regression"
      else "profile" end) + "-" + b + "-" + s;
+  # Every deployment serves its report at `<root>/report.html`; the parseable JSON sits at
+  # `<root>/data/main.json`.
+  def data_url(u): (u | sub("/report\\.html$"; "")) + "/data/main.json";
+  def link(entry; withData):
+    if entry == null then null
+    elif withData then { url: entry.url, data: data_url(entry.url) }
+    else { url: entry.url }
+    end;
 
-  map(select(.name | test("^(benchmarks|profile|regression)/[^/]+/[^/]+$")))
-  | map(select(.external_url != null))
-  | map(
-      (.name | capture("^(?<k>benchmarks|profile|regression)/(?<b>[^/]+)/(?<s>[^/]+)$")) as $c
-      | {
-          kind: $c.k,
-          branch: $c.b,
-          sha: $c.s,
-          url: .external_url,
-          when: ((.updated_at // .created_at) | (.[0:10] // ""))
-        }
+  {
+    generated_at: $ts,
+    commits: (
+      map(select(.name | test("^(benchmarks|profile|regression)/[^/]+/[^/]+$")))
+      | map(select(.external_url != null))
+      | map(
+          (.name | capture("^(?<k>benchmarks|profile|regression)/(?<b>[^/]+)/(?<s>[^/]+)$")) as $c
+          | {
+              kind: $c.k,
+              branch: $c.b,
+              sha: $c.s,
+              url: .external_url,
+              when: ((.updated_at // .created_at) | (.[0:10] // ""))
+            }
+        )
+      | map(select($active == null or (env_prefix(.kind; .branch; .sha) as $p | $active | index($p))))
+      | group_by([.branch, .sha])
+      | map({
+          branch: .[0].branch,
+          sha: .[0].sha,
+          title: ($titles[.[0].sha] // ""),
+          when: (map(.when) | max),
+          benchmarks: link((map(select(.kind == "benchmarks")) | first); true),
+          profile:    link((map(select(.kind == "profile"))    | first); true),
+          regression: link((map(select(.kind == "regression")) | first); false)
+        })
+      | sort_by([branch_rank(.branch), .branch, (.when // ""), .sha])
+      | reverse
+      | sort_by(branch_rank(.branch))   # stable sort preserves date-desc within branch
     )
-  | map(select($active == null or (env_prefix(.kind; .branch; .sha) as $p | $active | index($p))))
-  | group_by([.branch, .sha])
-  | map({
-      branch: .[0].branch,
-      sha: .[0].sha,
-      when: (map(.when) | max),
-      benchmarks: (map(select(.kind == "benchmarks")) | first),
-      profile:    (map(select(.kind == "profile"))    | first),
-      regression: (map(select(.kind == "regression")) | first)
-    })
-  | sort_by([branch_rank(.branch), .branch, (.when // ""), .sha])
-  | reverse
-  | sort_by(branch_rank(.branch))   # stable sort preserves date-desc within branch
-  | if length == 0 then
-      "<p class=\"empty-msg\">No reports published yet.</p>"
-    else
-      "<table><thead><tr><th>Branch</th><th>Commit</th><th>When</th><th>Benchmarks</th><th>Profile</th><th>Regression</th></tr></thead><tbody>"
-      + (map(
-          "<tr>"
-          + "<td class=\"branch\">" + (.branch | @html) + "</td>"
-          + "<td class=\"sha\">" + (.sha | @html) + "</td>"
-          + "<td class=\"when\">" + (.when | @html) + "</td>"
-          + (.benchmarks as $b
-              | if $b == null then "<td class=\"empty\">—</td>"
-                else "<td><a href=\"" + ($b.url | @html) + "\">report</a>"
-                  + " <span class=\"sep\">·</span> "
-                  + "<a href=\"" + (($b.url | sub("/report\\.html$"; "")) + "/data/main.json" | @html) + "\">json</a>"
-                  + "</td>"
-                end)
-          + (.profile as $p
-              | if $p == null then "<td class=\"empty\">—</td>"
-                else "<td><a href=\"" + ($p.url | @html) + "\">report</a></td>"
-                end)
-          + (.regression as $r
-              | if $r == null then "<td class=\"empty\">—</td>"
-                else "<td><a href=\"" + ($r.url | @html) + "\">report</a></td>"
-                end)
-          + "</tr>"
-        ) | join(""))
-      + "</tbody></table>"
-    end
-')
+  }
+' > "$out_dir/manifest.json"
 
-generated_at=$(date -u +"%Y-%m-%d %H:%M UTC")
+cp "$script_dir/index.html" "$out_dir/index.html"
 
-awk -v content="$table" -v ts="$generated_at" '
-  { gsub(/@CONTENT@/, content); gsub(/@GENERATED_AT@/, ts); print }
-' "$template"
+echo "wrote $out_dir/manifest.json and $out_dir/index.html" >&2

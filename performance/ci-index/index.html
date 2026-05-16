@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rell Performance Reports</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,6 +15,8 @@
     --bg:#FAFAF7; --bg-alt:#F2F2EE; --surface:#FFFFFF;
     --rule:rgba(15,15,16,0.12); --rule-hair:rgba(15,15,16,0.06);
     --accent:#C1440E;
+    --up:#B91C1C; --down:#15803D; --flat:#6B6D73;
+    --warn-bg:#FEF3C7; --warn-rule:#D97706; --warn-ink:#92400E;
     --sans:'Geist',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
     --mono:'JetBrains Mono','SF Mono','Cascadia Code',Consolas,ui-monospace,monospace;
   }
@@ -49,6 +52,7 @@
     letter-spacing:-0.01em; color:var(--ink); text-transform:lowercase;
   }
   .section-title::before { content:'# '; color:var(--faint); font-weight:400; }
+  .section-note { font-size:.82rem; color:var(--muted); margin-top:.3rem; }
 
   table { border-collapse:collapse; width:100%; }
   thead th {
@@ -61,11 +65,69 @@
   tbody tr:hover { background:rgba(193,68,14,0.04); }
   td.branch { font-family:var(--mono); font-weight:500; color:var(--ink); }
   td.sha { font-family:var(--mono); color:var(--ink-soft); font-size:.8rem; }
+  td.sha .msg {
+    font-family:var(--sans); color:var(--muted); font-size:.76rem; font-weight:400;
+    margin-top:2px; max-width:46ch;
+  }
   td.when { font-family:var(--mono); color:var(--muted); font-size:.78rem; }
-  td.empty { color:var(--muted); }
+  td.empty, .empty { color:var(--faint); }
+  td.num { font-family:var(--mono); text-align:right; font-size:.8rem; }
+  td.method { font-family:var(--mono); font-size:.76rem; word-break:break-all; color:var(--ink-soft); }
   .sep { color:var(--faint); margin:0 .15rem; }
+  .tag {
+    font-family:var(--mono); font-size:.62rem; letter-spacing:.04em; text-transform:uppercase;
+    padding:1px 5px; border-radius:2px; background:var(--bg-alt); color:var(--muted);
+  }
+
+  .delta { font-family:var(--mono); text-align:right; font-size:.8rem; font-weight:600; }
+  .delta.up { color:var(--up); }
+  .delta.down { color:var(--down); }
+  .delta.flat { color:var(--flat); font-weight:400; }
 
   .empty-msg { font-family:var(--sans); color:var(--muted); font-style:italic; padding:1rem 0; }
+
+  /* Compare panel */
+  .compare-controls {
+    display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;
+    background:var(--surface); border:1px solid var(--rule); border-radius:3px;
+    padding:1rem 1.1rem; margin-bottom:1.2rem;
+  }
+  .field { display:flex; flex-direction:column; gap:.3rem; }
+  .field label {
+    font-family:var(--mono); font-size:.64rem; text-transform:uppercase;
+    letter-spacing:.16em; color:var(--muted);
+  }
+  select, button {
+    font-family:var(--mono); font-size:.82rem; color:var(--ink);
+    border:1px solid var(--rule); border-radius:2px; background:var(--bg);
+    padding:.4rem .6rem;
+  }
+  select { min-width:18rem; max-width:26rem; }
+  button {
+    cursor:pointer; background:var(--ink); color:var(--bg); border-color:var(--ink);
+    font-weight:600; padding:.45rem 1.1rem;
+  }
+  button:hover { background:var(--accent); border-color:var(--accent); }
+  button:disabled { opacity:.4; cursor:not-allowed; }
+
+  .warn {
+    background:var(--warn-bg); border:1px solid var(--warn-rule); border-radius:3px;
+    color:var(--warn-ink); padding:.7rem .9rem; margin-bottom:1.1rem; font-size:.82rem;
+  }
+  .warn strong { font-family:var(--mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.12em; }
+  .warn ul { margin:.35rem 0 0 1.1rem; }
+
+  .diff-meta {
+    font-family:var(--mono); font-size:.82rem; color:var(--ink-soft);
+    margin-bottom:1.1rem; padding-bottom:.6rem; border-bottom:1px solid var(--rule-hair);
+  }
+  .diff-meta .arrow { color:var(--accent); margin:0 .5rem; }
+  .diff-block { margin-bottom:1.6rem; }
+  .diff-block h3 {
+    font-family:var(--mono); font-size:.78rem; text-transform:uppercase; letter-spacing:.14em;
+    color:var(--muted); margin-bottom:.5rem;
+  }
+  .hint { font-size:.78rem; color:var(--muted); font-style:italic; margin-top:.3rem; }
 
   .colophon { margin-top:3rem; border-top:1px solid var(--rule); background:var(--surface); }
   .colophon-inner {
@@ -80,6 +142,8 @@
   @media (max-width:720px) {
     html { font-size:14px; }
     .doc-head-inner, main, .colophon-inner { padding-left:1.1rem; padding-right:1.1rem; }
+    select { min-width:0; width:100%; }
+    .field { width:100%; }
   }
   @media print { body { background:#fff; } a { color:var(--ink); border-bottom:0; } }
 </style>
@@ -89,20 +153,35 @@
   <div class="doc-head-inner">
     <h1 class="doc-title">Rell Quality Reports</h1>
     <p class="doc-strap">
-      Manually-triggered CI jobs publish per-commit GitLab Pages HTML reports for three suites:
-      <strong>Benchmarks</strong> (JMH microbenchmarks, also exposes raw JSON at
-      <code>&lt;deployment&gt;/data/main.json</code> for programmatic regression analysis),
-      <strong>Profile</strong> (end-to-end async-profiler run against a Chromia node + workload), and
-      <strong>Regression</strong> (clone a curated list of external Rell projects and verify the local
-      Rell compiler still builds them).
+      CI jobs may publish reports for three suites:
+      <strong>Benchmarks</strong> (JMH microbenchmarks), <strong>Profile</strong> (end-to-end
+      async-profiler run against a Chromia node + workload), and <strong>Regression</strong>
+      (clone a curated list of external Rell projects and verify whether the snapshot Rell is still
+      valid in them). Benchmark and profile deployments also expose JSON at
+      <code>&lt;deployment&gt;/data/main.json</code> — the <strong>compare</strong> tool below
+      fetches two profile runs and diffs them client-side.
     </p>
   </div>
 </header>
 
 <main>
   <section class="section">
-    <div class="section-head"><div class="section-title">reports</div></div>
-    @CONTENT@
+    <div class="section-head">
+      <div class="section-title">reports</div>
+    </div>
+    <div id="reports"><p class="empty-msg">Loading…</p></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div class="section-title">compare profiles</div>
+      <p class="section-note">
+        Diff two profile runs by component breakdown, hot methods, and workload timing.
+        Profiler shares (<code>%</code> of the run) are the comparable quantity — absolute
+        sample counts and durations vary run to run.
+      </p>
+    </div>
+    <div id="compare"><p class="empty-msg">Loading…</p></div>
   </section>
 </main>
 
@@ -110,8 +189,276 @@
   <div class="colophon-inner">
     <span><a href="https://gitlab.com/chromaway/rell">chromaway/rell</a></span>
     <span class="colophon-spacer"></span>
-    <span class="colophon-meta">generated @GENERATED_AT@</span>
+    <span class="colophon-meta" id="generated">generated …</span>
   </div>
 </footer>
+
+<script>
+"use strict";
+
+// ─── Generic helpers ─────────────────────────────────────────────────────────────────────
+
+const $ = (id) => document.getElementById(id);
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"]/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+const commitId = (c) => c.branch + "@" + c.sha;
+
+// Δ → CSS class. Increases are red ("up"), decreases green ("down"); anything inside the
+// noise band is grey ("flat") — two single-shot profiler runs don't resolve small moves.
+function deltaClass(delta, band) {
+  if (!isFinite(delta) || Math.abs(delta) < band) return "flat";
+  return delta > 0 ? "up" : "down";
+}
+
+function signed(n, digits) {
+  if (!isFinite(n)) return "—";
+  return (n > 0 ? "+" : "") + n.toFixed(digits);
+}
+
+// ─── Reports table ───────────────────────────────────────────────────────────────────────
+
+function renderReports(commits) {
+  const host = $("reports");
+  if (!commits.length) {
+    host.innerHTML = '<p class="empty-msg">No reports published yet.</p>';
+    return;
+  }
+  const reportCell = (entry, withJson) => {
+    if (!entry) return '<td class="empty">—</td>';
+    let html = '<td><a href="' + esc(entry.url) + '">report</a>';
+    if (withJson && entry.data) {
+      html += ' <span class="sep">·</span> <a href="' + esc(entry.data) + '">json</a>';
+    }
+    return html + "</td>";
+  };
+  const rows = commits.map((c) =>
+    "<tr>" +
+    '<td class="branch">' + esc(c.branch) + "</td>" +
+    '<td class="sha">' + esc(c.sha) +
+      (c.title ? '<div class="msg">' + esc(c.title) + "</div>" : "") + "</td>" +
+    '<td class="when">' + esc(c.when) + "</td>" +
+    reportCell(c.benchmarks, true) +
+    reportCell(c.profile, true) +
+    reportCell(c.regression, false) +
+    "</tr>").join("");
+  host.innerHTML =
+    "<table><thead><tr>" +
+    "<th>Branch</th><th>Commit</th><th>When</th>" +
+    "<th>Benchmarks</th><th>Profile</th><th>Regression</th>" +
+    "</tr></thead><tbody>" + rows + "</tbody></table>";
+}
+
+// ─── Compare controls ────────────────────────────────────────────────────────────────────
+
+function renderCompareControls(commits) {
+  const host = $("compare");
+  const profiles = commits.filter((c) => c.profile && c.profile.data);
+  if (profiles.length < 2) {
+    host.innerHTML =
+      '<p class="empty-msg">Need at least two profile runs with <code>data/main.json</code> ' +
+      "to compare. Older deployments predate the structured-data export.</p>";
+    return;
+  }
+  const opt = (c) => {
+    const label = c.branch + " · " + c.sha + " · " + c.when +
+      (c.title ? " — " + c.title : "");
+    return '<option value="' + esc(commitId(c)) + '">' + esc(label) + "</option>";
+  };
+
+  host.innerHTML =
+    '<div class="compare-controls">' +
+    '<div class="field"><label for="base">Base (A)</label>' +
+    '<select id="base">' + profiles.map(opt).join("") + "</select></div>" +
+    '<div class="field"><label for="target">Target (B)</label>' +
+    '<select id="target">' + profiles.map(opt).join("") + "</select></div>" +
+    '<button id="run">Compare</button>' +
+    "</div>" +
+    '<div id="diff"></div>';
+
+  // Default: newest as target (B), next-newest as base (A) — the manifest is newest-first.
+  $("base").selectedIndex = 1;
+  $("target").selectedIndex = 0;
+  $("run").addEventListener("click", () => runCompare(profiles));
+}
+
+// ─── Diff computation + rendering ────────────────────────────────────────────────────────
+
+function runCompare(profiles) {
+  const byId = new Map(profiles.map((c) => [commitId(c), c]));
+  const base = byId.get($("base").value);
+  const target = byId.get($("target").value);
+  const out = $("diff");
+  if (!base || !target) return;
+  if (base === target) {
+    out.innerHTML = '<p class="warn">Base and target are the same run — nothing to diff.</p>';
+    return;
+  }
+  out.innerHTML = '<p class="empty-msg">Fetching profile data…</p>';
+  Promise.all([fetchJson(base.profile.data), fetchJson(target.profile.data)])
+    .then(([a, b]) => { out.innerHTML = renderDiff(base, a, target, b); })
+    .catch((e) => {
+      out.innerHTML = '<p class="warn"><strong>fetch failed</strong><br>' + esc(e.message) +
+        "<br>The deployment may predate <code>data/main.json</code>.</p>";
+    });
+}
+
+function fetchJson(url) {
+  return fetch(url).then((r) => {
+    if (!r.ok) throw new Error("HTTP " + r.status + " for " + url);
+    return r.json();
+  });
+}
+
+// Flag run-environment mismatches that make a comparison unreliable.
+function compatWarnings(a, b) {
+  const w = [];
+  const sa = a.system || {}, sb = b.system || {};
+  const check = (label, va, vb) => {
+    if (va != null && vb != null && String(va) !== String(vb)) {
+      w.push(label + ": " + va + " → " + vb);
+    }
+  };
+  check("CPU architecture", sa.arch, sb.arch);
+  check("host", sa.hostname, sb.hostname);
+  check("CPU count", sa.cpus, sb.cpus);
+  check("JVM", sa.java_vendor_version, sb.java_vendor_version);
+  check("profiler event", (a.profile || {}).event, (b.profile || {}).event);
+  const wa = a.workload || {}, wb = b.workload || {};
+  check("workload users", wa.num_users, wb.num_users);
+  check("workload posts/user", wa.posts_per_user, wb.posts_per_user);
+  check("workload transactions", wa.num_tx, wb.num_tx);
+  return w;
+}
+
+function diffTable(headers, rows) {
+  return "<table><thead><tr>" +
+    headers.map((h) => "<th>" + esc(h) + "</th>").join("") +
+    "</tr></thead><tbody>" + rows.join("") + "</tbody></table>";
+}
+
+// Component breakdown: profiler-share % per component, A vs B.
+function renderBreakdown(a, b) {
+  const map = (arr) => new Map((arr || []).map((x) => [x.component, x.pct]));
+  const ma = map((a.profile || {}).breakdown), mb = map((b.profile || {}).breakdown);
+  const keys = [...new Set([...ma.keys(), ...mb.keys()])];
+  keys.sort((x, y) => (mb.get(y) || 0) - (mb.get(x) || 0));
+  const rows = keys.map((k) => {
+    const va = ma.get(k) || 0, vb = mb.get(k) || 0, d = vb - va;
+    return "<tr><td>" + esc(k) + "</td>" +
+      '<td class="num">' + va.toFixed(2) + "%</td>" +
+      '<td class="num">' + vb.toFixed(2) + "%</td>" +
+      '<td class="delta ' + deltaClass(d, 0.5) + '">' + signed(d, 2) + " pp</td></tr>";
+  });
+  return '<div class="diff-block"><h3>Component breakdown</h3>' +
+    diffTable(["Component", "A %", "B %", "Δ"], rows) +
+    '<p class="hint">Δ in percentage points of total profiler samples.</p></div>';
+}
+
+// Hot methods: ranked by how much each method's self-time share moved between runs.
+function renderHotspots(a, b) {
+  const key = (h) => h.component + " " + h.method;
+  const map = (arr) => new Map((arr || []).map((h) => [key(h), h]));
+  const ma = map((a.profile || {}).hotspots), mb = map((b.profile || {}).hotspots);
+  const keys = [...new Set([...ma.keys(), ...mb.keys()])];
+  const rows = keys.map((k) => {
+    const ha = ma.get(k), hb = mb.get(k);
+    const oa = ha ? ha.own_pct : 0, ob = hb ? hb.own_pct : 0;
+    const sample = ha || hb;
+    return { d: ob - oa, oa, ob, method: sample.method, component: sample.component,
+             gone: !hb, isNew: !ha };
+  });
+  rows.sort((x, y) => Math.abs(y.d) - Math.abs(x.d));
+  const top = rows.filter((r) => Math.abs(r.d) >= 0.1).slice(0, 40);
+  if (!top.length) {
+    return '<div class="diff-block"><h3>Hot methods</h3>' +
+      '<p class="empty-msg">No method moved more than 0.1 pp of self time.</p></div>';
+  }
+  const html = top.map((r) => {
+    let tag = "";
+    if (r.isNew) tag = ' <span class="tag">new</span>';
+    else if (r.gone) tag = ' <span class="tag">gone</span>';
+    return "<tr>" +
+      '<td class="method">' + esc(r.method) + tag + "</td>" +
+      "<td>" + esc(r.component) + "</td>" +
+      '<td class="num">' + r.oa.toFixed(2) + "%</td>" +
+      '<td class="num">' + r.ob.toFixed(2) + "%</td>" +
+      '<td class="delta ' + deltaClass(r.d, 0.1) + '">' + signed(r.d, 2) + " pp</td></tr>";
+  });
+  return '<div class="diff-block"><h3>Hot methods — top movers by self time</h3>' +
+    diffTable(["Method", "Component", "A self%", "B self%", "Δ"], html) +
+    '<p class="hint">Self-time share of total samples; top 40 movers ≥ 0.1 pp.</p></div>';
+}
+
+// Workload: wall-clock timing per phase. Absolute seconds — directly comparable.
+function renderWorkload(a, b) {
+  const wa = a.workload || {}, wb = b.workload || {};
+  const rows = [];
+  const row = (label, va, vb) => {
+    if (va == null && vb == null) return;
+    const x = va || 0, y = vb || 0, d = y - x;
+    const pct = x ? (d / x) * 100 : NaN;
+    rows.push("<tr><td>" + esc(label) + "</td>" +
+      '<td class="num">' + x.toFixed(2) + " s</td>" +
+      '<td class="num">' + y.toFixed(2) + " s</td>" +
+      '<td class="delta ' + deltaClass(d, 0.01) + '">' + signed(d, 2) + " s</td>" +
+      '<td class="delta ' + deltaClass(isFinite(pct) ? pct : 0, 5) + '">' +
+        (isFinite(pct) ? signed(pct, 1) + " %" : "—") + "</td></tr>");
+  };
+  row("total", wa.total_time_s, wb.total_time_s);
+  const pa = wa.phases || {}, pb = wb.phases || {};
+  for (const name of new Set([...Object.keys(pa), ...Object.keys(pb)])) {
+    row(name, (pa[name] || {}).time_s, (pb[name] || {}).time_s);
+  }
+  if (!rows.length) return "";
+  return '<div class="diff-block"><h3>Workload timing</h3>' +
+    diffTable(["Phase", "A", "B", "Δ", "Δ %"], rows) +
+    '<p class="hint">Client-side wall time. A single short run is noise-prone — treat ' +
+    "sub-10% moves as inconclusive.</p></div>";
+}
+
+function renderDiff(baseC, a, targetC, b) {
+  const head = (c) =>
+    esc(c.branch + " · " + c.sha + " · " + c.when + (c.title ? "  —  " + c.title : ""));
+  let html =
+    '<div class="diff-meta"><strong>A</strong> ' + head(baseC) +
+    '<span class="arrow">→</span><strong>B</strong> ' + head(targetC) + "</div>";
+
+  const warns = compatWarnings(a, b);
+  if (warns.length) {
+    html += '<div class="warn"><strong>environment mismatch</strong> — ' +
+      "the two runs differ; the comparison may be unreliable." +
+      "<ul>" + warns.map((w) => "<li>" + esc(w) + "</li>").join("") + "</ul></div>";
+  }
+
+  html += renderBreakdown(a, b);
+  html += renderHotspots(a, b);
+  html += renderWorkload(a, b);
+  return html;
+}
+
+// ─── Bootstrap ───────────────────────────────────────────────────────────────────────────
+
+fetch("manifest.json")
+  .then((r) => {
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  })
+  .then((m) => {
+    const commits = m.commits || [];
+    $("generated").textContent = "generated " + (m.generated_at || "");
+    renderReports(commits);
+    renderCompareControls(commits);
+  })
+  .catch((e) => {
+    const msg = '<p class="warn"><strong>manifest unavailable</strong><br>' +
+      esc(e.message) + "</p>";
+    $("reports").innerHTML = msg;
+    $("compare").innerHTML = "";
+  });
+</script>
 </body>
 </html>

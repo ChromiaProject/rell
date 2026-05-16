@@ -219,12 +219,13 @@ dependency-check:
     when: always
     paths: [ build/reports/dependency-check-report.* ]
 
-# Static index page listing every currently-available `pages:benchmarks` / `pages:profile`
-# deployment. The project is private, so anonymous client-side fetches against the
-# Environments API return 401 — instead, build-index.sh bakes the deployment list into the
-# HTML at publish time via `glab api`. Republished on every dev pipeline so the list stays
-# fresh as branches come and go; pinned to dev so feature branches can't overwrite the
-# root deployment.
+# Client-side reports app (index.html) listing every currently-available `pages:benchmarks` /
+# `pages:profile` / `pages:regression` deployment, with a profile-diff tool. The project is
+# private, so anonymous client-side fetches against the Environments API return 401 — instead,
+# build-index.sh bakes the deployment list into a static `manifest.json` at publish time via
+# `glab api`, and the app fetches that (and the per-deployment data/main.json files) from the
+# browser. Republished on every dev pipeline so the list stays fresh as branches come and go;
+# pinned to dev so feature branches can't overwrite the root deployment.
 #
 # Requires GITLAB_TOKEN — a project access token with `read_api` scope, exposed as a
 # masked, dev-branch-protected CI variable. CI_JOB_TOKEN is *not* sufficient: GitLab's
@@ -243,7 +244,7 @@ dependency-check:
   script:
     - apk add --no-cache jq
     - mkdir -p public
-    - performance/ci-index/build-index.sh > public/index.html
+    - performance/ci-index/build-index.sh public
   pages: true
   environment:
     name: pages-index
