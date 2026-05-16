@@ -32,7 +32,8 @@ data class Rt_BigIntegerValue private constructor(val value: BigInteger): Rt_Val
     companion object:
         Rt_GtvCompatibleValueClass<Rt_BigIntegerValue>,
         Rt_NativeCompatibleValueClass<Rt_BigIntegerValue>,
-        Rt_SqlCompatibleValueClass<Rt_BigIntegerValue> {
+        Rt_SqlCompatibleValueClass<Rt_BigIntegerValue>,
+        Rt_PrimitiveFactory<Rt_BigIntegerValue, BigInteger> {
         override val name
             get() = "big_integer"
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.BIG_INTEGER)
@@ -88,6 +89,8 @@ data class Rt_BigIntegerValue private constructor(val value: BigInteger): Rt_Val
         }
 
         fun get(v: Long): Rt_BigIntegerValue = get(BigInteger.valueOf(v))
+
+        override fun wrap(value: BigInteger): Rt_BigIntegerValue = get(value)
 
         override fun toGtv(value: Rt_BigIntegerValue, pretty: Boolean): Gtv = GtvFactory.gtv(value.value)
 

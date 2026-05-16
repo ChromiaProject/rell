@@ -1,0 +1,14 @@
+// Microbenchmark workload: a tight loop over integer.sign(), a typed-param ("self()")
+// stdlib function. Its lambda body routes through the lib-DSL body funnel that publishes
+// call arguments for typed delegates — the path under measurement. Four calls per iteration
+// keep the system-function call cost, not the loop framing, dominant.
+
+query bench(cap: integer): integer {
+    var acc = 0;
+    var i = 1;
+    while (i <= cap) {
+        acc += i.sign() + (-i).sign() + (i + 1).sign() + (cap - i).sign();
+        i += 1;
+    }
+    return acc;
+}

@@ -40,7 +40,8 @@ class Rt_ByteArrayValue private constructor(val value: ByteArray):
     companion object:
         Rt_GtvCompatibleValueClass<Rt_ByteArrayValue>,
         Rt_NativeCompatibleValueClass<Rt_ByteArrayValue>,
-        Rt_SqlCompatibleValueClass<Rt_ByteArrayValue> {
+        Rt_SqlCompatibleValueClass<Rt_ByteArrayValue>,
+        Rt_PrimitiveFactory<Rt_ByteArrayValue, ByteArray> {
 
         override val name
             get() = "byte_array"
@@ -66,6 +67,8 @@ class Rt_ByteArrayValue private constructor(val value: ByteArray):
         fun get(value: ByteArray): Rt_ByteArrayValue {
             return if (value.isEmpty()) EMPTY else Rt_ByteArrayValue(value)
         }
+
+        override fun wrap(value: ByteArray): Rt_ByteArrayValue = get(value)
 
         override fun toGtv(value: Rt_ByteArrayValue, pretty: Boolean): Gtv = GtvByteArray(value.value)
 

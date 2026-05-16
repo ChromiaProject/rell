@@ -14,6 +14,7 @@ import net.postchain.rell.base.model.Name
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.Rt_CallContext
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.Rt_ValueClass
 import net.postchain.rell.base.runtime.simple
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.checkNull
@@ -154,7 +155,7 @@ class Ld_NamespacePropertyDslImpl(
         return Ld_MemberDef(memberHeader, property)
     }
 
-    private class Ld_BodyRes(val value: Ld_PropertyValue): Ld_BodyResult()
+    private class Ld_BodyRes(val value: Ld_PropertyValue): Ld_BodyResult
 }
 
 class Ld_TypePropertyDslImpl(
@@ -180,6 +181,18 @@ class Ld_TypePropertyDslImpl(
         return res
     }
 
+    override fun <T : Rt_Value> value(self: Rt_ValueClass<T>, getter: (T) -> Rt_Value): Ld_BodyResult {
+        return value { s, _ ->
+            getter(self.cast(s))
+        }
+    }
+
+    override fun <T : Rt_Value> value(self: Rt_ValueClass<T>, getter: (T, R_Type) -> Rt_Value): Ld_BodyResult {
+        return value { s, rType ->
+            getter(self.cast(s), rType)
+        }
+    }
+
     fun build(block: Ld_TypePropertyDsl.() -> Ld_BodyResult): Ld_MemberDef<Ld_TypeProperty> {
         val bodyTag = block(this)
         check(bodyTag === bodyRes)
@@ -196,5 +209,5 @@ class Ld_TypePropertyDslImpl(
         return Ld_MemberDef(memberHeader, property)
     }
 
-    private class Ld_BodyRes(val value: Ld_PropertyValue): Ld_BodyResult()
+    private class Ld_BodyRes(val value: Ld_PropertyValue): Ld_BodyResult
 }

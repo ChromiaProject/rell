@@ -8,12 +8,6 @@ import net.postchain.rell.base.lmodel.dsl.Ld_FunctionMetaBodyDsl
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.rr.RR_Type
 
-/**
- * R_Type / RR_Type accessors for stdlib `bodyMeta` blocks. Capture the [R_Type] outside of
- * [bodyContext] and resolve it to a runtime [Rt_ValueClass] via
- * `ctx.exeCtx.appCtx.interpreter.resolveRType(rType)` inside the body block (where the
- * [Rt_Interpreter] is available — only the interpreter knows this app's def indices).
- */
 fun Ld_FunctionMetaBodyDsl.typeArgR(name: String): R_Type = fnBodyMeta.typeArg(name)
 
 fun Ld_FunctionMetaBodyDsl.typeArgsR(name1: String, name2: String): Pair<R_Type, R_Type> =

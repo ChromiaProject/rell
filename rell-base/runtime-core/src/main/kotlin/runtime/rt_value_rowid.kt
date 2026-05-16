@@ -37,7 +37,8 @@ data class Rt_RowidValue private constructor(val value: Long): Rt_Value {
     companion object:
         Rt_GtvCompatibleValueClass<Rt_RowidValue>,
         Rt_NativeCompatibleValueClass<Rt_RowidValue>,
-        Rt_SqlCompatibleValueClass<Rt_RowidValue> {
+        Rt_SqlCompatibleValueClass<Rt_RowidValue>,
+        Rt_PrimitiveFactory<Rt_RowidValue, Long> {
         override val name
             get() = "rowid"
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.ROWID)
@@ -56,6 +57,8 @@ data class Rt_RowidValue private constructor(val value: Long): Rt_Value {
         fun get(value: Long): Rt_RowidValue {
             return if (value >= 0 && value < VALUES.size) VALUES[value.toInt()] else Rt_RowidValue(value)
         }
+
+        override fun wrap(value: Long): Rt_RowidValue = get(value)
 
         override fun toGtv(value: Rt_RowidValue, pretty: Boolean): Gtv = GtvInteger(value.value)
 

@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.lib.type
 
-import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
@@ -12,13 +11,13 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 object Lib_Type_Iterable {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("iterable", abstract = true, hidden = true, since = "0.10.6") {
-            comment("""
+            """
                 A generic type for sequences that can be iterated over, such as collections, ranges and maps.
-            """)
+            """.comment()
             generic("T")
 
             function("join_to_text", "text", pure = true, since = "0.13.10") {
-                comment("""
+                """
                     Generate a textual representation of this iterable.
 
                     An optional separator, prefix and postfix can be provided. One can also provide a `limit: integer?`.
@@ -44,37 +43,35 @@ object Lib_Type_Iterable {
                     - `range(10).join_to_text('->', '{', '}', 5, '...', even(*))` returns `{EVEN->ODD->EVEN->ODD->EVEN->...}`.
 
                     @return a textual representation of this iterable
-                """)
-                param("separator", "text", arity = L_ParamArity.ZERO_ONE) {
-                    comment("the separator between the elements, defaults to `', '`")
-                }
-                param("prefix", "text", arity = L_ParamArity.ZERO_ONE) {
-                    comment("the prefix text, default empty")
-                }
-                param("postfix", "text", arity = L_ParamArity.ZERO_ONE) {
-                    comment("the postfix text, default empty")
-                }
-                param("limit", "integer?", arity = L_ParamArity.ZERO_ONE) {
-                    comment("""
-                        The maximum number of elements to include in the result. If the number of elements exceeds
-                        `limit`, the value of the `truncated` argument is appended (after the last separator occurrence
-                        and before the postfix). Defaults to `null`, meaning no limit.
-                    """)
-                }
-                param("truncated", "text", arity = L_ParamArity.ZERO_ONE) {
-                    comment("""
-                        the text to be appended if the number of elements is greater than `limit`, defaults to `'...'`
-                    """)
-                }
-                param("transform", "(T) -> text", arity = L_ParamArity.ZERO_ONE) {
-                    comment("""
-                        a transformation function to apply to each element before joining, defaults to `to_text()`
-                    """)
-                }
-                bodyContextN { _, args ->
-                    Rt_Utils.checkRange(args.size, 1, 7)
-                    val joinedString = joinToTextCall((args[0] as Rt_IterableValue), args)
-                    Rt_TextValue.get(joinedString)
+                """.comment()
+                val separator by paramOpt(
+                    Rt_TextValue,
+                    comment = "the separator between the elements, defaults to `', '`",
+                )
+                val prefix by paramOpt(Rt_TextValue, comment = "the prefix text, default empty")
+                val postfix by paramOpt(Rt_TextValue, comment = "the postfix text, default empty")
+                val limit by paramOpt(
+                    "integer?",
+                    cast = Rt_Value,
+                    comment = "The maximum number of elements to include in the result. If the number of " +
+                        "elements exceeds `limit`, the value of the `truncated` argument is appended (after the " +
+                        "last separator occurrence and before the postfix). Defaults to `null`, meaning no limit.",
+                )
+                val truncated by paramOpt(
+                    Rt_TextValue,
+                    comment = "the text to be appended if the number of elements is greater than `limit`, " +
+                        "defaults to `'...'`",
+                )
+                val transform by paramOpt(
+                    "(T) -> text",
+                    cast = Rt_FunctionValue,
+                    comment = "a transformation function to apply to each element before joining, " +
+                        "defaults to `to_text()`",
+                )
+                val self by self(Rt_IterableValue)
+                body(Rt_TextValue) {
+                    val joinedString = joinToTextCall(self, separator, prefix, postfix, limit, truncated, transform)
+                    joinedString
                 }
             }
         }
@@ -82,20 +79,24 @@ object Lib_Type_Iterable {
 
     private fun joinToTextCall(
         self: Iterable<Rt_Value>,
-        args: List<Rt_Value>
+        separator: Rt_TextValue?,
+        prefix: Rt_TextValue?,
+        postfix: Rt_TextValue?,
+        limitValue: Rt_Value?,
+        truncated: Rt_TextValue?,
+        transformFn: Rt_FunctionValue?,
     ): String {
-        val separator = (args.getOrNull(1) as? Rt_TextValue)?.value ?: ", "
-        val prefix = (args.getOrNull(2) as? Rt_TextValue)?.value ?: ""
-        val postfix = (args.getOrNull(3) as? Rt_TextValue)?.value ?: ""
-        val limit = extractLimit(args.getOrNull(4))
-        val truncated = (args.getOrNull(5) as? Rt_TextValue)?.value ?: "..."
-        val fnValue = (args.getOrNull(6) as? Rt_FunctionValue)
-        val transform = if (fnValue != null) {
-            rtValue -> callTransformFunction(fnValue, rtValue)
+        val separatorStr = separator?.value ?: ", "
+        val prefixStr = prefix?.value ?: ""
+        val postfixStr = postfix?.value ?: ""
+        val limit = extractLimit(limitValue)
+        val truncatedStr = truncated?.value ?: "..."
+        val transform = if (transformFn != null) {
+            rtValue -> callTransformFunction(transformFn, rtValue)
         } else {
             ::defaultTransform
         }
-        return self.joinToString(separator, prefix, postfix, limit, truncated, transform)
+        return self.joinToString(separatorStr, prefixStr, postfixStr, limit, truncatedStr, transform)
     }
 
     private fun defaultTransform(value: Rt_Value): String {

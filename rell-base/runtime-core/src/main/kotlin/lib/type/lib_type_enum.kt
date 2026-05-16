@@ -24,7 +24,7 @@ import net.postchain.rell.base.utils.toIntExact
 object Lib_Type_Enum {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("enum", abstract = true, hidden = true, since = "0.7.0") {
-            comment("""
+            """
                 An enum is a set of member constants who share a type.
 
                 The declaration `enum example { A, B, C }` defines a type `example`, with three member constants,
@@ -37,7 +37,7 @@ object Lib_Type_Enum {
                 - `enum primary_color { RED, BLUE, GREEN }`
                 - `enum error { TIMEOUT, MALFORMED_RESPONSE, NOT_FOUND, UNAUTHORIZED, UNKNOWN }`
                 - `enum cardinal_direction { NORTH, EAST, SOUTH, WEST }`
-            """)
+            """.comment()
             supertypeStrategySpecial { mType ->
                 L_TypeUtils.getRTypeOrNull(mType) is R_EnumType
             }
@@ -49,8 +49,8 @@ object Lib_Type_Enum {
 
                 property("name", type = "text", pure = true, since = "0.7.0") {
                     comment("Get the declared name of the given enum member constant.")
-                    value { a ->
-                        val attr = (a as Rt_RR_EnumValue).rrAttr
+                    value(Rt_RR_EnumValue) { a ->
+                        val attr = a.rrAttr
                         Rt_TextValue.get(attr.nameStr)
                     }
                 }
@@ -63,7 +63,7 @@ object Lib_Type_Enum {
                     val attr = (a as Rt_RR_EnumValue).rrAttr
                     Rt_IntValue.get(attr.value.toLong())
                 }) {
-                    comment("""
+                    """
                         Get the ordinal value of an enum member constant.
 
                         Enum member constants are assigned integer values in the order in which they are declared,
@@ -73,16 +73,16 @@ object Lib_Type_Enum {
                         - `example.A.value` returns `0`
                         - `example.B.value` returns `1`
                         - `example.C.value` returns `2`
-                    """)
+                    """.comment()
                 }
 
                 staticFunction("values", result = "list<T>", pure = true, since = "0.7.0") {
-                    comment("""
+                    """
                         Get all member constants of this enum as a list, in the order in which they are defined.
 
                         For example, `primary_color.values()` returns `[RED, BLUE, GREEN]` where `primary_color` is
                         defined `enum primary_color { RED, BLUE, GREEN }`
-                    """)
+                    """.comment()
                     bodyMeta {
                         val resR = resultTypeR
                         val enumType = fnBodyMeta.rResultType as R_ListType
@@ -96,7 +96,7 @@ object Lib_Type_Enum {
                 }
 
                 staticFunction("value", result = "T", pure = true, since = "0.7.0") {
-                    comment("""
+                    """
                         Get an enum member constant value by its name.
 
                         With the definition `enum example { A, B, C }`, we have:
@@ -105,16 +105,15 @@ object Lib_Type_Enum {
                         - `example.value("C")` returns `C`
                         - `example.value("D")` throws an exception
                         @throws exception if there is no member constant in this enum with the given name
-                    """)
-                    param("name", type = "text", comment = "the name of the enum member constant")
+                    """.comment()
+                    val name by param(Rt_TextValue, comment = "the name of the enum member constant")
                     bodyMeta {
                         val enumType = fnBodyMeta.rResultType as R_EnumType
                         val enum = enumType.enum
-                        body { a ->
-                            val name = (a as Rt_TextValue).value
-                            val attr = enum.attr(name) ?: throw Rt_Exception.common(
-                                "enum_badname:${enum.appLevelName}:$name",
-                                "Enum '${enum.simpleName}' has no value '$name'",
+                        body {
+                            val attr = enum.attr(name.value) ?: throw Rt_Exception.common(
+                                "enum_badname:${enum.appLevelName}:${name.value}",
+                                "Enum '${enum.simpleName}' has no value '${name.value}'",
                             )
                             enum.rtGetValue(attr)
                         }
@@ -122,7 +121,7 @@ object Lib_Type_Enum {
                 }
 
                 staticFunction("value", result = "T", pure = true, since = "0.7.0") {
-                    comment("""
+                    """
                         Get an enum member constant by its ordinal value.
 
                         With the definition `enum example { A, B, C }`, we have:
@@ -132,17 +131,17 @@ object Lib_Type_Enum {
                         - `example.value(3)` throws an exception
                         @throws exception if there is no member constant with the given ordinal value in this enum, i.e.
                         if `value` is greater than the number of constants defined in this enum
-                    """)
-                    param("value", type = "integer", comment = "the ordinal value of an enum member constant")
+                    """.comment()
+                    val value by param(Rt_IntValue, comment = "the ordinal value of an enum member constant")
                     bodyMeta {
                         val enumType = fnBodyMeta.rResultType as R_EnumType
                         val enum = enumType.enum
-                        body { a ->
-                            val value = (a as Rt_IntValue).value.toIntExact()
+                        body {
+                            val valueInt = value.value.toIntExact()
 
-                            val attr = enum.attr(value) ?: throw Rt_Exception.common(
-                                "enum_badvalue:${enum.appLevelName}:$value",
-                                "Enum '${enum.simpleName}' has no value $value",
+                            val attr = enum.attr(valueInt) ?: throw Rt_Exception.common(
+                                "enum_badvalue:${enum.appLevelName}:$valueInt",
+                                "Enum '${enum.simpleName}' has no value $valueInt",
                             )
 
                             enum.rtGetValue(attr)

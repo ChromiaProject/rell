@@ -24,95 +24,95 @@ internal object Lib_Test_KeyPairs {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.test") {
             struct("keypair", since = "0.10.4") {
-                comment("""
+                """
                     A keypair for testing only.
 
                     $NOT_SECURE_MSG
-                """)
+                """.comment()
                 attribute("pub", type = "byte_array") {
-                    comment("""
+                    """
                         The public key of this test keypair.
 
                         $NOT_SECURE_MSG
-                    """)
+                    """.comment()
                 }
                 attribute("priv", type = "byte_array") {
-                    comment("""
+                    """
                         The private key of this test keypair.
 
                         $NOT_SECURE_MSG
-                    """)
+                    """.comment()
                 }
             }
 
             constant("BLOCKCHAIN_SIGNER_KEYPAIR", type = "rell.test.keypair", since = "0.11.0") {
-                comment("""
+                """
                     The test keypair used to sign all blocks built in the test context.
 
                     $NOT_SECURE_MSG
-                """)
+                """.comment()
                 value { rType -> keyPairToStruct(rType, Lib_RellTest.BLOCK_RUNNER_KEYPAIR) }
             }
 
             namespace("keypairs", since = "0.10.4") {
-                comment("""
+                """
                     Predefined constant keypairs for testing only.
 
                     These keys are the same as those found in `rell.test.privkeys` and `rell.test.pubkeys`.
 
                     $NOT_SECURE_MSG
-                """)
+                """.comment()
                 for ((name, keyPair) in PREDEFINED_KEYPAIRS) {
                     constant(name, type = "rell.test.keypair", since = "0.10.4") {
-                        comment("""
+                        """
                             A keypair representing the actor $name.
 
                             Access the public key with `rell.test.keypairs.$name.pub`, and the private key with
                             `rell.test.keypairs.$name.priv`.
 
                             $NOT_SECURE_MSG
-                        """)
+                        """.comment()
                         value { rType -> keyPairToStruct(rType, keyPair) }
                     }
                 }
             }
 
             namespace("privkeys", since = "0.10.4") {
-                comment("""
+                """
                     Predefined constant private keys for testing only.
 
                     These keys are the same as those found in `rell.test.keypairs`.
 
                     $NOT_SECURE_MSG
-                """)
+                """.comment()
                 for ((name, keyPair) in PREDEFINED_KEYPAIRS) {
                     val value = Rt_ByteArrayValue.get(keyPair.priv.toByteArray())
                     constant(name, type = "byte_array", value = value, since = "0.10.4") {
-                        comment("""
+                        """
                             A private key representing the actor $name.
 
                             $NOT_SECURE_MSG
-                        """)
+                        """.comment()
                     }
                 }
             }
 
             namespace("pubkeys", since = "0.10.4") {
-                comment("""
+                """
                     Predefined constant public keys for testing only.
 
                     These keys are the same as those found in `rell.test.keypairs`.
 
                     $NOT_SECURE_MSG
-                """)
+                """.comment()
                 for ((name, keyPair) in PREDEFINED_KEYPAIRS) {
                     val value = Rt_ByteArrayValue.get(keyPair.pub.toByteArray())
                     constant(name, type = "byte_array", value = value, since = "0.10.4") {
-                        comment("""
+                        """
                             A public key representing the actor $name.
 
                             $NOT_SECURE_MSG
-                        """)
+                        """.comment()
                     }
                 }
             }

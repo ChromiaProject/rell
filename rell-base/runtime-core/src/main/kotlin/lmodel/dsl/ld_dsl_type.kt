@@ -13,10 +13,11 @@ import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.mtype.M_Type
 import net.postchain.rell.base.mtype.M_Type_Composite
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.Rt_ValueClass
 import net.postchain.rell.base.utils.doc.DocCode
 
 @RellLibDsl
-interface Ld_CommonTypeDsl: Ld_MemberDsl {
+interface Ld_CommonTypeDsl<T : Rt_Value>: Ld_MemberDsl {
     fun generic(
         name: String,
         subOf: String? = null,
@@ -50,7 +51,7 @@ interface Ld_CommonTypeDsl: Ld_MemberDsl {
         pure: Boolean? = null,
         since: String? = null,
         comment: String? = null,
-        block: Ld_FunctionDsl.() -> Ld_BodyResult,
+        block: Ld_MethodDsl<T>.() -> Ld_BodyResult,
     )
 
     fun function(
@@ -80,7 +81,7 @@ interface Ld_CommonTypeDsl: Ld_MemberDsl {
 }
 
 @RellLibDsl
-interface Ld_TypeDefDsl: Ld_CommonTypeDsl, Ld_CommonNamespaceDsl {
+interface Ld_TypeDefDsl<T : Rt_Value>: Ld_CommonTypeDsl<T>, Ld_CommonNamespaceDsl {
     val typeSimpleName: String
 
     fun parent(type: String)
@@ -116,7 +117,7 @@ interface Ld_TypeDefDsl: Ld_CommonTypeDsl, Ld_CommonNamespaceDsl {
 }
 
 @RellLibDsl
-interface Ld_TypeExtensionDsl: Ld_CommonTypeDsl
+interface Ld_TypeExtensionDsl<T : Rt_Value>: Ld_CommonTypeDsl<T>
 
 @RellLibDsl
 interface Ld_ConstructorDsl: Ld_CommonFunctionDsl
@@ -125,4 +126,11 @@ interface Ld_ConstructorDsl: Ld_CommonFunctionDsl
 interface Ld_TypePropertyDsl: Ld_MemberDsl {
     fun value(getter: (Rt_Value) -> Rt_Value): Ld_BodyResult
     fun value(getter: (Rt_Value, R_Type) -> Rt_Value): Ld_BodyResult
+
+    /**
+     * Like [value], but the receiver is cast to [self] up front, so the getter sees a typed
+     * `self` instead of a raw [Rt_Value]: `value(Rt_GtvValue) { self -> ... }`.
+     */
+    fun <T : Rt_Value> value(self: Rt_ValueClass<T>, getter: (T) -> Rt_Value): Ld_BodyResult
+    fun <T : Rt_Value> value(self: Rt_ValueClass<T>, getter: (T, R_Type) -> Rt_Value): Ld_BodyResult
 }

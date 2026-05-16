@@ -9,19 +9,17 @@ import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lmodel.*
 import net.postchain.rell.base.model.FullName
 import net.postchain.rell.base.model.Name
+import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.Rt_ValueClass
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.doc.DocComment
 
-interface Ld_FunctionMaker: Ld_CommonFunctionMaker {
-    fun alias(name: String, deprecated: C_MessageType?, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)
-    fun result(type: String)
-}
-
-class Ld_FunctionDslImpl(
-    private val funMaker: Ld_FunctionMaker,
+open class Ld_FunctionDslImpl(
+    private val funMaker: Ld_FunctionBuilder,
     bodyMaker: Ld_FunctionBodyDsl,
-): Ld_CommonFunctionDslImpl(funMaker, bodyMaker), Ld_FunctionDsl {
+    receiverSlots: Int = 0,
+): Ld_CommonFunctionDslImpl(funMaker, bodyMaker, receiverSlots), Ld_FunctionDsl {
     override fun result(type: String) {
         funMaker.result(type)
     }
@@ -38,27 +36,43 @@ class Ld_FunctionDslImpl(
     }
 }
 
+class Ld_MethodDslImpl<T : Rt_Value>(
+    funMaker: Ld_FunctionBuilder,
+    bodyMaker: Ld_FunctionBodyDsl,
+    private val selfType: Rt_ValueClass<T>?,
+): Ld_FunctionDslImpl(funMaker, bodyMaker, receiverSlots = 1), Ld_MethodDsl<T> {
+    override fun self(): Ld_ParamRef<T> =
+        self(requireNotNull(selfType) { "self() requires a typed type(...) declaration" })
+}
+
 class Ld_FunctionBuilder(
         hdr: Ld_MemberHeader,
         simpleName: Name,
         outerTypeParams: ImmSet<Name>,
         bodyBuilder: Ld_FunctionBodyBuilder,
-): Ld_CommonFunctionBuilder(hdr, outerTypeParams, bodyBuilder), Ld_FunctionMaker {
+): Ld_CommonFunctionBuilder(hdr, outerTypeParams, bodyBuilder) {
     private val aliasesBuilder = Ld_AliasesBuilder(simpleName)
     private var resultType: Ld_Type? = null
 
-    override fun alias(name: String, deprecated: C_MessageType?, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit) {
+    fun alias(name: String, deprecated: C_MessageType?, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit) {
         finishParams()
         val memberHeader = Ld_MemberHeader.make(hdr, block)
         aliasesBuilder.alias(name, deprecated, memberHeader)
     }
 
-    override fun result(type: String) {
+    fun result(type: String) {
         Ld_Exception.check(resultType == null) {
             "function:result_already_defined:$type" to "Result type already set"
         }
         finishParams()
         resultType = Ld_Type.parse(type)
+    }
+
+    override fun setResultTypeIfAbsent(type: String) {
+        if (resultType == null) {
+            finishParams()
+            resultType = Ld_Type.parse(type)
+        }
     }
 
     fun build(bodyRes: Ld_BodyResult): Ld_MemberDef<Ld_Function> {
@@ -89,11 +103,43 @@ class Ld_FunctionBuilder(
                 outerTypeParams: ImmSet<Name>,
                 block: Ld_FunctionDsl.() -> Ld_BodyResult,
         ): Ld_MemberDef<Ld_Function> {
+            val funBuilder = newBuilder(hdr, simpleName, pure, outerTypeParams)
+            val dsl = Ld_FunctionDslImpl(funBuilder.first, funBuilder.second)
+            return finishBuild(funBuilder.first, dsl, result, block)
+        }
+
+        fun <T : Rt_Value> buildMethod(
+                hdr: Ld_MemberHeader,
+                simpleName: Name,
+                result: String?,
+                pure: Boolean?,
+                outerTypeParams: ImmSet<Name>,
+                selfType: Rt_ValueClass<T>?,
+                block: Ld_MethodDsl<T>.() -> Ld_BodyResult,
+        ): Ld_MemberDef<Ld_Function> {
+            val funBuilder = newBuilder(hdr, simpleName, pure, outerTypeParams)
+            val dsl = Ld_MethodDslImpl(funBuilder.first, funBuilder.second, selfType)
+            return finishBuild(funBuilder.first, dsl, result, block)
+        }
+
+        private fun newBuilder(
+                hdr: Ld_MemberHeader,
+                simpleName: Name,
+                pure: Boolean?,
+                outerTypeParams: ImmSet<Name>,
+        ): Pair<Ld_FunctionBuilder, Ld_FunctionBodyDslImpl> {
             val bodyBuilder = Ld_FunctionBodyBuilder(simpleName, pure)
             val funBuilder = Ld_FunctionBuilder(hdr, simpleName, outerTypeParams, bodyBuilder)
             val bodyDslBuilder = Ld_FunctionBodyDslImpl(bodyBuilder)
-            val dsl = Ld_FunctionDslImpl(funBuilder, bodyDslBuilder)
+            return funBuilder to bodyDslBuilder
+        }
 
+        private fun <D : Ld_FunctionDsl> finishBuild(
+                funBuilder: Ld_FunctionBuilder,
+                dsl: D,
+                result: String?,
+                block: D.() -> Ld_BodyResult,
+        ): Ld_MemberDef<Ld_Function> {
             if (result != null) {
                 dsl.result(result)
             }

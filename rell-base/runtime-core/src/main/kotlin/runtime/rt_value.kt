@@ -45,6 +45,15 @@ sealed interface Rt_Value {
         V1,
         V2,
     }
+
+    /**
+     * Identity value-class token. Used as the `cast` argument of `param(name, type, cast)` for
+     * parameters whose Rell type is generic (`T`, `K`, ...) and therefore has no specific runtime
+     * value class — the delegate yields the raw [Rt_Value].
+     */
+    companion object: Rt_ValueClass<Rt_Value> {
+        override val name = "any"
+    }
 }
 
 /** Top-level alias of [Rt_Value.StrFormat] for ergonomic unqualified use at call sites. */
@@ -52,8 +61,8 @@ typealias Rt_StrFormat = Rt_Value.StrFormat
 
 /** Iteration view over a value (range, list, set, map-as-tuples, byte-array-as-ints, ...). */
 interface Rt_IterableValue: Rt_Value, Iterable<Rt_Value> {
-    companion object {
-        val name = "ITERABLE"
+    companion object: Rt_ValueClass<Rt_IterableValue> {
+        override val name = "ITERABLE"
     }
 }
 
@@ -63,14 +72,18 @@ interface Rt_CollectionValue: Rt_IterableValue {
 
     override fun iterator(): Iterator<Rt_Value> = collection.iterator()
 
-    companion object {
-        val name = "COLLECTION"
+    companion object: Rt_ValueClass<Rt_CollectionValue> {
+        override val name = "COLLECTION"
     }
 }
 
 /** Read-only map-backed value (map, virtual-map). */
 interface Rt_MapBackedValue: Rt_Value {
     val mapView: Map<Rt_Value, Rt_Value>
+
+    companion object: Rt_ValueClass<Rt_MapBackedValue> {
+        override val name = "MAP"
+    }
 }
 
 /** Mutable map-backed value (only [Rt_MapValue], not virtual). */
@@ -82,8 +95,8 @@ interface Rt_MutableMapBackedValue: Rt_MapBackedValue {
 interface Rt_LazyResolvableValue: Rt_Value {
     fun resolveLazy(): Rt_Value
 
-    companion object {
-        val name = "LAZY"
+    companion object: Rt_ValueClass<Rt_LazyResolvableValue> {
+        override val name = "LAZY"
     }
 }
 
@@ -192,6 +205,17 @@ interface Rt_SqlCompatibleValueClass<T: Rt_Value>: Rt_ValueClass<T> {
 
     fun rtToSqlValue(value: Rt_Value): Any = toSqlValue(cast(value))
     fun rtToSql(params: PreparedStatementParams, idx: Int, value: Rt_Value) = toSql(cast(value), params, idx)
+}
+
+/**
+ * Metaclass capability: lift a raw JVM payload into its wrapping [Rt_Value].
+ *
+ * Lets a stdlib function body return the native result (`Long`, `String`, `BigDecimal`, ...) and
+ * have the DSL box it via [wrap], instead of every body calling the companion's `get(...)` factory
+ * by hand. Implemented by the primitive value companions, whose [wrap] simply delegates to `get`.
+ */
+interface Rt_PrimitiveFactory<T : Rt_Value, N : Any>: Rt_ValueClass<T> {
+    fun wrap(value: N): T
 }
 
 /** Shared NULL-handling helpers for [Rt_SqlCompatibleValueClass.fromSql] implementations. */

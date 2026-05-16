@@ -69,16 +69,16 @@ class IdeDocLibOverloadTest: BaseIdeSymbolTest() {
     private fun initNsFnOverload() {
         extraModule {
             function("f", result = "text") {
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("f", result = "boolean") {
                 param(name = "x", type = "integer")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("f", result = "integer") {
                 param(name = "a", type = "decimal")
                 param(name = "b", type = "byte_array")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
     }
@@ -118,13 +118,13 @@ class IdeDocLibOverloadTest: BaseIdeSymbolTest() {
             function("f", result = "integer") {
                 generic("T")
                 param(name = "x", type = "T")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("f", result = "T") {
                 generic("T")
                 param(name = "a", type = "byte_array")
                 param(name = "b", type = "T")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
     }
@@ -136,13 +136,13 @@ class IdeDocLibOverloadTest: BaseIdeSymbolTest() {
             function("f", result = "T") {
                 generic("T")
                 param(name = "x", type = "integer")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("f", result = "T") {
                 generic("T")
                 param(name = "a", type = "byte_array")
                 param(name = "b", type = "text")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 
@@ -222,11 +222,11 @@ class IdeDocLibOverloadTest: BaseIdeSymbolTest() {
                 modTst.setRTypeFactory(this)
                 constructor {
                     param(name = "x", type = "text")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 constructor {
                     param(name = "y", type = "integer")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -296,16 +296,16 @@ class IdeDocLibOverloadTest: BaseIdeSymbolTest() {
             type("data") {
                 modTst.setRTypeFactory(this)
                 function("f", result = "text") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("f", result = "boolean") {
                     param(name = "x", type = "integer")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("f", result = "integer") {
                     param(name = "a", type = "decimal")
                     param(name = "b", type = "byte_array")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -367,11 +367,11 @@ class IdeDocLibOverloadTest: BaseIdeSymbolTest() {
             type("data") {
                 modTst.setRTypeFactory(this)
                 staticFunction("f", result = "text") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 staticFunction("f", result = "boolean") {
                     param(name = "x", type = "integer")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -450,12 +450,12 @@ class IdeDocLibOverloadTest: BaseIdeSymbolTest() {
                 constructor {
                     param(name = "x", type = "text")
                     param(name = "y", type = "T")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 constructor {
                     param(name = "a", type = "T")
                     param(name = "b", type = "integer")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -506,25 +506,25 @@ class IdeDocLibOverloadTest: BaseIdeSymbolTest() {
                 modTst.setRTypeFactory(this, genericCount = 1)
                 function("f", result = "boolean") {
                     param(name = "x", type = "T")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("f", result = "integer") {
                     param(name = "a", type = "T")
                     param(name = "b", type = "text")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("g", result = "boolean") {
                     generic("R")
                     param(name = "x", type = "T")
                     param(name = "y", type = "R")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("g", result = "integer") {
                     generic("R")
                     param(name = "a", type = "R")
                     param(name = "b", type = "T")
                     param(name = "c", type = "text")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }

@@ -30,14 +30,14 @@ import net.postchain.rell.base.utils.ide.IdeCompletion
 object Lib_Type_Entity {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("entity", abstract = true, hidden = true, since = "0.6.0") {
-            comment("""
+            """
                 Parent of all entity types. An entity is a data structure that resides in the SQL database.
 
                 Entity values are created with a `create` statement and are persisted in the database, and are accessed
                 with an `@`-expression.
 
                 @see 1. <a href="https://docs.chromia.com/rell/language-features/database/overview#-operator"><code>@</code> operator - Chromia Documentation</a>
-            """)
+            """.comment()
             supertypeStrategySpecial { mType ->
                 val rType = L_TypeUtils.getRTypeOrNull(mType)
                 rType is R_EntityType
@@ -47,7 +47,7 @@ object Lib_Type_Entity {
         namespace("rell") {
             extension("entity_ext", type = "entity", since = "0.10.4") {
                 function("to_struct", C_Fn_ToStruct(false), since = "0.10.4") {
-                    comment("""
+                    """
                         Convert this entity value to a `struct<T>`.
 
                         Examples:
@@ -71,10 +71,10 @@ object Lib_Type_Entity {
                             print((a: animal) @* {} (a.to_struct()));
                         }
                         ```
-                    """)
+                    """.comment()
                 }
                 function("to_mutable_struct", C_Fn_ToStruct(true), since = "0.10.4") {
-                    comment("""
+                    """
                         Convert this entity value to a `struct<mutable T>`.
 
                         Examples:
@@ -98,7 +98,7 @@ object Lib_Type_Entity {
                             print((a: animal) @* {} (a.to_mutable_struct()));
                         }
                         ```
-                    """)
+                    """.comment()
                 }
             }
         }

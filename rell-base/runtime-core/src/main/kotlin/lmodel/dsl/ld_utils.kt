@@ -87,7 +87,7 @@ enum class Ld_ConflictMemberKind {
     OTHER,
 }
 
-class Ld_MemberConflictChecker(initialNames: Map<Name, Ld_ConflictMemberKind>) {
+internal class Ld_MemberConflictChecker(initialNames: Map<Name, Ld_ConflictMemberKind>) {
     private val names = initialNames.toMutableMap()
 
     fun addMember(name: Name, kind: Ld_ConflictMemberKind) {

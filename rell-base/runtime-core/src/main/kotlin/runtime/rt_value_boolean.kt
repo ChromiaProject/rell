@@ -41,7 +41,8 @@ sealed interface Rt_BooleanValue: Rt_Value {
     companion object:
         Rt_GtvCompatibleValueClass<Rt_BooleanValue>,
         Rt_NativeCompatibleValueClass<Rt_BooleanValue>,
-        Rt_SqlCompatibleValueClass<Rt_BooleanValue> {
+        Rt_SqlCompatibleValueClass<Rt_BooleanValue>,
+        Rt_PrimitiveFactory<Rt_BooleanValue, Boolean> {
 
         override val name
             get() = "boolean"
@@ -57,6 +58,8 @@ sealed interface Rt_BooleanValue: Rt_Value {
 
         @JvmStatic
         fun get(value: Boolean): Rt_BooleanValue = if (value) TRUE else FALSE
+
+        override fun wrap(value: Boolean): Rt_BooleanValue = get(value)
 
         override fun toGtv(value: Rt_BooleanValue, pretty: Boolean): Gtv =
             GtvInteger(if (value.value) 1L else 0L)

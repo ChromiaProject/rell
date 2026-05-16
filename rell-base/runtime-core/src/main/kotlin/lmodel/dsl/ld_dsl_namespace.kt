@@ -13,6 +13,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.Rt_CallContext
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.Rt_ValueClass
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -97,7 +98,23 @@ interface Ld_NamespaceBodyDsl: Ld_CommonNamespaceDsl {
         rrType: RR_Type? = null,
         since: String? = null,
         comment: String? = null,
-        block: Ld_TypeDefDsl.() -> Unit = {},
+        block: Ld_TypeDefDsl<Rt_Value>.() -> Unit = {},
+    )
+
+    /**
+     * Declare a type whose runtime value class is statically known. Member functions can write
+     * `val self by self()` without repeating the [Rt_ValueClass] token.
+     */
+    fun <T: Rt_Value> type(
+        valueClass: Rt_ValueClass<T>,
+        name: String,
+        abstract: Boolean = false,
+        hidden: Boolean = false,
+        rType: R_Type? = null,
+        rrType: RR_Type? = null,
+        since: String? = null,
+        comment: String? = null,
+        block: Ld_TypeDefDsl<T>.() -> Unit = {},
     )
 
     fun extension(
@@ -105,7 +122,7 @@ interface Ld_NamespaceBodyDsl: Ld_CommonNamespaceDsl {
         type: String,
         since: String? = null,
         comment: String? = null,
-        block: Ld_TypeExtensionDsl.() -> Unit,
+        block: Ld_TypeExtensionDsl<Rt_Value>.() -> Unit,
     )
 
     fun struct(

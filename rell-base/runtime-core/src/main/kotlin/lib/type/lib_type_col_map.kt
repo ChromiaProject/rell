@@ -19,11 +19,11 @@ object Lib_Type_Map {
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("map_entry", hidden = true, since = "0.13.2") {
-            comment("""
+            """
                 A supertype of all two-element tuples `(K, V)` (with named and unnamed fields), where `K` is an
                 immutable type, and `V` may be either mutable or immutable. Generally used for iterating over maps and
                 constructing maps from iterables.
-            """)
+            """.comment()
             generic("-K")
             generic("-V")
 
@@ -33,12 +33,12 @@ object Lib_Type_Map {
         }
 
         type("map", since = SINCE0) {
-            comment("""
+            """
                 A mutable map from keys of type `K` to values of type `V`, where `K` is immutable, and `V` may be either
                 mutable or immutable. `map<K,V> is a subtype of `iterable<(K,V)>`. It is implemented as a hash-map, with
                 iteration order determined by the order in which the entries were added.
                 @see 1. <a href="../iterable/index.html"><code>iterable</code> - Rell Standard Library</a>
-            """)
+            """.comment()
             generic("K", subOf = "immutable")
             generic("V")
             parent("iterable<(K,V)>")
@@ -60,20 +60,24 @@ object Lib_Type_Map {
             }
 
             constructor(pure = true, since = SINCE0) {
-                comment("""
+                """
                     Construct a new map by copying the entries from another iterable. The provided entries are an
                     iterable with element type `map_entry<K,V>`; a supertype of the two-element tuple `(K,V)`.
-                """)
-                param("entries", type = "iterable<-map_entry<K,V>>", comment = "entries with which to populate the map")
+                """.comment()
+                val entries by param(
+                    "iterable<-map_entry<K,V>>",
+                    cast = Rt_IterableValue,
+                    comment = "entries with which to populate the map",
+                )
                 bodyMeta {
                     val (keyR, valueR) = typeArgsR("K", "V")
-                    bodyContext { ctx, arg ->
+                    bodyContext { ctx ->
                         val interpreter = ctx.exeCtx.appCtx.interpreter
                         val mapType = Rt_MapType(interpreter.resolveRType(keyR), interpreter.resolveRType(valueR))
-                        val map = if (arg is Rt_MapValue) {
-                            arg.map.toMutableMap()
+                        val iterable = entries
+                        val map = if (iterable is Rt_MapValue) {
+                            iterable.map.toMutableMap()
                         } else {
-                            val iterable = (arg as Rt_IterableValue)
                             val tmap = mutableMapOf<Rt_Value, Rt_Value>()
                             for (item in iterable) {
                                 val tup = (item as Rt_TupleValue).elements
@@ -91,109 +95,115 @@ object Lib_Type_Map {
             }
 
             function("keys", result = "set<K>", pure = true, since = SINCE0) {
-                comment("""
+                """
                     Returns a set containing the keys of this map.
 
                     Examples:
                     - `[1: 'a', 2: 'b', 3: 'c'].keys()` returns `set([1, 2, 3])`.
                     - `map<K,V>().keys()` returns `set()` (where `K` and `V` are valid types).
-                """)
-                body { a ->
-                    val mapValue = (a as Rt_MapValue)
+                """.comment()
+
+                val self by self(Rt_MapValue)
+                body {
                     val r = mutableSetOf<Rt_Value>()
-                    r.addAll(mapValue.map.keys)
-                    val keySetType = (mapValue.type as? Rt_MapType)?.let { Rt_SetType(it.key) }
+                    r.addAll(self.map.keys)
+                    val keySetType = (self.type as? Rt_MapType)?.let { Rt_SetType(it.key) }
                         ?: Rt_GenericRrType(RR_Type.Error, "set<?>")
                     Rt_SetValue(keySetType, r)
                 }
             }
 
             function("values", result = "list<V>", pure = true, since = SINCE0) {
-                comment("""
+                """
                     Returns a list containing the values of this map.
 
                     Examples:
                     - `[1: 'a', 2: 'b', 3: 'c'].values()` returns `['a', 'b', 'c']`.
                     - `map<K,V>().values()` returns `[]` (where `K` and `V` are valid types).
-                """)
-                body { a ->
-                    val mapValue = (a as Rt_MapValue)
-                    val r = mutableListOf<Rt_Value>()
-                    r.addAll(mapValue.map.values)
-                    val valueListType = (mapValue.type as? Rt_MapType)?.let { Rt_ListType(it.value) }
+                """.comment()
+
+                val self by self(Rt_MapValue)
+                body {
+                    val r = self.map.values.toMutableList()
+                    val valueListType = (self.type as? Rt_MapType)?.let { Rt_ListType(it.value) }
                         ?: Rt_GenericRrType(RR_Type.Error, "list<?>")
                     Rt_ListValue(valueListType, r)
                 }
             }
 
             function("clear", result = "unit", since = SINCE0) {
-                comment("""
+                """
                     Clear this map; i.e. remove all its entries. Immediately after this method returns, this map is
                     empty.
-                """)
-                body { a ->
-                    val map = (a as Rt_MutableMapBackedValue).mutableMapView
-                    map.clear()
+                """.comment()
+
+                val self by self(Rt_MapValue)
+                body {
+                    self.mutableMapView.clear()
                     Rt_UnitValue
                 }
             }
 
             function("put", result = "unit", since = SINCE0) {
                 comment("Associate the specified value with the specified key in this map.")
-                param("key", type = "K", comment = "the key to associate with the specified value")
-                param("value", type = "V", comment = "the value to associate with the specified key")
-                body { a, b, c ->
-                    val map = (a as Rt_MutableMapBackedValue).mutableMapView
-                    map[b] = c
+                val self by self(Rt_MapValue)
+                val key by param("K", cast = Rt_Value, comment = "the key to associate with the specified value")
+                val value by param("V", cast = Rt_Value, comment = "the value to associate with the specified key")
+                body {
+                    self.mutableMapView[key] = value
                     Rt_UnitValue
                 }
             }
 
             function("put_all", result = "unit", since = "0.9.0") {
-                comment("""
+                """
                     Update this map with the entries from another map. Where a key is found in both this and the passed
                     map, the corresponding value in the passed map overwrites the value in this map. In other words,
                     this is a *right-biased* operation.
-                """)
+                """.comment()
                 alias("putAll", C_MessageType.ERROR, since = SINCE0)
-                param("map", type = "map<-K,-V>", comment = "the map whose entries are used to update this map")
-                body { a, b ->
-                    val map1 = (a as Rt_MutableMapBackedValue).mutableMapView
-                    val map2 = (b as Rt_MapBackedValue).mapView
-                    map1.putAll(map2)
+                val self by self(Rt_MapValue)
+                val map by param(
+                    "map<-K,-V>",
+                    cast = Rt_MapValue,
+                    comment = "the map whose entries are used to update this map",
+                )
+                body {
+                    self.mutableMapView.putAll(map.mapView)
                     Rt_UnitValue
                 }
             }
 
             function("remove", result = "V", since = SINCE0) {
-                comment("""
+                """
                     Remove an entry from this map.
                     @return the value of the removed entry
                     @throws exception if the key is not found in the map
-                """)
-                param("key", type = "K", comment = "the key of the entry to remove")
-                body { a, b ->
-                    val map = (a as Rt_MutableMapBackedValue).mutableMapView
-                    val v = map.remove(b)
-                    v ?: throw Rt_Exception.common("fn:map.remove:novalue:${b.strCode()}", "Key not in map: ${b.str()}")
+                """.comment()
+                val self by self(Rt_MapValue)
+                val key by param("K", cast = Rt_Value, comment = "the key of the entry to remove")
+                body {
+                    self.mutableMapView.remove(key) ?: throw Rt_Exception.common(
+                        "fn:map.remove:novalue:${key.strCode()}",
+                        "Key not in map: ${key.str()}"
+                    )
                 }
             }
 
             function("remove_or_null", result = "V?", since = "0.11.0") {
-                comment("""
+                """
                     Remove an entry from this map.
                     @return the value of the removed entry, or `null` if the key is not found in the map
-                """)
-                param("key", type = "K", comment = "the key of the entry to remove")
-                body { a, b ->
-                    val map = (a as Rt_MutableMapBackedValue).mutableMapView
-                    val v = map.remove(b)
-                    v ?: Rt_NullValue
+                """.comment()
+                val self by self(Rt_MapValue)
+                val key by param("K", cast = Rt_Value, comment = "the key of the entry to remove")
+                body {
+                    self.mutableMapView.remove(key) ?: Rt_NullValue
                 }
             }
 
             function("put_all_copy", result = "map<K, V>", since = "0.14.16") {
-                comment("""
+                """
                     Returns a new map with the mappings of this map combined with the mappings of the given map.
 
                     Where a value exists for a given key in both this and the other map, the returned map has the value
@@ -206,14 +216,19 @@ object Lib_Type_Map {
                         `[1: 'Z', 2: 'b', 3: 'c', 4: 'd', 5: 'e']`
                     - `[1: 'a', 2: 'b', 3: 'c'].put_all_copy([4: 'd', 5: 'e'])` returns
                         `[1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e']`
-                """)
-                param("map", type = "map<-K, -V>", comment = "the other map")
-                body(::evalMergeMap)
+                """.comment()
+                val self by self(Rt_MapValue)
+                val map by param(
+                    "map<-K, -V>",
+                    cast = Rt_MapValue,
+                    comment = "the other map",
+                )
+                body { evalMergeMap(self, map) }
             }
         }
     }
 
-    fun defCommonFunctions(m: Ld_TypeDefDsl) = with(m) {
+    fun <T : Rt_Value> defCommonFunctions(m: Ld_TypeDefDsl<T>) = with(m) {
         function("to_text", result = "text", since = SINCE0) {
             comment("Returns a textual representation of this map.")
             alias("str", since = SINCE0)
@@ -221,77 +236,81 @@ object Lib_Type_Map {
         }
 
         function("empty", result = "boolean", pure = true, since = SINCE0) {
-            comment("""
+            """
                 Check if this map is empty.
                 @return `true` if this map is empty, `false` otherwise
-            """)
-            body { a ->
-                val map = (a as Rt_MapBackedValue).mapView
-                Rt_BooleanValue.get(map.isEmpty())
+            """.comment()
+            val self by self(Rt_MapBackedValue)
+            body(Rt_BooleanValue) {
+                self.mapView.isEmpty()
             }
         }
 
         function("size", result = "integer", pure = true, since = SINCE0) {
             comment("Get the size (number of entries) of this map.")
             alias("len", C_MessageType.ERROR, since = SINCE0)
-            body { a ->
-                val map = (a as Rt_MapBackedValue).mapView
-                Rt_IntValue.get(map.size.toLong())
+            val self by self(Rt_MapBackedValue)
+            body(Rt_IntValue) {
+                self.mapView.size.toLong()
             }
         }
 
         function("get", result = "V", pure = true, since = SINCE0) {
-            comment("""
+            """
                 Get the value associated with the given key in this map.
                 @throws exception if the key is not found
-            """)
-            param("key", type = "K", comment = "the key to look up")
-            body { self, a ->
-                val map = (self as Rt_MapBackedValue).mapView
-                val v = map[a]
-                v ?: throw Rt_Exception.common("fn:map.get:novalue:${a.strCode()}", "Key not in map: ${a.str()}")
+            """.comment()
+            val self by self(Rt_MapBackedValue)
+            val key by param("K", cast = Rt_Value, comment = "the key to look up")
+            body {
+                self.mapView[key] ?: throw Rt_Exception.common(
+                    "fn:map.get:novalue:${key.strCode()}",
+                    "Key not in map: ${key.str()}"
+                )
             }
         }
 
         function("get_or_null", result = "V?", pure = true, since = "0.11.0") {
-            comment("""
+            """
                 Get the value associated with the given key in this map.
                 @return the value associated with the given key in this map, or `null` if the key is not found
-            """)
-            param("key", type = "K", comment = "the key to look up")
-            body { self, a ->
-                val map = (self as Rt_MapBackedValue).mapView
-                val r = map[a]
-                r ?: Rt_NullValue
+            """.comment()
+            val self by self(Rt_MapBackedValue)
+            val key by param("K", cast = Rt_Value, comment = "the key to look up")
+            body {
+                self.mapView[key] ?: Rt_NullValue
             }
         }
 
         function("get_or_default", pure = true, since = "0.11.0") {
-            comment("""
+            """
                 Get the value associated with the given key in this map.
                 @return the value associated with the given key in this map, or `default` if the key is not found
-            """)
+            """.comment()
             generic("R", superOf = "V")
             result(type = "R")
-            param("key", type = "K", comment = "the key to look up")
-            param("default", type = "R", lazy = true) {
-                comment("the default value (lazily evaluated) to return if the key is not found")
-            }
-            body { self, a, b ->
-                val map = (self as Rt_MapBackedValue).mapView
-                map[a] ?: (b as Rt_LazyResolvableValue).resolveLazy()
+            val self by self(Rt_MapBackedValue)
+            val key by param("K", cast = Rt_Value, comment = "the key to look up")
+            val default by param(
+                "R",
+                cast = Rt_LazyResolvableValue,
+                lazy = true,
+                comment = "the default value (lazily evaluated) to return if the key is not found",
+            )
+            body {
+                self.mapView[key] ?: default.resolveLazy()
             }
         }
 
         function("contains", result = "boolean", pure = true, since = SINCE0) {
-            comment("""
+            """
                 Check if this map contains the given key.
                 @return `true` if this map contains the given key, `false` otherwise
-            """)
-            param("key", type = "K", comment = "the key to look up")
-            body { self, a ->
-                val map = (self as Rt_MapBackedValue).mapView
-                Rt_BooleanValue.get(a in map)
+            """.comment()
+            val self by self(Rt_MapBackedValue)
+            val key by param("K", cast = Rt_Value, comment = "the key to look up")
+            body(Rt_BooleanValue) {
+                key in self.mapView
             }
         }
     }

@@ -26,7 +26,7 @@ class CLibVersionTest: BaseCLibTest() {
             struct("rec", since = "0.10.5") {}
             property("prop", "integer", since = "0.10.5") { value { _ -> Rt_UnitValue } }
             property("spec_prop", BaseLTest.makeNsProp(), since = "0.10.5")
-            function("f", result = "integer", since = "0.10.5") { body { -> Rt_UnitValue } }
+            function("f", result = "integer", since = "0.10.5") { constant(Rt_UnitValue) }
             function("g", BaseLTest.makeNsFun(), since = "0.10.5")
         }
 
@@ -45,7 +45,7 @@ class CLibVersionTest: BaseCLibTest() {
     @Test fun testNsAlias() {
         tst.extraMod = makeModule {
             constant("MAGIC", 123)
-            function("f", result = "integer") { body { -> Rt_UnitValue } }
+            function("f", result = "integer") { constant(Rt_UnitValue) }
             alias("MAGIC_REF", "MAGIC", since = "0.10.5")
             alias("f_ref", "f", since = "0.10.5")
         }
@@ -61,8 +61,8 @@ class CLibVersionTest: BaseCLibTest() {
         modTst.libModule {
             type("data") {
                 modTst.setRTypeFactory(this)
-                constructor { body { -> Rt_UnitValue } }
-                staticFunction("f", "integer") { body { -> Rt_UnitValue } }
+                constructor { constant(Rt_UnitValue) }
+                staticFunction("f", "integer") { constant(Rt_UnitValue) }
             }
             alias("tada", "data", since = "0.10.5")
         }
@@ -76,7 +76,7 @@ class CLibVersionTest: BaseCLibTest() {
         modTst.libModule {
             type("data", since = "0.10.5") {
                 modTst.setRTypeFactory(this)
-                constructor { body { -> Rt_UnitValue } }
+                constructor { constant(Rt_UnitValue) }
             }
         }
         chkVer("function q(v: data) = 0;", "TYPE:[test:data]")
@@ -122,11 +122,11 @@ class CLibVersionTest: BaseCLibTest() {
         tst.extraMod = makeModule {
             function("f1", "integer") {
                 alias("f2", since = "0.10.5")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("g1", "integer", since = "0.10.5") {
                 alias("g2")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 
@@ -141,11 +141,11 @@ class CLibVersionTest: BaseCLibTest() {
         tst.extraMod = makeModule {
             function("f", "integer") {
                 param("x", "integer")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("f", "integer", since = "0.10.5") {
                 param("x", "text")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 
@@ -160,9 +160,9 @@ class CLibVersionTest: BaseCLibTest() {
                 constant("MAGIC", 123, since = "0.10.5")
                 property("prop", "integer", since = "0.10.5") { value { _ -> Rt_UnitValue } }
                 property("spec_prop", "integer", BaseLTest.makeTypeProp(), since = "0.10.5")
-                function("f", "integer", since = "0.10.5") { body { -> Rt_UnitValue } }
+                function("f", "integer", since = "0.10.5") { constant(Rt_UnitValue) }
                 function("g", BaseLTest.makeTypeFun(), since = "0.10.5")
-                staticFunction("sf", "integer", since = "0.10.5") { body { -> Rt_UnitValue } }
+                staticFunction("sf", "integer", since = "0.10.5") { constant(Rt_UnitValue) }
                 staticFunction("sg", BaseLTest.makeNsFun(), since = "0.10.5")
             }
         }
@@ -184,7 +184,7 @@ class CLibVersionTest: BaseCLibTest() {
         modTst.libModule {
             type("data1") {
                 modTst.setRTypeFactory(this)
-                constructor(since = "0.10.5") { body { -> Rt_UnitValue } }
+                constructor(since = "0.10.5") { constant(Rt_UnitValue) }
             }
             type("data2") {
                 modTst.setRTypeFactory(this)
@@ -205,11 +205,11 @@ class CLibVersionTest: BaseCLibTest() {
                 modTst.setRTypeFactory(this)
                 constructor {
                     param("x", "integer")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 constructor(since = "0.10.5") {
                     param("x", "text")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -224,11 +224,11 @@ class CLibVersionTest: BaseCLibTest() {
                 modTst.setRTypeFactory(this)
                 function("f1", "integer") {
                     alias("f2", since = "0.10.5")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("g1", "integer", since = "0.10.5") {
                     alias("g2")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -246,11 +246,11 @@ class CLibVersionTest: BaseCLibTest() {
                 modTst.setRTypeFactory(this)
                 function("f", "integer") {
                     param("x", "integer")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("f", "integer", since = "0.10.5") {
                     param("x", "text")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -263,8 +263,8 @@ class CLibVersionTest: BaseCLibTest() {
         tst.extraMod = makeModule {
             extension("test_ext", "integer") {
                 property("prop", "integer", since = "0.10.5") { value { _ -> Rt_UnitValue } }
-                function("f", "integer", since = "0.10.5") { body { -> Rt_UnitValue } }
-                staticFunction("g", "integer", since = "0.10.5") { body { -> Rt_UnitValue } }
+                function("f", "integer", since = "0.10.5") { constant(Rt_UnitValue) }
+                staticFunction("g", "integer", since = "0.10.5") { constant(Rt_UnitValue) }
             }
         }
 
@@ -277,7 +277,7 @@ class CLibVersionTest: BaseCLibTest() {
         initParameter {
             param("x", "text")
             param("y", "integer", arity = L_ParamArity.ZERO_ONE, since = "0.10.5")
-            body { -> Rt_UnitValue }
+            constant(Rt_UnitValue)
         }
 
         chkParameter("", "f", "f")
@@ -320,7 +320,7 @@ class CLibVersionTest: BaseCLibTest() {
         initParameter {
             param("x", "text")
             param("y", "integer", arity = L_ParamArity.ZERO_MANY, since = "0.10.5")
-            body { -> Rt_UnitValue }
+            constant(Rt_UnitValue)
         }
 
         chkParameterZeroMany("", "f", "f")

@@ -27,20 +27,17 @@ internal object Lib_RellHidden {
     val MODULE = C_LibModule.make("rell.hidden", Lib_Rell.MODULE) {
         namespace("_test", since = "0.13.2") {
             function("crash", result = "unit", since = "0.13.2") {
-                param("message", "text")
-                body { a ->
-                    val s = (a as Rt_TextValue).value
-                    throw RellInterpreterCrashException(s)
+                val message by param(Rt_TextValue)
+                body {
+                    throw RellInterpreterCrashException(message.value)
                 }
             }
 
             function("throw", "unit", since = "0.13.2") {
-                param("code", "text")
-                param("msg", "text")
-                body { a, b ->
-                    val code = (a as Rt_TextValue).value
-                    val msg = (b as Rt_TextValue).value
-                    throw Rt_Exception.common("throw:$code", msg)
+                val code by param(Rt_TextValue)
+                val msg by param(Rt_TextValue)
+                body {
+                    throw Rt_Exception.common("throw:${code.value}", msg.value)
                 }
             }
 
@@ -56,15 +53,14 @@ internal object Lib_RellHidden {
             function("external_chain", fnExternalChain, since = "0.13.2")
 
             function("fake_assert", result = "unit", since = "0.14.0") {
-                param("value", type = "boolean", implies = L_ParamImplication.TRUE)
-                body { _ -> Rt_UnitValue }
+                param("value", "boolean", implies = L_ParamImplication.TRUE)
+                constant(Rt_UnitValue)
             }
 
             function("sleep", result = "unit", since = "0.15.1") {
-                param("ms", "integer")
-                bodyContext { ctx, ms ->
-                    val millis = (ms as Rt_IntValue).value
-                    val seconds = millis.toDouble() / 1000.0
+                val ms by param(Rt_IntValue)
+                bodyContext { ctx ->
+                    val seconds = ms.value.toDouble() / 1000.0
 
                     val pgSleep = DSL.function("pg_sleep", Any::class.java, DSL.value(seconds))
                     val sql = JOOQ_CTX.renderInlined(DSL.select(pgSleep))
@@ -82,42 +78,41 @@ internal object Lib_RellHidden {
         function("_nullable", pure = true, since = "0.6.0") {
             generic("T")
             result(type = "T?")
-            param("value", type = "T")
-            body { a -> a }
+            val value by param("T", cast = Rt_Value)
+            body { value }
         }
 
         function("_nullable_int", "integer?", pure = true, since = "0.6.0") {
-            param("value", type = "integer?")
-            body { a -> a }
+            val value by param("integer?", cast = Rt_Value)
+            body { value }
         }
 
         function("_nullable_text", result = "text?", pure = true, since = "0.6.0") {
-            param("value", "text?")
-            body { a -> a }
+            val value by param("text?", cast = Rt_Value)
+            body { value }
         }
 
         function("_nop", pure = true, since = "0.6.0") {
             generic("T")
             result("T")
-            param("value", "T")
-            body { a -> a }
+            val value by param("T", cast = Rt_Value)
+            body { value }
         }
 
         function("_nop_print", pure = true, since = "0.6.0") {
             generic("T")
             result(type = "T")
-            param("value", type = "T")
-            bodyContext { ctx, a ->
-                ctx.globalCtx.outPrinter.print(a.str())
-                a
+            val value by param("T", cast = Rt_Value)
+            bodyContext { ctx ->
+                ctx.globalCtx.outPrinter.print(value.str())
+                value
             }
         }
 
         function("_strict_str", result = "text", since = "0.6.0") {
-            param("value", type = "anything")
-            body { a ->
-                val s = a.strCode()
-                Rt_TextValue.get(s)
+            val value by param("anything", cast = Rt_Value)
+            body {
+                Rt_TextValue.get(value.strCode())
             }
         }
     }

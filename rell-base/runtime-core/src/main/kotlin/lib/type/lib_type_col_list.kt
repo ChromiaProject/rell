@@ -15,11 +15,11 @@ object Lib_Type_List {
 
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("list", since = SINCE0) {
-            comment("""
+            """
                 Represents a mutable array list. Subtype of `collection<T>`.
 
                 @see 1. <a href="../collection/index.html"><code>collection</code> - Rell Standard Library</a>
-            """)
+            """.comment()
             generic("T")
             parent("collection<T>")
 
@@ -38,30 +38,32 @@ object Lib_Type_List {
 
             constructor(pure = true, since = SINCE0) {
                 comment("Construct a new list by copying the values from another iterable.")
-                param("values", type = "iterable<-T>") {
-                    comment("an iterable containing values with which to initialize this list")
-                }
+                val values by param(
+                    "iterable<-T>",
+                    cast = Rt_IterableValue,
+                    comment = "an iterable containing values with which to initialize this list",
+                )
                 bodyMeta {
                     val elemR = typeArgR("T")
-                    bodyContext { ctx, arg ->
+                    bodyContext { ctx ->
                         val listType = Rt_ListType(ctx.exeCtx.appCtx.interpreter.resolveRType(elemR))
-                        val iterable = (arg as Rt_IterableValue)
                         val list = mutableListOf<Rt_Value>()
-                        iterable.forEach { list.add(it) }
+                        values.forEach { list.add(it) }
                         Rt_ListValue(listType, list)
                     }
                 }
             }
 
             function("get", "T", pure = true, since = SINCE0) {
-                comment("""
+                """
                     Retrieve the element at the specified index.
                     @throws exception if the provided index is out of bounds
-                """)
-                param("index", "integer", comment = "the index of the element to retrieve")
-                body { self, index ->
-                    val list = (self as Rt_ListValue).elements
-                    val i = (index as Rt_IntValue).value
+                """.comment()
+                val self by self(Rt_ListValue)
+                val index by param(Rt_IntValue, comment = "the index of the element to retrieve")
+                body {
+                    val list = self.elements
+                    val i = index.value
                     if (i < 0 || i >= list.size) {
                         throw Rt_Exception.common(
                             "fn:list.get:index:${list.size}:$i",
@@ -73,31 +75,33 @@ object Lib_Type_List {
             }
 
             function("index_of", "integer", pure = true, since = "0.9.0") {
-                comment("""
+                """
                     Search for the first occurrence of the specified element within this list.
                     @return the index of the first occurrence of the element within this list, or `-1` if the element
                     does not occur in this list
-                """)
+                """.comment()
+                val self by self(Rt_ListValue)
                 alias("indexOf", deprecated = C_MessageType.ERROR, since = SINCE0)
-                param("value", "T", comment = "the element for which to search")
-                body { self, value ->
-                    val list = (self as Rt_ListValue).elements
+                val value by param("T", cast = Rt_Value, comment = "the element for which to search")
+                body {
+                    val list = self.elements
                     Rt_IntValue.get(list.indexOf(value).toLong())
                 }
             }
 
             function("remove_at", "T", since = "0.9.0") {
-                comment("""
+                """
                     Remove and return the element at the specified index. The indices of elements occurring after the
                     specified index decrease by 1, and the size of this list decreases by 1.
                     @return the element that was at the specified index
                     @throws exception if the index is out of bounds
-                """)
+                """.comment()
+                val self by self(Rt_ListValue)
                 alias("removeAt", deprecated = C_MessageType.ERROR, since = SINCE0)
-                param("index", "integer", comment = "the index of the element to remove")
-                body { self, index ->
-                    val list = (self as Rt_ListValue).elements
-                    val i = (index as Rt_IntValue).value
+                val index by param(Rt_IntValue, comment = "the index of the element to remove")
+                body {
+                    val list = self.elements
+                    val i = index.value
 
                     if (i < 0 || i >= list.size) {
                         throw Rt_Exception.common(
@@ -112,7 +116,7 @@ object Lib_Type_List {
             }
 
             function("sub", "list<T>", pure = true, since = SINCE0) {
-                comment("""
+                """
                     Returns a sublist of this list starting from the specified index (inclusive).
 
                     Equivalent to `list.sub(index, list.size())`.
@@ -123,18 +127,18 @@ object Lib_Type_List {
                     - `my_list.sub(my_list.size())` returns an empty list
                     - `my_list.sub(my_list.size() + 1)` throws an exception
                     @throws exception if the `start` index greater than this list's size
-                """)
-                param("start", "integer", comment = "the starting index of the sublist (inclusive)")
-                body { self, start ->
+                """.comment()
+                val self by self(Rt_ListValue)
+                val start by param(Rt_IntValue, comment = "the starting index of the sublist (inclusive)")
+                body {
                     val type = self.type
-                    val list = (self as Rt_ListValue).elements
-                    val startIndex = (start as Rt_IntValue).value
-                    calcSub(type, list, startIndex, list.size.toLong())
+                    val list = self.elements
+                    calcSub(type, list, start.value, list.size.toLong())
                 }
             }
 
             function("sub", "list<T>", pure = true, since = SINCE0) {
-                comment("""
+                """
                     Returns a sublist of this list starting from the specified start index (inclusive) to the specified
                     end index (exclusive).
 
@@ -143,31 +147,29 @@ object Lib_Type_List {
                     @throws exception when:
                     - the `start` or `end` indexes are greater than this list's size
                     - the `start` index is greater than the `end` index
-                """)
-                param("start", "integer", comment = "the start index of the sublist (inclusive)")
-                param("end", "integer", comment = "the end index of the sublist (exclusive)")
-                body { self, start, end ->
-                    val type = self.type
-                    val list = (self as Rt_ListValue).elements
-                    val startIndex = (start as Rt_IntValue).value
-                    val endIndex = (end as Rt_IntValue).value
-                    calcSub(type, list, startIndex, endIndex)
+                """.comment()
+                val self by self(Rt_ListValue)
+                val start by param(Rt_IntValue, comment = "the start index of the sublist (inclusive)")
+                val end by param(Rt_IntValue, comment = "the end index of the sublist (exclusive)")
+                body {
+                    calcSub(self.type, self.elements, start.value, end.value)
                 }
             }
 
             function("set", "T", since = SINCE0) {
-                comment("""
+                """
                     Set the element at the specified index, overwriting the element that was previously at that index.
                     The size of the list is unchanged.
                     @return the overwritten element
                     @throws exception if the index is out of bounds
-                """)
+                """.comment()
+                val self by self(Rt_ListValue)
                 alias("_set", deprecated = C_MessageType.WARNING, since = SINCE0)
-                param("index", "integer", comment = "the index of the element to set")
-                param("value", "T", comment = "the value to set")
-                body { self, index, value ->
-                    val list = (self as Rt_ListValue).elements
-                    val i = (index as Rt_IntValue).value
+                val index by param(Rt_IntValue, comment = "the index of the element to set")
+                val value by param("T", cast = Rt_Value, comment = "the value to set")
+                body {
+                    val list = self.elements
+                    val i = index.value
 
                     if (i < 0 || i >= list.size) {
                         throw Rt_Exception.common(
@@ -182,7 +184,7 @@ object Lib_Type_List {
             }
 
             function("add", "boolean", since = SINCE0) {
-                comment("""
+                """
                     Insert a value at the specified index. Any elements previously occurring at and after the specified
                     index have their indices increased by 1, and the size of the list increases by 1.
 
@@ -194,12 +196,13 @@ object Lib_Type_List {
                     `collection<T>`).
                     @return `true`
                     @throws exception if the index is out of bounds
-                """)
-                param("index", "integer", comment = "The index at which to add the element.")
-                param("value", "T", comment = "The value to add.")
-                body { self, index, value ->
-                    val list = (self as Rt_ListValue).elements
-                    val i = (index as Rt_IntValue).value
+                """.comment()
+                val self by self(Rt_ListValue)
+                val index by param(Rt_IntValue, comment = "The index at which to add the element.")
+                val value by param("T", cast = Rt_Value, comment = "The value to add.")
+                body {
+                    val list = self.elements
+                    val i = index.value
 
                     if (i < 0 || i > list.size) {
                         throw Rt_Exception.common(
@@ -214,7 +217,7 @@ object Lib_Type_List {
             }
 
             function("add_all", "boolean", since = "0.9.0") {
-                comment("""
+                """
                     Insert all elements from a collection at the specified index. Any elements previously occurring at
                     and after the specified index have their indices increased by the size of the given collection. The
                     size of the list increases by the size of the given collection.
@@ -228,31 +231,41 @@ object Lib_Type_List {
                     from `collection<T>`).
                     @return `true`
                     @throws exception if the specified index is out of bounds
-                """)
+                """.comment()
+
+                val self by self(Rt_ListValue)
                 alias("addAll", deprecated = C_MessageType.ERROR, since = SINCE0)
-                param("index", "integer", comment = "the starting index at which to add the elements")
-                param("values", "collection<-T>", comment = "the collection containing elements to add")
-                body { self, index, values ->
-                    val list = (self as Rt_ListValue).elements
-                    val i = (index as Rt_IntValue).value
-                    val col = (values as Rt_CollectionValue).collection
+                val index by param(Rt_IntValue, comment = "the starting index at which to add the elements")
+                val values by param(
+                    "collection<-T>",
+                    cast = Rt_CollectionValue,
+                    comment = "the collection containing elements to add",
+                )
+
+                body(Rt_BooleanValue) {
+                    val list = self.elements
+                    val i = index.value
+                    val col = values.collection
 
                     if (i < 0 || i > list.size) {
-                        throw Rt_Exception.common("fn:list.add_all:index:${list.size}:$i", "Index out of range: $i (size ${list.size})")
+                        throw Rt_Exception.common(
+                            "fn:list.add_all:index:${list.size}:$i",
+                            "Index out of range: $i (size ${list.size})"
+                        )
                     }
 
-                    val r = list.addAll(i.toInt(), col)
-                    Rt_BooleanValue.get(r)
+                    list.addAll(i.toInt(), col)
                 }
             }
 
             function("sort", "unit", since = "0.11.0") {
                 comment("Sort this list in place.")
+                val self by self(Rt_ListValue)
                 alias("_sort", deprecated = C_MessageType.WARNING, since = "0.8.0")
                 bodyMeta {
                     val comparator = Lib_Type_Collection.getSortComparatorRr(this, typeArgRrType("T"), typeArgR("T").name)
-                    body { a ->
-                        val list = (a as Rt_ListValue).elements
+                    body {
+                        val list = self.elements
                         list.sortWith(comparator)
                         Rt_UnitValue
                     }
@@ -260,7 +273,7 @@ object Lib_Type_List {
             }
 
             function("repeat", "list<T>", since = "0.11.0") {
-                comment("""
+                """
                     Repeat this list `n` times.
 
                     Examples:
@@ -273,17 +286,18 @@ object Lib_Type_List {
                     - `n` is greater than `(2^31)-1`
                     - the resulting list has size greater than `(2^31)-1`
                     @return a new list with the elements from this list repeated `n` times
-                """)
-                param("n", "integer", comment = "the number of times to repeat this list")
-                body { self, n ->
-                    val list = (self as Rt_ListValue).elements
-                    val nRepeats = (n as Rt_IntValue).value
+                """.comment()
 
-                    val total = rtCheckRepeatArgs(list.size, nRepeats, "list")
+                val self by self(Rt_ListValue)
+                val n by param(Rt_IntValue, comment = "the number of times to repeat this list")
+
+                body {
+                    val list = self.elements
+                    val total = rtCheckRepeatArgs(list.size, n.value, "list")
 
                     val resList: MutableList<Rt_Value> = ArrayList(total)
-                    if (nRepeats > 0 && list.isNotEmpty()) {
-                        for (_ in 0 until nRepeats) {
+                    if (n.value > 0 && list.isNotEmpty()) {
+                        for (_ in 0 until n.value) {
                             resList += list
                         }
                     }
@@ -293,30 +307,34 @@ object Lib_Type_List {
             }
 
             function("reverse", "unit", since = "0.11.0") {
-                comment("""
+                """
                     Reverses the order of the elements in the list in place.
 
                     Where this list is bound to the variable `l`, then the statement `l.reverse();` is equivalent to
                     `l = l.reversed();`.
-                """)
-                body { self ->
-                    val list = (self as Rt_ListValue).elements
+                """.comment()
+
+                val self by self(Rt_ListValue)
+
+                body {
+                    val list = self.elements
                     list.reverse()
                     Rt_UnitValue
                 }
             }
 
             function("reversed", "list<T>", since = "0.11.0") {
-                comment("""
+                """
                     Returns a new list with the elements of this list in reverse order.
 
                     Examples:
                     - `[].reversed()` returns `[]`
                     - `[1].reversed()` returns `[1]`
                     - `[1, 2, 3].reversed()` returns `[3, 2, 1]`
-                """)
-                body { self ->
-                    val list = (self as Rt_ListValue).elements
+                """.comment()
+                val self by self(Rt_ListValue)
+                body {
+                    val list = self.elements
                     val resList = list.toMutableList()
                     resList.reverse()
                     Rt_ListValue(self.type, resList)
@@ -324,7 +342,7 @@ object Lib_Type_List {
             }
 
             function("add_all_copy", "list<T>", since = "0.14.16") {
-                comment("""
+                """
                     Returns a new list that is the concatenation of the elements of this list with those of the given
                     collection.
 
@@ -334,13 +352,18 @@ object Lib_Type_List {
                     - `[].add_all_copy([])` returns `[]`
                     - `[1].add_all_copy([2])` returns `[1, 2]`
                     - `[[1]].add_all_copy([[2]])` returns `[[1], [2]]`
-                """)
-                param("values", "collection<-T>", comment = "the other collection")
-                body(::evalConcatList)
+                """.comment()
+                val self by self(Rt_ListValue)
+                val values by param(
+                    "collection<-T>",
+                    cast = Rt_CollectionValue,
+                    comment = "the other collection",
+                )
+                body { evalConcatList(self, values) }
             }
 
             function("remove_all_copy", "list<T>", since = "0.14.16") {
-                comment("""
+                """
                     Returns a new list whose elements are those found in this list and not in the given collection.
 
                     `a.remove_all_copy(b)` is equivalent to `a - b`, where `a` and `b` are lists.
@@ -349,13 +372,18 @@ object Lib_Type_List {
                     - `[1].remove_all_copy([1])` returns `[]`
                     - `[1].remove_all_copy([2])` returns `[1]`
                     - `[1, 2, 3, 5].remove_all_copy([2, 3, 4])` returns `[1, 5]`
-                """)
-                param("values", type = "collection<-T>", comment = "the other collection")
-                body(::evalSubList)
+                """.comment()
+                val self by self(Rt_ListValue)
+                val values by param(
+                    "collection<-T>",
+                    cast = Rt_CollectionValue,
+                    comment = "the other collection",
+                )
+                body { evalSubList(self, values) }
             }
 
             function("retain_all_copy", "list<T>", since = "0.14.16") {
-                comment("""
+                """
                     Return a new list whose elements are those found in both this list and the given collection, or in
                     other words, the intersection of this list and the given collection.
                     @return a new list whose elements are the intersection of this list and the given collection
@@ -366,9 +394,14 @@ object Lib_Type_List {
                     - `[1].retain_all_copy([1])` returns `[1]`
                     - `[1].retain_all_copy([2])` returns `[]`
                     - `[1, 2, 3].retain_all_copy([2, 3, 4])` returns `[2, 3]`
-                """)
-                param("values", type = "collection<-T>", comment = "the other collection")
-                body(::evalIntersectList)
+                """.comment()
+                val self by self(Rt_ListValue)
+                val values by param(
+                    "collection<-T>",
+                    cast = Rt_CollectionValue,
+                    comment = "the other collection",
+                )
+                body { evalIntersectList(self, values) }
             }
         }
     }

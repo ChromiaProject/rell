@@ -12,6 +12,8 @@ import net.postchain.rell.base.lmodel.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.mtype.*
+import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.Rt_ValueClass
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.futures.FcFuture
@@ -282,15 +284,16 @@ class Ld_TypeDef(
     }
 
     companion object {
-        fun make(
+        fun <T : Rt_Value> make(
             simpleName: Name,
             hdr: Ld_MemberHeader,
             flags: L_TypeDefFlags,
             rType: R_Type?,
             rrType: RR_Type? = null,
-            block: Ld_TypeDefDsl.() -> Unit,
+            selfValueClass: Rt_ValueClass<T>?,
+            block: Ld_TypeDefDsl<T>.() -> Unit,
         ): Ld_MemberDef<Ld_TypeDef> {
-            val builder = Ld_TypeDefBuilder(simpleName, flags = flags)
+            val builder = Ld_TypeDefBuilder(simpleName, flags = flags, selfValueClass = selfValueClass)
             builder.header(hdr)
 
             val dsl = Ld_TypeDefDslImpl(simpleName.str, builder)
@@ -321,7 +324,7 @@ class Ld_NamespaceMember_Type(
     }
 }
 
-interface Ld_TypeDefMaker: Ld_CommonNamespaceMaker, Ld_MemberHeaderMaker {
+internal interface Ld_TypeDefMaker<T : Rt_Value>: Ld_CommonNamespaceMaker, Ld_MemberHeaderMaker {
     fun generic(name: String, subOf: String?, superOf: String?, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)
 
     fun parent(type: String)
@@ -350,8 +353,15 @@ interface Ld_TypeDefMaker: Ld_CommonNamespaceMaker, Ld_MemberHeaderMaker {
     fun constructor(pure: Boolean?, hdr: Ld_MemberHeader, block: Ld_ConstructorDsl.() -> Ld_BodyResult)
     fun constructor(fn: C_SpecialLibGlobalFunctionBody, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)
 
-    fun function(
-        isStatic: Boolean,
+    fun method(
+        name: String,
+        result: String?,
+        pure: Boolean?,
+        hdr: Ld_MemberHeader,
+        block: Ld_MethodDsl<T>.() -> Ld_BodyResult,
+    )
+
+    fun staticFunction(
         name: String,
         result: String?,
         pure: Boolean?,
@@ -363,10 +373,10 @@ interface Ld_TypeDefMaker: Ld_CommonNamespaceMaker, Ld_MemberHeaderMaker {
     fun function(name: String, fn: C_SpecialLibMemberFunctionBody, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)
 }
 
-class Ld_TypeDefDslImpl(
+internal class Ld_TypeDefDslImpl<T : Rt_Value>(
     override val typeSimpleName: String,
-    private val maker: Ld_TypeDefMaker,
-): Ld_TypeDefDsl, Ld_CommonNamespaceDsl by Ld_CommonNamespaceDslImpl(maker), Ld_MemberDsl by Ld_MemberDslImpl(maker) {
+    private val maker: Ld_TypeDefMaker<T>,
+): Ld_TypeDefDsl<T>, Ld_CommonNamespaceDsl by Ld_CommonNamespaceDslImpl(maker), Ld_MemberDsl by Ld_MemberDslImpl(maker) {
     override fun generic(
         name: String,
         subOf: String?,
@@ -496,10 +506,10 @@ class Ld_TypeDefDslImpl(
         pure: Boolean?,
         since: String?,
         comment: String?,
-        block: Ld_FunctionDsl.() -> Ld_BodyResult,
+        block: Ld_MethodDsl<T>.() -> Ld_BodyResult,
     ) {
         val hdr = Ld_MemberHeader.make(since, comment)
-        maker.function(isStatic = false, name = name, result = result, pure = pure, hdr = hdr, block = block)
+        maker.method(name = name, result = result, pure = pure, hdr = hdr, block = block)
     }
 
     override fun function(
@@ -522,7 +532,7 @@ class Ld_TypeDefDslImpl(
         block: Ld_FunctionDsl.() -> Ld_BodyResult,
     ) {
         val hdr = Ld_MemberHeader.make(since, comment)
-        maker.function(isStatic = true, name = name, result = result, pure = pure, hdr = hdr, block = block)
+        maker.staticFunction(name = name, result = result, pure = pure, hdr = hdr, block = block)
     }
 
     override fun staticFunction(
@@ -544,10 +554,11 @@ class Ld_TypeParamBound(private val type: Ld_Type, private val subOf: Boolean) {
     }
 }
 
-private class Ld_TypeDefBuilder(
+private class Ld_TypeDefBuilder<T : Rt_Value>(
     private val simpleName: Name,
     private val flags: L_TypeDefFlags,
-): Ld_MemberHeaderBuilder(), Ld_TypeDefMaker {
+    private val selfValueClass: Rt_ValueClass<T>?,
+): Ld_MemberHeaderBuilder(), Ld_TypeDefMaker<T> {
     private val typeParams = mutableMapOf<Name, Ld_TypeParam>()
     private var selfType: String? = null
     private var parentType: Ld_TypeDefParent? = null
@@ -734,8 +745,29 @@ private class Ld_TypeDefBuilder(
         }
     }
 
-    override fun function(
-        isStatic: Boolean,
+    override fun method(
+        name: String,
+        result: String?,
+        pure: Boolean?,
+        hdr: Ld_MemberHeader,
+        block: Ld_MethodDsl<T>.() -> Ld_BodyResult,
+    ) {
+        val rName = Name.of(name)
+
+        val def = Ld_FunctionBuilder.buildMethod(
+            hdr,
+            simpleName = rName,
+            result = result,
+            pure = pure,
+            outerTypeParams = typeParams.keys.toImmSet(),
+            selfType = selfValueClass,
+            block = block,
+        )
+
+        addFunctionMember(rName, def, isStatic = false)
+    }
+
+    override fun staticFunction(
         name: String,
         result: String?,
         pure: Boolean?,
@@ -753,6 +785,10 @@ private class Ld_TypeDefBuilder(
             block = block,
         )
 
+        addFunctionMember(rName, def, isStatic = true)
+    }
+
+    private fun addFunctionMember(rName: Name, def: Ld_MemberDef<Ld_Function>, isStatic: Boolean) {
         val conflictChecker = if (isStatic) staticConflictChecker else valueConflictChecker
         val kind = Ld_ConflictMemberKind.FUNCTION
         conflictChecker.addMember(rName, kind)

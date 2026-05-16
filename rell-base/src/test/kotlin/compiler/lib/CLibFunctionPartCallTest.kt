@@ -97,12 +97,12 @@ class CLibFunctionPartCallTest: BaseCLibTest() {
     @Test fun testPartCallCasesNoHintMany() {
         tst.extraMod = makeModule {
             function("_foo", "text") {
-                param("a", "integer")
-                body { a -> Rt_TextValue.get("_foo(integer):${a.str()}") }
+                val a by param("integer", cast = Rt_Value)
+                body(Rt_TextValue) { "_foo(integer):${a.str()}" }
             }
             function("_foo", "text") {
-                param("a", "boolean")
-                body { a -> Rt_TextValue.get("_foo(boolean):${a.str()}") }
+                val a by param("boolean", cast = Rt_Value)
+                body(Rt_TextValue) { "_foo(boolean):${a.str()}" }
             }
         }
         chk("_foo(*)", "ct_err:expr:call:partial_ambiguous:[_foo]")
@@ -111,8 +111,8 @@ class CLibFunctionPartCallTest: BaseCLibTest() {
     @Test fun testPartCallCasesNoHintOneBad() {
         tst.extraMod = makeModule {
             function("_foo", "text") {
-                param("a", "iterable<-any>")
-                body { a -> Rt_TextValue.get("_foo:${a.str()}") }
+                val a by param("iterable<-any>", cast = Rt_Value)
+                body(Rt_TextValue) { "_foo:${a.str()}" }
             }
         }
         chk("_foo(*)", "ct_err:expr:call:partial_bad_case:[_foo(iterable<-any>):text]")
@@ -121,8 +121,8 @@ class CLibFunctionPartCallTest: BaseCLibTest() {
     @Test fun testPartCallCasesNoHintOneGood() {
         tst.extraMod = makeModule {
             function("_foo", "text") {
-                param("a", "integer")
-                body { a -> Rt_TextValue.get("_foo:${a.strCode()}") }
+                val a by param("integer", cast = Rt_Value)
+                body(Rt_TextValue) { "_foo:${a.strCode()}" }
             }
         }
         chk("_foo(*)", "fn[_foo(*)]")
@@ -132,12 +132,12 @@ class CLibFunctionPartCallTest: BaseCLibTest() {
     @Test fun testPartCallCasesHintMany() {
         tst.extraMod = makeModule {
             function("_foo", "text") {
-                param("a", "iterable<integer>")
-                body { a -> Rt_TextValue.get("_foo(iterable):${a.str()}") }
+                val a by param("iterable<integer>", cast = Rt_Value)
+                body(Rt_TextValue) { "_foo(iterable):${a.str()}" }
             }
             function("_foo", "text") {
-                param("a", "collection<integer>")
-                body { a -> Rt_TextValue.get("_foo(collection):${a.str()}") }
+                val a by param("collection<integer>", cast = Rt_Value)
+                body(Rt_TextValue) { "_foo(collection):${a.str()}" }
             }
         }
 
@@ -149,8 +149,8 @@ class CLibFunctionPartCallTest: BaseCLibTest() {
     @Test fun testPartCallCasesHintOneBad() {
         tst.extraMod = makeModule {
             function("_foo", "text") {
-                param("a", "iterable<-any>")
-                body { a -> Rt_TextValue.get("_foo:${a.str()}") }
+                val a by param("iterable<-any>", cast = Rt_Value)
+                body { Rt_TextValue.get("_foo:${a.str()}") }
             }
         }
         chkEx("{ val f = _foo(*); return f; }", "ct_err:expr:call:partial_bad_case:[_foo(iterable<-any>):text]")
@@ -161,8 +161,8 @@ class CLibFunctionPartCallTest: BaseCLibTest() {
     @Test fun testPartCallCasesHintOneGood() {
         tst.extraMod = makeModule {
             function("_foo", "text") {
-                param("a", "integer")
-                body { a -> Rt_TextValue.get("_foo:${a.strCode()}") }
+                val a by param("integer", cast = Rt_Value)
+                body { Rt_TextValue.get("_foo:${a.strCode()}") }
             }
         }
         chkEx("{ val f: (integer) -> text = _foo(*); return f; }", "fn[_foo(*)]")
@@ -176,16 +176,16 @@ class CLibFunctionPartCallTest: BaseCLibTest() {
     @Test fun testPartCallExactMatchParams() {
         tst.extraMod = makeModule {
             function("_foo", "text") {
-                param("a", "(integer?,text)")
-                body { a -> Rt_TextValue.get("_foo_0:${a.strCode()}") }
+                val a by param("(integer?,text)", cast = Rt_Value)
+                body { Rt_TextValue.get("_foo_0:${a.strCode()}") }
             }
             function("_foo", "text") {
-                param("a", "(integer,text?)")
-                body { a -> Rt_TextValue.get("_foo_1:${a.strCode()}") }
+                val a by param("(integer,text?)", cast = Rt_Value)
+                body(Rt_TextValue) { "_foo_1:${a.strCode()}" }
             }
             function("_foo", "text") {
-                param("a", "(integer?,text?)")
-                body { a -> Rt_TextValue.get("_foo_2:${a.strCode()}") }
+                val a by param("(integer?,text?)", cast = Rt_Value)
+                body(Rt_TextValue) { "_foo_2:${a.strCode()}" }
             }
         }
 
@@ -215,13 +215,13 @@ class CLibFunctionPartCallTest: BaseCLibTest() {
                 fieldClasses = immListOf(Rt_PrimitiveTypes.INTEGER, Rt_PrimitiveTypes.TEXT),
             )
             function("_foo", "(integer?,text)") {
-                body { -> Rt_TupleValue.make(tupleRtType, Rt_IntValue.get(1), Rt_TextValue.get("_foo_0")) }
+                body { Rt_TupleValue.make(tupleRtType, Rt_IntValue.get(1), Rt_TextValue.get("_foo_0")) }
             }
             function("_foo", "(integer,text?)") {
-                body { -> Rt_TupleValue.make(tupleRtType, Rt_IntValue.get(1), Rt_TextValue.get("_foo_1")) }
+                body { Rt_TupleValue.make(tupleRtType, Rt_IntValue.get(1), Rt_TextValue.get("_foo_1")) }
             }
             function("_foo", "(integer?,text?)") {
-                body { -> Rt_TupleValue.make(tupleRtType, Rt_IntValue.get(1), Rt_TextValue.get("_foo_2")) }
+                body { Rt_TupleValue.make(tupleRtType, Rt_IntValue.get(1), Rt_TextValue.get("_foo_2")) }
             }
         }
 

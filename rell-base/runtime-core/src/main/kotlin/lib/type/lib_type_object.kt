@@ -25,7 +25,7 @@ import net.postchain.rell.base.utils.mapToImmList
 object Lib_Type_Object {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("object", abstract = true, hidden = true, since = "0.7.0") {
-            comment("""
+            """
                 Parent of all object types. An object is a singleton data structure that resides in the SQL database.
 
                 Objects are much like entities, with the following restrictions:
@@ -62,7 +62,7 @@ object Lib_Type_Object {
                 ```
 
                 @see 1. <a href="https://docs.chromia.com/rell/language-features/database/overview#-operator"><code>@</code> operator - Chromia Documentation</a>
-            """)
+            """.comment()
             supertypeStrategySpecial { mType ->
                 val rType = L_TypeUtils.getRTypeOrNull(mType)
                 rType is R_ObjectType
@@ -72,7 +72,7 @@ object Lib_Type_Object {
         namespace("rell") {
             extension("object_ext", type = "object", since = "0.7.0") {
                 function("to_struct", C_Fn_ToStruct(false), since = "0.10.4") {
-                    comment("""
+                    """
                         Convert this object value to a `struct<T>`.
 
                         Example:
@@ -86,10 +86,10 @@ object Lib_Type_Object {
                             print(state.to_struct()); // prints: struct<state>{x=0,s=n/a}
                         }
                         ```
-                    """)
+                    """.comment()
                 }
                 function("to_mutable_struct", C_Fn_ToStruct(true), since = "0.10.4") {
-                    comment("""
+                    """
                         Convert this object value to a `struct<mutable T>`.
 
                         Example:
@@ -103,7 +103,7 @@ object Lib_Type_Object {
                             print(state.to_mutable_struct()); // prints: struct<mutable state>{x=0,s=n/a}
                         }
                         ```
-                    """)
+                    """.comment()
                 }
             }
         }

@@ -50,7 +50,7 @@ class LDocCommentTest: BaseLTest() {
                 """)
                 param("x", "integer")
                 param("y", "text")
-                body { -> Rt_UnitValue }
+                body { Rt_UnitValue }
             }
         }
     }
@@ -72,14 +72,14 @@ class LDocCommentTest: BaseLTest() {
         chkErr("DOCE:comment:tag:duplicate:return") {
             makeModule("test") {
                 function("f", result = "any", comment = "hello\n@return 123\n@return 456") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
         chkErr("DOCE:comment:tag:duplicate:param[x]") {
             makeModule("test") {
                 function("f", result = "any", comment = "hello\n@param x 123\n@param x 123") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -208,27 +208,27 @@ class LDocCommentTest: BaseLTest() {
         chkComment("f", "desc|param:x=") {
             function("f", result = "unit", comment = "desc\n@param x") {
                 param("x", "integer")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
         chkErr("DOCE:tag:no_key:param") {
             makeModule("test") {
                 function("f", result = "any", comment = "desc\n@param") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
         chkErr("DOCE:comment:param:invalid_name:[test:f]:123") {
             makeModule("test") {
                 function("f", result = "any", comment = "desc\n@param 123") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
         chkErr("DOCE:comment:param:unknown:[test:f]:x") {
             makeModule("test") {
                 function("f", result = "any", comment = "desc\n@param x") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -247,23 +247,23 @@ class LDocCommentTest: BaseLTest() {
             function("f", result = "unit", comment = funComment) {
                 param("x", "integer", comment = paramComment1)
                 param("y", "text", comment = paramComment2)
-                body { -> Rt_UnitValue }
+                body { Rt_UnitValue }
             }
             type("data") {
                 constructor(comment = funComment) {
                     param("x", "integer", comment = paramComment1)
                     param("y", "text", comment = paramComment2)
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("f", result = "unit", comment = funComment) {
                     param("x", "integer", comment = paramComment1)
                     param("y", "text", comment = paramComment2)
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 staticFunction("g", result = "unit", comment = funComment) {
                     param("x", "integer", comment = paramComment1)
                     param("y", "text", comment = paramComment2)
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -300,7 +300,7 @@ class LDocCommentTest: BaseLTest() {
                         See 3
 
                 """)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
     }

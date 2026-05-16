@@ -34,22 +34,22 @@ class CLibFunctionTypeExtTest: BaseCLibTest() {
             extension("ext", type = "A") {
                 generic("A", subOf = "any")
                 staticFunction("static_self_type", result = "text") {
-                    bodyMeta { body { -> Rt_TextValue.get(fnBodyMeta.rSelfType.strCode()) } }
+                    bodyMeta { body { Rt_TextValue.get(fnBodyMeta.rSelfType.strCode()) } }
                 }
                 staticFunction("static_result_type", result = "A") {
-                    bodyMeta { body { -> Rt_TextValue.get(fnBodyMeta.rResultType.strCode()) } }
+                    bodyMeta { body { Rt_TextValue.get(fnBodyMeta.rResultType.strCode()) } }
                 }
                 staticFunction("static_type_args", result = "text") {
-                    bodyMeta { body { -> Rt_TextValue.get(argsToStr(fnBodyMeta.rTypeArgs)) } }
+                    bodyMeta { body { Rt_TextValue.get(argsToStr(fnBodyMeta.rTypeArgs)) } }
                 }
                 function("value_self_type", result = "text") {
-                    bodyMeta { body { _ -> Rt_TextValue.get(fnBodyMeta.rSelfType.strCode()) } }
+                    bodyMeta { body { Rt_TextValue.get(fnBodyMeta.rSelfType.strCode()) } }
                 }
                 function("value_result_type", result = "A") {
-                    bodyMeta { body { _ -> Rt_TextValue.get(fnBodyMeta.rResultType.strCode()) } }
+                    bodyMeta { body { Rt_TextValue.get(fnBodyMeta.rResultType.strCode()) } }
                 }
                 function("value_type_args", result = "text") {
-                    bodyMeta { body { _ -> Rt_TextValue.get(argsToStr(fnBodyMeta.rTypeArgs)) } }
+                    bodyMeta { body { Rt_TextValue.get(argsToStr(fnBodyMeta.rTypeArgs)) } }
                 }
             }
         }
@@ -145,22 +145,24 @@ class CLibFunctionTypeExtTest: BaseCLibTest() {
                 value { _ -> Rt_IntValue.ZERO }
             }
             staticFunction("test_decode", result = "T") {
-                param("a", type = "integer")
-                body { a ->
-                    Rt_Utils.check((a as Rt_IntValue).value != 0L) { "x=${a.strCode()}" to "x = ${a.str()}" }
-                    check((a as Rt_IntValue).value >= 0)
+                val a by param(Rt_IntValue)
+                body {
+                    Rt_Utils.check(a.value != 0L) { "x=${a.strCode()}" to "x = ${a.str()}" }
+                    check(a.value >= 0)
                     a
                 }
             }
+
             function("test_encode", result = "T") {
-                param("a", type = "integer")
-                body { _, a ->
-                    val v = (a as Rt_IntValue).value
+                val a by param(Rt_IntValue)
+                body {
+                    val v = a.value
                     Rt_Utils.check(v != 0L) { "x=${a.strCode()}" to "x = ${a.str()}" }
                     check(v >= 0)
                     Rt_TextValue.get(a.str())
                 }
             }
+
             staticFunction("spec_decode", object: C_SpecialLibGlobalFunctionBody() {
                 override fun compileCall(
                     ctx: C_ExprContext,

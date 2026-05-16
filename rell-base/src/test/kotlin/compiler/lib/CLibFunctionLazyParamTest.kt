@@ -16,12 +16,12 @@ class CLibFunctionLazyParamTest: BaseCLibTest() {
         tst.extraMod = makeModule {
             function("f", result = "unit") {
                 param("a", type = "integer", lazy = true)
-                body { _ -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             extension("ext", type = "any") {
                 function("g", result = "unit") {
                     param("a", type = "integer", lazy = true)
-                    body { _, _ -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -173,22 +173,23 @@ class CLibFunctionLazyParamTest: BaseCLibTest() {
         val MODULE: C_LibModule = C_LibModule.make("test", Lib_Rell.MODULE, requireSince = false) {
             extension("boolean_ext", type = "boolean") {
                 function("if_int", result = "integer") {
-                    param("a", type = "integer", lazy = true)
-                    param("b", type = "integer", lazy = true)
-                    body { arg1, arg2, arg3 ->
-                        val resValue = if ((arg1 as Rt_BooleanValue).value) arg2 else arg3
-                        (resValue as Rt_LazyResolvableValue).resolveLazy()
+                    val self by self(Rt_BooleanValue)
+                    val a by param("integer", cast = Rt_LazyResolvableValue, lazy = true)
+                    val b by param("integer", cast = Rt_LazyResolvableValue, lazy = true)
+                    body {
+                        val resValue = if (self.value) a else b
+                        resValue.resolveLazy()
                     }
                 }
             }
 
             function("if_int", "integer") {
-                param("a", "boolean")
-                param("b", "integer", lazy = true)
-                param("c", "integer", lazy = true)
-                body { a, b, c ->
-                    val resValue = if ((a as Rt_BooleanValue).value) b else c
-                    (resValue as Rt_LazyResolvableValue).resolveLazy()
+                val a by param(Rt_BooleanValue)
+                val b by param("integer", cast = Rt_LazyResolvableValue, lazy = true)
+                val c by param("integer", cast = Rt_LazyResolvableValue, lazy = true)
+                body {
+                    val resValue = if (a.value) b else c
+                    resValue.resolveLazy()
                 }
             }
         }

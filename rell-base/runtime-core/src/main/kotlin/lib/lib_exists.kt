@@ -34,7 +34,7 @@ import net.postchain.rell.base.utils.immListOf
 internal object Lib_Exists {
     val NAMESPACE = Ld_NamespaceDsl.make {
         function("exists", C_SysFn_Exists(false), since = "0.6.0") {
-            comment("""
+            """
                 Checks if a value is present, i.e. not `null` and not empty.
 
                 The negation of `empty()`.
@@ -72,17 +72,17 @@ internal object Lib_Exists {
 
                 @return `true` if `value` is not `null` and not an empty collection, `false` otherwise
                 @see 1. <a href="empty.html"><code>empty</code> - Rell Standard Library</a>
-            """)
+            """.comment()
         }
         function("empty", C_SysFn_Exists(true), since = "0.8.0") {
-            comment("""
+            """
                 Checks if a value is absent, i.e. `null` or empty.
 
                 Equivalent to `not exists(...)`.
 
                 @return `true` if `value` is `null` or an empty collection, `false` otherwise
                 @see 1. <a href="exists.html"><code>exists</code> - Rell Standard Library</a>
-            """)
+            """.comment()
         }
     }
 }

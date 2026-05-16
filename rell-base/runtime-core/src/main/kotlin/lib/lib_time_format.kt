@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.lib
 
-import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_PrimitiveType
 import net.postchain.rell.base.runtime.Rt_IntValue
@@ -16,8 +15,8 @@ import java.text.ParseException
 internal object Lib_RellTimeFormat {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.time", since = "0.14.14") {
-            type("format", rType = R_TimeFormatType, since = "0.14.14") {
-                comment("""
+            type(Rt_TimeFormatValue, "format", rType = R_TimeFormatType, since = "0.14.14") {
+                """
                     A time formatter type for formatting and parsing UTC dates and times. A `rell.time.format` value is
                     constructed from format pattern text. The resulting value can then be used to format a unix
                     timestamp according to the format pattern text, or the inverse, i.e. to parse a timestamp from text
@@ -59,59 +58,55 @@ internal object Lib_RellTimeFormat {
                     rell.time.format('yyyy-MM-dd\'T\'HH:mm:ss.SSS').ms_to_text(ms) // returns '2001-07-04T11:08:56.235'
                     rell.time.format('yyyy-\'W\'ww-u').ms_to_text(ms) // returns '2001-W27-3'
                     ```
-                """)
+                """.comment()
 
                 constructor(pure = true, since = "0.14.14") {
-                    comment("""
+                    """
                         Construct a rell.time.format value from time format pattern text.
                         @throws exception if the given format pattern text is invalid
-                    """)
-                    param("pattern", "text", arity = L_ParamArity.ONE, comment = "the time format pattern text")
-                    body { format ->
-                        val formatString = (format as Rt_TextValue).value
-                        Rt_TimeFormatValue(formatString)
+                    """.comment()
+                    val pattern by param(Rt_TextValue, comment = "the time format pattern text")
+                    body {
+                        Rt_TimeFormatValue(pattern.value)
                     }
                 }
 
                 function("ms_to_text", "text", since = "0.14.14") {
-                    comment("""
+                    """
                         Format a unix timestamp according to this time format value.
                         @return a text representation of the given unix timestamp
-                    """)
-                    param("ms", "integer", arity = L_ParamArity.ONE, comment = "the unix timestamp")
-                    body { self, ms ->
-                        val formatValue = (self as Rt_TimeFormatValue)
-                        val msValue = (ms as Rt_IntValue).value
-                        Rt_TextValue.get(formatValue.msToText(msValue))
+                    """.comment()
+                    val self by self()
+                    val ms by param(Rt_IntValue, comment = "the unix timestamp")
+                    body(Rt_TextValue) {
+                        self.msToText(ms.value)
                     }
                 }
 
                 function("text_to_ms", "integer", since = "0.14.14") {
-                    comment("""
+                    """
                         Parse a unix timestamp from text formatted according to this time format value.
                         @return the unix timestamp represented by the given text
                         @throws exception if the given text is not formatted according to this time format value
-                    """)
-                    param("text", "text", arity = L_ParamArity.ONE, comment = "the time-formatted text")
-                    body { self, text ->
-                        val formatValue = (self as Rt_TimeFormatValue)
-                        val textValue = (text as Rt_TextValue).value
-                        Rt_IntValue.get(formatValue.textToMs(textValue))
+                    """.comment()
+                    val self by self()
+                    val text by param(Rt_TextValue, comment = "the time-formatted text")
+                    body(Rt_IntValue) {
+                        self.textToMs(text.value)
                     }
                 }
 
                 function("text_to_ms_or_null", "integer?", since = "0.14.14") {
-                    comment("""
+                    """
                         Parse a unix timestamp from text formatted according to this time format value.
                         @return the unix timestamp represented by the given text, or `null` if the given text is not
                         formatted according to this time format value
-                    """)
-                    param("text", "text", arity = L_ParamArity.ONE, comment = "the time-formatted text")
-                    body { self, text ->
+                    """.comment()
+                    val self by self()
+                    val text by param(Rt_TextValue, comment = "the time-formatted text")
+                    body {
                         try {
-                            val formatValue = (self as Rt_TimeFormatValue)
-                            val textValue = (text as Rt_TextValue).value
-                            Rt_IntValue.get(formatValue.textToMs(textValue))
+                            Rt_IntValue.get(self.textToMs(text.value))
                         } catch (_: ParseException) {
                             Rt_NullValue
                         }
@@ -120,58 +115,53 @@ internal object Lib_RellTimeFormat {
 
                 function("to_text", "text", since = "0.14.14") {
                     comment("Get the format text of this time format value.")
-                    body { self -> Rt_TextValue.get((self as Rt_TimeFormatValue).toText()) }
+                    val self by self()
+                    body(Rt_TextValue) { self.toText() }
                 }
             }
 
             function("ms_to_text", "text", since = "0.14.14") {
-                comment("""
+                """
                     Format a unix timestamp according to the given time format text.
 
                     Equivalent to `rell.time.format(pattern).ms_to_text(ms)`.
                     @return a text representation of the given unix timestamp, in the specified format
-                """)
-                param("pattern", "text", arity = L_ParamArity.ONE, comment = "the time format pattern text")
-                param("ms", "integer", arity = L_ParamArity.ONE, comment = "the unix timestamp")
-                body { format, ms ->
-                    val formatString = (format as Rt_TextValue).value
-                    val msValue = (ms as Rt_IntValue).value
-                    Rt_TextValue.get(Rt_TimeFormatValue(formatString).msToText(msValue))
+                """.comment()
+                val pattern by param(Rt_TextValue, comment = "the time format pattern text")
+                val ms by param(Rt_IntValue, comment = "the unix timestamp")
+                body(Rt_TextValue) {
+                    Rt_TimeFormatValue(pattern.value).msToText(ms.value)
                 }
             }
 
             function("text_to_ms", "integer", since = "0.14.14") {
-                comment("""
+                """
                     Parse a unix timestamp from text formatted according to the given time format pattern text.
 
                     Equivalent to `rell.time.format(pattern).text_to_ms(text)`.
                     @return the unix timestamp represented by the given text
                     @throws exception if the given text is not formatted according to the given time format pattern text
-                """)
-                param("pattern", "text", arity = L_ParamArity.ONE, comment = "the time format pattern text")
-                param("text", "text", arity = L_ParamArity.ONE, comment = "the time-formatted text")
-                body { format, text ->
-                    val formatString = (format as Rt_TextValue).value
-                    val dateString = (text as Rt_TextValue).value
-                    Rt_IntValue.get(Rt_TimeFormatValue(formatString).textToMs(dateString))
+                """.comment()
+                val pattern by param(Rt_TextValue, comment = "the time format pattern text")
+                val text by param(Rt_TextValue, comment = "the time-formatted text")
+                body(Rt_IntValue) {
+                    Rt_TimeFormatValue(pattern.value).textToMs(text.value)
                 }
             }
 
             function("text_to_ms_or_null", "integer?", since = "0.14.14") {
-                comment("""
+                """
                     Parse a unix timestamp from text formatted according to the given time format pattern text.
 
                     Equivalent to `rell.time.format(pattern).text_to_ms_or_null(text)`.
                     @return the unix timestamp represented by the given text, or `null` if the given text is not
                     formatted according to the given time format pattern text
-                """)
-                param("pattern", "text", arity = L_ParamArity.ONE, comment = "the time format pattern text")
-                param("text", "text", arity = L_ParamArity.ONE, comment = "the time-formatted text")
-                body { format, text ->
+                """.comment()
+                val pattern by param(Rt_TextValue, comment = "the time format pattern text")
+                val text by param(Rt_TextValue, comment = "the time-formatted text")
+                body {
                     try {
-                        val formatString = (format as Rt_TextValue).value
-                        val dateString = (text as Rt_TextValue).value
-                        Rt_IntValue.get(Rt_TimeFormatValue(formatString).textToMs(dateString))
+                        Rt_IntValue.get(Rt_TimeFormatValue(pattern.value).textToMs(text.value))
                     } catch (_: ParseException) {
                         Rt_NullValue
                     }

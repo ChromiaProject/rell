@@ -14,14 +14,14 @@ class LTypeExtensionTest: BaseLTest() {
             extension("ext", type = "T") {
                 generic("T", subOf = "any")
                 function("get", result = "T") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("set", result = "anything") {
                     param("a", type = "T")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 staticFunction("create", result = "T") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -99,7 +99,7 @@ class LTypeExtensionTest: BaseLTest() {
             extension("ext", type = "any") {
             }
             function("f", result = "ext") {
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
     }

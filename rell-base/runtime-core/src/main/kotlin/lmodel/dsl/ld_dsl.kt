@@ -20,4 +20,14 @@ interface Ld_ModuleDsl: Ld_NamespaceBodyDsl {
 interface Ld_MemberDsl {
     fun since(version: String)
     fun comment(text: String)
+
+    /**
+     * Alias for [comment] with the text as the receiver: `"""...""".comment()`. Lets a
+     * multi-line `"""..."""` block stay as a leading expression instead of a wrapped call
+     * argument, which the code formatter handles far more gracefully. The receiver is
+     * [CharSequence] rather than [String] so the JVM signature does not clash with [comment].
+     */
+    fun CharSequence.comment() {
+        comment(toString())
+    }
 }

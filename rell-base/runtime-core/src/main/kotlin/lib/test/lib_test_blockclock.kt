@@ -19,7 +19,7 @@ internal object Lib_Test_BlockClock {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.test") {
             constant("DEFAULT_FIRST_BLOCK_TIME", DEFAULT_FIRST_BLOCK_TIME, since = "0.13.3") {
-                comment("""
+                """
                     The default value for the timestamp of the first block in the blockchain, in milliseconds. Equal to
                     `2020-01-01 00:00:00 UTC`, or `1577836800000`.
 
@@ -27,19 +27,19 @@ internal object Lib_Test_BlockClock {
                     milliseconds that have elapsed since midnight on 1st January 1970.
 
                     @see 1. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
-                """)
+                """.comment()
             }
             constant("DEFAULT_BLOCK_INTERVAL", DEFAULT_BLOCK_INTERVAL, since = "0.13.3") {
-                comment("""
+                """
                     The default value for the time interval between each block in the blockchain, in milliseconds.
                     Equal to `10000` (`10` seconds).
 
                     @see 1. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
-                """)
+                """.comment()
             }
 
             property("last_block_time", type = "timestamp", since = "0.13.3") {
-                comment("""
+                """
                     The timestamp of the most recently built block in the blockchain, in milliseconds.
 
                     This is a [Unix epoch timestamp](https://en.wikipedia.org/wiki/Unix_time), i.e. the number of
@@ -48,7 +48,7 @@ internal object Lib_Test_BlockClock {
                     blockchain has yet to be built)
 
                     @see 1. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
-                """)
+                """.comment()
                 value { ctx ->
                     val t0 = ctx.exeCtx.testBlockClock.getLastBlockTime()
                     val t = Rt_Utils.checkNotNull(t0) {
@@ -59,7 +59,7 @@ internal object Lib_Test_BlockClock {
             }
 
             property("last_block_time_or_null", type = "timestamp?", since = "0.13.3") {
-                comment("""
+                """
                     The timestamp of the most recently built block in the blockchain, in milliseconds.
 
                     If there are no blocks in the blockchain (i.e. if the first block in the blockchain has yet to be
@@ -69,7 +69,7 @@ internal object Lib_Test_BlockClock {
                     the number of milliseconds that have elapsed since midnight on 1st January 1970.
 
                     @see 1. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
-                """)
+                """.comment()
                 value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getLastBlockTime()
                     if (t == null) Rt_NullValue else Rt_IntValue.get(t)
@@ -77,7 +77,7 @@ internal object Lib_Test_BlockClock {
             }
 
             property("next_block_time", type = "timestamp", since = "0.13.3") {
-                comment("""
+                """
                     The timestamp that the next block will have, once built, in milliseconds.
 
                     Equivalent to `rell.test.last_block_time + rell.test.block_interval` (assuming there is at least one
@@ -87,7 +87,7 @@ internal object Lib_Test_BlockClock {
                     milliseconds that will have elapsed since midnight on 1st January 1970.
 
                     @see 1. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
-                """)
+                """.comment()
                 value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getNextBlockTime()
                     Rt_IntValue.get(t)
@@ -95,7 +95,7 @@ internal object Lib_Test_BlockClock {
             }
 
             property("block_interval", type = "timestamp", since = "0.13.3") {
-                comment("""
+                """
                     The time interval that will be used to determine the time of the next block to be built.
 
                     The next block to be built will have a timestamp equal to
@@ -110,7 +110,7 @@ internal object Lib_Test_BlockClock {
                     @see 2. <a href="set_next_block_time.html"><code>rell.test.set_next_block_time()</code> - Rell Standard Library</a>
                     @see 3. <a href="set_next_block_time_delta.html"><code>rell.test.set_next_block_time_delta()</code> - Rell Standard Library</a>
                     @see 4. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
-                """)
+                """.comment()
                 value { ctx ->
                     val t = ctx.exeCtx.testBlockClock.getBlockInterval()
                     Rt_IntValue.get(t)
@@ -118,7 +118,7 @@ internal object Lib_Test_BlockClock {
             }
 
             function("set_block_interval", result = "integer", since = "0.13.3") {
-                comment("""
+                """
                     Set the time interval between future blocks in the blockchain, in milliseconds.
 
                     If the timestamp for the next block has been explicitly set by calling
@@ -130,18 +130,18 @@ internal object Lib_Test_BlockClock {
                     @see 1. <a href="set_next_block_time.html"><code>rell.test.set_next_block_time()</code> - Rell Standard Library</a>
                     @see 2. <a href="set_next_block_time_delta.html"><code>rell.test.set_next_block_time_delta()</code> - Rell Standard Library</a>
                     @see 3. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
-                """)
-                param(name = "interval", type = "integer", comment = "the time interval between blocks")
-                bodyContext { ctx, a ->
+                """.comment()
+                val interval by param(Rt_IntValue, comment = "the time interval between blocks")
+                bodyContext { ctx ->
                     val clock = ctx.exeCtx.testBlockClock
                     val res = clock.getBlockInterval()
-                    clock.setBlockInterval((a as Rt_IntValue).value)
+                    clock.setBlockInterval(interval.value)
                     Rt_IntValue.get(res)
                 }
             }
 
             function("set_next_block_time", result = "unit", since = "0.13.3") {
-                comment("""
+                """
                     Set the timestamp that the next block will have, once built, in milliseconds.
 
                     `time` is a [Unix epoch timestamp](https://en.wikipedia.org/wiki/Unix_time), i.e. the number of
@@ -151,16 +151,16 @@ internal object Lib_Test_BlockClock {
 
                     @see 1. <a href="set_next_block_time_delta.html"><code>rell.test.set_next_block_time_delta()</code> - Rell Standard Library</a>
                     @see 2. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
-                """)
-                param(name = "time", type = "timestamp", comment = "timestamp to use on next block")
-                bodyContext { ctx, a ->
-                    ctx.exeCtx.testBlockClock.setNextBlockTime((a as Rt_IntValue).value)
+                """.comment()
+                val time by param("timestamp", cast = Rt_IntValue, comment = "timestamp to use on next block")
+                bodyContext { ctx ->
+                    ctx.exeCtx.testBlockClock.setNextBlockTime(time.value)
                     Rt_UnitValue
                 }
             }
 
             function("set_next_block_time_delta", result = "unit", since = "0.13.3") {
-                comment("""
+                """
                     Set the timestamp that the next block will have, once built, relative to the previous block, in
                     milliseconds.
 
@@ -175,10 +175,10 @@ internal object Lib_Test_BlockClock {
 
                     @see 1. <a href="set_next_block_time.html"><code>rell.test.set_next_block_time()</code> - Rell Standard Library</a>
                     @see 2. <a href="block/index.html"><code>rell.test.block</code> - Rell Standard Library</a>
-                """)
-                param(name = "delta", type = "integer", comment = "the time delta between the previous and next block")
-                bodyContext { ctx, a ->
-                    ctx.exeCtx.testBlockClock.setNextBlockTimeDelta((a as Rt_IntValue).value)
+                """.comment()
+                val delta by param(Rt_IntValue, comment = "the time delta between the previous and next block")
+                bodyContext { ctx ->
+                    ctx.exeCtx.testBlockClock.setNextBlockTimeDelta(delta.value)
                     Rt_UnitValue
                 }
             }

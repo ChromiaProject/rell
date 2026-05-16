@@ -28,12 +28,10 @@ object Lib_Type_VirtualList {
             }
 
             function("get", result = "T2", pure = true, since = "0.9.0") {
-                param("index", type = "integer")
-                body { a, b ->
-                    val list = (a as Rt_VirtualListValue)
-                    val index = (b as Rt_IntValue).value
-                    val res = list.get(index)
-                    res
+                val self by self(Rt_VirtualListValue)
+                val index by param(Rt_IntValue)
+                body {
+                    self.get(index.value)
                 }
             }
 

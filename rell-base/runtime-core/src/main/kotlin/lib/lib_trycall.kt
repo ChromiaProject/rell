@@ -20,7 +20,7 @@ import java.sql.SQLException
 internal object Lib_TryCall: KLogging() {
     val NAMESPACE = Ld_NamespaceDsl.make {
         function("try_call", result = "boolean", since = "0.13.0") {
-            comment("""
+            """
                 Safely call a function that may fail (i.e. that may throw an exception).
 
                 Accepts 0-ary unit-typed function references, i.e. references to functions of type `() -> unit`.
@@ -39,15 +39,15 @@ internal object Lib_TryCall: KLogging() {
                 try_call(succeeds(*)) // logs nothing, returns true
                 ```
                 @return `true` if call returns without throwing any exceptions, `false` otherwise
-            """)
-            param("fn", type = "() -> unit", exact = true, comment = "the function to call")
-            bodyContext { ctx, fn ->
+            """.comment()
+            val fn by param("() -> unit", cast = Rt_Value, exact = true, comment = "the function to call")
+            bodyContext { ctx ->
                 tryCall(ctx, fn, onSuccess = { Rt_BooleanValue.TRUE }, onFailure = { Rt_BooleanValue.FALSE })
             }
         }
 
         function("try_call", result = "T?", since = "0.13.0") {
-            comment("""
+            """
                 Safely call a function that may fail (i.e. that may throw an exception).
 
                 Accepts 0-ary function references, i.e. references to functions of type `() -> T`, and returns `T?`,
@@ -67,16 +67,16 @@ internal object Lib_TryCall: KLogging() {
                 try_call(succeeds(*)) // logs nothing, returns 0
                 ```
                 @return the return value of `fn` if the call returns without throwing any exceptions, `null` otherwise
-            """)
+            """.comment()
             generic("T")
-            param("fn", type = "() -> T", comment = "the function to be called")
-            bodyContext { ctx, fn ->
+            val fn by param("() -> T", cast = Rt_Value, comment = "the function to be called")
+            bodyContext { ctx ->
                 tryCall(ctx, fn, onFailure = { Rt_NullValue })
             }
         }
 
         function("try_call", result = "T", since = "0.13.0") {
-            comment("""
+            """
                 Safely call a function that may fail (i.e. that may throw an exception).
 
                 Accepts 0-ary function references, i.e. references to functions of type `() -> T`, and a default
@@ -97,17 +97,22 @@ internal object Lib_TryCall: KLogging() {
                 ```
                 @return the return value of `fn` if the call returns without throwing any exceptions, `default`
                 otherwise
-            """)
+            """.comment()
             generic("T")
-            param("fn", type = "() -> T", comment = "the function to be called")
-            param("default", type = "T", lazy = true, comment = "the default value")
-            bodyContext { ctx, fn, default ->
-                tryCall(ctx, fn, onFailure = { (default as Rt_LazyResolvableValue).resolveLazy() })
+            val fn by param("() -> T", cast = Rt_Value, comment = "the function to be called")
+            val default by param(
+                "T",
+                cast = Rt_LazyResolvableValue,
+                lazy = true,
+                comment = "the default value",
+            )
+            bodyContext { ctx ->
+                tryCall(ctx, fn, onFailure = { default.resolveLazy() })
             }
         }
 
         function("try_call_catch", result = "try_call_result<T>", since = "0.14.16") {
-            comment("""
+            """
                 Safely call a function that may fail (i.e. that may throw an exception), returning a result that can be
                 inspected for errors.
 
@@ -132,11 +137,11 @@ internal object Lib_TryCall: KLogging() {
                 try_call_catch(succeeds(*)) // returns a try_call_result containing 17
                 ```
                 @return a `try_call_result<T>` containing either the return value of `fn` or error information
-            """)
+            """.comment()
             generic("T")
-            param("fn", type = "() -> T", comment = "the function to be called")
+            val fn by param("() -> T", cast = Rt_Value, comment = "the function to be called")
 
-            bodyContext { ctx, fn ->
+            bodyContext { ctx ->
                 val resultType = tryCallResultType(fn)
                 tryCall(
                     ctx,
@@ -166,7 +171,7 @@ internal object Lib_TryCall: KLogging() {
 
         type("try_call_result", since = "0.14.16") {
             generic("T")
-            comment("""
+            """
                 Type representing the result of a function call that may have thrown a `require` exception.
 
                 Constructed by calling `try_call_catch()`. Contains either a value of type `T` or error information.
@@ -174,16 +179,16 @@ internal object Lib_TryCall: KLogging() {
                 Use `is_error` to check if the call failed, `value` to get the value (if the call succeeded),
                 `value_or_null` to get the value or null (if the call failed), or `require_message_or_null` to get
                 the error message (if the call failed) or null (if the call succeeded).
-            """)
+            """.comment()
 
             rType { t -> R_TryCallResultType(t) }
 
             property("is_error", type = "boolean", pure = true, since = "0.14.16") {
-                comment("""
+                """
                     Check if this result represents an error.
-                """)
-                value { self ->
-                    Rt_BooleanValue.get((self as Rt_TryCallResultValue).isError)
+                """.comment()
+                value(Rt_TryCallResultValue) { self ->
+                    Rt_BooleanValue.get(self.isError)
                 }
             }
 
@@ -197,8 +202,8 @@ internal object Lib_TryCall: KLogging() {
                     @throws exception if the function call threw a `require` exception
                 """,
             ) {
-                value { self ->
-                    (self as Rt_TryCallResultValue).valueOrNull
+                value(Rt_TryCallResultValue) { self ->
+                    self.valueOrNull
                         ?: throw Rt_Exception.common("try_call_result:value:novalue", "Field 'value' has no value")
                 }
             }
@@ -212,18 +217,18 @@ internal object Lib_TryCall: KLogging() {
                     Get the value contained in this result or null if this result represents an error.
                 """,
             ) {
-                value { self ->
-                    (self as Rt_TryCallResultValue).valueOrNull ?: Rt_NullValue
+                value(Rt_TryCallResultValue) { self ->
+                    self.valueOrNull ?: Rt_NullValue
                 }
             }
 
             property("require_message_or_null", type = "text?", pure = true, since = "0.14.16") {
-                comment("""
+                """
                     Get the error message from the `require` exception that was thrown by the function call,
                     or null if the function call did not throw an exception.
-                """)
-                value { self ->
-                    val msg = (self as Rt_TryCallResultValue).requireMessageOrNull
+                """.comment()
+                value(Rt_TryCallResultValue) { self ->
+                    val msg = self.requireMessageOrNull
                     if (msg != null) Rt_TextValue.get(msg) else Rt_NullValue
                 }
             }

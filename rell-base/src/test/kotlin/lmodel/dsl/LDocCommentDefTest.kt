@@ -7,6 +7,7 @@ package net.postchain.rell.base.lmodel.dsl
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_UnitValue
+import net.postchain.rell.base.runtime.Rt_Value
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.test.Test
@@ -133,7 +134,7 @@ class LDocCommentDefTest: BaseLTest() {
         chkNamespace("f") {
             function("f", "any", since = it.since, comment = it.comment) {
                 it.fn(this)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
         chkNamespace("f") {
@@ -167,7 +168,7 @@ class LDocCommentDefTest: BaseLTest() {
         chkType("!init") {
             constructor(since = it.since, comment = it.comment) {
                 it.fn(this)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
         chkType("!init") {
@@ -191,7 +192,7 @@ class LDocCommentDefTest: BaseLTest() {
         chkType("f") {
             function("f", "any", since = it.since, comment = it.comment) {
                 it.fn(this)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
         chkType("f") {
@@ -200,7 +201,7 @@ class LDocCommentDefTest: BaseLTest() {
         chkType("f") {
             staticFunction("f", "any", since = it.since, comment = it.comment) {
                 it.fn(this)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
         chkType("f") {
@@ -221,7 +222,7 @@ class LDocCommentDefTest: BaseLTest() {
         }
     }
 
-    private fun chkType(name: String, block: Ld_TypeDefDsl.(TestParams) -> Unit) {
+    private fun chkType(name: String, block: Ld_TypeDefDsl<Rt_Value>.(TestParams) -> Unit) {
         chkNamespace("data.$name") { params ->
             type("data") {
                 block(this, params)
@@ -233,19 +234,19 @@ class LDocCommentDefTest: BaseLTest() {
         chkNamespace(name) { params ->
             function("f", "any") {
                 block(this, params)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
         chkType(name) { params ->
             function("f", "any") {
                 block(this, params)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
         chkType(name) { params ->
             staticFunction("f", "any") {
                 block(this, params)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
     }

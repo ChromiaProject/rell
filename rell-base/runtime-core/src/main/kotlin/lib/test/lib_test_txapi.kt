@@ -15,7 +15,7 @@ import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lib.make
 import net.postchain.rell.base.lib.type.Lib_Type_Struct
 import net.postchain.rell.base.lmodel.L_ParamArity
-import net.postchain.rell.base.lmodel.dsl.Ld_FunctionDsl
+import net.postchain.rell.base.lmodel.dsl.Ld_MethodDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_TypeDefDsl
 import net.postchain.rell.base.model.*
@@ -101,11 +101,12 @@ private class BlockCommonFunctions(
     private val runFullName = "$typeQName.run"
     private val runMustFailFullName = "$typeQName.run_must_fail"
 
-    fun runFunction(m: Ld_TypeDefDsl, block: Ld_FunctionDsl.() -> Unit = {}) = with(m) {
+    fun runFunction(m: Ld_TypeDefDsl<Rt_Value>, block: Ld_MethodDsl<Rt_Value>.() -> Unit = {}) = with(m) {
         function("run", "unit", since = SINCE0) {
             block()
-            bodyContext { ctx, arg ->
-                val blk = getRunBlock(ctx, arg, runFullName)
+            val self by self(Rt_Value)
+            bodyContext { ctx ->
+                val blk = getRunBlock(ctx, self, runFullName)
                 try {
                     ctx.appCtx.blockRunner.runBlock(ctx, blk)
                 } catch (e: Rt_Exception) {
@@ -126,24 +127,25 @@ private class BlockCommonFunctions(
         }
     }
 
-    fun runMustFailFunction(m: Ld_TypeDefDsl, block: Ld_FunctionDsl.() -> Unit = {}) = with(m) {
+    fun runMustFailFunction(m: Ld_TypeDefDsl<Rt_Value>, block: Ld_MethodDsl<Rt_Value>.() -> Unit = {}) = with(m) {
         function("run_must_fail", "rell.test.failure", since = SINCE0) {
             block()
-            bodyContext { ctx, arg ->
-                val blk = getRunBlock(ctx, arg, runMustFailFullName)
+            val self by self(Rt_Value)
+            bodyContext { ctx ->
+                val blk = getRunBlock(ctx, self, runMustFailFullName)
                 runMustFail(ctx, blk, null)
             }
         }
     }
 
-    fun runMustFailWithMessageFunction(m: Ld_TypeDefDsl, block: Ld_FunctionDsl.() -> Unit = {}) = with(m) {
+    fun runMustFailWithMessageFunction(m: Ld_TypeDefDsl<Rt_Value>, block: Ld_MethodDsl<Rt_Value>.() -> Unit = {}) = with(m) {
         function("run_must_fail", "rell.test.failure", since = "0.11.0") {
             block()
-            param("expected_message", "text", comment = "the expected substring of the error message")
-            bodyContext { ctx, arg1, arg2 ->
-                val blk = getRunBlock(ctx, arg1, runMustFailFullName)
-                val expected = (arg2 as Rt_TextValue).value
-                runMustFail(ctx, blk, expected)
+            val self by self(Rt_Value)
+            val expected_message by param(Rt_TextValue, comment = "the expected substring of the error message")
+            bodyContext { ctx ->
+                val blk = getRunBlock(ctx, self, runMustFailFullName)
+                runMustFail(ctx, blk, expected_message.value)
             }
         }
     }
@@ -179,19 +181,22 @@ private class BlockCommonFunctions(
 }
 
 private class TxCommonFunctions(private val txGetter: (self: Rt_Value) -> Rt_TestTxValue) {
-    fun signWithKeypairList(m: Ld_TypeDefDsl, objectArticleText: String, block: Ld_FunctionDsl.() -> Unit) = with(m) {
+    fun signWithKeypairList(m: Ld_TypeDefDsl<Rt_Value>, objectArticleText: String, block: Ld_MethodDsl<Rt_Value>.() -> Unit) = with(m) {
         function("sign", "rell.test.tx", since = SINCE0) {
             block()
-            param("keypairs", type = "list<rell.test.keypair>") {
-                comment("the list of keypairs with which to sign $objectArticleText transaction")
-            }
-            body { arg1, arg2 ->
-                signByKeyPairs(arg1, (arg2 as Rt_ListValue).elements)
+            val self by self(Rt_Value)
+            val keypairs by param(
+                "list<rell.test.keypair>",
+                cast = Rt_ListValue,
+                comment = "the list of keypairs with which to sign $objectArticleText transaction",
+            )
+            body {
+                signByKeyPairs(self, keypairs.elements)
             }
         }
     }
 
-    fun signWithKeypairs(m: Ld_TypeDefDsl, objectArticleText: String, block: Ld_FunctionDsl.() -> Unit) = with(m) {
+    fun signWithKeypairs(m: Ld_TypeDefDsl<Rt_Value>, objectArticleText: String, block: Ld_MethodDsl<Rt_Value>.() -> Unit) = with(m) {
         function("sign", "rell.test.tx", since = SINCE0) {
             block()
             param("keypairs", type = "rell.test.keypair", arity = L_ParamArity.ONE_MANY) {
@@ -204,19 +209,22 @@ private class TxCommonFunctions(private val txGetter: (self: Rt_Value) -> Rt_Tes
         }
     }
 
-    fun signWithPrivkeyList(m: Ld_TypeDefDsl, objectArticleText: String, block: Ld_FunctionDsl.() -> Unit) = with(m) {
+    fun signWithPrivkeyList(m: Ld_TypeDefDsl<Rt_Value>, objectArticleText: String, block: Ld_MethodDsl<Rt_Value>.() -> Unit) = with(m) {
         function("sign", "rell.test.tx", since = SINCE0) {
             block()
-            param("privkeys", type = "list<byte_array>") {
-                comment("the list of private keys with which to sign $objectArticleText transaction")
-            }
-            body { arg1, arg2 ->
-                signByByteArrays(arg1, (arg2 as Rt_ListValue).elements)
+            val self by self(Rt_Value)
+            val privkeys by param(
+                "list<byte_array>",
+                cast = Rt_ListValue,
+                comment = "the list of private keys with which to sign $objectArticleText transaction",
+            )
+            body {
+                signByByteArrays(self, privkeys.elements)
             }
         }
     }
 
-    fun signWithPrivkeys(m: Ld_TypeDefDsl, objectArticleText: String, block: Ld_FunctionDsl.() -> Unit) = with(m) {
+    fun signWithPrivkeys(m: Ld_TypeDefDsl<Rt_Value>, objectArticleText: String, block: Ld_MethodDsl<Rt_Value>.() -> Unit) = with(m) {
         function("sign", "rell.test.tx", since = SINCE0) {
             block()
             param("privkeys", "byte_array", arity = L_ParamArity.ONE_MANY) {
@@ -270,7 +278,7 @@ internal object Lib_Type_Block {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.test") {
             type("block", rType = R_TestBlockType, since = SINCE0) {
-                comment("""
+                """
                     A test block builder; i.e. a [builder](https://en.wikipedia.org/wiki/Builder_pattern) for test
                     blockchain blocks.
 
@@ -298,15 +306,17 @@ internal object Lib_Type_Block {
                     @see 6. <a href="../block_interval.html"><code>rell.test.block_interval</code> - Rell Standard Library</a>
                     @see 7. <a href="../set_block_interval.html"><code>rell.test.set_block_interval()</code> - Rell Standard Library</a>
                     @see 8. <a href="https://docs.chromia.com/rell/tests/namespace/block"><code>rell.test.block</code> - Chromia Documentation</a>
-                """)
+                """.comment()
 
                 constructor(since = SINCE0) {
                     comment("Construct a test block builder from the specified list of transactions.")
-                    param("txs", type = "list<rell.test.tx>") {
-                        comment("the list of test transactions with which to initialize this test block builder")
-                    }
-                    body { arg ->
-                        Rt_TestBlockValue((arg as Rt_ListValue).elements.map { asTestTx(it).toRaw() })
+                    val txs by param(
+                        "list<rell.test.tx>",
+                        cast = Rt_ListValue,
+                        comment = "the list of test transactions with which to initialize this test block builder",
+                    )
+                    body {
+                        Rt_TestBlockValue(txs.elements.map { asTestTx(it).toRaw() })
                     }
                 }
 
@@ -321,23 +331,25 @@ internal object Lib_Type_Block {
                 }
 
                 constructor(since = SINCE0) {
-                    comment("""
+                    """
                         Construct a test block builder with a single test transaction consisting of the specified list
                         of test operation calls.
-                    """)
-                    param("ops", type = "list<rell.test.op>") {
-                        comment("the list of test operation calls")
-                    }
-                    body { arg ->
-                        newOps((arg as Rt_ListValue).elements)
+                    """.comment()
+                    val ops by param(
+                        "list<rell.test.op>",
+                        cast = Rt_ListValue,
+                        comment = "the list of test operation calls",
+                    )
+                    body {
+                        newOps(ops.elements)
                     }
                 }
 
                 constructor(since = SINCE0) {
-                    comment("""
+                    """
                         Construct a test block builder with a single test transaction consisting of the specified test
                         operation calls.
-                    """)
+                    """.comment()
                     param("ops", type = "rell.test.op", arity = L_ParamArity.ONE_MANY) {
                         comment("the test operation calls")
                     }
@@ -351,38 +363,42 @@ internal object Lib_Type_Block {
                 }
 
                 common.runMustFailFunction(this) {
-                    comment("""
+                    """
                         Build a test block from this test block builder, asserting that the building fails (i.e. throws
                         an exception).
 
                         Typically used to test operation calls that must throw an exception.
-                    """)
+                    """.comment()
                 }
 
                 common.runMustFailWithMessageFunction(this) {
-                    comment("""
+                    """
                         Build a test block from this test block builder, asserting that the building fails; i.e. throws
                         an exception; with the given exception message.
 
                         Typically used to test operation calls that must throw an exception.
-                    """)
+                    """.comment()
                 }
 
                 function("copy", "rell.test.block", since = SINCE0) {
                     comment("Copy this test block builder.")
-                    body { arg ->
-                        val block = asTestBlock(arg)
+                    val self by self(Rt_Value)
+                    body {
+                        val block = asTestBlock(self)
                         Rt_TestBlockValue(block.txs())
                     }
                 }
 
                 function("tx", "rell.test.block", since = SINCE0) {
                     comment("Add a list of test transactions to this test block builder.")
-                    param("txs", type = "list<rell.test.tx>") {
-                        comment("the list of transactions to be added to this test block builder")
-                    }
-                    body { arg1, arg2 ->
-                        addTxs(arg1, (arg2 as Rt_ListValue).elements)
+                    val self by self(Rt_Value)
+                    val txs by param(
+                        "list<rell.test.tx>",
+                        cast = Rt_ListValue,
+                        comment = "the list of transactions to be added to this test block builder",
+                    )
+                    body {
+                        addTxs(self, txs.elements)
                     }
                 }
 
@@ -398,23 +414,26 @@ internal object Lib_Type_Block {
                 }
 
                 function("tx", "rell.test.block", since = SINCE0) {
-                    comment("""
+                    """
                         Add a single test transaction to this test block builder; the test transaction consisting of the
                         specified list of test operation calls.
-                    """)
-                    param("ops", type = "list<rell.test.op>") {
-                        comment("the list of test operation calls to include in the transaction")
-                    }
-                    body { arg1, arg2 ->
-                        addOps(arg1, (arg2 as Rt_ListValue).elements)
+                    """.comment()
+                    val self by self(Rt_Value)
+                    val ops by param(
+                        "list<rell.test.op>",
+                        cast = Rt_ListValue,
+                        comment = "the list of test operation calls to include in the transaction",
+                    )
+                    body {
+                        addOps(self, ops.elements)
                     }
                 }
 
                 function("tx", "rell.test.block", since = SINCE0) {
-                    comment("""
+                    """
                         Add a single test transaction to this test block builder; the test transaction consisting of the
                         specified test operation calls.
-                    """)
+                    """.comment()
                     param("ops", type = "rell.test.op", arity = L_ParamArity.ONE_MANY) {
                         comment("the test operation calls to include in the transaction")
                     }
@@ -458,7 +477,7 @@ private object Lib_Type_Tx {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.test") {
             type("tx", rType = R_TestTxType, since = SINCE0) {
-                comment("""
+                """
                     A test transaction builder; i.e. a [builder](https://en.wikipedia.org/wiki/Builder_pattern) for test
                     transactions that comprise blockchain blocks.
 
@@ -469,26 +488,28 @@ private object Lib_Type_Tx {
                     @see 1. <a href="https://en.wikipedia.org/wiki/Builder_pattern">Builder pattern - Wikipedia</a>
                     @see 2. <a href="../op/index.html"><code>rell.test.op</code> - Rell Standard Library</a>
                     @see 3. <a href="../keypair/index.html"><code>rell.test.keypair</code> - Rell Standard Library</a>
-                """)
+                """.comment()
 
                 constructor(since = SINCE0) {
-                    comment("""
+                    """
                         Construct a new test transaction builder consisting of the specified list of test operation
                         calls.
-                    """)
-                    param("ops", type = "list<rell.test.op>") {
-                        comment("the list of test operation calls to include in this transaction")
-                    }
-                    body { arg ->
-                        val ops = (arg as Rt_ListValue).elements.map { asTestOp(it).toRaw() }
-                        newTx(ops)
+                    """.comment()
+                    val ops by param(
+                        "list<rell.test.op>",
+                        cast = Rt_ListValue,
+                        comment = "the list of test operation calls to include in this transaction",
+                    )
+                    body {
+                        val rawOps = ops.elements.map { asTestOp(it).toRaw() }
+                        newTx(rawOps)
                     }
                 }
 
                 constructor(since = SINCE0) {
-                    comment("""
+                    """
                         Construct a new test transaction builder consisting of the specified test operation calls.
-                    """)
+                    """.comment()
                     param("ops", type = "rell.test.op", arity = L_ParamArity.ZERO_MANY) {
                         comment("the test operation calls to include in this transaction")
                     }
@@ -499,7 +520,7 @@ private object Lib_Type_Tx {
                 }
 
                 constructor(since = SINCE0) {
-                    comment("""
+                    """
                         Construct a new test transaction builder consisting of the specified list of test operation
                         calls.
 
@@ -517,19 +538,21 @@ private object Lib_Type_Tx {
                             struct<my_op>(foo = 2, bar = ["c", "d"])
                         ]);
                         ```
-                    """)
-                    param("ops", type = "list<-mirror_struct<-operation>>") {
-                        comment("the list of test operation calls to include in the built transaction")
-                    }
-                    bodyContext { ctx, arg ->
-                        val list = (arg as Rt_ListValue).elements
-                        val ops = list.map { structToOpRaw(ctx, it) }
-                        newTx(ops)
+                    """.comment()
+                    val ops by param(
+                        "list<-mirror_struct<-operation>>",
+                        cast = Rt_ListValue,
+                        comment = "the list of test operation calls to include in the built transaction",
+                    )
+                    bodyContext { ctx ->
+                        val list = ops.elements
+                        val rawOps = list.map { structToOpRaw(ctx, it) }
+                        newTx(rawOps)
                     }
                 }
 
                 constructor(since = SINCE0) {
-                    comment("""
+                    """
                         Construct a new test transaction builder consisting of the specified test operation calls.
 
                         The test operation calls are given as `struct<operation>` values.
@@ -546,7 +569,7 @@ private object Lib_Type_Tx {
                             struct<my_op>(foo = 2, bar = ["c", "d"])
                         );
                         ```
-                    """)
+                    """.comment()
                     param("ops", type = "mirror_struct<-operation>", arity = L_ParamArity.ONE_MANY) {
                         comment("the test operation calls to include in the built transaction")
                     }
@@ -561,16 +584,16 @@ private object Lib_Type_Tx {
                 }
 
                 block.runMustFailFunction(this) {
-                    comment("""
+                    """
                         Build a test block containing only this test transaction, asserting that the building fails
                         (i.e. throws an exception).
 
                         Typically used to test operation calls that must throw an exception.
-                    """)
+                    """.comment()
                 }
 
                 block.runMustFailWithMessageFunction(this) {
-                    comment("""
+                    """
                         Build a test block containing only this test transaction, asserting that the building fails;
                         i.e. throws an exception; with the given exception message.
 
@@ -579,46 +602,47 @@ private object Lib_Type_Tx {
                         `Run-time error: List index out of bounds: 0 (size 0)` is thrown.
 
                         Typically used to test operation calls that must throw an exception.
-                    """)
+                    """.comment()
                 }
 
                 tx.signWithKeypairList(this, "this") {
-                    comment("""
+                    """
                         Add the given list of keypairs as signers of this test transaction builder.
 
                         When this builder is built, the transaction will be signed with all keypairs in the list.
-                    """)
+                    """.comment()
                 }
 
                 tx.signWithKeypairs(this, "this") {
-                    comment("""
+                    """
                         Add the given keypairs as signers of this test transaction builder.
 
                         When this builder is built, the transaction will be signed with all given keypairs.
-                    """)
+                    """.comment()
                 }
 
                 tx.signWithPrivkeyList(this, "this") {
-                    comment("""
+                    """
                         Add the given list of private keys as signers of this test transaction builder.
 
                         When this builder is built, the transaction will be signed with all private keys in the list.
-                    """)
+                    """.comment()
                 }
 
                 tx.signWithPrivkeys(this, "this") {
-                    comment("""
+                    """
                         Add the given private keys as signers of this test transaction builder.
 
                         When this builder is built, the transaction will be signed with all given private keys.
-                    """)
+                    """.comment()
                 }
 
                 function("op", "rell.test.tx", since = SINCE0) {
                     comment("Add a list of test operation calls to this test transaction builder.")
-                    param("ops", type = "list<rell.test.op>", comment = "the list of operations to add")
-                    body { arg1, arg2 ->
-                        addOps(arg1, (arg2 as Rt_ListValue).elements)
+                    val self by self(Rt_Value)
+                    val ops by param("list<rell.test.op>", cast = Rt_ListValue, comment = "the list of operations to add")
+                    body {
+                        addOps(self, ops.elements)
                     }
                 }
 
@@ -634,7 +658,7 @@ private object Lib_Type_Tx {
                 }
 
                 function("op", "rell.test.tx", since = SINCE0) {
-                    comment("""
+                    """
                         Add a list of test operation calls to this test transaction builder.
 
                         The test operation calls are given as `struct<operation>` values.
@@ -651,17 +675,20 @@ private object Lib_Type_Tx {
                             struct<my_op>(foo = 2, bar = ["c", "d"])
                         ]);
                         ```
-                    """)
-                    param("ops", type = "list<-mirror_struct<-operation>>") {
-                        comment("the list of test operation calls to add to this transaction builder")
-                    }
-                    bodyContext { ctx, arg1, arg2 ->
-                        addOpStructs(ctx, arg1, (arg2 as Rt_ListValue).elements)
+                    """.comment()
+                    val self by self(Rt_Value)
+                    val ops by param(
+                        "list<-mirror_struct<-operation>>",
+                        cast = Rt_ListValue,
+                        comment = "the list of test operation calls to add to this transaction builder",
+                    )
+                    bodyContext { ctx ->
+                        addOpStructs(ctx, self, ops.elements)
                     }
                 }
 
                 function("op", "rell.test.tx", since = SINCE0) {
-                    comment("""
+                    """
                         Add the given test operation calls to this test transaction builder.
 
                         The test operation calls are given as `struct<operation>` values.
@@ -678,7 +705,7 @@ private object Lib_Type_Tx {
                             struct<my_op>(foo = 2, bar = ["c", "d"])
                         );
                         ```
-                    """)
+                    """.comment()
                     param("ops", type = "mirror_struct<-operation>", arity = L_ParamArity.ONE_MANY) {
                         comment("the test operation calls to add to this transaction builder")
                     }
@@ -689,7 +716,7 @@ private object Lib_Type_Tx {
                 }
 
                 function("nop", "rell.test.tx", since = SINCE0) {
-                    comment("""
+                    """
                         Add a nop test operation call to this transaction builder.
 
                         The zero-argument `rell.test.tx.nop()` is effectively an alias of `rell.test.tx.nop(x: integer)`
@@ -710,9 +737,10 @@ private object Lib_Type_Tx {
                         ```
 
                         @see 1. <a href="https://en.wikipedia.org/wiki/NOP_(code)">NOP - Wikipedia</a>
-                        """)
-                    bodyContext { ctx, arg ->
-                        val tx = asTestTx(arg)
+                        """.comment()
+                    val self by self(Rt_Value)
+                    bodyContext { ctx ->
+                        val tx = asTestTx(self)
                         val op = Lib_Nop.callNoArgs(ctx)
                         tx.addOp(op.toRaw())
                         tx
@@ -720,7 +748,7 @@ private object Lib_Type_Tx {
                 }
 
                 function("nop", "rell.test.tx", since = SINCE0) {
-                    comment("""
+                    """
                         Add a nop test operation call to this transaction builder.
 
                         Serves the purpose of distinguishing transactions that are identical except for the presence of
@@ -748,15 +776,16 @@ private object Lib_Type_Tx {
 
                         @see 1. <a href="https://en.wikipedia.org/wiki/NOP_(code)">NOP - Wikipedia</a>
                         @see 2. <a href="https://en.wikipedia.org/wiki/Cryptographic_nonce">Cryptographic nonce - Wikipedia</a>
-                        """)
-                    param("x", type = "integer", comment = "the nonce")
-                    body { arg1, arg2 ->
-                        calcNopOneArg(arg1, arg2)
+                        """.comment()
+                    val self by self(Rt_Value)
+                    val x by param(Rt_IntValue, comment = "the nonce")
+                    body {
+                        calcNopOneArg(self, x)
                     }
                 }
 
                 function("nop", "rell.test.tx", since = SINCE0) {
-                    comment("""
+                    """
                         Add a nop test operation call to this transaction builder.
 
                         Serves the purpose of distinguishing transactions that are identical except for the presence of
@@ -784,15 +813,17 @@ private object Lib_Type_Tx {
 
                         @see 1. <a href="https://en.wikipedia.org/wiki/NOP_(code)">NOP - Wikipedia</a>
                         @see 2. <a href="https://en.wikipedia.org/wiki/Cryptographic_nonce">Cryptographic nonce - Wikipedia</a>
-                        """)
-                    param("x", "text", comment = "the nonce")
-                    body { arg1, arg2 ->
-                        calcNopOneArg(arg1, arg2)
+                        """.comment()
+                    val self by self(Rt_Value)
+                    val x by param(Rt_TextValue, comment = "the nonce")
+
+                    body {
+                        calcNopOneArg(self, x)
                     }
                 }
 
                 function("nop", "rell.test.tx", since = SINCE0) {
-                    comment("""
+                    """
                         Add a nop test operation call to this transaction builder.
 
                         Serves the purpose of distinguishing transactions that are identical except for the presence of
@@ -820,17 +851,19 @@ private object Lib_Type_Tx {
 
                         @see 1. <a href="https://en.wikipedia.org/wiki/NOP_(code)">NOP - Wikipedia</a>
                         @see 2. <a href="https://en.wikipedia.org/wiki/Cryptographic_nonce">Cryptographic nonce - Wikipedia</a>
-                        """)
-                    param("x", "byte_array", comment = "the nonce")
-                    body { arg1, arg2 ->
-                        calcNopOneArg(arg1, arg2)
+                        """.comment()
+                    val self by self(Rt_Value)
+                    val x by param(Rt_ByteArrayValue, comment = "the nonce")
+                    body {
+                        calcNopOneArg(self, x)
                     }
                 }
 
                 function("copy", "rell.test.tx", since = SINCE0) {
                     comment("Copy this transaction builder.")
-                    body { arg ->
-                        val tx = asTestTx(arg)
+                    val self by self(Rt_Value)
+                    body {
+                        val tx = asTestTx(self)
                         tx.copy()
                     }
                 }
@@ -890,19 +923,21 @@ private object Lib_Type_Op {
                             )
                         }
                     }
-                    bodyContext { ctx, a ->
-                        Lib_Type_Tx.structToOp(ctx, a)
+                    val self by self(Rt_StructValue)
+                    bodyContext { ctx ->
+                        Lib_Type_Tx.structToOp(ctx, self)
                     }
                 }
             }
 
             extension("gtx_operation_ext", type = "gtx_operation", since = "0.13.4") {
                 function("to_test_op", "rell.test.op", since = "0.13.4") {
-                    comment("""
+                    """
                         Get a test operation call representing this `gtx_operation`.
 
                         Inverse of `rell.test.op.to_gtx_operation()`.
-                    """)
+                    """.comment()
+
                     validate { ctx ->
                         if (!ctx.exprCtx.modCtx.isTestLib()) {
                             val fnName = this.fnSimpleName
@@ -912,8 +947,10 @@ private object Lib_Type_Op {
                             )
                         }
                     }
-                    body { a ->
-                        val sv = (a as Rt_StructValue)
+
+                    val self by self(Rt_StructValue)
+                    body {
+                        val sv = self
                         // Validate by struct type name rather than R_StructType identity, so the pure-RR path works.
                         checkEquals(sv.type.name, Lib_Rell.GTX_OPERATION_STRUCT_TYPE.name)
                         val rtName = sv.get(0)
@@ -926,51 +963,53 @@ private object Lib_Type_Op {
             }
 
             type("op", rType = R_TestOpType, since = SINCE0) {
-                comment("""
+                """
                     A test operation call, consisting of a name (an operation's *mount name*), and a list of arguments
                     (a `list<gtv>`).
 
                     @see 1. <a href="https://docs.chromia.com/rell/language-features/modules/mount">Mount names - Chromia Documentation</a>
                     @see 2. <a href="../../[root]/list/index.html"><code>list</code> - Rell Standard Library</a>
                     @see 3. <a href="../../[root]/gtv/index.html"><code>gtv</code> - Rell Standard Library</a>
-                """)
+                """.comment()
 
                 constructor(since = SINCE0) {
-                    comment("""
+                    """
                         Construct a new test operation call from the given operation name and argument list.
-                    """)
-                    param("name", type = "text", comment = "the name of the operation")
-                    param("args", type = "list<gtv>", comment = "the arguments to the operation")
-                    body { arg1, arg2 ->
-                        newOp(arg1, (arg2 as Rt_ListValue).elements)
+                    """.comment()
+
+                    val name by param(Rt_TextValue, comment = "the name of the operation")
+                    val args by param("list<gtv>", cast = Rt_ListValue, comment = "the arguments to the operation")
+
+                    body {
+                        newOp(name, args.elements)
                     }
                 }
 
                 constructor(since = SINCE0) {
-                    comment("""
+                    """
                         Construct a new test operation call from the given operation name and arguments.
-                    """)
-                    param("name", type = "text", comment = "the name of the operation")
+                    """.comment()
+
+                    val name by param(Rt_TextValue, comment = "the name of the operation")
                     param("args", type = "gtv", arity = L_ParamArity.ZERO_MANY) {
                         comment("the arguments to the operation")
                     }
                     bodyN { args ->
                         check(args.isNotEmpty())
-                        val nameArg = args[0]
                         val tailArgs = args.subList(1, args.size)
-                        newOp(nameArg, tailArgs)
+                        newOp(name, tailArgs)
                     }
                 }
 
                 block.runFunction(this) {
-                    comment("""
+                    """
                         Build a test block containing a single test transaction, which contains only this test
                         operation call.
-                    """)
+                    """.comment()
                 }
 
                 block.runMustFailFunction(this) {
-                    comment("""
+                    """
                         Assert that this test operation call fails.
 
                         More precisely:
@@ -978,11 +1017,11 @@ private object Lib_Type_Op {
                         operation call.
                         2. Assert that the building fails (i.e. that invoking this test transaction
                         call results in a thrown exception).
-                    """)
+                    """.comment()
                 }
 
                 block.runMustFailWithMessageFunction(this) {
-                    comment("""
+                    """
                         Assert that this test operation call fails.
 
                         More precisely:
@@ -994,11 +1033,11 @@ private object Lib_Type_Op {
                         Checks that the given message is a substring of the thrown message. For example
                         `my_tx.run_must_fail('out of bounds')` succeeds if an exception with message
                         `Run-time error: List index out of bounds: 0 (size 0)` is thrown.
-                    """)
+                    """.comment()
                 }
 
                 tx.signWithKeypairList(this, "the returned") {
-                    comment("""
+                    """
                         Create a test transaction builder containing this test operation call, and add the keypairs in
                         the given list as signers of the test transaction.
 
@@ -1006,11 +1045,11 @@ private object Lib_Type_Op {
                         keypairs in the list.
 
                         @return a test transaction builder with this test operation call and given signers
-                    """)
+                    """.comment()
                 }
 
                 tx.signWithKeypairs(this, "the returned") {
-                    comment("""
+                    """
                         Create a test transaction builder containing this test operation call, and add the given
                         keypairs as signers of the test transaction.
 
@@ -1018,11 +1057,11 @@ private object Lib_Type_Op {
                         given keypairs.
 
                         @return a test transaction builder with this test operation call and given signers
-                    """)
+                    """.comment()
                 }
 
                 tx.signWithPrivkeyList(this, "the returned") {
-                    comment("""
+                    """
                         Create a test transaction builder containing this test operation call, and add the private keys
                         in the given list as signers of the test transaction.
 
@@ -1030,11 +1069,11 @@ private object Lib_Type_Op {
                         private keys in the list.
 
                         @return a test transaction builder with this test operation call and given signers
-                    """)
+                    """.comment()
                 }
 
                 tx.signWithPrivkeys(this, "the returned") {
-                    comment("""
+                    """
                         Create a test transaction builder containing this test operation call, and add the given private
                         keys as signers of the test transaction.
 
@@ -1042,7 +1081,7 @@ private object Lib_Type_Op {
                         private keys.
 
                         @return a test transaction builder with this test operation call and given signers
-                    """)
+                    """.comment()
                 }
 
                 property("name", type = "text", pure = true, since = "0.13.4") {
@@ -1061,19 +1100,22 @@ private object Lib_Type_Op {
 
                 function("tx", result = "rell.test.tx", since = SINCE0) {
                     comment("Create a test transaction builder containing this test operation call.")
-                    body { arg ->
-                        val op = asTestOp(arg).toRaw()
+                    val self by self(Rt_Value)
+
+                    body {
+                        val op = asTestOp(self).toRaw()
                         Rt_TestTxValue(listOf(op), listOf())
                     }
                 }
 
                 function("to_gtx_operation", result = "gtx_operation", pure = true, since = "0.13.4") {
-                    comment("""
+                    """
                         Convert this test operation call to a `gtx_operation`.
 
                         Inverse of `gtx_operation.to_test_op()`.
-                    """)
-                    body { self ->
+                    """.comment()
+                    val self by self(Rt_Value)
+                    body {
                         val op = asTestOp(self)
                         val attrs = mutableListOf(op.nameValue, op.argsValue())
                         Rt_StructValue(Lib_Rell.GTX_OPERATION_STRUCT_TYPE, attrs)
@@ -1107,7 +1149,7 @@ private object Lib_Nop {
     val NAMESPACE = Ld_NamespaceDsl.make {
         namespace("rell.test") {
             function("nop", "rell.test.op", since = SINCE0) {
-                comment("""
+                """
                         Create a no-op test operation call.
 
                         The zero-argument `rell.test.nop()` is effectively an alias of `rell.test.nop(x: integer)` where
@@ -1129,14 +1171,14 @@ private object Lib_Nop {
 
                         @see 1. <a href="https://en.wikipedia.org/wiki/NOP_(code)">NOP - Wikipedia</a>
                         @see 2. <a href="https://en.wikipedia.org/wiki/Cryptographic_nonce">Cryptographic nonce - Wikipedia</a>
-                        """)
+                        """.comment()
                 bodyContext { ctx ->
                     callNoArgs(ctx)
                 }
             }
 
             function("nop", "rell.test.op", since = SINCE0) {
-                comment("""
+                """
                         Create a no-op test operation call.
 
                         Serves the purpose of distinguishing transactions that are identical except for the presence of
@@ -1163,15 +1205,16 @@ private object Lib_Nop {
 
                         @see 1. <a href="https://en.wikipedia.org/wiki/NOP_(code)">NOP - Wikipedia</a>
                         @see 2. <a href="https://en.wikipedia.org/wiki/Cryptographic_nonce">Cryptographic nonce - Wikipedia</a>
-                """)
-                param("x", "integer", comment = "the nonce")
-                body { arg ->
-                    callOneArg(arg)
+                """.comment()
+
+                val x by param(Rt_IntValue, comment = "the nonce")
+                body {
+                    callOneArg(x)
                 }
             }
 
             function("nop", "rell.test.op", since = SINCE0) {
-                comment("""
+                """
                         Create a no-op test operation call.
 
                         Serves the purpose of distinguishing transactions that are identical except for the presence of
@@ -1198,15 +1241,16 @@ private object Lib_Nop {
 
                         @see 1. <a href="https://en.wikipedia.org/wiki/NOP_(code)">NOP - Wikipedia</a>
                         @see 2. <a href="https://en.wikipedia.org/wiki/Cryptographic_nonce">Cryptographic nonce - Wikipedia</a>
-                        """)
-                param("x", "text", comment = "the nonce")
-                body { arg ->
-                    callOneArg(arg)
+                        """.comment()
+
+                val x by param(Rt_TextValue, comment = "the nonce")
+                body {
+                    callOneArg(x)
                 }
             }
 
             function("nop", "rell.test.op", since = SINCE0) {
-                comment("""
+                """
                         Create a no-op test operation call.
 
                         Serves the purpose of distinguishing transactions that are identical except for the presence of
@@ -1233,10 +1277,10 @@ private object Lib_Nop {
 
                         @see 1. <a href="https://en.wikipedia.org/wiki/NOP_(code)">NOP - Wikipedia</a>
                         @see 2. <a href="https://en.wikipedia.org/wiki/Cryptographic_nonce">Cryptographic nonce - Wikipedia</a>
-                        """)
-                param("x", "byte_array", comment = "the nonce")
-                body { arg ->
-                    callOneArg(arg)
+                        """.comment()
+                val x by param(Rt_ByteArrayValue, comment = "the nonce")
+                body {
+                    callOneArg(x)
                 }
             }
         }

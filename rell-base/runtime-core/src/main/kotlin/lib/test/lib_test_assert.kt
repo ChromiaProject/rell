@@ -45,10 +45,10 @@ internal object Lib_Test_Assert {
                 comment("Assert two values are equal.")
                 generic("T")
                 result("unit")
-                param("actual", type = "T", comment = "the actual value")
-                param("expected", type = "T", comment = "the expected value")
-                body { actualValue, expectedValue ->
-                    calcAssertEquals("assert_equals", expectedValue, actualValue)
+                val actual by param("T", cast = Rt_Value, comment = "the actual value")
+                val expected by param("T", cast = Rt_Value, comment = "the expected value")
+                body {
+                    calcAssertEquals("assert_equals", expected, actual)
                 }
             }
 
@@ -56,48 +56,48 @@ internal object Lib_Test_Assert {
                 comment("Assert two values are unequal.")
                 generic("T")
                 result("unit")
-                param("actual", type = "T", comment = "the actual value")
-                param("illegal", type = "T", comment = "the unexpected value")
-                body { actualValue, expectedValue ->
-                    val equalsValue = evaluateBinaryOp("R_BinaryOp_Eq", actualValue, expectedValue)
+                val actual by param("T", cast = Rt_Value, comment = "the actual value")
+                val illegal by param("T", cast = Rt_Value, comment = "the unexpected value")
+                body {
+                    val equalsValue = evaluateBinaryOp("R_BinaryOp_Eq", actual, illegal)
                     if ((equalsValue as Rt_BooleanValue).value) {
-                        val code = "assert_not_equals:${actualValue.strCode()}"
-                        throw Rt_AssertError.exception(code, "expected not <${actualValue.str(Rt_StrFormat.V2)}>")
+                        val code = "assert_not_equals:${actual.strCode()}"
+                        throw Rt_AssertError.exception(code, "expected not <${actual.str(Rt_StrFormat.V2)}>")
                     }
                     Rt_UnitValue
                 }
             }
 
             function("assert_true", "unit", pure = true, since = "0.10.4") {
-                comment("""
+                """
                     Assert a value is `true`.
 
                     Prefer other assertion functions where possible, as they provide better error messages.
-                """)
-                param("actual", "boolean", comment = "the value")
-                body { arg ->
-                    calcAssertBoolean(true, arg)
+                """.comment()
+                val actual by param(Rt_BooleanValue, comment = "the value")
+                body {
+                    calcAssertBoolean(true, actual)
                 }
             }
 
             function("assert_false", "unit", pure = true, since = "0.10.4") {
-                comment("""
+                """
                     Assert a value is `false`.
 
                     Prefer other assertion functions where possible, as they provide better error messages.
-                """)
-                param("actual", "boolean", comment = "the value")
-                body { arg ->
-                    calcAssertBoolean(false, arg)
+                """.comment()
+                val actual by param(Rt_BooleanValue, comment = "the value")
+                body {
+                    calcAssertBoolean(false, actual)
                 }
             }
 
             function("assert_null", "unit", pure = true, since = "0.10.4") {
                 comment("Assert a value is `null`.")
-                param("actual", type = "anything", nullable = true, comment = "the value")
-                body { arg ->
-                    if (arg != Rt_NullValue) {
-                        throw Rt_AssertError.exception("assert_null:${arg.strCode()}", "expected null but was <${arg.str()}>")
+                val actual by param("anything", cast = Rt_Value, nullable = true, comment = "the value")
+                body {
+                    if (actual != Rt_NullValue) {
+                        throw Rt_AssertError.exception("assert_null:${actual.strCode()}", "expected null but was <${actual.str()}>")
                     }
                     Rt_UnitValue
                 }
@@ -106,11 +106,15 @@ internal object Lib_Test_Assert {
             function("assert_not_null", "unit", pure = true, since = "0.10.4") {
                 comment("Assert a value is not `null`.")
                 generic("T", subOf = "any")
-                param("actual", type = "T?", nullable = true, implies = L_ParamImplication.NOT_NULL) {
-                    comment("the value")
-                }
-                body { arg ->
-                    if (arg == Rt_NullValue) {
+                val actual by param(
+                    "T?",
+                    cast = Rt_Value,
+                    nullable = true,
+                    implies = L_ParamImplication.NOT_NULL,
+                    comment = "the value",
+                )
+                body {
+                    if (actual == Rt_NullValue) {
                         throw Rt_AssertError.exception("assert_not_null", "expected not null")
                     }
                     Rt_UnitValue
@@ -118,7 +122,7 @@ internal object Lib_Test_Assert {
             }
 
             function("assert_fails", "rell.test.failure", since = "0.11.0") {
-                comment("""
+                """
                     Asserts a function fails; i.e. throws an exception.
 
                     #### Example
@@ -136,17 +140,16 @@ internal object Lib_Test_Assert {
                         rell.test.assert_fails(bad(*));
                     }
                     ```
-                """)
+                """.comment()
                 generic("T")
-                param("fn", type = "() -> T", comment = "the function value to invoke")
-                bodyContext { _, arg ->
-                    val fn = (arg as Rt_FunctionValue)
+                val fn by param("() -> T", cast = Rt_FunctionValue, comment = "the function value to invoke")
+                body {
                     calcAssertFails(fn, null)
                 }
             }
 
             function("assert_fails", "rell.test.failure", since = "0.11.0") {
-                comment("""
+                """
                     Asserts a function fails; i.e. throws an exception; with a given exception message.
 
                     Verifies that the given exception message is a substring of the exception thrown by the given
@@ -167,16 +170,12 @@ internal object Lib_Test_Assert {
                         rell.test.assert_fails("out of bounds", bad(*));
                     }
                     ```
-                """)
+                """.comment()
                 generic("T")
-                param("expected_message", type = "text") {
-                    comment("the expected substring of the error message")
-                }
-                param("fn", type = "() -> T", comment = "the function value to invoke")
-                bodyContext { _, arg1, arg2 ->
-                    val expected = (arg1 as Rt_TextValue).value
-                    val fn = (arg2 as Rt_FunctionValue)
-                    calcAssertFails(fn, expected)
+                val expected_message by param(Rt_TextValue, comment = "the expected substring of the error message")
+                val fn by param("() -> T", cast = Rt_FunctionValue, comment = "the function value to invoke")
+                body {
+                    calcAssertFails(fn, expected_message.value)
                 }
             }
 
@@ -207,8 +206,8 @@ internal object Lib_Test_Assert {
             param("${superlative}_expected", type = "T", comment = "the $bound bound ($clusivity)")
             bodyMeta {
                 val comparator = getAssertComparator(this)
-                body { left, right ->
-                    calcAssertCompare(comparator, op, left, right)
+                bodyN { args ->
+                    calcAssertCompare(comparator, op, args[0], args[1])
                     Rt_UnitValue
                 }
             }
@@ -224,20 +223,20 @@ internal object Lib_Test_Assert {
         lessClusivity: String
     ) = with(m) {
         function(name, "unit", pure = true, since = "0.10.4") {
-            comment("""
+            """
                 Assert that a value falls within given bounds.
 
                 Specifically, assert that the value is ${greaterOp.str} a lower bound, and ${lessOp.str} an upper bound.
-            """)
+            """.comment()
             generic("T", subOf = "comparable")
-            param("actual", type = "T", comment = "the actual value")
-            param("least_expected", type = "T", comment = "the lower bound ($greaterClusivity)")
-            param("greatest_expected", type = "T", comment = "the upper bound ($lessClusivity)")
+            val actual by param("T", cast = Rt_Value, comment = "the actual value")
+            val least_expected by param("T", cast = Rt_Value, comment = "the lower bound ($greaterClusivity)")
+            val greatest_expected by param("T", cast = Rt_Value, comment = "the upper bound ($lessClusivity)")
             bodyMeta {
                 val comparator = getAssertComparator(this)
-                body { actual, leastExpected, greatestExpected ->
-                    calcAssertCompare(comparator, greaterOp, actual, leastExpected)
-                    calcAssertCompare(comparator, lessOp, actual, greatestExpected)
+                body {
+                    calcAssertCompare(comparator, greaterOp, actual, least_expected)
+                    calcAssertCompare(comparator, lessOp, actual, greatest_expected)
                     Rt_UnitValue
                 }
             }
@@ -334,9 +333,8 @@ private object Lib_Test_Type_Failure {
                 comment("A test failure, with a message that gives the reason for the failure.")
                 property("message", type = "text", pure = true, since = "0.11.0") {
                     comment("The reason for this failure (typically the message of a thrown exception).")
-                    value { a ->
-                        val v = a as Rt_TestFailureValue
-                        v.messageValue
+                    value(Rt_TestFailureValue) { self ->
+                        self.messageValue
                     }
                 }
             }

@@ -16,12 +16,18 @@ import net.postchain.rell.base.mtype.M_FunctionParam
 import net.postchain.rell.base.mtype.M_ParamArity
 import net.postchain.rell.base.mtype.M_Type_Nullable
 import net.postchain.rell.base.mtype.M_Types
+import net.postchain.rell.base.runtime.Rt_CallContext
+import net.postchain.rell.base.runtime.Rt_PrimitiveFactory
+import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.Rt_ValueClass
+import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 
 abstract class Ld_CommonFunctionDslImpl(
     private val commonMaker: Ld_CommonFunctionMaker,
     private val bodyDsl: Ld_FunctionBodyDsl,
+    private val receiverSlots: Int,
 ): Ld_CommonFunctionDsl, Ld_FunctionBodyDsl by bodyDsl, Ld_MemberDsl by Ld_MemberDslImpl(commonMaker) {
     override val fnSimpleName: String
         get() = bodyDsl.fnSimpleName
@@ -66,12 +72,145 @@ abstract class Ld_CommonFunctionDslImpl(
             hdr = hdr,
             block = block,
         )
+        paramCount++
+        if (arity == L_ParamArity.ONE) requiredParamCount++
+    }
+
+    // Count of all declared parameters (typed or string-typed) and of the mandatory ones.
+    // A typed param/self delegate indexes into the runtime arg list [receiver?, p0, p1, ...];
+    // its index is therefore `receiverSlots + ordinal`, so typed params index correctly even
+    // when the receiver type has no token (collections, structs, ...) and `self()` is absent.
+    private var paramCount = 0
+    private var requiredParamCount = 0
+
+    override fun <T : Rt_Value> self(type: Rt_ValueClass<T>): Ld_ParamRef<T> {
+        require(receiverSlots == 1) { "self() is only valid for a member function" }
+        return Ld_ParamRef(0, type)
+    }
+
+    override fun <T : Rt_Value> param(
+        type: Rt_ValueClass<T>,
+        exact: Boolean,
+        implies: L_ParamImplication?,
+        since: String?,
+        comment: String?,
+    ): Ld_ParamProvider<T> = Ld_ParamProvider { name ->
+        val index = receiverSlots + paramCount
+        param(
+            name = name,
+            type = type.name,
+            arity = L_ParamArity.ONE,
+            exact = exact,
+            implies = implies,
+            since = since,
+            comment = comment,
+        )
+        Ld_ParamRef(index, type)
+    }
+
+    override fun <T : Rt_Value> param(
+        type: String,
+        cast: Rt_ValueClass<T>,
+        exact: Boolean,
+        lazy: Boolean,
+        nullable: Boolean,
+        implies: L_ParamImplication?,
+        since: String?,
+        comment: String?,
+    ): Ld_ParamProvider<T> = Ld_ParamProvider { name ->
+        val index = receiverSlots + paramCount
+        param(
+            name = name,
+            type = type,
+            arity = L_ParamArity.ONE,
+            exact = exact,
+            nullable = nullable,
+            lazy = lazy,
+            implies = implies,
+            since = since,
+            comment = comment,
+        )
+        Ld_ParamRef(index, cast)
+    }
+
+    override fun <T : Rt_Value> paramOpt(
+        type: String,
+        cast: Rt_ValueClass<T>,
+        exact: Boolean,
+        lazy: Boolean,
+        nullable: Boolean,
+        implies: L_ParamImplication?,
+        since: String?,
+        comment: String?,
+    ): Ld_OptParamProvider<T> = Ld_OptParamProvider { name ->
+        val index = receiverSlots + paramCount
+        param(
+            name = name,
+            type = type,
+            arity = L_ParamArity.ZERO_ONE,
+            exact = exact,
+            nullable = nullable,
+            lazy = lazy,
+            implies = implies,
+            since = since,
+            comment = comment,
+        )
+        Ld_OptParamRef(index, cast)
+    }
+
+    override fun <T : Rt_Value> paramOpt(
+        type: Rt_ValueClass<T>,
+        exact: Boolean,
+        implies: L_ParamImplication?,
+        since: String?,
+        comment: String?,
+    ): Ld_OptParamProvider<T> = Ld_OptParamProvider { name ->
+        val index = receiverSlots + paramCount
+        param(
+            name = name,
+            type = type.name,
+            arity = L_ParamArity.ZERO_ONE,
+            exact = exact,
+            implies = implies,
+            since = since,
+            comment = comment,
+        )
+        Ld_OptParamRef(index, type)
+    }
+
+    override fun <T : Rt_Value, N : Any> body(returns: Rt_PrimitiveFactory<T, N>, rCode: () -> N): Ld_BodyResult {
+        commonMaker.setResultTypeIfAbsent(returns.name)
+        val required = receiverSlots + requiredParamCount
+        val total = receiverSlots + paramCount
+        // Argument-stack push/pop is handled by bodyContextN (the common funnel).
+        return bodyN { args ->
+            Rt_Utils.checkRange(args.size, required, total)
+            returns.wrap(rCode())
+        }
+    }
+
+    // Parameterless body forms: the argument count is validated against the declared parameters
+    // (delegates supply the values), so the body lambda restates no arity.
+    override fun body(rCode: () -> Rt_Value): Ld_BodyResult = bodyN { args ->
+        Rt_Utils.checkRange(args.size, receiverSlots + requiredParamCount, receiverSlots + paramCount)
+        rCode()
+    }
+
+    override fun bodyContext(rCode: (Rt_CallContext) -> Rt_Value): Ld_BodyResult = bodyContextN { ctx, args ->
+        Rt_Utils.checkRange(args.size, receiverSlots + requiredParamCount, receiverSlots + paramCount)
+        rCode(ctx)
     }
 }
 
 interface Ld_CommonFunctionMaker: Ld_MemberHeaderMaker {
     fun deprecated(deprecated: C_Deprecated)
     fun generic(name: String, subOf: String?, superOf: String?, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)
+
+    /**
+     * Set the declared result type from a typed `body(...)` token, unless an explicit result type
+     * was already specified. No-op for constructors (their result type is the constructed type).
+     */
+    fun setResultTypeIfAbsent(type: String)
 
     fun param(
         name: String,
@@ -100,6 +239,10 @@ abstract class Ld_CommonFunctionBuilder(
         require(this.deprecated == null)
         finishParams()
         this.deprecated = deprecated
+    }
+
+    override fun setResultTypeIfAbsent(type: String) {
+        // Constructors have no declared result type; Ld_FunctionBuilder overrides this.
     }
 
     final override fun generic(

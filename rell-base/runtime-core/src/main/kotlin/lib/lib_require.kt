@@ -5,7 +5,6 @@
 package net.postchain.rell.base.lib
 
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
-import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.L_ParamImplication
 import net.postchain.rell.base.lmodel.dsl.Ld_FunctionDsl
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
@@ -16,105 +15,145 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 internal object Lib_Require {
     val NAMESPACE = Ld_NamespaceDsl.make {
         function("require", "unit", pure = true, since = "0.6.0") {
-            comment("""
+            """
                 Asserts a boolean condition.
                 @throws exception if the provided condition is false
-            """)
-            param("value", "boolean", implies = L_ParamImplication.TRUE.since("0.14.0")) {
-                comment("the boolean condition to check")
-            }
-            param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
-                comment("the message for the exception to be thrown if the condition is false")
-            }
-            makeRequireBody(this, Rt_RequireCondition_Boolean)
+            """.comment()
+            val value by param(
+                "boolean",
+                cast = Rt_Value,
+                implies = L_ParamImplication.TRUE.since("0.14.0"),
+                comment = "the boolean condition to check",
+            )
+            val message by paramOpt(
+                "text",
+                cast = Rt_LazyResolvableValue,
+                lazy = true,
+                comment = "the message for the exception to be thrown if the condition is false",
+            )
+            makeRequireBody(this, { value }, { message }, Rt_RequireCondition_Boolean)
         }
 
         function("require", pure = true, since = "0.6.0") {
-            comment("""
+            """
                 Asserts that a value is not `null`.
                 @return the passed `value`, but with type cast from `T?` to `T`
                 @throws exception if the provided value is `null`
-            """)
+            """.comment()
             generic("T", subOf = "any")
             result(type = "T")
-            param("value", type = "T?", nullable = true, implies = L_ParamImplication.NOT_NULL) {
-                comment("the value to check, and returned if it is not `null`")
-            }
-            param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
-                comment("the error message to be thrown if the value is `null`")
-            }
-            makeRequireBody(this, Rt_RequireCondition_Nullable)
+            val value by param(
+                "T?",
+                cast = Rt_Value,
+                nullable = true,
+                implies = L_ParamImplication.NOT_NULL,
+                comment = "the value to check, and returned if it is not `null`",
+            )
+            val message by paramOpt(
+                "text",
+                cast = Rt_LazyResolvableValue,
+                lazy = true,
+                comment = "the error message to be thrown if the value is `null`",
+            )
+            makeRequireBody(this, { value }, { message }, Rt_RequireCondition_Nullable)
         }
 
         function("require_not_empty", pure = true, since = "0.9.0") {
-            comment("""
+            """
                 Asserts that a list is non-null and non-empty.
                 @return the passed `value`, but with type cast from `list<T>?` to `list<T>`
                 @throws exception if the provided list is `null` or empty
-            """)
+            """.comment()
             alias("requireNotEmpty", C_MessageType.ERROR, since = "0.6.0")
             generic("T")
             result(type = "list<T>")
-            param("value", type = "list<T>?", implies = L_ParamImplication.NOT_NULL) {
-                comment("the list to be checked.")
-            }
-            param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
-                comment("the message for the exception to be thrown if the list is `null` or empty")
-            }
-            makeRequireBody(this, Rt_RequireCondition_Collection)
+            val value by param(
+                "list<T>?",
+                cast = Rt_Value,
+                implies = L_ParamImplication.NOT_NULL,
+                comment = "the list to be checked.",
+            )
+            val message by paramOpt(
+                "text",
+                cast = Rt_LazyResolvableValue,
+                lazy = true,
+                comment = "the message for the exception to be thrown if the list is `null` or empty",
+            )
+            makeRequireBody(this, { value }, { message }, Rt_RequireCondition_Collection)
         }
 
         function("require_not_empty", pure = true, since = "0.9.0") {
-            comment("""
+            """
                 Asserts that a set is non-null and non-empty.
                 @return the passed `value`, but with type cast from `set<T>?` to `set<T>`
                 @throws exception if the provided set is `null` or empty
-            """)
+            """.comment()
             alias("requireNotEmpty", C_MessageType.ERROR, since = "0.6.0")
             generic("T", subOf = "immutable")
             result(type = "set<T>")
-            param("value", type = "set<T>?", implies = L_ParamImplication.NOT_NULL, comment = "the set to be checked")
-            param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
-                comment("the message for the exception to be thrown if the set is `null` or empty")
-            }
-            makeRequireBody(this, Rt_RequireCondition_Collection)
+            val value by param(
+                "set<T>?",
+                cast = Rt_Value,
+                implies = L_ParamImplication.NOT_NULL,
+                comment = "the set to be checked",
+            )
+            val message by paramOpt(
+                "text",
+                cast = Rt_LazyResolvableValue,
+                lazy = true,
+                comment = "the message for the exception to be thrown if the set is `null` or empty",
+            )
+            makeRequireBody(this, { value }, { message }, Rt_RequireCondition_Collection)
         }
 
         function("require_not_empty", pure = true, since = "0.9.0") {
-            comment("""
+            """
                 Asserts that a map is non-null and non-empty.
                 @return the passed `value`, but with type cast from `map<K,V>?` to `map<K,V>`
                 @throws exception if the provided map is `null` or empty
-            """)
+            """.comment()
             alias("requireNotEmpty", C_MessageType.ERROR, since = "0.6.0")
             generic("K", subOf = "immutable")
             generic("V")
             result(type = "map<K,V>")
-            param("value", type = "map<K,V>?", implies = L_ParamImplication.NOT_NULL) {
-                comment("the map to be checked")
-            }
-            param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
-                comment("the message for the exception to be thrown if the map is `null` or empty")
-            }
-            makeRequireBody(this, Rt_RequireCondition_Map)
+            val value by param(
+                "map<K,V>?",
+                cast = Rt_Value,
+                implies = L_ParamImplication.NOT_NULL,
+                comment = "the map to be checked",
+            )
+            val message by paramOpt(
+                "text",
+                cast = Rt_LazyResolvableValue,
+                lazy = true,
+                comment = "the message for the exception to be thrown if the map is `null` or empty",
+            )
+            makeRequireBody(this, { value }, { message }, Rt_RequireCondition_Map)
         }
 
         function("require_not_empty", pure = true, since = "0.9.0") {
-            comment("""
+            """
                 Asserts that a value is non-null.
                 @return the passed `value`, but with type cast from `T?` to `T`
                 @throws exception if the provided value is `null`
-            """)
+            """.comment()
             alias("requireNotEmpty", C_MessageType.ERROR, since = "0.6.0")
             generic("T", subOf = "any")
             result(type = "T")
-            param("value", type = "T?", nullable = true, implies = L_ParamImplication.NOT_NULL) {
-                comment("the nullable value to be checked")
-            }
-            param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
-                comment("the message for the exception to be thrown if the value is `null`")
-            }
-            makeRequireBody(this, Rt_RequireCondition_Nullable)
+            val value by param(
+                "T?",
+                cast = Rt_Value,
+                nullable = true,
+                implies = L_ParamImplication.NOT_NULL,
+                comment = "the nullable value to be checked",
+            )
+            val message by paramOpt(
+                "text",
+                cast = Rt_LazyResolvableValue,
+                lazy = true,
+                comment = "the message for the exception to be thrown if the value is `null`",
+            )
+            makeRequireBody(this, { value }, { message }, Rt_RequireCondition_Nullable)
         }
 
 
@@ -122,7 +161,7 @@ internal object Lib_Require {
             type("error_type", rType = R_RellErrorType, abstract = true, hidden = true, since = "0.14.15")
 
             function("error", pure = true, since = "0.14.15") {
-                comment("""
+                """
                     Unconditionally fail, raising an exception, with an optional message.
 
                     Ends control flow, enabling one to write e.g.
@@ -140,28 +179,32 @@ internal object Lib_Require {
                     additional end-of-control-flow behaviour.
 
                     @throws exception unconditionally
-                """)
+                """.comment()
                 result(type = "rell.error_type")
-                param("message", "text", lazy = true, arity = L_ParamArity.ZERO_ONE) {
-                    comment("the message for the exception to be thrown")
-                }
+                val message by paramOpt(
+                    "text",
+                    cast = Rt_LazyResolvableValue,
+                    lazy = true,
+                    comment = "the message for the exception to be thrown",
+                )
                 bodyN { args ->
                     Rt_Utils.checkRange(args.size, 0, 1)
-                    val msg = ((args.getOrNull(0) as? Rt_LazyResolvableValue)?.resolveLazy() as? Rt_TextValue)?.value
+                    val msg = (message?.resolveLazy() as? Rt_TextValue)?.value
                     throw Rt_RequireError.exception(msg)
                 }
             }
         }
     }
 
-    private fun makeRequireBody(m: Ld_FunctionDsl, condition: Rt_RequireCondition) = with(m) {
-        bodyOpt1 { arg1, arg2 ->
-            val res = condition.calculate(arg1)
-            if (res == null) {
-                val msg = ((arg2 as? Rt_LazyResolvableValue)?.resolveLazy() as? Rt_TextValue)?.value
-                throw Rt_RequireError.exception(msg)
-            }
-            res
+    private fun makeRequireBody(
+        m: Ld_FunctionDsl,
+        value: () -> Rt_Value,
+        message: () -> Rt_LazyResolvableValue?,
+        condition: Rt_RequireCondition,
+    ) = with(m) {
+        body {
+            val res = condition.calculate(value())
+            res ?: throw Rt_RequireError.exception((message()?.resolveLazy() as? Rt_TextValue)?.value)
         }
     }
 }

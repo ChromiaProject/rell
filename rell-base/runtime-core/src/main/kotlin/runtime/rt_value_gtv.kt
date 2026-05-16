@@ -57,7 +57,8 @@ data class Rt_GtvValue private constructor(val value: Gtv): Rt_Value {
 
     companion object:
         Rt_GtvCompatibleValueClass<Rt_GtvValue>,
-        Rt_NativeCompatibleValueClass<Rt_GtvValue> {
+        Rt_NativeCompatibleValueClass<Rt_GtvValue>,
+        Rt_PrimitiveFactory<Rt_GtvValue, Gtv> {
 
         override val name
             get() = "gtv"
@@ -83,6 +84,8 @@ data class Rt_GtvValue private constructor(val value: Gtv): Rt_Value {
             is GtvDictionary -> if (value.dict.isEmpty()) EMPTY_DICT else Rt_GtvValue(value)
             else -> Rt_GtvValue(value)
         }
+
+        override fun wrap(value: Gtv): Rt_GtvValue = get(value)
 
         override fun toGtv(value: Rt_GtvValue, pretty: Boolean): Gtv = value.value
         override fun fromGtv(ctx: GtvToRtContext, gtv: Gtv): Rt_GtvValue = get(gtv)

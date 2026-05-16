@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.lib.type
 
-import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
@@ -16,18 +15,18 @@ import net.postchain.rell.base.runtime.Rt_Value
 object Lib_Type_Range {
     val NAMESPACE = Ld_NamespaceDsl.make {
         type("range", rrType = RR_Type.Primitive(RR_PrimitiveKind.RANGE), since = "0.6.0") {
-            comment("""
+            """
                 A range of integer values. Ranges represent arithmetic sequences with defined start and end points, and
                 a constant difference between consecutive elements. Ranges can be empty or contain any natural number of
                 elements.
 
                 Range is a subtype of `iterable<integer>`.
                 @see 1. <a href="../iterable/index.html"><code>iterable</code> - Rell Standard Library</a>
-            """)
+            """.comment()
             parent(type = "iterable<integer>")
 
             constructor(pure = true, since = "0.6.0") {
-                comment("""
+                """
                     Construct a range, starting at `0` (inclusive), ending at `end` (exclusive), with a step size of `1`.
 
                     Examples:
@@ -39,15 +38,15 @@ object Lib_Type_Range {
 
                     Note that `range(x)` is equivalent to `range(0, x, 1)`.
                     @throws exception if `end < 0`
-                """)
-                param("end", "integer", comment = "end value (exclusive) for this range")
-                body { a ->
-                    calcRange(0, (a as Rt_IntValue).value, 1)
+                """.comment()
+                val end by param(Rt_IntValue, comment = "end value (exclusive) for this range")
+                body {
+                    calcRange(0, end.value, 1)
                 }
             }
 
             constructor(pure = true, since = "0.6.0") {
-                comment("""
+                """
                     Construct a range, starting at `start` (inclusive), ending at `end` (exclusive), with a "step size"
                     (i.e. difference between consecutive values) of `step`.
 
@@ -67,12 +66,12 @@ object Lib_Type_Range {
                     - `step == 0`
                     - `start > end` and `step > 0`
                     - `start < end` and `step < 0`
-                """)
-                param("start", "integer", comment = "start value for this range (inclusive)")
-                param("end", "integer", comment = "end value for this range (exclusive)")
-                param("step", "integer", arity = L_ParamArity.ZERO_ONE, comment = "step size for this range")
-                bodyOpt2 { a, b, c ->
-                    calcRange((a as Rt_IntValue).value, (b as Rt_IntValue).value, (c as? Rt_IntValue)?.value ?: 1)
+                """.comment()
+                val start by param(Rt_IntValue, comment = "start value for this range (inclusive)")
+                val end by param(Rt_IntValue, comment = "end value for this range (exclusive)")
+                val step by paramOpt(Rt_IntValue, comment = "step size for this range")
+                body {
+                    calcRange(start.value, end.value, step?.value ?: 1)
                 }
             }
         }

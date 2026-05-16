@@ -61,8 +61,9 @@ object Lib_Type_Struct {
 
             function("to_immutable", result = "immutable_mirror_struct<T>", pure = true, since = "0.10.4") {
                 comment("Convert this struct to an immutable version.")
-                bodyContext { ctx, a ->
-                    toMutableOrImmutable(ctx, a, false, "to_immutable")
+                val self by self(Rt_Value)
+                bodyContext { ctx ->
+                    toMutableOrImmutable(ctx, self, false, "to_immutable")
                 }
             }
         }
@@ -86,8 +87,9 @@ object Lib_Type_Struct {
 
             function("to_mutable", result = "mutable_mirror_struct<T>", pure = true, since = "0.10.4") {
                 comment("Convert this structure to a mutable version.")
-                bodyContext { ctx, a ->
-                    toMutableOrImmutable(ctx, a, true, "to_mutable")
+                val self by self(Rt_Value)
+                bodyContext { ctx ->
+                    toMutableOrImmutable(ctx, self, true, "to_mutable")
                 }
             }
         }
@@ -97,19 +99,20 @@ object Lib_Type_Struct {
                 generic("T", subOf = "struct")
 
                 function("to_bytes", "byte_array", pure = true, since = "0.9.0") {
-                    comment("""
+                    """
                         Convert this structure to a `byte_array` representation.
 
                         Same as `.to_gtv().to_bytes()`.
-                    """)
+                    """.comment()
                     alias("toBytes", C_MessageType.ERROR, since = "0.6.1")
+                    val self by self(Rt_Value)
                     bodyMeta {
                         Lib_Type_Gtv.validateToGtvBody(this, fnBodyMeta.rSelfType)
                         val selfR = selfTypeR
 
-                        bodyContext { ctx, a ->
+                        bodyContext { ctx ->
                             val selfRt = ctx.exeCtx.appCtx.interpreter.resolveRType(selfR)
-                            val gtv = selfRt.gtvConversion!!.rtToGtv(a, false)
+                            val gtv = selfRt.gtvConversion!!.rtToGtv(self, false)
                             val bytes = PostchainGtvUtils.gtvToBytes(gtv)
                             Rt_ByteArrayValue.get(bytes)
                         }
@@ -131,17 +134,16 @@ object Lib_Type_Struct {
                 staticFunction("from_bytes", result = "T", pure = true, since = "0.9.0") {
                     comment("Decodes a struct from a byte_array. Fails if the bytes cannot represent this struct.")
                     alias("fromBytes", C_MessageType.ERROR, since = "0.6.1")
-                    param("bytes", type = "byte_array", comment = "Bytes to decode from.")
+                    val bytes by param(Rt_ByteArrayValue, comment = "Bytes to decode from.")
 
                     bodyMeta {
                         Lib_Type_Gtv.validateFromGtvBody(this, fnBodyMeta.rResultType)
                         val resR = resultTypeR
 
-                        bodyContext { ctx, a ->
+                        bodyContext { ctx ->
                             val resRt = ctx.exeCtx.appCtx.interpreter.resolveRType(resR)
-                            val bytes = (a as Rt_ByteArrayValue).value
                             Rt_Utils.wrapErr("fn:struct:from_bytes") {
-                                val gtv = PostchainGtvUtils.bytesToGtv(bytes)
+                                val gtv = PostchainGtvUtils.bytesToGtv(bytes.value)
                                 gtvToRt(ctx, resRt, gtv, pretty = false)
                             }
                         }
@@ -152,18 +154,18 @@ object Lib_Type_Struct {
                 // (they used to exist only for structs, not for all types).
                 staticFunction("fromGTXValue", result = "T", pure = true, since = "0.6.1") {
                     deprecated(newName = "from_gtv")
-                    param("gtv", type = "gtv")
-                    Lib_Type_Gtv.makeFromGtvBody(this, pretty = false)
+                    val gtv by param(Rt_GtvValue)
+                    Lib_Type_Gtv.makeFromGtvBody(this, { gtv }, pretty = false)
                 }
 
                 staticFunction("fromPrettyGTXValue", result = "T", pure = true, since = "0.6.1") {
                     deprecated(newName = "from_gtv_pretty")
-                    param("gtv", type = "gtv")
-                    Lib_Type_Gtv.makeFromGtvBody(this, pretty = true)
+                    val gtv by param(Rt_GtvValue)
+                    Lib_Type_Gtv.makeFromGtvBody(this, { gtv }, pretty = true)
                 }
 
                 function("copy", fn = C_StructCopyFunction, since = "0.14.16") {
-                    comment("""
+                    """
                         Creates a copy of this struct with optional parameter overrides.
 
                         All parameters are optional and must be specified by name.
@@ -175,7 +177,7 @@ object Lib_Type_Struct {
                         val p1 = person('Alice', 25);
                         val p2 = p1.copy(age = 26);  // p2 has name='Alice', age=26
                         ```
-                    """)
+                    """.comment()
                 }
             }
         }

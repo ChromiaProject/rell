@@ -464,9 +464,7 @@ class L_FunctionBodyMeta(
     val rResultType: R_Type,
     val rTypeArgs: ImmMap<String, R_Type>,
 ) {
-    fun typeArg(name: String): R_Type {
-        return rTypeArgs.getValue(name)
-    }
+    fun typeArg(name: String): R_Type = rTypeArgs.getValue(name)
 
     fun typeArgs(name1: String, name2: String): Pair<R_Type, R_Type> {
         val type1 = rTypeArgs.getValue(name1)
@@ -475,27 +473,22 @@ class L_FunctionBodyMeta(
     }
 }
 
-sealed class L_FunctionBody {
-    abstract fun getSysFunction(meta: L_FunctionBodyMeta): C_SysFunction
+sealed interface L_FunctionBody {
+    fun getSysFunction(meta: L_FunctionBodyMeta): C_SysFunction
 
-    private class L_FunctionBody_Direct(private val fn: C_SysFunction): L_FunctionBody() {
+    private class L_FunctionBody_Direct(private val fn: C_SysFunction): L_FunctionBody {
         override fun getSysFunction(meta: L_FunctionBodyMeta) = fn
     }
 
     private class L_FunctionBody_Delegating(
         private val block: (L_FunctionBodyMeta) -> C_SysFunction,
-    ): L_FunctionBody() {
-        override fun getSysFunction(meta: L_FunctionBodyMeta): C_SysFunction {
-            return block(meta)
-        }
+    ): L_FunctionBody {
+        override fun getSysFunction(meta: L_FunctionBodyMeta): C_SysFunction = block(meta)
     }
 
     companion object {
         fun direct(fn: C_SysFunction): L_FunctionBody = L_FunctionBody_Direct(fn)
-
-        fun delegating(block: (L_FunctionBodyMeta) -> C_SysFunction): L_FunctionBody {
-            return L_FunctionBody_Delegating(block)
-        }
+        fun delegating(block: (L_FunctionBodyMeta) -> C_SysFunction): L_FunctionBody = L_FunctionBody_Delegating(block)
     }
 }
 

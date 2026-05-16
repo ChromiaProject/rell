@@ -13,9 +13,9 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 
 object Lib_Type_Rowid {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("rowid", since = "0.9.0") {
+        type(Rt_RowidValue, "rowid", since = "0.9.0") {
             rrType(RR_Type.Primitive(RR_PrimitiveKind.ROWID))
-            comment("""
+            """
                 The primary key of a database record.
 
                 Implemented as a 64-bit integer, but requires explicit conversion to and from integer with the
@@ -56,30 +56,33 @@ object Lib_Type_Rowid {
 
                 @see 1. <a href="../integer/index.html"><code>integer</code> - Rell Standard Library</a>
                 @see 2. <a href="../gtv/index.html"><code>gtv</code> - Rell Standard Library</a>
-            """)
+            """.comment()
 
             // Constructor to create a ROWID from an integer value
             constructor(pure = true, since = "0.11.0") {
-                comment("""
+                """
                     Construct a ROWID from an integer value.
 
                     @throws exception if `value` is negative
-                """)
-                param("value", "integer", comment = "the row ID integer value")
-                body { value ->
-                    val intValue = (value as Rt_IntValue).value
-                    Rt_Utils.check(intValue >= 0) { "rowid(integer):negative:$intValue" to "Negative value: $intValue" }
-                    Rt_RowidValue.get(intValue)
+                """.comment()
+
+                val value by param(Rt_IntValue, comment = "the row ID integer value")
+
+                body(Rt_RowidValue) {
+                    Rt_Utils.check(value.value >= 0) {
+                        "rowid(integer):negative:${value.value}" to "Negative value: ${value.value}"
+                    }
+                    value.value
                 }
             }
 
             // Method to get the integer value of the ROWID
-            function("to_integer", result = "integer", pure = true, since = "0.11.0") {
+            function("to_integer", pure = true, since = "0.11.0") {
                 comment("Get the integer value of this ROWID.")
+                val self by self()
                 dbFunctionTemplate("rowid.to_integer", 1, "#0")
-                body { rowid ->
-                    val v = (rowid as Rt_RowidValue).value
-                    Rt_IntValue.get(v)
+                body(Rt_IntValue) {
+                    self.value
                 }
             }
         }

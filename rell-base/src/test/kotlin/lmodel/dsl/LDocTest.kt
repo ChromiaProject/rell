@@ -98,7 +98,7 @@ class LDocTest: BaseLTest() {
             extension("test_ext", type = "_iterable<T>") {
                 generic("T", subOf = "_comparable")
                 function("sorted", result = "_iterable<T>") {
-                    body { _ -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -151,9 +151,9 @@ class LDocTest: BaseLTest() {
             function("foo", result = "text") {
                 param("a", type = "integer")
                 param("b", type = "decimal")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
-            function("pure_1", result = "text", pure = true) { body { -> Rt_UnitValue } }
+            function("pure_1", result = "text", pure = true) { constant(Rt_UnitValue) }
             function("pure_2", result = "text") {
                 bodyRaw(C_SysFunctionBody(true, R_SysFunction { _, _ -> Rt_UnitValue }, null))
             }
@@ -168,7 +168,7 @@ class LDocTest: BaseLTest() {
             function("foo", result = "T?") {
                 generic("T", subOf = "any")
                 param("a", type = "(T,integer)")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
         chkDoc(mod, "foo", "FUNCTION|mod:foo", "<function> <T: -[any]> foo(\n\ta: ([T], [integer])\n): [T]?")
@@ -186,12 +186,12 @@ class LDocTest: BaseLTest() {
             function("f", result = "text") {
                 deprecated("new_f")
                 param("a", type = "integer")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("g", result = "text") {
                 deprecated("new_g", error = false)
                 param("a", type = "integer")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 
@@ -205,7 +205,7 @@ class LDocTest: BaseLTest() {
                 alias("g")
                 alias("h", deprecated = C_MessageType.WARNING)
                 alias("k", deprecated = C_MessageType.ERROR)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 
@@ -221,7 +221,7 @@ class LDocTest: BaseLTest() {
             struct("data") {
                 attribute("x", "integer")
             }
-            function("foo", result = "unit") { body { -> Rt_UnitValue } }
+            function("foo", result = "unit") { constant(Rt_UnitValue) }
             namespace("sub") {
                 constant("SUB_VALUE", 456)
             }
@@ -242,7 +242,7 @@ class LDocTest: BaseLTest() {
         val mod = makeDocModule {
             function("f", result = "text") {
                 deprecated("new_f")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             alias("link_f", "f")
         }
@@ -280,11 +280,11 @@ class LDocTest: BaseLTest() {
             type("data") {
                 constructor {
                     param(type = "integer", name = "x")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 constructor(pure = true) {
                     param(type = "text", name = "y")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 constructor {
                     param(type = "integer", name = "z")
@@ -293,7 +293,7 @@ class LDocTest: BaseLTest() {
                 constructor {
                     deprecated("...", error = false)
                     param(type = "byte_array", name = "a")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -320,7 +320,7 @@ class LDocTest: BaseLTest() {
                 constructor {
                     generic("T", subOf = "integer")
                     param(type = "list<T>", name = "a")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -332,20 +332,20 @@ class LDocTest: BaseLTest() {
             type("data") {
                 function("foo", result = "integer") {
                     param(type = "text", name = "x")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("spec", makeTypeFun())
                 staticFunction("stat", result = "integer") {
                     param(type = "text", name = "x")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 staticFunction("stat_spec", makeNsFun())
 
-                function("pure_1", result = "text", pure = true) { body { -> Rt_UnitValue } }
+                function("pure_1", result = "text", pure = true) { constant(Rt_UnitValue) }
                 function("pure_2", result = "text") {
                     bodyRaw(C_SysFunctionBody(true, R_SysFunction { _, _ -> Rt_UnitValue }, null))
                 }
-                staticFunction("stat_pure_1", result = "text", pure = true) { body { -> Rt_UnitValue } }
+                staticFunction("stat_pure_1", result = "text", pure = true) { constant(Rt_UnitValue) }
                 staticFunction("stat_pure_2", result = "text") {
                     bodyRaw(C_SysFunctionBody(true, R_SysFunction { _, _ -> Rt_UnitValue }, null))
                 }
@@ -368,17 +368,17 @@ class LDocTest: BaseLTest() {
                 function("f", result = "text") {
                     deprecated("new_f")
                     param("a", type = "integer")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("g", result = "text") {
                     deprecated("new_g", error = false)
                     param("a", type = "integer")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 staticFunction("h", result = "text") {
                     deprecated("new_h", error = false)
                     param("a", type = "integer")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -395,7 +395,7 @@ class LDocTest: BaseLTest() {
                     alias("g")
                     alias("h", deprecated = C_MessageType.WARNING)
                     alias("k", deprecated = C_MessageType.ERROR)
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -423,7 +423,7 @@ class LDocTest: BaseLTest() {
                 param(type = "integer", name = "a")
                 param(type = "integer", name = "b", lazy = true)
                 param(type = "integer", name = "c", arity = L_ParamArity.ZERO_MANY)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
         chkDoc(mod, "f.a", "PARAMETER|a", "a: [integer]")
@@ -434,22 +434,22 @@ class LDocTest: BaseLTest() {
     @Test fun testFunctionMultipleParameters() {
         val mod = makeDocModule {
             function("f", result = "text") {
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("g", result = "text") {
                 param(type = "integer", name = "x")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("h", result = "text") {
                 param(type = "integer", name = "x")
                 param(type = "integer", name = "y")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("p", result = "text") {
                 param(type = "integer", name = "x")
                 param(type = "integer", name = "y")
                 param(type = "integer", name = "z")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 
@@ -479,7 +479,7 @@ class LDocTest: BaseLTest() {
         val mod = makeDocModule {
             function("foo", result = "unit") {
                 block(this)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
         chkDoc(mod, "foo", "FUNCTION|mod:foo", "<function> foo(\n\t$expected\n): [unit]")
@@ -507,20 +507,20 @@ class LDocTest: BaseLTest() {
                 generic("T", subOf = "any")
                 function("foo", result = "integer") {
                     param(type = "text", name = "x")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("spec", makeTypeFun())
                 staticFunction("stat", result = "integer") {
                     param(type = "text", name = "x")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 staticFunction("stat_spec", makeNsFun())
 
-                function("pure_1", result = "text", pure = true) { body { -> Rt_UnitValue } }
+                function("pure_1", result = "text", pure = true) { constant(Rt_UnitValue) }
                 function("pure_2", result = "text") {
                     bodyRaw(C_SysFunctionBody(true, R_SysFunction { _, _ -> Rt_UnitValue }, null))
                 }
-                staticFunction("stat_pure_1", result = "text", pure = true) { body { -> Rt_UnitValue } }
+                staticFunction("stat_pure_1", result = "text", pure = true) { constant(Rt_UnitValue) }
                 staticFunction("stat_pure_2", result = "text") {
                     bodyRaw(C_SysFunctionBody(true, R_SysFunction { _, _ -> Rt_UnitValue }, null))
                 }
@@ -583,7 +583,7 @@ class LDocTest: BaseLTest() {
             }
             function("test_fn", result = type) {
                 generic("T")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
         chkDoc(mod, "test_fn", "FUNCTION|mod:test_fn", "<function> <T> test_fn(): $expected")

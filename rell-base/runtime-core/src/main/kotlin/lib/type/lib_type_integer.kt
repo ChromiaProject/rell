@@ -6,7 +6,6 @@ package net.postchain.rell.base.lib.type
 
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Math
-import net.postchain.rell.base.lmodel.L_ParamArity
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
@@ -22,12 +21,13 @@ object Lib_Type_Integer {
     val NAMESPACE = Ld_NamespaceDsl.make {
         alias("timestamp", "integer", since = SINCE0)
 
-        type("integer", since = SINCE0) {
+        type(Rt_IntValue, "integer", since = SINCE0) {
             rrType(RR_Type.Primitive(RR_PrimitiveKind.INTEGER))
-            comment("""
+
+            """
                 A 64-bit signed integer type, ranging from `-2^63` to `(2^63)-1`, supporting a standard
                 complement of numerical operations.
-            """)
+            """.comment()
 
             constant("MIN_VALUE", Rt_IntValue.MIN_VALUE, since = SINCE0) {
                 comment("The minimum value an integer can have, `-2^63`, or `-9223372036854775808`.")
@@ -37,7 +37,7 @@ object Lib_Type_Integer {
             }
 
             constructor(pure = true, since = SINCE0) {
-                comment("""
+                """
                     Construct an integer object by parsing a signed text representation of an integer.
 
                     Base prefixes are not supported, so one must write e.g. `integer('CAFE', 16)` rather than `integer('0xCAFE')`.
@@ -50,42 +50,47 @@ object Lib_Type_Integer {
 
                     - the textual representation is ill-formed
                     - `radix` is outside the supported range
-                """)
-                param("value", "text", comment = "the text to be parsed")
-                param("radix", "integer", arity = L_ParamArity.ZERO_ONE) {
-                    comment("the radix to be used in parsing `value`; defaults to 10 if not provided")
-                }
-                bodyOpt1 { value, radix ->
-                    val r = (radix as? Rt_IntValue)?.value ?: 10
-                    calcFromText(value, r)
+                """.comment()
+
+                val value by param(Rt_TextValue, comment = "the text to be parsed")
+                val radix by paramOpt(
+                    Rt_IntValue,
+                    comment = "the radix to be used in parsing `value`; defaults to 10 if not provided",
+                )
+
+                body(Rt_IntValue) {
+                    calcFromText(value, radix?.value ?: 10)
                 }
             }
 
             constructor(since = "0.9.1") {
-                comment("""
+                """
                     Construct an integer from a decimal, with any fractional part truncated (i.e. rounding toward 0).
-                """)
+                """.comment()
+
                 param("value", "decimal", comment = "the decimal value to convert to an integer")
                 bodyRaw(Lib_Type_Decimal.ToInteger)
             }
 
-            staticFunction("from_text", "integer", pure = true, since = "0.9.0") {
-                comment("""
+            staticFunction("from_text", pure = true, since = "0.9.0") {
+                """
                     Parse a signed text representation of an integer.
                     @throws exception if the text is ill-formed
-                """)
-                param("value", "text", comment = "the text to parse")
-                param("radix", "integer", arity = L_ParamArity.ZERO_ONE) {
-                    comment("the radix in which to interpret `value`, defaults to 10")
-                }
-                bodyOpt1 { value, radix ->
-                    val r = (radix as? Rt_IntValue)?.value ?: 10
-                    calcFromText(value, r)
+                """.comment()
+
+                val value by param(Rt_TextValue, comment = "the text to parse")
+                val radix by paramOpt(
+                    Rt_IntValue,
+                    comment = "the radix in which to interpret `value`, defaults to 10",
+                )
+
+                body(Rt_IntValue) {
+                    calcFromText(value, radix?.value ?: 10)
                 }
             }
 
-            staticFunction("from_hex", "integer", pure = true, since = "0.9.0") {
-                comment("""
+            staticFunction("from_hex", pure = true, since = "0.9.0") {
+                """
                     Parse an unsigned hexadecimal text representation of an integer.
 
                     Base prefixes are not supported, so one must write e.g. `integer.from_hex('CAFE')` rather than
@@ -93,114 +98,118 @@ object Lib_Type_Integer {
 
                     Case is ignored, i.e. `integer.from_hex('CAFE')` and `integer.from_hex('cafe')` are equivalent.
                     @throws exception if the text representation is ill-formed
-                """)
+                """.comment()
+                val value by param(Rt_TextValue, comment = "the hexadecimal text to be parsed")
                 alias("parseHex", C_MessageType.ERROR, since = "0.6.0")
-                param("value", "text", comment = "the hexadecimal text to be parsed")
-                body { value ->
-                    val s = (value as Rt_TextValue).value
-                    val r = try {
+                body(Rt_IntValue) {
+                    val s = value.value
+                    try {
                         java.lang.Long.parseUnsignedLong(s, 16)
                     } catch (_: NumberFormatException) {
                         throw Rt_Exception.common("fn:integer.from_hex:$s", "Invalid hex number: '$s'")
                     }
-                    Rt_IntValue.get(r)
                 }
             }
 
             function("abs", "integer", since = SINCE0) {
-                comment("""
+                """
                     Returns the absolute value of this integer; i.e. the integer itself if it's positive or its negation
                     if it's negative.
-                """)
+                """.comment()
+
                 bodyRaw(Lib_Math.Abs_Integer)
             }
 
             function("min", "integer", since = SINCE0) {
-                comment("""
+                """
                     Returns the lesser of this integer and another integer value; i.e. `value` if `value` is less than
                     this integer, or this integer otherwise.
                     @return the lesser of `value` and this integer.
-                """)
+                """.comment()
+
                 param("value", "integer", comment = "the value to compare against this integer")
                 bodyRaw(Lib_Math.Min_Integer)
             }
 
-            function("min", "big_integer", pure = true, since = "0.12.0") {
-                comment("""
+            function("min", pure = true, since = "0.12.0") {
+                """
                     Returns the lesser of this integer and a `big_integer` value; i.e. `value` if `value` is less than
                     this integer, or this integer otherwise.
                     @return the lesser of `value` and this integer.
-                """)
-                param("value", "big_integer", comment = "the value to compare against this integer")
+                """.comment()
+
+                val self by self()
+                val value by param(Rt_BigIntegerValue, comment = "the value to compare against this integer")
                 dbFunctionSimple("min", "LEAST")
-                body { self, value ->
-                    val v1 = (self as Rt_IntValue).value
-                    val v2 = (value as Rt_BigIntegerValue).value
-                    val r = BigInteger.valueOf(v1).min(v2)
-                    Rt_BigIntegerValue.get(r)
+                body(Rt_BigIntegerValue) {
+                    BigInteger.valueOf(self.value).min(value.value)
                 }
             }
 
-            function("min", "decimal", pure = true, since = SINCE0) {
-                comment("""
+            function("min", pure = true, since = SINCE0) {
+                """
                     Returns the lesser of this integer and a `decimal` value; i.e. `value` if `value` is less than this
                     integer, or this integer otherwise.
                     @return the lesser of `value` and this integer.
-                """)
-                param("value", "decimal", comment = "the value to compare against this integer")
+                """.comment()
+
+                val self by self()
+                val value by param(Rt_DecimalValue, comment = "the value to compare against this integer")
+
                 dbFunctionSimple("min", "LEAST")
-                body { self, value ->
-                    val v1 = (self as Rt_IntValue).value
-                    val v2 = (value as Rt_DecimalValue).value
-                    val r = BigDecimal.valueOf(v1).min(v2)
-                    Rt_DecimalValue.get(r)
+
+                body(Rt_DecimalValue) {
+                    BigDecimal.valueOf(self.value).min(value.value)
                 }
             }
 
             function("max", "integer", since = SINCE0) {
-                comment("""
+                """
                     Returns the greater of this integer and another integer value; i.e. `value` if `value` is greater
                     than this integer, or this integer otherwise.
                     @return the greater of `value` and this integer.
-                """)
+                """.comment()
+
                 param("value", "integer", comment = "the value to compare against this integer")
                 bodyRaw(Lib_Math.Max_Integer)
             }
 
-            function("max", "big_integer", pure = true, since = "0.12.0") {
-                comment("""
+            function("max", pure = true, since = "0.12.0") {
+                """
                     Returns the greater of this integer and a `big_integer` value; i.e. `value` if `value` is greater
                     than this integer, or this integer otherwise.
                     @return the greater of `value` and this integer.
-                """)
-                param("value", "big_integer", comment = "the value to compare against this integer")
+                """.comment()
+
+                val self by self()
+                val value by param(Rt_BigIntegerValue, comment = "the value to compare against this integer")
+
                 dbFunctionSimple("max", "GREATEST")
-                body { self, value ->
-                    val v1 = (self as Rt_IntValue).value
-                    val v2 = (value as Rt_BigIntegerValue).value
-                    val r = BigInteger.valueOf(v1).max(v2)
-                    Rt_BigIntegerValue.get(r)
+
+                body(Rt_BigIntegerValue) {
+                    BigInteger.valueOf(self.value).max(value.value)
                 }
             }
 
-            function("max", "decimal", pure = true, since = SINCE0) {
-                comment("""
+            function("max", pure = true, since = SINCE0) {
+                """
                     Returns the greater of this integer and a `decimal` value; i.e. `value` if `value` is greater than
                     this integer, or this integer otherwise.
                     @return the greater of `value` and this integer.
-                """)
-                param("value", "decimal", comment = "the value to compare against this integer")
+                """.comment()
+
+                val self by self()
+                val value by param(Rt_DecimalValue, comment = "the value to compare against this integer")
+
                 dbFunctionSimple("max", "GREATEST")
-                body { self, value ->
-                    val v1 = (self as Rt_IntValue).value
-                    val v2 = (value as Rt_DecimalValue).value
-                    val r = BigDecimal.valueOf(v1).max(v2)
-                    Rt_DecimalValue.get(r)
+
+                body(Rt_DecimalValue) {
+                    BigDecimal.valueOf(self.value).max(value.value)
                 }
             }
 
-            function("pow", result = "integer", pure = true, since = "0.13.6") {
-                comment("""
+            function("pow", pure = true, since = "0.13.6") {
+                """
                     Raise this integer to the power of the given exponent. SQL compatible.
 
                     Fails on integer overflow; so if results outside integer range are expected, first convert to
@@ -212,29 +221,36 @@ object Lib_Type_Integer {
                     - if the exponent is 0, the result is 1
                     - if the exponent is 1, the result is the original value
                     @throws exception if the result is out of integer range
-                """)
-                param(name = "exponent", type = "integer", comment = "the exponent")
+                """.comment()
+
+                val self by self()
+                val exponent by param(Rt_IntValue, comment = "the exponent")
+
                 dbFunctionSimple(fnSimpleName, SqlConstants.FN_INTEGER_POWER)
-                body { self, exponent ->
-                    val baseValue = (self as Rt_IntValue).value
-                    val expValue = (exponent as Rt_IntValue).value
-                    val resultValue = Lib_BigIntegerMath.genericPower(fnSimpleName, baseValue, expValue, Lib_BigIntegerMath.NumericType_Long)
-                    Rt_IntValue.get(resultValue)
+
+                body(Rt_IntValue) {
+                    Lib_BigIntegerMath.genericPower(
+                        fnName = fnSimpleName,
+                        base = self.value,
+                        exp = exponent.value,
+                        type = Lib_BigIntegerMath.NumericType_Long,
+                    )
                 }
             }
 
-            function("sign", "integer", pure = true, since = SINCE0) {
-                comment("""
+            function("sign", pure = true, since = SINCE0) {
+                """
                     Returns the sign of the integer: -1 if negative, 0 if zero, and 1 if positive.
 
                     It holds that for all `x`, `x == x.sign() * x.abs()`.
-                """)
+                """.comment()
+
+                val self by self()
                 alias("signum", C_MessageType.ERROR, since = SINCE0)
                 dbFunctionSimple("sign", "SIGN")
-                body { self ->
-                    val intValue = (self as Rt_IntValue).value
-                    val result = intValue.sign.toLong()
-                    Rt_IntValue.get(result)
+
+                body(Rt_IntValue) {
+                    self.value.sign.toLong()
                 }
             }
 
@@ -248,18 +264,19 @@ object Lib_Type_Integer {
                 bodyRaw(Lib_Type_Decimal.FromInteger)
             }
 
-            function("to_text", "text", pure = true, since = "0.9.0") {
+            function("to_text", pure = true, since = "0.9.0") {
                 comment("Convert this integer to a base-10 text representation.")
+                val self by self()
                 alias("str", since = SINCE0)
                 dbFunctionCast("int.to_text", "TEXT")
-                body { self ->
-                    val intValue = (self as Rt_IntValue).value
-                    Rt_TextValue.get(intValue.toString())
+
+                body(Rt_TextValue) {
+                    self.value.toString()
                 }
             }
 
-            function("to_text", "text", pure = true, since = "0.9.0") {
-                comment("""
+            function("to_text", pure = true, since = "0.9.0") {
+                """
                     Convert this integer to a text representation with the specified radix.
 
                     Does not include a base prefix in the output, i.e. `integer(25).to_text(16)` returns `19` rather
@@ -267,48 +284,54 @@ object Lib_Type_Integer {
 
                     Supported radixes are from ${Character.MIN_RADIX} to ${Character.MAX_RADIX} (inclusive).
                     @throws exception if the radix is outside the supported range
-                """)
+                """.comment()
+
+                val self by self()
+
+                val radix by param(
+                    Rt_IntValue,
+                    comment = "The radix (base) to use for the text representation.",
+                )
+
                 alias("str", since = SINCE0)
-                param("radix", "integer", comment = "The radix (base) to use for the text representation.")
-                body { self, radix ->
-                    val intValue = (self as Rt_IntValue).value
-                    val radixValue = (radix as Rt_IntValue).value
-                    if (radixValue < Character.MIN_RADIX || radixValue > Character.MAX_RADIX) {
-                        throw Rt_Exception.common("fn_int_str_radix:$radixValue", "Invalid radix: $radixValue")
+
+                body(Rt_TextValue) {
+                    if (radix.value < Character.MIN_RADIX || radix.value > Character.MAX_RADIX) {
+                        throw Rt_Exception.common("fn_int_str_radix:${radix.value}", "Invalid radix: ${radix.value}")
                     }
-                    val stringValue = intValue.toString(radixValue.toInt())
-                    Rt_TextValue.get(stringValue)
+
+                    self.value.toString(radix.value.toInt())
                 }
             }
 
-            function("to_hex", "text", pure = true, since = SINCE0) {
-                alias("hex", C_MessageType.ERROR, since = SINCE0)
-                comment("""
+            function("to_hex", pure = true, since = SINCE0) {
+                """
                     Convert this integer to hexadecimal text.
 
                     Does not include a base prefix in the output, i.e. `integer(25).to_hex()` returns `19` rather than
                     `0x19`.
-                """)
-                body { self ->
-                    val v = (self as Rt_IntValue).value
-                    Rt_TextValue.get(java.lang.Long.toHexString(v))
+                """.comment()
+
+                val self by self()
+                alias("hex", C_MessageType.ERROR, since = SINCE0)
+
+                body(Rt_TextValue) {
+                    java.lang.Long.toHexString(self.value)
                 }
             }
         }
     }
 
-    private fun calcFromText(a: Rt_Value, radix: Long): Rt_Value {
+    private fun calcFromText(a: Rt_TextValue, radix: Long): Long {
         if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX) {
             throw Rt_Exception.common("fn:integer.from_text:radix:$radix", "Invalid radix: $radix")
         }
 
-        val s = (a as Rt_TextValue).value
-        val r = try {
+        val s = a.value
+        return try {
             s.toLong(radix.toInt())
         } catch (_: NumberFormatException) {
             throw Rt_Exception.common("fn:integer.from_text:$s", "Invalid number: '$s'")
         }
-
-        return Rt_IntValue.get(r)
     }
 }

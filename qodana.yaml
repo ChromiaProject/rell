@@ -14,6 +14,10 @@ profile:
       enabled: false
     - inspection: FunctionName
       enabled: false
+    - inspection: LocalVariableNamingConvention
+      enabled: false
+    - inspection: LocalVariableName
+      enabled: false
 
 # Exclude build output and Gradle/IDE caches from all inspections. The `build` entry also covers ANTLR-generated Java.
 exclude:

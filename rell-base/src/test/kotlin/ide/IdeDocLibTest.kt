@@ -81,7 +81,7 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
         extraModule {
             function("foo", result = "text") {
                 param("a", type = "integer")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
         chkSyms("query q() = foo(123);", "foo=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:foo")
@@ -98,11 +98,11 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
         extraModule {
             function("f", result = "text") {
                 deprecated("new_f")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue )
             }
             function("g", result = "text") {
                 deprecated("new_g", error = false)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 
@@ -118,7 +118,7 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
                 alias("g")
                 alias("h", deprecated = C_MessageType.WARNING)
                 alias("k", deprecated = C_MessageType.ERROR)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 
@@ -144,7 +144,7 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
             struct("data") {
                 attribute("x", "integer")
             }
-            function("foo", result = "text") { body { -> Rt_UnitValue } }
+            function("foo", result = "text") { constant(Rt_UnitValue) }
             alias("value_ref", "VALUE")
             alias("data_ref", "data")
             alias("foo_ref", "foo")
@@ -168,7 +168,7 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
         extraModule {
             function("f", result = "text") {
                 deprecated("new_f")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             alias("link_f", "f")
         }
@@ -235,12 +235,12 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
                 modTst.setRTypeFactory(this)
                 constructor {
                     param(type = "integer", name = "x")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 constructor {
                     deprecated("something_else", error = false)
                     param(type = "byte_array", name = "a")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -266,11 +266,11 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
             type("data") {
                 modTst.setRTypeFactory(this)
                 function("foo", result = "integer") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("spec", BaseLTest.makeTypeFun())
                 staticFunction("stat", result = "integer") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 staticFunction("stat_spec", BaseLTest.makeNsFun())
             }
@@ -289,15 +289,15 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
                 modTst.setRTypeFactory(this)
                 function("f", result = "text") {
                     deprecated("new_f")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("g", result = "text") {
                     deprecated("new_g", error = false)
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 staticFunction("h", result = "text") {
                     deprecated("new_h", error = false)
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -321,7 +321,7 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
                     alias("g")
                     alias("h", deprecated = C_MessageType.WARNING)
                     alias("k", deprecated = C_MessageType.ERROR)
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -369,11 +369,11 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
             extension("test_ext", type = "T") {
                 generic("T", subOf = "any")
                 function("foo", result = "T") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("spec", BaseLTest.makeTypeFun())
                 staticFunction("stat", result = "T") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 staticFunction("stat_spec", BaseLTest.makeNsFun())
             }
@@ -412,7 +412,7 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
             function("f", result = "unit") {
                 param(type = "integer", name = "a")
                 param(type = "integer", name = "b", lazy = true)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 

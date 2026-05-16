@@ -76,7 +76,8 @@ interface Rt_DecimalValue: Rt_Value {
     companion object:
         Rt_GtvCompatibleValueClass<Rt_DecimalValue>,
         Rt_NativeCompatibleValueClass<Rt_DecimalValue>,
-        Rt_SqlCompatibleValueClass<Rt_DecimalValue> {
+        Rt_SqlCompatibleValueClass<Rt_DecimalValue>,
+        Rt_PrimitiveFactory<Rt_DecimalValue, BigDecimal> {
 
         override val name
             get() = "decimal"
@@ -114,6 +115,8 @@ interface Rt_DecimalValue: Rt_Value {
 
         @JvmStatic
         fun get(v: Long): Rt_DecimalValue = get(BigDecimal.valueOf(v))
+
+        override fun wrap(value: BigDecimal): Rt_DecimalValue = get(value)
 
         fun errOverflow(code: String, msg: String): Rt_Exception {
             val p = Lib_DecimalMath.DECIMAL_INT_DIGITS

@@ -32,7 +32,8 @@ data class Rt_IntValue private constructor(val value: Long): Rt_Value {
     companion object:
         Rt_GtvCompatibleValueClass<Rt_IntValue>,
         Rt_NativeCompatibleValueClass<Rt_IntValue>,
-        Rt_SqlCompatibleValueClass<Rt_IntValue> {
+        Rt_SqlCompatibleValueClass<Rt_IntValue>,
+        Rt_PrimitiveFactory<Rt_IntValue, Long> {
 
         override val name
             get() = "integer"
@@ -61,6 +62,8 @@ data class Rt_IntValue private constructor(val value: Long): Rt_Value {
         } else {
             Rt_IntValue(v)
         }
+
+        override fun wrap(value: Long): Rt_IntValue = get(value)
 
         override fun toGtv(value: Rt_IntValue, pretty: Boolean): Gtv = GtvInteger(value.value)
 

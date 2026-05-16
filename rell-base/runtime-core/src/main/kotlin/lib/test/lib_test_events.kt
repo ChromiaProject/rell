@@ -34,7 +34,7 @@ object Lib_Test_Events {
 
         namespace("rell.test") {
             function("assert_events", "unit", since = "0.13.0") {
-                comment("""
+                """
                     Assert that the given events were emitted during the construction of the last block, in the
                     specified order.
 
@@ -107,7 +107,7 @@ object Lib_Test_Events {
 
                     @see 1. <a href="../op_context/emit_event.html"><code>op_context.emit_event()</code> - Rell Standard Library</a>
                     @see 2. <a href="get_events.html"><code>rell.test.get_events()</code> - Rell Standard Library</a>
-                """)
+                """.comment()
                 param("expected", "(text,gtv)", arity = L_ParamArity.ZERO_MANY) {
                     comment("expected event sequence")
                 }
@@ -121,7 +121,7 @@ object Lib_Test_Events {
             }
 
             function("get_events", "list<(text,gtv)>", since = "0.13.0") {
-                comment("""
+                """
                     Get all events that were emitted during the construction of the last block.
 
                     Events are emitted in application code using `op_context.emit_event()`.
@@ -140,7 +140,7 @@ object Lib_Test_Events {
                     ```
 
                     @see 1. <a href="../op_context/emit_event.html"><code>op_context.emit_event()</code> - Rell Standard Library</a>
-                """)
+                """.comment()
                 bodyContext { ctx ->
                     val events = ctx.exeCtx.emittedEvents
                     val rtType = ctx.exeCtx.appCtx.interpreter.resolveType(EVENT_LIST_RR_TYPE)

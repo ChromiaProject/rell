@@ -35,9 +35,9 @@ object Lib_Type_Decimal {
     private const val SINCE0 = "0.9.1"
 
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("decimal", since = SINCE0) {
+        type(Rt_DecimalValue, "decimal", since = SINCE0) {
             rrType(RR_Type.Primitive(RR_PrimitiveKind.DECIMAL))
-            comment("""
+            """
                 A real number data type with high precision.
 
                 Not a complete equivalent of floating-point types, as there are a fixed maximum number of digits before
@@ -48,13 +48,13 @@ object Lib_Type_Decimal {
                 - `.789`
                 - `7e+33`
                 - `decimal('123456789.98765')`
-            """)
+            """.comment()
 
             constant("PRECISION", Lib_DecimalMath.DECIMAL_PRECISION.toLong(), since = SINCE0) {
-                comment("""
+                """
                     The maximum number of digits a `decimal` can have (`131072` before the decimal point and `20` after,
                     i.e. `131092`).
-                """)
+                """.comment()
             }
             constant("SCALE", Lib_DecimalMath.DECIMAL_FRAC_DIGITS.toLong(), since = SINCE0) {
                 comment("The maximum number of decimal digits after the decimal point (`20`).")
@@ -63,9 +63,9 @@ object Lib_Type_Decimal {
                 comment("The maximum number of digits before the decimal point (`131072`).")
             }
             constant("MIN_VALUE", Lib_DecimalMath.DECIMAL_MIN_VALUE, since = SINCE0) {
-                comment("""
+                """
                     The smallest nonzero absolute value that a decimal can store (`0.00000000000000000001`).
-                """)
+                """.comment()
             }
             constant("MAX_VALUE", Lib_DecimalMath.DECIMAL_MAX_VALUE, since = SINCE0) {
                 comment("The largest value that a decimal can store (`1E+131072 - 1`).")
@@ -90,7 +90,7 @@ object Lib_Type_Decimal {
             }
 
             staticFunction("from_text", "decimal", since = SINCE0) {
-                comment("""
+                """
                     Parse a signed base-10 text representation of a real number.
 
                     If the encoded value has more decimal places than are supported, it is rounded to the nearest
@@ -98,22 +98,22 @@ object Lib_Type_Decimal {
                     @throws exception when
                     - the text representation is ill-formed
                     - the magnitude of the encoded value is larger than `decimal.MAX_VALUE`
-                """)
+                """.comment()
 
                 param("value", "text", comment = "the text to parse")
                 bodyRaw(DecFns.FromText)
             }
 
             function("abs", "decimal", since = SINCE0) {
-                comment("""
+                """
                     Returns the absolute value of this decimal; i.e. the decimal itself if it's positive or its negation
                     if it's negative.
-                """)
+                """.comment()
                 bodyRaw(Lib_Math.Abs_Decimal)
             }
 
-            function("ceil", "decimal", pure = true, since = SINCE0) {
-                comment("""
+            function("ceil", pure = true, since = SINCE0) {
+                """
                     Round this decimal away from zero, to the next whole number.
 
                     Examples:
@@ -121,54 +121,54 @@ object Lib_Type_Decimal {
                     - `(-1.99999).ceil()` returns `-2`
                     - `(1.99999).ceil()` returns `2`
                     - `(1.00000000000000000001).ceil()` returns `2`
-                """)
+                """.comment()
+                val self by self()
                 dbFunctionSimple("decimal.ceil", "CEIL")
-                body { a ->
-                    val v = (a as Rt_DecimalValue).value
-                    val r = v.setScale(0, RoundingMode.CEILING)
-                    Rt_DecimalValue.get(r)
+                body(Rt_DecimalValue) {
+                    self.value.setScale(0, RoundingMode.CEILING)
                 }
             }
 
             function("floor", "decimal", pure = true, since = SINCE0) {
-                comment("""
+                """
                     Round this decimal towards zero, to the next whole number.
 
                     Examples:
                     - `(-0.4).floor()` returns `0`
                     - `(-1.6).floor()` returns `-1`
                     - `(1.99999999999999999999).floor()` returns `1`
-                """)
+                """.comment()
+                val self by self()
                 dbFunctionSimple("decimal.floor", "FLOOR")
-                body { a ->
+                body {
                     // Route through the virtual hook so the long-mantissa Truffle leaf can do
                     // floor in plain Long arithmetic without materialising a BigDecimal.
-                    (a as Rt_DecimalValue).fastFloor()
+                    self.fastFloor()
                 }
             }
 
             function("min", "decimal", since = SINCE0) {
-                comment("""
+                """
                     Returns the lesser of this and another decimal value; i.e. `value` if `value` is less than this, or
                     this decimal otherwise.
                     @return the lesser of `value` and this decimal
-                """)
+                """.comment()
                 param("value", "decimal", comment = "the value to compare against")
                 bodyRaw(Lib_Math.Min_Decimal)
             }
 
             function("max", "decimal", since = SINCE0) {
-                comment("""
+                """
                     Returns the greater of this and another decimal value; i.e. `value` if `value` is greater than this,
                     or this decimal otherwise.
                     @return the greater of `value` and this decimal
-                """)
+                """.comment()
                 param("value", "decimal", comment = "the value to compare against")
                 bodyRaw(Lib_Math.Max_Decimal)
             }
 
-            function("round", "decimal", pure = true, since = SINCE0) {
-                comment("""
+            function("round", pure = true, since = SINCE0) {
+                """
                     Round this decimal to the nearest whole number.
 
                     Examples:
@@ -176,17 +176,16 @@ object Lib_Type_Decimal {
                     - `(0.4).round()` returns `0`
                     - `(1.49999999999999999999).round()` returns `1`
                     - `(1.5).round()` returns `2`
-                """)
+                """.comment()
+                val self by self()
                 dbFunctionTemplate("decimal.round", 1, "ROUND(#0)")
-                body { a ->
-                    val v = (a as Rt_DecimalValue).value
-                    val r = v.setScale(0, RoundingMode.HALF_UP)
-                    Rt_DecimalValue.get(r)
+                body(Rt_DecimalValue) {
+                    self.value.setScale(0, RoundingMode.HALF_UP)
                 }
             }
 
-            function("round", "decimal", pure = true, since = SINCE0) {
-                comment("""
+            function("round", pure = true, since = SINCE0) {
+                """
                     Round this decimal to a specific number of decimal places.
 
                     `decimal.round(0)` is equivalent to `decimal.round()`, i.e. rounding will be to the nearest whole
@@ -203,77 +202,73 @@ object Lib_Type_Decimal {
                     - `(123.456).round(2)` returns `123.45`
                     - `(123.456).round(-3)` returns `0`
                     - `(123.456).round(3)` returns `123.456`
-                """)
-                param("digits", "integer", comment = "the number of decimal places to round")
+                """.comment()
+                val self by self()
+                val digits by param(Rt_IntValue, comment = "the number of decimal places to round")
                 // Argument #2 has to be cast to INT, as PostgreSQL doesn't allow BIGINT.
                 dbFunctionTemplate("decimal.round", 2, "ROUND(#0,(#1)::INT)")
-                body { a, b ->
-                    val v = (a as Rt_DecimalValue).value
-                    var scale = (b as Rt_IntValue).value
+                body(Rt_DecimalValue) {
+                    var scale = digits.value
                     scale = max(scale, -Lib_DecimalMath.DECIMAL_INT_DIGITS.toLong())
                     scale = min(scale, Lib_DecimalMath.DECIMAL_FRAC_DIGITS.toLong())
-                    val r = v.setScale(scale.toInt(), RoundingMode.HALF_UP)
-                    Rt_DecimalValue.get(r)
+                    self.value.setScale(scale.toInt(), RoundingMode.HALF_UP)
                 }
             }
 
             //function("pow", "decimal", listOf("integer"), R_SysFn_Decimal.Pow)
 
             // Function: sign
-            function("sign", "integer", pure = true, since = SINCE0) {
-                comment("""
+            function("sign", pure = true, since = SINCE0) {
+                """
                     Returns the sign of this decimal: `-1` if negative, `0` if zero, and `1` if positive.
 
                     It holds that for all `x`, `x == x.sign() * x.abs()`.
-                """)
+                """.comment()
+                val self by self()
                 alias("signum", C_MessageType.ERROR, since = SINCE0)
                 dbFunctionSimple("decimal.sign", "SIGN")
-                body { a ->
-                    val v = (a as Rt_DecimalValue).value
-                    val r = v.signum()
-                    Rt_IntValue.get(r.toLong())
+                body(Rt_IntValue) {
+                    self.value.signum().toLong()
                 }
             }
 
             //function("sqrt", "decimal", listOf(), R_SysFn_Decimal.Sqrt)
 
-            function("to_big_integer", "big_integer", pure = true, since = "0.12.0") {
-                comment("""
+            function("to_big_integer", pure = true, since = "0.12.0") {
+                """
                     Convert this decimal to a `big_integer`, truncating the fractional part.
 
                     Numerically equivalent to `decimal.floor()`, but with a type conversion.
-                """)
+                """.comment()
+                val self by self()
                 dbFunctionTemplate("decimal.to_big_integer", 1, "TRUNC(#0)")
-                body { a ->
-                    val v = (a as Rt_DecimalValue).value
-                    val bi = v.toBigInteger()
-                    Rt_BigIntegerValue.get(bi)
+                body(Rt_BigIntegerValue) {
+                    self.value.toBigInteger()
                 }
             }
 
             function("to_integer", "integer", since = SINCE0) {
-                comment("""
+                """
                     Convert this decimal to an integer, truncating the fractional part.
 
                     Numerically equivalent to `decimal.floor()`, but with a type conversion.
                     @throws exception if this decimal is greater than `integer.MAX_VALUE` or less than
                     `integer.MIN_VALUE`.
-                """)
+                """.comment()
                 bodyRaw(DecFns.ToInteger)
             }
 
-            function("to_text", "text", pure = true, since = SINCE0) {
+            function("to_text", pure = true, since = SINCE0) {
                 comment("Convert this decimal to a base 10 text representation.")
+                val self by self()
                 dbFunction(ToText_Db)
-                body { a ->
-                    val v = (a as Rt_DecimalValue).value
-                    val r = Lib_DecimalMath.toString(v)
-                    Rt_TextValue.get(r)
+                body(Rt_TextValue) {
+                    Lib_DecimalMath.toString(self.value)
                 }
             }
 
-            function("to_text", "text", pure = true, since = SINCE0) {
-                comment("""
+            function("to_text", pure = true, since = SINCE0) {
+                """
                     Convert this decimal to a base 10 text representation, optionally using scientific notation (also
                     called standard form), e.g. `6.0221E+23`.
 
@@ -283,22 +278,20 @@ object Lib_Type_Decimal {
 
                     Note that the maximum number of decimal places for the coefficient is `20`, and therefore any
                     precision beyond this in the original `decimal` value is lost.
-                """)
-                param("scientific", "boolean") {
-                    comment("""
-                        If `true`, the output will use scientific notation. If `false`, decimal representation will be
-                        used.
-                    """)
-                }
-                body { a, b ->
-                    val v = (a as Rt_DecimalValue).value
-                    val sci = (b as Rt_BooleanValue).value
-                    val r = if (sci) {
+                """.comment()
+                val self by self()
+                val scientific by param(
+                    Rt_BooleanValue,
+                    comment = "If `true`, the output will use scientific notation. If `false`, decimal " +
+                        "representation will be used.",
+                )
+                body(Rt_TextValue) {
+                    val v = self.value
+                    if (scientific.value) {
                         Lib_DecimalMath.toSciString(v)
                     } else {
                         Lib_DecimalMath.toString(v)
                     }
-                    Rt_TextValue.get(r)
                 }
             }
         }

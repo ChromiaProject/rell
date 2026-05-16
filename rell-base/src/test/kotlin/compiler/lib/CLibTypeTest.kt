@@ -10,6 +10,7 @@ import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_TextValue
 import net.postchain.rell.base.runtime.Rt_UnitValue
+import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.testutils.LibModuleTester
 import kotlin.test.Test
 
@@ -57,7 +58,7 @@ class CLibTypeTest: BaseCLibTest() {
             struct("data") {}
             extension("data_ext", type = "data") {
                 function("f", result = "text") {
-                    body { _ -> Rt_TextValue.get("hello from f") }
+                    constant(Rt_TextValue.get("hello from f"))
                 }
             }
         }
@@ -77,7 +78,7 @@ class CLibTypeTest: BaseCLibTest() {
             type("data") {
                 modTst.setRTypeFactory(this)
                 constant("X", 123)
-                staticFunction("f", "integer") { body { -> Rt_UnitValue } }
+                staticFunction("f", "integer") { constant(Rt_UnitValue) }
             }
             alias("tada", "data", C_MessageType.ERROR) //TODO remove alias when direct type deprecation is supported
         }
@@ -95,8 +96,8 @@ class CLibTypeTest: BaseCLibTest() {
                 generic("T")
                 modTst.setRTypeFactory(this, genericCount = 1)
                 constructor {
-                    param("value", type = "T")
-                    body { value -> value }
+                    val value by param("T", cast = Rt_Value)
+                    body { value }
                 }
                 property("prop", type = "T", pure = true) {
                     value { self, _ -> self }

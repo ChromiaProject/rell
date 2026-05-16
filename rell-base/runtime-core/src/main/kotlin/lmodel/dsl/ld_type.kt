@@ -87,15 +87,10 @@ class Ld_TypeSet_SubOf(val type: Ld_Type): Ld_TypeSet() {
 sealed class Ld_Type {
     abstract fun finish(ctx: Ld_TypeFinishContext): M_Type
 
-    fun finishR(ctx: Ld_TypeFinishContext): R_Type {
-        val mType = finish(ctx)
-        return L_TypeUtils.getRType(mType)
-    }
+    fun finishR(ctx: Ld_TypeFinishContext): R_Type = L_TypeUtils.getRType(finish(ctx))
 
     companion object {
-        fun parse(code: String): Ld_Type {
-            return Ld_Parser.parseType(code)
-        }
+        fun parse(code: String): Ld_Type = Ld_Parser.parseType(code)
     }
 }
 

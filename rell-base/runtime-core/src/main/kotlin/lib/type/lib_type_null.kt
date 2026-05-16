@@ -11,11 +11,11 @@ object Lib_Type_Null {
         // Not a real extension, used directly when calling a method on a "null" literal.
         type("null_ext", abstract = true, hidden = true, since = "0.10.6") {
             function("to_gtv", result = "gtv", pure = true, since = "0.10.6") {
-                comment("""
+                """
                     Convert this `null` to a `gtv null`.
 
                     @see 1. <a href="../gtv/index.html"><code>gtv</code> - Rell Standard Library</a>
-                """)
+                """.comment()
                 Lib_Type_Gtv.makeToGtvBody(this, pretty = false)
             }
         }

@@ -11,6 +11,8 @@ sourceSets.main {
     java.setSrcDirs(emptyList<String>())
 }
 
+kotlin.compilerOptions.freeCompilerArgs.add("-XXLanguage:+UnnamedLocalVariables")
+
 tasks.withType<Test> {
     useJUnitPlatform()
     systemProperty("rell.test.roundtrip", findProperty("rellTestRoundTrip") ?: "false")

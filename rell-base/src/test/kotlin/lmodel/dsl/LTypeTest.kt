@@ -134,7 +134,7 @@ class LTypeTest: BaseLTest() {
             type("json") {
                 constructor {
                     param("a", type = "text")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -151,13 +151,13 @@ class LTypeTest: BaseLTest() {
                     param("a", "text")
                     chkErr("LDE:common_fun:param_name_conflict:a") { param("a", type = "integer") }
                     param("b", "integer")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 constructor {
                     param("a", "text")
                     deprecated("foo")
                     chkErr("LDE:common_fun:params_already_defined:b") { param("b", type = "integer") }
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -170,7 +170,7 @@ class LTypeTest: BaseLTest() {
     @Test fun testConstructorPure() {
         val mod = makeModule("test") {
             type("data") {
-                constructor(pure = true) { body { -> Rt_UnitValue } }
+                constructor(pure = true) { constant(Rt_UnitValue) }
             }
         }
         chkTypeMems(mod, "data", "pure constructor ()")
@@ -203,7 +203,7 @@ class LTypeTest: BaseLTest() {
             type("text") {
                 function("to_chars") {
                     result(type = "list<char>")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -217,14 +217,14 @@ class LTypeTest: BaseLTest() {
                 generic("T")
                 constructor {
                     param("a", type = "T")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("get", result = "T") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("set", result = "unit") {
                     param("a", type = "T")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -237,7 +237,7 @@ class LTypeTest: BaseLTest() {
                 constructor {
                     generic("T")
                     param("a", type = "T")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -252,14 +252,14 @@ class LTypeTest: BaseLTest() {
                     generic("U")
                     param("a", type = "T")
                     param("b", type = "U")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("f") {
                     generic("V")
                     result(type = "(T,V)")
                     param("a", type = "V")
                     param("b", type = "T")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -274,7 +274,7 @@ class LTypeTest: BaseLTest() {
                 function("f") {
                     result(type = "U")
                     param("a", type = "T")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -344,7 +344,7 @@ class LTypeTest: BaseLTest() {
             type("iterable", abstract = true) {
                 generic("T")
                 function("iterator", result = "iterator<T>") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
             type("list") {
@@ -352,7 +352,7 @@ class LTypeTest: BaseLTest() {
                 parent("iterable<U>")
                 function("add", result = "boolean") {
                     param("a", type = "U")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
             type("map", abstract = true) {
@@ -361,7 +361,7 @@ class LTypeTest: BaseLTest() {
                 parent("iterable<(K,V)>")
                 function("get", result = "V?") {
                     param("a", type = "K")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
             type("multi_map") {
@@ -371,7 +371,7 @@ class LTypeTest: BaseLTest() {
                 function("put", result = "boolean") {
                     param("a", type = "A")
                     param("b", type = "B")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -396,11 +396,11 @@ class LTypeTest: BaseLTest() {
             type("iterable", abstract = true) {
                 generic("T")
                 staticFunction("empty", result = "iterable<T>") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 staticFunction("concat", result = "iterable<T>") {
                     param("a", type = "iterable<iterable<T>>")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
             type("list") {
@@ -424,7 +424,7 @@ class LTypeTest: BaseLTest() {
         chkModuleErr("LDE:type:abstract_constructor:data") {
             type("data", abstract = true) {
                 constructor {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -437,7 +437,7 @@ class LTypeTest: BaseLTest() {
                     alias("g")
                     alias("h", C_MessageType.WARNING)
                     alias("i", C_MessageType.ERROR)
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }

@@ -11,7 +11,7 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.futures.FcFuture
 
-class Ld_Constant(
+internal class Ld_Constant(
     private val type: Ld_Type,
     private val value: Ld_ConstantValue,
 ) {
@@ -53,7 +53,7 @@ class Ld_Constant(
     }
 }
 
-sealed interface Ld_ConstantValue {
+internal sealed interface Ld_ConstantValue {
     fun strCode(): String
     fun getValue(type: R_Type): Rt_Value
 
@@ -82,7 +82,7 @@ class Ld_ConstantDslImpl(
         return res
     }
 
-    fun build(block: Ld_ConstantDsl.() -> Ld_BodyResult): Ld_MemberDef<Ld_Constant> {
+    internal fun build(block: Ld_ConstantDsl.() -> Ld_BodyResult): Ld_MemberDef<Ld_Constant> {
         val bodyTag = block(this)
         check(bodyTag === bodyRes)
 
@@ -92,5 +92,5 @@ class Ld_ConstantDslImpl(
         return Ld_MemberDef(memberHeader, constant)
     }
 
-    private class Ld_BodyRes(val value: Ld_ConstantValue): Ld_BodyResult()
+    private class Ld_BodyRes(val value: Ld_ConstantValue): Ld_BodyResult
 }

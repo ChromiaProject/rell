@@ -196,7 +196,7 @@ class IdeCompletionBlockTest: BaseIdeCompletionTest() {
                 constructor {
                     param("x", "integer")
                     param("y", "text")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -216,7 +216,7 @@ class IdeCompletionBlockTest: BaseIdeCompletionTest() {
                 param("x", "integer")
                 param("y", "boolean", arity = L_ParamArity.ZERO_ONE)
                 param("z", "text", arity = L_ParamArity.ZERO_MANY)
-                body { -> Rt_UnitValue }
+                body { Rt_UnitValue }
             }
         }
 
@@ -234,17 +234,17 @@ class IdeCompletionBlockTest: BaseIdeCompletionTest() {
             type("_data") {
                 modTst.setRTypeFactory(this)
                 constructor {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("a", "unit") {
                     param("x", "integer")
                     param("y", "text")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 staticFunction("b", "unit") {
                     param("i", "boolean")
                     param("j", "decimal")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -262,17 +262,17 @@ class IdeCompletionBlockTest: BaseIdeCompletionTest() {
         modTst.libModule {
             function("_g", "integer") {
                 param("x", "integer")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("_g", "text") {
                 param("x", "text")
                 param("y", "boolean")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("_g", "integer") {
                 param("y", "boolean")
                 param("z", "decimal")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 

@@ -262,7 +262,7 @@ class IdeCompletionNamespaceTest: BaseIdeCompletionTest() {
             property("spec_prop", BaseLTest.makeNsProp())
             function("f", "my_type") {
                 param("x", "my_struct")
-                body { -> Rt_UnitValue}
+                constant(Rt_UnitValue)
             }
             function("g", BaseLTest.makeNsFun())
         }
@@ -290,7 +290,7 @@ class IdeCompletionNamespaceTest: BaseIdeCompletionTest() {
             alias("tada", "data")
             function("f", "data") {
                 alias("g")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 
@@ -351,16 +351,16 @@ class IdeCompletionNamespaceTest: BaseIdeCompletionTest() {
     @Test fun testLibOverloadedFunctions() {
         libModule {
             function("f", "integer") {
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("f", "integer") {
                 param("x", "big_integer")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("f", "integer") {
                 param("x", "decimal")
                 param("y", "text")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 
@@ -375,18 +375,18 @@ class IdeCompletionNamespaceTest: BaseIdeCompletionTest() {
         libModule {
             function("f", "integer") {
                 alias("p")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("g", "boolean") {
                 alias("p")
                 param("x", "big_integer")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             function("h", "byte_array") {
                 alias("p")
                 param("x", "decimal")
                 param("y", "text")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 
@@ -403,11 +403,11 @@ class IdeCompletionNamespaceTest: BaseIdeCompletionTest() {
     @Test fun testLibTypeConstructor() {
         libModule {
             type("my_type") {
-                constructor { body { -> Rt_UnitValue } }
+                constructor { constant(Rt_UnitValue) }
                 constructor {
                     param("x", "integer")
                     param("y", "text")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -423,11 +423,11 @@ class IdeCompletionNamespaceTest: BaseIdeCompletionTest() {
         libModule {
             alias("my_alias", "my_type")
             type("my_type") {
-                constructor { body { -> Rt_UnitValue } }
+                constructor { constant(Rt_UnitValue) }
                 constructor {
                     param("x", "integer")
                     param("y", "text")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }

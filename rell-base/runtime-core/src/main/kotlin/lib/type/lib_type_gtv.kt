@@ -26,11 +26,12 @@ object Lib_Type_Gtv {
         alias("GTXValue", "gtv", C_MessageType.ERROR, since = "0.6.1")
 
         enum("gtv_type", since = "0.15.3") {
-            comment("""
+            """
                 Represents the type of a GTV value.
 
                 Use `gtv.type` to get the type of a GTV value.
-            """)
+            """.comment()
+
             value("NULL")
             value("BYTEARRAY")
             value("STRING")
@@ -40,8 +41,8 @@ object Lib_Type_Gtv {
             value("BIGINTEGER")
         }
 
-        type("gtv", rrType = RR_Type.Primitive(RR_PrimitiveKind.GTV), since = "0.9.0") {
-            comment("""
+        type(Rt_GtvValue, "gtv", rrType = RR_Type.Primitive(RR_PrimitiveKind.GTV), since = "0.9.0") {
+            """
                 Generic Transfer Value (GTV) is a data type for the serialization and transfer of structured data, much
                 like JSON.
 
@@ -100,39 +101,37 @@ object Lib_Type_Gtv {
                 Rell operations expect their arguments as compact-encoded GTV, whereas queries expect pretty-encoded GTV
                 arguments, hence client applications are required to use those respective formats when making operation
                 and query calls to Rell applications.
-            """)
+            """.comment()
 
-            staticFunction("from_bytes", "gtv", pure = true, since = "0.9.0") {
-                comment("""
+            staticFunction("from_bytes", pure = true, since = "0.9.0") {
+                """
                     Decode a GTV from a byte array.
 
                     Inverse of `gtv.to_bytes()`.
                     @return the decoded GTV
                     @throws exception if the byte array does not encode a well-formed GTV; i.e. if a GTV cannot be
                     decoded
-                """)
+                """.comment()
+
+                val bytes by param(Rt_ByteArrayValue, comment = "the byte array to decode")
                 alias("fromBytes", C_MessageType.ERROR, since = "0.6.1")
-                param("bytes", "byte_array", comment = "the byte array to decode")
-                body { a ->
-                    val bytes = (a as Rt_ByteArrayValue).value
+                body(Rt_GtvValue) {
                     Rt_Utils.wrapErr("fn:gtv.from_bytes") {
-                        val gtv = PostchainGtvUtils.bytesToGtv(bytes)
-                        Rt_GtvValue.get(gtv)
+                        PostchainGtvUtils.bytesToGtv(bytes.value)
                     }
                 }
             }
 
             staticFunction("from_bytes_or_null", "gtv?", pure = true, since = "0.13.0") {
-                comment("""
+                """
                     Decode a GTV from a byte array.
                     @return the decoded GTV, or `null` if the byte array does not encode a well-formed GTV; i.e. if a
                     GTV cannot be decoded
-                """)
-                param("bytes", "byte_array", comment = "the byte array to decode")
-                body { a ->
-                    val bytes = (a as Rt_ByteArrayValue).value
+                """.comment()
+                val bytes by param(Rt_ByteArrayValue, comment = "the byte array to decode")
+                body {
                     val gtv = try {
-                        PostchainGtvUtils.bytesToGtv(bytes)
+                        PostchainGtvUtils.bytesToGtv(bytes.value)
                     } catch (_: Throwable) {
                         null
                     }
@@ -140,8 +139,8 @@ object Lib_Type_Gtv {
                 }
             }
 
-            staticFunction("from_json", "gtv", pure = true, since = "0.9.0") {
-                comment("""
+            staticFunction("from_json", pure = true, since = "0.9.0") {
+                """
                     Obtain a GTV from JSON text.
 
                     First parses a JSON value from text, and then converts the JSON value to a GTV.
@@ -150,32 +149,28 @@ object Lib_Type_Gtv {
                     @throws exception when:
                     - the JSON text is ill-formed
                     - the JSON value cannot be converted to a GTV
-                """)
+                """.comment()
+                val json by param(Rt_TextValue, comment = "the JSON text to decode")
                 alias("fromJSON", C_MessageType.ERROR, since = "0.6.1")
-                param("json", "text", comment = "the JSON text to decode")
-                body { a ->
-                    val str = (a as Rt_TextValue).value
+                body(Rt_GtvValue) {
                     Rt_Utils.wrapErr("fn:gtv.from_json(text)") {
-                        val gtv = PostchainGtvUtils.jsonToGtv(str)
-                        Rt_GtvValue.get(gtv)
+                        PostchainGtvUtils.jsonToGtv(json.value)
                     }
                 }
             }
 
-            staticFunction("from_json", "gtv", pure = true, since = "0.9.0") {
-                comment("""
+            staticFunction("from_json", pure = true, since = "0.9.0") {
+                """
                     Convert a JSON value to a GTV.
 
                     Inverse of `gtv.to_json()`.
                     @throws exception if the JSON value cannot be converted to a GTV
-                """)
+                """.comment()
+                val json by param(Rt_JsonValue, comment = "the JSON to convert")
                 alias("fromJSON", C_MessageType.ERROR, since = "0.6.1")
-                param("json", "json", comment = "the JSON to convert")
-                body { a ->
-                    val str = (a as Rt_JsonValue).str
+                body(Rt_GtvValue) {
                     Rt_Utils.wrapErr("fn:gtv.from_json(json)") {
-                        val gtv = PostchainGtvUtils.jsonToGtv(str)
-                        Rt_GtvValue.get(gtv)
+                        PostchainGtvUtils.jsonToGtv(json.str)
                     }
                 }
             }
@@ -183,42 +178,41 @@ object Lib_Type_Gtv {
             staticFunction("legacy_hash", result = "byte_array", pure = true, since = "0.14.5") {
                 comment("**Deprecated**; use instead `x.hash()` for a value `x` of any type.")
                 generic("T", subOf = "any")
-                param("value", "T")
-                param("version", "integer")
+                val value by param("T", cast = Rt_Value)
+                val version by param(Rt_IntValue)
                 bodyMeta {
                     val valueType = this.fnBodyMeta.rTypeArgs.getValue("T")
                     if (typeArgRrType("T").isVirtual()) {
-                        bodyContext { ctx, a, b ->
-                            calcHashVirtual(ctx, a, b, this.fnQualifiedName)
+                        bodyContext { ctx ->
+                            calcHashVirtual(ctx, value, version, this.fnQualifiedName)
                         }
                     } else {
                         validateToGtvBody(this, valueType)
                         val valueR = typeArgR("T")
-                        bodyContext { ctx, a, b ->
+                        bodyContext { ctx ->
                             val valueRt = ctx.exeCtx.appCtx.interpreter.resolveRType(valueR)
-                            calcHashNormal(ctx, valueRt, a, b, this.fnQualifiedName)
+                            calcHashNormal(ctx, valueRt, value, version, this.fnQualifiedName)
                         }
                     }
                 }
             }
 
-            function("to_bytes", "byte_array", pure = true, since = "0.9.0") {
-                comment("""
+            function("to_bytes", pure = true, since = "0.9.0") {
+                """
                     Encode this GTV as byte array.
 
                     Inverse of `gtv.from_bytes(byte_array)`.
                     @return a byte array containing an encoding of this GTV
-                """)
+                """.comment()
+                val self by self()
                 alias("toBytes", C_MessageType.ERROR, since = "0.6.1")
-                body { a ->
-                    val gtv = (a as Rt_GtvValue).value
-                    val bytes = PostchainGtvUtils.gtvToBytes(gtv)
-                    Rt_ByteArrayValue.get(bytes)
+                body(Rt_ByteArrayValue) {
+                    PostchainGtvUtils.gtvToBytes(self.value)
                 }
             }
 
             function("to_json", "json", pure = true, since = "0.9.0") {
-                comment("""
+                """
                     Convert this GTV to a JSON value.
 
                     Big integers are serialized as JSON numbers. Note that when deserializing back with
@@ -226,18 +220,18 @@ object Lib_Type_Gtv {
                     integers, and large big integers cannot be deserialized (will cause a runtime error).
 
                     @return a JSON value equivalent to this GTV
-                """)
+                """.comment()
+                val self by self()
                 alias("toJSON", C_MessageType.ERROR, since = "0.6.1")
-                body { a ->
-                    val gtv = (a as Rt_GtvValue).value
-                    val json = PostchainGtvUtils.gtvToJson(gtv, true)
+                body {
+                    val json = PostchainGtvUtils.gtvToJson(self.value, true)
                     //TODO consider making a separate function toJSONStr() to avoid unnecessary conversion str -> json -> str.
                     Rt_JsonValue.parse(json)
                 }
             }
 
             property("type", type = "gtv_type", pure = true, since = "0.15.3") {
-                comment("""
+                """
                     Returns the type of this GTV value.
 
                     Examples:
@@ -247,9 +241,9 @@ object Lib_Type_Gtv {
                     'hello'.to_gtv().type // gtv_type.STRING
                     [1, 2, 3].to_gtv().type // gtv_type.ARRAY
                     ```
-                """)
-                value { a ->
-                    val gtv = (a as Rt_GtvValue).value
+                """.comment()
+                value(Rt_GtvValue) { a ->
+                    val gtv = a.value
                     val ordinal = gtv.type.ordinal
                     Lib_Rell.GTV_TYPE_ENUM.rtGetValueOrNull(ordinal)
                         ?: throw Rt_Exception.common("gtv:type:unknown", "Unknown GTV type: ${gtv.type}")
@@ -263,7 +257,7 @@ object Lib_Type_Gtv {
                 generic("T", subOf = "any")
 
                 staticFunction("from_gtv", result = "T", pure = true, since = "0.9.0") {
-                    comment("""
+                    """
                         Decode a value of this type from a compact-encoded GTV.
 
                         Inverse of `any.to_gtv()`.
@@ -290,13 +284,13 @@ object Lib_Type_Gtv {
                         ```
 
                         @throws exception if the structure of the given GTV is incompatible with this type
-                    """)
-                    param("gtv", type = "gtv", comment = "the compact-encoded GTV to decode")
-                    makeFromGtvBody(this, pretty = false)
+                    """.comment()
+                    val gtv by param(Rt_GtvValue, comment = "the compact-encoded GTV to decode")
+                    makeFromGtvBody(this, { gtv }, pretty = false)
                 }
 
                 staticFunction("from_gtv_pretty", result = "T", pure = true, since = "0.9.0") {
-                    comment("""
+                    """
                         Decode a value of this type from a pretty-encoded GTV.
 
                         Note that the encoding (compact or pretty) of the given GTV will affect the types to which that
@@ -316,28 +310,29 @@ object Lib_Type_Gtv {
                         ```
 
                         @throws exception if the structure of the given GTV is incompatible with this type
-                    """)
-                    param("gtv", type = "gtv", comment = "the pretty-encoded GTV to decode")
-                    makeFromGtvBody(this, pretty = true, allowVirtual = false)
+                    """.comment()
+                    val gtv by param(Rt_GtvValue, comment = "the pretty-encoded GTV to decode")
+                    makeFromGtvBody(this, { gtv }, pretty = true, allowVirtual = false)
                 }
 
                 function("hash", result = "byte_array", pure = true, since = "0.9.0") {
-                    comment("""
+                    """
                         Compute the Merkle Hash of this value.
                         @return the Merkle Hash of this value as a byte array of length 32
-                    """)
+                    """.comment()
+                    val self by self(Rt_Value)
                     bodyMeta {
                         if (selfTypeRr.isVirtual()) {
-                            bodyContext { ctx, a ->
-                                calcHashVirtual(ctx, a, null, "fn:virtual:hash")
+                            bodyContext { ctx ->
+                                calcHashVirtual(ctx, self, null, "fn:virtual:hash")
                             }
                         } else {
                             val selfType = this.fnBodyMeta.rSelfType
                             validateToGtvBody(this, selfType)
                             val selfR = selfTypeR
-                            bodyContext { ctx, a ->
+                            bodyContext { ctx ->
                                 val selfRt = ctx.exeCtx.appCtx.interpreter.resolveRType(selfR)
-                                calcHashNormal(ctx, selfRt, a, null, "fn:any:hash")
+                                calcHashNormal(ctx, selfRt, self, null, "fn:any:hash")
                             }
                         }
                     }
@@ -357,15 +352,16 @@ object Lib_Type_Gtv {
     }
 
     fun makeToGtvBody(m: Ld_FunctionDsl, pretty: Boolean): Ld_BodyResult = with(m) {
+        val self by self(Rt_Value)
         bodyMeta {
             validateToGtvBody(this, fnBodyMeta.rSelfType)
             val selfR = selfTypeR
 
             val fnNameCopy = this.fnSimpleName
-            bodyContext { ctx, a ->
+            bodyContext { ctx ->
                 val selfRt = ctx.exeCtx.appCtx.interpreter.resolveRType(selfR)
                 val gtv = try {
-                    selfRt.gtvConversion!!.rtToGtv(a, pretty)
+                    selfRt.gtvConversion!!.rtToGtv(self, pretty)
                 } catch (e: Throwable) {
                     throw Rt_Exception.common(fnNameCopy, e.message ?: "error")
                 }
@@ -381,16 +377,21 @@ object Lib_Type_Gtv {
         }
     }
 
-    fun makeFromGtvBody(m: Ld_FunctionDsl, pretty: Boolean, allowVirtual: Boolean = true) = with(m) {
+    fun makeFromGtvBody(
+        m: Ld_FunctionDsl,
+        gtv: () -> Rt_GtvValue,
+        pretty: Boolean,
+        allowVirtual: Boolean = true,
+    ) = with(m) {
         bodyMeta {
             validateFromGtvBody(this, fnBodyMeta.rResultType, allowVirtual = allowVirtual)
             val resR = resultTypeR
 
-            bodyContext { ctx, a ->
+            bodyContext { ctx ->
                 val resRt = ctx.exeCtx.appCtx.interpreter.resolveRType(resR)
-                val gtv = (a as Rt_GtvValue).value
+                val gtvArg = gtv().value
                 Rt_Utils.wrapErr({ "fn:[${resRt.name}]:from_gtv:$pretty" }) {
-                    gtvToRt(ctx, resRt, gtv, pretty)
+                    gtvToRt(ctx, resRt, gtvArg, pretty)
                 }
             }
         }

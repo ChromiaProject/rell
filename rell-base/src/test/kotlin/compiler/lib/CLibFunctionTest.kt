@@ -11,6 +11,7 @@ import net.postchain.rell.base.model.R_IntegerType
 import net.postchain.rell.base.model.R_TextType
 import net.postchain.rell.base.runtime.Rt_TextValue
 import net.postchain.rell.base.runtime.Rt_UnitValue
+import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.testutils.LibModuleTester
 import kotlin.test.Test
 
@@ -34,44 +35,44 @@ class CLibFunctionTest: BaseCLibTest() {
 
     private fun makeTypeHintNs() = makeModule {
         function("_type_hint", "text") {
-            param("a", "list<integer>")
-            body { arg -> Rt_TextValue.get("A:${arg.strCode()}") }
+            val a by param("list<integer>", cast = Rt_Value)
+            body(Rt_TextValue) { "A:${a.strCode()}" }
         }
         function("_type_hint", "text") {
-            param("a", "set<text>")
-            body { arg -> Rt_TextValue.get("B:${arg.strCode()}") }
+            val a by param("set<text>", cast = Rt_Value)
+            body(Rt_TextValue) { "B:${a.strCode()}" }
         }
         function("_type_hint", "text") {
-            param("a", "map<decimal,integer>")
-            body { arg -> Rt_TextValue.get("C:${arg.strCode()}") }
+            val a by param("map<decimal,integer>", cast = Rt_Value)
+            body(Rt_TextValue) { "C:${a.strCode()}" }
         }
         function("_type_hint", "text") {
-            param("a", "(big_integer) -> decimal")
-            body { arg -> Rt_TextValue.get("D:${arg.strCode()}") }
+            val a by param("(big_integer) -> decimal", cast = Rt_Value)
+            body(Rt_TextValue) { "D:${a.strCode()}" }
         }
     }
 
     @Test fun testTypeHintMoreCollections() {
         tst.extraMod = makeModule {
             function("f_list", "text") {
-                param("a", "list<integer>")
-                body { arg -> Rt_TextValue.get(arg.strCode()) }
+                val a by param("list<integer>", cast = Rt_Value)
+                body(Rt_TextValue) { a.strCode() }
             }
             function("f_set", "text") {
-                param("a", "set<integer>")
-                body { arg -> Rt_TextValue.get(arg.strCode()) }
+                val a by param("set<integer>", cast = Rt_Value)
+                body(Rt_TextValue) { a.strCode() }
             }
             function("f_collection", "text") {
-                param("a", "collection<integer>")
-                body { arg -> Rt_TextValue.get(arg.strCode()) }
+                val a by param("collection<integer>", cast = Rt_Value)
+                body(Rt_TextValue) { a.strCode() }
             }
             function("f_iterable", "text") {
-                param("a", "iterable<(integer,text)>")
-                body { arg -> Rt_TextValue.get(arg.strCode()) }
+                val a by param("iterable<(integer,text)>", cast = Rt_Value)
+                body(Rt_TextValue) { a.strCode() }
             }
             function("f_map", "text") {
-                param("a", "map<integer,text>")
-                body { arg -> Rt_TextValue.get(arg.strCode()) }
+                val a by param("map<integer,text>", cast = Rt_Value)
+                body(Rt_TextValue) { a.strCode() }
             }
         }
 
@@ -111,15 +112,15 @@ class CLibFunctionTest: BaseCLibTest() {
         tst.extraMod = makeModule {
             function("f", "text") {
                 param("a", "text?", nullable = true)
-                body { _ -> Rt_TextValue.get("f(text?)") }
+                body(Rt_TextValue) { "f(text?)" }
             }
             function("f", "text") {
                 param("a", "integer?", nullable = true)
-                body { _ -> Rt_TextValue.get("f(integer?)") }
+                body(Rt_TextValue) { "f(integer?)" }
             }
             function("f", "text") {
                 param("a", "boolean?", nullable = true)
-                body { _ -> Rt_TextValue.get("f(boolean?)") }
+                body(Rt_TextValue) { "f(boolean?)" }
             }
         }
 
@@ -146,7 +147,7 @@ class CLibFunctionTest: BaseCLibTest() {
         tst.extraMod = makeModule {
             function("f", result = "T") {
                 generic("T")
-                param("a", "T")
+                val a by param("T", cast = Rt_Value)
                 validate { ctx ->
                     ctx.exprCtx.msgCtx.error(ctx.callPos, "test:validation_error_1", "Validation failed 1")
                 }
@@ -154,7 +155,7 @@ class CLibFunctionTest: BaseCLibTest() {
                     if (fnBodyMeta.rResultType == R_IntegerType) {
                         validationError("test:validation_error_2", "Validation failed 2")
                     }
-                    body { a -> a }
+                    body { a }
                 }
             }
         }
@@ -176,12 +177,12 @@ class CLibFunctionTest: BaseCLibTest() {
         tst.extraMod = makeModule {
             function("f", result = "R") {
                 generic("R")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             extension("ext", type = "any") {
                 function("g", result = "R") {
                     generic("R")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -196,12 +197,12 @@ class CLibFunctionTest: BaseCLibTest() {
         tst.extraMod = makeModule {
             function("f", result = "unit") {
                 param("a", type = "integer?", implies = L_ParamImplication.NOT_NULL)
-                body { _ -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             extension("ext", type = "any") {
                 function("g", result = "unit") {
                     param("a", type = "integer?", implies = L_ParamImplication.NOT_NULL)
-                    body { _, _ -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -218,7 +219,7 @@ class CLibFunctionTest: BaseCLibTest() {
         tst.extraMod = makeModule {
             function("f", result = "unit") {
                 param("a", type = "integer?", implies = L_ParamImplication.NOT_NULL.since("0.14.0"))
-                body { _ -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 
@@ -262,7 +263,7 @@ class CLibFunctionTest: BaseCLibTest() {
         modTst.libModule {
             type("data") {
                 modTst.setRTypeFactory(this)
-                constructor { body { -> Rt_UnitValue } }
+                constructor { constant(Rt_UnitValue) }
             }
         }
     }
@@ -272,15 +273,15 @@ class CLibFunctionTest: BaseCLibTest() {
             function("f", "integer") {
                 param("x", "integer")
                 param("y", "integer")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             type("data") {
                 modTst.setRTypeFactory(this)
-                constructor { body { -> Rt_UnitValue } }
+                constructor { constant(Rt_UnitValue) }
                 function("g", "integer") {
                     param("x", "integer")
                     param("y", "integer")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }

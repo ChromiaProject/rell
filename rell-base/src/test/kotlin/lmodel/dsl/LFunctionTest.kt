@@ -19,7 +19,7 @@ class LFunctionTest: BaseLTest() {
                 function("to_text") {
                     result("text")
                     param(name = "pretty", type = "boolean", arity = L_ParamArity.ZERO_ONE)
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -37,28 +37,28 @@ class LFunctionTest: BaseLTest() {
                     chkErr("LDE:common_fun:param_name_conflict:a") { param("a", type = "integer") }
                     param("b", "integer")
                     result(type = "integer")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("result_after_params") {
                     param("a", "text")
                     result(type = "integer")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("result_before_params") {
                     result(type = "integer")
                     param("a", "text")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("result_between_params") {
                     param("a", "text")
                     result(type = "integer")
                     chkErr("LDE:common_fun:params_already_defined:b") { param("b", type = "integer") }
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("result_already_defined", result = "integer") {
                     chkErr("LDE:function:result_already_defined:integer") { result(type = "integer") }
                     chkErr("LDE:function:result_already_defined:text") { result(type = "text") }
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -78,12 +78,12 @@ class LFunctionTest: BaseLTest() {
             type("text") {
                 function("upper_case") {
                     result(type = "text")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("index_of") {
                     result(type = "integer")
                     param("a", type = "text")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -97,7 +97,7 @@ class LFunctionTest: BaseLTest() {
                     generic("T")
                     result(type = "T")
                     param("a", type = "T")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -112,7 +112,7 @@ class LFunctionTest: BaseLTest() {
                     generic("U", subOf = "T")
                     result(type = "U")
                     param("a", type = "T")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -128,21 +128,21 @@ class LFunctionTest: BaseLTest() {
                     generic("U")
                     chkErr("LDE:fun:type_param_conflict:U") { generic("U") }
                     generic("V")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 function("f", result = "anything") {
                     chkErr("LDE:fun:type_param_conflict_outer:T") { generic("T") }
                     generic("U")
                     chkErr("LDE:fun:type_param_conflict:U") { generic("U") }
                     generic("V")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 staticFunction("g", result = "anything") {
                     chkErr("LDE:fun:type_param_conflict_outer:T") { generic("T") }
                     generic("U")
                     chkErr("LDE:fun:type_param_conflict:U") { generic("U") }
                     generic("V")
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
         }
@@ -159,7 +159,7 @@ class LFunctionTest: BaseLTest() {
             type("integer")
             function("f", result = "anything") {
                 param("a", type = "integer", nullable = true)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
     }
@@ -171,7 +171,7 @@ class LFunctionTest: BaseLTest() {
                 alias("g")
                 chkErr("LDE:alias_conflict:g") { alias("g") }
                 alias("h")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
         chkDefs(mod,
@@ -186,9 +186,9 @@ class LFunctionTest: BaseLTest() {
         val bodyTrue = C_SysFunctionBody(pure = true, R_SysFunction { _, _ -> Rt_UnitValue }, null)
 
         val mod = makeModule("test") {
-            function("f", result = "anything") { body { -> Rt_UnitValue } }
-            function("g", result = "anything", pure = true) { body { -> Rt_UnitValue } }
-            function("h", result = "anything", pure = false) { body { -> Rt_UnitValue } }
+            function("f", result = "anything") { constant(Rt_UnitValue) }
+            function("g", result = "anything", pure = true) { constant(Rt_UnitValue) }
+            function("h", result = "anything", pure = false) { constant(Rt_UnitValue) }
             function("p", result = "anything") { bodyRaw(bodyTrue) }
             function("q", result = "anything") { bodyRaw(bodyFalse) }
             function("r", result = "anything", pure = true) { bodyRaw(bodyTrue) }

@@ -20,16 +20,16 @@ object Lib_Type_VirtualCollection {
             }
 
             function("empty", "boolean", pure = true, since = "0.9.0") {
-                body { a ->
-                    val col = (a as Rt_VirtualCollectionValue)
-                    Rt_BooleanValue.get(col.size() == 0)
+                val self by self(Rt_VirtualCollectionValue)
+                body(Rt_BooleanValue) {
+                    self.size() == 0
                 }
             }
 
             function("size", "integer", pure = true, since = "0.9.0") {
-                body { a ->
-                    val col = (a as Rt_VirtualCollectionValue)
-                    Rt_IntValue.get(col.size().toLong())
+                val self by self(Rt_VirtualCollectionValue)
+                body(Rt_IntValue) {
+                    self.size().toLong()
                 }
             }
         }

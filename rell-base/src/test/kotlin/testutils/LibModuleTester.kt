@@ -43,14 +43,14 @@ internal class LibModuleTester(
         }
     }
 
-    fun setRTypeFactory(dsl: Ld_TypeDefDsl, typeName: String = dsl.typeSimpleName, genericCount: Int = 0) {
+    fun setRTypeFactory(dsl: Ld_TypeDefDsl<*>, typeName: String = dsl.typeSimpleName, genericCount: Int = 0) {
         val modRef = curModRef!!
         setRTypeMeta(dsl, modRef::get, typeName, genericCount)
     }
 
     companion object {
         fun setRTypeMeta(
-            dsl: Ld_TypeDefDsl,
+            dsl: Ld_TypeDefDsl<*>,
             modGetter: () -> C_LibModule,
             typeName: String = dsl.typeSimpleName,
             genericCount: Int = 0,

@@ -30,11 +30,12 @@ object Lib_Type_VirtualMap {
             Lib_Type_Map.defCommonFunctions(this)
 
             function("keys", result = "set<K>", pure = true, since = "0.9.0") {
+                val self by self(Rt_MapBackedValue)
                 bodyMeta {
                     val keyR = typeArgR("K")
-                    bodyContext { ctx, a ->
+                    bodyContext { ctx ->
                         val keySetType = Rt_SetType(ctx.exeCtx.appCtx.interpreter.resolveRType(keyR))
-                        val map = (a as Rt_MapBackedValue).mapView
+                        val map = self.mapView
                         val r = map.keys.toMutableSet()
                         Rt_SetValue(keySetType, r)
                     }
@@ -42,11 +43,12 @@ object Lib_Type_VirtualMap {
             }
 
             function("values", result = "list<V>", pure = true, since = "0.9.0") {
+                val self by self(Rt_MapBackedValue)
                 bodyMeta {
                     val valueR = typeArgR("V")
-                    bodyContext { ctx, a ->
+                    bodyContext { ctx ->
                         val valueListType = Rt_ListType(ctx.exeCtx.appCtx.interpreter.resolveRType(valueR))
-                        val map = (a as Rt_MapBackedValue).mapView
+                        val map = self.mapView
                         val r = map.values.toMutableList()
                         Rt_ListValue(valueListType, r)
                     }

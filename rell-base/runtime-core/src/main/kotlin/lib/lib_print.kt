@@ -12,10 +12,10 @@ import net.postchain.rell.base.runtime.Rt_UnitValue
 internal object Lib_Print {
     val NAMESPACE = Ld_NamespaceDsl.make {
         function("print", result = "unit", since = "0.6.0") {
-            comment("""
+            """
                 Prints the given value(s) to STDOUT, and then terminates the line.
                 When multiple values are provided, each is separated by a single space character.
-            """)
+            """.comment()
             param("values", type = "anything", arity = L_ParamArity.ZERO_MANY, comment = "the value(s) to print")
             bodyContextN { ctx, args ->
                 val str = args.joinToString(" ") { it.str() }
@@ -25,10 +25,10 @@ internal object Lib_Print {
         }
 
         function("log", result = "unit", since = "0.6.0") {
-            comment("""
+            """
                 Prints the given value(s) to the log, with a timestamp, and then terminates the line.
                 When multiple values are provided, each is separated by a single space character.
-            """)
+            """.comment()
             param("values", type = "anything", arity = L_ParamArity.ZERO_MANY, comment = "the value(s) to log")
 
             bodyMeta {

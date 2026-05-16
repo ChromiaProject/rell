@@ -42,7 +42,8 @@ interface Rt_TextValue: Rt_Value {
     companion object:
         Rt_GtvCompatibleValueClass<Rt_TextValue>,
         Rt_NativeCompatibleValueClass<Rt_TextValue>,
-        Rt_SqlCompatibleValueClass<Rt_TextValue> {
+        Rt_SqlCompatibleValueClass<Rt_TextValue>,
+        Rt_PrimitiveFactory<Rt_TextValue, String> {
         override val name
             get() = "text"
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.TEXT)
@@ -58,6 +59,8 @@ interface Rt_TextValue: Rt_Value {
 
         @JvmStatic
         fun get(s: String): Rt_TextValue = if (s.isEmpty()) EMPTY else Rt_JavaStringText(s)
+
+        override fun wrap(value: String): Rt_TextValue = get(value)
 
         override fun toGtv(value: Rt_TextValue, pretty: Boolean): Gtv = GtvString(value.value)
 

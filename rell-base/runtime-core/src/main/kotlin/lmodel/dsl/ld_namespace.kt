@@ -18,6 +18,7 @@ import net.postchain.rell.base.runtime.Rt_BigIntegerValue
 import net.postchain.rell.base.runtime.Rt_DecimalValue
 import net.postchain.rell.base.runtime.Rt_IntValue
 import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.Rt_ValueClass
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.*
 import net.postchain.rell.base.utils.futures.FcFuture
@@ -47,7 +48,7 @@ abstract class Ld_NamespaceMember(
     }
 }
 
-interface Ld_CommonNamespaceMaker {
+internal interface Ld_CommonNamespaceMaker {
     fun constant(
         name: String,
         type: String,
@@ -59,7 +60,7 @@ interface Ld_CommonNamespaceMaker {
     fun constant(name: String, type: String, hdr: Ld_MemberHeader, block: Ld_ConstantDsl.() -> Ld_BodyResult)
 }
 
-interface Ld_NamespaceMaker: Ld_CommonNamespaceMaker, Ld_MemberHeaderMaker {
+internal interface Ld_NamespaceMaker: Ld_CommonNamespaceMaker, Ld_MemberHeaderMaker {
     fun include(namespace: Ld_Namespace)
 
     fun alias(
@@ -79,10 +80,21 @@ interface Ld_NamespaceMaker: Ld_CommonNamespaceMaker, Ld_MemberHeaderMaker {
         rType: R_Type?,
         rrType: RR_Type?,
         hdr: Ld_MemberHeader,
-        block: Ld_TypeDefDsl.() -> Unit,
+        block: Ld_TypeDefDsl<Rt_Value>.() -> Unit,
     )
 
-    fun extension(name: String, type: String, hdr: Ld_MemberHeader, block: Ld_TypeExtensionDsl.() -> Unit)
+    fun <T : Rt_Value> type(
+        valueClass: Rt_ValueClass<T>,
+        name: String,
+        abstract: Boolean,
+        hidden: Boolean,
+        rType: R_Type?,
+        rrType: RR_Type?,
+        hdr: Ld_MemberHeader,
+        block: Ld_TypeDefDsl<T>.() -> Unit,
+    )
+
+    fun extension(name: String, type: String, hdr: Ld_MemberHeader, block: Ld_TypeExtensionDsl<Rt_Value>.() -> Unit)
 
     fun struct(name: String, hdr: Ld_MemberHeader, block: Ld_StructDsl.() -> Unit)
 
@@ -109,7 +121,7 @@ interface Ld_NamespaceMaker: Ld_CommonNamespaceMaker, Ld_MemberHeaderMaker {
     fun function(name: String, fn: C_SpecialLibGlobalFunctionBody, hdr: Ld_MemberHeader, block: Ld_MemberDsl.() -> Unit)
 }
 
-class Ld_CommonNamespaceDslImpl(
+internal class Ld_CommonNamespaceDslImpl(
     private val maker: Ld_CommonNamespaceMaker,
 ): Ld_CommonNamespaceDsl {
     override fun constant(
@@ -180,7 +192,7 @@ class Ld_CommonNamespaceDslImpl(
     }
 }
 
-class Ld_NamespaceBodyDslImpl(
+internal class Ld_NamespaceBodyDslImpl(
     private val maker: Ld_NamespaceMaker,
 ): Ld_NamespaceBodyDsl, Ld_CommonNamespaceDsl by Ld_CommonNamespaceDslImpl(maker) {
     override fun include(namespace: Ld_Namespace) {
@@ -230,10 +242,25 @@ class Ld_NamespaceBodyDslImpl(
         rrType: RR_Type?,
         since: String?,
         comment: String?,
-        block: Ld_TypeDefDsl.() -> Unit,
+        block: Ld_TypeDefDsl<Rt_Value>.() -> Unit,
     ) {
         val hdr = Ld_MemberHeader.make(since, comment)
         maker.type(name, abstract, hidden, rType, rrType, hdr, block)
+    }
+
+    override fun <T : Rt_Value> type(
+        valueClass: Rt_ValueClass<T>,
+        name: String,
+        abstract: Boolean,
+        hidden: Boolean,
+        rType: R_Type?,
+        rrType: RR_Type?,
+        since: String?,
+        comment: String?,
+        block: Ld_TypeDefDsl<T>.() -> Unit,
+    ) {
+        val hdr = Ld_MemberHeader.make(since, comment)
+        maker.type(valueClass, name, abstract, hidden, rType, rrType, hdr, block)
     }
 
     override fun extension(
@@ -241,7 +268,7 @@ class Ld_NamespaceBodyDslImpl(
         type: String,
         since: String?,
         comment: String?,
-        block: Ld_TypeExtensionDsl.() -> Unit,
+        block: Ld_TypeExtensionDsl<Rt_Value>.() -> Unit,
     ) {
         val hdr = Ld_MemberHeader.make(since, comment)
         maker.extension(name, type, hdr, block)
@@ -314,11 +341,11 @@ class Ld_NamespaceBodyDslImpl(
     }
 }
 
-class Ld_NamespaceDslImpl(
+internal class Ld_NamespaceDslImpl(
     private val maker: Ld_NamespaceMaker,
 ): Ld_NamespaceDsl, Ld_NamespaceBodyDsl by Ld_NamespaceBodyDslImpl(maker), Ld_MemberDsl by Ld_MemberDslImpl(maker)
 
-class Ld_NamespaceBuilder(
+internal class Ld_NamespaceBuilder(
     baseNamespace: Ld_Namespace = Ld_Namespace.EMPTY
 ): Ld_MemberHeaderBuilder(baseNamespace.memberHeader.update(since = null)), Ld_NamespaceMaker {
     private val baseSince = baseNamespace.memberHeader.since
@@ -385,7 +412,33 @@ class Ld_NamespaceBuilder(
         rType: R_Type?,
         rrType: RR_Type?,
         hdr: Ld_MemberHeader,
-        block: Ld_TypeDefDsl.() -> Unit,
+        block: Ld_TypeDefDsl<Rt_Value>.() -> Unit,
+    ) {
+        type0(name, abstract, hidden, rType, rrType, hdr, selfValueClass = null, block = block)
+    }
+
+    override fun <T : Rt_Value> type(
+        valueClass: Rt_ValueClass<T>,
+        name: String,
+        abstract: Boolean,
+        hidden: Boolean,
+        rType: R_Type?,
+        rrType: RR_Type?,
+        hdr: Ld_MemberHeader,
+        block: Ld_TypeDefDsl<T>.() -> Unit,
+    ) {
+        type0(name, abstract, hidden, rType, rrType, hdr, selfValueClass = valueClass, block = block)
+    }
+
+    private fun <T : Rt_Value> type0(
+        name: String,
+        abstract: Boolean,
+        hidden: Boolean,
+        rType: R_Type?,
+        rrType: RR_Type?,
+        hdr: Ld_MemberHeader,
+        selfValueClass: Rt_ValueClass<T>?,
+        block: Ld_TypeDefDsl<T>.() -> Unit,
     ) {
         val simpleName = getSimpleName(name)
 
@@ -400,6 +453,7 @@ class Ld_NamespaceBuilder(
             flags = flags,
             rType = rType,
             rrType = rrType,
+            selfValueClass = selfValueClass,
             block = block,
         )
 
@@ -407,7 +461,7 @@ class Ld_NamespaceBuilder(
         addMember(member)
     }
 
-    override fun extension(name: String, type: String, hdr: Ld_MemberHeader, block: Ld_TypeExtensionDsl.() -> Unit) {
+    override fun extension(name: String, type: String, hdr: Ld_MemberHeader, block: Ld_TypeExtensionDsl<Rt_Value>.() -> Unit) {
         val simpleName = getSimpleName(name)
 
         val ldType = Ld_Type.parse(type)
@@ -415,9 +469,9 @@ class Ld_NamespaceBuilder(
         // Using a type def internally to collect type members. No obvious reason to create a separate class for
         // extensions - no problems using L_TypeDef.
 
-        val typeDefBlock: Ld_TypeDefDsl.() -> Unit = {
-            val typeDsl: Ld_TypeDefDsl = this
-            val extDsl = object: Ld_TypeExtensionDsl, Ld_CommonTypeDsl by typeDsl {}
+        val typeDefBlock: Ld_TypeDefDsl<Rt_Value>.() -> Unit = {
+            val typeDsl: Ld_TypeDefDsl<Rt_Value> = this
+            val extDsl = object: Ld_TypeExtensionDsl<Rt_Value>, Ld_CommonTypeDsl<Rt_Value> by typeDsl {}
             block(extDsl)
         }
 
@@ -426,6 +480,7 @@ class Ld_NamespaceBuilder(
             hdr,
             flags = L_TypeDefFlags(abstract = true, hidden = true),
             rType = null,
+            selfValueClass = null,
             block = typeDefBlock,
         )
 

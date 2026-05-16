@@ -23,12 +23,12 @@ class LNamespaceNameConflictTest: BaseLTest() {
         chkNameConflictErr(defs, block, "ns") { constant("ns", "anything", Rt_UnitValue) }
         chkNameConflictErr(defs, block, "ns") { property("ns", "anything") { value { _ -> Rt_UnitValue } } }
         chkNameConflictErr(defs, block, "ns") { property("ns", makeNsProp()) }
-        chkNameConflictErr(defs, block, "ns") { function("ns", "anything") { body { -> Rt_UnitValue } } }
+        chkNameConflictErr(defs, block, "ns") { function("ns", "anything") { constant(Rt_UnitValue) } }
         chkNameConflictErr(defs, block, "ns") { function("ns", makeNsFun()) }
     }
 
     @Test fun testFunction() {
-        val block = makeBlock { function("f", "anything") { body { -> Rt_UnitValue } } }
+        val block = makeBlock { function("f", "anything") { constant(Rt_UnitValue) } }
         val defs = arrayOf("function f(): anything")
 
         chkNameConflictErr(defs, block, "f") { namespace("f") {} }
@@ -38,7 +38,7 @@ class LNamespaceNameConflictTest: BaseLTest() {
         chkNameConflictErr(defs, block, "f") { property("f", "anything") { value { _ -> Rt_UnitValue } } }
         chkNameConflictErr(defs, block, "f") { property("f", makeNsProp()) }
         chkNameConflictOK(defs, block, "function f(a: anything): anything") {
-            function("f", "anything") { param("a", "anything"); body { -> Rt_UnitValue } }
+            function("f", "anything") { param("a", "anything"); constant(Rt_UnitValue) }
         }
         chkNameConflictErr(defs, block, "f") { function("f", makeNsFun()) }
     }
@@ -60,13 +60,13 @@ class LNamespaceNameConflictTest: BaseLTest() {
         chkNameConflictErr(defs, block, name) { constant(name, "anything", Rt_UnitValue) }
         chkNameConflictErr(defs, block, name) { property(name, "anything") { value { _ -> Rt_UnitValue } } }
         chkNameConflictErr(defs, block, name) { property(name, makeNsProp()) }
-        chkNameConflictErr(defs, block, name) { function(name, "anything") { body { -> Rt_UnitValue } } }
+        chkNameConflictErr(defs, block, name) { function(name, "anything") { constant(Rt_UnitValue) } }
         chkNameConflictErr(defs, block, name) { function(name, makeNsFun()) }
     }
 
     @Test fun testAlias() {
         val block = makeBlock {
-            namespace("ns") { function("f", "anything") { body { -> Rt_UnitValue } } }
+            namespace("ns") { function("f", "anything") { constant(Rt_UnitValue) } }
             alias(target = "ns.f", name = "l")
         }
         val defs0 = arrayOf("namespace ns", "function ns.f(): anything")
@@ -80,7 +80,7 @@ class LNamespaceNameConflictTest: BaseLTest() {
         chkNameConflictErr(defs, block, "l") { function("l", makeNsFun()) }
 
         chkNameConflictErr(defs, block, "l") {
-            function("l", "anything") { param("a", "anything"); body { -> Rt_UnitValue } }
+            function("l", "anything") { param("a", "anything"); constant(Rt_UnitValue) }
         }
     }
 
@@ -116,14 +116,14 @@ class LNamespaceNameConflictTest: BaseLTest() {
             function("x", "anything") {
                 alias("f1")
                 param("a", "anything")
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
     }
 
     private fun chkAliasFunction(alias: String) {
         val (defs, block) = initAlias()
-        chkNameConflictErr(defs, block, alias) { function("x", "anything") { alias(alias); body { -> Rt_UnitValue } } }
+        chkNameConflictErr(defs, block, alias) { function("x", "anything") { alias(alias); constant(Rt_UnitValue) } }
     }
 
     private fun initAlias(): Pair<Array<String>, Ld_NamespaceBodyDsl.() -> Unit> {
@@ -134,7 +134,7 @@ class LNamespaceNameConflictTest: BaseLTest() {
             constant("c", "integer", Rt_IntValue.ZERO)
             property("p1", "integer") { value { _ -> Rt_UnitValue } }
             property("p2", makeNsProp())
-            function("f1", "integer") { body { -> Rt_UnitValue } }
+            function("f1", "integer") { constant(Rt_UnitValue) }
             function("f2", makeNsFun())
         }
 

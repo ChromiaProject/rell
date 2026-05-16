@@ -37,7 +37,7 @@ class LNamespaceTest: BaseLTest() {
     @Test fun testFunction() {
         val mod = makeModule("test") {
             function("f", result = "anything") {
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
         chkDefs(mod, "function f(): anything")
@@ -166,7 +166,7 @@ class LNamespaceTest: BaseLTest() {
                 alias("g")
                 alias("h", C_MessageType.WARNING)
                 alias("i", C_MessageType.ERROR)
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 
@@ -210,7 +210,7 @@ class LNamespaceTest: BaseLTest() {
             alias("g", "f")
             alias("h", "f", C_Deprecated.warning("foo"))
             function("f", result = "anything") {
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
             alias("i", "f", C_Deprecated.error("foo"))
         }
@@ -230,11 +230,11 @@ class LNamespaceTest: BaseLTest() {
             alias(target = "h", name = "i")
             namespace("sub") {
                 function("f", result = "anything") {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
             }
             function("h", result = "nothing") {
-                body { -> Rt_UnitValue }
+                constant(Rt_UnitValue)
             }
         }
 
@@ -294,19 +294,19 @@ class LNamespaceTest: BaseLTest() {
         val c = Ld_NamespaceDsl.make {
             type("type_c")
             struct("struct_c") {}
-            function("fc", result = "anything") { body { -> Rt_UnitValue } }
+            function("fc", result = "anything") { constant(Rt_UnitValue) }
         }
         val b = Ld_NamespaceDsl.make {
             namespace("c") { include(c) }
             type("type_b")
             struct("struct_b") {}
-            function("fb", result = "anything") { body { -> Rt_UnitValue } }
+            function("fb", result = "anything") { constant(Rt_UnitValue) }
         }
         val a = Ld_NamespaceDsl.make {
             namespace("b") { include(b) }
             type("type_a")
             struct("struct_a") {}
-            function("fa", result = "anything") { body { -> Rt_UnitValue } }
+            function("fa", result = "anything") { constant(Rt_UnitValue) }
         }
         val mod = makeModule("test") {
             namespace("a") { include(a) }
@@ -314,7 +314,7 @@ class LNamespaceTest: BaseLTest() {
             namespace("c") { include(c) }
             type("type_root")
             struct("struct_root") {}
-            function("froot", result = "anything") { body { -> Rt_UnitValue } }
+            function("froot", result = "anything") { constant(Rt_UnitValue) }
         }
         chkDefs(
             mod,

@@ -232,14 +232,14 @@ class CLibFunctionNamedArgsTest: BaseCLibTest() {
                 blocks.forEach { block ->
                     constructor {
                         block(this)
-                        body { _ -> Rt_UnitValue }
+                        constant(Rt_UnitValue)
                     }
                 }
             }
             type("data") {
                 modTst.setRTypeFactory(this)
                 constructor {
-                    body { -> Rt_UnitValue }
+                    constant(Rt_UnitValue)
                 }
                 blocks.forEachIndexed { i, block ->
                     function("h", result = "text") {

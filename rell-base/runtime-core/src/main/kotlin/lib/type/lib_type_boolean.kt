@@ -7,12 +7,13 @@ package net.postchain.rell.base.lib.type
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
+import net.postchain.rell.base.runtime.Rt_BooleanValue
 
 object Lib_Type_Boolean {
     val NAMESPACE = Ld_NamespaceDsl.make {
-        type("boolean", since = "0.6.0") {
+        type(Rt_BooleanValue, "boolean", since = "0.6.0") {
             rrType(RR_Type.Primitive(RR_PrimitiveKind.BOOLEAN))
-            comment("""
+            """
                 A data type with two possible values: `true` and `false`.
 
                 Boolean logic can be performed with the `and`, `or` and `not` operators, for example:
@@ -87,7 +88,7 @@ object Lib_Type_Boolean {
                     return x >= 10;
                 }
                 ```
-            """)
+            """.comment()
         }
     }
 }

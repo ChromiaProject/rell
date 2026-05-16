@@ -14,13 +14,11 @@ import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ImmSet
 import net.postchain.rell.base.utils.doc.DocComment
 
-interface Ld_ConstructorMaker: Ld_CommonFunctionMaker
-
 class Ld_ConstructorBuilder(
         hdr: Ld_MemberHeader,
         outerTypeParams: ImmSet<Name>,
         bodyBuilder: Ld_FunctionBodyBuilder,
-): Ld_CommonFunctionBuilder(hdr, outerTypeParams, bodyBuilder), Ld_ConstructorMaker {
+): Ld_CommonFunctionBuilder(hdr, outerTypeParams, bodyBuilder) {
     fun build(bodyRes: Ld_BodyResult): Ld_MemberDef<Ld_Constructor> {
         val cf = buildCommon(bodyRes)
 
@@ -37,9 +35,9 @@ class Ld_ConstructorBuilder(
 }
 
 class Ld_ConstructorDslImpl(
-    conMaker: Ld_ConstructorMaker,
+    conMaker: Ld_ConstructorBuilder,
     bodyMaker: Ld_FunctionBodyDsl,
-): Ld_CommonFunctionDslImpl(conMaker, bodyMaker), Ld_ConstructorDsl
+): Ld_CommonFunctionDslImpl(conMaker, bodyMaker, receiverSlots = 0), Ld_ConstructorDsl
 
 class Ld_ConstructorHeader(
     private val typeParams: ImmList<Ld_TypeParam>,
