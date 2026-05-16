@@ -153,6 +153,17 @@ cache:
 
 .local-chr-cache:
   extends: .setup
+  variables:
+    # `chr test` (chromia-build-tools `DatabaseModel`) reads its Postgres connection from the
+    # CHR_DB_* env vars, falling back to jdbc:postgresql://localhost/postchain. That default
+    # only works on a dev box — on CI the Postgres `.setup` starts lives on the DIND host
+    # `docker`, so without these the regression `chr test` step (and the `chr node start` in
+    # pages:profile) fails with connection-refused, i.e. "missing DB" rather than a real
+    # compiler regression. CHR_DB_URL reuses POSTCHAIN_DB_URL (same docker host + `postchain`
+    # database); credentials match the `docker run ... postgres` invocation in `.setup`.
+    CHR_DB_URL: "$POSTCHAIN_DB_URL"
+    CHR_DB_USER: "postchain"
+    CHR_DB_PASSWORD: "postchain"
   cache:
     - key: "$CI_COMMIT_REF_SLUG"
       fallback_keys: [ dev ]
@@ -321,8 +332,9 @@ pages:benchmarks:
     expire_in: 30 days
 
 # Manual end-to-end profiler run (Postgres + chr node + async-profiler + workload + HTML).
-# Extends `.setup` for the Postgres-via-DIND wiring; the pg_stats collector and chr node
-# both need a reachable Postgres (POSTCHAIN_DB_URL points at the DIND service).
+# Extends `.local-chr-cache` for the Postgres-via-DIND wiring and the persistent .m2 cache;
+# the pg_stats collector reaches Postgres via POSTCHAIN_DB_URL and the `chr node` it bootstraps
+# via local-chr.sh reaches it via the CHR_DB_* vars — both point at the DIND service.
 pages:profile:
   extends: .local-chr-cache
   stage: benchmarks
@@ -356,9 +368,9 @@ pages:profile:
 # bootstrap-once chromia-cli build + sequential per-project chr install). The public-only flavour
 # is wired here; `private.json` is gitignored and never reaches the runner.
 #
-# Extends `.setup` for git/bash/curl install and the GRADLE_FLAGS_WEAK profile via WEAK_RUNNER;
-# Postgres comes up unused but is cheap (~10s) and reusing `.setup` keeps memory tuning consistent
-# with the other Pages jobs.
+# Extends `.local-chr-cache` (and through it `.setup`) for git/bash/curl install, the
+# GRADLE_FLAGS_WEAK profile via WEAK_RUNNER, the persistent .m2 cache, and the Postgres the
+# per-project `chr test` step connects to via the CHR_DB_* vars set in `.local-chr-cache`.
 #
 # URL: https://<group>.gitlab.io/<project>/regression-<branch-slug>-<sha>/report.html
 # The reports index (performance/ci-index/) lists every regression deployment alongside the
