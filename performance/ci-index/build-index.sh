@@ -137,8 +137,8 @@ printf '%s' "$envs_json" | jq \
         })
       # Order newest-first within a branch. Sort on the full deployment timestamp `ts`,
       # not the date-only `when`: same-day commits would otherwise tie and fall back to an
-      # arbitrary lexical SHA order. `ts` is the environment's `updated_at` — GitLab returns
-      # it as a UTC ISO-8601 string, so a plain lexical sort is chronological.
+      # arbitrary lexical SHA order. `ts` holds the environment `updated_at` field — GitLab
+      # returns it as a UTC ISO-8601 string, so a plain lexical sort is chronological.
       | sort_by([branch_rank(.branch), .branch, .ts])
       | reverse
       | sort_by(branch_rank(.branch))   # stable sort preserves time-desc within branch
