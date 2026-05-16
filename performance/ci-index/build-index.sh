@@ -119,7 +119,8 @@ printf '%s' "$envs_json" | jq \
               branch: $c.b,
               sha: $c.s,
               url: .external_url,
-              when: ((.updated_at // .created_at) | (.[0:10] // ""))
+              when: ((.updated_at // .created_at) | (.[0:10] // "")),
+              ts: ((.updated_at // .created_at) // "")
             }
         )
       | map(select($active == null or (env_prefix(.kind; .branch; .sha) as $p | $active | index($p))))
@@ -129,13 +130,19 @@ printf '%s' "$envs_json" | jq \
           sha: .[0].sha,
           title: ($titles[.[0].sha] // ""),
           when: (map(.when) | max),
+          ts: (map(.ts) | max),
           benchmarks: link((map(select(.kind == "benchmarks")) | first); true),
           profile:    link((map(select(.kind == "profile"))    | first); true),
           regression: link((map(select(.kind == "regression")) | first); false)
         })
-      | sort_by([branch_rank(.branch), .branch, (.when // ""), .sha])
+      # Order newest-first within a branch. Sort on the full deployment timestamp `ts`,
+      # not the date-only `when`: same-day commits would otherwise tie and fall back to an
+      # arbitrary lexical SHA order. `ts` is the environment's `updated_at` — GitLab returns
+      # it as a UTC ISO-8601 string, so a plain lexical sort is chronological.
+      | sort_by([branch_rank(.branch), .branch, .ts])
       | reverse
-      | sort_by(branch_rank(.branch))   # stable sort preserves date-desc within branch
+      | sort_by(branch_rank(.branch))   # stable sort preserves time-desc within branch
+      | map(del(.ts))
     )
   }
 ' > "$out_dir/manifest.json"

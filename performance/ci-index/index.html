@@ -176,7 +176,7 @@
     <div class="section-head">
       <div class="section-title">compare profiles</div>
       <p class="section-note">
-        Diff two profile runs by component breakdown, hot methods, and workload timing.
+        Diff two profile runs by component breakdown and hot methods.
         Profiler shares (<code>%</code> of the run) are the comparable quantity — absolute
         sample counts and durations vary run to run.
       </p>
@@ -260,7 +260,7 @@ function renderCompareControls(commits) {
   if (profiles.length < 2) {
     host.innerHTML =
       '<p class="empty-msg">Need at least two profile runs with <code>data/main.json</code> ' +
-      "to compare. Older deployments predate the structured-data export.</p>";
+      "to compare.</p>";
     return;
   }
   const opt = (c) => {
@@ -302,7 +302,7 @@ function runCompare(profiles) {
     .then(([a, b]) => { out.innerHTML = renderDiff(base, a, target, b); })
     .catch((e) => {
       out.innerHTML = '<p class="warn"><strong>fetch failed</strong><br>' + esc(e.message) +
-        "<br>The deployment may predate <code>data/main.json</code>.</p>";
+        "<br>The deployment does not have <code>data/main.json</code>.</p>";
     });
 }
 
@@ -351,11 +351,12 @@ function renderBreakdown(a, b) {
     return "<tr><td>" + esc(k) + "</td>" +
       '<td class="num">' + va.toFixed(2) + "%</td>" +
       '<td class="num">' + vb.toFixed(2) + "%</td>" +
-      '<td class="delta ' + deltaClass(d, 0.5) + '">' + signed(d, 2) + " pp</td></tr>";
+      '<td class="delta ' + deltaClass(d, 2.5) + '">' + signed(d, 2) + " pp</td></tr>";
   });
   return '<div class="diff-block"><h3>Component breakdown</h3>' +
     diffTable(["Component", "A %", "B %", "Δ"], rows) +
-    '<p class="hint">Δ in percentage points of total profiler samples.</p></div>';
+    '<p class="hint">Δ in percentage points of total profiler samples; ' +
+    "moves under 2.5 pp are within single-run noise and shown grey.</p></div>";
 }
 
 // Hot methods: ranked by how much each method's self-time share moved between runs.
@@ -393,33 +394,6 @@ function renderHotspots(a, b) {
     '<p class="hint">Self-time share of total samples; top 40 movers ≥ 0.1 pp.</p></div>';
 }
 
-// Workload: wall-clock timing per phase. Absolute seconds — directly comparable.
-function renderWorkload(a, b) {
-  const wa = a.workload || {}, wb = b.workload || {};
-  const rows = [];
-  const row = (label, va, vb) => {
-    if (va == null && vb == null) return;
-    const x = va || 0, y = vb || 0, d = y - x;
-    const pct = x ? (d / x) * 100 : NaN;
-    rows.push("<tr><td>" + esc(label) + "</td>" +
-      '<td class="num">' + x.toFixed(2) + " s</td>" +
-      '<td class="num">' + y.toFixed(2) + " s</td>" +
-      '<td class="delta ' + deltaClass(d, 0.01) + '">' + signed(d, 2) + " s</td>" +
-      '<td class="delta ' + deltaClass(isFinite(pct) ? pct : 0, 5) + '">' +
-        (isFinite(pct) ? signed(pct, 1) + " %" : "—") + "</td></tr>");
-  };
-  row("total", wa.total_time_s, wb.total_time_s);
-  const pa = wa.phases || {}, pb = wb.phases || {};
-  for (const name of new Set([...Object.keys(pa), ...Object.keys(pb)])) {
-    row(name, (pa[name] || {}).time_s, (pb[name] || {}).time_s);
-  }
-  if (!rows.length) return "";
-  return '<div class="diff-block"><h3>Workload timing</h3>' +
-    diffTable(["Phase", "A", "B", "Δ", "Δ %"], rows) +
-    '<p class="hint">Client-side wall time. A single short run is noise-prone — treat ' +
-    "sub-10% moves as inconclusive.</p></div>";
-}
-
 function renderDiff(baseC, a, targetC, b) {
   const head = (c) =>
     esc(c.branch + " · " + c.sha + " · " + c.when + (c.title ? "  —  " + c.title : ""));
@@ -436,7 +410,6 @@ function renderDiff(baseC, a, targetC, b) {
 
   html += renderBreakdown(a, b);
   html += renderHotspots(a, b);
-  html += renderWorkload(a, b);
   return html;
 }
 
