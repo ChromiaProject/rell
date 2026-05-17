@@ -237,12 +237,22 @@ private fun bootstrapChr(): Path {
     val chrBin = root / "chromia-cli-local" / "chromia-cli" / "target" /
         "chromia-cli-dev-dist" / "bin" / "chr"
 
-    if (chrBin.exists()) {
-        log("compile", "chr binary exists at $chrBin — skipping bootstrap (delete chromia-cli-local/ to force rebuild)")
-        return chrBin
-    }
-
-    log("compile", "chr not found — running ./work/local-chr.sh --version (this is slow on first run)")
+    // Always run local-chr.sh, even when the chr binary already exists from a previous run
+    // or a restored CI cache. local-chr.sh is itself incremental: it re-publishes the current
+    // Rell snapshot to ~/.m2, rebuilds chromia-cli-tools against it, *skips* the expensive
+    // chromia-cli Maven build when the binary is already present, and re-syncs the freshly
+    // built Rell jars into the distribution's lib/. Returning early on `chrBin.exists()` here
+    // skipped that jar refresh, so a cached chromia-cli-local/ pinned the run to a stale Rell —
+    // the suite then passed locally (fresh build) but failed on CI (frozen jars).
+    log(
+        "compile",
+        if (chrBin.exists()) {
+            "chr binary present at $chrBin — running ./work/local-chr.sh to refresh Rell jars " +
+                "(the chromia-cli build itself is reused)"
+        } else {
+            "chr not found — running ./work/local-chr.sh --version (this is slow on first run)"
+        },
+    )
 
     val pb = ProcessBuilder("bash", (root / "work" / "local-chr.sh").toString(), "--version")
         .directory(root.toFile())
