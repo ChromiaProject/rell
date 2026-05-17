@@ -12,7 +12,6 @@ import net.postchain.rell.base.compiler.base.def.C_MntEntry
 import net.postchain.rell.base.compiler.base.expr.C_AtFromImplicitAttr
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.LazyString
 
 object C_Errors {
     fun errTypeMismatch(srcType: R_Type, dstType: R_Type, errCode: String, errMsg: String): C_CodeMsg {
@@ -91,9 +90,9 @@ object C_Errors {
         return C_CodeMsg("expr:call:sys_global_named_arg:$arg", "Named arguments not supported for function '$fnName'")
     }
 
-    fun errNamedArgsNotSupported(msgCtx: C_MessageContext, fn: LazyString?, arg: C_Name) {
+    fun errNamedArgsNotSupported(msgCtx: C_MessageContext, fn: Lazy<String>?, arg: C_Name) {
         val fnCode = fn?.value ?: ""
-        val fnMsg = if (fn == null) "this function" else "function '$fn'"
+        val fnMsg = if (fn == null) "this function" else "function '${fn.value}'"
         msgCtx.error(arg.pos, "expr:call:named_args_not_allowed:[$fnCode]:$arg", "Named arguments not supported for $fnMsg")
     }
 

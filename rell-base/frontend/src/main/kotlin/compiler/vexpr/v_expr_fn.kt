@@ -232,7 +232,7 @@ class V_SysFunctionTargetDescriptor(
     val resType: R_Type,
     val rFn: Any,
     val dbFn: Db_SysFunction?,
-    val fullName: LazyString,
+    val fullName: Lazy<String>,
     pure: Boolean,
     val synth: Boolean = false,
 ) {

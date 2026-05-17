@@ -57,7 +57,7 @@ object C_ExprUtils {
         return createSysCallRExpr(type, fn, args, nameMsg.pos, nameMsg.lazyStr)
     }
 
-    fun createSysCallRExpr(type: R_Type, fn: Any, args: ImmList<R_Expr>, pos: S_Pos, nameMsg: LazyString): R_Expr {
+    fun createSysCallRExpr(type: R_Type, fn: Any, args: ImmList<R_Expr>, pos: S_Pos, nameMsg: Lazy<String>): R_Expr {
         val rCallTarget: R_FunctionCallTarget = R_FunctionCallTarget_SysGlobalFunction(fn, nameMsg)
         val filePos = pos.toFilePos()
         val rCall: R_FunctionCall = R_FullFunctionCall(type, rCallTarget, filePos, args, args.indices.toImmList())
@@ -85,8 +85,7 @@ object C_ExprUtils {
         pure: Boolean,
         varId: C_VarId? = null,
     ): V_Expr {
-        val nameMsgLazy = LazyString.of(nameMsg)
-        val desc = V_SysFunctionTargetDescriptor(type, fn, null, nameMsgLazy, pure = pure, synth = true)
+        val desc = V_SysFunctionTargetDescriptor(type, fn, null, lazyOf(nameMsg), pure = pure, synth = true)
         val vCallTarget: V_FunctionCallTarget = V_FunctionCallTarget_SysGlobalFunction(desc)
         val vCall = V_CommonFunctionCall_Full(pos, pos, type, vCallTarget, V_FunctionCallArgs.EMPTY)
         val resVarId = if (pure) varId else null

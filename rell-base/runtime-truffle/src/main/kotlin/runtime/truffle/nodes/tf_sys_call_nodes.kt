@@ -15,7 +15,6 @@ import net.postchain.rell.base.model.FilePos
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.truffle.Tf_FrameInfo
 import net.postchain.rell.base.runtime.truffle.Tf_Unchecked
-import net.postchain.rell.base.utils.LazyString
 
 /**
  * Native: direct dispatch for sys-function calls (`RR_FunctionCallTarget.SysGlobal` and
@@ -150,7 +149,7 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
         displayName: String,
         e: Throwable,
     ): Nothing {
-        val decorated = R_SysFunctionUtils.decorateSysFnException(callCtx, LazyString.of(displayName), e)
+        val decorated = R_SysFunctionUtils.decorateSysFnException(callCtx, lazyOf(displayName), e)
         if (decorated is Rt_Exception) {
             tfRethrowNested(rt, ErrorPos(callPos), decorated)
         }

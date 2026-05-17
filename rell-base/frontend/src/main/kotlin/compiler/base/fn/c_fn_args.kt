@@ -18,7 +18,6 @@ import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.R_PartialArgMapping
 import net.postchain.rell.base.model.expr.R_PartialCallMapping
 import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.LazyString
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
@@ -54,7 +53,7 @@ sealed class C_FullCallArguments(
     val rawArgs: C_CallArguments,
     argHands: ImmList<C_CallArgumentHandle>,
 ): C_AbstractCallArguments(argHands) {
-    abstract fun compileSimpleArgs(functionName: LazyString): ImmList<V_Expr>
+    abstract fun compileSimpleArgs(functionName: Lazy<String>): ImmList<V_Expr>
 
     abstract fun compileComplexArgs(
         callInfo: C_FunctionCallInfo,
@@ -158,7 +157,7 @@ private class C_FullCallArguments_Impl(
     rawArgs: ImmList<C_CallArgumentHandle>,
     args: C_CallArguments,
 ): C_FullCallArguments(ctx, args, rawArgs) {
-    override fun compileSimpleArgs(functionName: LazyString): ImmList<V_Expr> {
+    override fun compileSimpleArgs(functionName: Lazy<String>): ImmList<V_Expr> {
         val named = rawArgs.named.firstOrNull()
         if (named != null) {
             C_Errors.errNamedArgsNotSupported(ctx.msgCtx, functionName, named.name)
@@ -310,7 +309,7 @@ private object C_InternalFnArgsUtils {
             val adapter = paramType.getTypeAdapter(argType)
             if (adapter == null && argType.isNotError()) {
                 val paramName = param.nameCodeMsg()
-                val fnNameCode = callInfo.functionName ?: "?"
+                val fnNameCode = callInfo.functionNameCode()
                 val code = "expr_call_argtype:[$fnNameCode]:${paramName.code}:${paramType.strCode()}:${argType.strCode()}"
                 val msg = "Wrong argument type for parameter ${paramName.msg}: ${argType.str()} instead of ${paramType.str()}"
                 ctx.msgCtx.error(callInfo.callPos, code, msg)

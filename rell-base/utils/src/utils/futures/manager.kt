@@ -63,12 +63,12 @@ private class FcBefore_Pair<A, B>(
 }
 
 private class FcFutureSettings(
-    val lazyName: LazyString?,
+    val lazyName: Lazy<String>?,
     val attachment: Any?,
     val computeOnDemand: Boolean,
 ) {
     fun copy(
-        lazyName: LazyString? = this.lazyName,
+        lazyName: Lazy<String>? = this.lazyName,
         attachment: Any? = this.attachment,
         computeOnDemand: Boolean = this.computeOnDemand,
     ): FcFutureSettings {
@@ -100,7 +100,7 @@ private abstract class FcFutureBuilderBase_Impl<SelfT: FcFutureBuilderBase<SelfT
 
     final override fun name(name: String): SelfT {
         checkNull(settings.lazyName)
-        val settings2 = settings.copy(lazyName = LazyString.of(name))
+        val settings2 = settings.copy(lazyName = lazyOf(name))
         return updateSettings(settings2)
     }
 
@@ -226,9 +226,9 @@ private class FcManagerCore(
         return future
     }
 
-    private fun generateName(kind: String): LazyString {
+    private fun generateName(kind: String): Lazy<String> {
         val id = futureNameCounter++
-        return LazyString.of { "$kind-$id" }
+        return lazy { "$kind-$id" }
     }
 
     private fun prepareInputs(before: Iterable<FcFuture<*>>): MutableSet<FcFuture_Later<*>>? {
@@ -377,7 +377,7 @@ private class FcFuture_Value<T>(val value: T): FcFuture_Base<T>() {
 
 private abstract class FcFuture_Later<T>(
     val core: FcManagerCore,
-    private val lazyName: LazyString,
+    private val lazyName: Lazy<String>,
     private val attachment: Any?,
 ): FcFuture_Base<T>() {
     abstract fun isCompleted(): Boolean
@@ -395,7 +395,7 @@ private abstract class FcFuture_Later<T>(
 
 private class FcPromise_Impl<T>(
     core: FcManagerCore,
-    lazyName: LazyString,
+    lazyName: Lazy<String>,
 ): FcPromise<T> {
     private val future = FcFuture_Promise<T>(core, lazyName)
 
@@ -408,7 +408,7 @@ private class FcPromise_Impl<T>(
 
 private class FcFuture_Promise<T>(
     core: FcManagerCore,
-    lazyName: LazyString,
+    lazyName: Lazy<String>,
 ): FcFuture_Later<T>(core, lazyName, null) {
     private var stateVar: State? = State(this)
     private var result: T? = null
@@ -463,7 +463,7 @@ private class FcFuture_Promise<T>(
 
 private class FcFuture_Computable<T>(
     core: FcManagerCore,
-    lazyName: LazyString,
+    lazyName: Lazy<String>,
     attachment: Any?,
     computeOnDemand: Boolean,
     inputs: MutableSet<FcFuture_Later<*>>?,

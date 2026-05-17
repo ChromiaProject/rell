@@ -86,7 +86,7 @@ abstract class R_Type(
     val name: String,
     val defName: C_DefinitionName = C_DefinitionName(C_LibUtils.DEFAULT_MODULE_STR, name),
 ) {
-    val toTextFunctionLazy = LazyString.of { "$name.to_text" }
+    val toTextFunctionLazy = lazy { "$name.to_text" }
 
     /** Compile-time SQL metadata. */
     val sqlInfo: R_TypeSqlInfo by lazy { computeSqlInfo() }

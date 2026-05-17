@@ -22,7 +22,6 @@ import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.utils.LazyString
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toBytes
 
@@ -33,7 +32,7 @@ object Lib_OpContext {
 
     private val TRANSACTION_FN_QNAME = NAMESPACE_QNAME.append("transaction")
     private val TRANSACTION_FN = TRANSACTION_FN_QNAME.str()
-    private val TRANSACTION_FN_LAZY = LazyString.of(TRANSACTION_FN)
+    private val TRANSACTION_FN_LAZY = lazyOf(TRANSACTION_FN)
 
     private val GET_SIGNERS_RETURN_RR_TYPE: RR_Type =
         RR_Type.List(RR_Type.Primitive(RR_PrimitiveKind.BYTE_ARRAY))
@@ -114,7 +113,7 @@ object Lib_OpContext {
                         val interpreter = ctx.exeCtx.appCtx.interpreter
                         val argsRtType = interpreter.resolveType(LIST_OF_GTV_RR_TYPE)
                         val argsValue = Rt_ListValue(argsRtType, rtArgs)
-                        val attrs = arrayListOf<Rt_Value>(nameValue, argsValue)
+                        val attrs = arrayListOf(nameValue, argsValue)
                         gtxOperationStructValue(interpreter, attrs)
                     }
                 }

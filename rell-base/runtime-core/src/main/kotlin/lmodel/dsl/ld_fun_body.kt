@@ -17,7 +17,6 @@ import net.postchain.rell.base.runtime.R_SysFunction
 import net.postchain.rell.base.runtime.Rt_CallContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
-import net.postchain.rell.base.utils.LazyString
 
 abstract class Ld_CommonFunctionBodyDslImpl(
     private val maker: Ld_CommonFunctionBodyMaker,
@@ -235,7 +234,7 @@ private class Ld_FunctionBody_Meta(
         private val block: Ld_FunctionMetaBodyDsl.() -> Ld_BodyResult,
 ): Ld_FunctionBody(pure) {
     override fun finish(qualifiedName: QualifiedName): L_FunctionBody {
-        val fnQualifiedName = LazyString.of { qualifiedName.str() }
+        val fnQualifiedName = lazy { qualifiedName.str() }
         return L_FunctionBody.delegating { meta ->
             val metaBuilder = Ld_FunctionMetaBodyBuilder(fnSimpleName, fnQualifiedName, internalState)
             val metaDslBuilder = Ld_FunctionMetaBodyDslImpl(meta, metaBuilder)
@@ -314,14 +313,14 @@ class Ld_FunctionBodyBuilder(
 }
 
 interface Ld_FunctionMetaBodyMaker: Ld_CommonFunctionBodyMaker {
-    val fnQualifiedName: LazyString
+    val fnQualifiedName: Lazy<String>
 
     fun validationError(code: String, msg: String)
 }
 
 private class Ld_FunctionMetaBodyBuilder(
         override val fnSimpleName: Name,
-        override val fnQualifiedName: LazyString,
+        override val fnQualifiedName: Lazy<String>,
         internalState: Ld_InternalFunctionBodyState,
 ): Ld_FunctionMetaBodyMaker {
     private val internalBuilder = Ld_InternalFunctionBodyBuilder(internalState)

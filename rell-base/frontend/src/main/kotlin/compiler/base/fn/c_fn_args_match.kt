@@ -168,7 +168,7 @@ object C_ArgMatcher {
 
         if (param == null) {
             builder.errNamedArg(name, "unknown_named_arg") {
-                val fnMsg = if (callInfo.functionName == null) "Function" else "Function '${callInfo.functionName}'"
+                val fnMsg = if (callInfo.functionName == null) "Function" else "Function '${callInfo.functionName.value}'"
                 "$fnMsg has no parameter '$name'"
             }
         } else if (param.arity == M_ParamArity.ZERO_MANY) {
@@ -212,7 +212,7 @@ object C_ArgMatcher {
             msgMgr.error(callInfo.callPos) {
                 val fnNameCode = callInfo.functionNameCode()
                 var msg = "Too many arguments"
-                if (callInfo.functionName != null) msg += " for function '${callInfo.functionName}'"
+                if (callInfo.functionName != null) msg += " for function '${callInfo.functionName.value}'"
                 msg += ": $actCount instead of $expCount"
                 "expr:call:too_many_args:[$fnNameCode]:$expCount:$actCount" toCodeMsg msg
             }

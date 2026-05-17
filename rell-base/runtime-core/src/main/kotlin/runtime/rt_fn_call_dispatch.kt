@@ -9,7 +9,6 @@ import net.postchain.rell.base.model.rr.RR_FunctionCallTarget
 import net.postchain.rell.base.runtime.R_SysFunctionUtils.callAndCatch
 import net.postchain.rell.base.runtime.utils.RellInterpreterCrashException
 import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
-import net.postchain.rell.base.utils.LazyString
 
 /**
  * Recovers the display name from an RR_ sys-function key.
@@ -66,11 +65,10 @@ private fun Rt_FunctionCallTarget.rrTargetName(): String = when (val rr = rrTarg
 // =============================================================================
 
 object R_SysFunctionUtils {
-    fun call(callCtx: Rt_CallContext, fn: R_SysFunction, name: String, values: List<Rt_Value>): Rt_Value {
-        return call(callCtx, fn, LazyString.of(name), values)
-    }
+    fun call(callCtx: Rt_CallContext, fn: R_SysFunction, name: String, values: List<Rt_Value>): Rt_Value =
+        call(callCtx, fn, lazyOf(name), values)
 
-    fun call(callCtx: Rt_CallContext, fn: R_SysFunction, nameMsg: LazyString?, values: List<Rt_Value>): Rt_Value {
+    fun call(callCtx: Rt_CallContext, fn: R_SysFunction, nameMsg: Lazy<String>?, values: List<Rt_Value>): Rt_Value {
         return if (nameMsg == null) {
             fn.call(callCtx, values)
         } else {
@@ -81,7 +79,7 @@ object R_SysFunctionUtils {
     private fun callAndCatch(
         callCtx: Rt_CallContext,
         fn: R_SysFunction,
-        name: LazyString,
+        name: Lazy<String>,
         values: List<Rt_Value>,
     ): Rt_Value = try {
         fn.call(callCtx, values)
@@ -106,7 +104,7 @@ object R_SysFunctionUtils {
      *   carrying a [Rt_CommonError] with code `fn:error:<name>:<exception-class>`; otherwise
      *   rethrow unchanged.
      */
-    fun decorateSysFnException(callCtx: Rt_CallContext, name: LazyString, e: Throwable): Throwable = when (e) {
+    fun decorateSysFnException(callCtx: Rt_CallContext, name: Lazy<String>, e: Throwable): Throwable = when (e) {
         is Rt_Exception -> {
             if (e.info.extraMessage == null && e.err !is Rt_RequireError) {
                 // Mutate-and-rethrow: attaching the wrapper extra-message to the existing
@@ -129,7 +127,7 @@ object R_SysFunctionUtils {
             } else if (callCtx.globalCtx.wrapFunctionCallErrors) {
                 val extra = "System function '${name.value}'"
                 val info = Rt_ExceptionInfo(stack = net.postchain.rell.base.utils.immListOf(), extraMessage = extra)
-                val err = Rt_CommonError("fn:error:$name:${e.javaClass.canonicalName}", e.message ?: "error")
+                val err = Rt_CommonError("fn:error:${name.value}:${e.javaClass.canonicalName}", e.message ?: "error")
                 Rt_Exception(err, info)
             } else {
                 e

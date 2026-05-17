@@ -115,7 +115,7 @@ class C_FunctionCallTarget_FunctionType(
 
 class C_FunctionCallInfo(
     val callPos: S_Pos,
-    val functionName: LazyString?,
+    val functionName: Lazy<String>?,
 ) {
     fun functionNameCode() = functionName?.value ?: "?"
 }

@@ -23,14 +23,15 @@ internal fun String.nounWithArticle(): String {
     return "$article $this"
 }
 
-class LazyPosString(val pos: S_Pos, val lazyStr: LazyString) {
-    val str: String get() = lazyStr.value
+class LazyPosString(val pos: S_Pos, val lazyStr: Lazy<String>) {
+    val str: String
+        get() = lazyStr.value
 
-    override fun toString() = lazyStr.toString()
+    override fun toString() = lazyStr.value
 
     companion object {
-        fun of(pos: S_Pos, value: String) = LazyPosString(pos, LazyString.of(value))
-        fun of(pos: S_Pos, fn: () -> String) = LazyPosString(pos, LazyString.of(fn))
+        fun of(pos: S_Pos, value: String) = LazyPosString(pos, lazyOf(value))
+        fun of(pos: S_Pos, fn: () -> String) = LazyPosString(pos, lazy(fn))
         fun of(cName: C_Name) = of(cName.pos, cName.str)
     }
 }

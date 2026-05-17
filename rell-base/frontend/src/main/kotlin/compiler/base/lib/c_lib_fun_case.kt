@@ -57,7 +57,7 @@ object C_LibFuncCaseUtils {
     }
 }
 
-class C_LibFuncCaseCtx(val linkPos: S_Pos, val fullNameLazy: LazyString) {
+class C_LibFuncCaseCtx(val linkPos: S_Pos, val fullNameLazy: Lazy<String>) {
     /** Beware that the returned name is a link name, not actual function definition name
      * (may differ sometimes, e.g. aliases, namespace member links, etc.). */
     fun qualifiedNameMsg() = fullNameLazy.value
@@ -157,7 +157,7 @@ abstract class C_LibFuncCaseMatch<CallT: V_FunctionCall> {
 
 abstract class C_LibPartialCallTarget<CallT: V_FunctionCall>(
     val callPos: S_Pos,
-    val fullName: LazyString,
+    val fullName: Lazy<String>,
 ) {
     abstract fun codeMsg(): C_CodeMsg
     abstract fun match(): C_LibPartialCallTargetMatch<CallT>
@@ -190,7 +190,7 @@ private class C_LibFunctionHeader(val lHeader: L_FunctionHeader) {
 
 private class C_CaseMatchBase(
     val resType: R_Type,
-    val fullNameLazy: LazyString,
+    val fullNameLazy: Lazy<String>,
     val linkPos: S_Pos,
     private val restrictions: C_MemberRestrictions,
 ) {
@@ -266,7 +266,7 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
         }
     }
 
-    protected abstract fun getFullName(selfType: R_Type): LazyString
+    protected abstract fun getFullName(selfType: R_Type): Lazy<String>
     protected abstract fun getCaseContext(selfType: R_Type): C_GenericFuncCaseCtx?
 
     protected abstract fun makeMatch(
@@ -495,20 +495,17 @@ private abstract class C_CommonLibFuncCase<CallT: V_FunctionCall>(
 }
 
 sealed class C_MemberNaming {
-    abstract val fullNameLazy: LazyString
+    abstract val fullNameLazy: Lazy<String>
 
     abstract fun replaceSelfType(selfType: M_Type?): C_MemberNaming
 
     final override fun toString() = fullNameLazy.value
 
     companion object {
-        fun makeFullName(fullName: FullName): C_MemberNaming {
-            return C_MemberNaming_FullName(fullName)
-        }
+        fun makeFullName(fullName: FullName): C_MemberNaming = C_MemberNaming_FullName(fullName)
 
-        fun makeTypeMember(mType: M_Type, simpleName: Name): C_MemberNaming {
-            return C_MemberNaming_TypeMember(mType, simpleName)
-        }
+        fun makeTypeMember(mType: M_Type, simpleName: Name): C_MemberNaming =
+            C_MemberNaming_TypeMember(mType, simpleName)
 
         fun makeTypeExtensionMember(qualifiedName: QualifiedName, simpleName: Name): C_MemberNaming {
             return C_MemberNaming_TypeExtensionMember(qualifiedName, simpleName, null)
@@ -523,7 +520,7 @@ sealed class C_MemberNaming {
 private class C_MemberNaming_FullName(
     private val fullName: FullName,
 ): C_MemberNaming() {
-    override val fullNameLazy = LazyString.of {
+    override val fullNameLazy = lazy {
         // Using a qualified name (w/o the module name) for compatibility; may be changed in the future.
         fullName.qualifiedName.str()
     }
@@ -535,7 +532,7 @@ private class C_MemberNaming_TypeMember(
     private val mType: M_Type,
     private val simpleName: Name,
 ): C_MemberNaming() {
-    override val fullNameLazy = LazyString.of {
+    override val fullNameLazy = lazy {
         "${mType.strCode()}.$simpleName"
     }
 
@@ -549,7 +546,7 @@ private class C_MemberNaming_TypeExtensionMember(
     private val simpleName: Name,
     private val actualSelfType: M_Type?,
 ): C_MemberNaming() {
-    override val fullNameLazy = LazyString.of {
+    override val fullNameLazy = lazy {
         if (actualSelfType == null) {
             "$qualifiedName.$simpleName"
         } else {
@@ -564,7 +561,7 @@ private class C_MemberNaming_TypeExtensionMember(
 }
 
 private class C_MemberNaming_Constructor(private val mType: M_Type): C_MemberNaming() {
-    override val fullNameLazy = LazyString.of {
+    override val fullNameLazy = lazy {
         mType.strCode()
     }
 
@@ -588,9 +585,7 @@ private class C_GlobalLibFuncCase(
         }
     }
 
-    override fun getFullName(selfType: R_Type): LazyString {
-        return naming.fullNameLazy
-    }
+    override fun getFullName(selfType: R_Type): Lazy<String> = naming.fullNameLazy
 
     override fun getCaseContext(selfType: R_Type): C_GenericFuncCaseCtx {
         checkEquals(selfType, R_UnitType)
@@ -636,7 +631,7 @@ private class C_MemberLibFuncCase(
         return if (lFunction2 === lFunction) this else C_MemberLibFuncCase(lFunction2, ideInfo, restrictions, naming)
     }
 
-    override fun getFullName(selfType: R_Type): LazyString {
+    override fun getFullName(selfType: R_Type): Lazy<String> {
         val actualNaming = naming.replaceSelfType(selfType.mType)
         return actualNaming.fullNameLazy
     }
