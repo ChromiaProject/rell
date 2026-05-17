@@ -31,7 +31,7 @@
       "name": "filechain",
       "url": "https://gitlab.com/chromaway/filehub/filechain.git",
       "commands": [["install"], ["build"]],
-      "notes": "FileHub on-chain storage blockchain. No `test:` block — `chr test` skipped."
+      "notes": "FileHub on-chain storage blockchain. `chr test` skipped."
     },
     {
       "name": "filehub",
@@ -49,27 +49,28 @@
       "name": "auth-server-ft4",
       "url": "https://bitbucket.org/chromawallet/auth-server-ft4.git",
       "commands": [["install"], ["build"]],
-      "notes": "FT4-aware auth server. No `test:` block — `chr test` skipped."
-    },
-    {
-      "name": "ft3-lib",
-      "url": "https://bitbucket.org/chromawallet/ft3-lib.git",
-      "expectedFailure": true,
-      "notes": "Predecessor of FT4. Historical/FT3-era; install+build pass but `chr test` hits the same downstream Rell issues as the FT4-tracking projects. Left listed to surface future regressions; not maintained forward."
+      "notes": "FT4-aware auth server. `chr test` skipped."
     },
     {
       "name": "lib-pagination-utils",
       "url": "https://bitbucket.org/chromawallet/lib-pagination-utils.git",
       "rellPath": "rell",
       "commands": [["install"]],
-      "notes": "Pagination helper. chromia.yml's `module: core` points at a non-existent module (real modules at src/core/pagination/), so `chr build` has never worked. Consumed as a library; install-only."
+      "notes": "Pagination helper. Consumed as a library; install-only."
     },
     {
       "name": "originals-governance",
       "url": "https://bitbucket.org/chromawallet/originals-governance.git",
       "rellPath": "rell",
       "commands": [["install"], ["build"]],
-      "notes": "Originals governance dapp. No `test:` block. (Earlier runs needed an ssh→https patch for the lib-pagination-utils registry; upstream now ships the https URL, so no patch is required.)"
+      "patches": [
+        {
+          "file": "rell/chromia.yml",
+          "replace": "ssh://git@bitbucket.org/chromawallet/lib-pagination-utils.git",
+          "with": "https://bitbucket.org/chromawallet/lib-pagination-utils.git"
+        }
+      ],
+      "notes": "Originals governance dapp. No `test:` block. lib-pagination-utils is referenced via ssh://git@bitbucket.org/... — CI runners have no Bitbucket SSH host key (and no account key to authenticate with), so we rewrite the registry to HTTPS pre-install. The library is public so anonymous HTTPS clones work."
     }
   ]
 }
