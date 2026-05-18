@@ -23,6 +23,13 @@ mkdir -p "$out_dir"
 envs_json=$(glab api --paginate \
   "projects/${CI_PROJECT_ID}/environments?states=available&per_page=100")
 
+# `glab api --paginate` emits one JSON array per page (`[...][...]`) rather than a single
+# merged array, so once the environment count crosses the per_page=100 boundary `envs_json`
+# becomes a multi-document stream. The final `jq` filter below would then run once per page
+# and emit one manifest object per page — an invalid multi-document manifest.json that the
+# browser app fails to parse. Merge the pages into a single array up front.
+envs_json=$(printf '%s' "$envs_json" | jq -s 'add // []')
+
 # Cross-reference with the live Pages deployments. Environment records persist after a
 # path-prefixed Pages deployment is removed (expiry, manual delete), so the env-only view
 # would link to 404s. The /pages endpoint is the authoritative list of currently-served
