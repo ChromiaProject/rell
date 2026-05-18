@@ -92,7 +92,7 @@ cache:
         export GRADLE_FLAGS="$GRADLE_FLAGS_WEAK"
         echo "Weak runner detected — using reduced memory profile (4g/2g/4g×1)"
       fi
-    - microdnf install -y ca-certificates curl tar gzip git
+    - microdnf install -y ca-certificates curl tar gzip git glibc-langpack-en
     - |
       DOCKER_VERSION=28.1.1
       curl -fsSL "https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz" -o /tmp/docker.tgz
