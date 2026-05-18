@@ -210,11 +210,13 @@ dependency-check:
   stage: dependency-check
   tags: [ saas-linux-medium-amd64 ]
   interruptible: true
-  variables:
-    WEAK_RUNNER: "true"
+  variables: { WEAK_RUNNER: "true" }
   rules:
     - if: $RUN_DEPENDENCY_CHECK == "true"
-  script: [ "./gradlew $GRADLE_FLAGS --no-configuration-cache dependencyCheckAggregate" ]
+  # --no-parallel: dependencyCheckAggregate resolves every subproject's configurations from the
+  # root project. With org.gradle.parallel=true (gradle.properties), Gradle 9 rejects that
+  # cross-project resolution ("attempted without an exclusive lock").
+  script: [ "./gradlew $GRADLE_FLAGS --no-configuration-cache --no-parallel dependencyCheckAggregate" ]
   artifacts:
     when: always
     paths: [ build/reports/dependency-check-report.* ]
@@ -282,7 +284,6 @@ pages:index:after-regression:
 # path prefixes (`bench-<slug>-<sha>` / `profile-<slug>-<sha>`). Including the short SHA in
 # the prefix and environment name means same-branch reruns no longer clobber each other —
 # regression analysis between commits on the same branch needs both deployments to coexist.
-# Requires GitLab 16.7+ parallel pages deployments.
 # URLs: https://<group>.gitlab.io/<project>/bench-<branch-slug>-<sha>/report.html
 #       https://<group>.gitlab.io/<project>/profile-<branch-slug>-<sha>/report.html
 # Each deployment also exposes the parseable benchmark JSON at /data/main.json so external
@@ -321,9 +322,6 @@ pages:benchmarks:
     - echo "Benchmark JSON   - $CI_PAGES_URL/data/main.json"
   pages:
     path_prefix: "bench-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
-    # Path-prefixed Pages deployments default to a 24h expiry on GitLab.com, after which the
-    # report URL 404s while the environment record persists. Pin to `never` so historical
-    # benchmark reports stay reachable for regression comparison across commits.
     expire_in: never
   environment:
     name: "benchmarks/$CI_COMMIT_REF_SLUG/$CI_COMMIT_SHORT_SHA"
@@ -341,8 +339,7 @@ pages:profile:
   stage: benchmarks
   tags: [ saas-linux-medium-amd64 ]
   interruptible: true
-  variables:
-    WEAK_RUNNER: "true"
+  variables: { WEAK_RUNNER: "true" }
   rules:
     - when: manual
       allow_failure: true
@@ -354,7 +351,6 @@ pages:profile:
     - echo "Profile report - $CI_PAGES_URL/report.html"
   pages:
     path_prefix: "profile-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
-    # See `pages:benchmarks` for the rationale — keep historical profile reports reachable.
     expire_in: never
   environment:
     name: "profile/$CI_COMMIT_REF_SLUG/$CI_COMMIT_SHORT_SHA"
@@ -397,8 +393,6 @@ pages:regression:
     - echo "Regression report - $CI_PAGES_URL/report.html"
   pages:
     path_prefix: "regression-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
-    # See `pages:benchmarks` for the rationale — keep historical regression reports reachable
-    # for cross-commit comparison rather than having them age out after 24h.
     expire_in: never
   environment:
     name: "regression/$CI_COMMIT_REF_SLUG/$CI_COMMIT_SHORT_SHA"
@@ -410,22 +404,17 @@ pages:regression:
 
 qodana:
   tags: [ saas-linux-large-amd64 ]
-  variables:
-    QODANA_MR_MODE: "true"
+  variables: { QODANA_MR_MODE: "true" }
   cache:
     key: "qodana-$CI_COMMIT_REF_SLUG"
-    fallback_keys:
-      - qodana-dev
-    paths:
-      - .qodana/cache
+    fallback_keys: [ qodana-dev ]
+    paths: [ .qodana/cache ]
     policy: pull-push
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "dev"
-      variables:
-        QODANA_MR_MODE: "false"
+      variables: { QODANA_MR_MODE: "false" }
   artifacts:
-    paths:
-      - .qodana/results/qodana.sarif.json
+    paths: [ .qodana/results/qodana.sarif.json ]
     when: always
     expire_in: 1 week
