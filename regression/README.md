@@ -10,6 +10,12 @@ invoked against the locally-bootstrapped `chr` (built from the Rell snapshot in 
 `work/local-chr.sh`). Projects without a `test:` block in their chromia.yml override `commands`
 to drop the test step &mdash; otherwise `chr test` exits with "No tests to run".
 
+`chr install` and `chr build` run **in parallel** across projects: each only touches its own
+clone tree, so the compile phase fans them out over a worker pool (sized to the CPU count, or
+to `REGRESSION_COMPILE_JOBS` if that env var is set &mdash; useful for capping memory on a CI
+runner). `chr test` then runs **serially** &mdash; every project's suite hits the same local
+PostgreSQL instance, and concurrent runs would race on shared schemas.
+
 ## Quick start
 
 ```bash

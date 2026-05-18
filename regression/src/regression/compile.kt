@@ -4,10 +4,14 @@
 package net.postchain.rell.regression
 
 import com.github.ajalt.clikt.core.Context
+import java.io.BufferedWriter
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.time.Duration
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.bufferedWriter
@@ -22,6 +26,20 @@ import kotlin.io.path.writeText
 // spread across two test chains). Bump if a new entry routinely times out.
 private val PER_PROJECT_TIMEOUT: Duration = Duration.ofMinutes(30)
 private val BOOTSTRAP_TIMEOUT: Duration = Duration.ofMinutes(60)
+
+// `chr install` (dependency resolution) and `chr build` (compilation) operate on each project's
+// own clone tree and never touch the database, so they fan out cleanly across projects. `chr test`
+// does not: every project's suite runs against the same local PostgreSQL instance, and concurrent
+// runs would race on shared schemas. compileAll therefore splits the pipeline in two — install/
+// build across a worker pool, then test strictly serially. Any step that is neither `install` nor
+// `build` is treated as serial too, so the split errs on the safe side for unrecognised commands.
+private val PARALLELISABLE_STEPS = setOf("install", "build")
+
+// Worker count for the install/build phase. Defaults to the CPU count; each `chr` invocation is a
+// heavyweight JVM, so REGRESSION_COMPILE_JOBS lets a memory-constrained CI runner cap the fan-out.
+private val COMPILE_PARALLELISM: Int =
+    (System.getenv("REGRESSION_COMPILE_JOBS")?.toIntOrNull() ?: Runtime.getRuntime().availableProcessors())
+        .coerceAtLeast(1)
 
 class CompileCommand : RegressionSubcommand("compile") {
     override fun help(context: Context) =
@@ -41,133 +59,47 @@ fun compileAll(projects: List<ProjectSpec>, workdir: Path, reportsDir: Path): Re
     log("compile", "chr binary: $chrBin")
 
     val total = projects.size
-    val results = ArrayList<CompileResult>(total)
 
-    for ((idx, project) in projects.withIndex()) {
-        val tag = "[${idx + 1}/$total] ${project.name}"
+    // ── Phase 1: install + build, fanned out across a worker pool ────────────────────────────
+    val workers = COMPILE_PARALLELISM.coerceAtMost(total.coerceAtLeast(1))
+    log("compile", "Phase 1/2 — install + build for $total project(s) across $workers worker(s)")
 
-        val target = workdir / project.name
-        val sha = readGitSha(target)
-        if (sha == null) {
-            log("compile", "$tag — CLONE_FAILED (no .git at $target — run :regressionClone)")
-            results += baseResult(project, Status.CLONE_FAILED)
-            continue
-        }
-
-        val rellDir = (target / project.rellPath).normalize()
-        if (!rellDir.exists()) {
-            log("compile", "$tag — CLONE_FAILED (rellPath=$rellDir does not exist after clone)")
-            results += baseResult(project, Status.CLONE_FAILED).copy(sha = sha)
-            continue
-        }
-
-        // Pre-check: chr install / chr build both fail mechanically with "library not found in null"
-        // when there's no chromia.yml in the rell dir. That's a tool-incompatibility, not a Rell
-        // compiler regression — short-circuit before invoking chr so the report shows a clean note
-        // instead of a wall of chr usage text. Projects pre-date the chromia.yml era live here.
-        val chromiaYml = rellDir / "chromia.yml"
-        if (!chromiaYml.exists()) {
-            log("compile", "$tag — EXPECTED_FAIL (no chromia.yml at $rellDir — pre-chromia.yml layout)")
-            results += baseResult(project, Status.EXPECTED_FAIL).copy(
-                sha = sha,
-                durationMs = 0L,
-                errorSummary = "no chromia.yml at $rellDir; project pre-dates chromia.yml era " +
-                    "and is incompatible with the current chr CLI — not a Rell compiler regression",
-            )
-            continue
-        }
-
-        // Apply declared patches (e.g. rewrite stricter-than-allowed chromia.yml strings).
-        // Applied per-compile so they survive `regressionClone`'s git reset on the next run.
-        val patchFailure = applyPatches(project, target)
-        if (patchFailure != null) {
-            log("compile", "$tag — FAILED (patch error: $patchFailure)")
-            results += baseResult(project, Status.FAILED).copy(
-                sha = sha,
-                durationMs = 0L,
-                errorSummary = "patch failed before chr: $patchFailure",
-            )
-            continue
-        }
-
-        val logFile = logsDir / "${project.name}.log"
-        logFile.deleteIfExists()
-
-        // Run the chr-command pipeline. Any non-zero exit short-circuits the rest; failedStep records
-        // which step gave up so the report can highlight `install` vs `build` failures separately.
-        var totalDuration = 0L
-        var lastExit = 0
-        var lastTimedOut = false
-        var failedStep: List<String>? = null
-
-        // One BufferedWriter spans the whole project: header, per-step markers, and any
-        // start-failure note. Opened with APPEND so each flush writes at the file's current EOF,
-        // which interleaves correctly with chr subprocesses that redirectOutput.appendTo() the
-        // same file between our flushes.
-        logFile.bufferedWriter(
-            Charsets.UTF_8,
-            DEFAULT_BUFFER_SIZE,
-            StandardOpenOption.CREATE,
-            StandardOpenOption.WRITE,
-            StandardOpenOption.APPEND,
-        ).use { w ->
-            w.appendLine("# regression :: ${project.name}")
-            w.appendLine("# url       :  ${project.url}")
-            w.appendLine("# ref       :  ${project.ref ?: "(default branch)"}")
-            w.appendLine("# sha       :  $sha")
-            w.appendLine("# rell path :  $rellDir")
-            w.appendLine("# commands  :  ${project.commands.joinToString(" && ") { "chr ${it.joinToString(" ")}" }}")
-            w.newLine()
-
-            for (step in project.commands) {
-                val cmd = listOf(chrBin.absolutePathString()) + step
-                log("compile", "$tag — chr ${step.joinToString(" ")}  (cwd=${rellDir.fileName})")
-                w.newLine()
-                w.appendLine("# step :: chr ${step.joinToString(" ")}")
-                w.flush()
-
-                val outcome = try {
-                    runToLog(cmd, rellDir, logFile, PER_PROJECT_TIMEOUT)
-                } catch (e: IOException) {
-                    w.newLine()
-                    w.appendLine("# regression :: failed to start chr: ${e.message}")
-                    ProcessOutcome(exitCode = -1, durationMs = 0, timedOut = false)
-                }
-
-                totalDuration += outcome.durationMs
-                lastExit = outcome.exitCode
-                lastTimedOut = outcome.timedOut
-                if (outcome.exitCode != 0 || outcome.timedOut) {
-                    failedStep = step
-                    break
+    val pool = Executors.newFixedThreadPool(workers) { r ->
+        Thread(r, "regression-compile").apply { isDaemon = true }
+    }
+    val phase1: List<Phase1Outcome> = try {
+        projects
+            .mapIndexed { idx, project ->
+                pool.submit(Callable { compilePhase1(project, idx, total, workdir, logsDir, chrBin) })
+            }
+            .map { future ->
+                try {
+                    future.get()
+                } catch (e: ExecutionException) {
+                    // A worker hit something the per-step IOException guard doesn't cover (e.g. an
+                    // IOException while applying patches). Abort with the real cause, as the old
+                    // sequential loop did — don't mask a toolkit bug as a project failure.
+                    throw e.cause ?: e
                 }
             }
+    } finally {
+        pool.shutdown()
+    }
+
+    // ── Phase 2: test, strictly serial — every project's suite shares one PostgreSQL instance ─
+    val pending = phase1.filterIsInstance<Pending>()
+    if (pending.isNotEmpty()) {
+        log("compile", "Phase 2/2 — test for ${pending.size} project(s), serially")
+    }
+    val testResults = pending.associate { p -> p.project.name to compilePhase2(p, chrBin) }
+
+    // Stitch results back into the original project order: phase-1 finishers verbatim, pending
+    // projects swapped for their post-test result.
+    val results = phase1.map { outcome ->
+        when (outcome) {
+            is Finished -> outcome.result
+            is Pending -> testResults.getValue(outcome.project.name)
         }
-
-        val passed = lastExit == 0 && !lastTimedOut
-
-        val status = when {
-            passed -> Status.PASSED
-            project.expectedFailure -> Status.EXPECTED_FAIL
-            else -> Status.FAILED
-        }
-
-        val summary = if (passed) null else tailLog(logFile, maxLines = 12)
-
-        log(
-            "compile",
-            "$tag — ${status.name} in ${totalDuration / 1000.0}s (exit $lastExit${if (lastTimedOut) ", TIMED OUT" else ""})",
-        )
-
-        results += baseResult(project, status).copy(
-            sha = sha,
-            durationMs = totalDuration,
-            exitCode = lastExit,
-            timedOut = lastTimedOut,
-            errorSummary = summary,
-            logRelPath = "logs/${project.name}.log",
-            failedStep = failedStep,
-        )
     }
 
     val resultsFile = ResultsFile(
@@ -183,6 +115,228 @@ fun compileAll(projects: List<ProjectSpec>, workdir: Path, reportsDir: Path): Re
     val summary = results.groupingBy { it.status }.eachCount()
     log("compile", "Summary: $summary")
     return resultsFile
+}
+
+/** Mutable accumulator threaded through one project's chr-command pipeline across both phases. */
+private class PipelineState {
+    var totalDurationMs = 0L
+    var lastExit = 0
+    var lastTimedOut = false
+    var failedStep: List<String>? = null
+
+    /** The pipeline keeps running only while the previous step exited cleanly. */
+    val ok: Boolean get() = lastExit == 0 && !lastTimedOut
+}
+
+/** Phase-1 result for one project. */
+private sealed interface Phase1Outcome
+
+/** Project is done — validation/patch failure, install/build failure, or no `test` step deferred. */
+private class Finished(val result: CompileResult) : Phase1Outcome
+
+/** install/build passed; the project still has `test` (and any later) steps to run serially. */
+private class Pending(
+    val project: ProjectSpec,
+    val tag: String,
+    val sha: String,
+    val rellDir: Path,
+    val logFile: Path,
+    val serialSteps: List<List<String>>,
+    val state: PipelineState,
+) : Phase1Outcome
+
+/**
+ * Validate the clone, apply patches, then run the project's parallelisable steps (the leading
+ * `install`/`build` prefix). Returns [Finished] when there is nothing left to do, or [Pending]
+ * when `test` steps remain for the serial phase. Safe to call from a worker thread: every project
+ * touches only its own clone tree and its own log file.
+ */
+private fun compilePhase1(
+    project: ProjectSpec,
+    idx: Int,
+    total: Int,
+    workdir: Path,
+    logsDir: Path,
+    chrBin: Path,
+): Phase1Outcome {
+    val tag = "[${idx + 1}/$total] ${project.name}"
+
+    val target = workdir / project.name
+    val sha = readGitSha(target)
+    if (sha == null) {
+        log("compile", "$tag — CLONE_FAILED (no .git at $target — run :regressionClone)")
+        return Finished(baseResult(project, Status.CLONE_FAILED))
+    }
+
+    val rellDir = (target / project.rellPath).normalize()
+    if (!rellDir.exists()) {
+        log("compile", "$tag — CLONE_FAILED (rellPath=$rellDir does not exist after clone)")
+        return Finished(baseResult(project, Status.CLONE_FAILED).copy(sha = sha))
+    }
+
+    // Pre-check: chr install / chr build both fail mechanically with "library not found in null"
+    // when there's no chromia.yml in the rell dir. That's a tool-incompatibility, not a Rell
+    // compiler regression — short-circuit before invoking chr so the report shows a clean note
+    // instead of a wall of chr usage text. Projects pre-date the chromia.yml era live here.
+    val chromiaYml = rellDir / "chromia.yml"
+    if (!chromiaYml.exists()) {
+        log("compile", "$tag — EXPECTED_FAIL (no chromia.yml at $rellDir — pre-chromia.yml layout)")
+        return Finished(
+            baseResult(project, Status.EXPECTED_FAIL).copy(
+                sha = sha,
+                durationMs = 0L,
+                errorSummary = "no chromia.yml at $rellDir; project pre-dates chromia.yml era " +
+                    "and is incompatible with the current chr CLI — not a Rell compiler regression",
+            ),
+        )
+    }
+
+    // Apply declared patches (e.g. rewrite stricter-than-allowed chromia.yml strings).
+    // Applied per-compile so they survive `regressionClone`'s git reset on the next run.
+    val patchFailure = applyPatches(project, target)
+    if (patchFailure != null) {
+        log("compile", "$tag — FAILED (patch error: $patchFailure)")
+        return Finished(
+            baseResult(project, Status.FAILED).copy(
+                sha = sha,
+                durationMs = 0L,
+                errorSummary = "patch failed before chr: $patchFailure",
+            ),
+        )
+    }
+
+    val logFile = logsDir / "${project.name}.log"
+    logFile.deleteIfExists()
+
+    // Split the pipeline: the leading run of install/build steps is parallelisable; `test` (and
+    // anything past it) is held back for the serial phase. takeWhile keeps within-project order
+    // intact and treats any unrecognised step as serial — see PARALLELISABLE_STEPS.
+    val parallelSteps = project.commands.takeWhile { it.firstOrNull() in PARALLELISABLE_STEPS }
+    val serialSteps = project.commands.drop(parallelSteps.size)
+
+    val state = PipelineState()
+
+    // One BufferedWriter spans phase 1's work: header, per-step markers, and any start-failure
+    // note. Opened with APPEND so each flush writes at the file's current EOF, which interleaves
+    // correctly with chr subprocesses that redirectOutput.appendTo() the same file between flushes.
+    logFile.bufferedWriter(
+        Charsets.UTF_8,
+        DEFAULT_BUFFER_SIZE,
+        StandardOpenOption.CREATE,
+        StandardOpenOption.WRITE,
+        StandardOpenOption.APPEND,
+    ).use { w ->
+        writeLogHeader(w, project, sha, rellDir)
+        runSteps(w, parallelSteps, chrBin, rellDir, logFile, tag, state)
+    }
+
+    // Finalise here when install/build failed (test would be short-circuited anyway) or when the
+    // project has no test step — so the serial phase only ever handles real test suites.
+    return if (!state.ok || serialSteps.isEmpty()) {
+        Finished(finalize(project, tag, sha, logFile, state))
+    } else {
+        Pending(project, tag, sha, rellDir, logFile, serialSteps, state)
+    }
+}
+
+/** Run the deferred serial steps (`chr test`) for one project, then finalise its result. */
+private fun compilePhase2(pending: Pending, chrBin: Path): CompileResult {
+    pending.logFile.bufferedWriter(
+        Charsets.UTF_8,
+        DEFAULT_BUFFER_SIZE,
+        StandardOpenOption.CREATE,
+        StandardOpenOption.WRITE,
+        StandardOpenOption.APPEND,
+    ).use { w ->
+        runSteps(w, pending.serialSteps, chrBin, pending.rellDir, pending.logFile, pending.tag, pending.state)
+    }
+    return finalize(pending.project, pending.tag, pending.sha, pending.logFile, pending.state)
+}
+
+/** Write the per-project log header: identity, ref/sha, rell path, and the full command pipeline. */
+private fun writeLogHeader(w: BufferedWriter, project: ProjectSpec, sha: String, rellDir: Path) {
+    w.appendLine("# regression :: ${project.name}")
+    w.appendLine("# url       :  ${project.url}")
+    w.appendLine("# ref       :  ${project.ref ?: "(default branch)"}")
+    w.appendLine("# sha       :  $sha")
+    w.appendLine("# rell path :  $rellDir")
+    w.appendLine("# commands  :  ${project.commands.joinToString(" && ") { "chr ${it.joinToString(" ")}" }}")
+    w.newLine()
+}
+
+/**
+ * Run `steps` in order against `chrBin`, short-circuiting on the first non-zero exit or timeout
+ * and recording the offending step in `state`. `w` must be a writer opened on `logFile` in APPEND
+ * mode: its `# step ::` markers are flushed so they interleave correctly with the chr subprocesses
+ * that append their combined output straight to the same file.
+ */
+private fun runSteps(
+    w: BufferedWriter,
+    steps: List<List<String>>,
+    chrBin: Path,
+    rellDir: Path,
+    logFile: Path,
+    tag: String,
+    state: PipelineState,
+) {
+    for (step in steps) {
+        val cmd = listOf(chrBin.absolutePathString()) + step
+        log("compile", "$tag — chr ${step.joinToString(" ")}  (cwd=${rellDir.fileName})")
+        w.newLine()
+        w.appendLine("# step :: chr ${step.joinToString(" ")}")
+        w.flush()
+
+        val outcome = try {
+            runToLog(cmd, rellDir, logFile, PER_PROJECT_TIMEOUT)
+        } catch (e: IOException) {
+            w.newLine()
+            w.appendLine("# regression :: failed to start chr: ${e.message}")
+            ProcessOutcome(exitCode = -1, durationMs = 0, timedOut = false)
+        }
+
+        state.totalDurationMs += outcome.durationMs
+        state.lastExit = outcome.exitCode
+        state.lastTimedOut = outcome.timedOut
+        if (outcome.exitCode != 0 || outcome.timedOut) {
+            state.failedStep = step
+            break
+        }
+    }
+}
+
+/** Turn a finished [PipelineState] into the project's [CompileResult] and log a one-line summary. */
+private fun finalize(
+    project: ProjectSpec,
+    tag: String,
+    sha: String,
+    logFile: Path,
+    state: PipelineState,
+): CompileResult {
+    val passed = state.ok
+
+    val status = when {
+        passed -> Status.PASSED
+        project.expectedFailure -> Status.EXPECTED_FAIL
+        else -> Status.FAILED
+    }
+
+    val summary = if (passed) null else tailLog(logFile, maxLines = 12)
+
+    log(
+        "compile",
+        "$tag — ${status.name} in ${state.totalDurationMs / 1000.0}s " +
+            "(exit ${state.lastExit}${if (state.lastTimedOut) ", TIMED OUT" else ""})",
+    )
+
+    return baseResult(project, status).copy(
+        sha = sha,
+        durationMs = state.totalDurationMs,
+        exitCode = state.lastExit,
+        timedOut = state.lastTimedOut,
+        errorSummary = summary,
+        logRelPath = "logs/${project.name}.log",
+        failedStep = state.failedStep,
+    )
 }
 
 /**
