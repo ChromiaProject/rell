@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
-package net.postchain.rell.benchmarks
+package net.postchain.rell.performance.benchmarks
 
 import kotlinx.benchmark.Blackhole
 

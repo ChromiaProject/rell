@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
-package net.postchain.rell.benchmarks.report
+package net.postchain.rell.performance.report
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode

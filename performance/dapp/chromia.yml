@@ -1,0 +1,3 @@
+blockchains:
+  hello_world:
+    module: main

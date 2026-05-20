@@ -1,0 +1,79 @@
+module;
+
+// --- Entities ---
+
+entity user {
+    key name: text;
+    mutable bio: text;
+}
+
+entity post {
+    index author: user;
+    title: text;
+    content: text;
+    timestamp;
+}
+
+entity tag {
+    key name: text;
+}
+
+entity post_tag {
+    index post;
+    index tag;
+    key post, tag;
+}
+
+// --- Operations ---
+
+operation create_user(name: text, bio: text) {
+    create user(name = name, bio = bio);
+}
+
+operation update_bio(name: text, bio: text) {
+    update user @ { .name == name } ( .bio = bio );
+}
+
+operation create_post(author_name: text, title: text, content: text) {
+    val author = user @ { .name == author_name };
+    create post(author = author, title = title, content = content, op_context.last_block_time);
+}
+
+operation tag_post(post_rowid: rowid, tag_name: text) {
+    val p = post @ { .rowid == post_rowid };
+    val t = tag @? { .name == tag_name } ?: create tag(name = tag_name);
+    create post_tag(post = p, tag = t);
+}
+
+// --- Queries ---
+
+query get_user(name: text) = user @? { .name == name } ( .name, .bio );
+
+query list_users(page_size: integer, skip: integer) =
+    user @* {} ( .name, .bio ) limit page_size offset skip;
+
+query count_users() = user @* {} ( @sum 1 );
+
+query get_posts_by_user(author_name: text, max_count: integer) =
+    post @* { .author.name == author_name } (
+        title = .title,
+        content = .content
+    ) limit max_count;
+
+query count_posts() = post @* {} ( @sum 1 );
+
+query search_posts(term: text) =
+    post @* { .title.contains(term) or .content.contains(term) } (
+        author = .author.name,
+        title = .title,
+        content = .content
+    ) limit 50;
+
+query get_posts_by_tag(tag_name: text) =
+    (pt: post_tag, p: post) @* { pt.tag.name == tag_name, pt.post == p } (
+        author = p.author.name,
+        title = p.title
+    ) limit 50;
+
+query get_user_post_count(author_name: text) =
+    post @* { .author.name == author_name } ( @sum 1 );

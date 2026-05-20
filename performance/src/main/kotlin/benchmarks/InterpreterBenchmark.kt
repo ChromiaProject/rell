@@ -3,7 +3,7 @@
  */
 @file:Suppress("unused")
 
-package net.postchain.rell.benchmarks
+package net.postchain.rell.performance.benchmarks
 
 import kotlinx.benchmark.Benchmark
 import kotlinx.benchmark.BenchmarkMode
@@ -36,43 +36,46 @@ import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.immListOf
 
 /**
- * Real-world microbenchmark on the **legacy R_Expr tree-walker** (master only has this
- * single backend). Driven by code lifted out of
- * [chromaway/ft4-lib](https://gitlab.com/chromaway/ft4-lib) — the canonical Rell library
- * that most Chromia dapps depend on. Three pure-compute, DB-free workloads:
+ * Synthetic microbenchmark on the **legacy R_Expr tree-walker** (this branch's only
+ * interpreter — the master codebase predates the RR_App refactor and the Truffle backend).
  *
- *   * `gtv_text` — `convert_gtv_to_text`, recursive pretty-printer over a nested gtv.
- *   * `rule_serde` — round-trip a list of `rule_expression`s through gtv.
- *   * `rule_eval` — evaluate a parsed rule set against a `map<text, gtv>` of variables.
- *
- * The Rell source for all three lives in `src/main/resources/ft4_bench/main.rell`.
+ * Mirrors rell2's `InterpreterBenchmark` so the two reports merge cleanly: same Rell source
+ * (`synthetic_bench/main.rell`), same `sample = "collatz_primes_fib"`, same query name,
+ * same input size. The `backend` axis carries the single value `r-expr-legacy` so this
+ * branch's row sits next to rell2's `interpreter | truffle | kotlin` rows in the merged
+ * report.
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
 @Warmup(iterations = 10, time = 2, timeUnit = BenchmarkTimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 2, timeUnit = BenchmarkTimeUnit.SECONDS)
-class Ft4Benchmark {
+class InterpreterBenchmark {
 
+    /**
+     * Single-value @Param so the JSON output carries a `backend` label that lines up
+     * with rell2's `{interpreter, truffle, kotlin}` axis when results are merged.
+     */
     @Param("r-expr-legacy")
     lateinit var backend: String
 
     /**
-     * Picks one of the three ft4-derived workloads exposed as queries by `ft4_bench/main.rell`.
-     * Named `sample` so the report generator pivots rows by workload.
+     * Single-value @Param so the report generator pivots this row by `sample` the same
+     * way it does for [Ft4Benchmark].
      */
-    @Param("gtv_text", "rule_serde", "rule_eval")
+    @Param("collatz_primes_fib")
     lateinit var sample: String
+
+    private val limitInt = 100_000L
+    private val limit: List<Rt_Value> = listOf(Rt_IntValue.get(limitInt))
 
     private lateinit var app: R_App
     private lateinit var exeCtx: Rt_ExecutionContext
     private lateinit var query: R_QueryDefinition
-    private var args: List<Rt_Value> = emptyList()
 
     @Setup
     fun setUp() {
-        val rellSource = loadRellResource("ft4_bench/main.rell")
-
+        val rellSource = loadRellResource("synthetic_bench/main.rell")
         val sourceDir = C_SourceDir.mapDirOf(RellTestUtils.MAIN_FILE to rellSource)
         val modSel = C_CompilerModuleSelection(immListOf(R_ModuleName.EMPTY), immListOf())
         val cRes = RellTestUtils.compileApp(sourceDir, modSel, RellTestUtils.DEFAULT_COMPILER_OPTIONS)
@@ -91,25 +94,17 @@ class Ft4Benchmark {
         val appCtx = Rt_AppContext(globalCtx, Rt_ChainContext.NULL, app)
         val sqlCtx = Rt_NullSqlContext.create(app)
         exeCtx = Rt_ExecutionContext(appCtx, Rt_NullOpContext, sqlCtx, NoConnSqlExecutor)
-
-        val (queryName, repsArg) = workloadConfig(sample)
-        query = app.moduleMap.getValue(R_ModuleName.EMPTY).queries.getValue(queryName)
-        args = listOf(Rt_IntValue.get(repsArg))
+        query = app.moduleMap.getValue(R_ModuleName.EMPTY).queries.getValue("bench")
     }
 
     @Benchmark
     fun runQuery(blackhole: Blackhole) {
-        blackhole.consume(query.call(exeCtx, args))
-    }
-
-    /**
-     * Per-workload tuning. The `reps` argument matches rell2's sizing so cross-branch
-     * results are directly comparable.
-     */
-    private fun workloadConfig(sample: String): Pair<String, Long> = when (sample) {
-        "gtv_text" -> "bench_gtv_text" to 200L
-        "rule_serde" -> "bench_rule_serde" to 500L
-        "rule_eval" -> "bench_rule_eval" to 5_000L
-        else -> error("Unknown sample: $sample")
+        blackhole.consume(query.call(exeCtx, limit))
     }
 }
+
+internal fun loadRellResource(path: String): String =
+    InterpreterBenchmark::class.java.classLoader.getResourceAsStream(path)
+        ?.bufferedReader()
+        ?.use { it.readText() }
+        ?: error("Benchmark resource not found on classpath: $path")

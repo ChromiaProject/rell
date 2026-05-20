@@ -51,4 +51,4 @@ include("rell-codegen:rellgen")
 
 include("rell-dokka-plugin")
 
-include("benchmarks")
+include("performance")
