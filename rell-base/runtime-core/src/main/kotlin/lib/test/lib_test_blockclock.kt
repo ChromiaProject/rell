@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.lib.test
 
-import com.google.common.math.LongMath
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_IntValue
@@ -253,7 +252,7 @@ class Rt_TestBlockClock(state: State = DEFAULT_STATE) {
 
     private fun checkedAdd(a: Long, b: Long): Long {
         return try {
-            LongMath.checkedAdd(a, b)
+            Math.addExact(a, b)
         } catch (e: ArithmeticException) {
             throw Rt_Exception.common("time_overflow:$a:$b", "Time overflow: $a + $b")
         }

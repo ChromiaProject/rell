@@ -4,13 +4,13 @@
 
 package net.postchain.rell.toolbox.indexer
 
-import net.postchain.rell.toolbox.chromia.model.ChromiaModel
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
+import net.postchain.rell.toolbox.chromia.model.ChromiaModel
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.AbstractFormattingStyleLinter
 import net.postchain.rell.toolbox.linter.AbstractRellLinter

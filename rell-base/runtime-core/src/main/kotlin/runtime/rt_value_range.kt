@@ -4,9 +4,9 @@
 
 package net.postchain.rell.base.runtime
 
-import com.google.common.math.LongMath
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
+import net.postchain.rell.base.utils.saturatedAdd
 
 @JvmRecord
 data class Rt_RangeValue(val start: Long, val end: Long, val step: Long):
@@ -66,7 +66,7 @@ data class Rt_RangeValue(val start: Long, val end: Long, val step: Long):
 
             override fun next(): Rt_Value {
                 val res = current
-                current = LongMath.saturatedAdd(current, range.step)
+                current = saturatedAdd(current, range.step)
                 return Rt_IntValue.get(res)
             }
         }

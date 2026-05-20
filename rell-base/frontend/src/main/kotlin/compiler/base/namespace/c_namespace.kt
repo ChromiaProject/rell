@@ -207,10 +207,10 @@ class C_NamespaceBuilder {
     }
 
     fun build(): C_Namespace {
-        val names = directMembers.keySet() + importMembers.keySet()
+        val names = directMembers.keys + importMembers.keys
         val entries = names.associateWithToImmMap {
-            val directIts = directMembers.get(it).toImmList()
-            val importIts = importMembers.get(it).toImmList()
+            val directIts = directMembers[it].orEmpty().toImmList()
+            val importIts = importMembers[it].orEmpty().toImmList()
             C_NamespaceEntry(directIts, importIts)
         }
         return C_BasicNamespace(entries)

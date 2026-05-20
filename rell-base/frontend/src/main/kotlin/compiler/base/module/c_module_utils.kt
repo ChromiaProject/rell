@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.module
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.ast.S_RellFile
@@ -401,8 +400,8 @@ private class S_PrivateModuleContext(
         check(!finished)
         finished = true
 
-        for (name in namespaces.keySet()) {
-            val recs = namespaces[name].toList()
+        for (name in namespaces.keys) {
+            val recs = namespaces.getValue(name).toList()
             for ((i, rec) in recs.withIndex()) {
                 val link = if (recs.size == 1) null else recs[(i + 1) % recs.size].link
                 val ideInfo = C_IdeSymbolInfo.late(
@@ -439,7 +438,7 @@ private class S_PrivateFileContext(
     symCtx: C_SymbolContext,
     path: C_SourcePath,
     idePath: IdeFilePath,
-    private val modNamespaces: Multimap<QualifiedName, NamespaceNameInfoRec>,
+    private val modNamespaces: MutableMultimap<QualifiedName, NamespaceNameInfoRec>,
 ): S_FileContext(modCtx, symCtx, path, idePath) {
     private val namespaces = mutableMapOf<QualifiedName, Int>()
 

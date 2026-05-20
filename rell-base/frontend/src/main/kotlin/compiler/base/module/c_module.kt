@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.module
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.*
@@ -34,7 +33,7 @@ class C_CompiledRellFile(
     val path: C_SourcePath,
     val mntTables: C_MountTables,
     val importsDescriptor: C_FileImportsDescriptor,
-    val ideCompletions: C_LateGetter<Multimap<String, IdeCompletion>>,
+    val ideCompletions: C_LateGetter<ImmMultimap<String, IdeCompletion>>,
 ) {
     override fun toString() = path.str()
 

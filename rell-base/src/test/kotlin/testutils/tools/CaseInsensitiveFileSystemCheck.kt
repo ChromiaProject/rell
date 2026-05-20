@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.testutils.tools
 
-import com.google.common.io.Files
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
@@ -160,5 +159,5 @@ fun main() {
     println("ALL TESTS PASSED")
 }
 
-private fun readFile(file: File): String = Files.asCharSource(file, Charsets.UTF_8).read()
-private fun writeFile(file: File, text: String) = Files.asCharSink(file, Charsets.UTF_8).write(text)
+private fun readFile(file: File): String = file.readText(Charsets.UTF_8)
+private fun writeFile(file: File, text: String) = file.writeText(text, Charsets.UTF_8)

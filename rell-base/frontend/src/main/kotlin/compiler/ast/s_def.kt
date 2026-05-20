@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.ast
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.*
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
@@ -215,7 +214,7 @@ abstract class S_BasicDefinition(base: S_DefinitionBase): S_Definition(base) {
         return C_MidModuleMember_Basic(this)
     }
 
-    internal abstract fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>>
+    internal abstract fun compileBasic(ctx: C_MountContext): C_LateGetter<ImmMultimap<String, IdeCompletion>>
 }
 
 class   S_EntityDefinition(
@@ -225,7 +224,7 @@ class   S_EntityDefinition(
     private val annotations: ImmList<S_Name>,
     private val body: ImmList<S_RelClause>?,
 ): S_BasicDefinition(base) {
-    override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
+    override fun compileBasic(ctx: C_MountContext): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         ctx.checkNotReplOrTest(name.pos, C_DeclarationType.ENTITY)
 
         if (deprecatedKwPos != null) {
@@ -498,7 +497,7 @@ class S_ObjectDefinition(
     private val name: S_Name,
     private val attrs: ImmList<S_AttributeClause>,
 ): S_BasicDefinition(base) {
-    override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
+    override fun compileBasic(ctx: C_MountContext): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         ctx.checkNotExternal(name.pos, C_DeclarationType.OBJECT)
         ctx.checkNotReplOrTest(name.pos, C_DeclarationType.OBJECT)
 
@@ -583,7 +582,7 @@ class S_StructDefinition(
     private val name: S_Name,
     private val attrs: ImmList<S_AttributeClause>,
 ): S_BasicDefinition(base) {
-    override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
+    override fun compileBasic(ctx: C_MountContext): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         if (deprecatedKwPos != null) {
             ctx.msgCtx.error(deprecatedKwPos, "deprecated_kw:record:struct",
                     "Keyword 'record' is deprecated, use 'struct' instead")
@@ -839,7 +838,7 @@ class S_GlobalConstantDefinition(
     val type: S_Type?,
     val expr: S_Expr,
 ): S_BasicDefinition(base) {
-    override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
+    override fun compileBasic(ctx: C_MountContext): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         val nameHand = name.compile(ctx, def = true)
         val cName = nameHand.name
 

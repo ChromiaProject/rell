@@ -4,9 +4,6 @@
 
 package net.postchain.rell.base.utils
 
-import com.google.common.collect.ImmutableMultimap
-import com.google.common.collect.LinkedListMultimap
-import com.google.common.collect.Multimap
 import kotlinx.collections.immutable.*
 import kotlinx.collections.immutable.minus as kminus
 import kotlinx.collections.immutable.plus as kplus
@@ -343,18 +340,31 @@ inline fun <K, V, R> Map<out K, V>.mapKeysToImmMap(transform: (Map.Entry<K, V>) 
     }
 
 
-typealias ImmMultimap<K, V> = ImmutableMultimap<K, V>
+typealias ImmMultimap<K, V> = ImmMap<K, ImmList<V>>
+typealias MutableMultimap<K, V> = MutableMap<K, MutableList<V>>
 
-fun <K: Any, V: Any> immMultimapOf(): ImmMultimap<K, V> = ImmutableMultimap.of()
-fun <K: Any, V: Any> mutableMultimapOf(): Multimap<K, V> = LinkedListMultimap.create()
-fun <K: Any, V: Any> Multimap<K, V>.toImmMultimap(): ImmMultimap<K, V> = ImmutableMultimap.copyOf(this)
+fun <K, V> immMultimapOf(): ImmMultimap<K, V> = immMapOf()
+fun <K, V> mutableMultimapOf(): MutableMultimap<K, V> = LinkedHashMap()
 
-@Deprecated("redundant toImmMultimap()")
-fun <K, V> ImmMultimap<K, V>.toImmMultimap(): ImmMultimap<K, V> = this
+fun <K, V> MutableMultimap<K, V>.put(key: K, value: V): Boolean =
+    getOrPut(key) { mutableListOf() }.add(value)
 
-fun <K: Any, V: Any> Multimap<K, V>.toMutableMultimap(): Multimap<K, V> = LinkedListMultimap.create(this)
+fun <K, V> MutableMultimap<K, V>.putAll(key: K, values: Iterable<V>) {
+    val list = getOrPut(key) { mutableListOf() }
+    for (v in values) list.add(v)
+}
 
-fun <T, K: Any, V: Any> Iterable<T>.toImmMultimap(fn: (T) -> Pair<K, V>): ImmMultimap<K, V> {
+fun <K, V> MutableMultimap<K, V>.putAll(other: ImmMultimap<K, V>) {
+    for ((k, vs) in other) putAll(k, vs)
+}
+
+fun <K, V> ImmMultimap<K, V>.toMutableMultimap(): MutableMultimap<K, V> {
+    val res: MutableMultimap<K, V> = LinkedHashMap()
+    for ((k, vs) in this) res[k] = vs.toMutableList()
+    return res
+}
+
+fun <T, K, V> Iterable<T>.toImmMultimap(fn: (T) -> Pair<K, V>): ImmMultimap<K, V> {
     val m = mutableMultimapOf<K, V>()
     for (e in this) {
         val (key, value) = fn(e)
@@ -363,7 +373,7 @@ fun <T, K: Any, V: Any> Iterable<T>.toImmMultimap(fn: (T) -> Pair<K, V>): ImmMul
     return m.toImmMultimap()
 }
 
-fun <K: Any, V: Any> Iterable<Pair<K, V>>.toImmMultimap(): ImmMultimap<K, V> {
+fun <K, V> Iterable<Pair<K, V>>.toImmMultimap(): ImmMultimap<K, V> {
     val m = mutableMultimapOf<K, V>()
     for ((k, v) in this) {
         m.put(k, v)
@@ -371,12 +381,15 @@ fun <K: Any, V: Any> Iterable<Pair<K, V>>.toImmMultimap(): ImmMultimap<K, V> {
     return m.toImmMultimap()
 }
 
-fun <K: Any, V: Any> Map<K, Iterable<V>>.toImmMultimap(): ImmMultimap<K, V> {
-    val map = mutableMultimapOf<K, V>()
-    for ((k, v) in this) {
-        map.putAll(k, v)
+fun <K, V> Map<K, Iterable<V>>.toImmMultimap(): ImmMultimap<K, V> =
+    persistentMapOf<K, ImmList<V>>().mutate { b ->
+        for ((k, vs) in this) b[k] = vs.toImmList()
     }
-    return map.toImmMultimap()
+
+fun <K, V> ImmMultimap<K, V>.flatEntries(): List<Map.Entry<K, V>> {
+    val res = mutableListOf<Map.Entry<K, V>>()
+    for ((k, vs) in this) for (v in vs) res.add(java.util.AbstractMap.SimpleImmutableEntry(k, v))
+    return res
 }
 
 

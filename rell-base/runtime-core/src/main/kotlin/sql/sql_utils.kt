@@ -4,8 +4,6 @@
 
 package net.postchain.rell.base.sql
 
-import com.google.common.collect.HashMultimap
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.model.rr.RR_EntityDefinition
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.*
@@ -145,7 +143,7 @@ object SqlUtils {
 
     fun getTableIndexes(con: Connection, schema: String, table: String): ImmList<SqlIndex> {
         class IndexRec(val unique: Boolean, val ordinal: Int, val column: String)
-        val map: Multimap<String, IndexRec> = HashMultimap.create<String, IndexRec>()
+        val map = mutableMultimapOf<String, IndexRec>()
 
         con.metaData.getIndexInfo(null, schema, table, false, false).use { rs ->
             while (rs.next()) {
@@ -159,12 +157,12 @@ object SqlUtils {
             }
         }
 
-        val keys: Set<String> = map.keySet()
+        val keys: Set<String> = map.keys
 
         val res = buildList(keys.size) {
             for (name in keys.sorted()) {
-                val recs = map[name]
-                val sortedRecs = recs.toList().sortedBy { it.ordinal }
+                val recs = map.getValue(name)
+                val sortedRecs = recs.sortedBy { it.ordinal }
                 val n = sortedRecs.size
 
                 val ordinals = sortedRecs.map { it.ordinal }

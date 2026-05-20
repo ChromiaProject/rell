@@ -54,11 +54,11 @@ private class C_NsRes_InternalMaker {
 
     private fun makeNamespace0(ns: C_NsImp_Namespace): C_Namespace {
         val b = C_NamespaceBuilder()
-        val names = ns.directDefs.keys + ns.importDefs.keySet()
+        val names = ns.directDefs.keys + ns.importDefs.keys
 
         for (name in names) {
             val directDef = ns.directDefs[name]
-            val importDefs = ns.importDefs.get(name).orEmpty()
+            val importDefs = ns.importDefs[name].orEmpty()
             val elem = makeDef(directDef, importDefs)
             b.add(name, elem)
         }

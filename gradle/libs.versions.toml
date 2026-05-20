@@ -69,7 +69,6 @@ postchain-gtv = { module = "net.postchain:postchain-gtv" }
 postchain-spi = { module = "net.postchain:postchain-spi" }
 postchain-base = { module = "net.postchain:postchain-base" }
 postchain-devtools = { module = "net.postchain:postchain-devtools" }
-guava = { module = "com.google.guava:guava" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
 postgresql = { module = "org.postgresql:postgresql" }

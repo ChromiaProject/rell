@@ -36,7 +36,7 @@ class Ld_ModuleContext(
         check(!finished)
         finished = true
 
-        val resMembers = members.asMap().mapValues { (_, futures) ->
+        val resMembers = members.mapValues { (_, futures) ->
             fcExec.future().after(futures.toList()).computeOnDemand(true).compute { lists ->
                 lists.flatten()
             }

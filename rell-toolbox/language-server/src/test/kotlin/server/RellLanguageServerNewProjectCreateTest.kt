@@ -11,11 +11,7 @@ import assertk.assertions.isTrue
 import net.postchain.rell.toolbox.lsp.TestClient
 import net.postchain.rell.toolbox.lsp.TestClientServerLauncher
 import net.postchain.rell.toolbox.lsp.TestServerModule
-import net.postchain.rell.toolbox.lsp.template.AddToProjectParams
-import net.postchain.rell.toolbox.lsp.template.CreateNewProjectParams
-import net.postchain.rell.toolbox.lsp.template.DevContainerSupport
-import net.postchain.rell.toolbox.lsp.template.TemplateOptions
-import net.postchain.rell.toolbox.lsp.template.TemplateProject
+import net.postchain.rell.toolbox.lsp.template.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.runtime
 
-import com.google.common.io.Resources
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.RellVersions
@@ -103,8 +102,9 @@ class Rt_RellVersion private constructor(
 
         private fun getBuildProperties(): Map<String, String>? {
             try {
-                val url = Resources.getResource(Rt_Utils.javaClass, "/rell-base-maven.properties")
-                val text = Resources.toString(url, Charsets.UTF_8)
+                val url = Rt_Utils.javaClass.getResource("/rell-base-maven.properties")
+                    ?: throw IllegalArgumentException("resource /rell-base-maven.properties not found")
+                val text = url.readText(Charsets.UTF_8)
                 val props = Properties()
                 props.load(StringReader(text))
                 return props.stringPropertyNames().sorted().associateWith { props.getProperty(it) }

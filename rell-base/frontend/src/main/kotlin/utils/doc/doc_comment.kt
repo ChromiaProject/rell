@@ -17,7 +17,6 @@ class DocComment(
                 tag.value.mapToImmList { item -> ItemKey(tag.key, item.key) to item }
             }
             .toImmMultimap()
-            .asMap()
             .mapValuesToImmMap { it.value.toImmList() }
     }
 
@@ -304,13 +303,13 @@ class DocCommentBuilder(private val errorTracker: DocCommentErrorTracker) {
         val resTags = mutableMapOf<DocCommentTag, ImmList<DocCommentItem>>()
 
         for (tag in DocCommentTag.ALL) {
-            val items = tags.asMap()[tag]?.toImmList()
+            val items = tags[tag]?.toImmList()
             if (items != null) {
                 resTags[tag] = items
             }
         }
 
-        for ((tag, items) in tags.asMap()) {
+        for ((tag, items) in tags) {
             if (tag !in resTags) {
                 resTags[tag] = items.toImmList()
             }

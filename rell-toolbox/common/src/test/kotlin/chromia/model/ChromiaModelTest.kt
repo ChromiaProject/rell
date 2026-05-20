@@ -5,13 +5,7 @@
 package net.postchain.rell.toolbox.chromia.model
 
 import assertk.assertThat
-import assertk.assertions.contains
-import assertk.assertions.containsExactly
-import assertk.assertions.doesNotContain
-import assertk.assertions.isEmpty
-import assertk.assertions.isEqualTo
-import assertk.assertions.isNotNull
-import assertk.assertions.isNull
+import assertk.assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir

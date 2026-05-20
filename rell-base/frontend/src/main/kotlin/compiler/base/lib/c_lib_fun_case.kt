@@ -144,8 +144,7 @@ abstract class C_LibFuncCase<CallT: V_FunctionCall>(
             for (case in cases) {
                 res.putAll(case.ideGetParameterCompletions())
             }
-            return res.asMap()
-                .mapValues { it.value.distinct() }
+            return res.mapValues { it.value.distinct() }
                 .toImmMultimap()
         }
     }

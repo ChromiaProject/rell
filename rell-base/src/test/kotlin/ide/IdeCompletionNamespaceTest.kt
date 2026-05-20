@@ -280,7 +280,7 @@ class IdeCompletionNamespaceTest: BaseIdeCompletionTest() {
 
     private fun chkLibComps(key: String, vararg expected: String) {
         val map = calcComps0("", null)
-        val actual = map.get(key).toList()
+        val actual = map[key].orEmpty().toList()
         assertEquals(expected.toList(), actual)
     }
 

@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.utils
 
-import com.google.common.math.IntMath
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.mapToImmList
@@ -95,7 +94,7 @@ class C_DefaultMessageManager: C_MessageManager {
 
     private fun trackMessage(type: C_MessageType) {
         if (type == C_MessageType.ERROR) {
-            errorCount = IntMath.checkedAdd(errorCount, 1)
+            errorCount = Math.addExact(errorCount, 1)
         }
     }
 

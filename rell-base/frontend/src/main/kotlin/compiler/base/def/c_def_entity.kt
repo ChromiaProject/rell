@@ -347,8 +347,8 @@ class C_EntityContext(
         val mappingPos = mutableMapOf<String, S_Pos?>()
 
         for ((name, attr) in attrMap) {
-            val attrKeys = keyMap.get(name)
-            val attrIndices = indexMap.get(name)
+            val attrKeys = keyMap[name].orEmpty()
+            val attrIndices = indexMap[name].orEmpty()
             val compiledAttr = attr.compile(cAttrs.size, attrKeys, attrIndices)
             val mapping = compiledAttr.rAttr.sqlMapping
             val prevPos = mappingPos.put(mapping, compiledAttr.defPos)

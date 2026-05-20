@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.runtime
 
-import com.google.common.math.LongMath
 import net.postchain.rell.base.lib.type.Lib_BigIntegerMath
 import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import net.postchain.rell.base.model.rr.RR_CmpBinaryOp
@@ -22,9 +21,9 @@ fun evaluateBinaryOp(key: String, left: Rt_Value, right: Rt_Value): Rt_Value = w
     "R_BinaryOp_Or" -> Rt_BooleanValue.get((left as Rt_BooleanValue).value || (right as Rt_BooleanValue).value)
 
     // Integer arithmetic
-    "R_BinaryOp_Add_Integer" -> evalIntArith("+", left, right) { a, b -> LongMath.checkedAdd(a, b) }
-    "R_BinaryOp_Sub_Integer" -> evalIntArith("-", left, right) { a, b -> LongMath.checkedSubtract(a, b) }
-    "R_BinaryOp_Mul_Integer" -> evalIntArith("*", left, right) { a, b -> LongMath.checkedMultiply(a, b) }
+    "R_BinaryOp_Add_Integer" -> evalIntArith("+", left, right) { a, b -> Math.addExact(a, b) }
+    "R_BinaryOp_Sub_Integer" -> evalIntArith("-", left, right) { a, b -> Math.subtractExact(a, b) }
+    "R_BinaryOp_Mul_Integer" -> evalIntArith("*", left, right) { a, b -> Math.multiplyExact(a, b) }
     "R_BinaryOp_Div_Integer" -> evalIntArith("/", left, right) { a, b ->
         if (b == 0L) throw Rt_Exception.common("expr:/:div0:$a", "Division by zero: $a / 0")
         a / b
@@ -253,7 +252,7 @@ fun evaluateUnaryOp(key: String, operand: Rt_Value): Rt_Value = when (key) {
     "Minus_Integer" -> {
         val v = (operand as Rt_IntValue).value
         val res = try {
-            LongMath.checkedSubtract(0, v)
+            Math.subtractExact(0, v)
         } catch (_: ArithmeticException) {
             throw Rt_Exception.common("expr:-:overflow:$v", "Integer overflow: -($v)")
         }

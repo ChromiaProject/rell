@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.ast
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.C_OperationGlobalFunction
 import net.postchain.rell.base.compiler.base.def.C_OperationHeader
@@ -34,7 +33,7 @@ class S_OperationDefinition(
     val params: ImmList<S_FormalParameter>,
     val body: S_Statement,
 ): S_BasicDefinition(base) {
-    override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
+    override fun compileBasic(ctx: C_MountContext): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         ctx.checkNotExternal(name.pos, C_DeclarationType.OPERATION)
         ctx.checkNotReplOrTest(name.pos, C_DeclarationType.OPERATION)
 
@@ -188,7 +187,7 @@ class S_QueryDefinition(
     val retType: S_Type?,
     val body: S_FunctionBody,
 ): S_BasicDefinition(base) {
-    override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
+    override fun compileBasic(ctx: C_MountContext): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         ctx.checkNotExternal(name.pos, C_DeclarationType.QUERY)
         ctx.checkNotReplOrTest(name.pos, C_DeclarationType.QUERY)
 

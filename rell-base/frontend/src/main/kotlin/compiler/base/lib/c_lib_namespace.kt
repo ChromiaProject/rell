@@ -68,7 +68,7 @@ class C_LibNamespace private constructor(
         override fun addMember(name: Name, member: C_NamespaceMember) {
             check(active)
             check(!done)
-            checkNameConflict(name, members, namespaces, functions.asMap())
+            checkNameConflict(name, members, namespaces, functions)
             members[name] = member
         }
 
@@ -94,7 +94,7 @@ class C_LibNamespace private constructor(
 
             var ns = namespaces[name]
             if (ns == null) {
-                checkNameConflict(name, members, functions.asMap())
+                checkNameConflict(name, members, functions)
                 val builder = Builder(basePath.append(name), active = false)
                 ns = NestedBuilder(builder, ideInfo, restrictions)
                 namespaces[name] = ns
@@ -128,7 +128,7 @@ class C_LibNamespace private constructor(
                 .mapValuesToImmMap { it.value.build() }
 
             val memberFactory = C_LibNsMemberFactory(basePath)
-            val fnMembers = functions.asMap().mapValues { (name, cases) ->
+            val fnMembers = functions.mapValues { (name, cases) ->
                 createFunctionMember(name, cases.toList(), memberFactory)
             }
 

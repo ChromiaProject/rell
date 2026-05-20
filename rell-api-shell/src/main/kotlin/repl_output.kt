@@ -4,7 +4,6 @@
 
 package net.postchain.rell.api.shell
 
-import com.google.common.base.Throwables
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.repl.ReplOutputChannel
 import net.postchain.rell.base.repl.ReplOutputChannelFactory
@@ -42,7 +41,7 @@ private object CliReplOutputChannel: ReplOutputChannel {
     }
 
     override fun printPlatformRuntimeError(e: Throwable) {
-        val s = Throwables.getStackTraceAsString(e).trim()
+        val s = e.stackTraceToString().trim()
         println("Run-time error: $s")
     }
 

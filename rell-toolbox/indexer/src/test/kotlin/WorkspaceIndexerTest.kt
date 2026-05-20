@@ -6,9 +6,9 @@ package net.postchain.rell.toolbox.indexer
 
 import assertk.assertThat
 import assertk.assertions.*
-import net.postchain.rell.toolbox.chromia.model.RellLibraryModel
 import io.mockk.every
 import io.mockk.mockk
+import net.postchain.rell.toolbox.chromia.model.RellLibraryModel
 import net.postchain.rell.toolbox.common.Position
 import net.postchain.rell.toolbox.common.Range
 import net.postchain.rell.toolbox.common.TextEdit

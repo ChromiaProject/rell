@@ -5,7 +5,6 @@
 
 package net.postchain.rell.base.testutils
 
-import com.google.common.collect.HashMultimap
 import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.model.rr.RR_EntityDefinition
 import net.postchain.rell.base.runtime.RawSqlBoundQuery
@@ -292,7 +291,7 @@ object SqlTestUtils {
     }
 
     fun dumpTablesStructure(con: Connection, all: Boolean = false): ImmMap<String, ImmMap<String, String>> {
-        val map = HashMultimap.create<String, Pair<String, String>>()
+        val map = mutableMultimapOf<String, Pair<String, String>>()
         val namePattern = if (all) null else "c%.%"
         con.metaData.getColumns(null, con.schema, namePattern, null).use { rs ->
             while (rs.next()) {
@@ -306,8 +305,8 @@ object SqlTestUtils {
         }
 
         val res = mutableMapOf<String, ImmMap<String, String>>()
-        for (table in map.keySet().sorted()) {
-            res[table] = map[table].sortedBy { it.first }.toImmMap()
+        for (table in map.keys.sorted()) {
+            res[table] = map.getValue(table).sortedBy { it.first }.toImmMap()
         }
 
         return res.toImmMap()

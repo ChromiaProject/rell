@@ -114,7 +114,7 @@ private class C_NsImp_InternalImportsProcessor(
             processDirectWildcardImport(wildcard)
         }
 
-        for ((name, defs) in targetNs.importDefs.asMap()) {
+        for ((name, defs) in targetNs.importDefs) {
             for (def in defs) {
                 processImportDef(builder, name, def)
             }
@@ -125,7 +125,7 @@ private class C_NsImp_InternalImportsProcessor(
             for ((name, def) in ns.defs) {
                 processImportDef(builder, name, def)
             }
-            for ((name, defs) in ns.importDefs.asMap()) {
+            for ((name, defs) in ns.importDefs) {
                 for (def in defs) {
                     processImportDef(builder, name, def)
                 }
@@ -260,7 +260,7 @@ private class C_NsImp_NamespaceConverter {
     private fun convertNamespace(impNs: C_NsImp_Namespace): C_NsAsm_Namespace {
         val defs = impNs.directDefs.mapValuesToImmMap { (_, v) -> convertDef(v) }
 
-        val importDefs = impNs.importDefs.asMap()
+        val importDefs = impNs.importDefs
                 .mapValues { (_, v) -> v.map { convertDef(it) } }
                 .toImmMultimap()
 
@@ -454,7 +454,7 @@ private class C_NsImp_ImportResolver(
         }
 
         val defs = mutableListOf<C_NsAsm_Def>()
-        defs.addAll(ns.importDefs.get(name))
+        defs.addAll(ns.importDefs[name].orEmpty())
 
         val queue: Queue<C_NsAsm_WildcardImport> = ArrayDeque()
         val set = mutableSetOf<C_NsAsm_Namespace>()
@@ -471,7 +471,7 @@ private class C_NsImp_ImportResolver(
                 if (def != null) {
                     defs.add(def)
                 } else {
-                    defs.addAll(importedNs.importDefs.get(name))
+                    defs.addAll(importedNs.importDefs[name].orEmpty())
                 }
             }
         }

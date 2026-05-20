@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.ast
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.def.*
 import net.postchain.rell.base.compiler.base.fn.C_FormalParameters
@@ -40,7 +39,7 @@ class S_FunctionDefinition(
     val fnPos = qualifiedName?.pos ?: kwPos
     val typePos = retType?.pos ?: fnPos
 
-    override fun compileBasic(ctx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
+    override fun compileBasic(ctx: C_MountContext): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         ctx.checkNotExternal(fnPos, C_DeclarationType.FUNCTION)
 
         val cQualifiedNameHand = qualifiedName?.compile(ctx.symCtx.nameCtx, def = true)

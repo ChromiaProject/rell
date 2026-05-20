@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.lib.type
 
-import com.google.common.math.LongMath
 import net.postchain.rell.base.compiler.base.lib.C_SysFunctionBody
 import net.postchain.rell.base.lib.Lib_Math
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
@@ -15,6 +14,7 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.utils.checkEquals
+import net.postchain.rell.base.utils.checkedPow
 import org.jooq.DataType
 import org.jooq.impl.SQLDataType
 import java.math.BigInteger
@@ -463,7 +463,7 @@ object Lib_BigIntegerMath {
     }
 
     data object NumericType_Long: NumericType<Long>(zero = 0, one = 1, minusOne = -1) {
-        override fun pow(base: Long, exp: Int): Long = LongMath.checkedPow(base, exp)
+        override fun pow(base: Long, exp: Int): Long = checkedPow(base, exp)
         override fun errStr(value: Long): String = value.toString()
     }
 
@@ -477,7 +477,7 @@ object Lib_BigIntegerMath {
             // will produce a very big number by performing heavy and slow computations - checking the overflow after
             // the computation is too inefficient in such cases (example: 1E+1000 ^ 250000 = 1E+250000000).
             val baseExp = (base.abs().bitLength() - 1).coerceAtLeast(0)
-            val resExp = LongMath.checkedMultiply(baseExp.toLong(), exp.toLong())
+            val resExp = Math.multiplyExact(baseExp.toLong(), exp.toLong())
             if (resExp + 1 > MAX_VALUE.bitLength()) {
                 throw ArithmeticException("Big integer power result out of range")
             }

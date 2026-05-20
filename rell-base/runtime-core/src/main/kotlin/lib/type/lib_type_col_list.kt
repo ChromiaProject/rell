@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.lib.type
 
-import com.google.common.math.LongMath
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_ListType
@@ -422,7 +421,7 @@ object Lib_Type_List {
         } else if (n > Integer.MAX_VALUE) {
             throw Rt_Exception.common("fn:$type.repeat:n_out_of_range:$n", "Count out of range: $n")
         } else {
-            val total = LongMath.checkedMultiply(s.toLong(), n) // Must never fail, but using checkedMultiply() for extra safety
+            val total = Math.multiplyExact(s.toLong(), n) // Must never fail, but using multiplyExact() for extra safety
             if (total > Integer.MAX_VALUE) {
                 throw Rt_Exception.common("fn:$type.repeat:too_big:$total", "Resulting size is too large: $s * $n = $total")
             }

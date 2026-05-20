@@ -25,8 +25,8 @@ private class C_MountConflictsProcessor(private val chain: String?, private val 
 
         val res = mutableListOf<C_MntEntry>()
 
-        for (name in map.keySet()) {
-            val entries = map.get(name)
+        for (name in map.keys) {
+            val entries = map.getValue(name)
             val (sysEntries, userEntries) = entries.partition { it.pos == null }
 
             if (entries.size > 1) {

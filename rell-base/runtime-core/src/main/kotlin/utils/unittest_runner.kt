@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.utils
 
-import com.google.common.base.Throwables
 import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.GtvType
 import net.postchain.rell.base.lib.test.Rt_AssertEqualsError
@@ -256,7 +255,7 @@ private fun printException(printer: Rt_Printer, e: Throwable, printPrettyLargeVa
             }
         }
         else -> {
-            val s = Throwables.getStackTraceAsString(e)
+            val s = e.stackTraceToString()
             printer.print(s)
         }
     }

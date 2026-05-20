@@ -16,6 +16,7 @@ import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.ImmMultimap
+import net.postchain.rell.base.utils.flatEntries
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmMultimap
@@ -27,7 +28,7 @@ abstract class BaseIdeCompletionTest: BaseRellTest() {
 
     protected fun chkCompKeys(vararg expected: String) {
         val map = calcComps0("", null)
-        val actual = map.keySet().sorted()
+        val actual = map.keys.sorted()
         assertEquals(expected.toList(), actual)
     }
 
@@ -70,7 +71,7 @@ abstract class BaseIdeCompletionTest: BaseRellTest() {
         err: String? = null,
     ): List<String> {
         val map = calcComps0(code, pos, defaultOptions, err)
-        return map.entries().sortedBy { it.key }.map { it.value }
+        return map.flatEntries().sortedBy { it.key }.map { it.value }
     }
 
     protected fun calcComps0(
@@ -92,7 +93,7 @@ abstract class BaseIdeCompletionTest: BaseRellTest() {
         val actualErr = if (cRes.errors.isEmpty()) "n/a" else RellTestUtils.msgsToString(cRes.errors)
         assertEquals(err ?: "n/a", actualErr)
 
-        return cRes.ideCompletions.entries()
+        return cRes.ideCompletions.flatEntries()
             .filterNot { (_, comp) -> defaultLib && isDefaultLib(comp) }
             .filterNot { (name, _) -> name.startsWith("_") }
             .map { (name, comp) ->

@@ -10,7 +10,10 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtx.SnapshotContext
 import net.postchain.gtx.data.OpData
 import net.postchain.rell.base.lib.Lib_OpContext
-import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.runtime.Rt_Interpreter
+import net.postchain.rell.base.runtime.Rt_OpContext
+import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.Bytes
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ImmMap

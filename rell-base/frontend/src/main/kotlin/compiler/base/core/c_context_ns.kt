@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.core
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.def.C_GlobalFunction
@@ -79,7 +78,7 @@ class C_NamespaceContext(
         return C_IdeCompletionsScope(null, late.getter)
     }
 
-    fun ideCompletions(): C_LateGetter<Multimap<String, IdeCompletion>> {
+    fun ideCompletions(): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         return scope.ideCompletionsDirect(executor, globalCtx.compilerOptions)
     }
 }

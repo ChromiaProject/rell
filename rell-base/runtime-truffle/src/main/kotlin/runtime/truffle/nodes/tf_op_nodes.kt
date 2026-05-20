@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.runtime.truffle.nodes
 
-import com.google.common.math.LongMath
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
@@ -96,7 +95,7 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
         override val opCode
             get() = "+"
 
-        override fun op(l: Long, r: Long): Long = LongMath.checkedAdd(l, r)
+        override fun op(l: Long, r: Long): Long = Math.addExact(l, r)
     }
 
     internal class IntSub(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
@@ -104,7 +103,7 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
         override val opCode
             get() = "-"
 
-        override fun op(l: Long, r: Long): Long = LongMath.checkedSubtract(l, r)
+        override fun op(l: Long, r: Long): Long = Math.subtractExact(l, r)
     }
 
     internal class IntMul(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
@@ -112,7 +111,7 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
         override val opCode
             get() = "*"
 
-        override fun op(l: Long, r: Long): Long = LongMath.checkedMultiply(l, r)
+        override fun op(l: Long, r: Long): Long = Math.multiplyExact(l, r)
     }
 
     internal class IntDiv(left: Tf_ExprNode, right: Tf_ExprNode, errPos: ErrorPos?):
@@ -1024,7 +1023,7 @@ internal sealed class Tf_UnaryNode: Tf_ExprNode() {
         override fun executeLong(frame: VirtualFrame): Long {
             val v = expr.executeLong(frame)
             return try {
-                LongMath.checkedSubtract(0L, v)
+                Math.subtractExact(0L, v)
             } catch (_: ArithmeticException) {
                 tfRethrowAt(
                     tfRtFrame(frame),

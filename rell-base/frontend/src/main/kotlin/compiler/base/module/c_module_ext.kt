@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.module
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.C_ImportTarget
 import net.postchain.rell.base.compiler.ast.S_BasicDefinition
 import net.postchain.rell.base.compiler.ast.S_PosRange
@@ -36,7 +35,7 @@ class C_ExtModuleFile(
     private val members: ImmList<C_ExtModuleMember>,
     private val symCtx: C_SymbolContext,
 ) {
-    private val ideCompletions = mutableListOf<C_LateGetter<Multimap<String, IdeCompletion>>>()
+    private val ideCompletions = mutableListOf<C_LateGetter<ImmMultimap<String, IdeCompletion>>>()
 
     fun compile(modCtx: C_ModuleContext): C_CompiledRellFile {
         modCtx.executor.checkPass(C_CompilerPass.DEFINITIONS)
@@ -54,7 +53,7 @@ class C_ExtModuleFile(
         val fileFinish = fileCtx.finish()
 
         val resIdeCompletions = ideCompletions.toImmList().transform {
-            list -> list.flatMap { map -> map.entries().map { it.key to it.value } }.toImmMultimap()
+            list -> list.flatMap { map -> map.flatEntries().map { it.key to it.value } }.toImmMultimap()
         }
         return C_CompiledRellFile(path, fileFinish.mountTables, fileFinish.importsDescriptor, resIdeCompletions)
     }
@@ -67,9 +66,9 @@ class C_ExtModuleFile(
 }
 
 sealed class C_ExtModuleMember {
-    protected abstract fun compile0(mntCtx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>>
+    protected abstract fun compile0(mntCtx: C_MountContext): C_LateGetter<ImmMultimap<String, IdeCompletion>>
 
-    fun compile(mntCtx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
+    fun compile(mntCtx: C_MountContext): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         return mntCtx.msgCtx.consumeError {
             compile0(mntCtx)
         } ?: C_LateGetter.const(immMultimapOf())
@@ -77,7 +76,7 @@ sealed class C_ExtModuleMember {
 }
 
 class C_ExtModuleMember_Basic(private val def: S_BasicDefinition): C_ExtModuleMember() {
-    override fun compile0(mntCtx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
+    override fun compile0(mntCtx: C_MountContext): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         val subMntCtx = C_MountContext(
             fileCtx = mntCtx.fileCtx,
             nsCtx = mntCtx.nsCtx,
@@ -95,7 +94,7 @@ class C_ExtModuleMember_Enum(
     private val rEnum: R_EnumDefinition,
     private val memBase: C_NamespaceMemberBase,
 ): C_ExtModuleMember() {
-    override fun compile0(mntCtx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
+    override fun compile0(mntCtx: C_MountContext): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         mntCtx.nsBuilder.addEnum(memBase, cName, rEnum)
         return C_LateGetter.const(immMultimapOf())
     }
@@ -107,7 +106,7 @@ class C_ExtModuleMember_Import(
         private val moduleName: ModuleName,
         private val extChainName: C_ExtChainName?,
 ): C_ExtModuleMember() {
-    override fun compile0(mntCtx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
+    override fun compile0(mntCtx: C_MountContext): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         val pos = importDef.pos
         val extChain = extChainName?.toExtChain(mntCtx.appCtx)
 
@@ -141,10 +140,10 @@ class C_ExtModuleMember_Namespace(
     private val extChainName: C_ExtChainName?,
     private val deprecated: C_Deprecated?,
 ): C_ExtModuleMember() {
-    override fun compile0(mntCtx: C_MountContext): C_LateGetter<Multimap<String, IdeCompletion>> {
+    override fun compile0(mntCtx: C_MountContext): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         val subMntCtx = createSubMountContext(mntCtx)
 
-        val ideCompletions = mutableListOf<C_LateGetter<Multimap<String, IdeCompletion>>>()
+        val ideCompletions = mutableListOf<C_LateGetter<ImmMultimap<String, IdeCompletion>>>()
 
         for (member in members) {
             ideCompletions.add(member.compile(subMntCtx))
@@ -155,7 +154,7 @@ class C_ExtModuleMember_Namespace(
         }
 
         return ideCompletions.toImmList().transform {
-            it.flatMap { map -> map.entries().map { e -> e.key to e.value } }.toImmMultimap()
+            it.flatMap { map -> map.flatEntries().map { e -> e.key to e.value } }.toImmMultimap()
         }
     }
 
@@ -212,19 +211,19 @@ class C_ExtModuleCompiler(
 
     private var done = false
 
-    fun compileModules(): C_LateGetter<Multimap<String, IdeCompletion>> {
+    fun compileModules(): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         appCtx.executor.checkPass(C_CompilerPass.DEFINITIONS)
         check(!done)
         done = true
 
-        val ideCompletions = mutableListOf<C_LateGetter<Multimap<String, IdeCompletion>>>()
+        val ideCompletions = mutableListOf<C_LateGetter<ImmMultimap<String, IdeCompletion>>>()
 
         for (base in bases) {
             ideCompletions.add(base.compile(appCtx, modProvider))
         }
 
         return ideCompletions.toImmList().transform {
-            list -> list.flatMap { map -> map.entries().map { it.key to it.value } }.toImmMultimap()
+            list -> list.flatMap { map -> map.flatEntries().map { it.key to it.value } }.toImmMultimap()
         }
     }
 
@@ -257,7 +256,7 @@ private class C_ModuleBasis(
     val module: C_Module,
     private val internalsLate: C_LateInit<C_ModuleInternals>,
 ) {
-    fun compile(appCtx: C_AppContext, modProvider: C_ModuleProvider): C_LateGetter<Multimap<String, IdeCompletion>> {
+    fun compile(appCtx: C_AppContext, modProvider: C_ModuleProvider): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         checkParentModule(appCtx.msgCtx, modProvider)
 
         val modCtx = C_RegularModuleContext(
@@ -280,7 +279,7 @@ private class C_ModuleBasis(
         }
 
         return ideCompletions.transform {
-            list -> list.flatMap { map -> map.entries().map { it.key to it.value } }.toImmMultimap()
+            list -> list.flatMap { map -> map.flatEntries().map { it.key to it.value } }.toImmMultimap()
         }
     }
 

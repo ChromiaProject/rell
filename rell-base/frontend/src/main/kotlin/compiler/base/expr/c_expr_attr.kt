@@ -4,8 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.expr
 
-import com.google.common.collect.LinkedHashMultimap
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.compiler.base.core.C_Name
@@ -17,10 +15,7 @@ import net.postchain.rell.base.compiler.vexpr.V_AttributeDefaultValueExpr
 import net.postchain.rell.base.compiler.vexpr.V_CreateExprAttr
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.model.*
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.mapToImmList
-import net.postchain.rell.base.utils.toImmMap
-import net.postchain.rell.base.utils.toImmSet
+import net.postchain.rell.base.utils.*
 
 class C_CreateContext(
         val exprCtx: C_ExprContext,
@@ -260,13 +255,13 @@ object C_AttributeResolver {
     }
 
     private fun checkImplicitExprsConflicts2(implicitAttrs: Map<C_AttrArgument, C_AttrMatch>) {
-        val implicitConflicts: Multimap<String, C_AttrArgument> = LinkedHashMultimap.create()
+        val implicitConflicts = mutableMultimapOf<String, C_AttrArgument>()
         for ((arg, attrMatch) in implicitAttrs) {
             implicitConflicts.put(attrMatch.attr.name, arg)
         }
 
-        for (name in implicitConflicts.keySet()) {
-            val args = implicitConflicts.get(name)
+        for (name in implicitConflicts.keys) {
+            val args = implicitConflicts.getValue(name)
             if (args.size > 1) {
                 val arg = args.first()
                 val idxs = args.map { it.index }

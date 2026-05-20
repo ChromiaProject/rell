@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.lib
 
-import com.google.common.io.Resources
 import net.postchain.common.hexStringToByteArray
 import net.postchain.common.toHex
 import net.postchain.crypto.KeyPair
@@ -582,8 +581,9 @@ class LibCryptoTest: BaseRellTest() {
     }
 
     private fun loadJsonResource(path: String): Gtv {
-        val url = Resources.getResource(javaClass, path)
-        val text = Resources.toString(url, Charsets.UTF_8)
+        val url = javaClass.getResource(path)
+            ?: throw IllegalArgumentException("resource not found: $path")
+        val text = url.readText(Charsets.UTF_8)
         return PostchainGtvUtils.jsonToGtv(text)
     }
 

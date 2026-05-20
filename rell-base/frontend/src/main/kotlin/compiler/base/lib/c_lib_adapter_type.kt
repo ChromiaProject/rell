@@ -365,7 +365,7 @@ private class C_LibTypeBodyBuilder(
     }
 
     private fun buildValueMembers(): C_LibTypeMembers<C_TypeValueMember> {
-        val cFunctions = valueFunctions.asMap().entries
+        val cFunctions = valueFunctions.entries
             .map { (name, mems) ->
                 val naming = namingFactory(name)
                 val cases = mems.mapToImmList { m ->
@@ -381,7 +381,7 @@ private class C_LibTypeBodyBuilder(
     }
 
     private fun buildStaticMembers(): C_LibTypeMembers<C_TypeStaticMember> {
-        val cFunctions = staticFunctions.asMap().entries.map { (simpleName, mems) ->
+        val cFunctions = staticFunctions.entries.map { (simpleName, mems) ->
             val defName = defPath.subName(simpleName)
             val naming = namingFactory(simpleName)
             val cases = mems.mapToImmList { m ->

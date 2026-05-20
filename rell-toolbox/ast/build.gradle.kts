@@ -13,7 +13,6 @@ dependencies {
     implementation(libs.slf4j)
     implementation(projects.rellBase)
     implementation(projects.rellBase.frontend)
-    implementation(libs.guava)
     implementation(libs.commons.collections4)
     api(projects.rellToolbox.common)
 

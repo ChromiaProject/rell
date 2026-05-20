@@ -10,7 +10,6 @@ import net.postchain.rell.base.lmodel.dsl.Ld_NamespaceDsl
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.runtime.Rt_TryCallResultValue
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
 import net.postchain.rell.base.sql.SqlUtils.withSavepoint

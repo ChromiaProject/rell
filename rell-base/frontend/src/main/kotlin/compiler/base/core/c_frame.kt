@@ -195,7 +195,7 @@ class C_BlockScopeBuilder(
     }
 
     fun lookupImplicit(name: Name): ImmList<C_BlockEntry> {
-        return implicitEntries.get(name).toImmList()
+        return implicitEntries[name].orEmpty().toImmList()
     }
 
     fun newVar(

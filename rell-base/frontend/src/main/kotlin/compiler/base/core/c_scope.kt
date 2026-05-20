@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.core
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.base.namespace.C_Namespace
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceEntry
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMember
@@ -12,11 +11,8 @@ import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMemberTag
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
 import net.postchain.rell.base.compiler.base.utils.lateInit
 import net.postchain.rell.base.model.Name
-import net.postchain.rell.base.utils.ImmMultimap
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeCompletion
-import net.postchain.rell.base.utils.immMultimapOf
-import net.postchain.rell.base.utils.mutableMultimapOf
-import net.postchain.rell.base.utils.toImmMultimap
 
 class C_ScopeBuilder {
     private val scope: C_Scope
@@ -84,7 +80,7 @@ class C_Scope(
     private fun ideCompletionsProcessMembers(
             name: Name,
             members: List<C_NamespaceMember>,
-            res: Multimap<String, IdeCompletion>,
+            res: MutableMultimap<String, IdeCompletion>,
             compilerOptions: C_CompilerOptions,
     ) {
         for (member in members) {
@@ -97,7 +93,7 @@ class C_Scope(
     fun ideCompletionsDirect(
         executor: C_CompilerExecutor,
         compilerOptions: C_CompilerOptions,
-    ): C_LateGetter<Multimap<String, IdeCompletion>> {
+    ): C_LateGetter<ImmMultimap<String, IdeCompletion>> {
         val late = executor.lateInit(C_CompilerPass.APPLICATION, immMultimapOf<String, IdeCompletion>())
         executor.onPass(C_CompilerPass.APPLICATION) {
             val res = mutableMultimapOf<String, IdeCompletion>()

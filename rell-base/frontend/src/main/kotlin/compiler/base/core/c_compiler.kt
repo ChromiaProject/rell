@@ -233,7 +233,7 @@ object C_Compiler {
         val messages = CommonUtils.sortedByCopy(msgCtx.messages()) { C_ComparablePos(it.pos) }
         val errors = messages.filter { it.type == C_MessageType.ERROR }
 
-        val ideCompletions = modIdeCompletions.get().asMap().mapValues { it.value.distinct() }.toImmMultimap()
+        val ideCompletions = modIdeCompletions.get().mapValues { it.value.distinct() }.toImmMultimap()
 
         val rApp = if (errors.isEmpty()) appFinish?.rApp else null
         val resolverRuntime = C_LibBridge.instance.newResolverRuntime()

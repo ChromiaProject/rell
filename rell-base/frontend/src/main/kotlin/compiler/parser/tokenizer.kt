@@ -6,7 +6,6 @@ package net.postchain.rell.base.compiler.parser
 
 import com.github.h0tk3y.betterParse.lexer.Token
 import com.github.h0tk3y.betterParse.lexer.TokenMatch
-import com.google.common.collect.ImmutableSortedMap
 import net.postchain.rell.base.compiler.ast.S_BasicPos
 import net.postchain.rell.base.compiler.ast.S_Comment
 import net.postchain.rell.base.compiler.ast.S_Pos
@@ -596,7 +595,7 @@ class RellTokenizer(version: R_LangVersion = RellVersions.VERSION) {
                 }
             }
 
-            return ImmutableSortedMap.copyOf(res)
+            return TreeMap(res)
         }
 
         fun matchToken(

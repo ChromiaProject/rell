@@ -4,7 +4,6 @@
 
 package net.postchain.rell.base.compiler.base.utils
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.compiler.ast.S_PosRange
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.core.C_DefinitionName
@@ -102,7 +101,7 @@ interface C_IdeCompletionsScopeProvider {
 
 class C_IdeCompletionsScope(
     val parent: C_IdeCompletionsScope?,
-    val getter: C_LateGetter<Multimap<String, IdeCompletion>>,
+    val getter: C_LateGetter<ImmMultimap<String, IdeCompletion>>,
 )
 
 class C_IdeCompletionsContext(
@@ -117,7 +116,7 @@ class C_IdeCompletionsContext(
     fun trackScope(
         range: S_PosRange?,
         parentScopeProvider: C_IdeCompletionsScopeProvider?,
-        getter: C_LateGetter<Multimap<String, IdeCompletion>> = C_LateGetter.const(immMultimapOf()),
+        getter: C_LateGetter<ImmMultimap<String, IdeCompletion>> = C_LateGetter.const(immMultimapOf()),
     ) {
         check(!finished)
 
@@ -150,10 +149,10 @@ class C_IdeCompletionsContext(
             finishScope(curScope, res)
         }
 
-        return res.asMap().mapValues { it.value.toSet().toImmList() }.toImmMultimap()
+        return res.mapValues { it.value.toSet().toImmList() }.toImmMultimap()
     }
 
-    private fun finishScope(scope: C_IdeCompletionsScope, res: Multimap<String, IdeCompletion>) {
+    private fun finishScope(scope: C_IdeCompletionsScope, res: MutableMultimap<String, IdeCompletion>) {
         var curScope: C_IdeCompletionsScope? = scope
         while (curScope != null) {
             res.putAll(curScope.getter.get())

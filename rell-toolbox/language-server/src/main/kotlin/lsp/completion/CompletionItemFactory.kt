@@ -4,8 +4,8 @@
 
 package net.postchain.rell.toolbox.lsp.completion
 
-import com.google.common.collect.Multimap
 import net.postchain.rell.base.model.ModuleName
+import net.postchain.rell.base.utils.ImmMultimap
 import net.postchain.rell.base.utils.doc.DocSymbolKind
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.ide.IdeCompletionParam
@@ -139,10 +139,10 @@ class CompletionItemFactory {
     )
 
     fun createCompletionItems(
-        completions: Multimap<String, IdeCompletion>,
+        completions: ImmMultimap<String, IdeCompletion>,
         trimPrefixDot: Boolean
     ): List<CompletionItem> {
-        return completions.asMap().flatMap { (key, ideCompletions) ->
+        return completions.flatMap { (key, ideCompletions) ->
             toSemanticCompletions(key, ideCompletions, trimPrefixDot)
         }
     }
