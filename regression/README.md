@@ -10,11 +10,13 @@ invoked against the locally-bootstrapped `chr` (built from the Rell snapshot in 
 `work/local-chr.sh`). Projects without a `test:` block in their chromia.yml override `commands`
 to drop the test step &mdash; otherwise `chr test` exits with "No tests to run".
 
-`chr install` and `chr build` run **in parallel** across projects: each only touches its own
-clone tree, so the compile phase fans them out over a worker pool (sized to the CPU count, or
-to `REGRESSION_COMPILE_JOBS` if that env var is set &mdash; useful for capping memory on a CI
-runner). `chr test` then runs **serially** &mdash; every project's suite hits the same local
-PostgreSQL instance, and concurrent runs would race on shared schemas.
+Parallelism is owned by Gradle. The build script parses the JSON configs and generates one task
+per project (`regressionFt4Lib`, `regressionDirectoryChain`, &hellip;) plus the aggregate
+`regression` / `regressionPublic`. Each task fans `chr install` + `chr build` out across Gradle's
+**worker pool** &mdash; each only touches its own clone tree, so the build phase parallelises
+freely, bounded by Gradle's worker budget (`--max-workers` / `org.gradle.workers.max`). `chr test`
+then runs **serially** &mdash; every project's suite hits the same local PostgreSQL instance, and
+concurrent runs would race on shared schemas.
 
 ## Quick start
 
@@ -23,11 +25,20 @@ PostgreSQL instance, and concurrent runs would race on shared schemas.
 # 2. End-to-end: clone every project, compile + test each, render the HTML.
 ./gradlew :regression:regression
 
-# Or, step-by-step:
-./gradlew :regression:regressionClone     # clone (or pull) every repo into regression/workdir
-./gradlew :regression:regressionCompile   # run install/build/test against each; writes results.json
-./gradlew :regression:regressionReport    # rebuild the HTML from cached results.json
+# Just one project (handy while debugging a single regression):
+./gradlew :regression:regressionFt4Lib
+
+# Public-only flavour (what CI runs; never touches private.json):
+./gradlew :regression:regressionPublic
+
+# Individual steps also exist:
+./gradlew :regression:regressionBootstrap  # build the local chr binary once (work/local-chr.sh)
+./gradlew :regression:regressionClone      # clone (or pull) every repo into regression/workdir
+./gradlew :regression:regressionReport     # merge reports/parts/*.json -> results.json -> report.html
 ```
+
+Each per-project run writes a result fragment under `regression/reports/parts/`; `regressionReport`
+(wired as a `finalizedBy` of every run task) merges them into `results.json` and renders the HTML.
 
 Reports land in `regression/reports/report.html`.
 

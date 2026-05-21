@@ -362,7 +362,7 @@ pages:profile:
 
 # Manual regression toolkit: clone every public Rell project and verify the local Rell build
 # compiles them. Deliberately not on the default pipeline — full runs take tens of minutes (one
-# bootstrap-once chromia-cli build + sequential per-project chr install). The public-only flavour
+# bootstrap-once chromia-cli build + per-project chr install/build/test). The public-only flavour
 # is wired here; `private.json` is gitignored and never reaches the runner.
 #
 # Extends `.local-chr-cache` (and through it `.setup`) for git/bash/curl install, the

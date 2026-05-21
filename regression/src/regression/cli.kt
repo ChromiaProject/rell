@@ -49,17 +49,12 @@ abstract class RegressionSubcommand(name: String): CliktCommand(name = name) {
     ).path().required()
 }
 
-class AllCommand: RegressionSubcommand("all") {
-    override fun help(context: Context) =
-        "End-to-end: clone every project, run chr against each, render an HTML report."
-
-    override fun run() {
-        val projects = loadProjects(configFiles, configOptionalFiles)
-        cloneAll(projects, workdir)
-        renderHtml(results = compileAll(projects, workdir, reportsDir), reportsDir = reportsDir)
-    }
-}
-
 fun main(args: Array<String>) = RegressionCli()
-    .subcommands(CloneCommand(), CompileCommand(), ReportCommand(), AllCommand())
+    .subcommands(
+        CloneCommand(),
+        BootstrapCommand(),
+        BuildOneCommand(),
+        TestOneCommand(),
+        ReportCommand(),
+    )
     .main(args)

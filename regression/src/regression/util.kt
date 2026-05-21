@@ -66,10 +66,15 @@ internal fun runToLog(
     pb.environment().apply {
         put("GIT_TERMINAL_PROMPT", "0")
         put("GIT_SSH_COMMAND", "ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new")
+        // Run chr under the same JDK the toolkit itself runs on (Gradle's toolchain JVM), not the
+        // ambient shell's java — keeps the Rell the projects compile against on a known JDK.
+        put("JAVA_HOME", System.getProperty("java.home"))
         putAll(extraEnv)
     }
+
     val proc = pb.start()
     val finished = proc.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS)
+
     if (!finished) {
         proc.destroyForcibly()
         return ProcessOutcome(
@@ -78,6 +83,7 @@ internal fun runToLog(
             timedOut = true,
         )
     }
+
     return ProcessOutcome(
         exitCode = proc.exitValue(),
         durationMs = (System.nanoTime() - start) / 1_000_000,
@@ -85,17 +91,17 @@ internal fun runToLog(
     )
 }
 
+private val RELL_VERSION = Regex("""version\s*=\s*"([^"]+)"""")
+
 /** Read `version = "..."` out of the root build.gradle.kts so the report can pin which Rell built the projects. */
 internal fun readRellVersion(): String {
     val root = repoRoot()
     val buildFile = root / "build.gradle.kts"
     if (!buildFile.exists()) return "unknown"
-    val regex = Regex("""version\s*=\s*"([^"]+)"""")
 
     buildFile.useLines { lines ->
-        for (line in lines) {
-            regex.find(line)?.let { return@readRellVersion it.groupValues[1] }
-        }
+        for (line in lines)
+            RELL_VERSION.find(line)?.let { return@readRellVersion it.groupValues[1] }
     }
 
     return "unknown"

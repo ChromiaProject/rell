@@ -3,8 +3,11 @@
  */
 package net.postchain.rell.regression
 
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.types.path
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
 import net.postchain.rell.performance.report.*
@@ -13,18 +16,26 @@ import java.nio.file.Path
 import java.time.Instant
 import kotlin.io.path.*
 
-class ReportCommand: RegressionSubcommand("report") {
+class ReportCommand: CliktCommand(name = "report") {
     override fun help(context: Context) =
-        "Render reports/report.html from reports/results.json. Run :regressionCompile first to produce the JSON."
+        "Merge reports/parts/*.json into reports/results.json and render reports/report.html."
+
+    private val reportsDir: Path by option(
+        "--reports-dir",
+        help = "Directory holding parts/, logs/, results.json, and the rendered report.html.",
+    ).path().required()
 
     override fun run() {
-        val resultsFile = reportsDir / "results.json"
+        val results = mergeFragments(reportsDir)
+        reportsDir.createDirectories()
+        val resultsPath = reportsDir / "results.json"
+        regressionWriter.writeValue(resultsPath.toFile(), results)
 
-        require(resultsFile.exists()) {
-            "No results.json at $resultsFile — run `:regressionCompile` (or `:regression`) first."
-        }
+        val summary = results.results
+            .groupBy { it.executionBackend }
+            .mapValues { (_, rs) -> rs.groupingBy { it.status }.eachCount() }
+        log("report", "Merged ${results.results.size} fragment(s) into $resultsPath — $summary")
 
-        val results: ResultsFile = regressionMapper.readValue(resultsFile.inputStream())
         renderHtml(results, reportsDir)
     }
 }
