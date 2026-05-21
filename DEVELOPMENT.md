@@ -236,21 +236,25 @@ chr tx -brid <BRID> <OP_NAME> ARG_AS_GTV_STR*
 
 ### Chromia CLI Scripts
 
-#### local-chr.sh
+#### Building a local `chr`
 
-The `local-chr.sh` script is a wrapper for the Chromia CLI (`chr`) that uses your local Rell build instead of the officially published release. It automatically patches CLI's POM to your local Rell version, making it ideal for testing language changes or new features before they're deployed.
+The `:performance:buildLocalChr` Gradle task builds the Chromia CLI (`chr`) against your **local**
+Rell build instead of the officially published release. It publishes the local Rell snapshot to
+`~/.m2`, clones and patches the Chromia CLI repos to
+that version, builds them, and syncs the fresh Rell jars into the distribution.
 
 ```shell
-./work/local-chr.sh [arguments]
+# Build (or refresh) the local chr distribution.
+./gradlew :performance:buildLocalChr
 
-# Print the software versions, for example
-./work/local-chr.sh --version
+# Then run chr directly from the built distribution, for example:
+chromia-cli-local/chromia-cli/target/chromia-cli-dev-dist/bin/chr --version
 ```
 
-If you need to clone the local Chromia CLI repository and patch it again, then add the `--rebuild` flag:
+To force a clean re-clone of the Chromia CLI repos, pass `-PchrRebuild`:
 
 ```shell
-./work/local-chr.sh --rebuild --version
+./gradlew :performance:buildLocalChr -PchrRebuild
 ```
 
 #### build-local-docs.sh

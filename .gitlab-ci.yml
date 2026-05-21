@@ -332,8 +332,8 @@ pages:benchmarks:
 
 # Manual end-to-end profiler run (Postgres + chr node + async-profiler + workload + HTML).
 # Extends `.local-chr-cache` for the Postgres-via-DIND wiring and the persistent .m2 cache;
-# the pg_stats collector reaches Postgres via POSTCHAIN_DB_URL and the `chr node` it bootstraps
-# via local-chr.sh reaches it via the CHR_DB_* vars — both point at the DIND service.
+# the pg_stats collector reaches Postgres via POSTCHAIN_DB_URL and the `chr node` it builds
+# via :performance:buildLocalChr reaches it via the CHR_DB_* vars — both point at the DIND service.
 pages:profile:
   extends: .local-chr-cache
   stage: benchmarks

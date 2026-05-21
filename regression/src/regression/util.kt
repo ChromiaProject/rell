@@ -26,13 +26,11 @@ internal fun die(component: String, msg: String): Nothing {
 }
 
 // All regression tasks are launched from the Rell repo root via build.gradle.kts
-// (`workingDir = project.rootDir`). This sanity-checks the assumption — failing fast here
-// is far easier to debug than a confused `local-chr.sh: must be run from the repository
-// root` deep in the bootstrap.
+// (`workingDir = project.rootDir`).
 internal fun repoRoot(): Path {
     val cwd = Path.of(System.getProperty("user.dir")).toAbsolutePath().normalize()
-    val marker = cwd / "work" / "local-chr.sh"
-    require(marker.isRegularFile()) {
+    val marker = cwd / "build.gradle.kts"
+    require(marker.isRegularFile() && (cwd / "settings.gradle.kts").isRegularFile()) {
         "Expected to be invoked from the Rell repo root (cwd=$cwd); $marker not found. " +
             "The Gradle tasks in :regression set workingDir = rootDir — running the Clikt CLI " +
             "directly? cd into the repo root first."

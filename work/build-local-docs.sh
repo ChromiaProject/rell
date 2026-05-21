@@ -17,13 +17,16 @@ fi
 
 echo "Generating Rell documentation preview..."
 
-# Ensure Rell is available to chromia-cli
-./gradlew publishToMavenLocal
+# Build chr against the local Rell build. buildLocalChr depends on :publishRellToMavenLocal, so the
+# Rell snapshot lands in ~/.m2 within the same build graph (no nested Gradle).
+./gradlew :performance:buildLocalChr
 
 # Create output directory
 mkdir -p libdoc
 
-# Generate documentation (skip redundant publish in local-chr)
-./work/local-chr.sh --skip-publish generate docs-site --system -d libdoc
+# Generate documentation with the freshly built chr distribution.
+CHR="chromia-cli-local/chromia-cli/target/chromia-cli-dev-dist/bin/chr"
+JAVA_ARGS="${JAVA_ARGS:-} --enable-native-access=ALL-UNNAMED" \
+    "$CHR" generate docs-site --system -d libdoc
 
 echo "Documentation preview generated in the libdoc directory"

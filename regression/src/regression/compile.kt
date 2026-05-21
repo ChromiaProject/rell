@@ -8,19 +8,18 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.enum
 import com.fasterxml.jackson.module.kotlin.readValue
+import net.postchain.rell.performance.chr.LocalChr
 import java.io.BufferedWriter
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.time.Duration
-import java.util.concurrent.TimeUnit
 import kotlin.io.path.*
 
 // 30 min covers install + build + test for the heaviest typical project (ft4-lib has 8+ test
 // modules spread across two test chains). Individual projects can override this via
 // `ProjectSpec.timeoutMinutes` when their suites legitimately need more — see mna-blockchain.
 private val DEFAULT_PER_PROJECT_TIMEOUT: Duration = Duration.ofMinutes(30)
-private val BOOTSTRAP_TIMEOUT: Duration = Duration.ofMinutes(60)
 
 private fun ProjectSpec.stepTimeout(): Duration =
     timeoutMinutes?.let { Duration.ofMinutes(it.toLong()) } ?: DEFAULT_PER_PROJECT_TIMEOUT
@@ -37,20 +36,10 @@ private val PARALLELISABLE_STEPS = setOf("install", "build")
 // ─── CLI subcommands ──────────────────────────────────────────────────────────────────────────
 //
 // The compile pipeline is sliced into single-unit invocations so Gradle owns all the threading:
-//   bootstrap   — build the local chr binary once
 //   build-one   — run the install/build prefix for ONE project under ONE backend (parallel-safe)
 //   test-one    — run the deferred test steps for ONE project under ONE backend (serial)
 // Each invocation reads/writes one result fragment under reports/parts/; `report` merges them.
-
-class BootstrapCommand : RegressionSubcommand("bootstrap") {
-    override fun help(context: Context) =
-        "Build the local chr binary (./work/local-chr.sh). Run once before build-one/test-one."
-
-    override fun run() {
-        val chrBin = bootstrapChr()
-        log("bootstrap", "chr binary: $chrBin")
-    }
-}
+// The chr binary they drive is built upstream by the shared `:performance:buildLocalChr` task.
 
 /** Shared `--name`/`--backend` plumbing for the single-project build/test subcommands. */
 abstract class SingleProjectSubcommand(name: String) : RegressionSubcommand(name) {
@@ -200,7 +189,7 @@ fun buildOneProject(project: ProjectSpec, workdir: Path, reportsDir: Path, backe
     partsDir(reportsDir).createDirectories()
     val tag = "[${backend.label()}] ${project.name}"
 
-    val chrBin = locateChr()
+    val chrBin = LocalChr.chrExecutable(repoRoot())
     val located = locate(project, workdir, backend)
     if (located is Unusable) {
         log("build-one", "$tag — ${located.result.status} (clone not usable; see notes)")
@@ -274,7 +263,7 @@ fun testOneProject(project: ProjectSpec, workdir: Path, reportsDir: Path, backen
     // already final.
     if (built.status != Status.PASSED || serialSteps.isEmpty()) return
 
-    val chrBin = locateChr()
+    val chrBin = LocalChr.chrExecutable(repoRoot())
     val logFile = logFileFor(reportsDir, backend, project.name)
 
     // Resume the accumulator from the build phase so durations and the final exit reflect the whole
@@ -438,49 +427,3 @@ private fun baseResult(project: ProjectSpec, status: Status): CompileResult = Co
     expectedFailure = project.expectedFailure,
     status = status,
 )
-
-/** The path the bootstrap step publishes the local chr binary to. */
-internal fun locateChr(): Path =
-    repoRoot() / "chromia-cli-local" / "chromia-cli" / "target" / "chromia-cli-dev-dist" / "bin" / "chr"
-
-private fun bootstrapChr(): Path {
-    val root = repoRoot()
-    val chrBin = locateChr()
-
-    // Always run local-chr.sh, even when the chr binary already exists from a previous run
-    // or a restored CI cache. local-chr.sh is itself incremental: it re-publishes the current
-    // Rell snapshot to ~/.m2, rebuilds chromia-cli-tools against it, *skips* the expensive
-    // chromia-cli Maven build when the binary is already present, and re-syncs the freshly
-    // built Rell jars into the distribution's lib/. Returning early on `chrBin.exists()` here
-    // skipped that jar refresh, so a cached chromia-cli-local/ pinned the run to a stale Rell —
-    // the suite then passed locally (fresh build) but failed on CI (frozen jars).
-    log(
-        "bootstrap",
-        if (chrBin.exists()) {
-            "chr binary present at $chrBin — running ./work/local-chr.sh to refresh Rell jars " +
-                "(the chromia-cli build itself is reused)"
-        } else {
-            "chr not found — running ./work/local-chr.sh --version (this is slow on first run)"
-        },
-    )
-
-    val pb = ProcessBuilder("bash", (root / "work" / "local-chr.sh").toString(), "--version")
-        .directory(root.toFile())
-        .inheritIO()
-
-    // local-chr.sh shells out to Maven, whose kotlin-bcv plugin demands JDK 21. Pin JAVA_HOME to
-    // the JDK this (toolchain-21) JVM runs on, so the nested build never falls back to whatever the
-    // ambient shell happens to have active.
-    pb.environment()["JAVA_HOME"] = System.getProperty("java.home")
-
-    val proc = pb.start()
-    val finished = proc.waitFor(BOOTSTRAP_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS)
-    if (!finished) {
-        proc.destroyForcibly()
-        die("bootstrap", "local-chr.sh did not finish within $BOOTSTRAP_TIMEOUT — aborted")
-    }
-    val rc = proc.exitValue()
-    if (rc != 0) die("bootstrap", "local-chr.sh exited with code $rc")
-    if (!chrBin.exists()) die("bootstrap", "Expected chr at $chrBin after bootstrap, but it is missing")
-    return chrBin
-}

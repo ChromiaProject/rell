@@ -258,9 +258,30 @@ val profileSample by tasks.registering(JavaExec::class) {
     )
 }
 
+val buildLocalChr by tasks.registering(JavaExec::class) {
+    group = LifecycleBasePlugin.BUILD_GROUP
+    description = "Build the local chr binary against the freshly published Rell snapshot (replaces local-chr.sh)."
+    dependsOn(":publishRellToMavenLocal")
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass = "net.postchain.rell.performance.chr.BuildLocalChrKt"
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+    workingDir = rootProject.projectDir
+    // Rell version for the chromia-cli POM patch; `-PchrRebuild` forces a clean re-clone.
+    val rellVersion = project.version.toString()
+    val rebuild = providers.gradleProperty("chrRebuild").map { listOf("--rebuild") }.orElse(emptyList())
+
+    argumentProviders += CommandLineArgumentProvider {
+        listOf(rellVersion) + rebuild.get()
+    }
+
+    // External clones + Maven state change out of band
+    outputs.upToDateWhen { false }
+}
+
 val profile by tasks.registering(JavaExec::class) {
     group = "performance"
     description = "End-to-end profiler: build chr, start node, attach async-profiler, run workload, render report."
+    dependsOn(buildLocalChr)
     classpath = sourceSets["main"].runtimeClasspath
     mainClass = "net.postchain.rell.performance.profiler.ProfileKt"
     javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }

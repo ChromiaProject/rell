@@ -43,6 +43,14 @@ dependencyCheck {
 
 val withLocales by extra(providers.gradleProperty("withLocales").isPresent)
 
+// Aggregator: publish every Rell module to ~/.m2 within this build graph. The chr bootstrap
+// (:performance:buildLocalChr) depends on this instead of shelling out to a nested
+// `./gradlew publishToMavenLocal` — a nested Gradle deadlocks on the journal-cache lock.
+val publishRellToMavenLocal by tasks.registering {
+    group = "publishing"
+    description = "Publish all Rell modules to the local Maven repository (used by the chr bootstrap)."
+}
+
 subprojects {
     group = rootProject.group
     version = rootProject.version
@@ -255,6 +263,14 @@ subprojects {
                         url = "https://gitlab.com/chromaway/rell"
                     }
                 }
+            }
+        }
+
+        // Feed this module's publishToMavenLocal into the aggregator the chr bootstrap depends on.
+        // The toolkits themselves are excluded — chr builds against the Rell artifacts, not these.
+        if (project.path != ":regression" && project.path != ":performance") {
+            rootProject.tasks.named("publishRellToMavenLocal").configure {
+                dependsOn(tasks.named("publishToMavenLocal"))
             }
         }
     }

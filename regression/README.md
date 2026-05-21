@@ -6,9 +6,9 @@ long &mdash; the suite is not wired into the default CI pipeline; it ships as a 
 job (`pages:regression`) and a collection of Gradle tasks for local use.
 
 The default pipeline per project is `chr install` &rarr; `chr build` &rarr; `chr test`, all
-invoked against the locally-bootstrapped `chr` (built from the Rell snapshot in this repo via
-`work/local-chr.sh`). Projects without a `test:` block in their chromia.yml override `commands`
-to drop the test step &mdash; otherwise `chr test` exits with "No tests to run".
+invoked against the locally-built `chr` (built from the Rell snapshot in this repo by the shared
+`:performance:buildLocalChr` task). Projects without a `test:` block in their chromia.yml override
+`commands` to drop the test step &mdash; otherwise `chr test` exits with "No tests to run".
 
 Parallelism is owned by Gradle. The build script parses the JSON configs and generates one task
 per project (`regressionFt4Lib`, `regressionDirectoryChain`, &hellip;) plus the aggregate
@@ -21,8 +21,7 @@ concurrent runs would race on shared schemas.
 ## Quick start
 
 ```bash
-# 1. Make sure the bootstrap-once chr build will succeed (see work/local-chr.sh prerequisites).
-# 2. End-to-end: clone every project, compile + test each, render the HTML.
+# End-to-end: build chr, clone every project, compile + test each, render the HTML.
 ./gradlew :regression:regression
 
 # Just one project (handy while debugging a single regression):
@@ -32,7 +31,7 @@ concurrent runs would race on shared schemas.
 ./gradlew :regression:regressionPublic
 
 # Individual steps also exist:
-./gradlew :regression:regressionBootstrap  # build the local chr binary once (work/local-chr.sh)
+./gradlew :performance:buildLocalChr       # build the local chr binary (shared across the repo)
 ./gradlew :regression:regressionClone      # clone (or pull) every repo into regression/workdir
 ./gradlew :regression:regressionReport     # merge reports/parts/*.json -> results.json -> report.html
 ```

@@ -14,6 +14,7 @@ import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
+import net.postchain.rell.performance.chr.LocalChr
 import java.awt.Desktop
 import java.io.File
 import java.net.InetAddress
@@ -62,7 +63,7 @@ class ProfileCommand : CliktCommand(name = "profile") {
         log("profile", "Profile event: $profileEvent")
         log("profile", "Workload: $users users, $posts posts/user")
 
-        val chrBin = ensureChrBuilt(localProps)
+        val chrBin = ensureChrBuilt()
         log("profile", "  chr: $chrBin")
 
         val versions = readChrVersions(chrBin, localProps)
@@ -161,26 +162,13 @@ class ProfileCommand : CliktCommand(name = "profile") {
             ?: die("profile", "async-profiler library not found after provisioning")
     }
 
-    private fun ensureChrBuilt(localProps: Map<String, String>): Path {
-        val chrBin = repoRoot() / "chromia-cli-local" / "chromia-cli" / "target" /
-            "chromia-cli-dev-dist" / "bin" / "chr"
-        if (chrBin.exists()) {
-            log("profile", "Step: chr binary exists, skipping build")
-            return chrBin
+    private fun ensureChrBuilt(): Path {
+        // The chr distribution is built upstream by the shared `:performance:buildLocalChr` task,
+        // which the `profile` task depends on. Here we only resolve and sanity-check the binary.
+        val chrBin = LocalChr.chrExecutable(repoRoot())
+        if (!chrBin.isExecutable()) {
+            die("profile", "chr not built at $chrBin — :performance:buildLocalChr should have produced it")
         }
-
-        log("profile", "Step: chr not found at $chrBin — building Rell + chromia-cli...")
-        val pb = ProcessBuilder("bash", (repoRoot() / "work" / "local-chr.sh").toString(), "--version")
-            .directory(repoRoot().toFile()).inheritIO()
-        applyJavaHome(pb.environment(), localProps)
-        val proc = pb.start()
-        if (!proc.waitFor(45, TimeUnit.MINUTES)) {
-            proc.destroyForcibly()
-            die("profile", "Build did not finish within 45 minutes — aborted")
-        }
-        val rc = proc.exitValue()
-        if (rc != 0) die("profile", "Build failed with exit code $rc")
-        if (!chrBin.exists()) die("profile", "chr binary not found at $chrBin")
         return chrBin
     }
 

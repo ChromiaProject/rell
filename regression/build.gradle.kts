@@ -69,8 +69,8 @@ val cliMain = "net.postchain.rell.regression.CliKt"
 val runtimeCp = sourceSets["main"].runtimeClasspath
 val rootDirPath: String = rootProject.projectDir.absolutePath
 
-// local-chr.sh asserts cwd == repo root, and the CLI mirrors that via util.kt#repoRoot, so every
-// invocation runs from the Rell repo root regardless of how the developer invoked Gradle.
+// The CLI asserts cwd == repo root (util.kt#repoRoot), so pin every invocation to the Rell repo
+// root regardless of how the developer invoked Gradle.
 val launcher21 = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
 val javaExecProvider = launcher21.map { it.executablePath.asFile.absolutePath }
 
@@ -83,18 +83,11 @@ fun baseArgs(publicOnly: Boolean): List<String> {
     return args
 }
 
-// ─── Setup tasks (serial, run once) ──────────────────────────────────────────────────────────────
-
-val regressionBootstrap by tasks.registering(JavaExec::class) {
-    group = LifecycleBasePlugin.VERIFICATION_GROUP
-    description = "Build the local chr binary once via ./work/local-chr.sh."
-    classpath = runtimeCp
-    mainClass = cliMain
-    javaLauncher = launcher21
-    workingDir = rootProject.projectDir
-    args = listOf("bootstrap") + baseArgs(publicOnly = false)
-    outputs.upToDateWhen { false }
-}
+// ─── Setup tasks ─────────────────────────────────────────────────────────────────────────────────
+//
+// The chr binary is built by the shared `:performance:buildLocalChr` task (which publishes Rell to
+// ~/.m2 in-graph — no nested Gradle). Cloning the target projects is regression-specific and stays
+// here; it runs serially because the clones share one network pipe.
 
 val regressionClone by tasks.registering(JavaExec::class) {
     group = LifecycleBasePlugin.VERIFICATION_GROUP
@@ -129,7 +122,7 @@ fun RegressionRunTask.configureRun(names: List<String>, publicOnly: Boolean) {
     projectNames = names
     backends = listOf("INTERPRETER", "TRUFFLE")
     sharedArgs = baseArgs(publicOnly)
-    dependsOn(regressionBootstrap, regressionClone)
+    dependsOn(":performance:buildLocalChr", regressionClone)
     finalizedBy(regressionReport)
     outputs.upToDateWhen { false }
 }

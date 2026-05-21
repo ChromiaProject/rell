@@ -132,7 +132,7 @@ Stack frames are tagged by walking the full stack. Priority **PostgreSQL > Rell 
 
 ## How the profiler works
 
-1. Builds local Rell via `work/local-chr.sh` if `chr` is missing (subprocess &mdash; no Java entry point).
+1. Builds local Rell + `chr` via the shared `:performance:buildLocalChr` task (a `dependsOn` of `:performance:profile`).
 2. Starts a single-node Chromia blockchain with `chr node start --wipe`.
 3. Attaches async-profiler via the HotSpot **Attach API** (`com.sun.tools.attach.VirtualMachine`) &mdash; the same mechanism the `asprof` CLI uses, just without spawning it.
 4. Snapshots PostgreSQL stats over **JDBC**.
