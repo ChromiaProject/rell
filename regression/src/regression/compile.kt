@@ -15,10 +15,14 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.*
 
-// 30 min covers install + build + test for the heaviest project (ft4-lib has 8+ test modules
-// spread across two test chains). Bump if a new entry routinely times out.
-private val PER_PROJECT_TIMEOUT: Duration = Duration.ofMinutes(30)
+// 30 min covers install + build + test for the heaviest typical project (ft4-lib has 8+ test
+// modules spread across two test chains). Individual projects can override this via
+// `ProjectSpec.timeoutMinutes` when their suites legitimately need more — see mna-blockchain.
+private val DEFAULT_PER_PROJECT_TIMEOUT: Duration = Duration.ofMinutes(30)
 private val BOOTSTRAP_TIMEOUT: Duration = Duration.ofMinutes(60)
+
+private fun ProjectSpec.stepTimeout(): Duration =
+    timeoutMinutes?.let { Duration.ofMinutes(it.toLong()) } ?: DEFAULT_PER_PROJECT_TIMEOUT
 
 // `chr install` (dependency resolution) and `chr build` (compilation) operate on each project's
 // own clone tree and never touch the database, so they fan out cleanly across projects. `chr test`
@@ -46,24 +50,75 @@ class CompileCommand : RegressionSubcommand("compile") {
 
 fun compileAll(projects: List<ProjectSpec>, workdir: Path, reportsDir: Path): ResultsFile {
     reportsDir.createDirectories()
-    val logsDir = (reportsDir / "logs").also { it.createDirectories() }
 
     val chrBin = bootstrapChr()
     log("compile", "chr binary: $chrBin")
 
+    // Two passes — every project gets a full pipeline run per backend. Compilation does not
+    // depend on the runtime backend, so install/build outcomes will agree across the pair;
+    // only `chr test` actually exercises the runtime, where the dev switch bites. Backends
+    // run strictly serially so the phase-2 test runs never share the PostgreSQL instance.
+    val results: List<CompileResult> = ExecutionBackend.entries.flatMap { backend ->
+        log("compile", "──── Backend: ${backend.label()} ────")
+        val logsDir = (reportsDir / "logs" / backend.name.lowercase()).also { it.createDirectories() }
+        val extraEnv = when (backend) {
+            ExecutionBackend.INTERPRETER -> emptyMap()
+            // chr's start script reads $JAVA_ARGS for JVM args; RellApiInterpreterBackend picks
+            // up the system property and reflectively loads the Truffle backend at run-time.
+            ExecutionBackend.TRUFFLE -> mapOf("JAVA_ARGS" to "-Drell.execution.backend=truffle")
+        }
+        compileForBackend(projects, workdir, logsDir, chrBin, backend, extraEnv)
+    }
+
+    val resultsFile = ResultsFile(
+        generatedAtEpochMs = System.currentTimeMillis(),
+        rellVersion = readRellVersion(),
+        results = results,
+    )
+
+    val resultsPath = reportsDir / "results.json"
+    regressionWriter.writeValue(resultsPath.toFile(), resultsFile)
+    log(
+        "compile",
+        "Wrote $resultsPath (${results.size} project-run(s) across ${ExecutionBackend.entries.size} backend(s))",
+    )
+
+    val summary = results
+        .groupBy { it.executionBackend }
+        .mapValues { (_, rs) -> rs.groupingBy { it.status }.eachCount() }
+    log("compile", "Summary: $summary")
+    return resultsFile
+}
+
+/**
+ * Run the full clone-aware pipeline for a single backend. Phase 1 (install + build) fans out
+ * across a worker pool; phase 2 (test) runs strictly serially because every project's suite
+ * lands on the same local PostgreSQL instance. Per-backend log files land under
+ * `reports/logs/<backend>/<project>.log` so the two passes can't trample each other's output.
+ */
+private fun compileForBackend(
+    projects: List<ProjectSpec>,
+    workdir: Path,
+    logsDir: Path,
+    chrBin: Path,
+    backend: ExecutionBackend,
+    extraEnv: Map<String, String>,
+): List<CompileResult> {
     val total = projects.size
 
     // ── Phase 1: install + build, fanned out across a worker pool ────────────────────────────
     val workers = COMPILE_PARALLELISM.coerceAtMost(total.coerceAtLeast(1))
-    log("compile", "Phase 1/2 — install + build for $total project(s) across $workers worker(s)")
+    log("compile", "[${backend.label()}] Phase 1/2 — install + build for $total project(s) across $workers worker(s)")
 
     val pool = Executors.newFixedThreadPool(workers) { r ->
-        Thread(r, "regression-compile").apply { isDaemon = true }
+        Thread(r, "regression-compile-${backend.name.lowercase()}").apply { isDaemon = true }
     }
     val phase1: List<Phase1Outcome> = try {
         projects
             .mapIndexed { idx, project ->
-                pool.submit(Callable { compilePhase1(project, idx, total, workdir, logsDir, chrBin) })
+                pool.submit(Callable {
+                    compilePhase1(project, idx, total, workdir, logsDir, chrBin, backend, extraEnv)
+                })
             }
             .map { future ->
                 try {
@@ -82,32 +137,20 @@ fun compileAll(projects: List<ProjectSpec>, workdir: Path, reportsDir: Path): Re
     // ── Phase 2: test, strictly serial — every project's suite shares one PostgreSQL instance ─
     val pending = phase1.filterIsInstance<Pending>()
     if (pending.isNotEmpty()) {
-        log("compile", "Phase 2/2 — test for ${pending.size} project(s), serially")
+        log("compile", "[${backend.label()}] Phase 2/2 — test for ${pending.size} project(s), serially")
     }
-    val testResults = pending.associate { p -> p.project.name to compilePhase2(p, chrBin) }
+    val testResults = pending.associate { p ->
+        p.project.name to compilePhase2(p, chrBin, backend, extraEnv)
+    }
 
     // Stitch results back into the original project order: phase-1 finishers verbatim, pending
     // projects swapped for their post-test result.
-    val results = phase1.map { outcome ->
+    return phase1.map { outcome ->
         when (outcome) {
             is Finished -> outcome.result
             is Pending -> testResults.getValue(outcome.project.name)
         }
     }
-
-    val resultsFile = ResultsFile(
-        generatedAtEpochMs = System.currentTimeMillis(),
-        rellVersion = readRellVersion(),
-        results = results,
-    )
-
-    val resultsPath = reportsDir / "results.json"
-    regressionWriter.writeValue(resultsPath.toFile(), resultsFile)
-    log("compile", "Wrote $resultsPath (${results.size} project(s))")
-
-    val summary = results.groupingBy { it.status }.eachCount()
-    log("compile", "Summary: $summary")
-    return resultsFile
 }
 
 /** Mutable accumulator threaded through one project's chr-command pipeline across both phases. */
@@ -151,6 +194,8 @@ private fun compilePhase1(
     workdir: Path,
     logsDir: Path,
     chrBin: Path,
+    backend: ExecutionBackend,
+    extraEnv: Map<String, String>,
 ): Phase1Outcome {
     val tag = "[${idx + 1}/$total] ${project.name}"
 
@@ -158,13 +203,13 @@ private fun compilePhase1(
     val sha = readGitSha(target)
     if (sha == null) {
         log("compile", "$tag — CLONE_FAILED (no .git at $target — run :regressionClone)")
-        return Finished(baseResult(project, Status.CLONE_FAILED))
+        return Finished(baseResult(project, Status.CLONE_FAILED).copy(executionBackend = backend))
     }
 
     val rellDir = (target / project.rellPath).normalize()
     if (!rellDir.exists()) {
         log("compile", "$tag — CLONE_FAILED (rellPath=$rellDir does not exist after clone)")
-        return Finished(baseResult(project, Status.CLONE_FAILED).copy(sha = sha))
+        return Finished(baseResult(project, Status.CLONE_FAILED).copy(sha = sha, executionBackend = backend))
     }
 
     // Pre-check: chr install / chr build both fail mechanically with "library not found in null"
@@ -180,6 +225,7 @@ private fun compilePhase1(
                 durationMs = 0L,
                 errorSummary = "no chromia.yml at $rellDir; project pre-dates chromia.yml era " +
                     "and is incompatible with the current chr CLI — not a Rell compiler regression",
+                executionBackend = backend,
             ),
         )
     }
@@ -194,6 +240,7 @@ private fun compilePhase1(
                 sha = sha,
                 durationMs = 0L,
                 errorSummary = "patch failed before chr: $patchFailure",
+                executionBackend = backend,
             ),
         )
     }
@@ -220,20 +267,25 @@ private fun compilePhase1(
         StandardOpenOption.APPEND,
     ).use { w ->
         writeLogHeader(w, project, sha, rellDir)
-        runSteps(w, parallelSteps, chrBin, rellDir, logFile, tag, state)
+        runSteps(w, parallelSteps, chrBin, rellDir, logFile, tag, state, extraEnv, project.stepTimeout())
     }
 
     // Finalise here when install/build failed (test would be short-circuited anyway) or when the
     // project has no test step — so the serial phase only ever handles real test suites.
     return if (!state.ok || serialSteps.isEmpty()) {
-        Finished(finalize(project, tag, sha, logFile, state))
+        Finished(finalize(project, backend, tag, sha, logFile, state))
     } else {
         Pending(project, tag, sha, rellDir, logFile, serialSteps, state)
     }
 }
 
 /** Run the deferred serial steps (`chr test`) for one project, then finalise its result. */
-private fun compilePhase2(pending: Pending, chrBin: Path): CompileResult {
+private fun compilePhase2(
+    pending: Pending,
+    chrBin: Path,
+    backend: ExecutionBackend,
+    extraEnv: Map<String, String>,
+): CompileResult {
     pending.logFile.bufferedWriter(
         Charsets.UTF_8,
         DEFAULT_BUFFER_SIZE,
@@ -241,9 +293,12 @@ private fun compilePhase2(pending: Pending, chrBin: Path): CompileResult {
         StandardOpenOption.WRITE,
         StandardOpenOption.APPEND,
     ).use { w ->
-        runSteps(w, pending.serialSteps, chrBin, pending.rellDir, pending.logFile, pending.tag, pending.state)
+        runSteps(
+            w, pending.serialSteps, chrBin, pending.rellDir, pending.logFile, pending.tag, pending.state,
+            extraEnv, pending.project.stepTimeout(),
+        )
     }
-    return finalize(pending.project, pending.tag, pending.sha, pending.logFile, pending.state)
+    return finalize(pending.project, backend, pending.tag, pending.sha, pending.logFile, pending.state)
 }
 
 /** Write the per-project log header: identity, ref/sha, rell path, and the full command pipeline. */
@@ -271,6 +326,8 @@ private fun runSteps(
     logFile: Path,
     tag: String,
     state: PipelineState,
+    extraEnv: Map<String, String>,
+    stepTimeout: Duration,
 ) {
     for (step in steps) {
         val cmd = listOf(chrBin.absolutePathString()) + step
@@ -280,7 +337,7 @@ private fun runSteps(
         w.flush()
 
         val outcome = try {
-            runToLog(cmd, rellDir, logFile, PER_PROJECT_TIMEOUT)
+            runToLog(cmd, rellDir, logFile, stepTimeout, extraEnv)
         } catch (e: IOException) {
             w.newLine()
             w.appendLine("# regression :: failed to start chr: ${e.message}")
@@ -300,6 +357,7 @@ private fun runSteps(
 /** Turn a finished [PipelineState] into the project's [CompileResult] and log a one-line summary. */
 private fun finalize(
     project: ProjectSpec,
+    backend: ExecutionBackend,
     tag: String,
     sha: String,
     logFile: Path,
@@ -327,8 +385,9 @@ private fun finalize(
         exitCode = state.lastExit,
         timedOut = state.lastTimedOut,
         errorSummary = summary,
-        logRelPath = "logs/${project.name}.log",
+        logRelPath = "logs/${backend.name.lowercase()}/${project.name}.log",
         failedStep = state.failedStep,
+        executionBackend = backend,
     )
 }
 

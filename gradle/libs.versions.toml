@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.3.0"
-postchain = "3.49.10"
+postchain = "3.49.12"
 kotlinx-benchmark = "0.4.16"
 async-profiler = "4.4"
 

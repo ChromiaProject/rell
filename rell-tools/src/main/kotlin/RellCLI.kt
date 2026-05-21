@@ -213,7 +213,7 @@ private class RellInterpreterCommand: RellBaseCommand("rell") {
                 blockRunner = blockRunner,
                 moduleArgsSource = Rt_ModuleArgsSource.NULL,
                 interpreterFactory = {
-                    Rt_InterpreterImpl.forCompilation(compiled.rrApp, compiled.compilationSysFns)
+                    RellApiInterpreterBackend.create(compiled.rrApp, compiled.compilationSysFns)
                 },
             )
 

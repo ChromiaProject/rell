@@ -7,7 +7,9 @@ package net.postchain.rell.api.gtx
 import net.postchain.rell.api.base.RellApiBaseInternal
 import net.postchain.rell.api.base.RellApiBaseUtils
 import net.postchain.rell.api.base.RellApiCompile
+import net.postchain.rell.api.base.RellApiInterpreterBackend
 import net.postchain.rell.api.base.RellCliEnv
+import net.postchain.rell.api.base.RellInterpreterFactory
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.lib.test.Lib_RellTest
@@ -104,6 +106,9 @@ public object RellApiRunTests {
         public val onTestCaseFinished: (UnitTestCaseResult) -> Unit,
             /** SQL execution finished callback. */
         public val onSqlExecutionFinished: ((SqlExecutionEvent) -> Unit)?,
+            /** Factory creating the [Rt_Interpreter] that runs the compiled app. Defaults to
+         * [RellApiInterpreterBackend.DEFAULT], which honors the `rell.execution.backend` dev switch. */
+        public val interpreterFactory: RellInterpreterFactory,
     ) {
         public fun toBuilder(): Builder = Builder(this)
 
@@ -124,6 +129,7 @@ public object RellApiRunTests {
                 onTestCaseStart = {},
                 onTestCaseFinished = {},
                 onSqlExecutionFinished = null,
+                interpreterFactory = RellApiInterpreterBackend.DEFAULT,
             )
         }
 
@@ -143,6 +149,7 @@ public object RellApiRunTests {
             private var onTestCaseStart = proto.onTestCaseStart
             private var onTestCaseFinished = proto.onTestCaseFinished
             private var onSqlExecutionFinished = proto.onSqlExecutionFinished
+            private var interpreterFactory = proto.interpreterFactory
 
             /** @see [Config.compileConfig] */
             public fun compileConfig(v: RellApiCompile.Config): Builder = apply { compileConfig = v }
@@ -189,6 +196,9 @@ public object RellApiRunTests {
             /** @see [Config.onSqlExecutionFinished] */
             public fun onSqlExecutionFinished(v: (SqlExecutionEvent) -> Unit): Builder = apply { onSqlExecutionFinished = v }
 
+            /** @see [Config.interpreterFactory] */
+            public fun interpreterFactory(v: RellInterpreterFactory): Builder = apply { interpreterFactory = v }
+
             public fun build(): Config {
                 return Config(
                     compileConfig = compileConfig,
@@ -206,6 +216,7 @@ public object RellApiRunTests {
                     onTestCaseStart = onTestCaseStart,
                     onTestCaseFinished = onTestCaseFinished,
                     onSqlExecutionFinished = onSqlExecutionFinished,
+                    interpreterFactory = interpreterFactory,
                 )
             }
         }
@@ -254,7 +265,7 @@ internal object RellApiGtxInternal {
                     chainCtx = chainCtx,
                     blockRunner = blockRunner,
                     moduleArgsSource = Rt_GtvModuleArgsSource(config.compileConfig.moduleArgs, options),
-                    interpreterFactory = { Rt_InterpreterImpl.forCompilation(rrApp, compilationSysFns) },
+                    interpreterFactory = { config.interpreterFactory(rrApp, compilationSysFns) },
                     printTestCases = config.printTestCases,
                     printPrettyLargeValues = config.printPrettyLargeValues,
                     stopOnError = config.stopOnError,

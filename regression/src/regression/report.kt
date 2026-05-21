@@ -52,8 +52,7 @@ fun renderHtml(results: ResultsFile, reportsDir: Path) {
                 )
                 main {
                     renderEnvironment(results)
-                    renderSummary(results)
-                    renderProjectSections(results)
+                    renderFlavorsOrFlat(results.results)
                     renderMethodology()
                 }
                 // Total compile time goes in the colophon, not the key metrics — reviewers
@@ -82,16 +81,66 @@ private fun FlowContent.renderEnvironment(results: ResultsFile) = renderSection(
     }
 }
 
-private fun FlowContent.renderSummary(results: ResultsFile) = renderSection("summary") {
-    val passed = results.results.count { it.status == Status.PASSED || it.status == Status.EXPECTED_FAIL }
-    val total = results.results.size
+private fun FlowContent.renderSummary(results: List<CompileResult>) = renderSection("summary") {
+    val passed = results.count { it.status == Status.PASSED || it.status == Status.EXPECTED_FAIL }
+    val total = results.size
     val rate = if (total > 0) 100.0 * passed / total else 0.0
 
     div(classes = "metrics") {
-        metric("Projects", total.toString(), "", "in scope")
-        metric("Pass rate", "%.0f".formatRoot(rate), "%", "incl. expected fails")
+        metric("Projects", total.toString(), "")
+        metric("Pass rate", "%.0f".formatRoot(rate), "%", "including expected fails")
     }
 }
+
+/**
+ * Branch on whether the results carry per-backend tagging. Legacy results.json (everything is
+ * [executionBackend][CompileResult.executionBackend] = null) and partial runs that only cover
+ * one backend render the same flat summary + project tables as the single-flavor era. When
+ * two or more distinct backends are present, we wrap each backend's panel in a CSS-only
+ * `:checked ~` switcher so reviewers can flip between flavors without leaving the page.
+ */
+private fun FlowContent.renderFlavorsOrFlat(results: List<CompileResult>) {
+    val backends = results.mapNotNull { it.executionBackend }.distinct()
+    if (backends.size < 2) {
+        renderSummary(results)
+        renderProjectSections(results)
+    } else {
+        renderFlavorSwitcher(results, backends)
+    }
+}
+
+/**
+ * Renders the radio-input/label tabbar plus one panel per backend. The radios and panels are
+ * direct children of `<main>` so the `.flavor-radio:checked ~ .flavor-panel-<x>` sibling
+ * combinator in REGRESSION_CSS can drive the switch with no JavaScript.
+ */
+private fun FlowContent.renderFlavorSwitcher(results: List<CompileResult>, backends: List<ExecutionBackend>) {
+    // Stable, deterministic order — INTERPRETER first so it's the default-checked tab.
+    val ordered = backends.sortedBy { it.ordinal }
+    for ((idx, backend) in ordered.withIndex()) {
+        radioInput(name = "flavor-switch", classes = "flavor-radio") {
+            id = backend.radioId()
+            if (idx == 0) checked = true
+        }
+    }
+    div(classes = "flavor-switch") {
+        for (backend in ordered) {
+            label(classes = "flavor-tab") {
+                attributes["for"] = backend.radioId()
+                +backend.label()
+            }
+        }
+    }
+    for (backend in ordered) {
+        div(classes = "flavor-panel flavor-panel-${backend.name.lowercase()}") {
+            val perBackend = results.filter { it.executionBackend == backend }
+            renderSummary(perBackend)
+            renderProjectSections(perBackend)
+        }
+    }
+}
+
+private fun ExecutionBackend.radioId(): String = "flavor-${name.lowercase()}"
 
 /**
  * Renders one `renderSection` per cohort (public, private, …) so the public results stay
@@ -99,7 +148,7 @@ private fun FlowContent.renderSummary(results: ResultsFile) = renderSection("sum
  * stamped cohort (older results.json) it lands in a `projects` section so the report still
  * renders cleanly.
  */
-private fun FlowContent.renderProjectSections(results: ResultsFile) {
+private fun FlowContent.renderProjectSections(results: List<CompileResult>) {
     // Sort: failed first (what reviewers actually care about), then everything else in original order.
     val priority = mapOf(
         Status.FAILED to 0,
@@ -107,7 +156,7 @@ private fun FlowContent.renderProjectSections(results: ResultsFile) {
         Status.EXPECTED_FAIL to 2,
         Status.PASSED to 3,
     )
-    val byCohort = results.results
+    val byCohort = results
         .withIndex()
         .groupBy { it.value.cohort ?: "projects" }
         .toSortedMap(compareBy { if (it == "public") 0 else if (it == "private") 1 else 2 })
@@ -288,28 +337,11 @@ private fun StageState.label(): String = when (this) {
 private fun FlowContent.renderMethodology() = renderSection("methodology") {
     ul(classes = "method") {
         li {
-            +"Each project is shallow-cloned into "
+            +"Each project is cloned into "
             code { +"regression/workdir/<name>" }
-            +" at the configured ref (default branch if unset), then compiled in place with "
+            +" at the configured ref (default branch if unset), then compiled with "
             code { +"chr <command>" }
-            +" against the local Rell build (jars synced into the chromia-cli distribution by "
-            code { +"work/local-chr.sh" }
-            +")."
-        }
-        li {
-            code { +"expectedFailure: true" }
-            +" suppresses "
-            code { +"FAILED" }
-            +" for historical entries and flips to "
-            code { +"UNEXPECTED_PASS" }
-            +" if the project starts compiling again."
-        }
-        li {
-            +"Per-project timeout: "
-            code { +"30 min" }
-            +". Bootstrap timeout (one-time chromia-cli build): "
-            code { +"60 min" }
-            +"."
+            +" against the local Rell build."
         }
     }
 }
@@ -416,4 +448,34 @@ table.regression tr.log-row.row-fail { background: rgba(193,68,14,0.04); }
 ul.method { padding-left: 1.2rem; color: var(--ink-soft); font-size: .88rem; }
 ul.method li { margin-bottom: .55rem; line-height: 1.55; }
 ul.method code { font-family: var(--mono); font-size: .8rem; background: var(--bg-alt); padding: 1px 5px; border-radius: 2px; color: var(--ink); }
+
+/* Flavor switcher: pure-CSS radio tabbar between Interpreter and Truffle runs.
+   Inputs live as direct siblings of the panels so `:checked ~ .flavor-panel-X` can
+   show/hide without JavaScript. The visible labels in .flavor-switch sit between the
+   inputs and the panels and pick up the same selectors to style themselves. */
+.flavor-radio { position: absolute; left: -9999px; width: 0; height: 0; opacity: 0; }
+.flavor-switch {
+  display: inline-flex; margin: 0 0 1.4rem 0;
+  border: 1px solid var(--rule); border-radius: 3px; overflow: hidden;
+  background: var(--bg-alt);
+}
+.flavor-switch .flavor-tab {
+  padding: 6px 16px; cursor: pointer; user-select: none;
+  font-family: var(--mono); font-size: .72rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .14em; color: var(--muted);
+  border-right: 1px solid var(--rule);
+  transition: background-color 80ms linear, color 80ms linear;
+}
+.flavor-switch .flavor-tab:last-child { border-right: none; }
+.flavor-switch .flavor-tab:hover { color: var(--ink); }
+.flavor-radio:focus-visible + .flavor-radio + .flavor-switch .flavor-tab,
+.flavor-radio:focus-visible + .flavor-switch .flavor-tab { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.flavor-panel { display: none; }
+#flavor-interpreter:checked ~ .flavor-panel-interpreter { display: block; }
+#flavor-truffle:checked     ~ .flavor-panel-truffle     { display: block; }
+#flavor-interpreter:checked ~ .flavor-switch label[for="flavor-interpreter"],
+#flavor-truffle:checked     ~ .flavor-switch label[for="flavor-truffle"] {
+  background: var(--ink); color: var(--bg);
+}
 """.trimIndent()

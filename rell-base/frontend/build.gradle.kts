@@ -18,7 +18,6 @@ dependencies {
     api(libs.antlr.runtime)
     api(projects.rellBase.utils)
     api(projects.rellBase.rrTree)
-    api(libs.postchain.gtv)
     api(libs.better.parse)
     api(libs.jooq)
     implementation(libs.jackson.databind)

@@ -23,6 +23,7 @@ import net.postchain.logging.BLOCKCHAIN_RID_TAG
 import net.postchain.logging.CHAIN_IID_TAG
 import net.postchain.logging.NODE_PUBKEY_TAG
 import net.postchain.rell.api.base.RellApiBaseUtils
+import net.postchain.rell.api.base.RellApiInterpreterBackend
 import net.postchain.rell.api.base.RellCliBasicException
 import net.postchain.rell.api.base.RellCliExitException
 import net.postchain.rell.api.gtx.*
@@ -223,7 +224,7 @@ private class RellRunConfigLaunchCommand : RellRunConfigCommand("RellRunConfigLa
                     blockRunner = blockRunner,
                     moduleArgsSource = moduleArgsSource,
                     interpreterFactory = {
-                        Rt_InterpreterImpl.forCompilation(tChain.compiled.rrApp, tChain.compiled.compilationSysFns)
+                        RellApiInterpreterBackend.create(tChain.compiled.rrApp, tChain.compiled.compilationSysFns)
                     },
                 )
 

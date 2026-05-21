@@ -73,13 +73,15 @@ inline fun FlowContent.renderSection(
     div(classes = "section-body") { body() }
 }
 
-fun FlowContent.metric(label: String, value: String, unit: String, sub: String) = div(classes = "metric") {
+fun FlowContent.metric(label: String, value: String, unit: String, sub: String? = null) = div(classes = "metric") {
     div(classes = "metric-label") { +label }
     div(classes = "metric-value") {
         +value
         if (unit.isNotEmpty()) span(classes = "metric-unit") { +" $unit" }
     }
-    div(classes = "metric-sub") { +sub }
+    if (sub != null) {
+        div(classes = "metric-sub") { +sub }
+    }
 }
 
 inline fun FlowContent.sysinfoBlock(title: String, crossinline body: DL.() -> Unit) =

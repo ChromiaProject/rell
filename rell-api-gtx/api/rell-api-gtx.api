@@ -27,11 +27,12 @@ public final class net/postchain/rell/api/gtx/RellApiRunTests {
 
 public final class net/postchain/rell/api/gtx/RellApiRunTests$Config {
 	public static final field Companion Lnet/postchain/rell/api/gtx/RellApiRunTests$Config$Companion;
-	public fun <init> (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lnet/postchain/rell/api/base/RellCliEnv;ZLjava/lang/String;ZZLkotlinx/collections/immutable/ImmutableList;Lnet/postchain/rell/base/runtime/Rt_Printer;Lnet/postchain/rell/base/runtime/Rt_Printer;ZZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
+	public fun <init> (Lnet/postchain/rell/api/base/RellApiCompile$Config;Lnet/postchain/rell/api/base/RellCliEnv;ZLjava/lang/String;ZZLkotlinx/collections/immutable/ImmutableList;Lnet/postchain/rell/base/runtime/Rt_Printer;Lnet/postchain/rell/base/runtime/Rt_Printer;ZZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;)V
 	public final fun getActivateTestDependencies ()Z
 	public final fun getCliEnv ()Lnet/postchain/rell/api/base/RellCliEnv;
 	public final fun getCompileConfig ()Lnet/postchain/rell/api/base/RellApiCompile$Config;
 	public final fun getDatabaseUrl ()Ljava/lang/String;
+	public final fun getInterpreterFactory ()Lkotlin/jvm/functions/Function2;
 	public final fun getLogPrinter ()Lnet/postchain/rell/base/runtime/Rt_Printer;
 	public final fun getOnSqlExecutionFinished ()Lkotlin/jvm/functions/Function1;
 	public final fun getOnTestCaseFinished ()Lkotlin/jvm/functions/Function1;
@@ -55,6 +56,7 @@ public final class net/postchain/rell/api/gtx/RellApiRunTests$Config$Builder {
 	public final fun cliEnv (Lnet/postchain/rell/api/base/RellCliEnv;)Lnet/postchain/rell/api/gtx/RellApiRunTests$Config$Builder;
 	public final fun compileConfig (Lnet/postchain/rell/api/base/RellApiCompile$Config;)Lnet/postchain/rell/api/gtx/RellApiRunTests$Config$Builder;
 	public final fun databaseUrl (Ljava/lang/String;)Lnet/postchain/rell/api/gtx/RellApiRunTests$Config$Builder;
+	public final fun interpreterFactory (Lkotlin/jvm/functions/Function2;)Lnet/postchain/rell/api/gtx/RellApiRunTests$Config$Builder;
 	public final fun logPrinter (Lnet/postchain/rell/base/runtime/Rt_Printer;)Lnet/postchain/rell/api/gtx/RellApiRunTests$Config$Builder;
 	public final fun onSqlExecutionFinished (Lkotlin/jvm/functions/Function1;)Lnet/postchain/rell/api/gtx/RellApiRunTests$Config$Builder;
 	public final fun onTestCaseFinished (Lkotlin/jvm/functions/Function1;)Lnet/postchain/rell/api/gtx/RellApiRunTests$Config$Builder;

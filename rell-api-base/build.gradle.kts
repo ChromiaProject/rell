@@ -27,6 +27,11 @@ artifacts {
 dependencies {
     api(projects.rellBase)
 
+    // Experimental Truffle execution backend. Kept off the compile classpath (selected reflectively
+    // by RellApiInterpreterBackend); `runtimeOnly` puts it on the runtime classpath of every API
+    // consumer, so the `-Drell.execution.backend=truffle` dev switch works without consumer changes.
+    runtimeOnly(projects.rellBase.runtimeTruffle)
+
     testImplementation(libs.junit.jupiter)
     testImplementation(kotlin("test-junit5"))
     testImplementation(libs.log4j.slf4j2.impl)

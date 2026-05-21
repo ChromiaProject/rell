@@ -86,6 +86,12 @@ public final class net/postchain/rell/api/base/RellApiCompile$Config$Companion {
 	public final fun getDEFAULT ()Lnet/postchain/rell/api/base/RellApiCompile$Config;
 }
 
+public final class net/postchain/rell/api/base/RellApiInterpreterBackend {
+	public static final field INSTANCE Lnet/postchain/rell/api/base/RellApiInterpreterBackend;
+	public final fun create (Lnet/postchain/rell/base/model/rr/RR_App;Ljava/util/Map;)Lnet/postchain/rell/base/runtime/Rt_Interpreter;
+	public final fun getDEFAULT ()Lkotlin/jvm/functions/Function2;
+}
+
 public final class net/postchain/rell/api/base/RellApiTokenizer {
 	public static final field INSTANCE Lnet/postchain/rell/api/base/RellApiTokenizer;
 	public final fun isBigInteger (Ljava/lang/String;Z)Z

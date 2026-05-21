@@ -152,6 +152,7 @@ class Tf_Backend(
          * downcast to [R_SysFunction]. Callers should use this rather than the raw constructor
          * so meta-body closure captures don't leak across unrelated compilations.
          */
+        @JvmStatic
         fun forCompilation(rrApp: RR_App, compilationSysFns: Map<String, Any>): Tf_Backend {
             val sysFnMap = Tf_Unchecked.cast<Map<String, R_SysFunction>>(compilationSysFns)
             return Tf_Backend(rrApp, Rt_StdlibEnv(sysFnMap.toImmMap()))

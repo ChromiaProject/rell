@@ -19,7 +19,6 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.model.rr.RR_FunctionDefinition
 import net.postchain.rell.base.runtime.Rt_Interpreter
-import net.postchain.rell.base.runtime.Rt_InterpreterImpl
 import net.postchain.rell.base.runtime.Rt_RellVersion
 import net.postchain.rell.base.utils.*
 import java.nio.file.Path
@@ -135,7 +134,7 @@ class RellCompiledApp(
      */
     val compilationSysFns: Map<String, Any> = emptyMap(),
 ) {
-    fun createInterpreter(): Rt_Interpreter = Rt_InterpreterImpl.forCompilation(rrApp, compilationSysFns)
+    fun createInterpreter(): Rt_Interpreter = RellApiInterpreterBackend.create(rrApp, compilationSysFns)
 
     fun getRRTestFunctions(moduleName: ModuleName, matcher: UnitTestMatcher): List<RR_FunctionDefinition> {
         val rrModule = rrApp.module(moduleName) ?: return emptyList()

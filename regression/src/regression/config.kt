@@ -38,6 +38,13 @@ data class ProjectSpec(
     // and originals-dip's chromia.yml still has `dip-whitelist`. The patches re-apply on every
     // compile (clones get git-reset on the next clone phase, so they don't persist).
     val patches: List<PatchSpec> = emptyList(),
+    /**
+     * Optional per-project override of the global per-step timeout (default: 30 min, see
+     * `compile.kt#DEFAULT_PER_PROJECT_TIMEOUT`). Applies to every chr invocation in [commands],
+     * not just `test`. Set higher for projects whose suites legitimately exceed the default cap
+     * on this hardware (e.g. mna-blockchain: ~36 min for 564 tests at avg 3.7s/test).
+     */
+    val timeoutMinutes: Int? = null,
     val expectedFailure: Boolean = false,
     val notes: String = "",
     // Populated by loadProjects from the source file's basename — never read from JSON.
@@ -61,6 +68,22 @@ enum class Status {
     EXPECTED_FAIL,  // chr non-zero, expectedFailure:true — historical / FT3-era projects we keep listed
 }
 
+/**
+ * Rell execution backend. The local Rell `runtime-truffle` artefact rides along on chr's
+ * classpath as a `runtimeOnly` dep of `rell-api-base`, so flipping backend at the regression
+ * boundary is a JVM-arg toggle (`JAVA_ARGS=-Drell.execution.backend=truffle`) — no chr rebuild.
+ *
+ * Compilation (`chr install` / `chr build`) is identical between backends; only the test
+ * phase (`chr test`) actually exercises the runtime. The regression sweep still runs the
+ * full pipeline twice for symmetry and so each [CompileResult] is a self-contained record.
+ */
+enum class ExecutionBackend {
+    INTERPRETER,
+    TRUFFLE;
+
+    fun label(): String = name.lowercase().replaceFirstChar(Char::uppercase)
+}
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class CompileResult(
     val name: String,
@@ -79,6 +102,8 @@ data class CompileResult(
     val timedOut: Boolean = false,
     val errorSummary: String? = null,
     val logRelPath: String? = null,
+    /** Backend the test phase ran under. Null for legacy results.json predating the dual-backend sweep. */
+    val executionBackend: ExecutionBackend? = null,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

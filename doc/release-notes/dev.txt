@@ -157,7 +157,7 @@ This is a breaking change for the IntelliJ plugin and any other consumer that bu
 
 A second runtime backend sits alongside the tree-walking interpreter. Both consume the same RR_App, the same
 standard library, and the same database connection; they differ only in dispatch. The Truffle backend translates each user function/operation/query body to
-a Truffle AST and lets GraalVM's partial evaluator specialise hot paths. Sub-trees that don't yet have hand-written
+a Truffle AST and lets GraalVM's partial evaluator specialize hot paths. Sub-trees that don't yet have hand-written
 Truffle nodes fall through to the tree-walker, so semantics are identical from day one.
 
 The tree-walker remains the only supported backend for deployed applications. The Truffle backend is exercised
