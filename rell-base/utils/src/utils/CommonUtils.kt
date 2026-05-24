@@ -12,10 +12,32 @@ import kotlin.math.min
 object CommonUtils {
     val IS_UNIT_TEST: Boolean = Thread.currentThread().stackTrace.any { it.className.startsWith("org.junit.") }
 
-    private val HEX: HexFormat = HexFormat.of()
+    // java.util.HexFormat (JDK 17+) is not emulated by TeaVM's classlib — touching it here
+    // (via the static initialiser) would break reachability for the whole utils package on
+    // the browser build. Inlined hex codecs do the same job and are dependency-free.
+    private const val HEX_DIGITS = "0123456789abcdef"
 
-    fun bytesToHex(bytes: ByteArray): String = HEX.formatHex(bytes)
-    fun hexToBytes(hex: String): ByteArray = HEX.parseHex(hex)
+    fun bytesToHex(bytes: ByteArray): String {
+        val out = CharArray(bytes.size * 2)
+        for (i in bytes.indices) {
+            val b = bytes[i].toInt() and 0xFF
+            out[i * 2] = HEX_DIGITS[b ushr 4]
+            out[i * 2 + 1] = HEX_DIGITS[b and 0xF]
+        }
+        return String(out)
+    }
+
+    fun hexToBytes(hex: String): ByteArray {
+        require(hex.length % 2 == 0) { "Invalid hex length: ${hex.length}" }
+        val out = ByteArray(hex.length / 2)
+        for (i in out.indices) {
+            val hi = Character.digit(hex[i * 2], 16)
+            val lo = Character.digit(hex[i * 2 + 1], 16)
+            require(hi >= 0 && lo >= 0) { "Invalid hex character at index ${i * 2}" }
+            out[i] = ((hi shl 4) or lo).toByte()
+        }
+        return out
+    }
 
     fun <T> split(lst: MutableList<T>, partSize: Int): List<MutableList<T>> {
         val s = lst.size

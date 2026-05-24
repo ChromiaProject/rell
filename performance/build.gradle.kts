@@ -172,6 +172,14 @@ val smokeStruct by tasks.registering(JavaExec::class) {
     mainClass = "net.postchain.rell.performance.benchmarks.StructBenchmarkKt"
 }
 
+/** Same as `smokeFt4`, but for the Advent of Code 2024 workloads in AocBenchmark. */
+val smokeAoc by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Run each AocBenchmark workload once on the interpreter and kotlin backends."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass = "net.postchain.rell.performance.benchmarks.AocBenchmarkKt"
+}
+
 val benchmarkHtmlReport by tasks.registering(JavaExec::class) {
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
     description = "Render the latest kotlinx-benchmark JSON result as HTML."

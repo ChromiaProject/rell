@@ -17,7 +17,7 @@ class DocComment(
                 tag.value.mapToImmList { item -> ItemKey(tag.key, item.key) to item }
             }
             .toImmMultimap()
-            .mapValuesToImmMap { it.value.toImmList() }
+            .mapValuesToImmMap { it.value }
     }
 
     init {

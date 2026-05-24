@@ -18,6 +18,10 @@ import kotlin.system.exitProcess
 private data class JmhMetric(
     val score: Double = 0.0,
     val scoreError: Double = 0.0,
+    // 95% CI [lo, hi] reported by JMH for AverageTime mode. Used by the AocBenchmark forest
+    // plot, which renders CI whiskers rather than bars + ±err (some AoC rows have a CI several
+    // times wider than the mean — a bar tip hides that, a whisker exposes it).
+    val scoreConfidence: List<Double> = emptyList(),
     val scoreUnit: String = "",
 )
 
@@ -45,22 +49,34 @@ private data class SampleInfo(
     val title: String,
     val description: String,
     val sources: List<SampleSource>,
+    // GitLab URL (with `#L<line>` anchor) pointing at the in-repo query this sample drives.
+    // The URL targets the `dev` branch, so it becomes valid as soon as the bench file lands
+    // there. Rendered as a hyperlink on the sample title in the result table.
+    val benchUrl: String? = null,
 )
 
 private const val FT4_BLOB = "https://gitlab.com/chromaway/ft4-lib/-/blob/development/rell/src/lib/ft4"
 private const val RELL_BENCH_BLOB = "$RELL_BLOB/performance/src/main/resources"
+
+// Line numbers of the AoC bench queries — kept as a table so they round-trip cleanly with
+// `grep -nE 'query bench_'` if the file gets reshuffled.
+private val AOC_QUERY_LINE = mapOf(
+    "day1a" to 58, "day1b" to 69,
+    "day2a" to 131, "day2b" to 142,
+    "day3a" to 187, "day3b" to 197,
+    "day4a" to 276, "day4b" to 287,
+    "day5a" to 390, "day5b" to 401,
+    "day6a" to 535, "day6b" to 546,
+    "day7a" to 660, "day7b" to 671,
+)
 
 /** Keys must match the JMH `sample` parameter values in the JSON. */
 private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
     "collatz_primes_fib" to SampleInfo(
         title = "Collatz · primality · Fibonacci",
         description = "Sums Collatz sequence lengths for every prime in [2, 100_000], then adds the 20th Fibonacci number.",
-        sources = listOf(
-            SampleSource(
-                "rell · synthetic_bench/main.rell",
-                "$RELL_BENCH_BLOB/synthetic_bench/main.rell",
-            ),
-        ),
+        sources = emptyList(),
+        benchUrl = "$RELL_BENCH_BLOB/synthetic_bench/main.rell#L34",
     ),
     "gtv_text" to SampleInfo(
         title = "convert_gtv_to_text",
@@ -68,6 +84,7 @@ private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
         sources = listOf(
             SampleSource("ft4-lib · utils/utils.rell", "$FT4_BLOB/utils/utils.rell"),
         ),
+        benchUrl = "$RELL_BENCH_BLOB/ft4_bench/main.rell#L169",
     ),
     "rule_serde" to SampleInfo(
         title = "auth descriptor rule serde",
@@ -82,6 +99,7 @@ private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
                 "$FT4_BLOB/core/accounts/auth_descriptor_rule_expression.rell",
             ),
         ),
+        benchUrl = "$RELL_BENCH_BLOB/ft4_bench/main.rell#L188",
     ),
     "rule_eval" to SampleInfo(
         title = "auth descriptor rule evaluation",
@@ -92,34 +110,31 @@ private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
                 "$FT4_BLOB/core/accounts/auth_descriptor_rule_validation.rell",
             ),
         ),
+        benchUrl = "$RELL_BENCH_BLOB/ft4_bench/main.rell#L211",
     ),
     "decimal_pow" to SampleInfo(
         title = "decimal power · ln · exp",
         description = "200 calls × 4 (base, exponent) shapes of power: integer exponent, non-integer exponent, fractional base near 1, and negative exponent. Note: ≳60% of wall time is spent in JDK BigInteger / BigDecimal arithmetic — small Rell-runtime wins translate to small ms/op deltas here. Distilled from chromaway/mna-blockchain (closed source).",
-        sources = listOf(
-            SampleSource("rell · mna_bench/main.rell", "$RELL_BENCH_BLOB/mna_bench/main.rell"),
-        ),
+        sources = emptyList(),
+        benchUrl = "$RELL_BENCH_BLOB/mna_bench/main.rell#L314",
     ),
     "perlin_noise" to SampleInfo(
         title = "8-octave 2D Simplex noise",
         description = "20 calls of sum_octave_2d on a 5×5 grid (500 simplex_2d samples per rep) with the canonical permutation tables. Note: ~40-50% of wall time is JDK BigDecimal / BigInteger arithmetic; the truffle backend's int128/long-scale decimal leaves shave a chunk off when values stay in range. Distilled from chromaway/mna-blockchain (closed source).",
-        sources = listOf(
-            SampleSource("rell · mna_bench/main.rell", "$RELL_BENCH_BLOB/mna_bench/main.rell"),
-        ),
+        sources = emptyList(),
+        benchUrl = "$RELL_BENCH_BLOB/mna_bench/main.rell#L340",
     ),
     "locations" to SampleInfo(
         title = "rotate · area_for_locations",
         description = "200 reps × 4 cardinal rotations of a 64-point list<location>; each rotated copy is collected into a set<location> and reduced via area_for_locations. Distilled from chromaway/mna-blockchain (closed source).",
-        sources = listOf(
-            SampleSource("rell · mna_bench/main.rell", "$RELL_BENCH_BLOB/mna_bench/main.rell"),
-        ),
+        sources = emptyList(),
+        benchUrl = "$RELL_BENCH_BLOB/mna_bench/main.rell#L389",
     ),
     "dto_mapping" to SampleInfo(
         title = "nested DTO mapping",
         description = "50 reps × 16 quests × (3 goals × 4 assets) × 4 rewards — triple-nested struct construction in a tight loop, mirroring the quests/community_quests get_*_dto path. Distilled from chromaway/mna-blockchain (closed source).",
-        sources = listOf(
-            SampleSource("rell · struct_bench/main.rell", "$RELL_BENCH_BLOB/struct_bench/main.rell"),
-        ),
+        sources = emptyList(),
+        benchUrl = "$RELL_BENCH_BLOB/struct_bench/main.rell#L149",
     ),
     "cursor_codec" to SampleInfo(
         title = "page_cursor codec · paged_result",
@@ -130,6 +145,7 @@ private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
                 "$FT4_BLOB/utils/pagination.rell",
             ),
         ),
+        benchUrl = "$RELL_BENCH_BLOB/struct_bench/main.rell#L235",
     ),
     "multi_sig" to SampleInfo(
         title = "multi-sig auth descriptor eval",
@@ -140,11 +156,52 @@ private val SAMPLE_INFO: Map<String, SampleInfo> = mapOf(
                 "$FT4_BLOB/core/accounts/auth_basic.rell",
             ),
         ),
+        benchUrl = "$RELL_BENCH_BLOB/struct_bench/main.rell#L336",
     ),
-)
+) + AOC_QUERY_LINE.mapValues { (key, line) ->
+    SampleInfo(
+        title = key,
+        description = "AoC 2024 — direct port of github.com/mikaelstaldal/AdventOfCode2024 day part.",
+        sources = emptyList(),
+        benchUrl = "$RELL_BENCH_BLOB/aoc_bench/main.rell#L$line",
+    )
+}
 
 private fun sampleInfo(sample: String): SampleInfo? = SAMPLE_INFO[sample]
 private fun sampleTitle(sample: String): String = sampleInfo(sample)?.title ?: sample
+
+/**
+ * Renders the sample-name cell in a result table: the title becomes a hyperlink to the bench
+ * query (when `benchUrl` is set), and any additional `sources` (e.g. ft4-lib functions under
+ * test) appear as a small inline list directly under it.
+ */
+private fun FlowContent.sampleNameCell(sample: String) {
+    val info = sampleInfo(sample)
+    val title = info?.title ?: sample
+    val href = info?.benchUrl
+    if (href != null) {
+        a(href = href, classes = "sample-link") {
+            attributes["target"] = "_blank"
+            attributes["rel"] = "noopener"
+            +title
+        }
+    } else {
+        +title
+    }
+    if (info?.sources?.isNotEmpty() == true) {
+        ul(classes = "sample-cell-sources") {
+            info.sources.forEach { src ->
+                li {
+                    a(href = src.url) {
+                        attributes["target"] = "_blank"
+                        attributes["rel"] = "noopener"
+                        +src.label
+                    }
+                }
+            }
+        }
+    }
+}
 
 private val METHOD_COLOR = mapOf(
     "antlr" to ACCENT_HEX,
@@ -153,8 +210,10 @@ private val METHOD_COLOR = mapOf(
     "runQuery" to ACCENT_HEX,
     "interpreter" to ACCENT_HEX,
     "truffle" to "#2E5E8A",
+    "kotlin" to "#1F6B4A",
     "runQuery[interpreter]" to ACCENT_HEX,
     "runQuery[truffle]" to "#2E5E8A",
+    "runQuery[kotlin]" to "#1F6B4A",
 )
 
 private val PALETTE = listOf(ACCENT_HEX, "#2E5E8A", "#1F6B4A", "#8A5E2E", "#5E2E8A", "#B07A1E")
@@ -262,7 +321,11 @@ private fun FlowContent.renderGroup(benchmarkClass: String, results: List<JmhRes
             results.firstOrNull { it.sample() == sample && variantOf(it) == variant }?.let { variant to it }
         }.toMap()
     }
-    renderResults(benchmarkClass, pivot, variants, results)
+    if (benchmarkClass == "AocBenchmark") {
+        renderAocResults(benchmarkClass, pivot, variants, results)
+    } else {
+        renderResults(benchmarkClass, pivot, variants, results)
+    }
 }
 
 private fun FlowContent.renderEnvironment(head: JmhResult) = renderSection("environment") {
@@ -334,19 +397,9 @@ private fun FlowContent.renderResults(
                         div(classes = "bars-panel-title") { +sampleTitle(sample) }
                         if (info != null) {
                             div(classes = "bars-panel-desc") { +info.description }
-                            if (info.sources.isNotEmpty()) {
-                                ul(classes = "bars-panel-sources") {
-                                    info.sources.forEach { src ->
-                                        li {
-                                            a(href = src.url) {
-                                                attributes["target"] = "_blank"
-                                                attributes["rel"] = "noopener"
-                                                +src.label
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            // Source links used to live here; they are now rendered in the
+                            // result table next to the sample name, where the deep-link is
+                            // closer to the row it belongs to.
                         }
                         div(classes = "bars-panel-svg") { unsafe { +svg } }
                     }
@@ -385,7 +438,7 @@ private fun FlowContent.renderResults(
                         val winner = best?.first?.takeIf { positiveScores.size > 1 }
                         val bestScore = best?.second?.takeIf { positiveScores.size > 1 }
                         tr {
-                            td(classes = "name") { +sampleTitle(sample) }
+                            td(classes = "name") { sampleNameCell(sample) }
                             methods.forEach { method ->
                                 val r = byMethod[method]
                                 val cls = if (method == winner) "num winner" else "num"
@@ -412,6 +465,269 @@ private fun FlowContent.renderResults(
             }
         }
     }
+}
+
+/**
+ * AocBenchmark renderer: a slopegraph (three engine columns, 14 sample lines, shared log10
+ * y-axis) plus a headline strip showing median slowdown vs the Kotlin baseline.
+ *
+ * Why a slopegraph and not the per-sample forest plot: the 14 AoC samples are independent
+ * replications of the same comparison (kotlin vs truffle vs interpreter), so day is a
+ * nuisance variable. The slopegraph marginalizes it — every day becomes one faint line in a
+ * bundle, and the *consistency* of the ×22 / ×44 ratio reads as a tight fan of near-parallel
+ * lines. The bold median path running through the bundle anchors the headline ratio
+ * visually; outliers (samples whose ratio diverges from the median) show up as lines that
+ * cross or fan away.
+ */
+private fun FlowContent.renderAocResults(
+    benchmarkClass: String,
+    pivot: Map<String, Map<String, JmhResult>>,
+    methods: List<String>,
+    allResults: List<JmhResult>,
+) {
+    val unit = pivot.values.flatMap { it.values }
+        .map { it.primaryMetric.scoreUnit }
+        .firstOrNull { it.isNotBlank() }
+        .orEmpty()
+
+    val head = allResults.first()
+    val timing = "warmup ${head.warmupIterations}× ${head.warmupTime ?: "—"} · " +
+        "measurement ${head.measurementIterations}× ${head.measurementTime ?: "—"}"
+    val strap = buildList {
+        if (unit.isNotEmpty()) add("$unit · log y · lower is better · day marginalized")
+        add(timing)
+    }.joinToString("  ·  ")
+
+    // Fastest-first ordering. `methods` here is the variant axis (backend names) from the
+    // pivot; intersecting with this preserves "kotlin / truffle / interpreter" only if the
+    // data actually contains them.
+    val ordered = listOf("kotlin", "truffle", "interpreter").filter { it in methods }
+    val samples = pivot.keys.toList()
+
+    // Global log-y range across every score, snapped to whole decades. CIs are intentionally
+    // ignored: the slopegraph hides day-level uncertainty by design — the question is "is the
+    // ×22 / ×44 ratio consistent across days", not "how wide is each day's CI".
+    val ys = pivot.values.flatMap { it.values.map { r -> r.primaryMetric.score } }
+        .filter { it.isFinite() && it > 0.0 }
+    val yMinLog = if (ys.isEmpty()) -3.0 else kotlin.math.floor(kotlin.math.log10(ys.min()))
+    val yMaxLog = if (ys.isEmpty()) 2.0 else kotlin.math.ceil(kotlin.math.log10(ys.max()))
+
+    // Median ratio vs kotlin, per non-kotlin engine. Median of *ratios*, not ratio of medians:
+    // each sample's per-engine slowdown contributes one number to the median, which makes the
+    // headline robust to a single outlier day.
+    val kotlinByS: Map<String, Double> = pivot.mapValues { (_, byM) ->
+        byM["kotlin"]?.primaryMetric?.score ?: Double.NaN
+    }
+    val medianRatio: Map<String, Double?> = ordered.associateWith { backend ->
+        if (backend == "kotlin") null
+        else {
+            val ratios = samples.mapNotNull { s ->
+                val k = kotlinByS[s] ?: return@mapNotNull null
+                val v = pivot[s]?.get(backend)?.primaryMetric?.score ?: return@mapNotNull null
+                if (k > 0 && v > 0) v / k else null
+            }.sorted()
+            if (ratios.isEmpty()) null
+            else if (ratios.size % 2 == 1) ratios[ratios.size / 2]
+            else (ratios[ratios.size / 2 - 1] + ratios[ratios.size / 2]) / 2.0
+        }
+    }
+
+    // Median score per engine across the 14 samples — the path of the bold median line drawn
+    // through the bundle. Marginalizes day, which is the entire point.
+    val medianScoreByBackend: Map<String, Double?> = ordered.associateWith { backend ->
+        val scores = samples.mapNotNull { s ->
+            pivot[s]?.get(backend)?.primaryMetric?.score?.takeIf { it.isFinite() && it > 0 }
+        }.sorted()
+        if (scores.isEmpty()) null
+        else if (scores.size % 2 == 1) scores[scores.size / 2]
+        else (scores[scores.size / 2 - 1] + scores[scores.size / 2]) / 2.0
+    }
+
+    renderSection(benchmarkClass.lowercase(), strap) {
+        // Headline strip: one cell per engine. Kotlin is "baseline"; the others get the
+        // median slowdown ratio, which is exactly the question the user keeps asking.
+        div(classes = "aoc-headline") {
+            ordered.forEach { backend ->
+                val ratio = medianRatio[backend]
+                div(classes = "aoc-headline-cell") {
+                    span(classes = "aoc-headline-swatch") {
+                        attributes["style"] = "background:${colorFor(backend, ordered.indexOf(backend))}"
+                    }
+                    span(classes = "aoc-headline-engine") { +backend }
+                    if (ratio != null) {
+                        span(classes = "aoc-headline-ratio") { +"×${formatRatio(ratio)}" }
+                        span(classes = "aoc-headline-note") { +"slower than kotlin (median)" }
+                    } else {
+                        span(classes = "aoc-headline-note") { +"baseline" }
+                    }
+                }
+            }
+        }
+        // Single slopegraph: 14 faint lines (one per sample) + one bold median path.
+        div(classes = "aoc-slope") {
+            unsafe { +aocSlopegraphSvg(pivot, samples, ordered, yMinLog, yMaxLog, medianScoreByBackend) }
+        }
+        // Reuse the existing table layout below the plot — different question (exact numbers,
+        // per-row winner) so it's worth keeping alongside the visual.
+        div(classes = "table-scroll") {
+            table(classes = "results") {
+                thead {
+                    tr {
+                        th { +"Sample" }
+                        ordered.forEach { method ->
+                            th(classes = "num") {
+                                +method
+                                if (unit.isNotEmpty()) span(classes = "unit") { +" $unit" }
+                            }
+                        }
+                    }
+                }
+                tbody {
+                    pivot.forEach { (sample, byMethod) ->
+                        val positiveScores = ordered.mapNotNull { m ->
+                            byMethod[m]?.primaryMetric?.score?.takeIf { it > 0 }?.let { m to it }
+                        }
+                        val best = positiveScores.minByOrNull { it.second }
+                        val winner = best?.first?.takeIf { positiveScores.size > 1 }
+                        val bestScore = best?.second?.takeIf { positiveScores.size > 1 }
+                        tr {
+                            td(classes = "name") { sampleNameCell(sample) }
+                            ordered.forEach { method ->
+                                val r = byMethod[method]
+                                val cls = if (method == winner) "num winner" else "num"
+                                td(classes = cls) {
+                                    if (r != null) {
+                                        val m = r.primaryMetric
+                                        +formatScoreBench(m.score)
+                                        span(classes = "err") { +" ± ${formatScoreBench(m.scoreError)}" }
+                                        if (bestScore != null && winner != null && method != winner && m.score > 0) {
+                                            span(classes = "ratio-note") {
+                                                +" "
+                                                span(classes = "ratio") { +"×%.1f".formatRoot(m.score / bestScore) }
+                                                +" $winner"
+                                            }
+                                        }
+                                    } else {
+                                        +"—"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun formatRatio(r: Double): String = when {
+    r >= 100 -> "%.0f".formatRoot(r)
+    r >= 10 -> "%.0f".formatRoot(r)
+    else -> "%.1f".formatRoot(r)
+}
+
+private fun aocSlopegraphSvg(
+    pivot: Map<String, Map<String, JmhResult>>,
+    samples: List<String>,
+    backends: List<String>,
+    yMinLog: Double,
+    yMaxLog: Double,
+    medianByBackend: Map<String, Double?>,
+): String {
+    val padL = 64
+    val padR = 16
+    val padT = 36
+    val padB = 28
+    val plotW = 540
+    val plotH = 360
+    val width = padL + plotW + padR
+    val height = padT + plotH + padB
+    val ySpan = (yMaxLog - yMinLog).coerceAtLeast(1e-9)
+
+    // Three columns evenly spaced inside the plot area. If we ever had >3 backends this still
+    // works; if we had 2 it splits the plot in half. The single-column degenerate case is
+    // handled by clamping the divisor.
+    val n = backends.size
+    val colX = backends.mapIndexed { i, _ ->
+        if (n == 1) padL + plotW / 2.0
+        else padL + plotW.toDouble() * i / (n - 1)
+    }
+
+    // Larger y → larger time → lower on screen ("lower is better" → top).
+    fun yFor(v: Double): Double {
+        val L = kotlin.math.log10(v.coerceAtLeast(1e-12)).coerceIn(yMinLog, yMaxLog)
+        return padT + plotH * (yMaxLog - L) / ySpan
+    }
+
+    val sb = StringBuilder()
+    sb.append("""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 $width $height" """)
+    sb.append("""width="$width" height="$height" role="img">""")
+
+    // Y-axis decade gridlines + tick labels (1µs .. 100ms).
+    var dec = yMinLog.toInt()
+    while (dec.toDouble() <= yMaxLog + 1e-9) {
+        val y = yFor(Math.pow(10.0, dec.toDouble()))
+        sb.append("""<line class="grid" x1="$padL" y1="${"%.2f".formatRoot(y)}" x2="${padL + plotW}" y2="${"%.2f".formatRoot(y)}"/>""")
+        sb.append("""<text class="tick" x="${padL - 8}" y="${"%.2f".formatRoot(y + 3)}" text-anchor="end">${decadeLabel(dec)}</text>""")
+        dec += 1
+    }
+
+    // Vertical column rules + column labels.
+    backends.forEachIndexed { i, backend ->
+        val x = colX[i]
+        val color = colorFor(backend, i)
+        sb.append("""<line class="aoc-col" x1="${"%.2f".formatRoot(x)}" y1="$padT" x2="${"%.2f".formatRoot(x)}" y2="${padT + plotH}"/>""")
+        sb.append("""<text class="aoc-col-label" x="${"%.2f".formatRoot(x)}" y="${padT - 16}" text-anchor="middle" fill="$color">${backend.xmlEscapeBench()}</text>""")
+    }
+
+    // 14 faint sample lines. One polyline per sample, threaded through the engine columns in
+    // ordered order. Per-sample point glyphs are intentionally small so the bundle reads as a
+    // single fan rather than three rows of dots.
+    samples.forEach { sample ->
+        val pts = backends.mapIndexedNotNull { i, b ->
+            val v = pivot[sample]?.get(b)?.primaryMetric?.score?.takeIf { it.isFinite() && it > 0 }
+            v?.let { Pair(colX[i], yFor(it)) }
+        }
+        if (pts.size < 2) return@forEach
+        val ptsStr = pts.joinToString(" ") { (x, y) -> "${"%.2f".formatRoot(x)},${"%.2f".formatRoot(y)}" }
+        sb.append("""<polyline class="aoc-slope-line" points="$ptsStr"/>""")
+        pts.forEach { (x, y) ->
+            sb.append("""<circle class="aoc-slope-pt" cx="${"%.2f".formatRoot(x)}" cy="${"%.2f".formatRoot(y)}" r="2"/>""")
+        }
+    }
+
+    // Median path: bold line threading through median score per engine. This is what makes
+    // the headline ratio (×22 / ×44) legible inside the bundle.
+    val medianPts = backends.mapIndexedNotNull { i, b ->
+        medianByBackend[b]?.takeIf { it.isFinite() && it > 0 }?.let { Pair(colX[i], yFor(it)) }
+    }
+    if (medianPts.size >= 2) {
+        val ptsStr = medianPts.joinToString(" ") { (x, y) -> "${"%.2f".formatRoot(x)},${"%.2f".formatRoot(y)}" }
+        sb.append("""<polyline class="aoc-median-line" points="$ptsStr"/>""")
+        medianPts.forEach { (x, y) ->
+            sb.append("""<circle class="aoc-median-pt" cx="${"%.2f".formatRoot(x)}" cy="${"%.2f".formatRoot(y)}" r="4"/>""")
+        }
+    }
+    // Legend tag for the median path, anchored at the rightmost median point.
+    if (medianPts.isNotEmpty()) {
+        val (lastX, lastY) = medianPts.last()
+        sb.append("""<text class="aoc-median-label" x="${"%.2f".formatRoot(lastX + 8)}" y="${"%.2f".formatRoot(lastY + 3)}">median</text>""")
+    }
+
+    sb.append("</svg>")
+    return sb.toString()
+}
+
+private fun decadeLabel(dec: Int): String = when (dec) {
+    -3 -> "1µs"
+    -2 -> "10µs"
+    -1 -> "100µs"
+    0 -> "1ms"
+    1 -> "10ms"
+    2 -> "100ms"
+    3 -> "1s"
+    4 -> "10s"
+    else -> "10^$dec"
 }
 
 private fun FlowContent.renderMethodology(head: JmhResult) = renderSection("methodology") {
@@ -558,14 +874,23 @@ private val EXTRA_CSS = """
   font-family: var(--sans); font-size: .76rem; line-height: 1.45;
   color: var(--ink-soft); padding: 0 .25rem .5rem; margin-bottom: .15rem;
 }
-.bars-panel-sources {
-  list-style: none; padding: 0 .25rem .55rem; margin: 0 0 .25rem;
-  border-bottom: 1px dashed var(--rule-hair);
+.bars-panel-svg svg { display: block; max-width: 100%; height: auto; }
+
+td.name .sample-link {
+  color: var(--ink); font-weight: 600;
+  /* Solid accent underline so bold sample names still read as links. The dashed --rule
+     variant blended into the surface at this font weight. */
+  border-bottom: 1px solid var(--accent);
+}
+td.name .sample-link:hover {
+  color: var(--accent); border-bottom-width: 2px;
+}
+ul.sample-cell-sources {
+  list-style: none; padding: 0; margin: .15rem 0 0;
   font-family: var(--mono); font-size: .68rem;
 }
-.bars-panel-sources li { margin: .12rem 0; overflow-wrap: anywhere; }
-.bars-panel-sources a { color: var(--accent); }
-.bars-panel-svg svg { display: block; max-width: 100%; height: auto; }
+ul.sample-cell-sources li { margin: .08rem 0; overflow-wrap: anywhere; }
+ul.sample-cell-sources a { color: var(--accent); }
 .grid { stroke: var(--rule-hair); stroke-width: 1; }
 .baseline { stroke: var(--ink); stroke-width: 1; }
 .tick { font-family: var(--mono); font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
@@ -573,6 +898,44 @@ private val EXTRA_CSS = """
 .group-label { font-family: var(--mono); font-size: 11px; fill: var(--ink-soft); font-variant-numeric: tabular-nums; }
 .bar-label { font-family: var(--mono); font-size: 11px; fill: var(--ink); font-variant-numeric: tabular-nums; }
 .err-line { stroke: var(--ink); stroke-width: 1; }
+
+.aoc-headline {
+  display: flex; flex-wrap: wrap; gap: 1.2rem;
+  margin: -.4rem 0 .8rem; padding: .6rem .9rem;
+  background: var(--surface); border: 1px solid var(--rule);
+  font-family: var(--mono); font-size: .78rem;
+}
+.aoc-headline-cell { display: inline-flex; align-items: baseline; gap: .4rem; }
+.aoc-headline-swatch { display: inline-block; width: 10px; height: 10px; align-self: center; flex-shrink: 0; }
+.aoc-headline-engine { color: var(--ink); font-weight: 600; letter-spacing: .04em; }
+.aoc-headline-ratio { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+.aoc-headline-note { color: var(--muted); letter-spacing: .04em; }
+
+.aoc-slope {
+  background: var(--surface); border: 1px solid var(--rule);
+  padding: .9rem 1rem; margin-bottom: 1.2rem;
+}
+.aoc-slope svg { display: block; max-width: 100%; height: auto; }
+.aoc-slope .aoc-col { stroke: var(--rule); stroke-width: 1; }
+.aoc-slope .aoc-col-label {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  text-transform: lowercase; letter-spacing: .04em;
+}
+/* Per-sample lines: light enough to read as a bundle, dark enough that the count of 14 is
+   visible. Day is a nuisance variable — none gets a colour. */
+.aoc-slope .aoc-slope-line {
+  fill: none; stroke: var(--ink-soft); stroke-width: 1; opacity: .28;
+}
+.aoc-slope .aoc-slope-pt { fill: var(--ink-soft); opacity: .55; }
+/* Median path: the visual subject. Solid ink, thick enough to read through the bundle. */
+.aoc-slope .aoc-median-line {
+  fill: none; stroke: var(--accent); stroke-width: 2.4;
+}
+.aoc-slope .aoc-median-pt { fill: var(--accent); }
+.aoc-slope .aoc-median-label {
+  font-family: var(--mono); font-size: 11px; fill: var(--accent);
+  font-variant-numeric: tabular-nums; letter-spacing: .04em;
+}
 
 .legend { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-top: -.5rem; margin-bottom: 1.2rem; font-family: var(--mono); font-size: .72rem; color: var(--ink-soft); }
 .legend-item { display: inline-flex; align-items: center; gap: .5rem; }

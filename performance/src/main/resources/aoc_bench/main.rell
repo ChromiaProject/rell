@@ -1,0 +1,680 @@
+// Advent of Code 2024 microbenchmarks.
+//
+// Ported directly from https://github.com/mikaelstaldal/AdventOfCode2024
+// (one .rell file per day). The original sources `print()` the answer at the
+// top level; here each part is wrapped in a query that returns the answer so
+// JMH can drive it deterministically. The example inputs from the puzzle are
+// embedded as top-level `val`s so a single benchmark call is hermetic.
+//
+// Helpers are prefixed per day to avoid the name collisions that arise when
+// merging all seven day-files into one module.
+
+// ============================================================================
+// Day 1
+// ============================================================================
+
+function day1_parse_input(input: list<text>) {
+    val left = list<integer>();
+    val right = list<integer>();
+    for (line in input) {
+        left.add(integer(line.sub(0, line.index_of(" "))));
+        right.add(integer(line.sub(line.last_index_of(" ") + 1)));
+    }
+    return (left, right);
+}
+
+function day1a(input: list<text>): integer {
+    val (left, right) = day1_parse_input(input);
+    left.sort();
+    right.sort();
+    var sum = 0;
+    for (i in range(input.size())) {
+        sum += abs(left[i] - right[i]);
+    }
+    return sum;
+}
+
+function day1b(input: list<text>): integer {
+    val (left, right) = day1_parse_input(input);
+    var sum = 0;
+    for (n in left) {
+        val times = right @ { $ == n } ( @sum 1 );
+        sum += n * times;
+    }
+    return sum;
+}
+
+// Top-level `val`s of `list<text>` are forbidden by Rell (`def:const:bad_type:mutable`),
+// so each day's input is a function that produces the list, captured once per bench call.
+function day1_input(): list<text> = [
+    "3   4",
+    "4   3",
+    "2   5",
+    "1   3",
+    "3   9",
+    "3   3",
+];
+
+query bench_day1a(reps: integer): integer {
+    val input = day1_input();
+    var acc = 0;
+    var i = 0;
+    while (i < reps) {
+        acc += day1a(input);
+        i += 1;
+    }
+    return acc;
+}
+
+query bench_day1b(reps: integer): integer {
+    val input = day1_input();
+    var acc = 0;
+    var i = 0;
+    while (i < reps) {
+        acc += day1b(input);
+        i += 1;
+    }
+    return acc;
+}
+
+// ============================================================================
+// Day 2
+// ============================================================================
+
+function day2_parse_input(input: list<text>): list<list<integer>> =
+    input @* { } ( $.split(" ") @* {} (integer($)) );
+
+function day2_is_safe(report: list<integer>): boolean {
+    val increasing = report[1] > report[0];
+    for (i in range(1, report.size())) {
+        if (
+            (increasing and (report[i] <= report[i-1]))
+            or
+            (not increasing and (report[i] >= report[i-1]))
+            or
+            (abs(report[i] - report[i-1]) > 3)
+        )
+            return false;
+    }
+    return true;
+}
+
+function day2a(input: list<text>): integer {
+    val reports = day2_parse_input(input);
+    return reports @ { day2_is_safe($) } ( @sum 1 );
+}
+
+function day2_is_safe_with_dampener(report: list<integer>): boolean {
+    if (day2_is_safe(report)) return true;
+    for (i in range(report.size())) {
+        val r = list(report);
+        r.remove_at(i);
+        if (day2_is_safe(r)) return true;
+    }
+    return false;
+}
+
+function day2b(input: list<text>): integer {
+    val reports = day2_parse_input(input);
+    return reports @ { day2_is_safe_with_dampener($) } ( @sum 1 );
+}
+
+function day2_input(): list<text> = [
+    "7 6 4 2 1",
+    "1 2 7 8 9",
+    "9 7 6 2 1",
+    "1 3 2 4 5",
+    "8 6 4 4 1",
+    "1 3 6 7 9",
+];
+
+query bench_day2a(reps: integer): integer {
+    val input = day2_input();
+    var acc = 0;
+    var i = 0;
+    while (i < reps) {
+        acc += day2a(input);
+        i += 1;
+    }
+    return acc;
+}
+
+query bench_day2b(reps: integer): integer {
+    val input = day2_input();
+    var acc = 0;
+    var i = 0;
+    while (i < reps) {
+        acc += day2b(input);
+        i += 1;
+    }
+    return acc;
+}
+
+// ============================================================================
+// Day 3
+// ============================================================================
+
+function day3a(input: text): integer {
+    var sum = 0;
+    for (i in range(input.size())) {
+        if (input.sub(i).matches("mul\\([0-9]+,[0-9]+\\).*")) {
+            val comma = input.index_of(",", i + 4);
+            sum += integer(input.sub(i + 4, comma)) * integer(input.sub(comma + 1, input.index_of(")", comma)));
+        }
+    }
+    return sum;
+}
+
+function day3b(input: text): integer {
+    var enabled = true;
+    var sum = 0;
+    for (i in range(input.size())) {
+        if (input.sub(i).matches("do\\(\\).*")) {
+            enabled = true;
+        } else if (input.sub(i).matches("don't\\(\\).*")) {
+            enabled = false;
+        } else if (enabled and input.sub(i).matches("mul\\([0-9]+,[0-9]+\\).*")) {
+            val comma = input.index_of(",", i + 4);
+            sum += integer(input.sub(i + 4, comma)) * integer(input.sub(comma + 1, input.index_of(")", comma)));
+        }
+    }
+    return sum;
+}
+
+val day3a_input = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))";
+val day3b_input = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))";
+
+query bench_day3a(reps: integer): integer {
+    var acc = 0;
+    var i = 0;
+    while (i < reps) {
+        acc += day3a(day3a_input);
+        i += 1;
+    }
+    return acc;
+}
+
+query bench_day3b(reps: integer): integer {
+    var acc = 0;
+    var i = 0;
+    while (i < reps) {
+        acc += day3b(day3b_input);
+        i += 1;
+    }
+    return acc;
+}
+
+// ============================================================================
+// Day 4
+// ============================================================================
+
+function day4a(input: list<text>): integer {
+    val word = "XMAS";
+    val reversed_word = word.reversed();
+    val word_size = word.size();
+
+    var occurances = 0;
+    for (row in range(input.size())) {
+        for (col in range(input[row].size())) {
+            if (col <= input[row].size() - word_size) {
+                val part = input[row][col] + input[row][col + 1] + input[row][col + 2] + input[row][col + 3];
+                if (part == word) occurances++;
+                if (part == reversed_word) occurances++;
+            }
+            if (row <= input.size() - word_size) {
+                val part = input[row][col] + input[row + 1][col] + input[row + 2][col] + input[row + 3][col];
+                if (part == word) occurances++;
+                if (part == reversed_word) occurances++;
+            }
+            if ((row <= input.size() - word_size) and (col <= input[row].size() - word_size)) {
+                val part = input[row][col] + input[row + 1][col + 1] + input[row + 2][col + 2] + input[row + 3][col + 3];
+                if (part == word) occurances++;
+                if (part == reversed_word) occurances++;
+            }
+            if ((row <= input.size() - word_size) and (col >= word_size - 1)) {
+                val part = input[row][col] + input[row + 1][col - 1] + input[row + 2][col - 2] + input[row + 3][col - 3];
+                if (part == word) occurances++;
+                if (part == reversed_word) occurances++;
+            }
+        }
+    }
+    return occurances;
+}
+
+function day4b(input: list<text>): integer {
+    var occurances = 0;
+    for (row in range(1, input.size() - 1)) {
+        for (col in range(1, input[row].size() - 1)) {
+            if (input[row][col] == "A") {
+                if (
+                    ((input[row - 1][col - 1] == "M" and input[row + 1][col + 1] == "S") or
+                     (input[row - 1][col - 1] == "S" and input[row + 1][col + 1] == "M"))
+                    and
+                    ((input[row - 1][col + 1] == "M" and input[row + 1][col - 1] == "S") or
+                     (input[row - 1][col + 1] == "S" and input[row + 1][col - 1] == "M"))
+                )
+                    occurances++;
+            }
+        }
+    }
+    return occurances;
+}
+
+function day4_input(): list<text> = [
+    "MMMSXXMASM",
+    "MSAMXMSMSA",
+    "AMXSXMAAMM",
+    "MSAMASMSMX",
+    "XMASAMXAMM",
+    "XXAMMXXAMA",
+    "SMSMSASXSS",
+    "SAXAMASAAA",
+    "MAMMMXMMMM",
+    "MXMXAXMASX",
+];
+
+query bench_day4a(reps: integer): integer {
+    val input = day4_input();
+    var acc = 0;
+    var i = 0;
+    while (i < reps) {
+        acc += day4a(input);
+        i += 1;
+    }
+    return acc;
+}
+
+query bench_day4b(reps: integer): integer {
+    val input = day4_input();
+    var acc = 0;
+    var i = 0;
+    while (i < reps) {
+        acc += day4b(input);
+        i += 1;
+    }
+    return acc;
+}
+
+// ============================================================================
+// Day 5
+// ============================================================================
+
+function day5_parse_input(input: list<text>) {
+    val rules = list<(integer,integer)>();
+    val updates = list<list<integer>>();
+    var parsing_pages = false;
+    for (line in input) {
+        if (line.empty()) {
+            parsing_pages = true;
+        } else if (parsing_pages) {
+            updates.add(line.split(",") @* {} (integer($)));
+        } else {
+            val parts = line.split("|") @* {} (integer($));
+            rules.add((parts[0], parts[1]));
+        }
+    }
+    return (rules, updates);
+}
+
+function day5_middle(l: list<integer>): integer = l[(l.size() - 1) / 2];
+
+function day5_valid_update(rules: list<(integer,integer)>, an_update: list<integer>): integer {
+    for (i in range(1, an_update.size())) {
+        for ((first, second) in rules) {
+            if (second == an_update[i - 1] and first == an_update[i]) return 0;
+        }
+    }
+    return day5_middle(an_update);
+}
+
+function day5_invalid_update(rules: list<(integer,integer)>, an_update: list<integer>): integer {
+    var corrected = list(an_update);
+    var invalid = true;
+    while (invalid) {
+        invalid = false;
+        for (i in range(1, an_update.size())) {
+            for ((first, second) in rules) {
+                if (second == corrected[i - 1] and first == corrected[i]) {
+                    invalid = true;
+                    val page = corrected[i - 1];
+                    corrected[i - 1] = corrected[i];
+                    corrected[i] = page;
+                }
+            }
+        }
+    }
+    return if (corrected != an_update) day5_middle(corrected) else 0;
+}
+
+function day5a(input: list<text>): integer {
+    val (rules, updates) = day5_parse_input(input);
+    return updates @ {} (@sum day5_valid_update(rules, $));
+}
+
+function day5b(input: list<text>): integer {
+    val (rules, updates) = day5_parse_input(input);
+    return updates @ {} (@sum day5_invalid_update(rules, $));
+}
+
+function day5_input(): list<text> = [
+    "47|53",
+    "97|13",
+    "97|61",
+    "97|47",
+    "75|29",
+    "61|13",
+    "75|53",
+    "29|13",
+    "97|29",
+    "53|29",
+    "61|53",
+    "97|53",
+    "61|29",
+    "47|13",
+    "75|47",
+    "97|75",
+    "47|61",
+    "75|61",
+    "47|29",
+    "75|13",
+    "53|13",
+    "",
+    "75,47,61,53,29",
+    "97,61,53,29,13",
+    "75,29,13",
+    "75,97,47,61,53",
+    "61,13,29",
+    "97,13,75,29,47",
+];
+
+query bench_day5a(reps: integer): integer {
+    val input = day5_input();
+    var acc = 0;
+    var i = 0;
+    while (i < reps) {
+        acc += day5a(input);
+        i += 1;
+    }
+    return acc;
+}
+
+query bench_day5b(reps: integer): integer {
+    val input = day5_input();
+    var acc = 0;
+    var i = 0;
+    while (i < reps) {
+        acc += day5b(input);
+        i += 1;
+    }
+    return acc;
+}
+
+// ============================================================================
+// Day 6
+// ============================================================================
+
+enum D { N, S, E, W }
+
+function day6_find_start_pos(input: list<text>) {
+    for (row in range(input.size())) {
+        for (col in range(input[row].size())) {
+            if (input[row][col] == "^") {
+                return (r=row, c=col, direction=D.N);
+            }
+        }
+    }
+    return (r=-1, c=-1, direction=D.N);
+}
+
+function day6_step(input: list<text>, obstacle: (r: integer, c: integer), current: (r: integer, c: integer, direction: D)): (r: integer, c: integer, direction: D)? {
+    when (current.direction) {
+        N -> {
+            if (current.r == 0) return null;
+            if (input[current.r-1][current.c] == "#" or (current.r-1 == obstacle.r and current.c == obstacle.c)) {
+                return day6_step(input, obstacle, (r=current.r, c=current.c, direction=D.E));
+            } else {
+                return (r=current.r-1, c=current.c, direction=current.direction);
+            }
+        }
+        E -> {
+            if (current.c == input[current.r].size() - 1) return null;
+            if (input[current.r][current.c+1] == "#" or (current.r == obstacle.r and current.c+1 == obstacle.c)) {
+                return day6_step(input, obstacle, (r=current.r, c=current.c, direction=D.S));
+            } else {
+                return (r=current.r, c=current.c+1, direction=current.direction);
+            }
+        }
+        S -> {
+            if (current.r == input.size() - 1) return null;
+            if (input[current.r+1][current.c] == "#" or (current.r+1 == obstacle.r and current.c == obstacle.c)) {
+                return day6_step(input, obstacle, (r=current.r, c=current.c, direction=D.W));
+            } else {
+                return (r=current.r+1, c=current.c, direction=current.direction);
+            }
+        }
+        W -> {
+            if (current.c == 0) return null;
+            if (input[current.r][current.c - 1] == "#" or (current.r == obstacle.r and current.c-1 == obstacle.c)) {
+                return day6_step(input, obstacle, (r=current.r, c=current.c, direction=D.N));
+            } else {
+                return (r=current.r, c=current.c-1, direction=current.direction);
+            }
+        }
+    }
+}
+
+function day6a(input: list<text>): integer {
+    val start_pos = day6_find_start_pos(input);
+
+    val positions = set<(r:integer,c:integer)>();
+    var current = start_pos;
+    while (true) {
+        val next = day6_step(input, (r=-1, c=-1), current);
+        if (next == null) {
+            break;
+        } else {
+            positions.add((r=next.r, c=next.c));
+            current = next;
+        }
+    }
+    return positions.size();
+}
+
+function day6b(input: list<text>): integer {
+    val start_pos = day6_find_start_pos(input);
+
+    val positions = set<(r:integer,c:integer)>();
+    var current = start_pos;
+    while (true) {
+        val next = day6_step(input, (r=-1, c=-1), current);
+        if (next == null) {
+            break;
+        } else {
+            positions.add((r=next.r, c=next.c));
+            current = next;
+        }
+    }
+
+    var count = 0;
+    for (pos in positions) {
+        if (input[pos.r][pos.c] != "#" and not (pos.r == start_pos.r and pos.c == start_pos.c)) {
+            val positions2 = set<(r: integer, c: integer, direction: D)>();
+            current = start_pos;
+            while (true) {
+                val next = day6_step(input, pos, current);
+                if (next == null) {
+                    break;
+                } else {
+                    if (next in positions2) {
+                        count++;
+                        break;
+                    } else {
+                        positions2.add(next);
+                        current = next;
+                    }
+                }
+            }
+        }
+    }
+    return count;
+}
+
+function day6_input(): list<text> = [
+    "....#.....",
+    ".........#",
+    "..........",
+    "..#.......",
+    ".......#..",
+    "..........",
+    ".#..^.....",
+    "........#.",
+    "#.........",
+    "......#...",
+];
+
+query bench_day6a(reps: integer): integer {
+    val input = day6_input();
+    var acc = 0;
+    var i = 0;
+    while (i < reps) {
+        acc += day6a(input);
+        i += 1;
+    }
+    return acc;
+}
+
+query bench_day6b(reps: integer): integer {
+    val input = day6_input();
+    var acc = 0;
+    var i = 0;
+    while (i < reps) {
+        acc += day6b(input);
+        i += 1;
+    }
+    return acc;
+}
+
+// ============================================================================
+// Day 7
+// ============================================================================
+
+function day7_parse_equation(line: text) {
+    val test_value = integer(line.sub(0, line.index_of(":")));
+    val numbers = line.sub(line.index_of(":") + 2).split(" ") @* {} (integer($));
+    return (test_value, numbers);
+}
+
+function day7_apply(left: integer, op: integer, right: integer): integer {
+    when(op) {
+        0 -> return left + right;
+        1 -> return left * right;
+        2 -> return integer(left.to_text() + right.to_text());
+        else -> require(false, "Unknown op " + op);
+    }
+    return 0;
+}
+
+function day7_eval(exp: list<integer>): integer {
+    var result = day7_apply(exp[0], exp[1], exp[2]);
+    for (i in range(3, exp.size(), step = 2)) {
+        result = day7_apply(result, exp[i], exp[i + 1]);
+    }
+    return result;
+}
+
+function day7_concat1(left: list<integer>, right: list<integer>): list<integer> {
+    val result = list(left);
+    result.add_all(right);
+    return result;
+}
+
+function day7_concat2(a: list<list<integer>>, b: list<list<integer>>, c: list<list<integer>>): list<list<integer>> {
+    val result = list(a);
+    result.add_all(b);
+    result.add_all(c);
+    return result;
+}
+
+function day7_generate_candidates_a(numbers: list<integer>): list<list<integer>> {
+    return if (numbers.size() < 2)
+        [ numbers ]
+    else
+        day7_concat2(
+            day7_generate_candidates_a(numbers.sub(1)) @* {} (day7_concat1([numbers[0], 0], $)),
+            day7_generate_candidates_a(numbers.sub(1)) @* {} (day7_concat1([numbers[0], 1], $)),
+            []
+        );
+}
+
+function day7_generate_candidates_b(numbers: list<integer>): list<list<integer>> {
+    return if (numbers.size() < 2)
+        [ numbers ]
+    else
+        day7_concat2(
+            day7_generate_candidates_b(numbers.sub(1)) @* {} (day7_concat1([numbers[0], 0], $)),
+            day7_generate_candidates_b(numbers.sub(1)) @* {} (day7_concat1([numbers[0], 1], $)),
+            day7_generate_candidates_b(numbers.sub(1)) @* {} (day7_concat1([numbers[0], 2], $))
+        );
+}
+
+function day7a(input: list<text>): integer {
+    val equations = input @* {} (day7_parse_equation($));
+    var sum = 0;
+    for ((test_value, numbers) in equations) {
+        for (candidate in day7_generate_candidates_a(numbers)) {
+            if (day7_eval(candidate) == test_value) {
+                sum += test_value;
+                break;
+            }
+        }
+    }
+    return sum;
+}
+
+function day7b(input: list<text>): integer {
+    val equations = input @* {} (day7_parse_equation($));
+    var sum = 0;
+    for ((test_value, numbers) in equations) {
+        for (candidate in day7_generate_candidates_b(numbers)) {
+            if (day7_eval(candidate) == test_value) {
+                sum += test_value;
+                break;
+            }
+        }
+    }
+    return sum;
+}
+
+function day7_input(): list<text> = [
+    "190: 10 19",
+    "3267: 81 40 27",
+    "83: 17 5",
+    "156: 15 6",
+    "7290: 6 8 6 15",
+    "161011: 16 10 13",
+    "192: 17 8 14",
+    "21037: 9 7 18 13",
+    "292: 11 6 16 20",
+];
+
+query bench_day7a(reps: integer): integer {
+    val input = day7_input();
+    var acc = 0;
+    var i = 0;
+    while (i < reps) {
+        acc += day7a(input);
+        i += 1;
+    }
+    return acc;
+}
+
+query bench_day7b(reps: integer): integer {
+    val input = day7_input();
+    var acc = 0;
+    var i = 0;
+    while (i < reps) {
+        acc += day7b(input);
+        i += 1;
+    }
+    return acc;
+}

@@ -4,13 +4,10 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.immMapOf
 import net.postchain.rell.base.utils.toImmMap
-import java.io.StringReader
-import java.util.*
 
 enum class Rt_RellVersionProperty(val key: String) {
     RELL_BRANCH("rell.branch"),
@@ -101,16 +98,12 @@ class Rt_RellVersion private constructor(
         ).joinToString("; ") { "${it.first}: ${it.second}" }
 
         private fun getBuildProperties(): Map<String, String>? {
-            try {
-                val url = Rt_Utils.javaClass.getResource("/rell-base-maven.properties")
-                    ?: throw IllegalArgumentException("resource /rell-base-maven.properties not found")
-                val text = url.readText(Charsets.UTF_8)
-                val props = Properties()
-                props.load(StringReader(text))
-                return props.stringPropertyNames().sorted().associateWith { props.getProperty(it) }
-            } catch (_: Exception) {
-                return null
-            }
+            // TeaVM-friendly: Class.getResource and Properties.load are not in TeaVM's
+            // classlib emulation, so the bytecode references break reachability analysis.
+            // The caller already handles `null` by falling back to FALLBACK_PROPERTIES; on
+            // the JVM the gradle-git-properties plugin's output sat in `rell-base-maven
+            // .properties`, on TeaVM there is no classpath so the fallback is the only path.
+            return null
         }
     }
 }
