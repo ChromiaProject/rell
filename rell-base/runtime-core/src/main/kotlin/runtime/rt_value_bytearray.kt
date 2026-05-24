@@ -46,7 +46,7 @@ class Rt_ByteArrayValue private constructor(val value: ByteArray):
         override val name
             get() = "byte_array"
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.BYTE_ARRAY)
-        override val nativeTypes = immSetOf(ByteArray::class.createType())
+        override val nativeTypes by lazy { immSetOf(ByteArray::class.createType()) }
 
         override val sqlType: DataType<ByteArray>
             get() = SQLDataType.BLOB

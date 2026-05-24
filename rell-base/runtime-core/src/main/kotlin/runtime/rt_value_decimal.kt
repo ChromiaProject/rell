@@ -82,7 +82,7 @@ interface Rt_DecimalValue: Rt_Value {
         override val name
             get() = "decimal"
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.DECIMAL)
-        override val nativeTypes = immSetOf(BigDecimal::class.createType())
+        override val nativeTypes by lazy { immSetOf(BigDecimal::class.createType()) }
 
         override val sqlType
             get() = Lib_DecimalMath.DECIMAL_SQL_TYPE

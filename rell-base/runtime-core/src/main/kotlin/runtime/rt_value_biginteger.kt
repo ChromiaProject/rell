@@ -37,7 +37,7 @@ data class Rt_BigIntegerValue private constructor(val value: BigInteger): Rt_Val
         override val name
             get() = "big_integer"
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.BIG_INTEGER)
-        override val nativeTypes = immSetOf(BigInteger::class.createType())
+        override val nativeTypes by lazy { immSetOf(BigInteger::class.createType()) }
 
         override val sqlType
             get() = Lib_BigIntegerMath.SQL_TYPE

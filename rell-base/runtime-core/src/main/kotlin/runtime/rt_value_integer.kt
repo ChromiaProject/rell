@@ -38,7 +38,7 @@ data class Rt_IntValue private constructor(val value: Long): Rt_Value {
         override val name
             get() = "integer"
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.INTEGER)
-        override val nativeTypes = immSetOf(Long::class.createType())
+        override val nativeTypes by lazy { immSetOf(Long::class.createType()) }
 
         override val sqlType: DataType<Long>
             get() = SQLDataType.BIGINT

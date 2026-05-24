@@ -46,6 +46,19 @@ internal object CliTestUtils {
 
     private const val LOG_TIME_REGEX = """\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}"""
 
+    /**
+     * System property / env var for overriding `rell.sh` with an arbitrary executable
+     * (e.g. a native-image binary). When set, `rell.sh` invocations become `[<path>, ...args]`
+     * instead of `[java, -cp, ..., MainClass, ...args]`.
+     *
+     * Scope: this only redirects `rell.sh`. The other scripts (`rellcfg.sh`, `multigen.sh`,
+     * `multirun.sh`, `migrate-v0.10.sh`) call different main classes that a single binary
+     * can't substitute for, so they keep using the JVM path. If we ever need per-script
+     * overrides, switch this to a map keyed by script name.
+     */
+    private const val EXECUTABLE_PROPERTY = "rell.test.executable"
+    private const val EXECUTABLE_ENV_VAR = "RELL_TEST_EXECUTABLE"
+
     /** Main class names for each CLI tool script. */
     private val MAIN_CLASSES = mapOf(
         "rell.sh" to "net.postchain.rell.tools.RellCLIKt",
@@ -55,13 +68,34 @@ internal object CliTestUtils {
         "migrate-v0.10.sh" to "net.postchain.rell.tools.Migrator_v0_10Kt",
     )
 
+    /** Script names eligible for the `rell.test.executable` override. */
+    private val OVERRIDABLE_SCRIPTS = setOf("rell.sh")
+
     /**
-     * Build the JVM command line for a CLI tool invocation.
-     * Resolves the script name to its main class and prepends JVM arguments.
+     * Build the command line for a CLI tool invocation.
+     *
+     * By default resolves the script name to its main class and produces a `java -cp ...`
+     * invocation. If [EXECUTABLE_PROPERTY] (or the [EXECUTABLE_ENV_VAR] env var) is set
+     * and [script] is in [OVERRIDABLE_SCRIPTS], the configured executable is invoked
+     * directly with [args] instead. Fails loudly if the configured path is missing or
+     * not executable.
      */
     internal fun buildCommandLine(script: String, args: List<String>): List<String> {
         val mainClass = checkNotNull(MAIN_CLASSES[script]) {
             "Unknown script: $script (known: ${MAIN_CLASSES.keys})"
+        }
+        if (script in OVERRIDABLE_SCRIPTS) {
+            val override = System.getProperty(EXECUTABLE_PROPERTY) ?: System.getenv(EXECUTABLE_ENV_VAR)
+            if (override != null) {
+                val file = java.io.File(override)
+                check(file.isFile) {
+                    "$EXECUTABLE_PROPERTY is set to '$override' but no file exists at that path"
+                }
+                check(file.canExecute()) {
+                    "$EXECUTABLE_PROPERTY is set to '$override' but the file is not executable"
+                }
+                return listOf(file.absolutePath) + args
+            }
         }
         return listOf(JAVA_BIN, "-cp", CLASSPATH, mainClass) + args
     }

@@ -12,9 +12,7 @@ import kotlin.math.min
 object CommonUtils {
     val IS_UNIT_TEST: Boolean = Thread.currentThread().stackTrace.any { it.className.startsWith("org.junit.") }
 
-    // java.util.HexFormat (JDK 17+) is not emulated by TeaVM's classlib — touching it here
-    // (via the static initialiser) would break reachability for the whole utils package on
-    // the browser build. Inlined hex codecs do the same job and are dependency-free.
+    // java.util.HexFormat isn't supported by TeaVM
     private const val HEX_DIGITS = "0123456789abcdef"
 
     fun bytesToHex(bytes: ByteArray): String {

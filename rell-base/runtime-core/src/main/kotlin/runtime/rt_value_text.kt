@@ -47,7 +47,7 @@ interface Rt_TextValue: Rt_Value {
         override val name
             get() = "text"
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.TEXT)
-        override val nativeTypes = immSetOf(String::class.createType())
+        override val nativeTypes by lazy { immSetOf(String::class.createType()) }
 
         override val sqlType: DataType<String>
             get() = SQLDataType.CLOB

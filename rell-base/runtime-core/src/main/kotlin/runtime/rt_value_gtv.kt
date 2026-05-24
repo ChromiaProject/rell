@@ -63,7 +63,7 @@ data class Rt_GtvValue private constructor(val value: Gtv): Rt_Value {
         override val name
             get() = "gtv"
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.GTV)
-        override val nativeTypes = immSetOf(Gtv::class.createType())
+        override val nativeTypes by lazy { immSetOf(Gtv::class.createType()) }
 
         val NULL: Rt_GtvValue = Rt_GtvValue(GtvNull)
 

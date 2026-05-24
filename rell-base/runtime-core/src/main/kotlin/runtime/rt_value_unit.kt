@@ -20,7 +20,7 @@ object Rt_UnitValue: Rt_Value, Rt_ValueClass<Rt_UnitValue>, Rt_NativeAdapter {
     override fun strCode(showTupleFieldNames: Boolean) = "unit"
     override fun str(format: Rt_StrFormat) = "unit"
 
-    override val nativeTypes = immSetOf(Unit::class.createType(), Void::class.createType())
+    override val nativeTypes by lazy { immSetOf(Unit::class.createType(), Void::class.createType()) }
     override fun nativeToRt(value: Any?) = Rt_UnitValue
     override fun rtToNative(value: Rt_Value) = null
 }

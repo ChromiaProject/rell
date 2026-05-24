@@ -44,7 +44,9 @@ class Rt_JsonValue(val node: JsonNode): Rt_Value {
             get() = SQLDataType.JSONB
 
         // https://stackoverflow.com/questions/3907929/should-i-declare-jacksons-objectmapper-as-a-static-field
-        private val mapper = ObjectMapper()
+        // `by lazy` (rather than eager `= ObjectMapper()`) keeps Jackson's static-init cascade
+        // out of the class-load path, which is needed for TeaVM compat
+        private val mapper by lazy { ObjectMapper() }
 
         fun parse(s: String): Rt_JsonValue {
             require(!s.isBlank()) { s }

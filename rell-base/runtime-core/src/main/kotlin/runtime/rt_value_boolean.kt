@@ -48,7 +48,7 @@ sealed interface Rt_BooleanValue: Rt_Value {
             get() = "boolean"
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.BOOLEAN)
 
-        override val nativeTypes = immSetOf(Boolean::class.createType())
+        override val nativeTypes by lazy { immSetOf(Boolean::class.createType()) }
 
         override val sqlType: DataType<Boolean>
             get() = SQLDataType.BOOLEAN
