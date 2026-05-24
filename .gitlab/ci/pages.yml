@@ -1,0 +1,157 @@
+# GitLab Pages deployments: the static reports index plus the three manual report jobs
+# (benchmarks / profile / regression). The index is republished automatically after each
+# manual job so the listing stays current.
+
+# Client-side reports index listing every available `pages:benchmarks` / `pages:profile` /
+# `pages:regression` deployment, plus a profile-diff tool. The project is private, so anonymous
+# client-side fetches against the Environments API 401 — build-index.sh bakes the list into
+# `manifest.json` at publish time via `glab api`, and the app fetches that + per-deployment
+# /data/main.json from the browser.
+#
+# Requires GITLAB_TOKEN (project access token with `read_api`, masked + dev-branch-protected).
+# CI_JOB_TOKEN's allowlist excludes the Environments API, so it 403s.
+#
+# Pinned to dev so feature branches can't overwrite the root deployment. Re-published in the
+# `index` stage after each manual click (see `pages:index:after-*`), keeping the listing fresh
+# when manual jobs are clicked days after the initial dev pipeline ran.
+.pages-index:
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  interruptible: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+  script:
+    - apk add --no-cache jq curl
+    - mkdir -p public
+    - performance/ci-index/build-index.sh public
+  pages: true
+  environment:
+    name: pages-index
+    url: "$CI_PAGES_URL/"
+  artifacts:
+    paths: [ public ]
+    expire_in: 30 days
+
+pages:index:
+  extends: .pages-index
+  stage: deploy
+  needs: []
+
+# Re-publish the index after each manual click so the new deployment shows up. `needs:` keeps
+# this pending alongside the unclicked manual job (harmless — same lifecycle). The deploy-stage
+# `pages:index` already covers the no-click case; these fill the "click days later" gap.
+pages:index:after-bench:
+  extends: .pages-index
+  stage: index
+  needs: [ pages:benchmarks ]
+
+pages:index:after-profile:
+  extends: .pages-index
+  stage: index
+  needs: [ pages:profile ]
+
+pages:index:after-regression:
+  extends: .pages-index
+  stage: index
+  needs: [ pages:regression ]
+
+# Manual benchmark / profile runs publishing HTML to GitLab Pages under per-commit path prefixes
+# (`bench-<slug>-<sha>` / `profile-<slug>-<sha>`); including the short SHA lets same-branch
+# reruns coexist for diffing. Benchmark JSON is also exposed at /data/main.json so external
+# tooling can fetch raw scores without scraping HTML.
+pages:benchmarks:
+  stage: benchmarks
+  tags: [ saas-linux-medium-amd64 ]
+  interruptible: true
+  rules:
+    - when: manual
+      allow_failure: true
+  needs: []
+  script:
+    - ./gradlew $GRADLE_FLAGS_MEDIUM :performance:mainBenchmark
+    - mkdir -p public public/data
+    - cp -r performance/build/reports/benchmarks/html/. public/
+    # Publish the raw kotlinx-benchmark JSON alongside the HTML for programmatic ingest
+    # (commit-to-commit regression diffs). Plugin writes to reports/benchmarks/main/<ts>/main.json;
+    # pick the newest and expose it at the stable URL `<deployment>/data/main.json`.
+    - |
+      latest_json=$(find performance/build/reports/benchmarks/main -type f -name '*.json' -printf '%T@ %p\n' | sort -nr | head -n1 | cut -d' ' -f2-)
+      if [ -z "$latest_json" ]; then
+        echo "ERROR: no benchmark JSON found under performance/build/reports/benchmarks/main" >&2
+        exit 1
+      fi
+      cp "$latest_json" public/data/main.json
+      echo "Published $latest_json -> public/data/main.json"
+    - echo "Benchmark report - $CI_PAGES_URL/report.html"
+    - echo "Benchmark JSON   - $CI_PAGES_URL/data/main.json"
+  pages:
+    path_prefix: "bench-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    expire_in: never
+  environment:
+    name: "benchmarks/$CI_COMMIT_REF_SLUG/$CI_COMMIT_SHORT_SHA"
+    url: "$CI_PAGES_URL/report.html"
+  artifacts:
+    paths: [ public ]
+    expire_in: 30 days
+
+# Manual end-to-end profiler (Postgres + chr node + async-profiler + workload + HTML).
+# Extends `.local-chr-cache` for the DIND Postgres wiring and the persistent .m2 cache.
+pages:profile:
+  extends: .local-chr-cache
+  stage: benchmarks
+  tags: [ saas-linux-medium-amd64 ]
+  interruptible: true
+  rules:
+    - when: manual
+      allow_failure: true
+  needs: []
+  script:
+    - ./gradlew $GRADLE_FLAGS_MEDIUM :performance:profile
+    - mkdir -p public
+    - cp -r performance/reports/. public/
+    - echo "Profile report - $CI_PAGES_URL/report.html"
+  pages:
+    path_prefix: "profile-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    expire_in: never
+  environment:
+    name: "profile/$CI_COMMIT_REF_SLUG/$CI_COMMIT_SHORT_SHA"
+    url: "$CI_PAGES_URL/report.html"
+  artifacts:
+    when: always
+    paths: [ public ]
+    expire_in: 30 days
+
+# Manual regression toolkit: clone every public Rell project and verify the local build compiles
+# (and tests) them. Off the default pipeline — full runs take tens of minutes. Public-only flavour
+# wired here; `private.json` is gitignored and never reaches the runner.
+#
+# On saas-linux-large-amd64 (8c/32G): the build phase fans 16 work items (8 projects × 2 backends)
+# across the worker pool — peak ~20 GB resident, fitting comfortably with `--max-workers=8`. Test
+# phase is strictly serial (one Postgres), so xlarge would only buy a small build-phase win.
+#
+# Extends `.local-chr-cache` for the persistent .m2 cache and CHR_DB_* wiring to the DIND Postgres.
+# `expectedFailure: true` projects in public.json aren't regressions; `allow_failure: true` keeps
+# a single compile blowup from reddening the pipeline.
+pages:regression:
+  extends: .local-chr-cache
+  stage: benchmarks
+  tags: [ saas-linux-large-amd64 ]
+  interruptible: true
+  rules:
+    - when: manual
+      allow_failure: true
+  needs: []
+  script:
+    - ./gradlew $GRADLE_FLAGS_LARGE :regression:regressionPublic
+    - mkdir -p public
+    - cp -r regression/reports/. public/
+    - echo "Regression report - $CI_PAGES_URL/report.html"
+  pages:
+    path_prefix: "regression-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    expire_in: never
+  environment:
+    name: "regression/$CI_COMMIT_REF_SLUG/$CI_COMMIT_SHORT_SHA"
+    url: "$CI_PAGES_URL/report.html"
+  artifacts:
+    when: always
+    paths: [ public ]
+    expire_in: 30 days

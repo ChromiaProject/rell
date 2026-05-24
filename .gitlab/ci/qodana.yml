@@ -1,0 +1,20 @@
+# Qodana static analysis. The qodana-gitlab-ci component is included from the root
+# `.gitlab-ci.yml` (it injects the actual scan steps); this file only customises the job:
+# runner tag, cache, MR-vs-dev mode toggle, and SARIF artifact retention.
+
+qodana:
+  tags: [ saas-linux-large-amd64 ]
+  variables: { QODANA_MR_MODE: "true" }
+  cache:
+    key: "qodana-$CI_COMMIT_REF_SLUG"
+    fallback_keys: [ qodana-dev ]
+    paths: [ .qodana/cache ]
+    policy: pull-push
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "dev"
+      variables: { QODANA_MR_MODE: "false" }
+  artifacts:
+    paths: [ .qodana/results/qodana.sarif.json ]
+    when: always
+    expire_in: 1 week

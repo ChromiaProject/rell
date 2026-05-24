@@ -1,0 +1,18 @@
+# OWASP Dependency-Check aggregate report. Opt-in via the `RUN_DEPENDENCY_CHECK=true` pipeline
+# variable; runs on the medium runner because the heavy work is downloading NVD feeds, not
+# parallel test execution.
+
+dependency-check:
+  extends: .setup
+  stage: dependency-check
+  tags: [ saas-linux-medium-amd64 ]
+  interruptible: true
+  rules:
+    - if: $RUN_DEPENDENCY_CHECK == "true"
+  # --no-parallel: dependencyCheckAggregate resolves every subproject's configurations from the
+  # root project. With org.gradle.parallel=true (gradle.properties), Gradle 9 rejects that
+  # cross-project resolution ("attempted without an exclusive lock").
+  script: [ "./gradlew $GRADLE_FLAGS_MEDIUM --no-configuration-cache --no-parallel dependencyCheckAggregate" ]
+  artifacts:
+    when: always
+    paths: [ build/reports/dependency-check-report.* ]

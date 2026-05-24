@@ -1,0 +1,88 @@
+# Shared anchors for jobs that need a Postgres + Docker host (and, in the case of
+# `.local-chr-cache`, a persistent ~/.m2 + chromia-cli build tree). Consumers live in
+# `build.yml`, `dependency-check.yml`, and `pages.yml`.
+
+.setup:
+  tags: [ saas-linux-xlarge-amd64 ]
+  before_script:
+    - microdnf install -y ca-certificates curl tar gzip git glibc-langpack-en
+    - |
+      DOCKER_VERSION=28.1.1
+      curl -fsSL "https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz" -o /tmp/docker.tgz
+      tar -xzf /tmp/docker.tgz -C /tmp
+      install -m 0755 /tmp/docker/docker /usr/local/bin/docker
+      rm -rf /tmp/docker /tmp/docker.tgz
+    # PGDATA on tmpfs — sized for the full parallel test load (rell-base runs `test`,
+    # `testRoundTrip`, `testTruffle` against this single Postgres). Smaller jobs (pages:profile
+    # on medium, pages:regression on large) only need one schema; the cap is uniform anyway.
+    - |
+      docker run \
+        --detach \
+        --name postgres \
+        --env POSTGRES_PASSWORD=postchain \
+        --env POSTGRES_USER=postchain \
+        --env PGDATA=/pgtmpfs \
+        --tmpfs=/pgtmpfs:size=8g \
+        --publish 5432:5432 \
+        postgres:16.13-alpine3.23@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416
+    # When PUBLISH_BUILD_SCAN=true, inject a Develocity plugin block into settings.gradle.kts.
+    # Kept out of git so local devs don't auto-accept ToU; the plugin only reads termsOfUseAgree
+    # from a Kotlin DSL block, so an in-flight tracked-file edit is the only way to express it.
+    - |
+      if [ "$PUBLISH_BUILD_SCAN" = "true" ]; then
+        cat >> settings.gradle.kts <<'EOF'
+
+      plugins { id("com.gradle.develocity") version "4.3.2" }
+
+      develocity {
+          buildScan {
+              termsOfUseUrl = "https://gradle.com/help/legal-terms-of-use"
+              termsOfUseAgree = "yes"
+              uploadInBackground = false
+          }
+      }
+      EOF
+      fi
+    - ./gradlew --version
+  artifacts:
+    when: always
+    paths:
+      - $JACOCO_REPORT_DIR/*
+      - "**/build/test-results/**/*"
+      - build/reports/configuration-cache/**/*
+    reports:
+      junit: [ "**/build/test-results/**/TEST-*.xml" ]
+      coverage_report:
+        coverage_format: jacoco
+        path: "**/build/reports/jacoco/test/jacocoTestReport.xml"
+    expire_in: 1 week
+
+.local-chr-cache:
+  extends: .setup
+  variables:
+    # `chr test` (chromia-build-tools `DatabaseModel`) and `chr node start` read CHR_DB_* env
+    # vars, falling back to jdbc:postgresql://localhost/postchain. The fallback works on a dev
+    # box but not on CI, where Postgres lives on the DIND host `docker`. CHR_DB_URL mirrors
+    # POSTCHAIN_DB_URL; credentials match the `docker run ... postgres` invocation in `.setup`.
+    CHR_DB_URL: "$POSTCHAIN_DB_URL"
+    CHR_DB_USER: "postchain"
+    CHR_DB_PASSWORD: "postchain"
+  cache:
+    - key: "$CI_COMMIT_REF_SLUG"
+      fallback_keys: [ dev ]
+      paths: [ .gradle ]
+      policy: pull-push
+    - key: "local-chr-m2-$CI_COMMIT_REF_SLUG"
+      fallback_keys: [ local-chr-m2-dev ]
+      paths:
+        - .m2
+        - chromia-cli-local
+        - chromia-cli-tools-local
+      policy: pull-push
+  before_script:
+    - !reference [ .setup, before_script ]
+    # Symlink ~/.m2 into the project dir so cached deps survive. Remove ~/.m2 first — the
+    # GraalVM image ships an empty real dir, which would make `ln -s` nest inside it.
+    - rm -rf "$HOME/.m2"
+    - mkdir -p "$CI_PROJECT_DIR/.m2/repository"
+    - ln -s "$CI_PROJECT_DIR/.m2" "$HOME/.m2"
