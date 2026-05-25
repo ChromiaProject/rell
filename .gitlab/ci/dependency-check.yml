@@ -1,6 +1,12 @@
 # OWASP Dependency-Check aggregate report. Opt-in via the `RUN_DEPENDENCY_CHECK=true` pipeline
 # variable; runs on the medium runner because the heavy work is downloading NVD feeds, not
 # parallel test execution.
+#
+# Requires the `NVD_API_KEY` CI/CD variable to be set (Settings → CI/CD → Variables; mark it
+# Masked and Protected). Without a key the NIST API rate-limits the job into HTTP 429 within a
+# few minutes and `dependencyCheckAggregate` fails with "Error updating the NVD Data".
+# Request a key at https://nvd.nist.gov/developers/request-an-api-key. The key is consumed by
+# build.gradle.kts via `providers.environmentVariable("NVD_API_KEY")`.
 
 dependency-check:
   extends: .setup

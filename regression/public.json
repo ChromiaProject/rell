@@ -20,12 +20,14 @@
       "name": "ft4-lib",
       "url": "https://gitlab.com/chromaway/ft4-lib.git",
       "ref": "development",
-      "notes": "FT4 token-fungibles library. Default pipeline; tests run against `ft4_rell_test` and `ft4_rell_auth` chains."
+      "timeoutMinutes": 60,
+      "notes": "FT4 token-fungibles library. Default pipeline; tests run against `ft4_rell_test` and `ft4_rell_auth` chains. 60-min cap: the full suite takes ~35-40 min on this hardware once the per-project Postgres holds up to completion (previously the 30-min default was masked by the DB-tmpfs failure that short-circuited the run)."
     },
     {
       "name": "directory-chain",
       "url": "https://gitlab.com/chromaway/core/directory-chain.git",
-      "notes": "Chromia directory service blockchain. Default pipeline; tests live under `economy_chain.test`."
+      "timeoutMinutes": 60,
+      "notes": "Chromia directory service blockchain. Default pipeline; tests live under `economy_chain.test`. 60-min cap: the economy_chain suite takes ~40 min end-to-end on this hardware; the 30-min default short-circuited at the DB-tmpfs failure boundary and never exposed the real runtime."
     },
     {
       "name": "filechain",

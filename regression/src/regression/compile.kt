@@ -249,7 +249,26 @@ private fun withProjectPostgres(tag: String, block: (Map<String, String>) -> Uni
         .withEnv("POSTGRES_PASSWORD", POSTGRES_PASSWORD)
         .withEnv("POSTGRES_DB", POSTGRES_DB)
         .withExposedPorts(POSTGRES_PORT)
-        .withTmpFs(mapOf("/var/lib/postgresql/data" to "rw,size=512m"))
+        // tmpfs cap: heavy suites (directory-chain, ft4-lib, mna-blockchain, postchain-eif) run
+        // thousands of test cases against a fresh `chr test` schema each, and the WAL + table
+        // churn outgrew the previous 512m cap ("could not extend file ... No space left on
+        // device" → backend EOF → "connection has been closed" surfaced as the DB-connectivity
+        // failures in reports/results.json). tmpfs only consumes RAM as it fills, so the higher
+        // cap is headroom, not a pre-allocation.
+        .withTmpFs(mapOf("/var/lib/postgresql/data" to "rw,size=2g"))
+        // Ephemeral test database — no durability requirement. Tuning trades fsync safety for
+        // disk-write volume so WAL stays small and we never refill the tmpfs cap:
+        //   fsync=off, synchronous_commit=off, full_page_writes=off — skip durability work.
+        //   max_wal_size=128MB — keep WAL footprint bounded; default checkpoint cadence is fine.
+        // (autovacuum stays ON — heavy suites churn dead rows fast enough that bloat outweighs
+        // the I/O cost of the worker, and the freed space helps the tmpfs cap.)
+        .withCommand(
+            "postgres",
+            "-c", "fsync=off",
+            "-c", "synchronous_commit=off",
+            "-c", "full_page_writes=off",
+            "-c", "max_wal_size=128MB",
+        )
         // Postgres logs the "ready to accept connections" line twice on boot (once for the bootstrap
         // run, once for the real server); waiting for both avoids the JDBC race where chr connects
         // during the brief bootstrap window and gets refused.

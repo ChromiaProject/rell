@@ -39,6 +39,11 @@ dependencyCheck {
         "dependencies-suppression.xml",
     )
     analyzers.assemblyEnabled = false
+    // Without an NVD API key the NIST endpoint rate-limits us into HTTP 429 within a few
+    // minutes (see CI: 30+ retries, then "Error updating the NVD Data"). Request one at
+    // https://nvd.nist.gov/developers/request-an-api-key and expose it as the NVD_API_KEY
+    // CI variable; local runs without the env var keep working (just slowly).
+    nvd.apiKey = providers.environmentVariable("NVD_API_KEY").orNull
 }
 
 val withLocales by extra(providers.gradleProperty("withLocales").isPresent)

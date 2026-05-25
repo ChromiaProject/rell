@@ -31,7 +31,7 @@ while true; do
     init &
     INIT_PID=$!
 
-    docker run --tmpfs=/pgtmpfs:size=2000m -p 127.0.0.1:5432:5432 -e PGDATA=/pgtmpfs -e POSTGRES_PASSWORD="$PASSWORD" postgres:16-alpine
+    docker run --tmpfs=/pgtmpfs:size=2000m -p 127.0.0.1:5432:5432 -e PGDATA=/pgtmpfs -e POSTGRES_PASSWORD="$PASSWORD" postgres:16.14-alpine3.23
     wait $INIT_PID
 
     SLEEP=2
