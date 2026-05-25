@@ -72,9 +72,19 @@ variables:
   TESTCONTAINERS_HOST_OVERRIDE: docker
   TESTCONTAINERS_RYUK_DISABLED: "true"
   JACOCO_REPORT_DIR: coverage-report-aggregate/build/reports/jacoco/testCodeCoverageReport
+  # Route the dind service pull through the group-level Dependency Proxy
+  # (https://docs.gitlab.com/user/packages/dependency_proxy/). Workers run with
+  # max_use_count=1, so the local docker image cache is empty on every job and
+  # each one pulls dind from registry-1.docker.io through the NAT — both flaky
+  # (context-deadline timeouts) and rate-limited. The proxy lives inside GitLab,
+  # is reached over HTTPS to gitlab.com, and caches the manifest+layers per group.
+  # DOCKER_AUTH_CONFIG lets the runner authenticate to the proxy using the
+  # per-job CI_DEPENDENCY_PROXY_USER/PASSWORD predefined variables.
+  DOCKER_AUTH_CONFIG: |-
+    {"auths":{"$CI_DEPENDENCY_PROXY_SERVER":{"username":"$CI_DEPENDENCY_PROXY_USER","password":"$CI_DEPENDENCY_PROXY_PASSWORD"}}}
 
 services:
-  - name: docker:28-dind
+  - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:28-dind
     alias: docker
     command: [ "--tls=false" ]
 
