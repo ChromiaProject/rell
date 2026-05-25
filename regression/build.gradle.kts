@@ -169,46 +169,53 @@ val regressionPublic by tasks.registering(RegressionRunTask::class) {
 
 // ─── Worker plumbing ────────────────────────────────────────────────────────────────────────────
 
-/** Parameters for one `run-one` invocation submitted to the Gradle worker pool. */
+/** Parameters for one per-project work item; the action iterates over [backends] sequentially. */
 interface RegressionRunParameters: WorkParameters {
     val javaExecutable: Property<String>
     val classpath: ConfigurableFileCollection
     val mainClass: Property<String>
-    val args: ListProperty<String>
+    val projectName: Property<String>
+    val backends: ListProperty<String>
+    val sharedArgs: ListProperty<String>
     val workingDir: Property<String>
     val envVars: MapProperty<String, String>
 }
 
 /**
- * Runs one project's full chr pipeline (`run-one --name … --backend …`) as a forked CLI JVM. The
- * CLI spins up its own Postgres via Testcontainers for the duration of the project, so several of
- * these can run concurrently without colliding on schemas. Submitted with noIsolation: the chr
- * build is a separate subprocess, so the orchestration JVM doesn't need stronger isolation. Exit
- * value is ignored — a project that fails to compile/test is recorded in its result fragment (CLI
- * exits 0), and an unexpected crash should not abort the rest of the sweep.
+ * Runs both backends of one project, sequentially, as forked CLI JVMs. Serialising the backends
+ * within a project avoids the chr-install race: `chr install` clones library deps into the
+ * project source tree (`src/lib/<name>`), and two parallel installs against the same workdir
+ * collide on `git clone` ("destination path already exists", `.git/index.lock`, partial-tree
+ * "no such file or directory"). Cross-project parallelism is preserved — each project still
+ * gets its own worker slot. Submitted with noIsolation; exit value is ignored (a failing run is
+ * recorded in its fragment, and an unexpected crash should not abort the sweep).
  */
 abstract class RegressionRunWork @Inject constructor(
     private val execOps: ExecOperations,
 ): WorkAction<RegressionRunParameters> {
     override fun execute() {
-        execOps.javaexec {
-            executable = parameters.javaExecutable.get()
-            classpath = parameters.classpath
-            mainClass = parameters.mainClass.get()
-            args = parameters.args.get()
-            workingDir = File(parameters.workingDir.get())
-            environment(parameters.envVars.get())
-            isIgnoreExitValue = true
+        val name = parameters.projectName.get()
+        for (backend in parameters.backends.get()) {
+            execOps.javaexec {
+                executable = parameters.javaExecutable.get()
+                classpath = parameters.classpath
+                mainClass = parameters.mainClass.get()
+                args = listOf("run-one", "--name", name, "--backend", backend) +
+                    parameters.sharedArgs.get()
+                workingDir = File(parameters.workingDir.get())
+                environment(parameters.envVars.get())
+                isIgnoreExitValue = true
+            }
         }
     }
 }
 
 /**
- * One task per project (and the aggregate): fan every (project, backend) pipeline across the
- * worker pool. Each work item leases its own throw-away Postgres for the lifetime of the project
- * via Testcontainers (started inside the CLI), so the whole install/build/test pipeline runs in
- * parallel with no shared-schema serialisation. Always runs (external clones change out of band),
- * so no inputs/outputs are declared for up-to-date checking.
+ * One task per project (and the aggregate): fan every project across the worker pool. Each work
+ * item runs both backends sequentially (see [RegressionRunWork]) so chr install doesn't race
+ * against itself; the worker also leases a fresh per-backend Postgres inside the CLI, so suites
+ * never share schema. Always runs (external clones change out of band), so no inputs/outputs are
+ * declared for up-to-date checking.
  */
 abstract class RegressionRunTask: DefaultTask() {
     @get:Inject
@@ -242,13 +249,15 @@ abstract class RegressionRunTask: DefaultTask() {
     fun run() {
         val queue = workers.noIsolation()
 
-        for (name in projectNames.get()) for (backend in backends.get()) {
+        for (name in projectNames.get()) {
             queue.submit(RegressionRunWork::class.java) {
                 javaExecutable = this@RegressionRunTask.javaExecutable
                 classpath.from(cliClasspath)
                 mainClass = cliMainClass
                 workingDir = runWorkingDir
-                args = listOf("run-one", "--name", name, "--backend", backend) + sharedArgs.get()
+                projectName.set(name)
+                backends.set(this@RegressionRunTask.backends)
+                sharedArgs.set(this@RegressionRunTask.sharedArgs)
                 envVars.set(this@RegressionRunTask.forwardedEnv)
             }
         }

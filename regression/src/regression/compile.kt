@@ -253,9 +253,13 @@ private fun withProjectPostgres(tag: String, block: (Map<String, String>) -> Uni
         // thousands of test cases against a fresh `chr test` schema each, and the WAL + table
         // churn outgrew the previous 512m cap ("could not extend file ... No space left on
         // device" → backend EOF → "connection has been closed" surfaced as the DB-connectivity
-        // failures in reports/results.json). tmpfs only consumes RAM as it fills, so the higher
-        // cap is headroom, not a pre-allocation.
-        .withTmpFs(mapOf("/var/lib/postgresql/data" to "rw,size=2g"))
+        // failures in reports/results.json). 1g leaves ~25–50% headroom over observed peaks once
+        // the WAL is bounded by `max_wal_size=128MB` below; the cap is lazy (RAM is consumed
+        // only as the tmpfs fills) so light suites cost what they actually use.
+        // CI budget: saas-linux-xlarge-amd64 (64 GB / 16 vCPU) with `--max-workers=8` →
+        // 8 × 1 GB worst case = 8 GB tmpfs, comfortably inside the runner envelope (see the
+        // budget comment on `pages:regression` in .gitlab/ci/pages.yml).
+        .withTmpFs(mapOf("/var/lib/postgresql/data" to "rw,size=1g"))
         // Ephemeral test database — no durability requirement. Tuning trades fsync safety for
         // disk-write volume so WAL stays small and we never refill the tmpfs cap:
         //   fsync=off, synchronous_commit=off, full_page_writes=off — skip durability work.
