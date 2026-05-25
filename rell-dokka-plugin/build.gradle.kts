@@ -21,9 +21,7 @@ dependencies {
     testImplementation(libs.log4j.slf4j2.impl)
 }
 
-application {
-    mainClass = "com.chromia.rell.dokka.cli.MainKt"
-}
+application.mainClass = "com.chromia.rell.dokka.cli.MainKt"
 
 tasks.test {
     useJUnitPlatform()
@@ -34,12 +32,6 @@ tasks.withType<JacocoReport> {
     dependsOn(tasks.test)
 
     afterEvaluate {
-        classDirectories.setFrom(
-            files(
-                classDirectories.files.map {
-                    fileTree(it).apply { exclude("**/cli/*") }
-                },
-            ),
-        )
+        classDirectories.setFrom(files(classDirectories.files.map { fileTree(it).apply { exclude("**/cli/*") } }))
     }
 }

@@ -72,12 +72,10 @@ object LocalChr {
         log("Installing chromia-cli-tools ($CHR_TOOLS_VERSION) to local Maven…")
         installChromiaCliTools(repoRoot, rellVersion, log)
 
-        val chrBin = chrExecutable(repoRoot)
-        if (!chrBin.isExecutable()) {
-            log("chr binary not present — building chromia-cli distribution…")
-            mvnInstall(repoRoot / CHR_REPO_DIR, log)
-        }
+        log("Building chromia-cli distribution…")
+        mvnInstall(repoRoot / CHR_REPO_DIR, log)
 
+        val chrBin = chrExecutable(repoRoot)
         syncRellJars(repoRoot, rellVersion, log)
 
         check(chrBin.isExecutable()) { "Expected chr at $chrBin after build, but it is missing or not executable" }
