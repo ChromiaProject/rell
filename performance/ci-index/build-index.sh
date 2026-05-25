@@ -1,7 +1,7 @@
 #!/bin/sh
-# Builds the Rell performance reports index: a static client-side app (index.html) plus a
-# manifest.json describing every currently-available benchmark / profile / regression Pages
-# deployment. The Environments API requires authentication even on public projects, so the
+# Builds the Rell Developer Portal index: a static client-side app (index.html) plus a
+# manifest.json describing every currently-available docs / benchmark / profile / regression
+# Pages deployment. The Environments API requires authentication even on public projects, so the
 # manifest is baked here at publish time; the browser app then fetches it — and the
 # per-deployment data/main.json files it points at — anonymously.
 #
@@ -52,7 +52,7 @@ fi
 # resolves (force-push, deleted branch) is simply left without a title.
 commit_titles="{}"
 for sha in $(printf '%s' "$envs_json" | jq -r '
-  [ .[] | select(.name | test("^(benchmarks|profile|regression)/[^/]+/[^/]+$"))
+  [ .[] | select(.name | test("^(docs|benchmarks|profile|regression)/[^/]+/[^/]+$"))
         | (.name | capture("/(?<s>[^/]+)$")).s ] | unique | .[]'); do
   title=$(glab api "projects/${CI_PROJECT_ID}/repository/commits/${sha}" 2>/dev/null \
             | jq -r '.title // empty' 2>/dev/null || true)
@@ -96,10 +96,12 @@ printf '%s' "$envs_json" | jq \
   --arg ts "$generated_at" '
   def branch_rank(b): if b == "dev" then 0 elif b == "master" then 1 else 2 end;
   # path_prefix mirrors the CI config: `benchmarks/dev/<sha>` -> `bench-dev-<sha>`,
-  # `profile/dev/<sha>` -> `profile-dev-<sha>`, `regression/dev/<sha>` -> `regression-dev-<sha>`.
+  # `profile/dev/<sha>` -> `profile-dev-<sha>`, `regression/dev/<sha>` -> `regression-dev-<sha>`,
+  # `docs/dev/<sha>` -> `docs-dev-<sha>`.
   def env_prefix(k; b; s):
     (if k == "benchmarks" then "bench"
      elif k == "regression" then "regression"
+     elif k == "docs" then "docs"
      else "profile" end) + "-" + b + "-" + s;
   # Every deployment serves its report at `<root>/report.html`; the parseable JSON sits at
   # `<root>/data/main.json`.
@@ -117,10 +119,10 @@ printf '%s' "$envs_json" | jq \
   {
     generated_at: $ts,
     commits: (
-      map(select(.name | test("^(benchmarks|profile|regression)/[^/]+/[^/]+$")))
+      map(select(.name | test("^(docs|benchmarks|profile|regression)/[^/]+/[^/]+$")))
       | map(select(.external_url != null))
       | map(
-          (.name | capture("^(?<k>benchmarks|profile|regression)/(?<b>[^/]+)/(?<s>[^/]+)$")) as $c
+          (.name | capture("^(?<k>docs|benchmarks|profile|regression)/(?<b>[^/]+)/(?<s>[^/]+)$")) as $c
           | {
               kind: $c.k,
               branch: $c.b,
@@ -138,6 +140,7 @@ printf '%s' "$envs_json" | jq \
           title: ($titles[.[0].sha] // ""),
           when: (map(.when) | max),
           ts: (map(.ts) | max),
+          docs:       link((map(select(.kind == "docs"))       | first); false),
           benchmarks: link((map(select(.kind == "benchmarks")) | first); true),
           profile:    link((map(select(.kind == "profile"))    | first); true),
           regression: link((map(select(.kind == "regression")) | first); false)

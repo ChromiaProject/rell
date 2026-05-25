@@ -16,7 +16,7 @@ stages:
   - deploy
   - dependency-check
   - qodana
-  - benchmarks
+  - portal
   - index
 
 workflow:
@@ -34,7 +34,7 @@ variables:
   # `saas-linux-<tier>-amd64` runner tag of every job that uses it. (qodana runs on the `large`
   # tier but invokes its own CLI, so no Gradle flag applies there.)
   #   $GRADLE_FLAGS_XLARGE — build/deploy (xlarge 16c/64G) + pages:regression (xlarge 16c/64G)
-  #   $GRADLE_FLAGS_MEDIUM — dependency-check, pages:benchmarks, pages:profile (medium 4c/16G)
+  #   $GRADLE_FLAGS_MEDIUM — dependency-check, pages:benchmarks, pages:profile, pages:docs (medium 4c/16G)
   # Custom knobs: -Pkotlin.daemon.jvmargs, -PtestJvmMaxHeap (matches build.gradle.kts default),
   # -PjunitParallelThreads, -PgitlabAuthHeaderValue (Package Registry auth token).
   #

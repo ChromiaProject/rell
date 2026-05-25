@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Rell Performance Reports</title>
+<title>Rell Developer Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
@@ -151,9 +151,10 @@
 <body>
 <header class="doc-head">
   <div class="doc-head-inner">
-    <h1 class="doc-title">Rell Quality Reports</h1>
+    <h1 class="doc-title">Rell Developer Portal</h1>
     <p class="doc-strap">
-      CI jobs may publish reports for three suites:
+      CI jobs may publish four kinds of artifacts per commit:
+      <strong>Docs</strong> (Dokka-rendered Rell stdlib reference),
       <strong>Benchmarks</strong> (JMH microbenchmarks), <strong>Profile</strong> (end-to-end
       async-profiler run against a Chromia node + workload), and <strong>Regression</strong>
       (clone a curated list of external Rell projects and verify whether the snapshot Rell is still
@@ -227,9 +228,9 @@ function renderReports(commits) {
     host.innerHTML = '<p class="empty-msg">No reports published yet.</p>';
     return;
   }
-  const reportCell = (entry, withJson) => {
+  const reportCell = (entry, withJson, label) => {
     if (!entry) return '<td class="empty">—</td>';
-    let html = '<td><a href="' + esc(entry.url) + '">report</a>';
+    let html = '<td><a href="' + esc(entry.url) + '">' + label + "</a>";
     if (withJson && entry.data) {
       html += ' <span class="sep">·</span> <a href="' + esc(entry.data) + '">json</a>';
     }
@@ -241,14 +242,15 @@ function renderReports(commits) {
     '<td class="sha">' + esc(c.sha) +
       (c.title ? '<div class="msg">' + esc(c.title) + "</div>" : "") + "</td>" +
     '<td class="when">' + esc(c.when) + "</td>" +
-    reportCell(c.benchmarks, true) +
-    reportCell(c.profile, true) +
-    reportCell(c.regression, false) +
+    reportCell(c.docs,       false, "browse") +
+    reportCell(c.benchmarks, true,  "report") +
+    reportCell(c.profile,    true,  "report") +
+    reportCell(c.regression, false, "report") +
     "</tr>").join("");
   host.innerHTML =
     "<table><thead><tr>" +
     "<th>Branch</th><th>Commit</th><th>When</th>" +
-    "<th>Benchmarks</th><th>Profile</th><th>Regression</th>" +
+    "<th>Docs</th><th>Benchmarks</th><th>Profile</th><th>Regression</th>" +
     "</tr></thead><tbody>" + rows + "</tbody></table>";
 }
 

@@ -1,12 +1,12 @@
-# GitLab Pages deployments: the static reports index plus the three manual report jobs
-# (benchmarks / profile / regression). The index is republished automatically after each
+# GitLab Pages deployments: the static portal index plus the four manual report jobs
+# (docs / benchmarks / profile / regression). The index is republished automatically after each
 # manual job so the listing stays current.
 
-# Client-side reports index listing every available `pages:benchmarks` / `pages:profile` /
-# `pages:regression` deployment, plus a profile-diff tool. The project is private, so anonymous
-# client-side fetches against the Environments API 401 — build-index.sh bakes the list into
-# `manifest.json` at publish time via `glab api`, and the app fetches that + per-deployment
-# /data/main.json from the browser.
+# Client-side portal index listing every available `pages:docs` / `pages:benchmarks` /
+# `pages:profile` / `pages:regression` deployment, plus a profile-diff tool. The project is
+# private, so anonymous client-side fetches against the Environments API 401 — build-index.sh
+# bakes the list into `manifest.json` at publish time via `glab api`, and the app fetches that +
+# per-deployment /data/main.json from the browser.
 #
 # Requires GITLAB_TOKEN (project access token with `read_api`, masked + dev-branch-protected).
 # CI_JOB_TOKEN's allowlist excludes the Environments API, so it 403s.
@@ -54,12 +54,17 @@ pages:index:after-regression:
   stage: index
   needs: [ pages:regression ]
 
+pages:index:after-docs:
+  extends: .pages-index
+  stage: index
+  needs: [ pages:docs ]
+
 # Manual benchmark / profile runs publishing HTML to GitLab Pages under per-commit path prefixes
 # (`bench-<slug>-<sha>` / `profile-<slug>-<sha>`); including the short SHA lets same-branch
 # reruns coexist for diffing. Benchmark JSON is also exposed at /data/main.json so external
 # tooling can fetch raw scores without scraping HTML.
 pages:benchmarks:
-  stage: benchmarks
+  stage: portal
   tags: [ saas-linux-medium-amd64 ]
   interruptible: true
   rules:
@@ -97,7 +102,7 @@ pages:benchmarks:
 # Extends `.local-chr-cache` for the DIND Postgres wiring and the persistent .m2 cache.
 pages:profile:
   extends: .local-chr-cache
-  stage: benchmarks
+  stage: portal
   tags: [ saas-linux-medium-amd64 ]
   interruptible: true
   rules:
@@ -140,7 +145,7 @@ pages:profile:
 # a single compile blowup from reddening the pipeline.
 pages:regression:
   extends: .local-chr-cache-no-postgres
-  stage: benchmarks
+  stage: portal
   tags: [ saas-linux-xlarge-amd64 ]
   interruptible: true
   rules:
@@ -160,5 +165,41 @@ pages:regression:
     url: "$CI_PAGES_URL/report.html"
   artifacts:
     when: always
+    paths: [ public ]
+    expire_in: 30 days
+
+# Manual Rell stdlib documentation publish: build local chr against the snapshot Rell, then run
+# `chr generate docs-site --system` (the chromia-build-tools docs entrypoint that drives the
+# rell-dokka-plugin against the bundled stdlib). HTML lands under per-commit path prefix
+# `docs-<slug>-<sha>` so successive runs coexist; the portal points at `index.html` (Dokka's
+# entry point). Mirrors `work/build-local-docs.sh` end-to-end.
+#
+# Extends `.local-chr-cache-no-postgres`: docs generation is pure Dokka, no Postgres needed; we
+# still want the persistent ~/.m2 + chromia-cli-local cache so reruns skip the chr rebuild.
+pages:docs:
+  extends: .local-chr-cache-no-postgres
+  stage: portal
+  tags: [ saas-linux-medium-amd64 ]
+  interruptible: true
+  rules:
+    - when: manual
+      allow_failure: true
+  needs: []
+  script:
+    - ./gradlew $GRADLE_FLAGS_MEDIUM :performance:buildLocalChr
+    - mkdir -p public
+    # `--enable-native-access=ALL-UNNAMED` mirrors work/build-local-docs.sh — chr's JVM startup
+    # logs Foreign API warnings without it. JAVA_ARGS is forwarded by the chr launcher.
+    - |
+      JAVA_ARGS="${JAVA_ARGS:-} --enable-native-access=ALL-UNNAMED" \
+        chromia-cli-local/chromia-cli/target/chromia-cli-dev-dist/bin/chr generate docs-site --system -d public
+    - echo "Rell docs - $CI_PAGES_URL/index.html"
+  pages:
+    path_prefix: "docs-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    expire_in: never
+  environment:
+    name: "docs/$CI_COMMIT_REF_SLUG/$CI_COMMIT_SHORT_SHA"
+    url: "$CI_PAGES_URL/index.html"
+  artifacts:
     paths: [ public ]
     expire_in: 30 days
