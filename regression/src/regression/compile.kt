@@ -9,6 +9,9 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.enum
 import com.fasterxml.jackson.module.kotlin.readValue
 import net.postchain.rell.performance.chr.LocalChr
+import org.testcontainers.containers.GenericContainer
+import org.testcontainers.containers.wait.strategy.Wait
+import org.testcontainers.utility.DockerImageName
 import java.io.BufferedWriter
 import java.io.IOException
 import java.nio.file.Path
@@ -24,48 +27,41 @@ private val DEFAULT_PER_PROJECT_TIMEOUT: Duration = Duration.ofMinutes(30)
 private fun ProjectSpec.stepTimeout(): Duration =
     timeoutMinutes?.let { Duration.ofMinutes(it.toLong()) } ?: DEFAULT_PER_PROJECT_TIMEOUT
 
-// `chr install` (dependency resolution) and `chr build` (compilation) operate on each project's
-// own clone tree and never touch the database, so the build phase fans out cleanly across
-// projects — Gradle's worker pool (org.gradle.workers.max / --max-workers) drives that fan-out
-// via the per-project `build-one` invocation. `chr test` does not fan out: every project's suite
-// runs against the same local PostgreSQL instance, so the Gradle task runs every `test-one`
-// strictly serially. The split is keyed on this step set; any step that is neither `install` nor
-// `build` is treated as a serial (test-phase) step, so unrecognised commands err on the safe side.
-private val PARALLELISABLE_STEPS = setOf("install", "build")
+// Pinned to the digest the .gitlab-ci.yml setup script uses for its DIND Postgres, so the
+// regression toolkit exercises chr against the same server version CI mainline tests use.
+private val POSTGRES_IMAGE = DockerImageName.parse(
+    "postgres:16.13-alpine3.23" +
+        "@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416",
+)
+
+private const val POSTGRES_USER = "postchain"
+private const val POSTGRES_PASSWORD = "postchain"
+private const val POSTGRES_DB = "postchain"
+private const val POSTGRES_PORT = 5432
 
 // ─── CLI subcommands ──────────────────────────────────────────────────────────────────────────
 //
 // The compile pipeline is sliced into single-unit invocations so Gradle owns all the threading:
-//   build-one   — run the install/build prefix for ONE project under ONE backend (parallel-safe)
-//   test-one    — run the deferred test steps for ONE project under ONE backend (serial)
-// Each invocation reads/writes one result fragment under reports/parts/; `report` merges them.
-// The chr binary they drive is built upstream by the shared `:performance:buildLocalChr` task.
+//   run-one — run the full install/build/test pipeline for ONE project under ONE backend.
+// Each invocation spins up its own throw-away Postgres via Testcontainers, so the whole pipeline
+// runs concurrently with other projects — no shared-schema serialisation. The result fragment lands
+// under reports/parts/; `report` merges them. The chr binary it drives is built upstream by the
+// shared `:performance:buildLocalChr` task.
 
-/** Shared `--name`/`--backend` plumbing for the single-project build/test subcommands. */
-abstract class SingleProjectSubcommand(name: String) : RegressionSubcommand(name) {
+class RunOneCommand : RegressionSubcommand("run-one") {
     val projectName: String by option("--name", help = "Project name as listed in the JSON config.").required()
     val backend: ExecutionBackend by option("--backend", help = "Execution backend for this run.")
         .enum<ExecutionBackend>().required()
 
-    protected fun resolveProject(): ProjectSpec {
+    override fun help(context: Context) =
+        "Run the full chr pipeline (install/build/test) for a single project under one backend; writes its result fragment."
+
+    override fun run() {
         val projects = loadProjects(configFiles, configOptionalFiles)
-        return projects.firstOrNull { it.name == projectName }
+        val project = projects.firstOrNull { it.name == projectName }
             ?: die(commandName, "No project named '$projectName' in the supplied config(s)")
+        runOneProject(project, workdir, reportsDir, backend)
     }
-}
-
-class BuildOneCommand : SingleProjectSubcommand("build-one") {
-    override fun help(context: Context) =
-        "Run the install/build prefix for a single project under one backend; writes its result fragment."
-
-    override fun run() = buildOneProject(resolveProject(), workdir, reportsDir, backend)
-}
-
-class TestOneCommand : SingleProjectSubcommand("test-one") {
-    override fun help(context: Context) =
-        "Run the deferred test steps for a single project under one backend; updates its result fragment."
-
-    override fun run() = testOneProject(resolveProject(), workdir, reportsDir, backend)
 }
 
 // ─── Per-backend environment ────────────────────────────────────────────────────────────────────
@@ -94,12 +90,6 @@ private fun writeFragment(reportsDir: Path, backend: ExecutionBackend, result: C
     regressionWriter.writeValue(path.toFile(), result)
 }
 
-private fun readFragment(reportsDir: Path, backend: ExecutionBackend, name: String): CompileResult? {
-    val path = fragmentPath(reportsDir, backend, name)
-    if (!path.exists()) return null
-    return regressionMapper.readValue<CompileResult>(path.inputStream())
-}
-
 /**
  * Read every result fragment under reports/parts/ and assemble the combined [ResultsFile] the
  * report renders from. Replaces the single results.json that the old monolithic `compile` wrote;
@@ -123,7 +113,7 @@ internal fun mergeFragments(reportsDir: Path): ResultsFile {
 
 // ─── Single-unit pipeline ─────────────────────────────────────────────────────────────────────
 
-/** Mutable accumulator threaded through one project's chr-command pipeline across build + test. */
+/** Mutable accumulator threaded through one project's chr-command pipeline. */
 private class PipelineState {
     var totalDurationMs = 0L
     var lastExit = 0
@@ -179,31 +169,30 @@ private fun locate(project: ProjectSpec, workdir: Path, backend: ExecutionBacken
 }
 
 /**
- * Build phase for one (project, backend): validate the clone, apply patches, then run the leading
- * `install`/`build` prefix of the project's command list and write the result fragment. Backend-
- * independent compilation-wise, but each backend gets its own fragment + log so the report stays a
- * self-contained per-backend record. Safe to run concurrently with other projects — every project
- * touches only its own clone tree, log file, and fragment.
+ * Run one (project, backend) end-to-end: validate the clone, apply patches, spin up a throw-away
+ * Postgres for the project's lifetime, then run every chr command in order and write the result
+ * fragment. Safe to run concurrently with other projects — each invocation owns its own Postgres
+ * container, log file, and fragment. The Postgres is recreated per project so suites never see
+ * leftover state from a sibling run.
  */
-fun buildOneProject(project: ProjectSpec, workdir: Path, reportsDir: Path, backend: ExecutionBackend) {
+fun runOneProject(project: ProjectSpec, workdir: Path, reportsDir: Path, backend: ExecutionBackend) {
     partsDir(reportsDir).createDirectories()
     val tag = "[${backend.label()}] ${project.name}"
 
     val chrBin = LocalChr.chrExecutable(repoRoot())
     val located = locate(project, workdir, backend)
     if (located is Unusable) {
-        log("build-one", "$tag — ${located.result.status} (clone not usable; see notes)")
+        log("run-one", "$tag — ${located.result.status} (clone not usable; see notes)")
         writeFragment(reportsDir, backend, located.result)
         return
     }
     val (sha, rellDir) = (located as Usable).let { it.sha to it.rellDir }
 
     // Apply declared patches (e.g. rewrite stricter-than-allowed chromia.yml strings). Applied
-    // per build so they survive `regressionClone`'s git reset on the next run. Idempotent, so the
-    // test phase re-running `locate` without patches is fine.
+    // before every chr step so they survive `regressionClone`'s git reset on the next sweep.
     val patchFailure = applyPatches(project, workdir / project.name)
     if (patchFailure != null) {
-        log("build-one", "$tag — FAILED (patch error: $patchFailure)")
+        log("run-one", "$tag — FAILED (patch error: $patchFailure)")
         writeFragment(
             reportsDir, backend,
             baseResult(project, Status.FAILED).copy(
@@ -216,69 +205,72 @@ fun buildOneProject(project: ProjectSpec, workdir: Path, reportsDir: Path, backe
         return
     }
 
-    // The leading run of install/build steps is the parallel-safe build phase; `test` (and anything
-    // past it) is deferred to test-one. takeWhile keeps within-project order intact and treats any
-    // unrecognised step as serial — see PARALLELISABLE_STEPS.
-    val parallelSteps = project.commands.takeWhile { it.firstOrNull() in PARALLELISABLE_STEPS }
-
     val logFile = logFileFor(reportsDir, backend, project.name)
     logFile.parent.createDirectories()
     logFile.deleteIfExists()
 
     val state = PipelineState()
-    appendingWriter(logFile).use { w ->
-        writeLogHeader(w, project, sha, rellDir)
-        runSteps(w, parallelSteps, chrBin, rellDir, logFile, tag, state, backend.extraEnv(), project.stepTimeout())
+
+    withProjectPostgres(tag) { dbEnv ->
+        appendingWriter(logFile).use { w ->
+            writeLogHeader(w, project, sha, rellDir)
+            runSteps(
+                w,
+                project.commands,
+                chrBin,
+                rellDir,
+                logFile,
+                tag,
+                state,
+                backend.extraEnv() + dbEnv,
+                project.stepTimeout(),
+            )
+        }
     }
 
     writeFragment(reportsDir, backend, finalize(project, backend, tag, sha, logFile, state))
 }
 
 /**
- * Test phase for one (project, backend): pick up the build phase's fragment, run the deferred
- * `test` steps if the build passed, and overwrite the fragment with the final result. Run strictly
- * serially across projects by the Gradle task — every suite shares one PostgreSQL instance.
+ * Spin a fresh PostgreSQL container for the lifetime of [block] and hand the chr-readable
+ * connection env (`CHR_DB_URL`/`CHR_DB_USER`/`CHR_DB_PASSWORD`) to it. Stopped in a finally so a
+ * thrown exception or process kill doesn't leak the container. PGDATA on tmpfs (capped at 512 MB
+ * per container, well under the suites' actual fill) keeps startup at a few seconds and avoids
+ * disk-IO contention when many of these run in parallel under Gradle's worker pool.
+ *
+ * Uses [GenericContainer] rather than the dedicated `PostgreSQLContainer`: the project's pinned
+ * testcontainers (2.0.2, via postchain-bom) has no matching `:postgresql` submodule on Maven
+ * Central — that helper still ships only on the 1.x branch. The half-dozen lines of env + port
+ * wiring below are equivalent for our purposes.
  */
-fun testOneProject(project: ProjectSpec, workdir: Path, reportsDir: Path, backend: ExecutionBackend) {
-    val tag = "[${backend.label()}] ${project.name}"
-
-    val located = locate(project, workdir, backend)
-    if (located is Unusable) {
-        // build-one already wrote the terminal fragment for the same reason; nothing to test.
-        return
+private fun withProjectPostgres(tag: String, block: (Map<String, String>) -> Unit) {
+    val container = GenericContainer(POSTGRES_IMAGE)
+        .withEnv("POSTGRES_USER", POSTGRES_USER)
+        .withEnv("POSTGRES_PASSWORD", POSTGRES_PASSWORD)
+        .withEnv("POSTGRES_DB", POSTGRES_DB)
+        .withExposedPorts(POSTGRES_PORT)
+        .withTmpFs(mapOf("/var/lib/postgresql/data" to "rw,size=512m"))
+        // Postgres logs the "ready to accept connections" line twice on boot (once for the bootstrap
+        // run, once for the real server); waiting for both avoids the JDBC race where chr connects
+        // during the brief bootstrap window and gets refused.
+        .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*", 2))
+    try {
+        container.start()
+        val jdbcUrl = "jdbc:postgresql://${container.host}:${container.getMappedPort(POSTGRES_PORT)}/$POSTGRES_DB"
+        val dbEnv = mapOf(
+            "CHR_DB_URL" to jdbcUrl,
+            "CHR_DB_USER" to POSTGRES_USER,
+            "CHR_DB_PASSWORD" to POSTGRES_PASSWORD,
+        )
+        log("run-one", "$tag — postgres @ $jdbcUrl")
+        block(dbEnv)
+    } finally {
+        try {
+            container.stop()
+        } catch (e: Exception) {
+            log("run-one", "$tag — postgres stop failed: ${e.message}")
+        }
     }
-    val rellDir = (located as Usable).rellDir
-
-    val built = readFragment(reportsDir, backend, project.name)
-    if (built == null) {
-        log("test-one", "$tag — no build fragment found; skipping (did build-one run?)")
-        return
-    }
-
-    val serialSteps = project.commands.drop(
-        project.commands.takeWhile { it.firstOrNull() in PARALLELISABLE_STEPS }.size,
-    )
-
-    // Build failed (or was a terminal status), or there is nothing to test — the build fragment is
-    // already final.
-    if (built.status != Status.PASSED || serialSteps.isEmpty()) return
-
-    val chrBin = LocalChr.chrExecutable(repoRoot())
-    val logFile = logFileFor(reportsDir, backend, project.name)
-
-    // Resume the accumulator from the build phase so durations and the final exit reflect the whole
-    // pipeline, not just the test steps.
-    val state = PipelineState().apply {
-        totalDurationMs = built.durationMs ?: 0L
-        lastExit = built.exitCode ?: 0
-        lastTimedOut = built.timedOut
-    }
-
-    appendingWriter(logFile).use { w ->
-        runSteps(w, serialSteps, chrBin, rellDir, logFile, tag, state, backend.extraEnv(), project.stepTimeout())
-    }
-
-    writeFragment(reportsDir, backend, finalize(project, backend, tag, built.sha ?: "", logFile, state))
 }
 
 // One BufferedWriter spans a phase's work: header, per-step markers, and any start-failure note.

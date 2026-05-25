@@ -635,7 +635,7 @@ private fun aocSlopegraphSvg(
     medianByBackend: Map<String, Double?>,
 ): String {
     val padL = 64
-    val padR = 16
+    val padR = 56
     val padT = 36
     val padB = 28
     val plotW = 540

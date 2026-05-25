@@ -31,7 +31,7 @@ variables:
     description: "Set to 'true' to publish a Develocity build scan for this pipeline (visible at scans.gradle.com)."
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
   # CI Gradle args — two profiles, picked per job in its script. (qodana runs its own CLI.)
-  #   $GRADLE_FLAGS_LARGE  — build/deploy (xlarge 16c/64G) + pages:regression (large 8c/32G)
+  #   $GRADLE_FLAGS_LARGE  — build/deploy (xlarge 16c/64G) + pages:regression (xlarge 16c/64G)
   #   $GRADLE_FLAGS_MEDIUM — dependency-check, pages:benchmarks, pages:profile (medium 4c/16G)
   # Custom knobs: -Pkotlin.daemon.jvmargs, -PtestJvmMaxHeap (matches build.gradle.kts default),
   # -PjunitParallelThreads, -PgitlabAuthHeaderValue (Package Registry auth token).
@@ -40,8 +40,12 @@ variables:
   #   50g heap caps (12g daemon + 6g kotlin + 8 × 4g test workers) + ~2g Postgres tmpfs
   #   (cap 8g, actual fill is small) + ~6g OS/DIND/non-heap ≈ 58g ≤ 64g ✓. Threads: 8 × 4
   #   JUnit = 32 on 16 vCPU (2× oversub, I/O-bound — fine).
-  # Re-used on large for pages:regression: workload is chr fan-out, not Test workers, so per-slot
-  # resident is ~2.5g (orchestrator + chr). Peak ≈ 4g daemon + 8 × 2.5g + ~4g infra ≈ 28g ≤ 32g ✓.
+  # Re-used on xlarge for pages:regression: workload is chr fan-out, not Test workers, and each
+  # of the 8 worker slots also holds a per-project Testcontainers Postgres for the duration of
+  # the pipeline (see regression/src/regression/compile.kt `withProjectPostgres`). Per-slot
+  # resident ≈ 2.5g chr orchestrator + 0.5g Postgres ≈ 3g; peak ≈ 4g daemon + 8 × 3g + ~6g
+  # infra ≈ 34g ≤ 64g ✓. The previous large-runner (8c/32G) sizing assumed the serial-test
+  # model and no longer fits the parallel pipeline.
   GRADLE_FLAGS_LARGE: >-
     -Dorg.gradle.caching=true
     --max-workers=8

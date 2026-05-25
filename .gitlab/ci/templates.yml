@@ -1,10 +1,16 @@
 # Shared anchors for jobs that need a Postgres + Docker host (and, in the case of
 # `.local-chr-cache`, a persistent ~/.m2 + chromia-cli build tree). Consumers live in
 # `build.yml`, `dependency-check.yml`, and `pages.yml`.
+#
+# Composition: the `.setup-fragments` job below holds the individual before_script chunks; the
+# real `.setup` / `.setup-no-postgres` anchors splice them via `!reference` so jobs can opt out
+# of the DIND Postgres without duplicating the docker-CLI install or the Develocity injection.
+# `pages:regression` is the only no-postgres consumer today — it manages per-project Postgres
+# via Testcontainers from inside the regression toolkit (see regression/src/regression/compile.kt
+# `withProjectPostgres`), so the shared DIND instance would just sit idle for it.
 
-.setup:
-  tags: [ saas-linux-xlarge-amd64 ]
-  before_script:
+.setup-fragments:
+  docker-cli-install:
     - microdnf install -y ca-certificates curl tar gzip git glibc-langpack-en
     - |
       DOCKER_VERSION=28.1.1
@@ -12,9 +18,11 @@
       tar -xzf /tmp/docker.tgz -C /tmp
       install -m 0755 /tmp/docker/docker /usr/local/bin/docker
       rm -rf /tmp/docker /tmp/docker.tgz
-    # PGDATA on tmpfs — sized for the full parallel test load (rell-base runs `test`,
-    # `testRoundTrip`, `testTruffle` against this single Postgres). Smaller jobs (pages:profile
-    # on medium, pages:regression on large) only need one schema; the cap is uniform anyway.
+  # PGDATA on tmpfs — sized for the full parallel test load (rell-base runs `test`,
+  # `testRoundTrip`, `testTruffle` against this single Postgres). The pages:profile job (medium)
+  # only needs one schema; the cap is uniform anyway. pages:regression no longer extends `.setup`
+  # at all — see `.setup-no-postgres`.
+  dind-postgres-start:
     - |
       docker run \
         --detach \
@@ -25,9 +33,10 @@
         --tmpfs=/pgtmpfs:size=8g \
         --publish 5432:5432 \
         postgres:16.13-alpine3.23@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416
-    # When PUBLISH_BUILD_SCAN=true, inject a Develocity plugin block into settings.gradle.kts.
-    # Kept out of git so local devs don't auto-accept ToU; the plugin only reads termsOfUseAgree
-    # from a Kotlin DSL block, so an in-flight tracked-file edit is the only way to express it.
+  # When PUBLISH_BUILD_SCAN=true, inject a Develocity plugin block into settings.gradle.kts.
+  # Kept out of git so local devs don't auto-accept ToU; the plugin only reads termsOfUseAgree
+  # from a Kotlin DSL block, so an in-flight tracked-file edit is the only way to express it.
+  develocity-inject:
     - |
       if [ "$PUBLISH_BUILD_SCAN" = "true" ]; then
         cat >> settings.gradle.kts <<'EOF'
@@ -44,6 +53,8 @@
       EOF
       fi
     - ./gradlew --version
+
+.setup-artifacts:
   artifacts:
     when: always
     paths:
@@ -56,6 +67,23 @@
         coverage_format: jacoco
         path: "**/build/reports/jacoco/test/jacocoTestReport.xml"
     expire_in: 1 week
+
+.setup:
+  tags: [ saas-linux-xlarge-amd64 ]
+  before_script:
+    - !reference [ .setup-fragments, docker-cli-install ]
+    - !reference [ .setup-fragments, dind-postgres-start ]
+    - !reference [ .setup-fragments, develocity-inject ]
+  artifacts: !reference [ .setup-artifacts, artifacts ]
+
+# Same as `.setup` but without the DIND Postgres. Used by jobs that bring their own database
+# (e.g. pages:regression, which spins one Testcontainers Postgres per project).
+.setup-no-postgres:
+  tags: [ saas-linux-xlarge-amd64 ]
+  before_script:
+    - !reference [ .setup-fragments, docker-cli-install ]
+    - !reference [ .setup-fragments, develocity-inject ]
+  artifacts: !reference [ .setup-artifacts, artifacts ]
 
 .local-chr-cache:
   extends: .setup
@@ -83,6 +111,18 @@
     - !reference [ .setup, before_script ]
     # Symlink ~/.m2 into the project dir so cached deps survive. Remove ~/.m2 first — the
     # GraalVM image ships an empty real dir, which would make `ln -s` nest inside it.
+    - rm -rf "$HOME/.m2"
+    - mkdir -p "$CI_PROJECT_DIR/.m2/repository"
+    - ln -s "$CI_PROJECT_DIR/.m2" "$HOME/.m2"
+
+# Sibling of `.local-chr-cache` for jobs that bring their own database (pages:regression). Skips
+# the DIND Postgres + the CHR_DB_* env that pointed at it; keeps the persistent ~/.m2 cache and
+# the chromia-cli-local checkout the regression toolkit consumes.
+.local-chr-cache-no-postgres:
+  extends: .setup-no-postgres
+  cache: !reference [ .local-chr-cache, cache ]
+  before_script:
+    - !reference [ .setup-no-postgres, before_script ]
     - rm -rf "$HOME/.m2"
     - mkdir -p "$CI_PROJECT_DIR/.m2/repository"
     - ln -s "$CI_PROJECT_DIR/.m2" "$HOME/.m2"

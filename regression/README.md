@@ -12,11 +12,14 @@ invoked against the locally-built `chr` (built from the Rell snapshot in this re
 
 Parallelism is owned by Gradle. The build script parses the JSON configs and generates one task
 per project (`regressionFt4Lib`, `regressionDirectoryChain`, &hellip;) plus the aggregate
-`regression` / `regressionPublic`. Each task fans `chr install` + `chr build` out across Gradle's
-**worker pool** &mdash; each only touches its own clone tree, so the build phase parallelises
-freely, bounded by Gradle's worker budget (`--max-workers` / `org.gradle.workers.max`). `chr test`
-then runs **serially** &mdash; every project's suite hits the same local PostgreSQL instance, and
-concurrent runs would race on shared schemas.
+`regression` / `regressionPublic`. Each task fans every (project, backend) pipeline out across
+Gradle's **worker pool** (bounded by `--max-workers` / `org.gradle.workers.max`); each work
+item runs `chr install` &rarr; `chr build` &rarr; `chr test` end-to-end against its own
+throw-away PostgreSQL spun up via Testcontainers (`withProjectPostgres` in
+`src/regression/compile.kt`). The whole pipeline parallelises freely &mdash; no shared-schema
+serialisation. Each project gets a fresh database, so suites never see leftover state from a
+sibling run. Requires a reachable Docker daemon: locally pick it up from `DOCKER_HOST` /
+`local.properties`; in CI the `.gitlab-ci.yml` variables already point at the DIND service.
 
 ## Quick start
 
