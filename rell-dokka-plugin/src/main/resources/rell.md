@@ -38,6 +38,10 @@ query my_query() {
 
 Meta information about rell types.
 
+# Package rell.time
+
+Date/time formatting and parsing utilities. Convert between millisecond timestamps and human-readable text via configurable [rell.time.format] patterns.
+
 # Package rell.test
 
 The [rell.test] namespace is only accessible within test modules

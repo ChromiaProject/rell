@@ -1,0 +1,5 @@
+module;
+
+@extendable function on_event(s: text): list<text>;
+
+@extend(on_event) function logger(s: text): list<text> = ["logged: " + s];

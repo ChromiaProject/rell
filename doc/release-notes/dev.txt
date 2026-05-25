@@ -169,3 +169,21 @@ behind on others. We are not publishing comparative numbers until the implementa
 The CI suite now runs the entire rell-base test family three times — interpreter, interpreter + RR-serialization
 round-trip, and Truffle — and requires bit-identical results on all three. Differences between the tree-walker and
 Truffle are Truffle bugs; the tree-walker is the canonical reference.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+12. Tooling: rell-dokka-plugin no longer depends on Dokka
+
+The doc-site generator has been rewritten as a pure HTML generator. It walks the Rell L_/R_ model directly
+(stdlib via Lib_Rell + Lib_RellTest, source projects via RellApiBaseInternal.compileApp) and produces the
+output tree with kotlinx.html, commonmark, and a self-contained stylesheet. All Dokka dependencies
+(dokka-core, dokka-base, dokka-analysis-*, dokka-test-api, etc.) and the unshading workaround that backed
+them are gone.
+
+The CLI surface is unchanged: `--source/--target/--modules/--name/--system/--styles/--assets/--includes/
+--source-link/--filtered-modules/--additional-modules` continue to work as before. The two public API
+classes that downstream tools depend on (`com.chromia.rell.dokka.RellDokkaGenerator` and
+`com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder`) keep the same constructor and method
+signatures, so existing chromia-cli builds (and any other caller) compile against the new plugin without
+edits. The rendered output is a new look but the the path layout is preserved —
+title-mangled module slug at the top, then `<package>/<def>.html`, `<package>/<Type>/index.html`,
+`<package>/<Type>/<member>.html`, plus `navigation.html` and `scripts/pages.json`.

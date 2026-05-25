@@ -1,0 +1,32 @@
+public final class com/chromia/rell/dokka/RellDokkaGenerator {
+	public fun <init> (Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;)V
+	public final fun generate ()V
+}
+
+public final class com/chromia/rell/dokka/cli/MainKt {
+	public static final fun main ([Ljava/lang/String;)V
+}
+
+public final class com/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder {
+	public static final field Companion Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/util/List;Ljava/io/File;)V
+	public synthetic fun <init> (ZLjava/lang/String;Ljava/util/List;Ljava/io/File;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun addSourceLink (Ljava/lang/String;Ljava/net/URI;Ljava/lang/String;)Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;
+	public final fun addSourceLink (Ljava/lang/String;Ljava/net/URL;Ljava/lang/String;)Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;
+	public final fun additionalModules (Ljava/util/List;)Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;
+	public final fun cliEnv (Lnet/postchain/rell/api/base/RellCliEnv;)Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;
+	public final fun customAssets (Ljava/util/List;)Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;
+	public final fun customStyleSheets (Ljava/util/List;)Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;
+	public final fun filteredModules (Ljava/util/List;)Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;
+	public final fun footerMessage (Ljava/lang/String;)Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;
+	public static final fun getSYSTEM ()Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;
+	public final fun includes (Ljava/util/List;)Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;
+	public static final fun newSystemBuilder ()Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;
+	public final fun targetFolder (Ljava/io/File;)Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;
+}
+
+public final class com/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder$Companion {
+	public final fun getSYSTEM ()Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;
+	public final fun newSystemBuilder ()Lcom/chromia/rell/dokka/config/RellDokkaPluginConfigurationBuilder;
+}
+

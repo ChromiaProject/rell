@@ -25,7 +25,6 @@ apiValidation {
         "rell-toolbox", "common", "ast", "indexer", "code-quality", "language-server", "seeder",
         "rell-codegen", "codegen", "codegen-kotlin", "codegen-typescript", "codegen-javascript",
         "codegen-python", "codegen-mermaid", "rellgen",
-        "rell-dokka-plugin",
         "performance",
         "regression",
     )

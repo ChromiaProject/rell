@@ -38,9 +38,8 @@ system-stubs-jupiter = "2.1.7"
 commons-text = "1.15.0"
 
 # rell-dokka-plugin dependencies
-dokka = "2.1.0"
-kotlinx-html = "0.8.0"
-kotlinx-serialization-json = "1.6.0"
+kotlinx-html = "0.12.0"
+commonmark = "0.26.0"
 jsoup = "1.22.2"
 
 # Plugins
@@ -118,15 +117,10 @@ system-stubs-jupiter = { module = "uk.org.webcompere:system-stubs-jupiter", vers
 commons-text = { module = "org.apache.commons:commons-text", version.ref = "commons-text" }
 
 # rell-dokka-plugin libraries
-dokka-core = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka" }
-dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokka" }
-dokka-analysis-markdown = { module = "org.jetbrains.dokka:analysis-markdown", version.ref = "dokka" }
-dokka-analysis-kotlin-api = { module = "org.jetbrains.dokka:analysis-kotlin-api", version.ref = "dokka" }
-dokka-analysis-kotlin-descriptors = { module = "org.jetbrains.dokka:analysis-kotlin-descriptors", version.ref = "dokka" }
-dokka-test-api = { module = "org.jetbrains.dokka:dokka-test-api", version.ref = "dokka" }
-dokka-base-test-utils = { module = "org.jetbrains.dokka:dokka-base-test-utils", version.ref = "dokka" }
 kotlinx-html = { module = "org.jetbrains.kotlinx:kotlinx-html-jvm", version.ref = "kotlinx-html" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
+commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
+commonmark-ext-gfm-tables = { module = "org.commonmark:commonmark-ext-gfm-tables", version.ref = "commonmark" }
+commonmark-ext-autolink = { module = "org.commonmark:commonmark-ext-autolink", version.ref = "commonmark" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
 # Performance

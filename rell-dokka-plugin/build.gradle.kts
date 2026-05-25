@@ -1,20 +1,13 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
     application
 }
 
-val dependenciesToUnshade: Configuration by configurations.creating
-val unshadedClassesTarget = layout.buildDirectory.dir("unshaded")
-
 dependencies {
-    implementation(libs.dokka.core)
-    implementation(libs.dokka.base)
-    implementation(libs.dokka.analysis.markdown)
-    implementation(libs.dokka.analysis.kotlin.api)
-
     implementation(libs.kotlinx.html)
-    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.commonmark)
+    implementation(libs.commonmark.ext.gfm.tables)
+    implementation(libs.commonmark.ext.autolink)
 
     implementation(projects.rellApiBase)
     implementation(projects.rellBase)
@@ -23,35 +16,9 @@ dependencies {
 
     testImplementation(kotlin("test-junit5"))
     testImplementation(libs.assertk)
-    testImplementation(libs.dokka.test.api)
-    testImplementation(libs.dokka.base.test.utils)
     testImplementation(libs.jsoup)
     testImplementation(libs.jackson.kotlin)
     testImplementation(libs.log4j.slf4j2.impl)
-
-    // Unshading dependencies
-    dependenciesToUnshade(libs.dokka.analysis.kotlin.descriptors)
-    implementation(files(unshadedClassesTarget))
-}
-
-val copyShadedDependencyClasses by tasks.registering(Copy::class) {
-    from(zipTree(dependenciesToUnshade.singleFile))
-    include(
-        "**/DocumentableSourceLanguageParser.class",
-        "**/DocumentableLanguage.class",
-        "**/DescriptorDocumentableSource.class",
-        "**/DeclarationDescriptor.class",
-    )
-    into(unshadedClassesTarget)
-}
-
-kotlin.compilerOptions.optIn.addAll(
-    "org.jetbrains.dokka.InternalDokkaApi",
-    "org.jetbrains.dokka.plugability.DokkaPluginApiPreview",
-)
-
-tasks.compileKotlin {
-    dependsOn(copyShadedDependencyClasses)
 }
 
 application {
@@ -76,4 +43,3 @@ tasks.withType<JacocoReport> {
         )
     }
 }
-
