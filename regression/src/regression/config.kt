@@ -98,6 +98,10 @@ data class CompileResult(
     val status: Status,
     val sha: String? = null,
     val durationMs: Long? = null,
+    /** Wall-clock spent in non-test steps (install/build/...) for this run. Null on legacy results. */
+    val nonTestDurationMs: Long? = null,
+    /** Wall-clock spent in `chr test` steps for this run. Null on legacy results; 0 when no test step ran. */
+    val testDurationMs: Long? = null,
     val exitCode: Int? = null,
     val timedOut: Boolean = false,
     val errorSummary: String? = null,

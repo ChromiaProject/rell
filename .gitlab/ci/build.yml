@@ -8,7 +8,7 @@ build:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   script:
-    - ./gradlew $GRADLE_FLAGS_LARGE check :coverage-report-aggregate:testCodeCoverageReport
+    - ./gradlew $GRADLE_FLAGS_XLARGE check :coverage-report-aggregate:testCodeCoverageReport
     - "awk -F, 'NR>1 { missed += $4; covered += $5 } END { printf \"Line coverage: %.2f%%\\n\", 100 * covered / (missed + covered) }' $JACOCO_REPORT_DIR/testCodeCoverageReport.csv"
   coverage: '/Line coverage: (\d+\.\d+%)/'
 
@@ -18,6 +18,6 @@ deploy:
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH =~ /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
   script:
-    - ./gradlew $GRADLE_FLAGS_LARGE check :coverage-report-aggregate:testCodeCoverageReport publish
+    - ./gradlew $GRADLE_FLAGS_XLARGE check :coverage-report-aggregate:testCodeCoverageReport publish
     - "awk -F, 'NR>1 { missed += $4; covered += $5 } END { printf \"Line coverage: %.2f%%\\n\", 100 * covered / (missed + covered) }' $JACOCO_REPORT_DIR/testCodeCoverageReport.csv"
   coverage: '/Line coverage: (\d+\.\d+%)/'

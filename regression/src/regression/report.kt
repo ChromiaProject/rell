@@ -114,10 +114,31 @@ private fun FlowContent.renderFlavorsOrFlat(results: List<CompileResult>) {
     val backends = results.mapNotNull { it.executionBackend }.distinct()
     if (backends.size < 2) {
         renderSummary(results)
-        renderProjectSections(results)
+        renderProjectSections(results, sharedNonTestMs = emptyMap())
     } else {
         renderFlavorSwitcher(results, backends)
     }
+}
+
+/**
+ * Build a per-project lookup of the canonical install+build cost ("x") to display under every
+ * backend. The first backend run (INTERPRETER, by order) pays the cold-cache cost of `chr install`
+ * and `chr build`; the second backend reuses the same workdir and sees those already done. Using
+ * the first-backend measurement as the shared `x` makes `x + y_interp` vs `x + y_truffle` an
+ * honest comparison: only `y` (the test phase) reflects the backend choice.
+ *
+ * If no first-backend record exists for a project (partial run), callers fall back to that
+ * project's own non-test duration — the substitution only kicks in when we actually have a fair
+ * baseline to share.
+ */
+private fun sharedNonTestMsByName(results: List<CompileResult>): Map<String, Long> {
+    val firstBackend = ExecutionBackend.entries.firstOrNull { backend ->
+        results.any { it.executionBackend == backend }
+    } ?: return emptyMap()
+    return results
+        .filter { it.executionBackend == firstBackend }
+        .mapNotNull { r -> r.nonTestDurationMs?.let { r.name to it } }
+        .toMap()
 }
 
 /**
@@ -126,6 +147,7 @@ private fun FlowContent.renderFlavorsOrFlat(results: List<CompileResult>) {
  * combinator in REGRESSION_CSS can drive the switch with no JavaScript.
  */
 private fun FlowContent.renderFlavorSwitcher(results: List<CompileResult>, backends: List<ExecutionBackend>) {
+    val sharedNonTestMs = sharedNonTestMsByName(results)
     // Stable, deterministic order — INTERPRETER first so it's the default-checked tab.
     val ordered = backends.sortedBy { it.ordinal }
     for ((idx, backend) in ordered.withIndex()) {
@@ -146,7 +168,7 @@ private fun FlowContent.renderFlavorSwitcher(results: List<CompileResult>, backe
         div(classes = "flavor-panel flavor-panel-${backend.name.lowercase()}") {
             val perBackend = results.filter { it.executionBackend == backend }
             renderSummary(perBackend)
-            renderProjectSections(perBackend)
+            renderProjectSections(perBackend, sharedNonTestMs)
         }
     }
 }
@@ -159,7 +181,10 @@ private fun ExecutionBackend.radioId(): String = "flavor-${name.lowercase()}"
  * stamped cohort (older results.json) it lands in a `projects` section so the report still
  * renders cleanly.
  */
-private fun FlowContent.renderProjectSections(results: List<CompileResult>) {
+private fun FlowContent.renderProjectSections(
+    results: List<CompileResult>,
+    sharedNonTestMs: Map<String, Long>,
+) {
     // Sort: failed first (what reviewers actually care about), then everything else in original order.
     val priority = mapOf(
         Status.FAILED to 0,
@@ -176,11 +201,15 @@ private fun FlowContent.renderProjectSections(results: List<CompileResult>) {
         val rows = rowsWithIdx
             .sortedWith(compareBy({ priority[it.value.status] ?: 99 }, { it.index }))
             .map { it.value }
-        renderCohortTable(cohort, rows)
+        renderCohortTable(cohort, rows, sharedNonTestMs)
     }
 }
 
-private fun FlowContent.renderCohortTable(cohort: String, rows: List<CompileResult>) = renderSection(
+private fun FlowContent.renderCohortTable(
+    cohort: String,
+    rows: List<CompileResult>,
+    sharedNonTestMs: Map<String, Long>,
+) = renderSection(
     title = "$cohort projects",
     strap = "${rows.size} project${if (rows.size == 1) "" else "s"} · click a failed " +
             "pipeline stage to read the last few lines of chr stderr.",
@@ -197,13 +226,13 @@ private fun FlowContent.renderCohortTable(cohort: String, rows: List<CompileResu
                 }
             }
             tbody {
-                for (row in rows) renderRow(row)
+                for (row in rows) renderRow(row, sharedNonTestMs[row.name])
             }
         }
     }
 }
 
-private fun TBODY.renderRow(r: CompileResult) {
+private fun TBODY.renderRow(r: CompileResult, sharedNonTestMs: Long?) {
     tr(classes = "row-${r.status.cssClass()}") {
         td(classes = "name") {
             div { +r.name }
@@ -226,9 +255,7 @@ private fun TBODY.renderRow(r: CompileResult) {
             }
         }
         td(classes = "pipeline-cell") { renderPipeline(r) }
-        td(classes = "num") {
-            r.durationMs?.let { +"%.1f s".formatRoot(it / 1000.0) } ?: run { +"—" }
-        }
+        td(classes = "num") { renderDurationCell(r, sharedNonTestMs) }
     }
     // Failure log lives on a second row that spans the table — gives the chr stderr excerpt
     // room to wrap without being squeezed into the pipeline cell. Collapsed by default so the
@@ -248,6 +275,28 @@ private fun TBODY.renderRow(r: CompileResult) {
                 }
             }
         }
+    }
+}
+
+/**
+ * Render the duration cell as `x + y s` — `x` is the shared install/build cost (taken from the
+ * first backend's run so both panels show the same baseline) and `y` is this backend's `chr test`
+ * time. Collapses to just `x s` when this run had no test step, and to a single number when the
+ * fragment predates the dual-duration split (legacy `durationMs` only).
+ */
+private fun FlowContent.renderDurationCell(r: CompileResult, sharedNonTestMs: Long?) {
+    val nonTest = sharedNonTestMs ?: r.nonTestDurationMs
+    val test = r.testDurationMs
+    if (nonTest == null && test == null) {
+        r.durationMs?.let { +"%.1f s".formatRoot(it / 1000.0) } ?: run { +"—" }
+        return
+    }
+    val x = nonTest ?: 0L
+    val y = test ?: 0L
+    if (y == 0L) {
+        +"%.1f s".formatRoot(x / 1000.0)
+    } else {
+        +"%.1f s + %.1f s".formatRoot(x / 1000.0, y / 1000.0)
     }
 }
 

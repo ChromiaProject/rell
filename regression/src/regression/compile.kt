@@ -115,14 +115,20 @@ internal fun mergeFragments(reportsDir: Path): ResultsFile {
 
 /** Mutable accumulator threaded through one project's chr-command pipeline. */
 private class PipelineState {
-    var totalDurationMs = 0L
+    var nonTestDurationMs = 0L
+    var testDurationMs = 0L
     var lastExit = 0
     var lastTimedOut = false
     var failedStep: List<String>? = null
 
+    val totalDurationMs: Long get() = nonTestDurationMs + testDurationMs
+
     /** The pipeline keeps running only while the previous step exited cleanly. */
     val ok: Boolean get() = lastExit == 0 && !lastTimedOut
 }
+
+/** A chr step is "test" iff the first arg is `test` — covers `["test"]` and `["test", "--filter", ...]`. */
+private fun List<String>.isTestStep(): Boolean = firstOrNull() == "test"
 
 /** Outcome of locating + sanity-checking a project's clone before any chr step runs. */
 private sealed interface Located
@@ -350,7 +356,11 @@ private fun runSteps(
             ProcessOutcome(exitCode = -1, durationMs = 0, timedOut = false)
         }
 
-        state.totalDurationMs += outcome.durationMs
+        if (step.isTestStep()) {
+            state.testDurationMs += outcome.durationMs
+        } else {
+            state.nonTestDurationMs += outcome.durationMs
+        }
         state.lastExit = outcome.exitCode
         state.lastTimedOut = outcome.timedOut
         if (outcome.exitCode != 0 || outcome.timedOut) {
@@ -388,6 +398,8 @@ private fun finalize(
     return baseResult(project, status).copy(
         sha = sha,
         durationMs = state.totalDurationMs,
+        nonTestDurationMs = state.nonTestDurationMs,
+        testDurationMs = state.testDurationMs,
         exitCode = state.lastExit,
         timedOut = state.lastTimedOut,
         errorSummary = summary,

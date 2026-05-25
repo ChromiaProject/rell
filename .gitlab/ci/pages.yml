@@ -148,7 +148,7 @@ pages:regression:
       allow_failure: true
   needs: []
   script:
-    - ./gradlew $GRADLE_FLAGS_LARGE :regression:regressionPublic
+    - ./gradlew $GRADLE_FLAGS_XLARGE :regression:regressionPublic
     - mkdir -p public
     - cp -r regression/reports/. public/
     - echo "Regression report - $CI_PAGES_URL/report.html"
