@@ -30,7 +30,7 @@ private fun ProjectSpec.stepTimeout(): Duration =
 // Pinned to the digest the .gitlab-ci.yml setup script uses for its DIND Postgres, so the
 // regression toolkit exercises chr against the same server version CI mainline tests use.
 private val POSTGRES_IMAGE = DockerImageName.parse(
-    "postgres:16.13-alpine3.23" +
+    "postgres:16.14-alpine3.23" +
         "@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416",
 )
 

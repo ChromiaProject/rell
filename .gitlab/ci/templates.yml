@@ -32,7 +32,7 @@
         --env PGDATA=/pgtmpfs \
         --tmpfs=/pgtmpfs:size=8g \
         --publish 5432:5432 \
-        postgres:16.13-alpine3.23@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416
+        postgres:16.14-alpine3.23@sha256:16bc17c64a573ef34162af9298258d1aec548232985b33ed7b1eac33ba35c229
   # When PUBLISH_BUILD_SCAN=true, inject a Develocity plugin block into settings.gradle.kts.
   # Kept out of git so local devs don't auto-accept ToU; the plugin only reads termsOfUseAgree
   # from a Kotlin DSL block, so an in-flight tracked-file edit is the only way to express it.

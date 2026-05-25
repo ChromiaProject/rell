@@ -62,7 +62,7 @@ class PythonCodegenITTest {
 
             val network = Network.newNetwork()
 
-            GenericContainer("postgres:16.3-alpine3.20").apply {
+            GenericContainer("postgres:16.14-alpine3.23").apply {
                 withEnv("POSTGRES_USER", "postchain")
                 withEnv("POSTGRES_PASSWORD", "postchain")
                 withEnv("POSTGRES_DB", "postchain")
