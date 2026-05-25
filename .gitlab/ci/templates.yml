@@ -18,6 +18,13 @@
       tar -xzf /tmp/docker.tgz -C /tmp
       install -m 0755 /tmp/docker/docker /usr/local/bin/docker
       rm -rf /tmp/docker /tmp/docker.tgz
+    # Materialise DOCKER_AUTH_CONFIG as $HOME/.docker/config.json so the docker CLI (and the
+    # docker-java client testcontainers uses) sends Dependency-Proxy credentials when pulling
+    # via dind. GitLab Runner only consumes DOCKER_AUTH_CONFIG for its own image/service pulls;
+    # `docker run`/`docker pull` issued from job scripts don't see it otherwise.
+    - |
+      mkdir -p "$HOME/.docker"
+      printf '%s' "$DOCKER_AUTH_CONFIG" > "$HOME/.docker/config.json"
   # PGDATA on tmpfs — sized for the full parallel test load (rell-base runs `test`,
   # `testRoundTrip`, `testTruffle` against this single Postgres). The pages:profile job (medium)
   # only needs one schema; the cap is uniform anyway. pages:regression no longer extends `.setup`
@@ -32,7 +39,7 @@
         --env PGDATA=/pgtmpfs \
         --tmpfs=/pgtmpfs:size=8g \
         --publish 5432:5432 \
-        postgres:16.14-alpine3.23@sha256:16bc17c64a573ef34162af9298258d1aec548232985b33ed7b1eac33ba35c229
+        ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/postgres:16.14-alpine3.23@sha256:16bc17c64a573ef34162af9298258d1aec548232985b33ed7b1eac33ba35c229
   # When PUBLISH_BUILD_SCAN=true, inject a Develocity plugin block into settings.gradle.kts.
   # Kept out of git so local devs don't auto-accept ToU; the plugin only reads termsOfUseAgree
   # from a Kotlin DSL block, so an in-flight tracked-file edit is the only way to express it.

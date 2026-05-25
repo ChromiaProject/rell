@@ -4,7 +4,7 @@ include:
   - component: $CI_SERVER_FQDN/qodana/qodana/qodana-gitlab-ci@v2025.3
     inputs:
       stage: qodana
-      args: --image,jetbrains/qodana-jvm-community:2025.3
+      args: --image,${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/jetbrains/qodana-jvm-community:2025.3
   - local: .gitlab/ci/templates.yml
   - local: .gitlab/ci/build.yml
   - local: .gitlab/ci/dependency-check.yml
@@ -72,16 +72,29 @@ variables:
   TESTCONTAINERS_HOST_OVERRIDE: docker
   TESTCONTAINERS_RYUK_DISABLED: "true"
   JACOCO_REPORT_DIR: coverage-report-aggregate/build/reports/jacoco/testCodeCoverageReport
-  # Route the dind service pull through the group-level Dependency Proxy
+  # Route every Docker Hub pull through the group-level Dependency Proxy
   # (https://docs.gitlab.com/user/packages/dependency_proxy/). Workers run with
   # max_use_count=1, so the local docker image cache is empty on every job and
-  # each one pulls dind from registry-1.docker.io through the NAT — both flaky
-  # (context-deadline timeouts) and rate-limited. The proxy lives inside GitLab,
-  # is reached over HTTPS to gitlab.com, and caches the manifest+layers per group.
-  # DOCKER_AUTH_CONFIG lets the runner authenticate to the proxy using the
-  # per-job CI_DEPENDENCY_PROXY_USER/PASSWORD predefined variables.
+  # each one would otherwise pull from registry-1.docker.io through the NAT —
+  # both flaky (context-deadline timeouts) and rate-limited. The proxy lives
+  # inside GitLab, is reached over HTTPS to gitlab.com, and caches the
+  # manifest+layers per group.
+  #
+  # Three things route through the proxy:
+  #  1. The dind service image (`services:` below) — runner pulls it via DOCKER_AUTH_CONFIG.
+  #  2. The qodana linter image (`include: qodana-gitlab-ci` above) — runner pulls it via DOCKER_AUTH_CONFIG.
+  #  3. The dind-side Postgres pull (`docker run postgres:...` in .setup-fragments) and every
+  #     testcontainers pull inside tests — dind's daemon needs auth too. The job script writes
+  #     $HOME/.docker/config.json from DOCKER_AUTH_CONFIG before the first `docker run`, and
+  #     TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX rewrites bare Docker Hub names to the proxy prefix
+  #     so existing GenericContainer("postgres:…") calls don't need to change.
+  #
+  # The Oracle GraalVM job image and the GitLab-hosted `gitlab-org/cli` image
+  # are NOT on Docker Hub and can't be proxied — the Dependency Proxy only
+  # caches Docker Hub today.
   DOCKER_AUTH_CONFIG: |-
     {"auths":{"$CI_DEPENDENCY_PROXY_SERVER":{"username":"$CI_DEPENDENCY_PROXY_USER","password":"$CI_DEPENDENCY_PROXY_PASSWORD"}}}
+  TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX: "${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/"
 
 services:
   - name: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/docker:28-dind
