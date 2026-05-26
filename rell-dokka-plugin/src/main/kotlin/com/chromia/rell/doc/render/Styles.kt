@@ -40,6 +40,7 @@ internal val SITE_CSS: String = """
 
   /* Light-mode semantic tokens (the default). The `[data-theme="dark"]` rule below
      overrides these for the dark theme. */
+  color-scheme: light;
   --primary:        #9e5ecf;
   --primary-dark:   #7130a2;
   --primary-light:  #c8a4e4;
@@ -67,6 +68,7 @@ internal val SITE_CSS: String = """
 [data-theme="dark"] {
   /* Mirrors chromia-docs' `[data-theme="dark"]` block — lighter primary purple,
      `--chromia-dark` background, light text, low-contrast neutrals. */
+  color-scheme: dark;
   --primary:        #cc91f0;
   --primary-dark:   #b45ee9;
   --primary-light:  #dcb3f5;

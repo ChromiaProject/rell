@@ -351,7 +351,7 @@ internal class Pages(
             is Doc_Property -> properties.add(def)
             is Doc_TypeAlias -> aliases.add(def)
         }
-        return Bucketed(classes.sortedBy { it.name }, functions.sortedBy { it.name }, properties.sortedBy { it.name }, aliases.sortedBy { it.name })
+        return Bucketed(classes.sortedBy { it.name }, functions.sortedBy { it.name }, properties, aliases.sortedBy { it.name })
     }
 }
 

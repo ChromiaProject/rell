@@ -64,6 +64,19 @@ class SystemLibTest {
     }
 
     @Test
+    fun `search index covers stdlib defs`() {
+        val out = generate()
+        val pages = (out / "scripts/pages.json").readText()
+        // Anchor on the qname keys (wrapped in quotes) so we don't false-positive on a `"name"`
+        // hit that happens to share a substring with one of these.
+        assertThat(pages).contains("\"integer\"")
+        assertThat(pages).contains("\"text\"")
+        assertThat(pages).contains("\"byte_array\"")
+        assertThat(pages).contains("\"crypto\"")
+        assertThat(pages).contains("\"rell.test\"")
+    }
+
+    @Test
     fun `rell test namespace is generated`() {
         val out = generate()
         val moduleSlug = "-rell -system -library -a-p-i -reference"

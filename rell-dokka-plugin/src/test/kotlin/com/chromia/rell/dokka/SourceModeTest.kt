@@ -6,6 +6,7 @@ package com.chromia.rell.dokka
 
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.doesNotContain
 import assertk.assertions.exists
 import assertk.assertions.isTrue
 import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
@@ -112,6 +113,30 @@ class SourceModeTest {
         val out = generate(entryPointModules = listOf("main"))
         val indexHtml = (out / "index.html").readText()
         assertThat(indexHtml).contains("Footer Message")
+    }
+
+    @Test
+    fun `search index contains only project symbols, not stdlib`() {
+        val out = generate(
+            entryPointModules = listOf("main"),
+            additionalModules = listOf("lib.lib1"),
+        )
+        val pages = (out / "scripts/pages.json").readText()
+
+        // Project symbols are present.
+        assertThat(pages).contains("\"main.person\"")
+        assertThat(pages).contains("\"main.set_name\"")
+        assertThat(pages).contains("\"main.hello_world\"")
+        assertThat(pages).contains("\"lib.lib1.user\"")
+        assertThat(pages).contains("\"lib.lib1.color\"")
+        assertThat(pages).contains("\"lib.lib1.nested.product\"")
+
+        // Stdlib must not leak into a project's index. Sample a few well-known stdlib qnames that
+        // would appear if `app.modules` ever started shipping the system library through the
+        // source-mode walk.
+        for (sym in listOf("\"integer\"", "\"byte_array\"", "\"crypto\"", "\"op_context\"", "\"chain_context\"")) {
+            assertThat(pages, name = "pages.json").doesNotContain(sym)
+        }
     }
 
     @Test
