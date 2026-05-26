@@ -16,8 +16,6 @@ dependencies {
 
     testImplementation(kotlin("test-junit5"))
     testImplementation(libs.assertk)
-    testImplementation(libs.jsoup)
-    testImplementation(libs.jackson.kotlin)
     testImplementation(libs.log4j.slf4j2.impl)
 }
 

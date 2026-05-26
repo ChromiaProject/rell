@@ -1,528 +1,264 @@
 # Technical Architecture & Codebase
 
-## High-Level Architecture Description
-
-Rell Dokka Plugin follows Dokka's pipeline-based architecture, extending multiple stages of the documentation generation pipeline with Rell-specific implementations.
-
-**Architecture Layers:**
-
-1. **CLI Layer** - Command-line interface for invoking documentation generation
-2. **Configuration Layer** - Builds and serializes plugin configuration
-3. **Dokka Pipeline Layer** - Integrates with Dokka's extension point system
-4. **Analysis Layer** - Compiles and analyzes Rell source code using Rell compiler API
-5. **Translation Layer** - Converts Rell language constructs to Dokka's Documentable model
-6. **Transformation Layer** - Enriches and transforms documentables
-7. **Page Generation Layer** - Converts documentables to page models
-8. **Rendering Layer** - Renders pages to HTML with custom styling and assets
-
-**Key Architectural Decisions:**
-
-- **Pipeline Extension Pattern** - Plugin extends Dokka's pipeline at multiple extension points rather than replacing entire pipeline
-- **Serialization Bypass** - Uses `RellDokkaGlobalState` singleton to bypass Dokka's serialization for non-serializable state
-- **Dual Translation Modes** - Supports both user project documentation and system library documentation with different translators
-- **Modular Component Design** - Each pipeline stage has dedicated component with clear responsibilities
-- **Reflection-Based Extension Detection** - Uses reflection to detect extension functions that aren't directly accessible through Rell compiler API
-
-## Major Components and Responsibilities
-
-### 1. Entry Point (`cli/main.kt`)
-
-**Responsibility:** Command-line interface for invoking documentation generation.
-
-**Key Components:**
-- `DokkaCommand`: Clikt-based command-line parser
-- `main()`: Application entry point
-
-**Key Functions:**
-- Parses command-line arguments (source, target, modules, etc.)
-- Builds `RellDokkaPluginConfigurationBuilder` from arguments
-- Invokes `RellDokkaGenerator.generate()`
-
-**Why it matters:** Provides user-facing interface for documentation generation. Handles argument parsing and validation.
-
-**Key Dependencies:**
-- `RellDokkaGenerator` - Executes documentation generation
-- `RellDokkaPluginConfigurationBuilder` - Builds configuration
-- Clikt library - Command-line parsing
-
-### 2. Generator (`RellDokkaGenerator.kt`)
-
-**Responsibility:** Initializes and executes documentation generation process.
-
-**Key Functions:**
-- `generate()`: Builds Dokka configuration and invokes Dokka generator
-- Creates `DokkaConsoleLogger` for logging
-- Configures Dokka with plugin configuration
-
-**Why it matters:** Centralizes documentation generation orchestration. Bridges CLI and Dokka framework.
-
-**Key Dependencies:**
-- `RellDokkaPluginConfigurationBuilder` - Provides configuration
-- `DokkaGenerator` - Dokka framework generator
-- `DokkaConsoleLogger` - Logging infrastructure
-
-### 3. Plugin Configuration (`config/`)
-
-**Responsibility:** Manages plugin configuration and global state.
-
-**Key Components:**
-
-**`RellDokkaPluginConfiguration`** - Serializable configuration data class
-- Stores module names, filtering options, system library mode
-- Serialized to JSON and embedded in Dokka configuration
-- Passed between pipeline stages via serialization
-
-**`RellDokkaPluginConfigurationBuilder`** - Builder for configuration
-- Fluent API for building configuration
-- Handles source links, custom assets, includes
-- Supports both user project and system library modes
-- Creates `DokkaConfiguration` with plugin configurations
-
-**`RellDokkaGlobalState`** - Singleton for non-serializable state
-- Stores hidden packages (modules excluded from navigation)
-- Stores `RellCliEnv` for error handling and logging
-- Bypasses Dokka's serialization mechanism
-- Accessed across pipeline stages
-
-**Why it matters:** Separates serializable configuration from runtime state. Enables state persistence across serialization boundaries.
-
-### 4. Main Plugin (`RellDokkaPlugin.kt`)
-
-**Responsibility:** Registers custom extensions at Dokka pipeline stages.
-
-**Key Extensions Registered:**
-
-**`sourceToDocumentableTranslator`** - Source code to Documentable translation
-- Provides `RellSourceToDocumentableTranslator` for user projects
-- Provides `RellSystemLibToDocumentableTranslator` for system library
-- Selects translator based on `system` configuration flag
-
-**`signatureProvider`** - Function/type signature generation
-- Provides `RellSignatureProvider` to override Kotlin signature provider
-- Generates Rell-specific signatures for functions, types, etc.
-
-**`documentableToPageTranslator`** - Documentable to Page model translation
-- Provides `RellDocumentableToPageTranslator` to override default translator
-- Converts Documentables to Page models for rendering
-
-**`aliasProvider`** - Custom tag content provider
-- Provides `AliasDocTagProvider` for handling alias documentation tags
-
-**`chromiaAssetsInstaller`** - Custom asset installation
-- Provides `ChromiaAssetsInstaller` to inject custom CSS, JavaScript, images
-- Runs after styles and assets installation, before scripts
-
-**`rellSearchbarDataInstaller`** - Search functionality customization
-- Provides `RellSearchbarDataInstaller` to override default search data installer
-- Customizes search indexing for Rell documentation
-
-**`renderer`** - HTML rendering
-- Provides `RellHtmlRenderer` to override default HTML renderer
-- Customizes HTML output for Rell documentation
-
-**`rellNavigationPageInstaller`** - Navigation structure customization
-- Provides `RellNavigationPageInstaller` to override default navigation
-- Handles module filtering and hidden packages
-
-**`rellModuleAndPackageDocumentation`** - Module/package documentation transformer
-- Provides transformer for module and package-level documentation
-- Processes markdown documentation files
-
-**`nullPageTransformer`** - Suppresses Kotlin-specific transformers
-- Provides `NullPageTransformer` to override Kotlin samples transformer
-- Removes Kotlin-specific functionality not applicable to Rell
-
-**Why it matters:** Central registration point for all plugin extensions. Integrates plugin functionality into Dokka pipeline.
-
-### 5. Analysis (`analysis/RellAnalysis.kt`)
-
-**Responsibility:** Compiles and analyzes Rell source code using Rell compiler API.
-
-**Key Functions:**
-- `RellAnalysis()`: Constructor compiles Rell application and extracts information
-- `findFunctionReference()`: Finds DRI for function by app-level name
-- `getExtensionFunctions()`: Gets extension functions for module
-- `modules()`: Returns non-test modules
-- `testModules()`: Returns test modules
-- `hiddenPackages()`: Computes packages to hide from navigation
-
-**Compilation Process:**
-1. Builds Rell compiler `Config` with appropriate settings
-2. Calls `RellApiCompile.compileApp()` to compile source code
-3. Extracts modules, functions, types, constants, operations, queries
-4. Identifies extension functions using reflection
-5. Builds maps for efficient lookup (functions by name, extensions by module, etc.)
-
-**Why it matters:** Provides Rell language analysis capabilities. Bridges Rell compiler API and documentation generation.
-
-**Key Dependencies:**
-- `RellApiCompile` - Rell compiler API
-- `RellCliEnv` - Error handling and logging
-- Reflection utilities - Extension function detection
-
-### 6. Source Translation (`translators/RellSourceToDocumentableTranslator.kt`)
-
-**Responsibility:** Translates Rell source code to Dokka Documentables.
-
-**Key Functions:**
-- `invoke()`: Main translation function
-- Creates `RellAnalysis` to compile and analyze source
-- Uses `RellModuleVisitor` to traverse modules
-- Separates test and main source sets
-- Creates `DModule` with packages
-
-**Translation Process:**
-1. Creates `RellAnalysis` instance to compile source
-2. Determines source set type (main vs test)
-3. Filters modules based on source set
-4. Uses `RellModuleVisitor` to visit each module
-5. Collects packages from module traversal
-6. Marks hidden packages in global state
-7. Creates `DModule` with packages and documentation
-
-**Why it matters:** Entry point for user project documentation generation. Converts Rell code to Dokka's internal representation.
-
-**Key Dependencies:**
-- `RellAnalysis` - Source code analysis
-- `RellModuleVisitor` - Module traversal
-- `RellDokkaGlobalState` - Hidden packages registry
-
-### 7. Module Visitor (`translators/RellModuleVisitor.kt`)
-
-**Responsibility:** Traverses Rell modules and creates Documentable objects.
-
-**Key Functions:**
-- `visitRellModule()`: Main visitor function for modules
-- `genericVisitor()`: Generic visitor for collections of definitions
-- `namespace()`: Creates namespace packages
-- Individual visit methods for each Rell construct type
-
-**Visitor Pattern:**
-- Visits functions, operations, queries
-- Visits entities, structs, objects, enums
-- Visits constants
-- Visits extension functions
-- Organizes definitions by namespace
-- Creates `DPackage`, `DFunction`, `DClass`, etc. objects
-- Attaches documentation from doc comments
-
-**Why it matters:** Core translation logic. Converts Rell language constructs to Dokka Documentables.
-
-**Key Dependencies:**
-- `RellAnalysis` - Function lookup and extension detection
-- `RellDocumentableSource` - Source location tracking
-- Doc comment parsing utilities
-
-### 8. System Library Translation (`translators/RellSystemLibToDocumentableTranslator.kt`)
-
-**Responsibility:** Translates Rell system library to Documentables.
-
-**Key Functions:**
-- `invoke()`: Main translation function for system library
-- Uses `RellModule.find()` to locate system module
-- Uses `SystemLibVisitor` to traverse system library structure
-
-**Translation Process:**
-1. Finds system module from source set
-2. Uses `SystemLibVisitor` to visit system library
-3. Creates `DModule` with system library packages
-4. System library structure is predefined, not compiled from source but from C_LibModule
-
-**Why it matters:** Enables system library documentation generation. Uses different approach than user project documentation.
-
-**Key Dependencies:**
-- `RellModule` - System module definitions
-- `SystemLibVisitor` - System library traversal
-- `RellDocumentableSource.NULL` - Null source for system library
-
-### 9. System Library Visitor (`systemlib/SystemLibVisitor.kt`)
-
-**Responsibility:** Traverses Rell system library structure and creates Documentables.
-
-**Key Functions:**
-- `visitRellModule()`: Main visitor function
-- Individual visit methods for system library constructs
-- Filters blacklisted types, aliases, namespaces
-
-**Visitor Pattern:**
-- Visits types, structs, functions, special functions
-- Visits properties, aliases, namespaces
-- Filters blacklisted items (guid, signer, tuid, etc.)
-- Creates Documentables from system library definitions
-- Uses `TypeDefMemberVisitor` for type definition members
-
-**Why it matters:** Handles system library-specific documentation generation. Works with predefined system library structure.
-
-**Key Dependencies:**
-- `RellModule` - System module definitions
-- `TypeDefMemberVisitor` - Type member traversal
-- System library type definitions
-
-### 10. Page Translation (`translators/documentables/RellDocumentableToPageTranslator.kt`)
-
-**Responsibility:** Converts Documentables to Page models for rendering.
-
-**Key Functions:**
-- `invoke()`: Main translation function
-- Creates `RellPageCreator` with configuration and dependencies
-- Calls `pageForModule()` to generate page structure
-
-**Translation Process:**
-1. Extracts configuration and dependencies from context
-2. Creates `RellPageCreator` instance
-3. Calls `pageForModule()` to generate `ModulePageNode`
-4. Page structure includes navigation, content, and metadata
-
-**Why it matters:** Converts documentation model to renderable page structure. Prepares documentation for HTML rendering.
-
-**Key Dependencies:**
-- `RellPageCreator` - Page structure creation
-- `DokkaBase` plugins - Comments converter, signature provider, tag providers
-
-### 11. Page Creator (`page/RellPageCreator.kt`)
-
-**Responsibility:** Creates page models from Documentables.
-
-**Key Functions:**
-- `pageForModule()`: Creates module page structure
-- Creates pages for packages, classes, functions, etc.
-- Organizes pages hierarchically
-
-**Page Structure:**
-- Module page contains package pages
-- Package pages contain class/function pages
-- Pages include content, navigation, and metadata
-- Structure mirrors Documentable hierarchy
-
-**Why it matters:** Builds renderable page structure. Organizes documentation into navigable hierarchy.
-
-### 12. HTML Rendering (`renderers/html/RellHtmlRenderer.kt`)
-
-**Responsibility:** Renders page models to HTML with Rell-specific customizations.
-
-**Key Customizations:**
-- Rell-specific tabbed content types (OPERATION, QUERY, FUNCTION)
-- Custom signature rendering for Rell constructs
-- Rell-specific HTML structure and styling
-- Custom handling for operations, queries, functions
-
-**Rendering Process:**
-1. Extends `HtmlRenderer` from DokkaBase
-2. Overrides rendering methods for Rell-specific constructs
-3. Applies custom HTML structure and styling
-4. Generates HTML files in output directory
-
-**Why it matters:** Produces final HTML output. Applies Rell-specific rendering customizations.
-
-**Key Dependencies:**
-- `HtmlRenderer` - Base HTML rendering from DokkaBase
-- Kotlinx HTML - HTML generation utilities
-
-### 13. Asset Installation (`renderers/html/ChromiaAssetsInstaller.kt`)
-
-**Responsibility:** Installs custom CSS, JavaScript, and image assets.
-
-**Key Functions:**
-- Installs Chromia-branded assets
-- Copies custom CSS and JavaScript files
-- Installs images and icons
-- Runs as page transformer in pipeline
-
-**Why it matters:** Provides custom styling and branding. Enhances documentation appearance and functionality.
-
-### 14. Navigation (`navigation/RellNavigationPageInstaller.kt`)
-
-**Responsibility:** Customizes navigation structure with module filtering.
-
-**Key Functions:**
-- Builds navigation menu structure
-- Filters hidden packages from navigation
-- Organizes navigation by module/package hierarchy
-- Overrides default navigation installer
-
-**Why it matters:** Controls navigation visibility. Enables hiding implementation details while keeping documentation.
-
-**Key Dependencies:**
-- `RellDokkaGlobalState` - Hidden packages list
-
-### 15. Search (`renderers/html/RellSearchbarDataInstaller.kt`)
-
-**Responsibility:** Customizes search functionality for Rell documentation.
-
-**Key Functions:**
-- Builds search index from Documentables
-- Customizes search data format
-- Overrides default search data installer
-
-**Why it matters:** Enables search functionality. Provides symbol search in documentation.
-
-### 16. Signature Provider (`signature/RellSignatureProvider.kt`)
-
-**Responsibility:** Generates Rell-specific function and type signatures.
-
-**Key Functions:**
-- Generates signatures for functions, operations, queries
-- Generates signatures for types, structs, enums
-- Formats Rell syntax correctly
-- Overrides Kotlin signature provider
-
-**Why it matters:** Produces correct Rell syntax in documentation. Ensures signatures match Rell language syntax.
-
-### 17. Doc Comment Processing (`doc/`)
-
-**Responsibility:** Parses and processes Rell doc comments.
-
-**Key Components:**
-
-**`RellMarkdownParser`** - Parses markdown in doc comments
-- Converts markdown to `DocumentationNode` structures
-- Handles code blocks, links, formatting
-
-**`AliasDocTagProvider`** - Handles alias documentation tags
-- Processes custom documentation tags
-- Provides content for alias tags
-
-**`doc_comment.kt`** - Doc comment utilities
-- Extracts doc comments from Rell definitions
-- Converts doc comments to documentation nodes
-
-**Why it matters:** Processes documentation content. Enables rich documentation with markdown support.
-
-### 18. DRI (Documentable Resource Identifier) (`dri/`)
-
-**Responsibility:** Creates and manages DRI references for cross-referencing.
-
-**Key Components:**
-- `dri.kt` - DRI creation utilities
-- `callable.kt` - Callable DRI creation
-- `bound.kt` - Bound type DRI creation
-- `extra.kt` - Extra DRI properties
-
-**Why it matters:** Enables cross-references in documentation. Links related documentation elements.
-
-### 19. Module Documentation (`moduledocs/`)
-
-**Responsibility:** Processes module and package-level documentation files.
-
-**Key Components:**
-- `ModuleAndPackageDocumentationReader` - Reads documentation files
-- `ModuleAndPackageDocumentationParser` - Parses documentation content
-- `ModuleAndPackageDocumentationTransformer` - Transforms documentables with module docs
-
-**Why it matters:** Enables module-level documentation. Supports documentation files separate from source code.
-
-## How Components Communicate
-
-### Pipeline Flow
-
-```
-CLI (main.kt)
-    ↓
-RellDokkaGenerator
-    ↓
-DokkaGenerator (Framework)
-    ↓
-RellDokkaPlugin (Extension Registration)
-    ↓
-┌─────────────────────────────────────┐
-│ Source Analysis Stage               │
-│ RellSourceToDocumentableTranslator  │
-│   → RellAnalysis (compilation)      │
-│   → RellModuleVisitor (traversal)    │
-└─────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────┐
-│ Transformation Stage                │
-│ ModuleAndPackageDocumentation       │
-│ Documentable Transformers           │
-└─────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────┐
-│ Page Generation Stage               │
-│ RellDocumentableToPageTranslator    │
-│   → RellPageCreator                 │
-└─────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────┐
-│ Rendering Stage                     │
-│ RellHtmlRenderer                    │
-│ ChromiaAssetsInstaller              │
-│ RellNavigationPageInstaller         │
-│ RellSearchbarDataInstaller          │
-└─────────────────────────────────────┘
-    ↓
-HTML Output
+## High-Level Architecture
+
+Rell Dokka Plugin is split into two layers connected by an immutable model:
+
+```mermaid
+flowchart TD
+    subgraph Compose["Compose layer — com.chromia.rell.doc.compose"]
+        direction TB
+        composeBody["<b>SourceBuild</b> — compile project, project R_Module → Doc_Module<br/><b>SystemBuild</b> — walk Lib_Rell / Lib_RellTest → Doc_Module<br/><b>ModuleDocs</b> — parse # Dapp/Module/Package md fragments<br/><b>TypeConv</b> — R_Type / M_Type → Doc_Type<br/><b>DocSymbolText</b> — DocSymbol/DocComment → markdown"]
+    end
+
+    subgraph Model["Model — com.chromia.rell.doc.model"]
+        direction TB
+        modelBody["Doc_Site, Doc_Module, Doc_Package, Doc_Def (sealed),<br/>Doc_Function, Doc_Property, Doc_Class, Doc_TypeAlias,<br/>Doc_Type (sealed), Doc_SourceLink, Doc_Deprecated, …<br/><i>pure Kotlin data classes — no rell-base / kotlinx-html deps</i>"]
+    end
+
+    subgraph Render["Render layer — com.chromia.rell.doc.render"]
+        direction TB
+        renderBody["<b>SiteRender</b> — top orchestrator, file I/O<br/><b>SiteIndex</b> — qname → page entry lookup<br/><b>Pages</b> — per-page HTML via kotlinx-html<br/><b>Navigation</b> — sidebar nav HTML<br/><b>Markdown</b> — commonmark + [ref] rewrite<br/><b>SignatureRender + TypeRender</b> — signature HTML fragments<br/><b>Paths, Hrefs</b> — URL slug / relative-href helpers<br/><b>Search</b> — scripts/pages.json (search index JSON)<br/><b>Styles, ThemeAssets, RellHighlight</b> — embedded CSS / JS"]
+    end
+
+    Compose --> Model --> Render
 ```
 
-### Component Interaction Details
+The legacy package `com.chromia.rell.dokka.*` only holds the public CLI / generator / builder shells; everything substantive lives under `com.chromia.rell.doc.*`. The split is intentional &mdash; the public-facing class names (`RellDokkaGenerator`, `RellDokkaPluginConfigurationBuilder`) are pinned by the chromia-cli / gradle-plugin contract and would be expensive to rename.
 
-**Configuration Flow:**
-1. CLI parses arguments and builds `RellDokkaPluginConfigurationBuilder`
-2. Builder creates `RellDokkaPluginConfiguration` (serializable)
-3. Builder stores non-serializable state in `RellDokkaGlobalState`
-4. Configuration is serialized to JSON and embedded in `DokkaConfiguration`
-5. `DokkaGenerator` deserializes configuration and passes to plugins
+**Key architectural decisions:**
 
-**Source Analysis Flow:**
-1. `RellSourceToDocumentableTranslator.invoke()` is called by Dokka
-2. Translator creates `RellAnalysis` instance
-3. `RellAnalysis` compiles source using `RellApiCompile.compileApp()`
-4. Translator creates `RellModuleVisitor` with analysis results
-5. Visitor traverses modules and creates Documentables
-6. Hidden packages are registered in `RellDokkaGlobalState`
+- **Internal model in the middle.** `Doc_*` data classes are immutable and depend only on the JDK. Compose and render do not share types beyond the model. This keeps the renderer testable without a Rell compiler in the loop (see `SiteRenderTest`).
+- **One `Doc_Site` per generator invocation.** The site is a single value computed eagerly; rendering is a pure walk over it.
+- **No Dokka.** The previous implementation extended `org.jetbrains.dokka.plugability.DokkaPlugin`; the current one has no Dokka dependency at all. CSS, JS, fonts, and search-index JSON are produced directly.
+- **Paths frozen.** `Paths.fileSlug` reproduces Dokka's package-name mangling (`"My Dapp"` → `-my -dapp`) because downstream URL consumers (chromia-cli integration tests, docs.chromia.com) already address those slugs.
 
-**Translation Flow:**
-1. `RellModuleVisitor` visits each Rell module
-2. For each module, visitor processes functions, types, constants, etc.
-3. Visitor creates `DPackage`, `DFunction`, `DClass` objects
-4. Doc comments are parsed and attached to Documentables
-5. DRI references are created for cross-referencing
+## Major Components
 
-**Page Generation Flow:**
-1. `RellDocumentableToPageTranslator.invoke()` is called
-2. Translator creates `RellPageCreator` with dependencies
-3. Page creator traverses Documentables and creates Page models
-4. Pages are organized hierarchically (module → package → class/function)
+### 1. CLI (`com/chromia/rell/dokka/cli/main.kt`)
 
-**Rendering Flow:**
-1. `RellHtmlRenderer` receives Page models
-2. Renderer converts pages to HTML using templates
-3. `ChromiaAssetsInstaller` adds custom assets
-4. `RellNavigationPageInstaller` builds navigation structure
-5. `RellSearchbarDataInstaller` builds search index
-6. HTML files are written to output directory
+Clikt command `DokkaCommand` parsing the same flag set the old Dokka-plugin CLI had:
 
-**State Management:**
-- Configuration is serialized and passed between stages
-- `RellDokkaGlobalState` singleton is accessed directly (bypasses serialization)
-- Hidden packages and CLI environment persist across pipeline stages
+| Flag | Default | Notes |
+|---|---|---|
+| `--source` | `src` (must exist, dir) | Project root. |
+| `--target` | `out` (dir) | Output directory. |
+| `--modules` | none | Comma-separated entry-point modules. |
+| `--additional-modules` | `[]` | Modules to include and **un-hide** from navigation when also in `--filtered-modules`. |
+| `--name` | `My Rell Dapp` | Site title. |
+| `--styles` | none | Comma-separated CSS files (copied into `styles/`). |
+| `--assets` | none | Comma-separated asset files (copied into `images/`). |
+| `--system` | off (hidden flag) | Generate stdlib docs. |
+| `--includes` | `[]` | Markdown files containing `# Dapp/Module/Package` fragments. |
+| `--source-link` | none | `localDir=remoteUrl[#lineSuffix]`. |
+| `--filtered-modules` | `[]` | Modules hidden from navigation (still rendered to disk). |
+
+Footer is hardwired to `"© <year> Chromia"`. The main class is `com.chromia.rell.dokka.cli.MainKt`.
+
+### 2. `RellDokkaGenerator` (`com/chromia/rell/dokka/RellDokkaGenerator.kt`)
+
+Public entry point &mdash; `class RellDokkaGenerator(builder: RellDokkaPluginConfigurationBuilder) { fun generate() }`. Total ~75 lines:
+
+1. `builder.build()` → `RellDokkaPluginConfiguration` (internal POJO).
+2. `ModuleDocs.load(includes, additionalTexts)`, including the bundled `rell.md` when `system = true`.
+3. Either `SystemBuild.build(...)` or `SourceBuild.build(...)`.
+4. Wrap the resulting `Doc_Module` in a `Doc_Site` together with stylesheets / assets / source-links / hidden packages.
+5. `SiteRender(targetFolder).render(site)`.
+
+Hidden packages are `config.filteredModules - config.additionalModules` (system-mode forces empty).
+
+### 3. Configuration (`com/chromia/rell/dokka/config/`)
+
+`RellDokkaPluginConfigurationBuilder` &mdash; **the public API**. Two constructors:
+
+- `RellDokkaPluginConfigurationBuilder(title: String, modules: List<String>?, projectRoot: File)` for project docs.
+- `RellDokkaPluginConfigurationBuilder.SYSTEM` / `newSystemBuilder()` for stdlib docs (title hard-coded to `"Rell System Library API Reference"`).
+
+Fluent setters: `targetFolder`, `customStyleSheets`, `customAssets`, `footerMessage`, `includes`, `filteredModules`, `additionalModules`, `addSourceLink`, `cliEnv`. The `.build()` method is `internal`; only `RellDokkaGenerator` calls it.
+
+`RellDokkaPluginConfiguration` is the resolved POJO consumed by the generator. There is no `RellDokkaGlobalState` anymore &mdash; the old singleton existed to bypass Dokka's serialization; without Dokka, there is no serialization boundary to cross.
+
+### 4. Compose &mdash; Project Mode (`compose/SourceBuild.kt`)
+
+Drives `RellApiBaseInternal.compileApp` and turns the resulting `R_App` into a single `Doc_Module`. Highlights:
+
+- **Compiler config:** `mountConflictError(false)`, `includeTestSubModules(true)`, `moduleArgsMissingError(false)`, `docSymbolsEnabled(true)` (so every `R_Definition` carries a `DocSymbol`), `appModuleInTestsError(false)`. The optional `cliEnv` is wired into the compiler's IO surface &mdash; chromia-cli passes its `BuildCliEnv` to capture diagnostics.
+- **Module fan-out:** each `R_Module` produces one `Doc_Package` for the module root plus one extra `Doc_Package` per nested `namespace { … }` block, keyed under the dotted prefix.
+- **Extension functions:** read from `app.functionExtensions.list` (public API, not reflection). Concrete `@extend(target)` implementations are hidden in favor of their `@extendable` target; chained extensions (functions that are both `@extendable` and `@extend(...)`) still surface.
+- **Constants & attribute defaults:** rendered using `rrConstantToRtValue` + `rtValueToGtv` so the default text matches what the runtime would emit.
+- **Mount names:** included on `Doc_Function` only when the explicit `@mount` differs from the simple name.
+
+The companion `SourceBuild.compile(...)` is the reusable analysis step &mdash; callers can run only the compile portion and get back the `Analysis` record (`modules`, `testModules`, extension tables, app-level-name maps) if they need it without rendering.
+
+### 5. Compose &mdash; System Mode (`compose/SystemBuild.kt`)
+
+Walks the in-process stdlib namespace graph (`Lib_Rell.MODULE` and `Lib_RellTest.MODULE`) with a single recursive `walkLib` that flatens descendents into a `parentQname → defs` map.
+
+- **Members handled:** `L_NamespaceMember_Type`, `_Struct`, `_Function`, `_SpecialFunction`, `_Property`, `_Constant`, `_Alias`, `_Namespace`. Other namespace members (e.g. `_TypeExtension`) are intentionally skipped.
+- **Aliases:** type aliases become `Doc_TypeAlias`; function aliases become a copy of the target `Doc_Function` with `aliasOfQname` set, deprecation propagated, and an `"**Alias of** [target]"` suffix attached to the markdown body.
+- **Special functions:** only `exists` and `empty` are documented (with a hand-written `(arg: T?) -> boolean` signature). Other special functions cannot be expressed as a `Doc_Function` and are skipped &mdash; matching the previous Dokka-plugin output, which TODO'd them out.
+- **Blacklists:** `BLACKLISTED_TYPES = {"guid", "signer"}`, `BLACKLISTED_ALIASES = {"tuid"}`. Aliases are only kept from `Lib_Rell` (the test lib's aliases are skipped).
+- **Empty namespaces are dropped** &mdash; they would render an index page with no content.
+
+### 6. Compose &mdash; Module Docs (`compose/ModuleDocs.kt`)
+
+Parses Markdown includes containing fragments of the form:
+
+```markdown
+# Dapp My Rell Dapp
+… overview …
+
+# Module lib.lib1
+… module-level docs …
+
+# Package lib.lib1.nested
+… package-level docs …
+```
+
+Two maps come out: `moduleDocs` (keyed by site title) and `packageDocs` (keyed by qualified package name, with empty/root keyed as `[root]`). The bundled `src/main/resources/rell.md` is included automatically when `--system` is set.
+
+The old Dokka-plugin rewrote `# Dapp` → `# Module` and `# Module` → `# Package` before handing the file to Dokka's `ModuleAndPackageDocumentation` parser. Without Dokka in the loop, the parser lives here and keeps the user-facing vocabulary directly.
+
+### 7. Compose &mdash; Type Projection (`compose/TypeConv.kt`)
+
+`R_Type.toDocType()` → `M_Type.toDocType()` → `Doc_Type`. Maps `M_Type_Generic` (named, with type args), `M_Type_Tuple`, `M_Type_Function`, `M_Type_Nullable`, `M_Type_Param`, `M_Type_Simple` (Raw fallback). The `qname` field is set whenever the type can be cross-linked &mdash; generic type names with `:` package separators get rewritten to `.` to align with `Doc_Def.qname` and feed `SiteIndex`.
+
+### 8. Compose &mdash; DocSymbol Rendering (`compose/DocSymbolText.kt`)
+
+`DocSymbol.markdown(extraSuffix)` flattens a Rell `DocSymbol` (description + tag map) into a single markdown blob:
+
+- Description goes verbatim.
+- `@param name desc` becomes a `**Parameters**` bullet list.
+- `@return`, `@throws`, `@see`, `@since`, `@author` each get their own headed bullet section.
+- `extraSuffix` (used by aliases for `"**Alias of** [target]"`) is appended at the end.
+- `C_Deprecated.toDocDeprecated()` turns a Rell deprecation marker into the renderer's `Doc_Deprecated` (strips the leading two characters Rell prepends to the message and titlecases).
+
+### 9. Model (`com/chromia/rell/doc/model/`)
+
+Three files:
+
+- `DocSite.kt` &mdash; `Doc_Site`, `Doc_Module`, `Doc_Package`, `Doc_SourceLink`.
+- `DocDef.kt` &mdash; sealed `Doc_Def` hierarchy (`Doc_Function`, `Doc_Property`, `Doc_Class`, `Doc_TypeAlias`), plus `Doc_Param`, `Doc_TypeParam`, `Doc_Source`, `Doc_Deprecated`, and the `Doc_FunctionKind` / `Doc_ClassKind` enums.
+- `DocType.kt` &mdash; sealed `Doc_Type` (`Named`, `Tuple`, `Function`, `Nullable`, `TypeParam`, `Raw`) and `Doc_Type.Arg` (`Invariant`, `SubOf`, `SuperOf`, `Star`).
+
+Everything is `internal` and a plain data class. No mutability, no lazy fields, no dependency on `rell-base` or `kotlinx-html`.
+
+### 10. Render &mdash; Site Orchestration (`render/SiteRender.kt`)
+
+Top-level entry. `render(site)` performs, in order:
+
+1. `outputDir.createDirectories()`.
+2. Build `SiteIndex`, `Markdown(index)`, `Navigation(site)`.
+3. Emit `index.html` (the site landing page).
+4. Emit `navigation.html` (the same sidebar as a standalone file, kept for the iframe pattern the old Dokka nav used).
+5. Walk modules → packages → top-level defs → class members, writing each as `<moduleSlug>/<package>/<def>.html` (or `…/<Type>/index.html` for classlike defs, `…/<Type>/<member>.html` for members).
+6. Copy user stylesheets into `styles/<sheet>.css` and user assets into `images/<asset>`.
+7. Write the static `styles/site.css` (from `Styles.SITE_CSS`) and the bundled fonts (`chromia/fonts/NBInternational/…`, `chromia/fonts/Battlefin-Black.otf`) out of the jar.
+8. Write the search index to `scripts/pages.json`.
+
+### 11. Render &mdash; Site Index (`render/SiteIndex.kt`)
+
+A flat `Map<String, Entry>` keyed on qualified name. Entries carry the owning `Doc_Module` / `Doc_Package`, the `Doc_Def` (or null for the package itself), and the owning class for members. `resolve(qname)` is the strict lookup; `resolveAny(name, currentPackage)` first tries `currentPackage.qname + "." + name` for unqualified references inside a package.
+
+Used by `Markdown.kt` for `[ref]` resolution and by `TypeRender.kt` for `<a class="type-link">` href computation.
+
+### 12. Render &mdash; Pages (`render/Pages.kt`)
+
+`Pages.renderSitePage(spec)` builds a single page string. The shell is shared across all pages: `<head>` with embedded `SITE_CSS` + theme-boot + Rell-syntax-highlight JS + optional user stylesheets, then a two-column `<body>` (sidebar + `<main>`). Per-page body is supplied by `PageSpec.body`. There are dedicated renderers for the site index, module index, package index, def page, and class member page.
+
+### 13. Render &mdash; Navigation (`render/Navigation.kt`)
+
+Builds the sidebar `<nav>`. Notable behaviour:
+
+- The root package is rendered inline (`nav-defs-root` list); other packages are rendered as collapsible groups.
+- When the site has only one module (the typical case &mdash; system lib, or one dapp), the module heading is suppressed as visual noise; multi-module sites keep the heading.
+- The search input carries `data-pages-json` / `data-site-root` attributes so the embedded `SEARCH_JS` can resolve hits regardless of how deep in the tree the current page sits.
+- Hidden packages (`Doc_Site.hiddenPackages`) are filtered here. They remain in `SiteIndex` so cross-references still work; only the nav drops them.
+
+### 14. Render &mdash; Markdown (`render/Markdown.kt`)
+
+CommonMark parser + HTML renderer, with two extensions enabled (GFM tables, autolinks). The interesting work is in `ResolveRefsVisitor`: every `Text` node is scanned for `[A.B.C]`-shaped shortcut references (regex `\[([A-Za-z_][A-Za-z_0-9.]*)](?![(\[:])`), and matches that resolve through `SiteIndex.resolveAny` are replaced with `Link` AST nodes pointing at the relative href. Text inside `Code` / `FencedCodeBlock` / `IndentedCodeBlock` is skipped.
+
+`renderSummaryText(markdown)` strips down to a single inline line for navigation summaries.
+
+### 15. Render &mdash; Signature / Type (`render/SignatureRender.kt`, `render/TypeRender.kt`)
+
+`SignatureRender` produces a pre-escaped HTML fragment per `Doc_Def`, mirroring Rell source syntax (`function name(p: T): R`, `@extendable function …`, `@extend(target) function …`, `@mount("…") operation …`, `entity Name`, `type Name<T> : super`, `val NAME: T = 123`, …).
+
+`TypeRender` renders a `Doc_Type` to HTML. Linkable named types become `<a class="type-link" href="…">`; non-linkable bits land inside `<span class="type-name">`. Output is injected via `unsafe { +html }`, which is why the renderer escapes every value it doesn't emit as a tag.
+
+### 16. Render &mdash; Path / Href Helpers (`render/Paths.kt`, `render/Hrefs.kt`)
+
+`Paths.fileSlug` is the Dokka-compatible slug mangler &mdash; lowercase letters and digits stay, uppercase ASCII becomes `-` + lowercase, everything else passes through. `urlEncodeName` turns `function#N` into `function%23N`. The full path layout is documented in `SiteRender`'s KDoc.
+
+`Hrefs.relativeFrom(from, to)` does the `../`-prefixed relative-path computation given two forward-slash paths.
+
+### 17. Render &mdash; Search (`render/Search.kt`)
+
+Writes `scripts/pages.json`. Schema is `[{name, description, location, searchKeys[]}, …]` &mdash; identical to what the old Dokka plugin emitted, so any downstream search bar keeps working. JSON is rendered without `kotlinx.serialization` (`appendStringField` / `appendJsonString` are small enough that the dependency wasn't worth it).
+
+### 18. Render &mdash; Assets (`render/Styles.kt`, `render/ThemeAssets.kt`, `render/RellHighlight.kt`)
+
+- `Styles.SITE_CSS` &mdash; the entire site stylesheet as a Kotlin string constant.
+- `ThemeAssets` &mdash; `THEME_BOOT_JS` (sets up `prefers-color-scheme` + localStorage at first paint), `THEME_TOGGLE_SVG`, `SEARCH_JS`.
+- `RellHighlight.RELL_HIGHLIGHT_JS` &mdash; small client-side highlighter for `<code class="lang-rell">` blocks in doc comments.
+
+Bundled fonts live under `src/main/resources/chromia/fonts/` and are copied out at render time so the `@font-face` URLs in `SITE_CSS` resolve. Missing font resources are silently skipped &mdash; the CSS has a system-font fallback chain.
+
+## Component Communication
+
+```mermaid
+flowchart TD
+    cmd["DokkaCommand.run()"]
+    builder["RellDokkaPluginConfigurationBuilder"]
+    config["RellDokkaPluginConfiguration"]
+    gen["RellDokkaGenerator"]
+    moduleDocs["ModuleDocs.load<br/><i>includes + bundled rell.md</i>"]
+    system["SystemBuild.build<br/><i>walks Lib_Rell / Lib_RellTest</i>"]
+    source["SourceBuild.build<br/>· RellApiBaseInternal.compileApp<br/>· TypeConv.toDocType<br/>· DocSymbolText.markdown"]
+    docModule["Doc_Module"]
+    site["Doc_Site"]
+    render["SiteRender.render"]
+    idx["SiteIndex.build"]
+    helpers["Markdown(index),<br/>Navigation(site)"]
+    pages["Pages.renderSitePage<br/>· SignatureRender<br/>· TypeRender<br/>· Markdown"]
+    htmlStr["HTML strings"]
+    misc["writeStaticAssets /<br/>writeSearchIndex /<br/>copyUserAssets"]
+    out["HTML directory tree"]
+
+    cmd --> builder --> config --> gen
+    gen --> moduleDocs
+    gen --> system
+    gen --> source
+    system --> docModule
+    source --> docModule
+    docModule --> site --> render
+    render --> idx
+    render --> helpers
+    render --> pages --> htmlStr
+    render --> misc
+    htmlStr --> out
+    misc --> out
+```
+
+State management is trivial: every long-lived helper (`SiteIndex`, `Markdown`, `Navigation`, `SignatureRender`, `TypeRender`) is constructed once per `render()` call and discarded when the call returns.
 
 ## Key Frameworks, Libraries, and Versions
 
-### Core Dependencies
+### Production Dependencies
 
-- **Dokka Core:** 1.9.20 (`org.jetbrains.dokka:dokka-core`)
-- **Dokka Base:** 1.9.20 (`org.jetbrains.dokka:dokka-base`)
-- **Rell API Base:** 0.15.0 (`net.postchain.rell:rell-api-base`)
-- **Rell Base:** 0.15.0 (`net.postchain.rell:rell-base`)
-
-### Supporting Libraries
-
-- **Kotlinx HTML:** 0.8.0 (`org.jetbrains.kotlinx:kotlinx-html-jvm`) - HTML generation
-- **Kotlinx Serialization:** 1.6.0 (`org.jetbrains.kotlinx:kotlinx-serialization-json`) - JSON serialization
-- **Clikt:** 3.5.2 (`com.github.ajalt.clikt:clikt`) - Command-line parsing
-- **Jackson:** 2.15.3 (`com.fasterxml.jackson.module:jackson-module-kotlin`) - JSON processing
+- `:rell-api-base`, `:rell-base` &mdash; Rell compiler frontend, runtime model, and in-process standard library. Same module versions as the rest of the repository.
+- `libs.kotlinx.html` &mdash; HTML DSL.
+- `libs.commonmark`, `libs.commonmark.ext.gfm.tables`, `libs.commonmark.ext.autolink` &mdash; Markdown.
+- `libs.clikt` &mdash; CLI parsing.
 
 ### Test Dependencies
 
-- **Dokka Test API:** 1.9.20 (`org.jetbrains.dokka:dokka-test-api`)
-- **Dokka Base Test Utils:** 1.9.20 (`org.jetbrains.dokka:dokka-base-test-utils`)
-- **JSoup:** 1.17.2 (`org.jsoup:jsoup`) - HTML parsing for tests
+- `kotlin("test-junit5")`
+- `libs.assertk` &mdash; fluent assertions
+- `libs.log4j.slf4j2.impl` &mdash; SLF4J implementation
 
-### Key Libraries Purpose
+### Gradle Plugin
 
-- **Dokka Framework:** Core documentation generation infrastructure, pipeline architecture, extension points
-- **Rell Compiler API:** Rell language analysis, compilation, symbol resolution
-- **Kotlinx HTML:** HTML generation utilities for rendering
-- **Kotlinx Serialization:** JSON serialization for configuration
-- **Clikt:** Command-line interface parsing and validation
+The module applies `kotlin.jvm` + `application`. `application.mainClass = "com.chromia.rell.dokka.cli.MainKt"`.
+JaCoCo's class-directories list excludes `**/cli/*` from coverage. Tests run on JUnit Platform, single-threaded.

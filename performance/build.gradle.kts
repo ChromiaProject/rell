@@ -29,7 +29,6 @@ dependencies {
     implementation(projects.rellToolbox.ast)
     implementation(libs.antlr.runtime)
     implementation(libs.kotlinx.html)
-    implementation(libs.jackson.databind)
     implementation(libs.jackson.kotlin)
     // CLI entry points for the end-to-end profiler (profile / workload / provision / report).
     implementation(libs.clikt)

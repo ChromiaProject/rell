@@ -1,29 +1,29 @@
 [versions]
 kotlin = "2.3.0"
 postchain = "3.49.12"
-kotlinx-benchmark = "0.4.16"
+kotlinx-benchmark = "0.4.17"
 async-profiler = "4.4"
 
 flatbuffers = "25.2.10"
-jooq = "3.19.15"
 truffle = "25.0.3"
 
+antlr = "4.13.1"
 better-parse = "0.4.4"
 kotlinx-collections-immutable = "0.4.0"
-jline = "3.28.0"
+jline = "4.1.2"
+jooq = "3.21.4"
 clikt = "5.1.0"
-jackson = "2.21.2"
-slf4j = "2.0.13"
+jackson = "2.21.3"
+slf4j = "2.0.18"
 
 assertk = "0.28.1"
-junit = "6.0.2"
+junit = "6.1.0"
 
 # rell-toolbox dependencies
-antlr = "4.13.1"
-commons-collections4 = "4.3"
-ec4j = "0.3.0"
+commons-collections4 = "4.5.0"
+ec4j = "1.2.0"
 fury-core = "0.4.1"
-java-diff-utils = "4.12"
+java-diff-utils = "4.17"
 json-schema-validator = "1.5.6"
 koin = "3.5.0"
 log4j = "2.20.0"
@@ -39,13 +39,12 @@ commons-text = "1.15.0"
 
 # rell-dokka-plugin dependencies
 kotlinx-html = "0.12.0"
-commonmark = "0.26.0"
-jsoup = "1.22.2"
+commonmark = "0.28.0"
 
 # Plugins
 binary-compatibility-validator = "0.18.1"
-dependency-check = "12.2.1"
-gradle-git-properties = "2.5.7"
+dependency-check = "12.2.2"
+gradle-git-properties = "3.0.2"
 sentry = "6.4.0"
 shadow = "9.4.1"
 
@@ -53,9 +52,13 @@ shadow = "9.4.1"
 postchain-bom = { module = "net.postchain:postchain", version.ref = "postchain" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 
+antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
+antlr-runtime = { module = "org.antlr:antlr4-runtime", version.ref = "antlr" }
 better-parse = { module = "com.github.h0tk3y.betterParse:better-parse-jvm", version.ref = "better-parse" }
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
+flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version.ref = "flatbuffers" }
 jline = { module = "org.jline:jline", version.ref = "jline" }
+jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm", version.ref = "kotlinx-collections-immutable" }
 postchain-client = { module = "net.postchain.client:postchain-client", version = "3.39.1" }
 
@@ -69,15 +72,12 @@ postchain-spi = { module = "net.postchain:postchain-spi" }
 postchain-base = { module = "net.postchain:postchain-base" }
 postchain-devtools = { module = "net.postchain:postchain-devtools" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
-jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
 postgresql = { module = "org.postgresql:postgresql" }
 bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on" }
 kotlinLogging = { module = "io.github.microutils:kotlin-logging-jvm" }
 log4j-slf4j2-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl" }
 testcontainers = { module = "org.testcontainers:testcontainers" }
 testcontainers-junit-jupiter = { module = "org.testcontainers:testcontainers-junit-jupiter" }
-
-flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version.ref = "flatbuffers" }
 
 # GraalVM Truffle
 truffle-api = { module = "org.graalvm.truffle:truffle-api", version.ref = "truffle" }
@@ -90,8 +90,6 @@ junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params" }
 
 # rell-toolbox libraries
-antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
-antlr-runtime = { module = "org.antlr:antlr4-runtime", version.ref = "antlr" }
 commons-collections4 = { module = "org.apache.commons:commons-collections4", version.ref = "commons-collections4" }
 ec4j = { module = "org.ec4j.core:ec4j-core", version.ref = "ec4j" }
 fury-core = { module = "org.furyio:fury-core", version.ref = "fury-core" }
@@ -121,7 +119,6 @@ kotlinx-html = { module = "org.jetbrains.kotlinx:kotlinx-html-jvm", version.ref 
 commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
 commonmark-ext-gfm-tables = { module = "org.commonmark:commonmark-ext-gfm-tables", version.ref = "commonmark" }
 commonmark-ext-autolink = { module = "org.commonmark:commonmark-ext-autolink", version.ref = "commonmark" }
-jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
 # Performance
 kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinx-benchmark" }
@@ -137,7 +134,6 @@ toolbox-testing = ["assertk", "mockk", "junit-jupiter", "junit-jupiter-params", 
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator" }
 dependency-check = { id = "org.owasp.dependencycheck", version.ref = "dependency-check" }
 git-properties = { id = "com.gorylenko.gradle-git-properties", version.ref = "gradle-git-properties" }

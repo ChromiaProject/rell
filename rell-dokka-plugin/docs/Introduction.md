@@ -4,170 +4,138 @@
 
 ## Project Summary
 
-Rell Dokka Plugin is a **Dokka plugin** that generates HTML documentation for Rell programming language code. It extends Dokka's documentation generation framework to support Rell source code analysis, translation, and HTML rendering. The plugin can generate documentation for both user Rell projects and the Rell system library.
+Rell Dokka Plugin is a **self-contained HTML documentation generator** for the Rell programming language. The "dokka"
+in the name and in the package layout is historical &mdash; earlier versions were implemented as a JetBrains Dokka plugin.
+The current implementation no longer depends on it: it walks the Rell compiler model directly, builds an internal
+site model (`Doc_Site`), and renders the whole site with kotlinx.html + a CSS/JS bundle shipped inside the jar.
 
 The plugin works by:
 
-1. **Analyzing Rell source code** - Uses the Rell compiler API to compile and analyze Rell modules, extracting functions, types, constants, operations, queries, and their relationships
-2. **Translating to Dokka's internal model** - Converts Rell language constructs into Dokka's Documentable representation
-3. **Generating HTML documentation** - Renders documentation pages with navigation, search, and custom Chromia branding
+1. **Loading a Rell program model** &mdash; either by compiling a user project through `RellApiBaseInternal.compileApp`(`SourceBuild`), or by walking the in-process standard library (`Lib_Rell.MODULE` + `Lib_RellTest.MODULE`) via the `L_Namespace` graph (`SystemBuild`).
+2. **Projecting it to a renderer-only model** &mdash; `R_Module` / `L_Namespace` definitions are converted to the immutable `Doc_*` data classes in `com.chromia.rell.doc.model`. The renderer never sees a compiler type.
+3. **Writing an HTML directory tree** &mdash; `SiteRender` walks the `Doc_Site` and emits `index.html`, `navigation.html`, `scripts/pages.json`, `styles/site.css`, per-module / per-package / per-def pages, and copies user-supplied stylesheets/assets plus bundled fonts.
 
-The plugin provides a command-line interface for generating documentation sites and can be integrated into build systems via Gradle or Maven.
+The plugin ships as a CLI (`com.chromia.rell.dokka.cli.MainKt`) and as a library: `RellDokkaGenerator(builder).generate()` is the entry point called from both chromia-cli and `rell-gradle-plugin`.
 
 ## Value Creation
 
 Rell Dokka Plugin enables developers to:
 
-- **Generate API documentation automatically** - Creates comprehensive documentation from Rell source code and doc comments without manual maintenance
-- **Document Rell system library** - Provides complete API reference for the Rell standard library, including types, functions, and modules
-- **Maintain documentation consistency** - Ensures documentation stays synchronized with code changes through automated generation
-- **Provide developer-friendly documentation** - Generates HTML documentation with navigation, search, and code examples similar to Kotlin's Dokka documentation
-- **Support multiple documentation modes** - Can generate documentation for user projects or system library, with different filtering and inclusion options
+- **Generate API documentation automatically** from compiled Rell source and doc comments, with no manual maintenance.
+- **Publish a reference for the Rell standard library** directly from the in-process `L_NamespaceMember` graph &mdash; no source files needed, so the output always reflects the version of `rell-base` linked into the jar.
+- **Keep cross-references working** &mdash; `[rell.qualified.name]` inside doc comments resolves through `SiteIndex` (a flat `qname → page` map) and gets rewritten to relative HTML links at render time.
+- **Ship a single binary** &mdash; no Dokka, no Kotlin compiler, no Gradle plugin runtime required on the consumer side. The CLI bundles everything.
+- **Match the historical Dokka-plugin URL layout** so downstream tooling (chromia-cli integration tests, docs.chromia.com) keeps working without URL rewrites. The `Paths.fileSlug` rule is intentionally preserved verbatim (`"My Dapp"` → `-my -dapp`, `function#0` → `function%230`).
 
 ## Upstream and Downstream Projects
 
 ### Upstream Dependencies (What Rell Dokka Plugin Consumes)
 
-**1. Dokka Framework**
-- **Role:** Core documentation generation framework providing pipeline architecture, extension points, and HTML rendering infrastructure
-- **Source:** Maven Central (`org.jetbrains.dokka:dokka-core`, `org.jetbrains.dokka:dokka-base`)
-- **Version:** 1.9.20
-- **Relationship:** Rell Dokka Plugin extends Dokka's plugin system by implementing custom translators, renderers, and transformers at various pipeline stages
-- **Critical Dependency:** If Dokka framework is unavailable or incompatible, the plugin cannot function. The plugin depends on Dokka's extension point system for integration.
+**1. `rell-base` and `rell-api-base`**
+- **Role:** Provide the Rell compiler frontend, the runtime model (`R_Module`, `R_Function`, `R_Type`, …), the in-process standard library (`Lib_Rell`, `Lib_RellTest`), and `RellApiBaseInternal.compileApp` / `RellApiCompile`.
+- **Source:** Sibling modules &mdash; `:rell-api-base` and `:rell-base`.
+- **Critical dependency:** All `Doc_*` content is derived from these. The plugin runs in-process and links against the same `rell-base` classes that are linked into the consumer (chromia-cli, gradle plugin) &mdash; there is no version negotiation: whatever stdlib symbols `Lib_Rell.MODULE` exposes is what gets documented.
+- **Internal-API opt-in:** `SourceBuild` is `@OptIn(InternalRellApi::class)` because it uses `RellApiBaseInternal.compileApp` / `RellApiBaseInternal.makeCompilerOptions`.
 
-**2. Rell Compiler API**
-- **Role:** Provides Rell language analysis capabilities, including compilation, module parsing, and symbol resolution
-- **Source:** GitLab Maven registry (`net.postchain.rell:rell-api-base`, `net.postchain.rell:rell-base`)
-- **Version:** 0.15.0
-- **Relationship:** Plugin uses `RellApiCompile` to compile Rell source code and extract module structures, function definitions, and type information
-- **Critical Dependency:** If Rell compiler API is unavailable or fails to compile source code, documentation generation will fail. The plugin requires successful compilation to extract documentation.
+**2. `kotlinx-html-jvm`**
+- **Role:** Type-safe HTML DSL for `Pages.kt`, `Navigation.kt`, and the signature/type renderers.
+- **Source:** Maven Central, version pinned via `libs.kotlinx.html` in the version catalog.
 
-**4. Additional Libraries**
-- **Kotlinx HTML** - HTML generation utilities
-- **Kotlinx Serialization** - JSON serialization for configuration
-- **Clikt** - Command-line interface parsing
-- **Jackson** - JSON processing
+**3. `commonmark` (+ `commonmark-ext-gfm-tables`, `commonmark-ext-autolink`)**
+- **Role:** Markdown parsing and HTML rendering for doc comments. `Markdown.kt` post-processes the AST to rewrite `[qname]` shortcut-style references into `<a href>` links via `SiteIndex`.
+
+**4. `clikt`**
+- **Role:** Command-line option parsing in `cli/main.kt`.
 
 ### Downstream Projects (What Consumes Rell Dokka Plugin)
 
 **1. Chromia CLI**
-- **Role:** Command-line tool for Chromia development that includes documentation generation functionality
-- **Relationship:** Chromia CLI uses `RellDokkaGenerator` and `RellDokkaPluginConfigurationBuilder` to generate documentation for Rell projects via the `generate docs-site` command
+- Calls `RellDokkaGenerator(builder).generate()` from `GenerateDocsSiteCommand`. The constructor + `generate()` shape is part of the public contract and cannot change without coordinating a chromia-cli release. Chromia CLI passes its own `BuildCliEnv` (a `RellCliEnv` subtype) via `builder.cliEnv(...)`.
 
 **2. Rell Gradle Plugin**
-- **Role:** Gradle plugin for Rell projects that provides build tasks including documentation generation
-- **Relationship:** Rell Gradle Plugin uses `RellDokkaGenerator` and `RellDokkaPluginConfigurationBuilder` in its `RellDocsTask` to generate documentation as part of Gradle builds
+- Uses the same builder + generator from `RellDocsTask`.
 
-**3. Rell System Library Documentation**
-- **Role:** Official Rell system library API reference documentation
-- **Relationship:** Plugin generates public-facing documentation for the Rell standard library
-- **Usage Pattern:** System library documentation is generated separately using the `--system` flag, typically invoked directly via the plugin's CLI
+**3. Rell System Library Documentation (docs.chromia.com)**
+- Generated by running the CLI with `--system`. `work/build-local-docs.sh` is the local-preview script for this mode.
 
 ## Data and Control Flow
 
-### Documentation Generation Flow
+```mermaid
+flowchart TD
+    argv["CLI argv<br/>(cli/main.kt)"]
+    builder["RellDokkaPluginConfigurationBuilder<br/><i>also called directly by chromia-cli / gradle plugin</i>"]
+    config["RellDokkaPluginConfiguration<br/><i>POJO — no Dokka types</i>"]
+    gen["RellDokkaGenerator.generate()"]
+    moduleDocs["ModuleDocs.load(includes,<br/>+bundled rell.md when --system)"]
+    source["SourceBuild.build(...)<br/>· RellApiBaseInternal.compileApp<br/>· R_Module → Doc_Package"]
+    system["SystemBuild.build(...)<br/>· walk Lib_Rell + Lib_RellTest<br/>namespaces → Doc_Package"]
+    docModule["Doc_Module"]
+    site["Doc_Site<br/>modules + customStyleSheets + sourceLinks<br/>+ hiddenPackages + system flag"]
+    render["SiteRender(targetFolder).render(site)"]
+    idx["SiteIndex.build(site)<br/><i>qname → page entry; powers [ref] resolution</i>"]
+    md["Markdown(index)<br/><i>commonmark + ref rewrite</i>"]
+    nav["Navigation(site)<br/><i>sidebar HTML, root-package inlined</i>"]
+    root["writeSiteRoot<br/><i>index.html, navigation.html</i>"]
+    pages["per-module / per-package /<br/>per-def / per-member pages"]
+    userAssets["copyUserAssets<br/><i>styles/&lt;sheet&gt;.css, images/&lt;asset&gt;</i>"]
+    staticAssets["writeStaticAssets<br/><i>styles/site.css + bundled fonts</i>"]
+    search["writeSearchIndex<br/><i>scripts/pages.json — schema unchanged from Dokka era</i>"]
 
-```
-1. User/CLI Invocation
-   ↓
-   Command-line arguments or build configuration
-   ↓
-2. RellDokkaGenerator
-   ↓
-   Builds DokkaConfiguration with RellDokkaPluginConfiguration
-   ↓
-3. DokkaGenerator (Dokka Framework)
-   ↓
-   Initializes plugin system and pipeline
-   ↓
-4. RellDokkaPlugin
-   ↓
-   Registers custom extensions at pipeline stages
-   ↓
-5. Source Analysis Stage
-   ↓
-   RellSourceToDocumentableTranslator or RellSystemLibToDocumentableTranslator
-   ↓
-   RellAnalysis compiles Rell code using RellApiCompile
-   ↓
-   RellModuleVisitor traverses compiled modules
-   ↓
-6. Translation Stage
-   ↓
-   Rell language constructs → Dokka Documentables
-   ↓
-7. Merging & Transformation Stage
-   ↓
-   Documentables merged and enriched with additional information
-   ↓
-8. Page Generation Stage
-   ↓
-   RellDocumentableToPageTranslator converts Documentables to Page models
-   ↓
-9. Rendering Stage
-   ↓
-   RellHtmlRenderer renders pages to HTML
-   ↓
-   ChromiaAssetsInstaller adds custom CSS/JS/assets
-   ↓
-   RellNavigationPageInstaller creates navigation structure
-   ↓
-10. Output
-   ↓
-   HTML documentation site in target directory
+    argv --> builder
+    builder -- ".build() (internal)" --> config
+    config --> gen
+    gen --> moduleDocs
+    gen -- "project mode" --> source
+    gen -- "--system mode" --> system
+    source --> docModule
+    system --> docModule
+    moduleDocs --> docModule
+    docModule --> site
+    site --> render
+    render --> idx
+    render --> md
+    render --> nav
+    render --> root
+    render --> pages
+    render --> userAssets
+    render --> staticAssets
+    render --> search
 ```
 
 ### Control Flow Details
 
 **Configuration:**
-- CLI parses arguments and builds `RellDokkaPluginConfigurationBuilder`
-- Configuration is serialized to JSON and embedded in Dokka configuration
-- `RellDokkaGlobalState` maintains non-serializable state (hidden packages, CLI environment)
+- `RellDokkaPluginConfigurationBuilder` is the public surface. Two constructor paths: app docs (`RellDokkaPluginConfigurationBuilder(title, modules, projectRoot)`) and system docs (`RellDokkaPluginConfigurationBuilder.SYSTEM` / `newSystemBuilder()`).
+- `.build()` is `internal` &mdash; the generator is the only consumer. The output is a plain `RellDokkaPluginConfiguration` data class; there is no Dokka `DokkaConfiguration` anywhere.
+- Filesystem inputs are accepted as `java.io.File` on the builder and stored as `java.nio.file.Path` internally.
 
-**Source Analysis:**
-- `RellAnalysis` uses Rell compiler API to compile source code
-- Compilation extracts modules, functions, types, constants, operations, queries
-- Extension functions are identified using reflection
-- Module structure is analyzed to determine package hierarchy
+**Source analysis (`SourceBuild`):**
+- Builds a `RellApiCompile.Config` with `docSymbolsEnabled(true)`, `includeTestSubModules(true)`, `mountConflictError(false)`, `moduleArgsMissingError(false)`, `appModuleInTestsError(false)`, and the optional `cliEnv` from the builder.
+- Calls `RellApiBaseInternal.compileApp(...)` to get the full `R_App`, then projects each non-test `R_Module` and each test `R_Module` into `Doc_Package`s.
+- Extension functions: `app.functionExtensions.list` provides the public mapping from extendable target → extension implementations. No reflection is involved (the previous Dokka-plugin had to reflect into private fields; the current `rell-base` exposes the table through a public API).
+- A Rell module's nested `namespace { … }` blocks turn into sibling `Doc_Package`s keyed under the dotted prefix (e.g. `lib.lib1` + `lib.lib1.nested`).
 
-**Translation:**
-- `RellModuleVisitor` traverses compiled Rell modules
-- Each Rell construct (function, type, etc.) is converted to Dokka `Documentable`
-- Doc comments are parsed and attached to documentables
-- DRI (Documentable Resource Identifier) references are created for cross-references
+**System library (`SystemBuild`):**
+- Walks `Lib_Rell.MODULE.lModule.namespace` and `Lib_RellTest.MODULE.lModule.namespace` recursively.
+- Each `L_NamespaceMember_*` becomes the corresponding `Doc_Def`. Empty namespaces are filtered. Blacklists (`guid`, `signer`, `tuid`) match the historical Dokka-plugin output.
+- A bundled `rell.md` resource (under `src/main/resources/`) is folded into the documentation automatically when `--system` is set, so the package summaries appear without `--includes`.
 
 **Rendering:**
-- `RellDocumentableToPageTranslator` converts documentables to page models
-- `RellHtmlRenderer` renders pages using Dokka's HTML template system
-- Custom assets (CSS, JavaScript, images) are installed
-- Navigation structure is generated with module filtering support
-
-**System Library Mode:**
-- When `system: true` is set, `RellSystemLibToDocumentableTranslator` is used
-- System library documentation is generated from predefined Rell module definitions
-- Uses `SystemLibVisitor` to traverse system library structure
-- Generates documentation for standard library modules (rell, rell.test, etc.)
+- `SiteRender` first builds the `SiteIndex`, then the `Markdown` / `Navigation` helpers, then walks the site emitting one HTML file per definition.
+- The renderer is **purely a string→file emitter**: every `Pages.kt` method returns a `String` and `SiteRender` is responsible for the I/O. This makes the renderer easy to test in isolation (see `SiteRenderTest`).
 
 ### Data Persistence
 
-Rell Dokka Plugin maintains minimal state:
-
-- **Configuration** - Serialized in Dokka configuration, passed between pipeline stages
-- **Global State** - `RellDokkaGlobalState` singleton maintains hidden packages and CLI environment (bypasses serialization)
-- **Compiled Rell Model** - In-memory representation during generation, not persisted
-- **Generated HTML** - Output files written to target directory
-
-The only persistent data is:
-- **Generated documentation files** - HTML, CSS, JavaScript, images written to output directory
-- **No database or configuration files** - All configuration is provided at generation time
+- In-memory only during a single `generate()` call.
+- The only output is the HTML directory tree under `targetFolder`. There is no database, no cache, no temp files.
+- The bundled CSS / JS / font assets are read from the jar's `src/main/resources/` (notably `chromia/fonts/...` and `rell.md`).
 
 ## External References and Resources
 
-### Dokka Documentation
-- **Dokka Developer Guide:** https://kotlin.github.io/dokka/2.0.0/developer_guide/introduction/
-- **Dokka Plugin Development:** https://kotlin.github.io/dokka/2.0.0/developer_guide/plugin-development/introduction/
-- **Dokka Core Extension Points:** https://kotlin.github.io/dokka/2.0.0/developer_guide/architecture/extension_points/core_extension_points/
-- **Dokka Architecture:** https://kotlin.github.io/dokka/2.0.0/developer_guide/architecture/architecture_overview/
-
 ### Rell Language Documentation
 - **Rell Documentation:** https://docs.chromia.com/rell/
+
+### Library References
+- **kotlinx.html:** https://github.com/Kotlin/kotlinx.html
+- **commonmark-java:** https://github.com/commonmark/commonmark-java
+- **clikt:** https://ajalt.github.io/clikt/

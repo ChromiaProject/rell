@@ -141,8 +141,13 @@ object LocalChr {
     private fun setProperty(dir: Path, property: String, value: String, log: (String) -> Unit) =
         mvnw(dir, listOf("versions:set-property", "-Dproperty=$property", "-DnewVersion=$value"), MVN_TIMEOUT, log)
 
+    // `clean` is critical: maven-assembly-plugin populates target/chromia-cli-dev-dist/lib/ but
+    // doesn't prune it between runs. Without a clean, jars from a previous build whose dependency
+    // is no longer resolved (e.g. the kotlinx-html-jvm 0.9.1 that came in transitively when
+    // rell-dokka-plugin still depended on Dokka) stay in lib/ and clobber the freshly-resolved
+    // version at runtime. The same logic applies to chromia-cli-tools.
     private fun mvnInstall(dir: Path, log: (String) -> Unit) =
-        mvnw(dir, listOf("-DskipTests", "-DskipITs", "install"), MVN_TIMEOUT, log)
+        mvnw(dir, listOf("-DskipTests", "-DskipITs", "clean", "install"), MVN_TIMEOUT, log)
 
     /** Copy freshly published net.postchain.rell + com.chromia.rell.dokka jars into the chr dist lib/. */
     private fun syncRellJars(repoRoot: Path, rellVersion: String, log: (String) -> Unit) {
