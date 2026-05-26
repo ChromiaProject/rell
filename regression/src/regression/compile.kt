@@ -38,11 +38,18 @@ private const val POSTGRES_PORT = 5432
 // ─── Per-project pipeline ──────────────────────────────────────────────────────────────────────
 //
 // `runOneProject` runs the full install/build/test pipeline for ONE (project, backend); each
-// invocation owns its throw-away Testcontainers Postgres so concurrent projects never share a
+// invocation owns its throw-away Testcontainers Postgres so concurrent units never share a
 // schema. The chr binary is built upstream by `:performance:buildLocalChr`. The driver is the
-// JUnit @TestFactory in test/regression/RegressionTest.kt — one DynamicTest per project, both
-// backends looped sequentially inside the test body to avoid the chr-install race in the shared
-// `src/lib/<name>` clone tree.
+// JUnit @TestFactory in test/regression/RegressionTest.kt — one DynamicTest per (project, backend),
+// fanned out by JUnit's parallel-test extension.
+//
+// `chr install` is heavy (git clones of every Rell library dependency listed in chromia.yml) and
+// backend-agnostic, so we pre-install on the master clone once per project (`ensureMasterInstalled`,
+// lock + sha-stamped sentinel) before fanning out. Each backend then rsync-mirrors the populated
+// master into its own working copy at `workdir/<project>-<backend>/` and runs the full
+// install→build→test pipeline. The per-backend `chr install` lands on warm `src/lib/<dep>/` and
+// finishes in seconds; `chr build` and `chr test` do their backend-specific work in isolation, so
+// the two backends never race on the shared `src/lib/<name>` tree.
 
 // ─── Per-backend environment ────────────────────────────────────────────────────────────────────
 
@@ -117,41 +124,184 @@ private sealed interface Located
 private class Unusable(val result: CompileResult) : Located
 
 /** The clone is present and has a chromia.yml — proceed with build/test from [rellDir]. */
-private class Usable(val sha: String, val rellDir: Path) : Located
+private class Usable(val sha: String, val backendDir: Path, val rellDir: Path) : Located
+
+/**
+ * Path of the per-(project, backend) working copy: a mirror of the master clone (cloned by
+ * `regressionClone` into `workdir/<project>/`) that the two backends can populate independently.
+ * Keeping each backend in its own tree is what lets them run concurrently — chr install writes
+ * into `src/lib/<name>/` inside this directory, and two parallel installs would otherwise race on
+ * the shared path (destination-exists, `.git/index.lock`, partial-tree).
+ */
+internal fun backendWorkdir(workdir: Path, project: ProjectSpec, backend: ExecutionBackend): Path =
+    workdir / "${project.name}-${backend.name.lowercase()}"
+
+// Per-project lock: serialises `chr install` on the master clone across the two backends.
+// Without this, the (project, INTERPRETER) and (project, TRUFFLE) tests would race to populate
+// `workdir/<project>/src/lib/<dep>/` (git clones into the shared path). Once installed, the
+// sentinel file `.chr-install-sentinel-<sha>` short-circuits subsequent backends in O(1).
+private val masterInstallLocks = java.util.concurrent.ConcurrentHashMap<String, Any>()
+
+/**
+ * Run `chr install` on the master clone exactly once per project per JVM lifetime, so the
+ * backend-isolated workdirs `rsync`-mirror an already-populated `src/lib/<dep>/` tree and the
+ * per-backend `chr install` step becomes a no-op against the warm cache.
+ *
+ * Idempotent and concurrency-safe: a sha-stamped sentinel inside the master clone short-circuits
+ * sibling backends after the first install; a per-project lock prevents two concurrent backends
+ * from each starting a real install on the master. chr install doesn't touch the database and is
+ * backend-agnostic, so we run it without spinning up a Postgres container and without injecting
+ * `-Drell.execution.backend=truffle`.
+ *
+ * Returns silently when there is nothing for chr install to do (no chromia.yml in [rellDir]) —
+ * the caller's downstream chromia.yml check still handles the EXPECTED_FAIL path.
+ */
+private fun ensureMasterInstalled(
+    project: ProjectSpec,
+    masterDir: Path,
+    rellDir: Path,
+    sha: String,
+    chrBin: Path,
+    reportsDir: Path,
+) {
+    if (!(rellDir / "chromia.yml").exists()) return
+
+    val sentinel = masterDir / ".chr-install-sentinel-$sha"
+    if (sentinel.exists()) return
+
+    val lock = masterInstallLocks.computeIfAbsent(project.name) { Any() }
+    synchronized(lock) {
+        if (sentinel.exists()) return  // raced with sibling; install already done
+
+        // Sweep stale sha-stamped sentinels (the master clone was advanced since the last install).
+        runCatching {
+            masterDir.listDirectoryEntries(".chr-install-sentinel-*").forEach { it.deleteIfExists() }
+        }
+
+        val logFile = reportsDir / "logs" / "_master-install-${project.name}.log"
+        logFile.parent.createDirectories()
+        logFile.deleteIfExists()
+
+        log("master-install", "${project.name} — chr install on master clone")
+        val outcome = try {
+            runToLog(
+                listOf(chrBin.absolutePathString(), "install"),
+                rellDir,
+                logFile,
+                Duration.ofMinutes(15),
+                emptyMap(),
+            )
+        } catch (e: IOException) {
+            error("chr install on master clone for ${project.name} failed to start: ${e.message}")
+        }
+        check(outcome.exitCode == 0 && !outcome.timedOut) {
+            "chr install on master clone for ${project.name} failed " +
+                "(exit ${outcome.exitCode}${if (outcome.timedOut) ", timed out" else ""}); see $logFile"
+        }
+        sentinel.toFile().createNewFile()
+        log("master-install", "${project.name} — done in ${outcome.durationMs / 1000}s")
+    }
+}
+
+/**
+ * Mirror [source] into [dest] with `rsync -a --delete`. Used to bring the per-backend working copy
+ * back in sync with the master clone before each run, discarding chr install artifacts from a prior
+ * sweep. rsync handles both "first run" (dest doesn't exist) and "subsequent run" (dest has stale
+ * src/lib + build outputs) without a separate code path. Times out at 5 min so a wedged sync fails
+ * loudly instead of holding the JUnit slot indefinitely.
+ */
+private fun refreshBackendCopy(source: Path, dest: Path) {
+    dest.parent?.createDirectories()
+    val tempLog = java.io.File.createTempFile("regression-rsync-", ".log")
+    try {
+        val pb = ProcessBuilder(
+            "rsync", "-a", "--delete",
+            // Trailing slashes: copy contents of source into dest, not nest source under dest.
+            source.toString().trimEnd('/') + "/",
+            dest.toString().trimEnd('/') + "/",
+        )
+            .redirectErrorStream(true)
+            .redirectOutput(ProcessBuilder.Redirect.to(tempLog))
+        val proc = pb.start()
+        val finished = proc.waitFor(Duration.ofMinutes(5).toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS)
+        if (!finished) {
+            proc.destroyForcibly()
+            error("rsync $source -> $dest timed out after 5 min")
+        }
+        if (proc.exitValue() != 0) {
+            error("rsync $source -> $dest failed (exit ${proc.exitValue()})\n${tempLog.readText().take(800)}")
+        }
+    } finally {
+        tempLog.delete()
+    }
+}
 
 /**
  * Resolve a project's clone to a usable Rell directory, or a terminal [CompileResult] explaining
- * why not. Pure with respect to the filesystem apart from reading — safe to call from both the
- * build and test phases (the test phase re-derives the same context the build phase saw).
+ * why not. Pre-installs the master clone (once per project, idempotent across backends), then
+ * materialises the per-backend working copy from the populated master so the per-backend
+ * `chr install` step lands on a warm `src/lib/<dep>/` and finishes in seconds. Safe to call from
+ * both the build and test phases.
  */
-private fun locate(project: ProjectSpec, workdir: Path, backend: ExecutionBackend): Located {
-    val target = workdir / project.name
-    val sha = readGitSha(target)
+private fun locate(
+    project: ProjectSpec,
+    workdir: Path,
+    backend: ExecutionBackend,
+    reportsDir: Path,
+): Located {
+    val sourceClone = workdir / project.name
+    val sha = readGitSha(sourceClone)
         ?: return Unusable(baseResult(project, Status.CLONE_FAILED).copy(executionBackend = backend))
 
-    val rellDir = (target / project.rellPath).normalize()
-    if (!rellDir.exists()) {
+    val masterRellDir = (sourceClone / project.rellPath).normalize()
+    if (!masterRellDir.exists()) {
         return Unusable(baseResult(project, Status.CLONE_FAILED).copy(sha = sha, executionBackend = backend))
     }
 
     // Pre-check: chr install / chr build both fail mechanically with "library not found in null"
     // when there's no chromia.yml in the rell dir. That's a tool-incompatibility, not a Rell
     // compiler regression — short-circuit so the report shows a clean note instead of a wall of
-    // chr usage text. Projects that pre-date the chromia.yml era live here.
-    val chromiaYml = rellDir / "chromia.yml"
-    if (!chromiaYml.exists()) {
+    // chr usage text. Projects that pre-date the chromia.yml era live here. Checked on the master
+    // clone so we skip the per-backend rsync + install for projects we know are unusable.
+    if (!(masterRellDir / "chromia.yml").exists()) {
         return Unusable(
             baseResult(project, Status.EXPECTED_FAIL).copy(
                 sha = sha,
                 durationMs = 0L,
-                errorSummary = "no chromia.yml at $rellDir; project pre-dates chromia.yml era " +
+                errorSummary = "no chromia.yml at $masterRellDir; project pre-dates chromia.yml era " +
                     "and is incompatible with the current chr CLI — not a Rell compiler regression",
                 executionBackend = backend,
             ),
         )
     }
 
-    return Usable(sha, rellDir)
+    val chrBin = LocalChr.chrExecutable(repoRoot())
+    try {
+        ensureMasterInstalled(project, sourceClone, masterRellDir, sha, chrBin, reportsDir)
+    } catch (e: Exception) {
+        return Unusable(
+            baseResult(project, Status.FAILED).copy(
+                sha = sha,
+                errorSummary = "master chr install failed: ${e.message?.lines()?.firstOrNull()?.take(200)}",
+                executionBackend = backend,
+            ),
+        )
+    }
+
+    val backendDir = backendWorkdir(workdir, project, backend)
+    try {
+        refreshBackendCopy(sourceClone, backendDir)
+    } catch (e: Exception) {
+        return Unusable(
+            baseResult(project, Status.CLONE_FAILED).copy(
+                sha = sha,
+                errorSummary = "failed to materialise backend workdir: ${e.message?.lines()?.firstOrNull()?.take(200)}",
+                executionBackend = backend,
+            ),
+        )
+    }
+
+    return Usable(sha, backendDir, (backendDir / project.rellPath).normalize())
 }
 
 /**
@@ -166,17 +316,18 @@ fun runOneProject(project: ProjectSpec, workdir: Path, reportsDir: Path, backend
     val tag = "[${backend.label()}] ${project.name}"
 
     val chrBin = LocalChr.chrExecutable(repoRoot())
-    val located = locate(project, workdir, backend)
+    val located = locate(project, workdir, backend, reportsDir)
     if (located is Unusable) {
         log("run-one", "$tag — ${located.result.status} (clone not usable; see notes)")
         writeFragment(reportsDir, backend, located.result)
         return
     }
-    val (sha, rellDir) = (located as Usable).let { it.sha to it.rellDir }
+    val (sha, backendDir, rellDir) = (located as Usable).let { Triple(it.sha, it.backendDir, it.rellDir) }
 
     // Apply declared patches (e.g. rewrite stricter-than-allowed chromia.yml strings). Applied
-    // before every chr step so they survive `regressionClone`'s git reset on the next sweep.
-    val patchFailure = applyPatches(project, workdir / project.name)
+    // to the per-backend working copy after `refreshBackendCopy` repaints it from the master clone,
+    // so patches re-apply cleanly on every sweep.
+    val patchFailure = applyPatches(project, backendDir)
     if (patchFailure != null) {
         log("run-one", "$tag — FAILED (patch error: $patchFailure)")
         writeFragment(

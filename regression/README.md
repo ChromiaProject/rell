@@ -11,16 +11,18 @@ invoked against the locally-built `chr` (built from the Rell snapshot in this re
 `commands` to drop the test step &mdash; otherwise `chr test` exits with "No tests to run".
 
 Parallelism is owned by JUnit Jupiter. A `@TestFactory`
-(`test/regression/RegressionTest.kt`) emits one `DynamicTest` per project; cross-project
-fan-out runs concurrently inside one test JVM (capped by `-PregressionParallelism`, default 4
-locally / 8 in CI). Each test loops both backends (Interpreter &rarr; Truffle) sequentially so
-`chr install` doesn't race against itself in the shared `src/lib/<name>` clone tree, and chr
-itself runs out-of-process via `ProcessBuilder` &mdash; its ~2.5 GB JVM lives in the OS, not in
-the test JVM. Each concurrent project also leases its own throw-away PostgreSQL spun up via
-Testcontainers (`withProjectPostgres` in `src/regression/compile.kt`). Each project gets a
-fresh database, so suites never see leftover state from a sibling run. Requires a reachable
-Docker daemon: locally pick it up from `DOCKER_HOST` / `local.properties`; in CI the
-`.gitlab-ci.yml` variables already point at the DIND service.
+(`test/regression/RegressionTest.kt`) emits one `DynamicTest` per **(project, backend)** pair;
+all units fan out concurrently inside one test JVM (capped by `-PregressionParallelism`,
+default 4 locally / 8 in CI). Each unit operates on its own working copy under
+`workdir/<project>-<backend>/`, mirrored from the master clone (`workdir/<project>/`) by
+`refreshBackendCopy` in `src/regression/compile.kt`, so the two backends of one project can run
+in parallel without `chr install` racing on the shared `src/lib/<name>` clone tree. chr itself
+runs out-of-process via `ProcessBuilder` &mdash; its ~2.5 GB JVM lives in the OS, not in the
+test JVM. Each unit also leases its own throw-away PostgreSQL spun up via Testcontainers
+(`withProjectPostgres` in `src/regression/compile.kt`). Each unit gets a fresh database, so
+suites never see leftover state from a sibling run. Requires a reachable Docker daemon: locally
+pick it up from `DOCKER_HOST` / `local.properties`; in CI the `.gitlab-ci.yml` variables
+already point at the DIND service.
 
 ## Quick start
 
@@ -28,8 +30,11 @@ Docker daemon: locally pick it up from `DOCKER_HOST` / `local.properties`; in CI
 # End-to-end: build chr, clone every project, compile + test each, render the HTML.
 ./gradlew :regression:regression
 
-# Just one project (handy while debugging a single regression):
-./gradlew :regression:regression --tests "ft4-lib"
+# Just one project, both backends (handy while debugging a single regression):
+./gradlew :regression:regression --tests "ft4-lib*"
+
+# Just one (project, backend):
+./gradlew :regression:regression --tests "ft4-lib [interpreter]"
 
 # Public-only flavour (what CI runs; never touches private.json):
 ./gradlew :regression:regressionPublic

@@ -31,17 +31,20 @@ val reportsDir = layout.projectDirectory.dir("reports").asFile
 // Threading
 //
 // One JUnit test JVM per Test task. The @TestFactory in test/regression/RegressionTest.kt parses
-// the JSON config and emits one DynamicTest per project; each test loops both backends
-// (INTERPRETER and TRUFFLE) sequentially so `chr install` doesn't race against itself in the shared
-// `src/lib/<name>` clone tree (two parallel installs collide on "destination path already exists",
-// `.git/index.lock`, and partial-tree errors). Parallelism across projects is owned by JUnit's parallel-test extension
+// the JSON config and emits one DynamicTest per (project, backend); JUnit Jupiter's parallel-test
+// extension fans them out so both backends of the same project can run concurrently. Each backend
+// operates on its own working copy at `workdir/<project>-<backend>/` (mirrored from the master
+// clone in `workdir/<project>/` by `refreshBackendCopy` in src/regression/compile.kt), so the two
+// `chr install` calls never race on the shared `src/lib/<name>` clone tree (which would otherwise
+// collide on "destination path already exists", `.git/index.lock`, and partial-tree errors).
 //
-// Each concurrent project leases its own throw-away Testcontainers Postgres (`withProjectPostgres`
-// in src/regression/compile.kt) and runs chr out-of-process via ProcessBuilder, so chr's JVM heap
-// is *outside* the test JVM's heap budget. Per-slot RAM is dominated by the chr subprocess
-// (~2.5 GB) plus the Postgres container (~1.2 GB) - not by what this JVM holds.
+// Each concurrent (project, backend) unit leases its own throw-away Testcontainers Postgres
+// (`withProjectPostgres` in src/regression/compile.kt) and runs chr out-of-process via
+// ProcessBuilder, so chr's JVM heap is *outside* the test JVM's heap budget. Per-slot RAM is
+// dominated by the chr subprocess (~2.5 GB) plus the Postgres container (~1.2 GB) - not by what
+// this JVM holds.
 //
-// Each (project, backend) run still writes a fragment to reports/parts/; `regressionReport`
+// Each (project, backend) run writes a fragment to reports/parts/; `regressionReport`
 // (finalizedBy) merges them into results.json and renders the custom report.html.
 
 // Setup tasks

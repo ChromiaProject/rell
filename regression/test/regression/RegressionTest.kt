@@ -19,12 +19,12 @@ import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 
 /**
- * One DynamicTest per project, parsed from public.json (+ optional private.json). Each test
- * loops both backends (INTERPRETER, TRUFFLE) sequentially against the project — serialising
- * the backends within a project avoids the chr-install race in the shared `src/lib/<name>`
- * clone tree. Cross-project parallelism is JUnit Jupiter's job: `parallel.enabled=true` +
- * `parallel.mode.default=concurrent` (set by the root build) plus the fixed parallelism the
- * regression Test task injects drive the project fan-out.
+ * One DynamicTest per (project, backend), parsed from public.json (+ optional private.json).
+ * JUnit Jupiter's parallel-test extension (`parallel.enabled=true` + `parallel.mode.default=concurrent`
+ * set by the root build, plus the fixed parallelism the regression Test task injects) fans the
+ * (project, backend) units out across worker threads. Each unit operates on its own
+ * `workdir/<project>-<backend>/` clone (materialised by `refreshBackendCopy` in compile.kt), so
+ * concurrent `chr install` calls never race on the shared `src/lib/<name>` clone tree.
  *
  * Each `runOneProject` invocation owns its own throw-away Testcontainers Postgres and writes a
  * fragment to reports/parts/; the custom HTML renderer (report.kt) — invoked by the
@@ -32,7 +32,7 @@ import kotlin.io.path.inputStream
  *
  * Test-level pass/fail mirrors the fragment status so the IDE / JUnit XML view matches the HTML:
  * PASSED and EXPECTED_FAIL are JUnit "pass"; FAILED and CLONE_FAILED are JUnit "fail". Both
- * still write fragments. `ignoreFailures = true` on the Test task keeps a single failing project
+ * still write fragments. `ignoreFailures = true` on the Test task keeps a single failing unit
  * from reddening the build.
  */
 @Execution(ExecutionMode.CONCURRENT)
@@ -51,37 +51,37 @@ class RegressionTest {
             optional = listOfNotNull(privateConfig?.takeIf { it.exists() }),
         )
 
-        return projects.map { project ->
-            dynamicTest(project.name) {
-                runProject(project, workdir, reportsDir)
+        val backends = listOf(ExecutionBackend.INTERPRETER, ExecutionBackend.TRUFFLE)
+        return projects.flatMap { project ->
+            backends.map { backend ->
+                dynamicTest("${project.name} [${backend.name.lowercase()}]") {
+                    runProjectBackend(project, backend, workdir, reportsDir)
+                }
             }
         }
     }
 
-    private fun runProject(project: ProjectSpec, workdir: Path, reportsDir: Path) {
-        val backends = listOf(ExecutionBackend.INTERPRETER, ExecutionBackend.TRUFFLE)
+    private fun runProjectBackend(
+        project: ProjectSpec,
+        backend: ExecutionBackend,
+        workdir: Path,
+        reportsDir: Path,
+    ) {
         val perBackendTimeout = project.timeoutMinutes?.let { Duration.ofMinutes(it.toLong()) }
             ?: Duration.ofMinutes(30)
-        // Total cap = sum of per-backend caps + slack for fragment IO. JUnit kills the thread on
-        // overrun; the chr ProcessBuilder owns its own timeout inside `runToLog`, so the
-        // subprocess is still torn down cleanly.
-        val totalCap = perBackendTimeout.multipliedBy(backends.size.toLong()).plus(Duration.ofMinutes(2))
+        // Cap = per-backend budget + slack for fragment IO and Postgres start/stop. JUnit kills
+        // the thread on overrun; the chr ProcessBuilder owns its own timeout inside `runToLog`,
+        // so the subprocess is still torn down cleanly.
+        val cap = perBackendTimeout.plus(Duration.ofMinutes(2))
 
-        assertTimeoutPreemptively(totalCap) {
-            for (backend in backends) {
-                runOneProject(project, workdir, reportsDir, backend)
-            }
+        assertTimeoutPreemptively(cap) {
+            runOneProject(project, workdir, reportsDir, backend)
         }
 
-        val statuses = backends.map { backend ->
-            val frag = partsDir(reportsDir) / "${backend.name.lowercase()}-${project.name}.json"
-            regressionMapper.readValue<CompileResult>(frag.inputStream()).status
-        }
-        val unexpected = backends.zip(statuses)
-            .filter { (_, s) -> s == Status.FAILED || s == Status.CLONE_FAILED }
-        check(unexpected.isEmpty()) {
-            "${project.name}: unexpected outcome(s) — " +
-                backends.zip(statuses).joinToString { (b, s) -> "$b=$s" }
+        val frag = partsDir(reportsDir) / "${backend.name.lowercase()}-${project.name}.json"
+        val status = regressionMapper.readValue<CompileResult>(frag.inputStream()).status
+        check(status != Status.FAILED && status != Status.CLONE_FAILED) {
+            "${project.name} [${backend.name.lowercase()}]: unexpected outcome — $status"
         }
     }
 
