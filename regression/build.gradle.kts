@@ -1,6 +1,3 @@
-import groovy.json.JsonSlurper
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
 }
@@ -8,6 +5,7 @@ plugins {
 description = "Regression toolkit: clone external Rell projects and verify the local Rell compiler builds them."
 
 sourceSets["main"].kotlin.setSrcDirs(listOf("src"))
+sourceSets["test"].kotlin.setSrcDirs(listOf("test"))
 
 dependencies {
     // Shared HTML report style
@@ -18,88 +16,63 @@ dependencies {
     implementation(libs.jackson.kotlin)
     implementation(libs.kotlinx.html)
 
-    // Each `run-one` invocation owns its Postgres for the project's entire pipeline so the
-    // build *and* test phases can fan out across the Gradle worker pool.
     implementation(libs.testcontainers)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.testcontainers.junit.jupiter)
 }
 
-// ─── Layout ───────────────────────────────────────────────────────────────────────────────────
+// Layout
 
 val publicConfig = layout.projectDirectory.file("public.json").asFile
 val privateConfig = layout.projectDirectory.file("private.json").asFile
 val workdir = layout.projectDirectory.dir("workdir").asFile
 val reportsDir = layout.projectDirectory.dir("reports").asFile
 
-// ─── Threading model ────────────────────────────────────────────────────────────────────────────
+// Threading
 //
-// Gradle is the single controller of parallelism. The build script parses the JSON configs and
-// generates one task per project (regressionFt4Lib, regressionDirectoryChain, …) plus the
-// aggregate `regression` / `regressionPublic`. Each task fans every (project, backend) work item
-// out across Gradle's worker pool (RegressionRunWork submitted via WorkerExecutor — bounded by
-// --max-workers / org.gradle.workers.max). The work action runs the full `chr install` → `chr
-// build` → `chr test` pipeline end-to-end; each invocation owns its own throw-away PostgreSQL
-// (Testcontainers, spun up inside the CLI), so suites no longer race on a shared schema.
+// One JUnit test JVM per Test task. The @TestFactory in test/regression/RegressionTest.kt parses
+// the JSON config and emits one DynamicTest per project; each test loops both backends
+// (INTERPRETER and TRUFFLE) sequentially so `chr install` doesn't race against itself in the shared
+// `src/lib/<name>` clone tree (two parallel installs collide on "destination path already exists",
+// `.git/index.lock`, and partial-tree errors). Parallelism across projects is owned by JUnit's parallel-test extension
 //
-// Each (project, backend) run goes through the single-unit CLI (`run-one`) and lands a result
-// fragment under reports/parts/; `regressionReport` merges them into results.json and renders
-// report.html.
+// Each concurrent project leases its own throw-away Testcontainers Postgres (`withProjectPostgres`
+// in src/regression/compile.kt) and runs chr out-of-process via ProcessBuilder, so chr's JVM heap
+// is *outside* the test JVM's heap budget. Per-slot RAM is dominated by the chr subprocess
+// (~2.5 GB) plus the Postgres container (~1.2 GB) - not by what this JVM holds.
+//
+// Each (project, backend) run still writes a fragment to reports/parts/; `regressionReport`
+// (finalizedBy) merges them into results.json and renders the custom report.html.
 
-// Build-script-side project list: only the names are needed to wire the tasks. The CLI re-reads the
-// JSON for the full ProjectSpec. Reading the files here registers them as configuration-cache inputs,
-// so editing public.json/private.json invalidates the cached task graph.
-fun projectNames(file: File): List<String> {
-    if (!file.exists()) return emptyList()
-    @Suppress("UNCHECKED_CAST")
-    val root = JsonSlurper().parseText(file.readText()) as Map<String, Any?>
-
-    @Suppress("UNCHECKED_CAST")
-    val projects = (root["projects"] as? List<Map<String, Any?>>).orEmpty()
-    return projects.mapNotNull { it["name"] as? String }.distinct()
-}
-
-val publicNames = projectNames(publicConfig)
-val privateNames = projectNames(privateConfig)
-// public wins on a name clash, mirroring loadProjects() in the CLI (public config passed first).
-val allNames = (publicNames + privateNames).distinct()
-
-// "ft4-lib" → "Ft4Lib", "directory-chain" → "DirectoryChain", "postchain-eif" → "PostchainEif".
-fun taskSuffix(name: String): String =
-    name.split('-', '_', '.', ' ').filter { it.isNotEmpty() }.joinToString("") { it.replaceFirstChar(Char::uppercase) }
-
-// ─── Shared run wiring ──────────────────────────────────────────────────────────────────────────
+// Setup tasks
+//
+// The chr binary is built by the shared `:performance:buildLocalChr` task (which publishes Rell to
+// ~/.m2 in-graph). Cloning the target projects is regression-specific and stays
+// here as a JavaExec; it runs serially because the clones share one network pipe.
 
 val cliMain = "net.postchain.rell.regression.CliKt"
 val runtimeCp = sourceSets["main"].runtimeClasspath
-val rootDirPath: String = rootProject.projectDir.absolutePath
 
 // The CLI asserts cwd == repo root (util.kt#repoRoot), so pin every invocation to the Rell repo
 // root regardless of how the developer invoked Gradle.
-val launcher21 = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
-val javaExecProvider = launcher21.map { it.executablePath.asFile.absolutePath }
-
-// Shared CLI options appended after each subcommand. `publicOnly` drops the optional private.json
-// so the CI flavour never depends on a file that is gitignored and never reaches the runner.
-fun baseArgs(publicOnly: Boolean): List<String> {
-    val args = mutableListOf("--config", publicConfig.absolutePath)
-    if (!publicOnly) args += listOf("--config-optional", privateConfig.absolutePath)
-    args += listOf("--workdir", workdir.absolutePath, "--reports-dir", reportsDir.absolutePath)
-    return args
+val launcher21 = javaToolchains.launcherFor {
+    languageVersion = JavaLanguageVersion.of(21)
 }
-
-// ─── Setup tasks ─────────────────────────────────────────────────────────────────────────────────
-//
-// The chr binary is built by the shared `:performance:buildLocalChr` task (which publishes Rell to
-// ~/.m2 in-graph — no nested Gradle). Cloning the target projects is regression-specific and stays
-// here; it runs serially because the clones share one network pipe.
 
 val regressionClone by tasks.registering(JavaExec::class) {
     group = LifecycleBasePlugin.VERIFICATION_GROUP
-    description = "Clone every configured project into regression/workdir (serial — one network pipe)."
+    description = "Clone every configured project into regression/workdir."
     classpath = runtimeCp
     mainClass = cliMain
     javaLauncher = launcher21
     workingDir = rootProject.projectDir
-    args = listOf("clone") + baseArgs(publicOnly = false)
+    args = listOf(
+        "clone",
+        "--config", publicConfig.absolutePath,
+        "--config-optional", privateConfig.absolutePath,
+        "--workdir", workdir.absolutePath,
+        "--reports-dir", reportsDir.absolutePath,
+    )
     outputs.upToDateWhen { false }
 }
 
@@ -114,154 +87,69 @@ val regressionReport by tasks.registering(JavaExec::class) {
     outputs.upToDateWhen { false }
 }
 
-// ─── Per-project + aggregate run tasks ───────────────────────────────────────────────────────────
+// Regression Test tasks
 
-// Docker config forwarded to every CLI subprocess so Testcontainers can reach the daemon both
-// locally (DOCKER_HOST in local.properties or the parent env) and in CI (DOCKER_HOST=tcp://docker:2375
-// + TESTCONTAINERS_HOST_OVERRIDE=docker, set globally by .gitlab-ci.yml). Mirrors the root build's
-// Test-task forwarding (build.gradle.kts:83) so dev boxes get the same wiring without special-casing.
-val rootLocalProps = Properties().apply {
-    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+// `:regression:test` would be auto-wired into `:check` via the Kotlin plugin's lifecycle;
+// we don't want a 40-min IT on every build.
+tasks.test {
+    enabled = false
 }
-val dockerEnv: Map<String, String> = listOf(
-    "DOCKER_HOST",
-    "DOCKER_TLS_CERTDIR",
-    "TESTCONTAINERS_HOST_OVERRIDE",
-    "TESTCONTAINERS_RYUK_DISABLED",
-    "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE",
-).mapNotNull { key ->
-    val value = rootLocalProps.getProperty(key) ?: providers.environmentVariable(key).orNull
-    value?.let { key to it }
-}.toMap()
 
-fun RegressionRunTask.configureRun(names: List<String>, publicOnly: Boolean) {
+// Root build wires every Test task as `finalizedBy(jacocoTestReport)` and `jacocoTestReport`
+// `dependsOn(every Test task)` - that fan-in would pull `regressionPublic` in whenever
+// `regression` ran (and vice versa). The regression sweep runs chr subprocesses, not bytecode
+// the agent can attach to, so coverage is meaningless here; disable jacoco for this module.
+tasks.withType<JacocoReport>().configureEach {
+    enabled = false
+    setDependsOn(emptyList<Any>())
+}
+
+// Custom Test tasks don't auto-wire to the `test` source set (only the plugin's default `test`
+// task does). Reuse what the plugin computed there.
+val defaultTest = tasks.test.get()
+
+fun Test.configureRegressionRun(includePrivate: Boolean) {
     group = LifecycleBasePlugin.VERIFICATION_GROUP
-    cliClasspath.from(runtimeCp)
-    javaExecutable = javaExecProvider
-    runWorkingDir = rootDirPath
-    cliMainClass = cliMain
-    projectNames = names
-    backends = listOf("INTERPRETER", "TRUFFLE")
-    sharedArgs = baseArgs(publicOnly)
-    forwardedEnv = dockerEnv
-    dependsOn(":performance:buildLocalChr", regressionClone)
-    finalizedBy(regressionReport)
+    testClassesDirs = defaultTest.testClassesDirs
+    classpath = defaultTest.classpath
+    workingDir = rootProject.projectDir
+
+    systemProperty("regression.workdir", workdir.absolutePath)
+    systemProperty("regression.reportsDir", reportsDir.absolutePath)
+    systemProperty("regression.config.public", publicConfig.absolutePath)
+
+    if (includePrivate)
+        systemProperty("regression.config.private", privateConfig.absolutePath)
+
+    // Per-project parallelism: each slot pays ~3.7 GB (chr subprocess ~2.5 GB + Postgres container
+    // ~1.2 GB) outside this JVM. On xlarge (16c/64G) we run 8 concurrent; locally the default 4
+    // suits a 16 GiB dev box. Override via -PregressionParallelism. Overrides the root build's
+    // -PjunitParallelThreads fallback (set for the mainline test suites, not this one).
+    val parallelism = providers.gradleProperty("regressionParallelism").orElse("1").get()
+    systemProperty("junit.jupiter.execution.parallel.config.strategy", "fixed")
+    systemProperty("junit.jupiter.execution.parallel.config.fixed.parallelism", parallelism)
+
+    // Holds Testcontainers refs, JSON state, and process handles for ~parallelism slots; chr's
+    // ~2.5 GB and Postgres's ~1.2 GB live outside this JVM. 4 GB has comfortable headroom for 8.
+    maxHeapSize = providers.gradleProperty("regressionTestHeap").orElse("4g").get()
+
+    // The HTML report is the verdict. A failing project shouldn't redden the build.
+    ignoreFailures = true
+
+    // Always run: external projects change.
     outputs.upToDateWhen { false }
+
+    dependsOn(":performance:buildLocalChr", regressionClone)
+
+    setFinalizedBy(listOf(regressionReport))
 }
 
-allNames.forEach { name ->
-    tasks.register<RegressionRunTask>("regression${taskSuffix(name)}") {
-        description = "Regression pipeline (install/build/test, both backends) for project '$name'."
-        configureRun(listOf(name), publicOnly = false)
-    }
+val regression by tasks.registering(Test::class) {
+    description = "Regression sweep over every configured project (public.json + private.json if present)."
+    configureRegressionRun(includePrivate = true)
 }
 
-val regression by tasks.registering(RegressionRunTask::class) {
-    description = "Clone, build (parallel) and test (serial) every configured project; render the report."
-    configureRun(allNames, publicOnly = false)
-}
-
-// CI uses a public-only flavour — `private.json` is gitignored and never lands on the runner.
-val regressionPublic by tasks.registering(RegressionRunTask::class) {
+val regressionPublic by tasks.registering(Test::class) {
     description = "Same as :regression but reads public.json only (used by the manual CI job)."
-    configureRun(publicNames, publicOnly = true)
-}
-
-// ─── Worker plumbing ────────────────────────────────────────────────────────────────────────────
-
-/** Parameters for one per-project work item; the action iterates over [backends] sequentially. */
-interface RegressionRunParameters: WorkParameters {
-    val javaExecutable: Property<String>
-    val classpath: ConfigurableFileCollection
-    val mainClass: Property<String>
-    val projectName: Property<String>
-    val backends: ListProperty<String>
-    val sharedArgs: ListProperty<String>
-    val workingDir: Property<String>
-    val envVars: MapProperty<String, String>
-}
-
-/**
- * Runs both backends of one project, sequentially, as forked CLI JVMs. Serialising the backends
- * within a project avoids the chr-install race: `chr install` clones library deps into the
- * project source tree (`src/lib/<name>`), and two parallel installs against the same workdir
- * collide on `git clone` ("destination path already exists", `.git/index.lock`, partial-tree
- * "no such file or directory"). Cross-project parallelism is preserved — each project still
- * gets its own worker slot. Submitted with noIsolation; exit value is ignored (a failing run is
- * recorded in its fragment, and an unexpected crash should not abort the sweep).
- */
-abstract class RegressionRunWork @Inject constructor(
-    private val execOps: ExecOperations,
-): WorkAction<RegressionRunParameters> {
-    override fun execute() {
-        val name = parameters.projectName.get()
-        for (backend in parameters.backends.get()) {
-            execOps.javaexec {
-                executable = parameters.javaExecutable.get()
-                classpath = parameters.classpath
-                mainClass = parameters.mainClass.get()
-                args = listOf("run-one", "--name", name, "--backend", backend) +
-                    parameters.sharedArgs.get()
-                workingDir = File(parameters.workingDir.get())
-                environment(parameters.envVars.get())
-                isIgnoreExitValue = true
-            }
-        }
-    }
-}
-
-/**
- * One task per project (and the aggregate): fan every project across the worker pool. Each work
- * item runs both backends sequentially (see [RegressionRunWork]) so chr install doesn't race
- * against itself; the worker also leases a fresh per-backend Postgres inside the CLI, so suites
- * never share schema. Always runs (external clones change out of band), so no inputs/outputs are
- * declared for up-to-date checking.
- */
-abstract class RegressionRunTask: DefaultTask() {
-    @get:Inject
-    abstract val workers: WorkerExecutor
-
-    @get:Internal
-    abstract val cliClasspath: ConfigurableFileCollection
-
-    @get:Internal
-    abstract val javaExecutable: Property<String>
-
-    @get:Internal
-    abstract val cliMainClass: Property<String>
-
-    @get:Internal
-    abstract val runWorkingDir: Property<String>
-
-    @get:Internal
-    abstract val sharedArgs: ListProperty<String>
-
-    @get:Internal
-    abstract val projectNames: ListProperty<String>
-
-    @get:Internal
-    abstract val backends: ListProperty<String>
-
-    @get:Internal
-    abstract val forwardedEnv: MapProperty<String, String>
-
-    @TaskAction
-    fun run() {
-        val queue = workers.noIsolation()
-
-        for (name in projectNames.get()) {
-            queue.submit(RegressionRunWork::class.java) {
-                javaExecutable = this@RegressionRunTask.javaExecutable
-                classpath.from(cliClasspath)
-                mainClass = cliMainClass
-                workingDir = runWorkingDir
-                projectName.set(name)
-                backends.set(this@RegressionRunTask.backends)
-                sharedArgs.set(this@RegressionRunTask.sharedArgs)
-                envVars.set(this@RegressionRunTask.forwardedEnv)
-            }
-        }
-
-        workers.await()
-    }
+    configureRegressionRun(includePrivate = false)
 }

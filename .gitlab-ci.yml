@@ -42,12 +42,14 @@ variables:
   #   50g heap caps (12g daemon + 6g kotlin + 8 × 4g test workers) + ~2g Postgres tmpfs
   #   (cap 8g, actual fill is small) + ~6g OS/DIND/non-heap ≈ 58g ≤ 64g ✓. Threads: 8 × 4
   #   JUnit = 32 on 16 vCPU (2× oversub, I/O-bound — fine).
-  # Re-used on xlarge for pages:regression: workload is chr fan-out, not Test workers, and each
-  # of the 8 worker slots also holds a per-project Testcontainers Postgres for the duration of
-  # the pipeline (see regression/src/regression/compile.kt `withProjectPostgres`). Per-slot
-  # resident ≈ 2.5g chr orchestrator + 0.5g Postgres ≈ 3g; peak ≈ 4g daemon + 8 × 3g + ~6g
-  # infra ≈ 34g ≤ 64g ✓. The previous large-runner (8c/32G) sizing assumed the serial-test
-  # model and no longer fits the parallel pipeline.
+  # Re-used on xlarge for pages:regression, but parallelism for that job comes from JUnit Jupiter
+  # (-PregressionParallelism=8 in pages.yml), not Gradle workers — `--max-workers=8` only benefits
+  # the up-front `:performance:buildLocalChr` task graph there. Each of the 8 JUnit slots runs
+  # a chr subprocess (~2.5g) and a per-project Testcontainers Postgres (~1.2g) outside the test
+  # JVM (see regression/src/regression/compile.kt `withProjectPostgres`), plus the test JVM itself
+  # at -PregressionTestHeap=4g (defaulted in regression/build.gradle.kts). Peak ≈ 8 × 3.7g
+  # OS-level + 4g test JVM + 4g daemon + ~6g infra ≈ 44g ≤ 64g ✓. The previous large-runner
+  # (8c/32G) sizing assumed the serial-test model and no longer fits the parallel pipeline.
   GRADLE_FLAGS_XLARGE: >-
     -Dorg.gradle.caching=true
     --max-workers=8

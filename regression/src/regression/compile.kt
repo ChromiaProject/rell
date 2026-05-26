@@ -3,10 +3,6 @@
  */
 package net.postchain.rell.regression
 
-import com.github.ajalt.clikt.core.Context
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
-import com.github.ajalt.clikt.parameters.types.enum
 import com.fasterxml.jackson.module.kotlin.readValue
 import net.postchain.rell.performance.chr.LocalChr
 import org.testcontainers.containers.GenericContainer
@@ -39,30 +35,14 @@ private const val POSTGRES_PASSWORD = "postchain"
 private const val POSTGRES_DB = "postchain"
 private const val POSTGRES_PORT = 5432
 
-// ─── CLI subcommands ──────────────────────────────────────────────────────────────────────────
+// ─── Per-project pipeline ──────────────────────────────────────────────────────────────────────
 //
-// The compile pipeline is sliced into single-unit invocations so Gradle owns all the threading:
-//   run-one — run the full install/build/test pipeline for ONE project under ONE backend.
-// Each invocation spins up its own throw-away Postgres via Testcontainers, so the whole pipeline
-// runs concurrently with other projects — no shared-schema serialisation. The result fragment lands
-// under reports/parts/; `report` merges them. The chr binary it drives is built upstream by the
-// shared `:performance:buildLocalChr` task.
-
-class RunOneCommand : RegressionSubcommand("run-one") {
-    val projectName: String by option("--name", help = "Project name as listed in the JSON config.").required()
-    val backend: ExecutionBackend by option("--backend", help = "Execution backend for this run.")
-        .enum<ExecutionBackend>().required()
-
-    override fun help(context: Context) =
-        "Run the full chr pipeline (install/build/test) for a single project under one backend; writes its result fragment."
-
-    override fun run() {
-        val projects = loadProjects(configFiles, configOptionalFiles)
-        val project = projects.firstOrNull { it.name == projectName }
-            ?: die(commandName, "No project named '$projectName' in the supplied config(s)")
-        runOneProject(project, workdir, reportsDir, backend)
-    }
-}
+// `runOneProject` runs the full install/build/test pipeline for ONE (project, backend); each
+// invocation owns its throw-away Testcontainers Postgres so concurrent projects never share a
+// schema. The chr binary is built upstream by `:performance:buildLocalChr`. The driver is the
+// JUnit @TestFactory in test/regression/RegressionTest.kt — one DynamicTest per project, both
+// backends looped sequentially inside the test body to avoid the chr-install race in the shared
+// `src/lib/<name>` clone tree.
 
 // ─── Per-backend environment ────────────────────────────────────────────────────────────────────
 

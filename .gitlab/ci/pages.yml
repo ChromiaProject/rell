@@ -129,20 +129,26 @@ pages:profile:
 # (and tests) them. Off the default pipeline — full runs take tens of minutes. Public-only flavour
 # wired here; `private.json` is gitignored and never reaches the runner.
 #
-# On saas-linux-xlarge-amd64 (16c/64G): the toolkit fans one work item per project across the
-# Gradle worker pool, and the work item runs both backends sequentially (see RegressionRunWork
-# in regression/build.gradle.kts) so chr install doesn't race against itself in the shared
-# project source tree. Each per-backend invocation leases its own throw-away Testcontainers
-# Postgres for install/build/test (see regression/src/regression/compile.kt `withProjectPostgres`).
-# Peak budget per slot ≈ 2.5 GB chr orchestrator + ~1.2 GB Postgres (process + 1 GB tmpfs cap,
-# lazy fill) ≈ 3.7 GB; 8 slots ≈ 30 GB + ~6 GB Gradle/infra ≈ 36 GB, comfortably under the
-# xlarge envelope. The previous large-runner sizing assumed the serial-test model and is no
-# longer accurate — the parallel pipeline needs the extra RAM.
+# On saas-linux-xlarge-amd64 (16c/64G): one JUnit test JVM runs the @TestFactory in
+# regression/test/regression/RegressionTest.kt; cross-project parallelism is JUnit Jupiter's job,
+# capped at `regressionParallelism` (8 here). Each test loops both backends sequentially in-JVM so
+# `chr install` doesn't race against itself in the shared `src/lib/<name>` clone tree, and chr
+# itself runs out-of-process via ProcessBuilder, so the ~2.5 GB chr JVM is *outside* the test
+# JVM's heap budget. Each concurrent project also leases its own throw-away Testcontainers
+# Postgres for the duration of its pipeline (see regression/src/regression/compile.kt
+# `withProjectPostgres`).
+#
+# Peak per slot ≈ 2.5 GB chr subprocess + 1.2 GB Postgres container (process + 1 GB tmpfs cap,
+# lazy fill) ≈ 3.7 GB OS-level. 8 slots ≈ 30 GB + 4 GB test JVM heap + 4 GB Gradle daemon +
+# ~6 GB OS/DIND/non-heap ≈ 44 GB, comfortably under the xlarge envelope. (`--max-workers=8` from
+# $GRADLE_FLAGS_XLARGE is unused by the regression Test task itself — fan-out is JUnit's — but
+# the up-front `:performance:buildLocalChr` task graph still benefits.)
 #
 # Extends `.local-chr-cache-no-postgres`: the regression toolkit brings its own per-project
 # Postgres, so the shared DIND instance from `.setup` would just sit idle.
-# `expectedFailure: true` projects in public.json aren't regressions; `allow_failure: true` keeps
-# a single compile blowup from reddening the pipeline.
+# `expectedFailure: true` projects in public.json aren't regressions; `ignoreFailures = true` on
+# the regression Test task already keeps a single compile blowup off the build status, and
+# `allow_failure: true` here is belt-and-braces.
 pages:regression:
   extends: .local-chr-cache-no-postgres
   stage: portal
@@ -153,7 +159,7 @@ pages:regression:
       allow_failure: true
   needs: []
   script:
-    - ./gradlew $GRADLE_FLAGS_XLARGE :regression:regressionPublic
+    - ./gradlew $GRADLE_FLAGS_XLARGE -PregressionParallelism=8 :regression:regressionPublic
     - mkdir -p public
     - cp -r regression/reports/. public/
     - echo "Regression report - $CI_PAGES_URL/report.html"

@@ -52,7 +52,6 @@ abstract class RegressionSubcommand(name: String): CliktCommand(name = name) {
 fun main(args: Array<String>) = RegressionCli()
     .subcommands(
         CloneCommand(),
-        RunOneCommand(),
         ReportCommand(),
     )
     .main(args)
