@@ -204,36 +204,17 @@ private fun ensureMasterInstalled(
 }
 
 /**
- * Mirror [source] into [dest] with `rsync -a --delete`. Used to bring the per-backend working copy
- * back in sync with the master clone before each run, discarding chr install artifacts from a prior
- * sweep. rsync handles both "first run" (dest doesn't exist) and "subsequent run" (dest has stale
- * src/lib + build outputs) without a separate code path. Times out at 5 min so a wedged sync fails
- * loudly instead of holding the JUnit slot indefinitely.
+ * Mirror [source] into [dest] by wiping any existing [dest] and recursively copying [source].
+ * Used to bring the per-backend working copy back in sync with the master clone before each run,
+ * discarding chr install artifacts from a prior sweep.
  */
+@OptIn(kotlin.io.path.ExperimentalPathApi::class)
 private fun refreshBackendCopy(source: Path, dest: Path) {
     dest.parent?.createDirectories()
-    val tempLog = java.io.File.createTempFile("regression-rsync-", ".log")
-    try {
-        val pb = ProcessBuilder(
-            "rsync", "-a", "--delete",
-            // Trailing slashes: copy contents of source into dest, not nest source under dest.
-            source.toString().trimEnd('/') + "/",
-            dest.toString().trimEnd('/') + "/",
-        )
-            .redirectErrorStream(true)
-            .redirectOutput(ProcessBuilder.Redirect.to(tempLog))
-        val proc = pb.start()
-        val finished = proc.waitFor(Duration.ofMinutes(5).toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS)
-        if (!finished) {
-            proc.destroyForcibly()
-            error("rsync $source -> $dest timed out after 5 min")
-        }
-        if (proc.exitValue() != 0) {
-            error("rsync $source -> $dest failed (exit ${proc.exitValue()})\n${tempLog.readText().take(800)}")
-        }
-    } finally {
-        tempLog.delete()
+    if (dest.exists()) {
+        dest.deleteRecursively()
     }
+    source.copyToRecursively(dest, followLinks = false)
 }
 
 /**
