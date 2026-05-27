@@ -164,6 +164,7 @@ pages:regression:
     - mkdir -p public
     - cp -r regression/reports/. public/
     - echo "Regression report - $CI_PAGES_URL/report.html"
+    - echo "Regression JSON   - $CI_PAGES_URL/results.json"
   pages:
     path_prefix: "regression-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
     expire_in: never

@@ -65,11 +65,12 @@ fun renderHtml(results: ResultsFile, reportsDir: Path) {
                     renderEnvironment(results)
                     renderFlavorsOrFlat(results.results)
                     renderMethodology()
+                    renderDataLink()
                 }
                 // Total compile time goes in the colophon, not the key metrics — reviewers
                 // act on per-project status in the cohort tables below, not on the running total.
                 renderColophon(
-                    "results.json · ${"%.1f".formatRoot(totalSeconds)}s total chr time",
+                    "${"%.1f".formatRoot(totalSeconds)}s total chr time",
                     generatedAt,
                 )
             }
@@ -403,6 +404,13 @@ private fun FlowContent.renderMethodology() = renderSection("methodology") {
             code { +"chr <command>" }
             +" against the local Rell build."
         }
+    }
+}
+
+private fun FlowContent.renderDataLink() = renderSection("data") {
+    p(classes = "data-link") {
+        +"Machine-readable: "
+        a(href = "results.json", classes = "data-link-a") { +"results.json" }
     }
 }
 

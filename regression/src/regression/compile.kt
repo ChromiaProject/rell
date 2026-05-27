@@ -178,6 +178,13 @@ private fun ensureMasterInstalled(
             masterDir.listDirectoryEntries(".chr-install-sentinel-*").forEach { it.deleteIfExists() }
         }
 
+        // Patch the master clone BEFORE chr install so SSH→HTTPS-style rewrites take effect
+        // here too (originals-governance's lib-pagination-utils dep was failing master install
+        // with "Server key did not validate" because the patch only ran on the per-backend copy).
+        // `refreshBackendCopy` carries the patched files into each backend tree, so the second
+        // `applyPatches` call in `runOneProject` hits the idempotent already-applied branch.
+        applyPatches(project, masterDir)?.let { error("patch failed before master chr install: $it") }
+
         val logFile = reportsDir / "logs" / "_master-install-${project.name}.log"
         logFile.parent.createDirectories()
         logFile.deleteIfExists()
