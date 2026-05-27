@@ -39,18 +39,35 @@ internal class Markdown(private val index: SiteIndex) {
         return renderer.render(root)
     }
 
-    /** Strip markdown to a single inline-text line — used for navigation summaries. */
+    /**
+     * Strip markdown to a single inline-text line — used for navigation summaries. Summaries
+     * cover only the *description* portion of a doc comment; tag sections (`@since`, `@param`,
+     * `@return`, …) never bleed into the summary, because their content out of context
+     * (a lone version number, an orphan parameter name) is worse than no summary at all.
+     */
     fun renderSummaryText(markdown: String): String {
         if (markdown.isBlank()) return ""
-        val firstParagraph = markdown.lineSequence()
-            .map { it.trim() }
-            .takeWhile { it.isNotEmpty() }
-            .joinToString(" ")
-        if (firstParagraph.isBlank()) return ""
-        return firstParagraph.replace(Regex("""\[([^]]+)]\([^)]*\)"""), "$1")
-            .replace(Regex("""\[([^]]+)]"""), "$1")
-            .replace(Regex("[`*_]"), "")
-            .trim()
+        // Walk paragraphs (blocks separated by blank lines). The first paragraph that *is* a
+        // bold-wrapped heading marks the start of tag sections (`DocSymbolText.appendSectionHeader`
+        // writes `**Since**`, `**Parameters**`, etc.) — stop there: everything beyond belongs to
+        // a tag, not the description.
+        for (paragraph in markdown.split(Regex("\n\\s*\n"))) {
+            val trimmed = paragraph.trim()
+            if (trimmed.isEmpty()) continue
+            if (HEADING_ONLY.matches(trimmed)) return ""
+            val firstLine = trimmed.lineSequence().first { it.isNotBlank() }
+            return firstLine
+                .replace(Regex("""\[([^]]+)]\([^)]*\)"""), "$1")
+                .replace(Regex("""\[([^]]+)]"""), "$1")
+                .replace(Regex("[`*_]"), "")
+                .trim()
+        }
+        return ""
+    }
+
+    private companion object {
+        // Paragraph is purely a bold heading: `**Word**` or `**Two words**` with no body text.
+        private val HEADING_ONLY = Regex("""\*\*[^*]+\*\*""")
     }
 
     private class ResolveRefsVisitor(

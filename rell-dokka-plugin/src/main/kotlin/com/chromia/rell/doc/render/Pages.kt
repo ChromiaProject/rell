@@ -175,25 +175,18 @@ internal class Pages(
             relativePath = Paths.pageRelativePath(module, pkg, def),
             currentPackage = pkg,
         )
-        renderSignature(out, def)
-        renderSourceLink(out, def.source)
-        renderDeprecated(out, def)
-        if (def.docMd.isNotBlank()) {
-            out.div(classes = "prose") { unsafe { +markdown.renderHtml(def.docMd, ctx) } }
-        }
+        renderDefSignatureSection(out, def, ctx)
         if (def is Doc_Class) {
             val (nestedClasses, methods, attrs, aliases) = bucketDefs(def.members)
             if (def.kind == Doc_ClassKind.ENUM && def.entries.isNotEmpty()) {
                 out.section(classes = "section") {
                     div(classes = "section-head") { div(classes = "section-title") { +"Entries" } }
-                    table(classes = "def-list") {
-                        thead { tr { th { +"Name" } } }
-                        tbody {
-                            for (entry in def.entries) {
-                                tr {
-                                    td(classes = "def-name") { code { +entry } }
-                                    td(classes = "def-summary") {}
-                                }
+                    div(classes = "def-grid") {
+                        for (entry in def.entries) {
+                            // Enum entries aren't separately documented, so the card is non-clickable
+                            // — `div`, not `a` — and only carries the name.
+                            div(classes = "def-card def-card-static") {
+                                div(classes = "def-card-name") { +entry }
                             }
                         }
                     }
@@ -217,11 +210,34 @@ internal class Pages(
             relativePath = Paths.memberRelativePath(module, pkg, owner, member),
             currentPackage = pkg,
         )
-        renderSignature(out, member)
-        renderSourceLink(out, member.source)
-        renderDeprecated(out, member)
-        if (member.docMd.isNotBlank()) {
-            out.div(classes = "prose") { unsafe { +markdown.renderHtml(member.docMd, ctx) } }
+        renderDefSignatureSection(out, member, ctx)
+    }
+
+    /**
+     * Render the head of a def page (or class-member page): the signature, source link, deprecation
+     * note, and doc body. For an overloaded `Doc_Function` (`overloads` is non-empty), emit one
+     * block per overload — each block carries its own signature, source link, deprecation note,
+     * and doc text — separated by a horizontal rule, matching the layout Kotlin Dokka uses.
+     */
+    private fun renderDefSignatureSection(out: FlowContent, def: Doc_Def, ctx: PageContext) {
+        if (def is Doc_Function && def.overloads.isNotEmpty()) {
+            val all = listOf(def) + def.overloads
+            for ((i, overload) in all.withIndex()) {
+                if (i > 0) out.hr(classes = "overload-sep")
+                renderSignature(out, overload)
+                renderSourceLink(out, overload.source)
+                renderDeprecated(out, overload)
+                if (overload.docMd.isNotBlank()) {
+                    out.div(classes = "prose") { unsafe { +markdown.renderHtml(overload.docMd, ctx) } }
+                }
+            }
+            return
+        }
+        renderSignature(out, def)
+        renderSourceLink(out, def.source)
+        renderDeprecated(out, def)
+        if (def.docMd.isNotBlank()) {
+            out.div(classes = "prose") { unsafe { +markdown.renderHtml(def.docMd, ctx) } }
         }
     }
 
@@ -234,28 +250,19 @@ internal class Pages(
         ctx: PageContext,
     ) {
         // Root package goes first — every top-level type / function the user reaches for
-        // (`integer`, `text`, `print()`, …) lives there, so it deserves the top row. Other
+        // (`integer`, `text`, `print()`, …) lives there, so it deserves the top spot. Other
         // packages keep their build-time order (which matches the lib-author's `include`
         // sequence and is close to alphabetical for our libs).
         val sortedPkgs = packages.sortedBy { if (it.qname.isEmpty()) 0 else 1 }
-        out.table(classes = "def-list") {
-            thead {
-                tr {
-                    th { +"Name" }
-                    th { +"Summary" }
-                }
-            }
-            tbody {
-                for (pkg in sortedPkgs) {
-                    tr {
-                        attributes["anchor-label"] = pkg.qname
-                        td(classes = "def-name") {
-                            val href = Hrefs.relativeFrom(ctx.relativePath, Paths.packageIndexPath(module, pkg))
-                            a(href = href) { +pkg.displayName }
-                        }
-                        td(classes = "def-summary") {
-                            unsafe { +markdown.renderSummaryText(pkg.docMd) }
-                        }
+        out.div(classes = "def-grid") {
+            for (pkg in sortedPkgs) {
+                val href = Hrefs.relativeFrom(ctx.relativePath, Paths.packageIndexPath(module, pkg))
+                a(href = href, classes = "def-card") {
+                    attributes["anchor-label"] = pkg.qname
+                    div(classes = "def-card-name") { +pkg.displayName }
+                    val summary = markdown.renderSummaryText(pkg.docMd)
+                    if (summary.isNotBlank()) {
+                        div(classes = "def-card-summary") { unsafe { +summary } }
                     }
                 }
             }
@@ -274,30 +281,22 @@ internal class Pages(
         if (defs.isEmpty()) return
         out.section(classes = "section") {
             div(classes = "section-head") { div(classes = "section-title") { +title } }
-            table(classes = "def-list") {
-                thead {
-                    tr {
-                        th { +"Name" }
-                        th { +"Summary" }
+            div(classes = "def-grid") {
+                for (def in defs) {
+                    val deprecated = def.deprecated != null
+                    val pagePath = if (parentClass != null) {
+                        Paths.memberRelativePath(module, pkg, parentClass, def)
+                    } else {
+                        Paths.pageRelativePath(module, pkg, def)
                     }
-                }
-                tbody {
-                    for (def in defs) {
-                        val deprecated = def.deprecated != null
-                        tr(classes = if (deprecated) "deprecated" else null) {
-                            attributes["anchor-label"] = def.qname
-                            td(classes = "def-name") {
-                                val pagePath = if (parentClass != null) {
-                                    Paths.memberRelativePath(module, pkg, parentClass, def)
-                                } else {
-                                    Paths.pageRelativePath(module, pkg, def)
-                                }
-                                val href = Hrefs.relativeFrom(ctx.relativePath, pagePath)
-                                a(href = href) { +def.name }
-                            }
-                            td(classes = "def-summary") {
-                                unsafe { +markdown.renderSummaryText(def.docMd) }
-                            }
+                    val href = Hrefs.relativeFrom(ctx.relativePath, pagePath)
+                    val classes = if (deprecated) "def-card deprecated" else "def-card"
+                    a(href = href, classes = classes) {
+                        attributes["anchor-label"] = def.qname
+                        div(classes = "def-card-name") { +def.name }
+                        val summary = markdown.renderSummaryText(def.docMd)
+                        if (summary.isNotBlank()) {
+                            div(classes = "def-card-summary") { unsafe { +summary } }
                         }
                     }
                 }
@@ -324,9 +323,10 @@ internal class Pages(
         val d = def.deprecated ?: return
         // Inline note — no callout. Strikethrough on the page title and listings carries the
         // visual cue; this paragraph is the textual reason a reader looking at this page should
-        // not use the def. `<s>` matches `<a class="sig-name">` strikethrough style.
+        // not use the def. The "Deprecated" label stays upright — striking it through hurts
+        // readability and the surrounding muted styling already conveys the state.
         out.p(classes = "deprecated-note") {
-            s { +"Deprecated" }
+            strong { +"Deprecated" }
             if (d.forRemoval) +" (for removal)"
             +": "
             +d.message

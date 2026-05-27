@@ -100,12 +100,16 @@ internal class SourceBuild private constructor(
             routeDef(localPart, doc)
         }
 
-        val base = Doc_Package(qname = moduleName, docMd = rModule.docSymbol.markdown(), defs = rootDefs)
+        val base = Doc_Package(
+            qname = moduleName,
+            docMd = rModule.docSymbol.markdown(),
+            defs = groupFunctionOverloads(rootDefs),
+        )
 
         val result = mutableListOf<Doc_Package>()
         result += attachModuleDoc(base)
         for ((qname, defs) in nested) {
-            result += attachModuleDoc(Doc_Package(qname, docMd = "", defs = defs))
+            result += attachModuleDoc(Doc_Package(qname, docMd = "", defs = groupFunctionOverloads(defs)))
         }
         return result
     }

@@ -7,6 +7,7 @@ package com.chromia.rell.dokka
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.exists
+import assertk.assertions.isEqualTo
 import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -58,9 +59,12 @@ class SystemLibTest {
     fun `blacklisted types are absent from output`() {
         val out = generate()
         val moduleSlug = "-rell -system -library -a-p-i -reference"
-        // `guid` and `signer` are filtered out at the build stage.
+        // `guid`, `signer`, `comparable`, `immutable` are filtered at the build stage —
+        // compiler-internal abstract base types not part of the user-facing surface.
         assertThat((out / "$moduleSlug/[root]/guid/index.html").exists()).isFalse()
         assertThat((out / "$moduleSlug/[root]/signer/index.html").exists()).isFalse()
+        assertThat((out / "$moduleSlug/[root]/comparable/index.html").exists()).isFalse()
+        assertThat((out / "$moduleSlug/[root]/immutable/index.html").exists()).isFalse()
     }
 
     @Test
@@ -77,6 +81,27 @@ class SystemLibTest {
     }
 
     @Test
+    fun `overloaded stdlib functions render as one page with multiple signature blocks`() {
+        val out = generate()
+        val moduleSlug = "-rell -system -library -a-p-i -reference"
+        // `text.sub` has two overloads in the stdlib: sub(start) and sub(start, end).
+        val subPage = out / "$moduleSlug/[root]/text/sub.html"
+        assertThat(subPage).exists()
+        val html = subPage.readText()
+        // Both signatures live on the same page — count occurrences of the function keyword
+        // followed by the function name. Two signature blocks → two matches.
+        val sigBlocks = Regex("class=\"signature\"").findAll(html).count()
+        assertThat(sigBlocks >= 2).isTrue()
+        // The overload separator HR appears between blocks.
+        assertThat(html).contains("overload-sep")
+        // And the search index lists `text.sub` exactly once (one search record per group, not
+        // per overload). Class members are recorded as `"<Type>.<member>"` in Search.kt.
+        val pages = (out / "scripts/pages.json").readText()
+        val subRecords = Regex("\"name\":\"text\\.sub\"").findAll(pages).count()
+        assertThat(subRecords).isEqualTo(1)
+    }
+
+    @Test
     fun `rell test namespace is generated`() {
         val out = generate()
         val moduleSlug = "-rell -system -library -a-p-i -reference"
@@ -87,3 +112,4 @@ class SystemLibTest {
 }
 
 private fun assertk.Assert<Boolean>.isFalse() = given { value -> kotlin.test.assertFalse(value) }
+private fun assertk.Assert<Boolean>.isTrue() = given { value -> kotlin.test.assertTrue(value) }

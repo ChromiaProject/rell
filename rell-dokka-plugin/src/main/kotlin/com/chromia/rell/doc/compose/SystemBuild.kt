@@ -21,7 +21,11 @@ import net.postchain.rell.base.mtype.M_TypeParam
  * output. Empty namespaces are dropped: they have no defs to render.
  */
 internal object SystemBuild {
-    private val BLACKLISTED_TYPES = setOf("guid", "signer")
+    // `comparable` / `immutable` are abstract base types the compiler uses internally to model
+    // subtyping rules; users can't declare values of them and there is no user-facing surface
+    // worth documenting. `guid` / `signer` were already dropped by the old Dokka plugin for the
+    // same reason.
+    private val BLACKLISTED_TYPES = setOf("guid", "signer", "comparable", "immutable")
     private val BLACKLISTED_ALIASES = setOf("tuid")
 
     fun build(title: String, slug: String, moduleDocs: ModuleDocs?): Doc_Module {
@@ -41,7 +45,7 @@ internal object SystemBuild {
             .map { (qname, defs) ->
                 val mdName = qname.ifEmpty { "[root]" }
                 val docMd = moduleDocs?.packageDoc(mdName)?.takeUnless { it.isBlank() } ?: ""
-                Doc_Package(qname = qname, docMd = docMd, defs = defs.toList())
+                Doc_Package(qname = qname, docMd = docMd, defs = groupFunctionOverloads(defs))
             }
 
         return Doc_Module(
@@ -117,7 +121,7 @@ internal object SystemBuild {
             kind = Doc_ClassKind.TYPE,
             typeParams = typeParams,
             superTypes = superTypes,
-            members = members,
+            members = groupFunctionOverloads(members),
             hidden = typeDef.hidden,
             abstract = typeDef.abstract,
         )

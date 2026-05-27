@@ -38,8 +38,18 @@ internal class SignatureRender(private val typeRender: TypeRender) {
                 .append("<span class=\"sig-ref\">").append(escapeHtml(f.extendTargetQname)).append("</span>")
                 .append(") ")
         }
-        if (f.pure) append(kw("pure")).append(' ')
-        if (f.static) append(kw("static")).append(' ')
+        // `pure` and `static` are stdlib-internal modifiers, not Rell user syntax — render as
+        // metadata chips, matching the treatment for hidden/abstract/type on classes.
+        val metas = buildList {
+            if (f.pure) add("pure")
+            if (f.static) add("static")
+        }
+        if (metas.isNotEmpty()) {
+            append("<span class=\"sig-meta-row\">")
+            for (m in metas) append("<span class=\"sig-meta\">").append(escapeHtml(m)).append("</span>")
+            append("</span>")
+            append(' ')
+        }
         append(kw(f.kind.keyword)).append(' ')
         append("<span class=\"sig-name\">").append(escapeHtml(f.name)).append("</span>")
         if (f.typeParams.isNotEmpty()) {
@@ -84,9 +94,22 @@ internal class SignatureRender(private val typeRender: TypeRender) {
     }
 
     private fun renderClass(c: Doc_Class): String = buildString {
-        if (c.hidden) append(kw("@hidden")).append(' ')
-        if (c.abstract) append(kw("@abstract")).append(' ')
-        append(kw(c.kind.keyword)).append(' ')
+        // Pseudo-keywords (`hidden`, `abstract`, `type`) are compiler-internal markers, not part
+        // of Rell user syntax. Render them as small uppercase chips so a reader doesn't mistake
+        // them for actual source. The kind keyword stays inline as a real keyword for the kinds
+        // that *are* Rell syntax (entity / object / struct / enum); `type` joins the chip row.
+        val metas = buildList {
+            if (c.hidden) add("hidden")
+            if (c.abstract) add("abstract")
+            if (c.kind == Doc_ClassKind.TYPE) add("type")
+        }
+        if (metas.isNotEmpty()) {
+            append("<span class=\"sig-meta-row\">")
+            for (m in metas) append("<span class=\"sig-meta\">").append(escapeHtml(m)).append("</span>")
+            append("</span>")
+            append(' ')
+        }
+        if (c.kind != Doc_ClassKind.TYPE) append(kw(c.kind.keyword)).append(' ')
         append("<span class=\"sig-name\">").append(escapeHtml(c.name)).append("</span>")
         if (c.typeParams.isNotEmpty()) {
             append("&lt;")

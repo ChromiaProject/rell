@@ -68,6 +68,13 @@ internal data class Doc_Function(
     val zeroOneArity: Boolean = false,
     /** True when this is a stdlib hidden function. */
     val hidden: Boolean = false,
+    /**
+     * Additional overloads sharing this function's `name`, `qname`, and `kind`. Empty for
+     * non-overloaded functions. The primary `Doc_Function` plus `overloads` form the complete
+     * set; only the primary participates in routing / search / navigation, but every entry
+     * (primary + overloads) renders its own signature on the function's page.
+     */
+    val overloads: List<Doc_Function> = emptyList(),
 ) : Doc_Def
 
 internal data class Doc_Param(

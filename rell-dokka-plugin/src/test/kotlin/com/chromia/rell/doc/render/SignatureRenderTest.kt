@@ -68,8 +68,11 @@ class SignatureRenderTest {
     @Test
     fun `pure and static modifiers appear`() {
         val out = mkRender().render(fn(pure = true, static = true))
-        assertThat(out).contains("pure")
-        assertThat(out).contains("static")
+        // Rendered as metadata chips, not bare keywords — pure/static aren't Rell user syntax.
+        assertThat(out).contains("class=\"sig-meta\">pure<")
+        assertThat(out).contains("class=\"sig-meta\">static<")
+        assertThat(out).doesNotContain("class=\"sig-kw\">pure<")
+        assertThat(out).doesNotContain("class=\"sig-kw\">static<")
     }
 
     @Test
@@ -147,9 +150,13 @@ class SignatureRenderTest {
             hidden = true, abstract = true,
         )
         val out = mkRender().render(cls)
-        assertThat(out).contains("@hidden")
-        assertThat(out).contains("@abstract")
-        assertThat(out).contains("type")
+        // Pseudo-keywords render as metadata chips, not bare keywords — they're compiler markers,
+        // not Rell syntax.
+        assertThat(out).contains("class=\"sig-meta\">hidden<")
+        assertThat(out).contains("class=\"sig-meta\">abstract<")
+        assertThat(out).contains("class=\"sig-meta\">type<")
+        // `type` lives in the chip row; no bare `type` keyword span.
+        assertThat(out).doesNotContain("class=\"sig-kw\">type<")
         assertThat(out).contains("T")
         assertThat(out).contains("U")
         assertThat(out).contains("Base")

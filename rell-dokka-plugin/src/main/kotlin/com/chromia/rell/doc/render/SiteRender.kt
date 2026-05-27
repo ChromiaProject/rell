@@ -136,7 +136,7 @@ internal class SiteRender(private val outputDir: Path) {
                         PageSpec.Crumb(module.name, Hrefs.relativeFrom(pageRel, Paths.moduleIndexPath(module))),
                         PageSpec.Crumb(pkg.displayName, Hrefs.relativeFrom(pageRel, Paths.packageIndexPath(module, pkg))),
                     ),
-                    deprecated = def.deprecated != null,
+                    deprecated = isWhollyDeprecated(def),
                     body = { out, p -> p.renderDefPageBody(out, module, pkg, def) },
                 ),
             )
@@ -157,13 +157,26 @@ internal class SiteRender(private val outputDir: Path) {
                                 PageSpec.Crumb(pkg.displayName, Hrefs.relativeFrom(memberRel, Paths.packageIndexPath(module, pkg))),
                                 PageSpec.Crumb(def.name, Hrefs.relativeFrom(memberRel, Paths.pageRelativePath(module, pkg, def))),
                             ),
-                            deprecated = member.deprecated != null,
+                            deprecated = isWhollyDeprecated(member),
                             body = { out, p -> p.renderMemberPageBody(out, module, pkg, def, member) },
                         ),
                     )
                 }
             }
         }
+    }
+
+    /**
+     * Page-title strikethrough rule: for an overloaded function, strike only when every signature
+     * is deprecated — otherwise at least one supported overload still exists and a struck title
+     * misleads the reader.
+     */
+    private fun isWhollyDeprecated(def: com.chromia.rell.doc.model.Doc_Def): Boolean {
+        if (def.deprecated == null) return false
+        if (def is com.chromia.rell.doc.model.Doc_Function) {
+            return def.overloads.all { it.deprecated != null }
+        }
+        return true
     }
 
     private fun defKicker(def: com.chromia.rell.doc.model.Doc_Def): String = when (def) {

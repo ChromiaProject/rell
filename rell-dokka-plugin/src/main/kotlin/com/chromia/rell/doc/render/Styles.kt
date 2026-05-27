@@ -124,10 +124,11 @@ body {
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 a {
-  color: var(--primary-dark); text-decoration: none;
-  transition: color .12s ease;
+  color: var(--primary-dark);
+  text-decoration: underline; text-decoration-color: var(--primary-light); text-underline-offset: 2px;
+  transition: color .12s ease, text-decoration-color .12s ease;
 }
-a:hover { color: var(--primary); text-decoration: underline; }
+a:hover { color: var(--primary); text-decoration-color: var(--primary); }
 code { font-family: var(--mono); font-size: .9em; }
 
 /* ─── Three-column layout ─────────────────────────────────────── */
@@ -186,10 +187,9 @@ main {
   font-size: 1.05rem; line-height: 1.25;
   color: var(--ink); font-weight: 700;
   letter-spacing: -0.01em;
-  text-decoration: none;
   word-break: break-word;
 }
-.sidebar .site-title:hover { color: var(--primary-dark); text-decoration: none; }
+.sidebar .site-title:hover { color: var(--primary-dark); }
 
 .theme-toggle {
   flex: 0 0 32px; width: 32px; height: 32px;
@@ -231,11 +231,11 @@ main {
 .search-results li { margin: 0; padding: 0; }
 .search-results a {
   display: block; padding: .35rem .75rem;
-  color: var(--ink-soft); font-size: .82rem; text-decoration: none;
+  color: var(--ink-soft); font-size: .82rem;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .search-results a:hover, .search-results a.focused {
-  background: var(--primary-bg); color: var(--primary-dark); text-decoration: none;
+  background: var(--primary-bg); color: var(--primary-dark);
 }
 .search-results .res-name { font-weight: 600; color: var(--ink); }
 .search-results .res-pkg  { color: var(--muted); font-size: .72rem; margin-left: .4rem; font-weight: 400; }
@@ -264,7 +264,6 @@ main {
 .sidebar nav .nav-def-row a {
   color: var(--ink-soft); font-size: .82rem;
   text-overflow: ellipsis; overflow: hidden;
-  text-decoration: none;
 }
 .sidebar nav .nav-def-row:hover a { color: var(--primary-dark); }
 .sidebar nav .nav-def-row.deprecated a { text-decoration: line-through; text-decoration-color: var(--faint); color: var(--muted); }
@@ -303,7 +302,7 @@ main {
 .sidebar nav .nav-pkg-block[open] > .nav-pkg-summary::before { transform: rotate(90deg); }
 .sidebar nav .nav-pkg {
   display: inline; color: var(--ink-soft); font-weight: 500;
-  font-size: .85rem; text-decoration: none;
+  font-size: .85rem;
 }
 .sidebar nav .nav-pkg:hover { color: var(--primary-dark); }
 .sidebar nav .nav-pkg-block.current > .nav-pkg-summary {
@@ -335,7 +334,7 @@ main {
   font-family: var(--sans); font-size: .82rem; color: var(--muted);
   margin-top: .8rem;
 }
-.doc-breadcrumbs a { color: var(--muted); text-decoration: none; }
+.doc-breadcrumbs a { color: var(--muted); }
 .doc-breadcrumbs a:hover { color: var(--primary-dark); }
 .doc-breadcrumbs .sep { color: var(--faint); margin: 0 .35rem; }
 
@@ -350,24 +349,45 @@ main {
   color: var(--ink);
 }
 
-/* ─── Definition tables (package listings + class members) ───── */
-.def-list { width: 100%; border-collapse: collapse; }
-.def-list th, .def-list td {
-  text-align: left; padding: .7rem .85rem; border-bottom: 1px solid var(--rule-hair);
-  vertical-align: top; font-size: .9rem;
+/* ─── Definition cards (package listings + class members) ─────── */
+/* Card grid inspired by chromia-docs DocCardItem: large radius, generous padding, hover
+   highlights via border color only (no background flash). Cards collapse the Name+Summary
+   table — when a def has no summary the card just shows the name. */
+.def-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: 1rem;
 }
-.def-list thead th {
-  font-family: var(--sans); font-weight: 700;
-  font-size: .72rem; text-transform: uppercase; letter-spacing: .1em;
-  color: var(--muted); border-bottom: 1px solid var(--rule);
+.def-card {
+  display: flex; flex-direction: column;
+  padding: 1.25rem 1.4rem; height: 100%;
+  border: 1px solid var(--rule); border-radius: 12px;
+  background: var(--bg); color: inherit;
+  /* The whole card is one anchor, but only the name underlines — the summary stays plain text
+     so the underline isn't visually noisy across a paragraph. */
+  text-decoration: none;
+  transition: border-color .12s ease;
 }
-.def-list .def-name { font-family: var(--mono); font-weight: 500; min-width: 14em; }
-.def-list .def-name a { color: var(--ink); text-decoration: none; }
-.def-list .def-name a:hover { color: var(--primary-dark); }
-.def-list tr.deprecated .def-name a { text-decoration: line-through; text-decoration-color: var(--faint); color: var(--muted); }
-.def-list tr.deprecated .def-summary { color: var(--muted); }
-.def-list .def-summary { color: var(--ink-soft); }
-.def-list .def-summary code { font-size: .82em; background: var(--bg-alt); padding: 0 .3rem; border-radius: 3px; }
+.def-card:hover { border-color: var(--primary); }
+.def-card.def-card-static, .def-card.def-card-static:hover { border-color: var(--rule); cursor: default; }
+.def-card-name {
+  font-family: var(--mono); font-weight: 600; color: var(--ink);
+  font-size: 1rem; line-height: 1.3; word-break: break-word;
+  text-decoration: underline; text-decoration-color: var(--primary-light); text-underline-offset: 2px;
+  margin-bottom: .45em;
+}
+.def-card:hover .def-card-name { text-decoration-color: var(--primary); color: var(--primary-dark); }
+.def-card.def-card-static .def-card-name { text-decoration: none; color: var(--ink); }
+.def-card-summary {
+  font-size: .85rem; color: var(--ink-soft); line-height: 1.55;
+}
+.def-card-summary code {
+  font-size: .82em; background: var(--bg-alt); padding: 0 .3rem; border-radius: 3px;
+}
+.def-card.deprecated .def-card-name {
+  text-decoration: line-through; text-decoration-color: var(--faint); color: var(--muted);
+}
+.def-card.deprecated .def-card-summary { color: var(--muted); }
 
 /* ─── Signature block ──────────────────────────────────────────── */
 .signature {
@@ -392,6 +412,21 @@ main {
 .signature a.type-link { color: var(--primary-dark); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
 .signature a.type-link:hover { text-decoration-style: solid; }
 .signature .type-name { color: var(--ink-soft); }
+/* Metadata chips — compiler-internal markers (`hidden`, `abstract`, `type`) that aren't part
+   of Rell user syntax. Visually distinct from .sig-kw so a reader can tell they're metadata,
+   not source. */
+.signature .sig-meta-row { display: inline-flex; gap: .3rem; vertical-align: middle; margin-right: .25rem; }
+.signature .sig-meta {
+  font-family: var(--sans); font-size: .68rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em;
+  padding: .1rem .4rem; border-radius: 3px;
+  background: var(--bg); color: var(--muted);
+  border: 1px solid var(--rule);
+}
+
+/* Separator between overload blocks on a function page. Subtle — the .signature block already
+   carries a left border, so a heavy rule would overwhelm the page. */
+hr.overload-sep { border: 0; border-top: 1px dashed var(--rule); margin: 1.4rem 0 1.2rem; }
 
 /* ─── Prose (markdown-rendered body) ───────────────────────────── */
 .prose { font-size: .98rem; color: var(--ink); line-height: 1.7; }
@@ -450,11 +485,12 @@ main {
 .source-link a { color: var(--muted); }
 .source-link a:hover { color: var(--primary-dark); }
 
-/* Deprecated decls: just a strikethrough; no orange callout. */
+/* Deprecated decls: the page title carries the strikethrough; this inline note just labels
+   the paragraph and prints the reason, so the label is bold rather than struck. */
 .deprecated-note {
   font-size: .9rem; color: var(--muted); margin: .5rem 0 1rem;
 }
-.deprecated-note s { color: var(--ink-soft); font-weight: 600; text-decoration-color: var(--muted); }
+.deprecated-note strong { color: var(--ink-soft); font-weight: 600; }
 
 .empty {
   font-family: var(--sans); color: var(--muted); font-style: italic;

@@ -44,9 +44,13 @@ private fun appendTagsTo(out: StringBuilder, tagMap: Map<DocCommentTag, List<Doc
 
     fun simpleSection(tag: DocCommentTag, format: (DocCommentItem) -> String) {
         val items = tagMap[tag] ?: return
-        if (items.isEmpty()) return
+        // Skip the section entirely when every item formats to blank text. Some stdlib decls
+        // carry a `@since` (or similar) tag with no value — emitting a lone `**Since**` heading
+        // shows up as garbage in the package-index summary cell.
+        val formatted = items.map(format).filter { it.isNotBlank() }
+        if (formatted.isEmpty()) return
         out.appendSectionHeader(tag.title)
-        items.forEach { item -> out.append(format(item)).append('\n') }
+        formatted.forEach { out.append(it).append('\n') }
     }
 
     simpleSection(DocCommentTag.RETURN) { it.text.trim() }
