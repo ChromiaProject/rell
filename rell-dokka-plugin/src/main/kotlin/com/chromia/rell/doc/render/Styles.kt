@@ -408,9 +408,12 @@ main {
 }
 .decl-block .decl-line .sig-kw { color: var(--primary-dark); font-weight: 600; }
 .decl-block .decl-line .sig-name { color: var(--ink); font-weight: 700; }
-/* Gap between fields so a card visually groups with the field directly below it, separated from the
-   previous field. The first field sits snug under the `<kw> X {` opening line. */
-.decl-field { scroll-margin-top: 1rem; border-radius: 6px; margin-top: 1.1rem; }
+/* Gap before a field only when it carries a doc card, so the card visually groups with the field
+   directly below it, separated from the previous field. Plain fields (no card) sit on consecutive
+   lines like ordinary source, with no extra padding. The first field sits snug under the
+   `<kw> X {` opening line. */
+.decl-field { scroll-margin-top: 1rem; border-radius: 6px; }
+.decl-field:has(.decl-field-doc) { margin-top: 1.1rem; }
 .decl-field:first-of-type { margin-top: .2rem; }
 .decl-field:target { background: var(--primary-bg); }
 .decl-field-sig .sig-kw    { color: var(--primary-dark); font-weight: 600; }
