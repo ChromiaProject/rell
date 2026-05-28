@@ -128,6 +128,29 @@ internal class SignatureRender(private val typeRender: TypeRender) {
         }
     }
 
+    /** The opening punctuation of a block, e.g. ` {`. Exposed so the struct-declaration renderer
+     * in Pages can build the header line in the same token style as the signature. */
+    fun openBrace(): String = " " + punct("{")
+
+    fun closeBrace(): String = punct("}")
+
+    /**
+     * Inline `name: type` form for one attribute, with the Rell field modifiers (`mutable`, `key`,
+     * `index`) as leading keywords and any default value. Used by the struct-declaration body and by
+     * the attribute listing on class pages.
+     */
+    fun renderAttribute(p: Doc_Property): String = buildString {
+        if (p.mutable) append(kw("mutable")).append(' ')
+        if (p.key) append(kw("key")).append(' ')
+        if (p.index) append(kw("index")).append(' ')
+        append("<span class=\"sig-param\">").append(escapeHtml(p.name)).append("</span>")
+        append(": ")
+        append(typeRender.renderHtml(p.type))
+        if (p.defaultValueText != null) {
+            append(" = ").append("<span class=\"sig-lit\">").append(escapeHtml(p.defaultValueText)).append("</span>")
+        }
+    }
+
     private fun renderAlias(a: Doc_TypeAlias): String = buildString {
         append(kw("alias")).append(' ')
         append("<span class=\"sig-name\">").append(escapeHtml(a.name)).append("</span>")

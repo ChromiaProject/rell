@@ -37,7 +37,9 @@ class RellDokkaGenerator(private val configBuilder: RellDokkaPluginConfiguration
         val module = if (config.system) {
             SystemBuild.build(
                 title = config.title,
-                slug = Paths.fileSlug(config.title),
+                // Slug pinned to the legacy Dokka module name, not the page title — see
+                // RellDokkaPluginConfiguration.SYSTEM_MODULE_NAME for why URL compatibility needs this.
+                slug = Paths.fileSlug(RellDokkaPluginConfiguration.SYSTEM_MODULE_NAME),
                 moduleDocs = moduleDocs,
             )
         } else {

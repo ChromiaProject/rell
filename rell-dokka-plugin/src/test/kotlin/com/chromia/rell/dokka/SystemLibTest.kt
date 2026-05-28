@@ -38,7 +38,7 @@ class SystemLibTest {
         assertThat(out / "navigation.html").exists()
         assertThat(out / "scripts/pages.json").exists()
         // The system lib's outer module slug.
-        val moduleSlug = "-rell -system -library -a-p-i -reference"
+        val moduleSlug = SYSTEM_MODULE_SLUG
         assertThat(out / "$moduleSlug/index.html").exists()
         assertThat(out / "$moduleSlug/[root]/index.html").exists()
         assertThat(out / "$moduleSlug/rell.test/index.html").exists()
@@ -48,7 +48,7 @@ class SystemLibTest {
     @Test
     fun `documents core stdlib types`() {
         val out = generate()
-        val moduleSlug = "-rell -system -library -a-p-i -reference"
+        val moduleSlug = SYSTEM_MODULE_SLUG
         val rootIndex = (out / "$moduleSlug/[root]/index.html").readText()
         assertThat(rootIndex).contains("integer")
         assertThat(rootIndex).contains("text")
@@ -58,7 +58,7 @@ class SystemLibTest {
     @Test
     fun `blacklisted types are absent from output`() {
         val out = generate()
-        val moduleSlug = "-rell -system -library -a-p-i -reference"
+        val moduleSlug = SYSTEM_MODULE_SLUG
         // `guid`, `signer`, `comparable`, `immutable` are filtered at the build stage —
         // compiler-internal abstract base types not part of the user-facing surface.
         assertThat((out / "$moduleSlug/[root]/guid/index.html").exists()).isFalse()
@@ -83,7 +83,7 @@ class SystemLibTest {
     @Test
     fun `overloaded stdlib functions render as one page with multiple signature blocks`() {
         val out = generate()
-        val moduleSlug = "-rell -system -library -a-p-i -reference"
+        val moduleSlug = SYSTEM_MODULE_SLUG
         // `text.sub` has two overloads in the stdlib: sub(start) and sub(start, end).
         val subPage = out / "$moduleSlug/[root]/text/sub.html"
         assertThat(subPage).exists()
@@ -104,12 +104,19 @@ class SystemLibTest {
     @Test
     fun `rell test namespace is generated`() {
         val out = generate()
-        val moduleSlug = "-rell -system -library -a-p-i -reference"
+        val moduleSlug = SYSTEM_MODULE_SLUG
         assertThat(out / "$moduleSlug/rell.test/index.html").exists()
         val text = (out / "$moduleSlug/rell.test/index.html").readText()
         assertThat(text).contains("assert_equals")
     }
 }
+
+/**
+ * Output directory slug for the system lib. Pinned to the legacy Dokka `DModule` name
+ * "Rell System Library" (not the longer page title) for URL compatibility — see
+ * `RellDokkaPluginConfiguration.SYSTEM_MODULE_NAME`.
+ */
+internal const val SYSTEM_MODULE_SLUG: String = "-rell -system -library"
 
 private fun assertk.Assert<Boolean>.isFalse() = given { value -> kotlin.test.assertFalse(value) }
 private fun assertk.Assert<Boolean>.isTrue() = given { value -> kotlin.test.assertTrue(value) }

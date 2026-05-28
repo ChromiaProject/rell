@@ -141,9 +141,23 @@ internal class SiteRender(private val outputDir: Path) {
                 ),
             )
 
+            // Type aliases were `<Name>/index.html` under legacy Dokka but are flat `<Name>.html`
+            // now — emit the legacy path as a redirect so existing links keep working.
+            if (def is com.chromia.rell.doc.model.Doc_TypeAlias) {
+                val flatLeaf = Paths.pageRelativePath(module, pkg, def).substringAfterLast('/')
+                writePage(Paths.classifierIndexPath(module, pkg, def), redirectHtml("../$flatLeaf"))
+            }
+
             if (def is Doc_Class) {
                 for (member in def.members) {
                     val memberRel = Paths.memberRelativePath(module, pkg, def, member)
+                    // Attributes don't get their own page — they're embedded on the owner's page.
+                    // But the legacy Dokka URL (`…/<Owner>/<attr>.html`) is kept alive as a redirect
+                    // to the owner's anchor, so existing links/bookmarks still resolve.
+                    if (member is com.chromia.rell.doc.model.Doc_Property) {
+                        writePage(memberRel, redirectHtml("index.html#${Paths.memberAnchor(member)}"))
+                        continue
+                    }
                     renderPage(
                         site, index, markdown, navigation,
                         relativePath = memberRel,
@@ -206,6 +220,21 @@ internal class SiteRender(private val outputDir: Path) {
         file.writeText(html)
     }
 
+    /**
+     * Minimal client-side redirect page. Uses both a `meta refresh` and a `location.replace` (the
+     * latter avoids leaving the stub in browser history) plus a `<link rel="canonical">` so crawlers
+     * follow it to the real anchor. [target] is relative to the stub's own directory.
+     */
+    private fun redirectHtml(target: String): String =
+        """
+        <!DOCTYPE html>
+        <html lang="en"><head><meta charset="utf-8">
+        <link rel="canonical" href="$target">
+        <meta http-equiv="refresh" content="0; url=$target">
+        <script>location.replace("$target" + location.search)</script>
+        </head><body>Redirecting to <a href="$target">$target</a>…</body></html>
+        """.trimIndent()
+
     private fun copyUserAssets(site: Doc_Site) {
         for (sheet in site.customStyleSheets) {
             if (!sheet.isRegularFile()) continue
@@ -225,12 +254,13 @@ internal class SiteRender(private val outputDir: Path) {
         val css = outputDir / "styles" / "site.css"
         css.parent.createDirectories()
         css.writeText(SITE_CSS)
+        (outputDir / "styles" / "fonts.css").writeText(FONTS_CSS)
         copyBundledFonts()
     }
 
     /**
      * Copy the chromia-docs web fonts (NBInternational family + Battlefin) out of the plugin's
-     * jar into `<outputDir>/fonts/...` so the `@font-face` URLs in `SITE_CSS` resolve at runtime.
+     * jar into `<outputDir>/fonts/...` so the `@font-face` URLs in `FONTS_CSS` resolve at runtime.
      * Missing resources are silently skipped; the CSS already has a system-font fallback chain.
      */
     private fun copyBundledFonts() {
@@ -245,16 +275,26 @@ internal class SiteRender(private val outputDir: Path) {
 
     private companion object {
         val BUNDLED_FONTS: List<String> = listOf(
+            "fonts/NBInternational/NBInternationalRegularWebfont.woff2",
             "fonts/NBInternational/NBInternationalRegularWebfont.ttf",
+            "fonts/NBInternational/NBInternationalBoldWebfont.woff2",
             "fonts/NBInternational/NBInternationalBoldWebfont.ttf",
+            "fonts/NBInternational/NBInternationalMonoWebfont.woff2",
             "fonts/NBInternational/NBInternationalMonoWebfont.ttf",
+            "fonts/Battlefin-Black.woff2",
             "fonts/Battlefin-Black.otf",
         )
     }
 
     private fun writeSearchIndex(site: Doc_Site) {
-        val file = outputDir / "scripts" / "pages.json"
-        file.parent.createDirectories()
-        file.writeText(Search.render(site))
+        val json = Search.render(site)
+        val dir = outputDir / "scripts"
+        dir.createDirectories()
+        // `pages.json` is kept for the legacy schema / external consumers. `pages.js` wraps the same
+        // payload as a global assignment loaded via <script> — `fetch()` of a local file is blocked
+        // under the file:// origin (CORS), so a script include is what makes search work when the
+        // docs are opened straight off disk rather than served over HTTP.
+        (dir / "pages.json").writeText(json)
+        (dir / "pages.js").writeText("window.__rellDocsPages = $json;\n")
     }
 }

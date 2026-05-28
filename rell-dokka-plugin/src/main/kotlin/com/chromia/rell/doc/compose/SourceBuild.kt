@@ -322,7 +322,10 @@ internal class SourceBuild private constructor(
         ): Doc_Module {
             val analysis = compile(projectRoot, entryPointModules, additionalModules, cliEnv)
             val builder = SourceBuild(moduleDocs, analysis)
+
             val packages = builder.buildModule(analysis.modules + analysis.testModules)
+                .filter { it.defs.isNotEmpty() || it.docMd.isNotBlank() }
+
             val titleDoc = moduleDocs?.moduleDoc(title) ?: ""
             return Doc_Module(name = title, slug = slug, docMd = titleDoc, packages = packages, system = false)
         }

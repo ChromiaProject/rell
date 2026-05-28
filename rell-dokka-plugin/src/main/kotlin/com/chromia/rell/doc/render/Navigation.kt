@@ -24,7 +24,9 @@ internal class Navigation(private val site: Doc_Site) {
         // site-root directory it resolves search-hit `location`s against. Computed per-page so
         // the search keeps working regardless of how deep the current page sits in the tree.
         val pagesJsonHref = Hrefs.relativeFrom(ctx.relativePath, "scripts/pages.json")
+        val pagesJsHref = Hrefs.relativeFrom(ctx.relativePath, "scripts/pages.js")
         val siteRootHref = Hrefs.relativeFrom(ctx.relativePath, "index.html").removeSuffix("index.html")
+
         out.div(classes = "search") {
             input(type = InputType.search) {
                 id = "doc-search"
@@ -34,6 +36,9 @@ internal class Navigation(private val site: Doc_Site) {
                 attributes["data-site-root"] = siteRootHref
             }
             ul(classes = "search-results") { id = "doc-search-results" }
+            // Loads the index as `window.__rellDocsPages` so search works off the file:// origin
+            // (where fetch is blocked); SEARCH_JS falls back to fetch(pages.json) if this is absent.
+            script(src = pagesJsHref) {}
             script {
                 unsafe { +SEARCH_JS }
             }
@@ -151,6 +156,7 @@ internal class Navigation(private val site: Doc_Site) {
                 meta(charset = "utf-8")
                 meta(name = "viewport", content = "width=device-width, initial-scale=1")
                 title("${escapeHtml(site.title)} — Navigation")
+                link(rel = "stylesheet", href = "styles/fonts.css")
                 style { unsafe { +SITE_CSS } }
             }
             body {
@@ -193,6 +199,9 @@ internal const val SEARCH_JS = """
 
     function loadOnce() {
       if (records !== null) return Promise.resolve(records);
+      // Preferred path: the index was loaded as a global via <script src="pages.js">, which works
+      // even off the file:// origin. Fall back to fetch(pages.json) for setups that only ship it.
+      if (window.__rellDocsPages) { records = window.__rellDocsPages; return Promise.resolve(records); }
       return fetch(pagesUrl).then(function(r) { return r.json(); })
         .then(function(json) { records = json; return records; })
         .catch(function(err) { records = []; console.error('rell-docs search:', err); return records; });

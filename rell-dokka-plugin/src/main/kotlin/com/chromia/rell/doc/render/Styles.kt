@@ -16,7 +16,8 @@ import org.intellij.lang.annotations.Language
  * don't bundle those — closest free fallback is plain `system-ui`).
  *
  * The stylesheet is inlined into every page's `<style>` block; we also drop a copy at
- * `styles/site.css` for anyone who wants to override.
+ * `styles/site.css` for anyone who wants to override. The `@font-face` rules live separately in
+ * [FONTS_CSS] (written to `styles/fonts.css` and `<link>`ed per page) — see that constant for why.
  */
 @Suppress(
     "CssUnresolvedCustomProperty", "CssUnusedSymbol", "CssNoGenericFontName",
@@ -85,34 +86,6 @@ internal val SITE_CSS: String = """
   --info-bg:        rgba(79,163,223,0.12);
   --info-border:    #4fa3df;
   --shadow-card:    0 6px 18px rgba(0,0,0,0.35);
-}
-
-/* Web fonts bundled with the plugin — same NBInternational family the main Chromia Docs
-   site uses (under `/static/fonts/` in chromia-docs). Battlefin is reserved for the brand-y
-   `Battlefin` family but not currently wired into any selector. */
-@font-face {
-  font-family: 'International-regular';
-  src: url("../fonts/NBInternational/NBInternationalRegularWebfont.ttf") format("truetype"),
-       url("fonts/NBInternational/NBInternationalRegularWebfont.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: 'International-bold';
-  src: url("../fonts/NBInternational/NBInternationalBoldWebfont.ttf") format("truetype"),
-       url("fonts/NBInternational/NBInternationalBoldWebfont.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: 'International-mono';
-  src: url("../fonts/NBInternational/NBInternationalMonoWebfont.ttf") format("truetype"),
-       url("fonts/NBInternational/NBInternationalMonoWebfont.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Battlefin';
-  src: url("../fonts/Battlefin-Black.otf") format("opentype"),
-       url("fonts/Battlefin-Black.otf") format("opentype");
-  font-display: swap;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -389,6 +362,81 @@ main {
 }
 .def-card.deprecated .def-card-summary { color: var(--muted); }
 
+/* ─── Attribute list (entity/struct/type fields) ──────────────── */
+/* Attributes are plain `name: type` pairs, so they get a compact list instead of the card grid:
+   one row per field, the mono signature on top, summary beneath. */
+.attr-list { list-style: none; margin: 0; padding: 0; }
+.attr-row {
+  padding: .7rem 0; border-bottom: 1px solid var(--rule-hair);
+  scroll-margin-top: 1rem;
+}
+.attr-row:last-child { border-bottom: 0; }
+.attr-row:target { background: var(--primary-bg); border-radius: 6px; padding-left: .6rem; padding-right: .6rem; }
+.attr-sig { display: block; text-decoration: none; }
+.attr-sig code {
+  font-family: var(--mono); font-size: .9rem; line-height: 1.5;
+  color: var(--ink); white-space: pre-wrap; word-break: break-word;
+}
+.attr-sig:hover code { color: var(--primary-dark); }
+.attr-sig .sig-kw    { color: var(--primary-dark); font-weight: 600; }
+.attr-sig .sig-param { color: #2f4968; }
+.attr-sig .sig-lit   { color: #1f6b4a; }
+.attr-sig a.type-link { color: var(--primary-dark); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+.attr-sig a.type-link:hover { text-decoration-style: solid; }
+.attr-sig .type-name { color: var(--ink-soft); }
+.attr-desc { font-size: .9rem; color: var(--ink-soft); line-height: 1.6; margin-top: .4rem; }
+.attr-desc p { margin-bottom: .5rem; }
+.attr-desc p:last-child { margin-bottom: 0; }
+.attr-row.deprecated .attr-sig code { text-decoration: line-through; text-decoration-color: var(--faint); color: var(--muted); }
+.attr-row.deprecated .attr-desc { color: var(--muted); }
+
+/* ─── Definition declaration with inline field-doc cards ──────── */
+/* Struct/entity/object declarations render as a code block; a documented field gets its description
+   as a card sitting right above the field line, so each card reads as a lead-in to the attribute
+   beneath it. This is its own box (not .signature) so the global `.signature code { display:block }`
+   rule can't leak into the cards and turn inline `code` spans into full-width blocks. */
+.decl-summary { margin-bottom: 1.1rem; }
+.decl-block {
+  background: var(--bg-alt); border: 1px solid var(--rule);
+  border-left: 3px solid var(--primary);
+  padding: 1rem 1.2rem; margin-bottom: 1.2rem; border-radius: 4px;
+}
+.decl-block .decl-line code,
+.decl-block .decl-field-sig {
+  display: block; font-family: var(--mono); font-size: .9rem; line-height: 1.5;
+  color: var(--ink); white-space: pre-wrap; word-break: break-word;
+}
+.decl-block .decl-line .sig-kw { color: var(--primary-dark); font-weight: 600; }
+.decl-block .decl-line .sig-name { color: var(--ink); font-weight: 700; }
+/* Gap between fields so a card visually groups with the field directly below it, separated from the
+   previous field. The first field sits snug under the `<kw> X {` opening line. */
+.decl-field { scroll-margin-top: 1rem; border-radius: 6px; margin-top: 1.1rem; }
+.decl-field:first-of-type { margin-top: .2rem; }
+.decl-field:target { background: var(--primary-bg); }
+.decl-field-sig .sig-kw    { color: var(--primary-dark); font-weight: 600; }
+.decl-field-sig .sig-param { color: #2f4968; }
+.decl-field-sig .sig-lit   { color: #1f6b4a; }
+.decl-field-sig a.type-link { color: var(--primary-dark); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+.decl-field-sig a.type-link:hover { text-decoration-style: solid; }
+.decl-field-sig .type-name { color: var(--ink-soft); }
+/* The doc card: indented to align under the field name (2 mono chars), sitting just above its
+   field line with a left accent so it reads as that field's annotation. */
+.decl-field-doc {
+  margin: 0 0 .3rem 2ch;
+  padding: .5rem .8rem;
+  font-family: var(--sans);
+  font-size: .82rem; line-height: 1.55; color: var(--ink-soft);
+  background: var(--bg); border: 1px solid var(--rule);
+  border-left: 3px solid var(--primary-light); border-radius: 6px;
+}
+.decl-field-doc p { margin-bottom: .4rem; }
+.decl-field-doc p:last-child { margin-bottom: 0; }
+.decl-field-doc code { font-size: .82em; background: var(--bg-alt); padding: 0 .3rem; border-radius: 3px; border: 1px solid var(--rule-hair); }
+.decl-field-doc pre { background: var(--bg-alt); border: 1px solid var(--rule); border-radius: 6px; padding: .6rem .8rem; overflow-x: auto; margin: .4rem 0; }
+.decl-field-doc pre code { border: 0; background: transparent; padding: 0; }
+.decl-field.deprecated .decl-field-sig code { text-decoration: line-through; text-decoration-color: var(--faint); color: var(--muted); }
+.decl-field.deprecated .decl-field-doc { color: var(--muted); }
+
 /* ─── Signature block ──────────────────────────────────────────── */
 .signature {
   background: var(--bg-alt); border: 1px solid var(--rule);
@@ -531,3 +579,52 @@ hr.overload-sep { border: 0; border-top: 1px dashed var(--rule); margin: 1.4rem 
   main { padding: 1.4rem 1.4rem 2.5rem; }
 }
 """.trimIndent()
+
+/**
+ * `@font-face` declarations, kept out of [SITE_CSS] and written to a standalone `styles/fonts.css`
+ * that every page `<link>`s. A linked stylesheet resolves its `url()`s relative to the CSS file —
+ * which always lives in `styles/` — so a single `../fonts/...` path is correct from every page,
+ * regardless of depth. (Inlining these into each page's `<style>` instead made the relative path
+ * depend on page depth, which forced a dual-path `src` list where one URL always 404'd first.)
+ *
+ * woff2 is listed first (≈⅓ the size of the ttf/otf) with the original ttf/otf as a real fallback.
+ */
+@Suppress("CssUnknownTarget")
+@Language("CSS")
+internal val FONTS_CSS: String = """
+@font-face {
+  font-family: 'International-regular';
+  src: url("../fonts/NBInternational/NBInternationalRegularWebfont.woff2") format("woff2"),
+       url("../fonts/NBInternational/NBInternationalRegularWebfont.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: 'International-bold';
+  src: url("../fonts/NBInternational/NBInternationalBoldWebfont.woff2") format("woff2"),
+       url("../fonts/NBInternational/NBInternationalBoldWebfont.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: 'International-mono';
+  src: url("../fonts/NBInternational/NBInternationalMonoWebfont.woff2") format("woff2"),
+       url("../fonts/NBInternational/NBInternationalMonoWebfont.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Battlefin';
+  src: url("../fonts/Battlefin-Black.woff2") format("woff2"),
+       url("../fonts/Battlefin-Black.otf") format("opentype");
+  font-display: swap;
+}
+""".trimIndent()
+
+/**
+ * The woff2 faces above the fold (sidebar text/bold, code/signatures in mono). Preloaded per page
+ * so the browser fetches them in parallel with CSS parsing instead of discovering them afterwards.
+ * Battlefin is intentionally omitted — it isn't wired into any selector.
+ */
+internal val PRELOAD_FONTS: List<String> = listOf(
+    "fonts/NBInternational/NBInternationalRegularWebfont.woff2",
+    "fonts/NBInternational/NBInternationalBoldWebfont.woff2",
+    "fonts/NBInternational/NBInternationalMonoWebfont.woff2",
+)

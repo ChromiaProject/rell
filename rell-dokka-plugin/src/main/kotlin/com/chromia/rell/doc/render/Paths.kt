@@ -52,6 +52,23 @@ internal object Paths {
         return "${module.slug}/${packageDir(pkg)}/$ownerDir/$memberSlug.html"
     }
 
+    /**
+     * Fragment id for an attribute embedded on its owner's page. Attribute `.html` files survive as
+     * redirects (legacy-URL compatibility), pointing at `…/<Owner>/index.html#<this anchor>`. Uses
+     * the same slug rule as filenames so `MAX_VALUE` → `-m-a-x_-v-a-l-u-e` matches the leaf name.
+     */
+    fun memberAnchor(member: Doc_Def): String = fileSlug(member.name)
+
+    /**
+     * Legacy Dokka rendered *every classifier* — including type aliases — as `<Name>/index.html`,
+     * whereas the new renderer puts non-class defs at the flat `<Name>.html` (see [pageRelativePath]).
+     * For type aliases we keep this legacy path alive as a redirect so old URLs still resolve.
+     */
+    fun classifierIndexPath(module: Doc_Module, pkg: Doc_Package, def: Doc_Def): String {
+        val slug = urlEncodeName(fileSlug(def.name))
+        return "${module.slug}/${packageDir(pkg)}/$slug/index.html"
+    }
+
     fun packageIndexPath(module: Doc_Module, pkg: Doc_Package): String =
         "${module.slug}/${packageDir(pkg)}/index.html"
 

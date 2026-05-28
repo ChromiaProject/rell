@@ -34,5 +34,14 @@ internal class RellDokkaPluginConfiguration(
 ) {
     companion object {
         const val SYSTEM_TITLE: String = "Rell System Library API Reference"
+
+        /**
+         * Module name used for the system-lib *output directory slug* — distinct from [SYSTEM_TITLE]
+         * (which is the page `<title>`/H1). The legacy Dokka generator named its `DModule`
+         * "Rell System Library", producing the `-rell -system -library` directory that
+         * docs.chromia.com and downstream tooling already link to. Deriving the slug from the
+         * longer title would silently break every existing URL, so the slug stays pinned here.
+         */
+        const val SYSTEM_MODULE_NAME: String = "Rell System Library"
     }
 }

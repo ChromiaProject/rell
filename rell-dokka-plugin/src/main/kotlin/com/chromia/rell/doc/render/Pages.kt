@@ -30,6 +30,16 @@ internal class Pages(
                 meta(charset = "utf-8")
                 meta(name = "viewport", content = "width=device-width, initial-scale=1")
                 title("${escapeHtml(spec.title)} — ${escapeHtml(site.title)}")
+                for (font in PRELOAD_FONTS) {
+                    link {
+                        rel = "preload"
+                        href = Hrefs.relativeFrom(spec.ctx.relativePath, font)
+                        attributes["as"] = "font"
+                        attributes["type"] = "font/woff2"
+                        attributes["crossorigin"] = "anonymous"
+                    }
+                }
+                link(rel = "stylesheet", href = Hrefs.relativeFrom(spec.ctx.relativePath, "styles/fonts.css"))
                 style { unsafe { +SITE_CSS } }
                 script { unsafe { +THEME_BOOT_JS } }
                 script { unsafe { +RELL_HIGHLIGHT_JS } }
@@ -175,6 +185,25 @@ internal class Pages(
             relativePath = Paths.pageRelativePath(module, pkg, def),
             currentPackage = pkg,
         )
+        // Structs, entities and objects render their fields inline in the declaration code block,
+        // each with its description attached as a card — they're all instantiated/queried by field
+        // order, so the field-by-field declaration is the useful shape and there's no separate
+        // Attributes section for them.
+        if (def is Doc_Class && def.kind in DECL_BLOCK_KINDS) {
+            // For these the code block *is* the headline; the prose description reads as a lead-in,
+            // so it goes above the block (with the deprecation note), and only the source link
+            // trails below it.
+            renderDeprecated(out, def)
+            if (def.docMd.isNotBlank()) {
+                out.div(classes = "prose decl-summary") { unsafe { +markdown.renderHtml(def.docMd, ctx) } }
+            }
+            renderDeclBlock(out, def, ctx)
+            renderSourceLink(out, def.source)
+            val (nestedClasses, _, _, aliases) = bucketDefs(def.members)
+            renderDefTable(out, "Types", nestedClasses, module, pkg, ctx, parentClass = def)
+            renderDefTable(out, "Aliases", aliases, module, pkg, ctx, parentClass = def)
+            return
+        }
         renderDefSignatureSection(out, def, ctx)
         if (def is Doc_Class) {
             val (nestedClasses, methods, attrs, aliases) = bucketDefs(def.members)
@@ -192,7 +221,7 @@ internal class Pages(
                     }
                 }
             }
-            renderDefTable(out, "Attributes", attrs, module, pkg, ctx, parentClass = def)
+            renderAttributeList(out, "Attributes", attrs, ctx)
             renderDefTable(out, "Methods", methods, module, pkg, ctx, parentClass = def)
             renderDefTable(out, "Types", nestedClasses, module, pkg, ctx, parentClass = def)
             renderDefTable(out, "Aliases", aliases, module, pkg, ctx, parentClass = def)
@@ -301,6 +330,83 @@ internal class Pages(
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Attributes render as a compact list rather than the card grid used for functions/types: an
+     * attribute is just a `name: type` pair, so a card's worth of chrome per field is noise. Each
+     * row carries an anchor `id` (the legacy `<attr>.html` page is now a redirect that lands here),
+     * a self-permalink on the signature, and the attribute's full description embedded inline.
+     */
+    private fun renderAttributeList(
+        out: FlowContent,
+        title: String,
+        defs: List<Doc_Def>,
+        ctx: PageContext,
+    ) {
+        val attrs = defs.filterIsInstance<Doc_Property>()
+        if (attrs.isEmpty()) return
+        out.section(classes = "section") {
+            div(classes = "section-head") { div(classes = "section-title") { +title } }
+            ul(classes = "attr-list") {
+                for (attr in attrs) {
+                    val anchor = Paths.memberAnchor(attr)
+                    val deprecated = attr.deprecated != null
+                    li(classes = if (deprecated) "attr-row deprecated" else "attr-row") {
+                        id = anchor
+                        a(href = "#$anchor", classes = "attr-sig") {
+                            code { unsafe { +signatureRender.renderAttribute(attr) } }
+                        }
+                        if (attr.docMd.isNotBlank()) {
+                            div(classes = "attr-desc prose") { unsafe { +markdown.renderHtml(attr.docMd, ctx) } }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Definition declaration (struct / entity / object) as a single code block with each field's
+     * description folded in as a card right above the field line — so the reader sees the
+     * construction shape and the per-field docs in one place instead of a code block plus a detached
+     * Attributes list. Each field row carries its anchor `id` (the legacy `<field>.html` redirect
+     * lands here).
+     */
+    private companion object {
+        // Kinds rendered as a field-by-field declaration block (with per-field doc cards) instead of
+        // a bare signature + Attributes list: all of them are constructed/accessed by field order.
+        val DECL_BLOCK_KINDS = setOf(Doc_ClassKind.STRUCT, Doc_ClassKind.ENTITY, Doc_ClassKind.OBJECT)
+    }
+
+    private fun renderDeclBlock(out: FlowContent, def: Doc_Class, ctx: PageContext) {
+        val attrs = def.members.filterIsInstance<Doc_Property>()
+        out.div(classes = "decl-block") {
+            if (attrs.isEmpty()) {
+                div(classes = "decl-line") {
+                    code { unsafe { +(signatureRender.render(def) + " " + signatureRender.closeBrace()) } }
+                }
+                return@div
+            }
+            div(classes = "decl-line") {
+                code { unsafe { +(signatureRender.render(def) + signatureRender.openBrace()) } }
+            }
+            for (attr in attrs) {
+                val deprecated = attr.deprecated != null
+                div(classes = if (deprecated) "decl-field deprecated" else "decl-field") {
+                    id = Paths.memberAnchor(attr)
+                    // Card above its field line, so each description reads as a lead-in to the
+                    // attribute directly beneath it (spacing between fields keeps the grouping clear).
+                    if (attr.docMd.isNotBlank()) {
+                        div(classes = "decl-field-doc prose") { unsafe { +markdown.renderHtml(attr.docMd, ctx) } }
+                    }
+                    code(classes = "decl-field-sig") {
+                        unsafe { +("    " + signatureRender.renderAttribute(attr) + ";") }
+                    }
+                }
+            }
+            div(classes = "decl-line") { code { unsafe { +signatureRender.closeBrace() } } }
         }
     }
 
