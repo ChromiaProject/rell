@@ -64,19 +64,31 @@ class MultirunCliTest : BaseResourcefulTest() {
 
         private val mapper = ObjectMapper()
 
+        /** Ports handed out by [findFreePort], so two parallel tests never pick the same one. */
+        private val reservedPorts = java.util.Collections.synchronizedSet(mutableSetOf<Int>())
+
         /**
-         * Find a free TCP port in the range 10000–49151. Postchain rejects ports ≥ 49152
-         * (the ephemeral range that `ServerSocket(0)` would normally pick from).
+         * Find a free TCP port for a Postchain node to bind.
+         *
+         * Drawn from 10000–32767: below the Linux ephemeral range (default 32768–60999) so an
+         * outbound socket can't grab the port in the window between this check and the node
+         * actually binding it, and below Postchain's 49152 cap. The probe [ServerSocket] only
+         * proves the port is free *now*; [reservedPorts] additionally guarantees we never return
+         * the same port to two parallel tests, since the probe is closed immediately and the node
+         * binds seconds later.
          */
         private fun findFreePort(): Int {
-            repeat(100) {
-                val port = ThreadLocalRandom.current().nextInt(10000, 49152)
+            repeat(1000) {
+                val port = ThreadLocalRandom.current().nextInt(10000, 32768)
+                if (!reservedPorts.add(port)) return@repeat
                 try {
                     ServerSocket(port).use { /* available */ }
                     return port
-                } catch (_: IOException) { /* in use, try another */ }
+                } catch (_: IOException) {
+                    reservedPorts.remove(port) // taken by another process; free our reservation
+                }
             }
-            error("Could not find a free port in 10000–49151")
+            error("Could not find a free port in 10000–32767")
         }
     }
 
