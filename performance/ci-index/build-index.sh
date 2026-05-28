@@ -6,8 +6,8 @@
 # per-deployment data/main.json files it points at — anonymously.
 #
 # Auth: requires GITLAB_TOKEN (a project/group access token with `read_api` scope) exposed
-# as a masked CI variable on dev. CI_JOB_TOKEN can't read the Environments API — it's not
-# on GitLab's allowlist for that endpoint and returns 403.
+# as a masked CI variable on the protected dev and version-* branches. CI_JOB_TOKEN can't read
+# the Environments API — it's not on GitLab's allowlist for that endpoint and returns 403.
 #
 # Inputs (from GitLab CI):  CI_PROJECT_ID, GITLAB_TOKEN.
 # Usage:   build-index.sh <output-dir>
