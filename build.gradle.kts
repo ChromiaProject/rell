@@ -1,3 +1,4 @@
+import org.gradle.plugins.signing.SigningExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import java.util.*
@@ -62,6 +63,7 @@ subprojects {
     plugins.withId("org.jetbrains.kotlin.jvm") {
         apply(plugin = "jacoco")
         apply(plugin = "maven-publish")
+        apply(plugin = "signing")
 
         dependencies {
             "implementation"(platform(rootProject.libs.postchain.bom))
@@ -72,6 +74,7 @@ subprojects {
         extensions.configure<JavaPluginExtension> {
             toolchain.languageVersion = JavaLanguageVersion.of(21)
             withSourcesJar()
+            withJavadocJar()
         }
 
         extensions.configure<KotlinJvmProjectExtension> {
@@ -239,6 +242,7 @@ subprojects {
                 }
 
                 pom {
+                    name = project.name
                     description = project.description
                     url = "https://rell.chromia.com"
                     inceptionYear = "2018"
@@ -246,6 +250,7 @@ subprojects {
                     licenses {
                         license {
                             name = "GNU General Public License v3.0 with additional linking exceptions"
+                            url = "https://www.gnu.org/licenses/gpl-3.0.en.html"
                         }
                     }
 
@@ -267,6 +272,18 @@ subprojects {
                         url = "https://gitlab.com/chromaway/rell"
                     }
                 }
+            }
+        }
+
+        extensions.configure<SigningExtension> {
+            val signingKey = providers.gradleProperty("signingKey").orNull
+            val signingPassword = providers.gradleProperty("signingPassword").orNull
+            isRequired = signingKey != null
+
+            if (signingKey != null) {
+                useInMemoryPgpKeys(signingKey, signingPassword)
+                val publishing = extensions.getByType(PublishingExtension::class.java)
+                sign(publishing.publications["mavenJava"])
             }
         }
 
