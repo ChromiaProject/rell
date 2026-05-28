@@ -156,18 +156,28 @@ This is a breaking change for the IntelliJ plugin and any other consumer that bu
 11. Runtime: GraalVM Truffle peer backend
 
 A second runtime backend sits alongside the tree-walking interpreter. Both consume the same RR_App, the same
-standard library, and the same database connection; they differ only in dispatch. The Truffle backend translates each user function/operation/query body to
-a Truffle AST and lets GraalVM's partial evaluator specialize hot paths. Sub-trees that don't yet have hand-written
-Truffle nodes fall through to the tree-walker, so semantics are identical from day one.
+standard library, and the same database connection; they differ only in dispatch. The Truffle backend translates each
+user function/operation/query body to a Truffle AST and lets GraalVM's partial evaluator specialize hot paths.
+Sub-trees that don't yet have hand-written Truffle nodes fall through to the tree-walker, so semantics are identical
+from day one.
 
-The tree-walker remains the only supported backend for deployed applications. The Truffle backend is exercised
-internally by the test matrix and microbenchmarks but is not yet ready for production use; no public toggle is
-documented. Performance on real-world Rell workloads is mixed — early measurements show the two backends within the
-same order of magnitude on the FT4 library and on dapp-level workloads (mna-blockchain), with Truffle ahead on some shapes and
-behind on others. We are not publishing comparative numbers until the implementation has stabilised.
+The tree-walker remains the only supported backend for deployed applications. The Truffle backend is exercized
+internally by the test matrix and microbenchmarks but is not yet ready for production use. Performance on real-world
+Rell workloads is mixed — early measurements show the two backends within the same order of magnitude on the FT4
+library and on dapp-level workloads (mna-blockchain), with Truffle ahead on some shapes and behind on others. We are
+not publishing comparative numbers until the implementation has stabiliяed.
+
+For experimentation, the backend can be selected with the JVM system property rell.execution.backend, which accepts
+interpreter (the default) or truffle. To run the chr CLI with the Truffle backend, pass the property through
+JAVA_ARGS:
+
+    JAVA_ARGS="-Drell.execution.backend=truffle" chr run <args>
+
+This switch is experimental and for testing only — it is not a supported configuration for
+deployed applications, and the property may change or be removed without notice.
 
 The CI suite now runs the entire rell-base test family three times — interpreter, interpreter + RR-serialization
-round-trip, and Truffle — and requires bit-identical results on all three. Differences between the tree-walker and
+round-trip, and Truffle — and requires 100% results on all three. Differences between the tree-walker and
 Truffle are Truffle bugs; the tree-walker is the canonical reference.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
