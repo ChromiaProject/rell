@@ -3,6 +3,9 @@ ALL RELEASES (2026-01-10)
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 1. Releases: List of all Rell versions
 
+- 0.16.0
+  Notes: 0.16.0.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/51257284641eeec6bd03a9b940052ee92867970c/
 - 0.15.4
   Notes: 0.15.4.txt
   GitLab: https://gitlab.com/chromaway/rell/-/tree/1eba53016e5dd10f809f93c9d0ddb3170bf0e520/

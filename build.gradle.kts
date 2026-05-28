@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "net.postchain.rell"
-version = "0.16.0-SNAPSHOT"
+version = "0.17.0-SNAPSHOT"
 description = "Rell programming language"
 
 // Load local.properties (not committed) for machine-specific settings like Docker socket paths.
