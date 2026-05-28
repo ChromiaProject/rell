@@ -11,14 +11,14 @@
 # Requires GITLAB_TOKEN (project access token with `read_api`, masked + dev-branch-protected).
 # CI_JOB_TOKEN's allowlist excludes the Environments API, so it 403s.
 #
-# Pinned to dev so feature branches can't overwrite the root deployment. Re-published in the
-# `index` stage after each manual click (see `pages:index:after-*`), keeping the listing fresh
-# when manual jobs are clicked days after the initial dev pipeline ran.
+# Restricted to dev and version-* release branches so feature branches can't overwrite the root
+# deployment. Re-published in the `index` stage after each manual click (see `pages:index:after-*`),
+# keeping the listing fresh when manual jobs are clicked days after the initial pipeline ran.
 .pages-index:
   image: registry.gitlab.com/gitlab-org/cli:latest
   interruptible: true
   rules:
-    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH =~ /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
   script:
     - apk add --no-cache jq curl
     - mkdir -p public
@@ -59,6 +59,51 @@ pages:index:after-docs:
   stage: index
   needs: [ pages:docs ]
 
+# MR counterpart of the `pages:index:after-*` jobs: branch pipelines (dev / version-*) refresh the
+# root index, but MR pipelines have no index — instead they post the freshly published links as a
+# note on the merge request. One follow-up per portal kind, each triggered by `needs:` on its manual
+# job and inheriting that job's links via the dotenv artifact (`mr-comment.env`). post-mr-comment.sh
+# upserts a single note (creating it once, then editing it as more kinds are run or a kind is
+# re-run), so repeated dispatches never stack duplicate comments. The shared per-MR `resource_group`
+# serialises these read-modify-write cycles so concurrent dispatches can't race.
+#
+# Auth is QODANA_GITLAB_TOKEN (the `qodana-ci` token) — unlike GITLAB_TOKEN it is unprotected, so it
+# is exposed on MR/feature branches, and its `api` scope allows writing notes.
+.pages-mr-comment:
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  stage: index
+  interruptible: true
+  resource_group: "portal-mr-comment-$CI_MERGE_REQUEST_IID"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - apk add --no-cache jq curl
+    - performance/ci-index/post-mr-comment.sh
+
+pages:mr-comment:after-bench:
+  extends: .pages-mr-comment
+  needs:
+    - job: pages:benchmarks
+      artifacts: true
+
+pages:mr-comment:after-profile:
+  extends: .pages-mr-comment
+  needs:
+    - job: pages:profile
+      artifacts: true
+
+pages:mr-comment:after-regression:
+  extends: .pages-mr-comment
+  needs:
+    - job: pages:regression
+      artifacts: true
+
+pages:mr-comment:after-docs:
+  extends: .pages-mr-comment
+  needs:
+    - job: pages:docs
+      artifacts: true
+
 # Manual benchmark / profile runs publishing HTML to GitLab Pages under per-commit path prefixes
 # (`bench-<slug>-<sha>` / `profile-<slug>-<sha>`); including the short SHA lets same-branch
 # reruns coexist for diffing. Benchmark JSON is also exposed at /data/main.json so external
@@ -88,6 +133,12 @@ pages:benchmarks:
       echo "Published $latest_json -> public/data/main.json"
     - echo "Benchmark report - $CI_PAGES_URL/report.html"
     - echo "Benchmark JSON   - $CI_PAGES_URL/data/main.json"
+    # Hand the portal links to the MR-comment follow-up (consumed via dotenv on MR pipelines).
+    - |
+      {
+        echo "PORTAL_KEY=benchmarks"
+        echo "PORTAL_BULLET=**Benchmarks** (\`$CI_COMMIT_SHORT_SHA\`): [report]($CI_PAGES_URL/report.html), [JSON]($CI_PAGES_URL/data/main.json)"
+      } > mr-comment.env
   pages:
     path_prefix: "bench-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
     expire_in: never
@@ -96,6 +147,8 @@ pages:benchmarks:
     url: "$CI_PAGES_URL/report.html"
   artifacts:
     paths: [ public ]
+    reports:
+      dotenv: mr-comment.env
     expire_in: 30 days
 
 # Manual end-to-end profiler (Postgres + chr node + async-profiler + workload + HTML).
@@ -114,6 +167,12 @@ pages:profile:
     - mkdir -p public
     - cp -r performance/reports/. public/
     - echo "Profile report - $CI_PAGES_URL/report.html"
+    # Hand the portal links to the MR-comment follow-up (consumed via dotenv on MR pipelines).
+    - |
+      {
+        echo "PORTAL_KEY=profile"
+        echo "PORTAL_BULLET=**Profile** (\`$CI_COMMIT_SHORT_SHA\`): [report]($CI_PAGES_URL/report.html)"
+      } > mr-comment.env
   pages:
     path_prefix: "profile-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
     expire_in: never
@@ -123,6 +182,8 @@ pages:profile:
   artifacts:
     when: always
     paths: [ public ]
+    reports:
+      dotenv: mr-comment.env
     expire_in: 30 days
 
 # Manual regression toolkit: clone every public Rell project and verify the local build compiles
@@ -165,6 +226,12 @@ pages:regression:
     - cp -r regression/reports/. public/
     - echo "Regression report - $CI_PAGES_URL/report.html"
     - echo "Regression JSON   - $CI_PAGES_URL/results.json"
+    # Hand the portal links to the MR-comment follow-up (consumed via dotenv on MR pipelines).
+    - |
+      {
+        echo "PORTAL_KEY=regression"
+        echo "PORTAL_BULLET=**Regression** (\`$CI_COMMIT_SHORT_SHA\`): [report]($CI_PAGES_URL/report.html), [JSON]($CI_PAGES_URL/results.json)"
+      } > mr-comment.env
   pages:
     path_prefix: "regression-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
     expire_in: never
@@ -174,6 +241,8 @@ pages:regression:
   artifacts:
     when: always
     paths: [ public ]
+    reports:
+      dotenv: mr-comment.env
     expire_in: 30 days
 
 # Manual Rell stdlib documentation publish: build local chr against the snapshot Rell, then run
@@ -202,6 +271,12 @@ pages:docs:
       JAVA_ARGS="${JAVA_ARGS:-} --enable-native-access=ALL-UNNAMED" \
         chromia-cli-local/chromia-cli/target/chromia-cli-dev-dist/bin/chr generate docs-site --system -d public
     - echo "Rell docs - $CI_PAGES_URL/index.html"
+    # Hand the portal links to the MR-comment follow-up (consumed via dotenv on MR pipelines).
+    - |
+      {
+        echo "PORTAL_KEY=docs"
+        echo "PORTAL_BULLET=**Docs** (\`$CI_COMMIT_SHORT_SHA\`): [docs]($CI_PAGES_URL/index.html)"
+      } > mr-comment.env
   pages:
     path_prefix: "docs-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
     expire_in: never
@@ -210,4 +285,6 @@ pages:docs:
     url: "$CI_PAGES_URL/index.html"
   artifacts:
     paths: [ public ]
+    reports:
+      dotenv: mr-comment.env
     expire_in: 30 days
