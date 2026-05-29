@@ -65,8 +65,15 @@ private fun StringBuilder.appendSectionHeader(title: String) {
     append("**").append(title).append("**\n\n")
 }
 
+private val SEE_ENUMERATOR = Regex("""^\d+\.(\s|$)""")
+
 private fun formatSeeLine(item: DocCommentItem): String {
-    val (head, rest) = item.text.splitFirstWord()
+    val text = item.text.trim()
+    // Stdlib `@see` items already arrive as numbered list lines (`1. <a ...>...</a>`). Emit them
+    // verbatim so commonmark renders a real ordered list, instead of bracketing the leading "1."
+    // marker into a bogus `[1.]` link followed by a redundant em-dash.
+    if (SEE_ENUMERATOR.containsMatchIn(text)) return text.singleLine()
+    val (head, rest) = text.splitFirstWord()
     return if (rest.isNullOrBlank()) "- [$head]" else "- [$head] — ${rest.singleLine()}"
 }
 
