@@ -31,9 +31,8 @@ object LocalChr {
     const val CHR_TOOLS_REPO_URL = "https://gitlab.com/chromaway/core-tools/chromia-cli-tools.git"
     const val CHR_TOOLS_DIR = "chromia-cli-tools-local"
 
-    // The branches carry the Rell 0.16 API fixes the released chromia-cli / -tools jars lack.
-    const val GIT_BRANCH = "update-rell-0.16.0-snapshot"
-    const val CHR_TOOLS_BRANCH = "update-rell-0.16.0-snapshot"
+    const val GIT_BRANCH = "dev"
+    const val CHR_TOOLS_BRANCH = "dev"
     const val CHR_TOOLS_VERSION = "dev" // value of <revision> in chromia-cli-tools/pom.xml
 
     private val GIT_TIMEOUT: Duration = Duration.ofMinutes(5)
