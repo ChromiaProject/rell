@@ -17,17 +17,16 @@ import org.testcontainers.containers.Network
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.MountableFile
-import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
+import kotlin.io.path.toPath
 
 @Testcontainers
 @Execution(ExecutionMode.SAME_THREAD)
 class PythonCodegenITTest {
-
     @Test
     fun `integration test project uses latest postchain-client-py`() {
         val latest = fetchLatestPyPiVersion("postchain-client-py")
@@ -51,7 +50,7 @@ class PythonCodegenITTest {
         @BeforeAll
         @JvmStatic
         fun setup() {
-            val projectRootTestResources =  File(this::class.java.getResource("/integration_test_project")!!.toURI())
+            val projectRootTestResources = this::class.java.getResource("/integration_test_project")!!.toURI().toPath()
             val projectRellPath = "$projectRootTestResources/rell"
             val projectFrontendPath = "$projectRootTestResources/frontend/python"
 
@@ -123,10 +122,8 @@ class PythonCodegenITTest {
         expected(errorMessage)
     }
 
-    private fun readClasspathResourceText(path: String): String {
-        val url = checkNotNull(this::class.java.getResource(path)) { "$path not found on test classpath" }
-        return File(url.toURI()).readText()
-    }
+    private fun readClasspathResourceText(path: String): String =
+        checkNotNull(this::class.java.getResource(path)) { "$path not found on test classpath" }.readText()
 
     private fun parsePinnedRequirement(requirementsTxt: String, packageName: String): String {
         val regex = """(?m)^\s*${Regex.escape(packageName)}==([0-9]+\.[0-9]+\.[0-9]+)\s*$""".toRegex()

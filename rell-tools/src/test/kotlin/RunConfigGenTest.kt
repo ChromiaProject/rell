@@ -13,6 +13,7 @@ import net.postchain.rell.base.testutils.GtvTestUtils
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.unwrap
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.tools.runcfg.MapGeneralDir
 import net.postchain.rell.tools.runcfg.RellRunConfigGenerator
 import net.postchain.rell.tools.runcfg.RellRunConfigParams
 import kotlin.test.*

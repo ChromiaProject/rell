@@ -7,7 +7,6 @@ package net.postchain.rell.tools.runcfg
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import net.postchain.rell.base.utils.DirFile
 import net.postchain.rell.tools.RellBaseCommand
 import net.postchain.rell.tools.RellToolsLogUtils
 import net.postchain.rell.tools.RellToolsUtils
@@ -60,7 +59,7 @@ private class RellRunConfigGenCommand : RellRunConfigCommand("RellRunConfigGen")
             val javaFile = outputDir / path
             val dir = javaFile.parent
             dir.createDirectories()
-            file.write(javaFile.toFile())
+            file.writeTo(javaFile.pathString)
         }
     }
 

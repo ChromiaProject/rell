@@ -12,7 +12,15 @@ import net.postchain.rell.base.utils.ide.IdeFilePath
 import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.base.utils.toImmMap
 import java.io.File
+import java.nio.file.Path
 import java.util.*
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
+import kotlin.io.path.readText
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 
 class IdeSourcePathFilePath(val path: C_SourcePath): IdeFilePath() {
     override fun equals(other: Any?) = other is IdeSourcePathFilePath && path == other.path
@@ -65,14 +73,13 @@ abstract class C_SourceDir {
         }
 
         @JvmStatic
-        fun diskDir(dir: File): C_SourceDir {
-            return C_CachedSourceDir(C_DiskSourceDir(dir))
-        }
+        fun diskDir(dir: File): C_SourceDir = C_CachedSourceDir(C_DiskSourceDir(dir))
 
         @JvmStatic
-        fun uncachedDiskDir(dir: File): C_SourceDir {
-            return C_DiskSourceDir(dir)
-        }
+        fun diskDir(dir: Path): C_SourceDir = C_CachedSourceDir(C_NioSourceDir(dir))
+
+        @JvmStatic
+        fun uncachedDiskDir(dir: File): C_SourceDir = C_DiskSourceDir(dir)
     }
 }
 
@@ -174,13 +181,8 @@ private class C_DiskSourceDir(private val dir: File): C_SourceDir() {
         return if (file != null && file.isFile) C_DiskSourceFile(file, path) else null
     }
 
-    override fun dirs(path: C_SourcePath): List<String> {
-        return members(path) { it.isDirectory }
-    }
-
-    override fun files(path: C_SourcePath): List<String> {
-        return members(path) { it.isFile }
-    }
+    override fun dirs(path: C_SourcePath): List<String> = members(path) { it.isDirectory }
+    override fun files(path: C_SourcePath): List<String> = members(path) { it.isFile }
 
     private fun members(path: C_SourcePath, filter: (File) -> Boolean): List<String> {
         val file = toFile(path)
@@ -209,6 +211,50 @@ private class C_DiskSourceDir(private val dir: File): C_SourceDir() {
         }
 
         override fun readText() = file.readText()
+    }
+}
+
+private class C_NioSourceDir(private val dir: Path): C_SourceDir() {
+    override fun dir(path: C_SourcePath): Boolean {
+        val file = toPath(path)
+        return file != null && file.isDirectory()
+    }
+
+    override fun file(path: C_SourcePath): C_SourceFile? {
+        val file = toPath(path)
+        return if (file != null && file.isRegularFile()) NioSourceFile(file, path) else null
+    }
+
+    override fun dirs(path: C_SourcePath): List<String> = members(path) { it.isDirectory() }
+    override fun files(path: C_SourcePath): List<String> = members(path) { it.isRegularFile() }
+
+    private inline fun members(path: C_SourcePath, filter: (Path) -> Boolean): List<String> {
+        val files = toPath(path)?.listDirectoryEntries().orEmpty()
+        return files.filter(filter).map { it.name }.sorted()
+    }
+
+    private fun toPath(path: C_SourcePath): Path? {
+        var curFile = dir
+        for (part in path.parts) {
+            if (!curFile.isDirectory()) return null
+            val files = curFile.listDirectoryEntries().map { it.name }
+            if (part !in files) return null
+            curFile = curFile.resolve(part)
+        }
+        return curFile
+    }
+
+    private class NioSourceFile(private val path: Path, private val sourcePath: C_SourcePath): C_SourceFile() {
+        private val idePath: IdeFilePath = IdeSourcePathFilePath(sourcePath)
+
+        override fun idePath() = idePath
+
+        override fun readAst(version: R_LangVersion): S_RellFile {
+            val text = readText()
+            return C_Parser.parse(sourcePath, idePath, text, version)
+        }
+
+        override fun readText() = path.readText()
     }
 }
 
@@ -264,13 +310,11 @@ private class C_CachedSourceDir(private val sourceDir: C_SourceDir): C_SourceDir
     private fun lookup(path: C_SourcePath): CacheEntry = cache.getOrPut(path) { CacheEntry() }
 
     private class C_CachedSourceFile(private val file: C_SourceFile): C_SourceFile() {
-        private val idePath = CachedField { file.idePath() }
-        private val text = CachedField { file.readText() }
+        private val idePath by CachedField { file.idePath() }
+        private val text by CachedField { file.readText() }
         private val astMap = mutableMapOf<R_LangVersion, CachedField<S_RellFile>>()
 
-        override fun idePath(): IdeFilePath {
-            return idePath.get()
-        }
+        override fun idePath(): IdeFilePath = idePath
 
         override fun readAst(version: R_LangVersion): S_RellFile {
             val field = astMap.getOrPut(version) {
@@ -279,11 +323,9 @@ private class C_CachedSourceDir(private val sourceDir: C_SourceDir): C_SourceDir
             return field.get()
         }
 
-        override fun readText(): String {
-            return text.get()
-        }
+        override fun readText(): String = text
 
-        private class CachedField<T>(private val f: () -> T) {
+        private class CachedField<T>(private val f: () -> T): ReadOnlyProperty<Any?, T> {
             private var value: T? = null
             private var error: Exception? = null
 
@@ -307,6 +349,8 @@ private class C_CachedSourceDir(private val sourceDir: C_SourceDir): C_SourceDir
                     throw e
                 }
             }
+
+            override fun getValue(thisRef: Any?, property: KProperty<*>): T = get()
         }
     }
 

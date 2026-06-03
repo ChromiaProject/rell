@@ -12,7 +12,9 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.runtime.PostchainGtvUtils
-import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.Bytes32
+import net.postchain.rell.base.utils.Bytes33
+import net.postchain.rell.base.utils.toBytes
 import java.nio.file.Path
 import kotlin.io.path.absolute
 import kotlin.io.path.pathString
@@ -94,11 +96,10 @@ object RellRunConfigGenerator {
             sourceVersion: R_LangVersion,
             unitTest: Boolean
     ): RellPostAppCliConfig {
-        val cSourceDir = C_SourceDir.diskDir(sourceDir.toFile())
+        val cSourceDir = C_SourceDir.diskDir(sourceDir)
 
         val configDir = runConfFile.absolute().parent
-        val generalConfigDir = DiskGeneralDir(configDir.toFile())
-        val params = RellRunConfigParams(cSourceDir, generalConfigDir, sourceVersion, unitTest)
+        val params = RellRunConfigParams(cSourceDir, PathGeneralDir(configDir), sourceVersion, unitTest)
 
         val runConfText = runConfFile.readText()
         val config = generate(RellCliEnv.DEFAULT, params, runConfFile.pathString, runConfText)

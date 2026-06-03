@@ -5,7 +5,8 @@
 package net.postchain.rell.base.utils
 
 import java.io.File
-import java.util.*
+import kotlin.io.path.Path
+import kotlin.io.path.readText
 import kotlin.math.max
 import kotlin.math.min
 
@@ -79,7 +80,7 @@ object CommonUtils {
             checkNotNull(resource) { "File not found: $resourcePath" }
             resource.readText()
         } else {
-            File(path).readText()
+            Path(path).readText()
         }
     }
 

@@ -76,7 +76,7 @@ object RellToolsUtils: KLogging() {
 
     fun getTarget(sourceDir: String?, module: String): RellCliTarget {
         val sourcePath = checkDir(sourceDir ?: ".").absolute()
-        val cSourceDir = C_SourceDir.diskDir(sourcePath.toFile())
+        val cSourceDir = C_SourceDir.diskDir(sourcePath)
         val moduleName = checkModule(module)
         return RellCliTarget(sourcePath.toFile(), cSourceDir, listOf(moduleName))
     }

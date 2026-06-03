@@ -12,6 +12,8 @@ import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.mapToImmList
 import java.io.File
+import kotlin.io.path.Path
+import kotlin.io.path.isDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -67,7 +69,7 @@ class CliSnippetsTest {
 
     private fun chkModules(modSel: C_CompilerModuleSelection) {
         // When run from IntelliJ as "All_tests", the working directory is the repository root, not the sub-project.
-        val dir = listOf(".", "..", "../..").map { File(it, "work/testproj/src") }.find { it.isDirectory }
+        val dir = listOf(".", "..", "../..").map { Path(it).resolve("work/testproj/src") }.find { it.isDirectory() }
         checkNotNull(dir) { "Sources not found: ${File(".").absolutePath}" }
         val sourceDir = C_SourceDir.diskDir(dir)
         val res = RellTestUtils.compileApp(sourceDir, modSel, C_CompilerOptions.DEFAULT)

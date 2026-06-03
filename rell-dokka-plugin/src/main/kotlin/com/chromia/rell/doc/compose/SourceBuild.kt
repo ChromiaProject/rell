@@ -350,7 +350,7 @@ internal class SourceBuild private constructor(
             val (apiRes, _) = RellApiBaseInternal.compileApp(
                 config,
                 options,
-                C_SourceDir.diskDir(projectRoot.toFile()),
+                C_SourceDir.diskDir(projectRoot),
                 moduleNames,
                 immListOf(),
             )

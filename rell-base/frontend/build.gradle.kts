@@ -27,6 +27,12 @@ tasks.compileKotlin {
     dependsOn(tasks.generateGrammarSource)
 }
 
+// ANTLR-generated parser/lexer sources carry no doc comments; keep them out of Javadoc
+// so they don't flood the build with "no comment" / "default constructor" warnings.
+tasks.javadoc {
+    exclude("net/postchain/rell/base/compiler/parser/antlr/**")
+}
+
 tasks.generateGrammarSource {
     arguments = arguments + listOf("-visitor", "-long-messages")
     packageName = "net.postchain.rell.base.compiler.parser.antlr"

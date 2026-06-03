@@ -8,8 +8,11 @@ import net.postchain.rell.tools.cli.CliTestUtils.createMatcher
 import net.postchain.rell.tools.cli.CliTestUtils.runCommand
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.div
 import kotlin.io.path.isDirectory
+import kotlin.io.path.isExecutable
+import kotlin.io.path.isRegularFile
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail
@@ -87,14 +90,14 @@ internal object CliTestUtils {
         if (script in OVERRIDABLE_SCRIPTS) {
             val override = System.getProperty(EXECUTABLE_PROPERTY) ?: System.getenv(EXECUTABLE_ENV_VAR)
             if (override != null) {
-                val file = java.io.File(override)
-                check(file.isFile) {
+                val file = Path(override)
+                check(file.isRegularFile()) {
                     "$EXECUTABLE_PROPERTY is set to '$override' but no file exists at that path"
                 }
-                check(file.canExecute()) {
+                check(file.isExecutable()) {
                     "$EXECUTABLE_PROPERTY is set to '$override' but the file is not executable"
                 }
-                return listOf(file.absolutePath) + args
+                return listOf(file.absolutePathString()) + args
             }
         }
         return listOf(JAVA_BIN, "-cp", CLASSPATH, mainClass) + args

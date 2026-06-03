@@ -47,7 +47,7 @@ object LocalChr {
      * freshly published Rell jars into the chr distribution. Assumes Rell [rellVersion] is already
      * in ~/.m2 (the caller task depends on `:publishRellToMavenLocal`). Returns the chr binary path.
      */
-    fun ensureChr(
+    @OptIn(ExperimentalPathApi::class) fun ensureChr(
         repoRoot: Path,
         rellVersion: String,
         rebuild: Boolean = false,
@@ -57,8 +57,8 @@ object LocalChr {
 
         if (rebuild) {
             log("Rebuild requested — removing $CHR_REPO_DIR and $CHR_TOOLS_DIR")
-            (repoRoot / CHR_REPO_DIR).toFile().deleteRecursively()
-            (repoRoot / CHR_TOOLS_DIR).toFile().deleteRecursively()
+            (repoRoot / CHR_REPO_DIR).deleteRecursively()
+            (repoRoot / CHR_TOOLS_DIR).deleteRecursively()
         }
 
         log("Syncing chromia-cli repositories…")

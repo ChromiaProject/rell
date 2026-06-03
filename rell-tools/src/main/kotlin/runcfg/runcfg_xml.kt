@@ -5,7 +5,6 @@
 package net.postchain.rell.tools.runcfg
 
 import net.postchain.rell.api.base.RellCliBasicException
-import net.postchain.rell.base.utils.GeneralDir
 import net.postchain.rell.base.utils.checkEquals
 import net.postchain.rell.base.utils.checkNull
 import org.w3c.dom.Document
@@ -285,7 +284,7 @@ class RellXmlAttrsParser(private val elem: RellXmlElement) {
         return parseType(key, type, s, parser, checker)
     }
 
-    private fun <T> parseType(
+    private inline fun <T> parseType(
         key: String,
         type: String?,
         value: String,
