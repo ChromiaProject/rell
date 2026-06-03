@@ -12,7 +12,6 @@ import java.io.File
 import java.net.URI
 
 class RellDokkaPluginConfigurationBuilderTest {
-
     @Test
     fun `SYSTEM builder is system mode with no project root`() {
         val cfg = RellDokkaPluginConfigurationBuilder.SYSTEM.targetFolder(File("out")).build()

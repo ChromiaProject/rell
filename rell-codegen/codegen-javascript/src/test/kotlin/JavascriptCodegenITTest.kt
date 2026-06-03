@@ -18,12 +18,13 @@ import org.testcontainers.containers.Network
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.MountableFile
-import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
+import kotlin.io.path.readText
+import kotlin.io.path.toPath
 
 @Testcontainers
 @Execution(ExecutionMode.SAME_THREAD)
@@ -52,7 +53,7 @@ class JavascriptCodegenITTest {
         @BeforeAll
         @JvmStatic
         fun setup() {
-            val projectRootTestResources =  File(this::class.java.getResource("/integration_test_project")!!.toURI())
+            val projectRootTestResources =  this::class.java.getResource("/integration_test_project")!!.toURI().toPath()
             val projectRellPath = "$projectRootTestResources/rell"
             val projectFrontendPath = "$projectRootTestResources/frontend/javascript"
 
@@ -128,7 +129,7 @@ class JavascriptCodegenITTest {
 
     private fun readClasspathResourceText(path: String): String {
         val url = checkNotNull(this::class.java.getResource(path)) { "$path not found on test classpath" }
-        return File(url.toURI()).readText()
+        return url.toURI().toPath().readText()
     }
 
     private fun parseNpmDependencySpecFromPackageJson(packageJson: String, packageName: String): String {

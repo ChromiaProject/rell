@@ -10,6 +10,8 @@ import net.postchain.rell.codegen.SingleFileRellApp
 import net.postchain.rell.codegen.deps.CamelCaseClassName
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
 import kotlin.test.assertNotNull
 
 internal class KotlinDocGeneratorTest {
@@ -42,7 +44,7 @@ internal class KotlinDocGeneratorTest {
 
     @Test
     fun entityWithoutDoc() {
-        println(java.io.File(".").absoluteFile.toURI().path)
+        println(Path(".").absolutePathString())
         val entity = assertNotNull(testModule.entities["not_doc_entity"])
         val formatted = KotlinEntity(CamelCaseClassName.fromRellDefinition(entity), entity).format()
         assertThat(formatted).contains("""

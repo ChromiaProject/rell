@@ -10,6 +10,7 @@ import net.postchain.rell.base.utils.ide.IdeCodeSnippet
 import java.nio.file.Files
 import java.util.stream.Stream
 import kotlin.io.path.extension
+import kotlin.io.path.inputStream
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.toPath
 
@@ -32,7 +33,7 @@ internal object TestCaseSnippets {
 
         return Files.walk(testDataFolder)
             .filter { it.isRegularFile() && it.extension == "json" }
-            .flatMap { mapper.readValue<List<Map<String, Any>>>(it.toFile()).stream() }
+            .flatMap { mapper.readValue<List<Map<String, Any>>>(it.inputStream()).stream() }
             .map(IdeCodeSnippet::deserializeFromRaw)
     }
 }

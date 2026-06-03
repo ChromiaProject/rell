@@ -27,12 +27,14 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.MountableFile
 import java.io.File
 import java.nio.file.Files
+import kotlin.io.path.div
 import kotlin.io.path.name
+import kotlin.io.path.writeText
 
 @Testcontainers
 internal class PythonCodeGeneratorTest {
 
-    private val rellCliEnv = CachedRellCliEnv(RellCliEnv.DEFAULT, true, true)
+    private val rellCliEnv = CachedRellCliEnv(RellCliEnv.DEFAULT, cacheOutput = true, cacheError = true)
     private val generator = CodeGenerator(PythonDocumentFactory(), object: PythonCodeGeneratorConfig {}, rellCliEnv)
 
     companion object {
@@ -62,7 +64,7 @@ internal class PythonCodeGeneratorTest {
         val target = Files.createTempDirectory("rell-codegen")
         DocumentSaver(target.toFile()).saveDocuments(documents)
 
-        with(File(target.toFile(), "mypy.ini")) {
+        with(target / "mypy.ini") {
             writeText("""
                 [mypy]
                 python_version = 3.11
