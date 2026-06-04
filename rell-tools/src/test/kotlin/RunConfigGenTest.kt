@@ -13,9 +13,12 @@ import net.postchain.rell.base.testutils.GtvTestUtils
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.unwrap
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.tools.runcfg.BinaryDirFile
+import net.postchain.rell.tools.runcfg.DirFile
 import net.postchain.rell.tools.runcfg.MapGeneralDir
 import net.postchain.rell.tools.runcfg.RellRunConfigGenerator
 import net.postchain.rell.tools.runcfg.RellRunConfigParams
+import net.postchain.rell.tools.runcfg.TextDirFile
 import kotlin.test.*
 
 class RunConfigGenTest {
@@ -175,7 +178,7 @@ class RunConfigGenTest {
             </dict>
         """)
 
-        assertEquals(setOf<String>(), files.keys)
+        assertEquals(setOf(), files.keys)
     }
 
     @Test fun testAddSignersDefault() {
@@ -212,7 +215,7 @@ class RunConfigGenTest {
             </dict>
         """)
 
-        assertEquals(setOf<String>(), files.keys)
+        assertEquals(setOf(), files.keys)
     }
 
     @Test fun testAddSignersExisting() {
@@ -254,7 +257,7 @@ class RunConfigGenTest {
             </dict>
         """)
 
-        assertEquals(setOf<String>(), files.keys)
+        assertEquals(setOf(), files.keys)
     }
 
     @Test fun testModule() {
@@ -541,7 +544,7 @@ class RunConfigGenTest {
             </dict>
         """)
 
-        assertEquals(setOf<String>(), files.keys)
+        assertEquals(setOf(), files.keys)
     }
 
     @Test fun testDependencyWithGreaterIid() {
