@@ -23,6 +23,6 @@ internal class CodeGenCommandTest {
         assertThat(dir.useDirectoryEntries { it.count() }).equals(1)
         CodeGenCommand().parse(listOf(dir.pathString, "${dir.pathString}/target", "--module", "test", "--kotlin", "--package", "com.example"))
         assertThat(dir.useDirectoryEntries { it.count() }).equals(2)
-        assertThat((dir / "target/test").listDirectoryEntries()).containsAtLeast("test.kt")
+        assertThat((dir / "target/test").listDirectoryEntries().map { it.name }).containsAtLeast("test.kt")
     }
 }
