@@ -33,16 +33,11 @@ val testRoundTrip by tasks.registering(Test::class) {
     shouldRunAfter(tasks.test)
 }
 
-// Detect whether the Gradle daemon itself is running on a GraalVM-flavoured JDK.
-// We use the daemon JVM directly (no toolchain pin) because:
-//   - Gradle's vendor-matching auto-detection is fragile across GraalVM distributions
-//     (Oracle GraalVM reports `java.vendor=Oracle Corporation`, so `matching("GraalVM")`
-//     misses it), and there's no toolchain download repository configured.
-//   - Pinning a `javaLauncher` Provider that fails to resolve breaks configuration cache
-//     serialization, not just task execution.
-// On non-GraalVM daemons (e.g. Temurin on a dev laptop) we skip the task rather than
-// crash — `-XX:+UseJVMCINativeLibrary` is fatal without libgraal.
-val runningOnGraalVm = arrayOf("java.vm.name", "java.vendor.version", "java.runtime.name")
+// Detect whether the Gradle daemon itself is running on a GraalVM
+// We use the daemon JVM directly (no toolchain pin) because Gradle's vendor-matching auto-detection is fragile across
+// GraalVM distributions (Oracle GraalVM reports `java.vendor=Oracle Corporation`, so `matching("GraalVM")` misses it),
+// and there's no toolchain download repository configured.
+val runningOnGraalVM = arrayOf("java.vm.name", "java.vendor.version", "java.runtime.name")
     .any { System.getProperty(it, "").contains("GraalVM", ignoreCase = true) }
 
 val testTruffle by tasks.registering(Test::class) {
@@ -54,9 +49,9 @@ val testTruffle by tasks.registering(Test::class) {
     systemProperty("rell.test.roundtrip", "false")
     systemProperty("rell.test.backend", "truffle")
 
-    enabled = runningOnGraalVm
+    enabled = runningOnGraalVM
 
-    if (runningOnGraalVm) {
+    if (runningOnGraalVM) {
         // Force GraalVM Truffle runtime to engage instead of fallback Interpreted runtime
         jvmArgs(
             "-XX:+UnlockExperimentalVMOptions",
@@ -119,6 +114,7 @@ gitProperties {
         "git.dirty",
         "git.build.version",
     )
+
     for ((k, v) in gitCustomProperties) {
         customProperty(k, v)
     }

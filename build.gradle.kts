@@ -95,6 +95,7 @@ subprojects {
                 "TESTCONTAINERS_HOST_OVERRIDE",
                 "TESTCONTAINERS_RYUK_DISABLED",
                 "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE",
+                "TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX",
             ).forEach { key ->
                 val value = localProperties.getProperty(key) ?: providers.environmentVariable(key).orNull
                 if (value != null) environment(key, value)

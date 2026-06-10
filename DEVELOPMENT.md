@@ -21,7 +21,7 @@ Rell's two key features are blockchain integration and SQL-like capabilities:
 1. **[IntelliJ IDEA](https://www.jetbrains.com/idea/)** - The recommended IDE
 2. **JDK 21** - The project requires Java Development Kit 21 (can be managed by IDEA)
 3. **[PostgreSQL](https://www.postgresql.org/download/)** (`psql`) - For setting up PostgreSQL for core module tests
-4. **[Docker](https://docs.docker.com/get-started/get-docker/)** - For running PostgreSQL in an isolated container and for Testcontainers-based integration tests
+4. **[Docker](https://docs.docker.com/get-started/get-docker/)** - For running PostgreSQL in an isolated container and for Testcontainers-based integration tests (on macOS, Colima and Apple Containers also work &mdash; see [Testcontainers](#testcontainers))
 
 ## Project Structure
 
@@ -96,11 +96,11 @@ In IntelliJ IDEA, use the run configuration `All_tests` (Gradle `check`).
 
 Some integration tests use [Testcontainers](https://www.testcontainers.org/) to spin up disposable Docker containers. Testcontainers requires a working Docker daemon. On Linux with Docker Engine installed natively this works out of the box.
 
-#### macOS: Using Colima Instead of Docker Desktop
+#### macOS: Alternatives to Docker Desktop
 
-On macOS, [Colima](https://github.com/abiosoft/colima) is a lightweight alternative to Docker Desktop.
+On macOS, the test suite is verified to work with two lightweight alternatives to Docker Desktop: [Colima](https://github.com/abiosoft/colima) and [Apple Containers](https://github.com/apple/container) with [socktainer](https://github.com/socktainer/socktainer). Both expose their Docker socket at a non-default path, so you need to tell the Gradle build where to find it via `local.properties` in the project root.
 
-Because Colima exposes its Docker socket at a non-default path, you need to tell both Testcontainers and the Gradle build where to find it.
+**Option A: Colima**
 
 **1. Configure Testcontainers globally** &mdash; create or edit `~/.testcontainers.properties`:
 
@@ -111,13 +111,39 @@ ryuk.disabled=true
 
 `ryuk.disabled=true` avoids a common issue where the Ryuk resource-reaper container fails to start under Colima.
 
-**2. Forward Docker config to Gradle test JVMs** &mdash; add to `local.properties` in the project root:
+**2. Forward Docker config to Gradle test JVMs** &mdash; add to `local.properties`:
 
 ```properties
 DOCKER_HOST=unix://${HOME}/.colima/default/docker.sock
 TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 TESTCONTAINERS_RYUK_DISABLED=true
 ```
+
+**Option B: Apple Containers + socktainer**
+
+Apple's native `container` runtime speaks XPC rather than the Docker API, so Testcontainers talks to it through [socktainer](https://github.com/socktainer/socktainer), a bridge that serves the Docker REST API on a Unix socket.
+
+**1. Install and start both:**
+
+```shell
+brew install container socktainer/tap/socktainer
+container system start
+socktainer   # serves the Docker API at ~/.socktainer/container.sock
+```
+
+The socktainer version must match the installed Apple `container` version &mdash; a mismatch causes XPC errors when starting containers.
+
+**2. Forward Docker config to Gradle test JVMs** &mdash; add to `local.properties`:
+
+```properties
+DOCKER_HOST=unix://${HOME}/.socktainer/container.sock
+TESTCONTAINERS_RYUK_DISABLED=true
+TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX=docker.io/library/
+```
+
+Ryuk must be disabled because socktainer cannot bind-mount its socket into containers; without the reaper, leftover test containers can be cleaned up with `container ls` / `container rm`.
+
+`TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX` is required because socktainer reports image tags fully qualified (`docker.io/library/postgres:...`), so without the prefix Testcontainers never matches locally pulled images and re-pulls on every run &mdash; and socktainer's pull progress stream is not understood by docker-java, which fails the run with `Could not pull image: Image digest: sha256:...`. Pre-pull the images used by tests with `container image pull <image>`.
 
 ### Grammar Tests
 
@@ -158,6 +184,7 @@ The following variables are forwarded to test JVMs (via `local.properties` or th
 | `TESTCONTAINERS_HOST_OVERRIDE`          | Override the host Testcontainers connects to      |
 | `TESTCONTAINERS_RYUK_DISABLED`          | Disable the Ryuk resource reaper (`true`/`false`) |
 | `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE` | Override the socket path inside the container     |
+| `TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX`  | Prefix prepended to Docker Hub image names        |
 
 ### Gradle Project Properties
 
