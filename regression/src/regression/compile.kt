@@ -13,21 +13,16 @@ import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.time.Duration
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.*
 
-// 30 min covers install + build + test for the heaviest typical project (ft4-lib has 8+ test
-// modules spread across two test chains). Individual projects can override this via
-// `ProjectSpec.timeoutMinutes` when their suites legitimately need more — see mna-blockchain.
 private val DEFAULT_PER_PROJECT_TIMEOUT: Duration = Duration.ofMinutes(30)
 
 private fun ProjectSpec.stepTimeout(): Duration =
     timeoutMinutes?.let { Duration.ofMinutes(it.toLong()) } ?: DEFAULT_PER_PROJECT_TIMEOUT
 
-// Pinned to the digest the .gitlab-ci.yml setup script uses for its DIND Postgres, so the
-// regression toolkit exercises chr against the same server version CI mainline tests use.
-private val POSTGRES_IMAGE = DockerImageName.parse(
-    "postgres:16.14-alpine3.23" +
-        "@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416",
+private val POSTGRES_IMAGE: DockerImageName = DockerImageName.parse(
+    "postgres:16.14-alpine3.23@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416",
 )
 
 private const val POSTGRES_USER = "postchain"
@@ -140,7 +135,7 @@ internal fun backendWorkdir(workdir: Path, project: ProjectSpec, backend: Execut
 // Without this, the (project, INTERPRETER) and (project, TRUFFLE) tests would race to populate
 // `workdir/<project>/src/lib/<dep>/` (git clones into the shared path). Once installed, the
 // sentinel file `.chr-install-sentinel-<sha>` short-circuits subsequent backends in O(1).
-private val masterInstallLocks = java.util.concurrent.ConcurrentHashMap<String, Any>()
+private val masterInstallLocks = ConcurrentHashMap<String, Any>()
 
 /**
  * Run `chr install` on the master clone exactly once per project per JVM lifetime, so the
@@ -215,7 +210,7 @@ private fun ensureMasterInstalled(
  * Used to bring the per-backend working copy back in sync with the master clone before each run,
  * discarding chr install artifacts from a prior sweep.
  */
-@OptIn(kotlin.io.path.ExperimentalPathApi::class)
+@OptIn(ExperimentalPathApi::class)
 private fun refreshBackendCopy(source: Path, dest: Path) {
     dest.parent?.createDirectories()
     if (dest.exists()) {
