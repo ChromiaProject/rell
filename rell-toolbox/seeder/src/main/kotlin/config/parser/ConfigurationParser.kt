@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.config.parser
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.networknt.schema.ValidationMessage
+import com.networknt.schema.Error
 import net.postchain.rell.toolbox.seeder.config.Configuration
 import net.postchain.rell.toolbox.seeder.config.ModuleConfig
 import net.postchain.rell.toolbox.seeder.config.YamlSchemaValidator
@@ -75,5 +75,5 @@ object ResourceLoader {
     }
 }
 
-class ConfigurationValidationException(message: String, validationErrors: Set<ValidationMessage> = emptySet()) :
+class ConfigurationValidationException(message: String, validationErrors: List<Error> = emptyList()) :
     RuntimeException(message)

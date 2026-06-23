@@ -126,6 +126,8 @@ tasks.generateGitProperties {
     }
 }
 
+tasks.sourcesJar { dependsOn(tasks.generateGitProperties) }
+
 val generateDependencyList by tasks.registering {
     group = "build"
     description = "Generates dependency list file"

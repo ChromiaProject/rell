@@ -1,19 +1,19 @@
 [versions]
 kotlin = "2.3.0"
-postchain = "3.49.12"
+postchain = "3.49.15"
 kotlinx-benchmark = "0.4.17"
 async-profiler = "4.4"
 
 flatbuffers = "25.2.10"
 truffle = "25.0.3"
 
-antlr = "4.13.1"
+antlr = "4.13.2"
 better-parse = "0.4.4"
-kotlinx-collections-immutable = "0.4.0"
-jline = "4.1.2"
-jooq = "3.21.4"
+kotlinx-collections-immutable = "0.5.0"
+jline = "4.2.1"
+jooq = "3.21.6"
 clikt = "5.1.0"
-jackson = "2.21.3"
+jackson = "2.22.0"
 slf4j = "2.0.18"
 
 assertk = "0.28.1"
@@ -24,29 +24,29 @@ commons-collections4 = "4.5.0"
 ec4j = "1.2.0"
 fury-core = "0.4.1"
 java-diff-utils = "4.17"
-json-schema-validator = "1.5.6"
-koin = "3.5.0"
-log4j = "2.20.0"
-lsp4j = "0.23.1"
-mockk = "1.13.8"
-oshai = "5.1.0"
-sentry-log4j2 = "8.38.0"
-serpro69-faker = "1.16.0"
-system-stubs-jupiter = "2.1.7"
+json-schema-validator = "3.0.5"
+koin = "4.2.2"
+log4j = "2.26.0"
+lsp4j = "0.24.0"
+mockk = "1.14.11"
+oshai = "8.0.4"
+sentry-log4j2 = "8.44.1"
+serpro69-faker = "1.16.1"
+system-stubs-jupiter = "2.1.8"
 
 # rell-codegen dependencies
 commons-text = "1.15.0"
 
 # rell-dokka-plugin dependencies
 kotlinx-html = "0.12.0"
-commonmark = "0.28.0"
+commonmark = "0.29.0"
 
 # Plugins
 binary-compatibility-validator = "0.18.1"
 dependency-check = "12.2.2"
-gradle-git-properties = "3.0.2"
-sentry = "6.4.0"
-shadow = "9.4.1"
+gradle-git-properties = "4.0.1"
+sentry = "6.12.0"
+shadow = "9.4.2"
 
 [libraries]
 postchain-bom = { module = "net.postchain:postchain", version.ref = "postchain" }
@@ -60,7 +60,7 @@ flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version
 jline = { module = "org.jline:jline", version.ref = "jline" }
 jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm", version.ref = "kotlinx-collections-immutable" }
-postchain-client = { module = "net.postchain.client:postchain-client", version = "3.39.1" }
+postchain-client = { module = "net.postchain.client:postchain-client", version = "3.39.4" }
 
 # common testing
 assertk = { module = "com.willowtreeapps.assertk:assertk-jvm", version.ref = "assertk" }

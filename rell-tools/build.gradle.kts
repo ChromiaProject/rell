@@ -59,6 +59,9 @@ tasks.generateGitProperties {
     for ((k, v) in gitCustomProperties) inputs.property("customProperty.$k", v)
 }
 
+// git-properties 4.x writes into a shared resources dir that sourcesJar also consumes; declare the dependency.
+tasks.sourcesJar { dependsOn(tasks.generateGitProperties) }
+
 val generateDependencyList by tasks.registering {
     group = LifecycleBasePlugin.BUILD_GROUP
     description = "Generates dependency list file"

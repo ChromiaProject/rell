@@ -121,7 +121,7 @@ class ConfigParserTextTest {
         val exception = assertThrows<ConfigurationValidationException> {
             configParser.parseConfiguration(configFilePath, schema)
         }
-        assertThat(exception.message!!).contains("\$.article.attributes.title.min: must have a minimum value of 1")
+        assertThat(exception.message!!).contains("/article/attributes/title/min: must have a minimum value of 1")
     }
 
     @Test

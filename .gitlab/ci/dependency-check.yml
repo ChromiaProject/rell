@@ -13,6 +13,13 @@ dependency-check:
   stage: dependency-check
   tags: [ saas-linux-medium-amd64 ]
   interruptible: true
+  # The NVD API is frequently flaky — transient HTTP 503/429 responses abort the data update
+  # (and leave the H2 cache mid-compaction, surfacing as an org.h2.mvstore ClosedChannelException
+  # cascade). dependency-check treats a failed update as fatal by design (stale vuln data is
+  # unsafe), so the only resilient option is to re-run and let a later attempt catch NVD healthy.
+  retry:
+    max: 2
+    when: script_failure
   rules:
     - if: $RUN_DEPENDENCY_CHECK == "true"
   # --no-parallel: dependencyCheckAggregate resolves every subproject's configurations from the

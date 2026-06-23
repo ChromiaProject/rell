@@ -67,8 +67,8 @@ class YamlSchemaValidatorTest {
         val validationMessages = validator.validate(yamlFile, moduleSchemaContent)
 
         assertThat(validationMessages).hasSize(1)
-        val firstMessage = validationMessages.map { it.message }.first()
-        assertThat(firstMessage).contains("\$.person.attributes.age.generator: does not have a value in the enumeration ")
+        val firstMessage = validationMessages.map { it.toString() }.first()
+        assertThat(firstMessage).contains("/person/attributes/age/generator: does not have a value in the enumeration ")
     }
 
     @Test

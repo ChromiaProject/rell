@@ -371,7 +371,7 @@ class ConfigParserRangeTest {
             configParser.parseConfiguration(configFilePath, schema)
         }
 
-        assertThat(res.message!!).contains("product.attributes.price.min: must be multiple of 1")
+        assertThat(res.message!!).contains("/product/attributes/price/min: must be multiple of 1")
     }
 
     @Test
@@ -455,7 +455,7 @@ class ConfigParserRangeTest {
         }
         assertThat(
             res.message!!.contains(
-                "\$.product.attributes.stock.min: must be multiple of 1, \$.product.attributes.stock.max: must be multiple of 1"
+                "/product/attributes/stock/min: must be multiple of 1, /product/attributes/stock/max: must be multiple of 1"
             )
         ).isTrue()
     }
