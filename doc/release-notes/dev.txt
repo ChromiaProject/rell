@@ -1,1 +1,25 @@
 UNRELEASED NOTES
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Docs: Anonymous extension functions excluded from generated documentation
+
+The documentation generator no longer emits entries for anonymous @extend functions. An anonymous @extend body
+compiles to an internal function#N name that cannot be referenced from Rell code, so the generated entries were
+noise: they had no stable name to link to and no call site could ever use them. Named @extend functions are
+documented as before.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Docs: Layout fixes in generated documentation
+
+Two rendering fixes in the generated documentation site:
+
+- Numbered @see lists render as real ordered lists. Previously the leading "1." marker was mistaken for a link
+  label, producing a bogus [1.] link followed by a redundant em-dash.
+- Entity and struct fields without a doc comment no longer get the vertical gap that separates documented fields,
+  so undocumented fields read as consecutive source lines.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tools: Dependency updates
+
+Postchain has been upgraded from 3.49.12 to 3.49.15 (postchain-client from 3.39.1 to 3.39.4). No behavior changes
+are expected from the upgrade.
