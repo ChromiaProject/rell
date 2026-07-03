@@ -62,8 +62,6 @@ internal data class Doc_Function(
     val mountName: String? = null,
     /** Alias-only: the qualified name of the function this is an alias of. */
     val aliasOfQname: String? = null,
-    /** True for anonymous function (Rell `function#0`-style). */
-    val anonymous: Boolean = false,
     /** True when the parameters' positions show as `[name: T]` (M_ParamArity.ZERO_ONE). */
     val zeroOneArity: Boolean = false,
     /** True when this is a stdlib hidden function. */

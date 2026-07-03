@@ -263,6 +263,7 @@ main {
   padding: .25rem .55rem .25rem 1.3rem;
   border-radius: 4px;
   position: relative;
+  overflow-wrap: anywhere;
 }
 .sidebar nav .nav-pkg-summary:hover { background: var(--bg-alt); }
 .sidebar nav .nav-pkg-summary::-webkit-details-marker { display: none; }

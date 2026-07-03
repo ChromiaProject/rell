@@ -95,6 +95,8 @@ internal class SourceBuild private constructor(
         for ((local, d) in rModule.queries) routeDef(local, queryToDoc(d, moduleName))
 
         for (ext in analysis.extensionFunctionsByModule[moduleName].orEmpty()) {
+            // Anonymous `@extend` bodies compile to `function#N` — no referenceable name, so no doc entry.
+            if (ext.anonymous) continue
             val doc = extensionFunctionToDoc(ext) ?: continue
             val localPart = ext.qualifiedName
             routeDef(localPart, doc)
@@ -287,7 +289,6 @@ internal class SourceBuild private constructor(
             returnType = ext.resultType.takeUnless { it is R_UnitType }?.toDocType(),
             typeParams = emptyList(),
             extendTargetQname = targetQname,
-            anonymous = ext.anonymous,
         )
     }
 
