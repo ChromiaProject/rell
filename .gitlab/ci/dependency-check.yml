@@ -1,31 +1,61 @@
 # OWASP Dependency-Check aggregate report. Opt-in via the `RUN_DEPENDENCY_CHECK=true` pipeline
-# variable; runs on the medium runner because the heavy work is downloading NVD feeds, not
-# parallel test execution.
+# variable; runs on the medium runner because the heavy work is NVD data handling, not parallel
+# test execution.
 #
-# Requires the `NVD_API_KEY` CI/CD variable to be set (Settings → CI/CD → Variables; mark it
-# Masked and Protected). Without a key the NIST API rate-limits the job into HTTP 429 within a
-# few minutes and `dependencyCheckAggregate` fails with "Error updating the NVD Data".
-# Request a key at https://nvd.nist.gov/developers/request-an-api-key. The key is consumed by
-# build.gradle.kts via `providers.environmentVariable("NVD_API_KEY")`.
+# dependency-check does NOT talk to the NVD API directly here — every cold run used to spend
+# 30-60+ min downloading the CVE history through NIST's rate-limited, flaky endpoint (HTTP
+# 503/429 aborts, or the 1 h job timeout; the job never once succeeded that way). Instead the
+# job maintains a local NVD mirror with the Open Vulnerability Project's vulnz CLI in a
+# dedicated cache (incremental after the first seed), and dependency-check consumes it via
+# `nvd.datafeedUrl` as a file:// URL (wired through NVD_DATAFEED_URL in build.gradle.kts).
+#
+# Requires the `NVD_API_KEY` CI/CD variable (Settings → CI/CD → Variables; Masked + Protected):
+# vulnz still pulls from the NVD API to build/refresh the mirror, just resiliently and
+# incrementally. Request a key at https://nvd.nist.gov/developers/request-an-api-key.
 
 dependency-check:
   extends: .setup
   stage: dependency-check
   tags: [ saas-linux-medium-amd64 ]
   interruptible: true
-  # The NVD API is frequently flaky — transient HTTP 503/429 responses abort the data update
-  # (and leave the H2 cache mid-compaction, surfacing as an org.h2.mvstore ClosedChannelException
-  # cascade). dependency-check treats a failed update as fatal by design (stale vuln data is
-  # unsafe), so the only resilient option is to re-run and let a later attempt catch NVD healthy.
+  # A cold seed (empty nvd cache) downloads the full CVE history via vulnz and builds the H2
+  # database from scratch; warm runs are minutes. 2 h leaves headroom for the cold path, which
+  # used to blow the default 1 h timeout.
+  timeout: 2h
+  # The NVD API can still throw transient 503/429 at vulnz during the mirror refresh. The script
+  # wipes the mirror if vulnz fails (a partial download must never be cached), so a retry starts
+  # clean and lets a later attempt catch NVD healthy.
   retry:
     max: 2
     when: script_failure
   rules:
     - if: $RUN_DEPENDENCY_CHECK == "true"
+  cache:
+    # Shared Gradle cache (wrapper, module deps) — pull only, so this job never overwrites the
+    # archive the build/test jobs maintain (its push would lack their state, evicting it).
+    - key: "$CI_COMMIT_REF_SLUG"
+      fallback_keys: [ dev ]
+      paths: [ .gradle ]
+      policy: pull
+    # NVD mirror + dependency-check's H2 database (lives under GRADLE_USER_HOME =
+    # $CI_PROJECT_DIR/.gradle), private to this job so other jobs' pushes can't evict it.
+    # `when: always` keeps the expensive mirror even when the analysis itself fails (e.g. a new
+    # unsuppressed CVE with failBuildOnCVSS=0); vulnz failures wipe the mirror first, see above.
+    - key: dependency-check-nvd
+      paths:
+        - nvd-cache
+        - .gradle/dependency-check-data
+      when: always
+  variables:
+    VULNZ_VERSION: "9.0.4"
+    NVD_DATAFEED_URL: "file://$CI_PROJECT_DIR/nvd-cache/"
   # --no-parallel: dependencyCheckAggregate resolves every subproject's configurations from the
   # root project. With org.gradle.parallel=true (gradle.properties), Gradle 9 rejects that
   # cross-project resolution ("attempted without an exclusive lock").
-  script: [ "./gradlew $GRADLE_FLAGS_MEDIUM --no-configuration-cache --no-parallel dependencyCheckAggregate" ]
+  script:
+    - curl -fsSL "https://github.com/jeremylong/open-vulnerability-cli/releases/download/v${VULNZ_VERSION}/vulnz-${VULNZ_VERSION}.jar" -o /tmp/vulnz.jar
+    - java -Xmx2g -jar /tmp/vulnz.jar cve --cache --directory nvd-cache || { rm -rf nvd-cache; exit 1; }
+    - ./gradlew $GRADLE_FLAGS_MEDIUM --no-configuration-cache --no-parallel dependencyCheckAggregate
   artifacts:
     when: always
     paths: [ build/reports/dependency-check-report.* ]
