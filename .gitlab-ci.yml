@@ -1,89 +1,60 @@
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/user/application_security/sast/#available-cicd-variables
+# Secret Detection customization: https://docs.gitlab.com/user/application_security/secret_detection/pipeline/configure/
+# Dependency Scanning customization: https://docs.gitlab.com/user/application_security/dependency_scanning/dependency_scanning_sbom/#customizing-analyzer-behavior
+# Container Scanning customization: https://docs.gitlab.com/user/application_security/container_scanning/#customizing-analyzer-behavior
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ci/variables/#cicd-variable-precedence
 image: container-registry.oracle.com/graalvm/jdk:21
-
 include:
-  - component: $CI_SERVER_FQDN/qodana/qodana/qodana-gitlab-ci@v2025.3
-    inputs:
-      stage: qodana
-      args: --image,jetbrains/qodana-jvm-community:2025.3
-  - local: .gitlab/ci/templates.yml
-  - local: .gitlab/ci/build.yml
-  - local: .gitlab/ci/dependency-check.yml
-  - local: .gitlab/ci/pages.yml
-  - local: .gitlab/ci/qodana.yml
-
+- component: "$CI_SERVER_FQDN/qodana/qodana/qodana-gitlab-ci@v2025.3"
+  inputs:
+    stage: qodana
+    args: "--image,jetbrains/qodana-jvm-community:2025.3"
+- local: ".gitlab/ci/templates.yml"
+- local: ".gitlab/ci/build.yml"
+- local: ".gitlab/ci/dependency-check.yml"
+- local: ".gitlab/ci/pages.yml"
+- local: ".gitlab/ci/qodana.yml"
+- template: Jobs/Dependency-Scanning.v2.gitlab-ci.yml
 stages:
-  - build
-  - deploy
-  - dependency-check
-  - qodana
-  - portal
-  - index
-
+- build
+- deploy
+- dependency-check
+- qodana
+- portal
+- index
+- test
 workflow:
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH =~ /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
-
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH
+      =~ /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
 variables:
-  # Opt-in Develocity build scan publication; override via the manual pipeline UI to investigate.
   PUBLISH_BUILD_SCAN:
-    value: "false"
-    description: "Set to 'true' to publish a Develocity build scan for this pipeline (visible at scans.gradle.com)."
+    value: 'false'
+    description: Set to 'true' to publish a Develocity build scan for this pipeline
+      (visible at scans.gradle.com).
   GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
-  # CI Gradle args — two profiles, picked per job in its script. Each profile name matches the
-  # `saas-linux-<tier>-amd64` runner tag of every job that uses it. (qodana runs on the `large`
-  # tier but invokes its own CLI, so no Gradle flag applies there.)
-  #   $GRADLE_FLAGS_XLARGE — build/deploy (xlarge 16c/64G) + pages:regression (xlarge 16c/64G)
-  #   $GRADLE_FLAGS_MEDIUM — dependency-check, pages:benchmarks, pages:profile, pages:docs (medium 4c/16G)
-  # Custom knobs: -Pkotlin.daemon.jvmargs, -PtestJvmMaxHeap (matches build.gradle.kts default),
-  # -PjunitParallelThreads, -PgitlabAuthHeaderValue (Package Registry auth token).
-  #
-  # XLARGE budget on xlarge (full test suite):
-  #   50g heap caps (12g daemon + 6g kotlin + 8 × 4g test workers) + ~2g Postgres tmpfs
-  #   (cap 8g, actual fill is small) + ~6g OS/DIND/non-heap ≈ 58g ≤ 64g ✓. Threads: 8 × 4
-  #   JUnit = 32 on 16 vCPU (2× oversub, I/O-bound — fine).
-  # Re-used on xlarge for pages:regression, but parallelism for that job comes from JUnit Jupiter
-  # (-PregressionParallelism=8 in pages.yml), not Gradle workers — `--max-workers=8` only benefits
-  # the up-front `:performance:buildLocalChr` task graph there. Each of the 8 JUnit slots runs
-  # a chr subprocess (~2.5g) and a per-project Testcontainers Postgres (~1.2g) outside the test
-  # JVM (see regression/src/regression/compile.kt `withProjectPostgres`), plus the test JVM itself
-  # at -PregressionTestHeap=4g (defaulted in regression/build.gradle.kts). Peak ≈ 8 × 3.7g
-  # OS-level + 4g test JVM + 4g daemon + ~6g infra ≈ 44g ≤ 64g ✓. The previous large-runner
-  # (8c/32G) sizing assumed the serial-test model and no longer fits the parallel pipeline.
-  GRADLE_FLAGS_XLARGE: >-
-    -Dorg.gradle.caching=true
-    --max-workers=8
-    -Dorg.gradle.jvmargs=-Xmx12g
-    -Pkotlin.daemon.jvmargs=-Xmx6g
-    -PtestJvmMaxHeap=4g
-    -PjunitParallelThreads=4
-    -PgitlabAuthHeaderValue=$CI_JOB_TOKEN
-  # MEDIUM budget on medium:
-  #   10g heap caps (4g daemon + 2g kotlin + 1 × 4g test) + ~1g Postgres tmpfs (cap 8g but
-  #   medium jobs hold a single schema) + ~2g OS/DIND/non-heap ≈ 13g ≤ 16g ✓. 1 worker × 2
-  #   JUnit threads on 4 vCPU — no oversub.
-  GRADLE_FLAGS_MEDIUM: >-
-    -Dorg.gradle.caching=true
-    --max-workers=1
-    -Dorg.gradle.jvmargs=-Xmx4g
-    -Pkotlin.daemon.jvmargs=-Xmx2g
-    -PtestJvmMaxHeap=4g
-    -PjunitParallelThreads=2
-    -PgitlabAuthHeaderValue=$CI_JOB_TOKEN
+  GRADLE_FLAGS_XLARGE: "-Dorg.gradle.caching=true --max-workers=8 -Dorg.gradle.jvmargs=-Xmx12g
+    -Pkotlin.daemon.jvmargs=-Xmx6g -PtestJvmMaxHeap=4g -PjunitParallelThreads=4 -PgitlabAuthHeaderValue=$CI_JOB_TOKEN"
+  GRADLE_FLAGS_MEDIUM: "-Dorg.gradle.caching=true --max-workers=1 -Dorg.gradle.jvmargs=-Xmx4g
+    -Pkotlin.daemon.jvmargs=-Xmx2g -PtestJvmMaxHeap=4g -PjunitParallelThreads=2 -PgitlabAuthHeaderValue=$CI_JOB_TOKEN"
   POSTCHAIN_DB_URL: jdbc:postgresql://docker/postchain
   DOCKER_HOST: tcp://docker:2375
-  DOCKER_TLS_CERTDIR: ""
+  DOCKER_TLS_CERTDIR: ''
   TESTCONTAINERS_HOST_OVERRIDE: docker
-  TESTCONTAINERS_RYUK_DISABLED: "true"
+  TESTCONTAINERS_RYUK_DISABLED: 'true'
   JACOCO_REPORT_DIR: coverage-report-aggregate/build/reports/jacoco/testCodeCoverageReport
-
 services:
-  - name: docker:28-dind
-    alias: docker
-    command: [ "--tls=false" ]
-
+- name: docker:28-dind
+  alias: docker
+  command:
+  - "--tls=false"
 cache:
   key: "$CI_COMMIT_REF_SLUG"
-  fallback_keys: [ dev ]
-  paths: [ .gradle ]
+  fallback_keys:
+  - dev
+  paths:
+  - ".gradle"
   policy: pull-push
