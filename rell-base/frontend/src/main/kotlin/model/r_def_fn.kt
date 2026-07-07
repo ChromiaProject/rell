@@ -8,6 +8,7 @@ import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.base.core.C_CompilerPass
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
+import net.postchain.rell.base.compiler.base.utils.C_LateInit
 import net.postchain.rell.base.compiler.base.utils.lateInit
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.stmt.R_Statement
@@ -168,22 +169,44 @@ class R_FunctionBody(
     }
 }
 
-class R_FunctionBase(executor: C_CompilerExecutor, val defName: DefinitionName) {
-    private val headerLate = executor.lateInit(C_CompilerPass.EXPRESSIONS, R_FunctionHeader.ERROR)
-    private val bodyLate = executor.lateInit(C_CompilerPass.EXPRESSIONS, R_FunctionBody.ERROR)
+class R_FunctionBase private constructor(
+    val defName: DefinitionName,
+    private val headerLate: C_LateInit<R_FunctionHeader>?,
+    private val bodyLate: C_LateInit<R_FunctionBody>?,
+    private val eagerHeader: R_FunctionHeader?,
+    private val eagerBody: R_FunctionBody?,
+) {
+    constructor(executor: C_CompilerExecutor, defName: DefinitionName): this(
+        defName,
+        executor.lateInit(C_CompilerPass.EXPRESSIONS, R_FunctionHeader.ERROR),
+        executor.lateInit(C_CompilerPass.EXPRESSIONS, R_FunctionBody.ERROR),
+        null,
+        null,
+    )
 
     fun setHeader(header: R_FunctionHeader) {
-        headerLate.set(header)
+        headerLate!!.set(header)
     }
 
     fun setBody(body: R_FunctionBody) {
-        bodyLate.set(body)
+        bodyLate!!.set(body)
     }
 
-    fun getHeader() = headerLate.get()
-    fun getBody() = bodyLate.get()
+    fun getHeader() = eagerHeader ?: headerLate!!.get()
+    fun getBody() = eagerBody ?: bodyLate!!.get()
 
     override fun toString() = defName.appLevelName
+
+    companion object {
+        /**
+         * A synthetic function whose header and body are already known at construction time
+         * (e.g. a lifted lambda body). Unlike the primary constructor it allocates no
+         * [C_LateInit]s, so it can be built during the EXPRESSIONS pass — where lambda bodies are
+         * compiled — instead of being restricted to pass <= APPDEFS.
+         */
+        fun eager(defName: DefinitionName, header: R_FunctionHeader, body: R_FunctionBody): R_FunctionBase =
+            R_FunctionBase(defName, null, null, header, body)
+    }
 }
 
 class R_FunctionDefinition(

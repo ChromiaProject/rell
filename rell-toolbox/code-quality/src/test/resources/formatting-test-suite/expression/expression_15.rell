@@ -1,0 +1,7 @@
+function lambdas() {
+    val f = x->x*2;
+    val g = (x:integer,y:integer)->x+y;
+    val h = ()->42;
+    val m = n -> { val d = n*2; d+1 };
+    val u = [1, 2, 3].join_to_text(transform = x->'n'+x);
+}

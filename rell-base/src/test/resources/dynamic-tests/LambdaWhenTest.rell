@@ -1,0 +1,93 @@
+// Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+//
+// Dynamic query test suite: sanity of the `when` x lambda interaction. Both a `when` arm and a lambda
+// now write `->`, so this suite pins down that the two compose without their arrows clashing. A lambda
+// can be a `when` arm's result, and a `when` expression or statement can be a lambda body. The parser
+// splits `cond -> params -> body` correctly: the first arrow closes the `when` condition, the second
+// is the lambda arrow. Discovered and executed by `RellQueryFileTest` across all three backends.
+//
+// Note: an expected function type is NOT threaded through `when` arms, so a lambda returned from a
+// `when` must annotate its parameters. That limitation is pinned as a negative case in
+// `LambdaExprTest.kt` (testLambdaInWhenArmNeedsAnnotation).
+
+// A `when` expression whose arms are lambdas. The arm `1 -> (x: integer) -> x + 1` puts two arrows on
+// one line - the first ends the condition, the second is the lambda arrow.
+query lambda_as_when_arm_result() {
+    val k = 2;
+    val f: (integer) -> integer = when (k) {
+        1 -> (x: integer) -> x + 1;
+        2 -> (x: integer) -> x * 10;
+        else -> (x: integer) -> x
+    };
+    assert_equals(f(5), 50);
+    return 0;
+}
+
+// Same, with no expected type at the binding: the `when` result type is the common type of the arm
+// lambdas, inferred bottom-up.
+query lambda_from_when_bottom_up() {
+    val f = when (1) {
+        1 -> (x: integer) -> x + 1;
+        else -> (x: integer) -> x * 10
+    };
+    assert_equals(f(5), 6);
+    assert_equals(_type_of(f), '(integer)->integer');
+    return 0;
+}
+
+// A `when` expression as the lambda body: the body is a single expression, and that expression is a
+// `when`. Adjacent arrows, no ambiguity.
+query when_expr_as_lambda_body() {
+    val classify: (integer) -> text = n -> when {
+        n < 0 -> 'neg';
+        n == 0 -> 'zero';
+        else -> 'pos'
+    };
+    assert_equals(classify(-3), 'neg');
+    assert_equals(classify(0), 'zero');
+    assert_equals(classify(7), 'pos');
+    return 0;
+}
+
+// A `when` statement inside a lambda's value-block body.
+query when_stmt_in_lambda_block() {
+    val name: (integer) -> text = n -> {
+        var r = '';
+        when (n) {
+            1 -> r = 'one';
+            2 -> r = 'two';
+            else -> r = 'many';
+        }
+        r
+    };
+    assert_equals(name(1), 'one');
+    assert_equals(name(2), 'two');
+    assert_equals(name(9), 'many');
+    return 0;
+}
+
+// A curried lambda whose innermost body is a `when`: `mode -> (x -> when {...})`. Two lambda arrows
+// nest and coexist with the `when` arrows.
+query curried_lambda_ending_in_when() {
+    val pick = (mode: integer) -> (x: integer) -> when {
+        x > 0 -> mode;
+        else -> -mode
+    };
+    assert_equals(pick(3)(5), 3);
+    assert_equals(pick(3)(-5), -3);
+    return 0;
+}
+
+// The deepest nesting: a `when` arm's result is a lambda that itself contains a `when`. The bare outer
+// param `mode` is target-typed from the annotated binding; the arm lambdas annotate their own param.
+query when_arm_lambda_with_inner_when() {
+    val sign: (integer) -> ((integer) -> text) = mode -> when (mode) {
+        1 -> (x: integer) -> when { x > 0 -> 'p'; x < 0 -> 'n'; else -> 'z' };
+        else -> (x: integer) -> 'const'
+    };
+    assert_equals(sign(1)(5), 'p');
+    assert_equals(sign(1)(-5), 'n');
+    assert_equals(sign(1)(0), 'z');
+    assert_equals(sign(2)(9), 'const');
+    return 0;
+}

@@ -684,12 +684,13 @@ private class C_MemberLibFuncCase(
 private class C_LibFunctionCallTypeHints(private val header: L_FunctionHeader): C_CallTypeHints {
     override fun getTypeHint(index: Int?, name: Name?): C_TypeHint {
         val param = when {
-            index == null -> null
-            index < 0 -> null
+            name != null -> header.params.find { it.name == name }
+            index == null || index < 0 -> null
             index < header.params.size -> header.params[index]
             header.params.isNotEmpty() && header.params.last().arity.many -> header.params.last()
             else -> null
         }
+
         return C_TypeHint.ofType(param?.rType)
     }
 }

@@ -138,3 +138,40 @@ interface RellTokenProducer: TokenProducer {
 internal class LegacyCombinator<T>(val innerParser: Parser<T>): Parser<T> {
     override fun tryParse(tokens: TokenMatchesSequence, fromPosition: Int) = innerParser.tryParse(tokens, fromPosition)
 }
+
+/**
+ * Parses a lambda body and pairs it with the body's captured-name set. The set reproduces the ANTLR
+ * visitor's `collectRefNames`: every identifier occurring in the body except those used as member
+ * names (immediately preceded by `.` or `?.`), in source order. It is recovered by scanning the
+ * tokens the body parser consumed, so the legacy and ANTLR parsers yield identical `S_LambdaExpr`s.
+ */
+internal class LambdaBodyWithNamesParser(
+    private val body: Parser<S_LambdaBody>,
+    private val idToken: RellToken,
+    private val dotToken: RellToken,
+    private val safeCallToken: RellToken,
+): Parser<Pair<S_LambdaBody, Set<String>>> {
+    override fun tryParse(
+        tokens: TokenMatchesSequence,
+        fromPosition: Int,
+    ): ParseResult<Pair<S_LambdaBody, Set<String>>> {
+        return when (val r = body.tryParse(tokens, fromPosition)) {
+            is Parsed -> RellParsedValue(Pair(r.value, collectNames(tokens, fromPosition, r.nextPosition)), r.nextPosition)
+            is ErrorResult -> r
+        }
+    }
+
+    private fun collectNames(tokens: TokenMatchesSequence, from: Int, to: Int): Set<String> {
+        val names = LinkedHashSet<String>()
+        var prevType: Token? = null
+        for (i in from until to) {
+            val m = tokens[i] ?: break
+            if (m.type.ignored) continue
+            if (m.type === idToken.token && prevType !== dotToken.token && prevType !== safeCallToken.token) {
+                names.add((m.input as RellTokenInput).match.text)
+            }
+            prevType = m.type
+        }
+        return names
+    }
+}

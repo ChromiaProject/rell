@@ -881,7 +881,63 @@ class RellAntlrVisitor(
     // ---------------------------------------------------------------------------------------------
     // Expressions
 
-    fun toExpression(ctx: RellParser.ExpressionContext): S_Expr = withCtx(ctx) {
+    fun toExpression(ctx: RellParser.ExpressionContext): S_Expr {
+        ctx.lambdaExpr()?.let { return toLambdaExpr(it) }
+        return toBinaryExpr(ctx.binaryExpr())
+    }
+
+    private fun toLambdaExpr(ctx: RellParser.LambdaExprContext): S_Expr = withCtx(ctx) {
+        val lp = ctx.lambdaParams()
+        val bare = lp.RULE_ID()
+        val params = if (bare != null) {
+            // Bare single parameter: never type-annotated.
+            immListOf(S_LambdaParam(idTokenToName(bare), null))
+        } else {
+            // Parenthesised parameters, each with an optional explicit type.
+            lp.lambdaParam().map { S_LambdaParam(idTokenToName(it.RULE_ID()), it.type()?.let { t -> toType(t) }) }.toImmList()
+        }
+        val body = toLambdaBody(ctx.lambdaBody())
+        // Collect every simple identifier textually present in the body; the compiler intersects
+        // this with the enclosing scope's initialized locals to decide what to capture by value.
+        val bodyNames = mutableSetOf<String>()
+        collectRefNames(ctx.lambdaBody(), bodyNames)
+        return@withCtx S_LambdaExpr(ctx.start.toPos(), params, body, bodyNames)
+    }
+
+    /**
+     * Gathers the text of every `RULE_ID` in a parse subtree, except identifiers used as member
+     * names (those immediately preceded by `.` or `?.`), which can never denote a captured local.
+     * Over-collection (e.g. named-argument or type names) is harmless: it only widens the candidate
+     * set, and the compiler keeps only those that resolve to initialized outer locals.
+     */
+    private fun collectRefNames(ctx: ParserRuleContext, sink: MutableSet<String>) {
+        val children = ctx.children ?: return
+        for ((i, ch) in children.withIndex()) {
+            when (ch) {
+                is TerminalNode -> {
+                    if (ch.symbol.type == RellParser.RULE_ID) {
+                        val prevText = if (i > 0) (children[i - 1] as? TerminalNode)?.text else null
+                        if (prevText != "." && prevText != "?.") sink.add(ch.text)
+                    }
+                }
+                is ParserRuleContext -> collectRefNames(ch, sink)
+            }
+        }
+    }
+
+    private fun toLambdaBody(ctx: RellParser.LambdaBodyContext): S_LambdaBody = withCtx(ctx) {
+        when (ctx) {
+            is RellParser.LambdaBodyExprContext -> S_LambdaBody_Expr(toExpression(ctx.expression()))
+            is RellParser.LambdaBodyBlockContext -> {
+                val stmts = ctx.statement().map { toStatement(it) }.toImmList()
+                val result = ctx.expression()?.let { toExpression(it) }
+                S_LambdaBody_Block(S_PosRange(ctx.start.toPos(), ctx.stop.toPos()), stmts, result)
+            }
+            else -> error("unknown lambdaBody: ${ctx.javaClass.simpleName}")
+        }
+    }
+
+    private fun toBinaryExpr(ctx: RellParser.BinaryExprContext): S_Expr = withCtx(ctx) {
         // Children are: prefix-op* operand (binary-op prefix-op* operand)*
         // - operand = ifExpr | whenExpr | baseExpr
         // - prefix-ops are inline TerminalNodes ('+'/'-'/'not'/'++'/'--')

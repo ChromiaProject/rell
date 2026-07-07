@@ -27,10 +27,80 @@ are expected from the upgrade.
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 4. Library: Named arguments fixed for functions with multiple optional parameters
 
-Named arguments to standard-library functions with several optional parameters - such as `join_to_text` - now bind
+Named arguments to standard-library functions with several optional parameters - such as join_to_text - now bind
 correctly in two cases that were broken:
 
 - reordering by name on a method call was ignored:
-  `[1, 2, 3].join_to_text(prefix = '<', separator = '*')` gave `*1<2<3` instead of `<1*2*3`;
-- skipping an earlier optional misplaced the value - a wrong result for `[1, 2, 3].join_to_text(prefix = '<')`
-  (`1<2<3` instead of `<1, 2, 3`), or a `ClassCastException` for `join_to_text(transform = f)`.
+  [1, 2, 3].join_to_text(prefix = '<', separator = '*') gave *1<2<3 instead of <1*2*3;
+- skipping an earlier optional misplaced the value - a wrong result for [1, 2, 3].join_to_text(prefix = '<')
+  (1<2<3 instead of <1, 2, 3), or a ClassCastException for join_to_text(transform = f).
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Language: Lambda expressions
+
+Rell now has lambda expressions: anonymous functions written with arrow syntax (->) that evaluate to first-class
+function values. They can be stored in variables, passed to and returned from functions, and called like any other
+function value.
+
+    x -> x * 2                 // one parameter
+    (x, y) -> x + y            // parenthesised parameters
+    () -> 42                   // no parameters
+
+The body is either a single expression (as above) or a value block whose trailing expression is the result -
+no return is needed:
+
+    n -> {
+        val doubled = n * 2;
+        doubled + 1
+    }
+
+A parameter's type comes from one of two places: an optional explicit annotation, or the expected function type at
+the use site (target typing). Annotations use the parenthesised form and are all-or-nothing - every parameter or
+none. The return type is always inferred from the body.
+
+    val f: (integer) -> integer = x -> x * 2;   // x is integer, from the declared type
+    f(10);                                       // 20
+
+    val g = (x: integer) -> x * 2;               // x is integer, from the annotation; g is (integer) -> integer
+    g(10);                                       // 20
+
+    function reduce(xs: list<integer>, f: (integer) -> integer): integer {
+        var s = 0;
+        for (x in xs) s += f(x);
+        return s;
+    }
+
+    reduce([1, 2, 3], x -> x * x);   // 14
+
+A lambda whose parameters are neither annotated nor typed by an expected function type is a compile error (a
+parameterless lambda needs neither, having nothing to type).
+
+Lambdas now fit many standard-library functions that take a function value. join_to_text maps each element
+through a function before joining it; combined with a named argument, a one-line lambda supplies that function
+without spelling out the intervening optional parameters:
+
+    [1, 2, 3].join_to_text(transform = x -> "n" + x);   // "n1, n2, n3"
+
+When the work needs several statements, a lambda with a value-block body replaces the partial application that was
+previously the only option. try_call runs a function and traps any exception it throws:
+
+    val result = try_call(() -> {
+        val h = checked_div(20, 4);
+        h * h
+    });   // integer? - 25, or null if the call threw
+
+A lambda captures each enclosing local variable it refers to by reading the binding's current value when the lambda
+is created; reassigning that outer variable afterwards is not visible inside the lambda. This is a value capture in
+the same sense as any Rell assignment, not a deep snapshot: a captured mutable object (a list, map, set, ...) is
+captured by its reference, so an in-place mutation made to it after the lambda is created is visible inside the
+lambda - only reassigning the variable is not. A captured variable is read-only inside the lambda.
+
+    var n = 7;
+    val g: (integer) -> integer = x -> x + n;
+    n = 100;
+    g(1);   // 8 - reassigning n is not seen; g read n's value (7) when it was created
+
+    val xs = [1, 2, 3];
+    val h: () -> integer = () -> xs.size();
+    xs.add(4);
+    h();   // 4 - xs is captured by reference, so the in-place add IS seen

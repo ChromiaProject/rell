@@ -6,8 +6,10 @@ package net.postchain.rell.toolbox.formatter.util
 
 import net.postchain.rell.base.compiler.parser.antlr.RellParser.*
 import net.postchain.rell.toolbox.formatter.BracePairTypes
+import net.postchain.rell.toolbox.formatter.Changes
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.tree.TerminalNode
 
 /**
  * Logical "tail" entries of a [BaseExprContext]. The grammar has the head followed by
@@ -48,12 +50,12 @@ internal sealed class BaseExprTail {
  * expression context.
  */
 internal sealed class LabeledAnchor {
-    class Term(val node: org.antlr.v4.runtime.tree.TerminalNode) : LabeledAnchor()
+    class Term(val node: TerminalNode) : LabeledAnchor()
     class Rule(val ctx: ParserRuleContext) : LabeledAnchor()
 
     fun applyPrepend(
-        doc: net.postchain.rell.toolbox.formatter.FormattableDocument,
-        mod: (net.postchain.rell.toolbox.formatter.Changes) -> Unit,
+        doc: FormattableDocument,
+        mod: (Changes) -> Unit,
     ) {
         when (this) {
             is Term -> doc.prepend(node, mod)
@@ -233,19 +235,17 @@ class ExpressionFormatter(
             val itemStartIdx = item.start.tokenIndex
             // Walk children of parent looking for the closest preceding RULE_ID with an
             // item-boundary terminal immediately before it.
-            var foundLabel: org.antlr.v4.runtime.tree.TerminalNode? = null
+            var foundLabel: TerminalNode? = null
             for (i in 0 until parent.childCount) {
                 val c = parent.getChild(i)
-                if (c is org.antlr.v4.runtime.tree.TerminalNode &&
+                if (c is TerminalNode &&
                     c.symbol.type == net.postchain.rell.base.compiler.parser.antlr.RellParser.RULE_ID &&
                     c.symbol.tokenIndex < itemStartIdx
                 ) {
                     // Check that the token before this RULE_ID is `(` or `,`.
-                    val tokenStream = c.symbol.tokenSource as? org.antlr.v4.runtime.Lexer
-                    @Suppress("UNUSED_VARIABLE") val _unused = tokenStream
                     if (i == 0) continue
                     val prev = parent.getChild(i - 1)
-                    if (prev is org.antlr.v4.runtime.tree.TerminalNode &&
+                    if (prev is TerminalNode &&
                         (prev.symbol.text == "(" || prev.symbol.text == ",")
                     ) {
                         foundLabel = c
@@ -269,7 +269,7 @@ class ExpressionFormatter(
     fun formatLabelEquals(parent: ParserRuleContext, doc: FormattableDocument) {
         for (i in 0 until parent.childCount) {
             val c = parent.getChild(i)
-            if (c is org.antlr.v4.runtime.tree.TerminalNode && c.symbol.text == "=") {
+            if (c is TerminalNode && c.symbol.text == "=") {
                 doc.prepend(c) {
                     it.oneSpace()
                     it.setNewLines(0)
@@ -327,34 +327,36 @@ class ExpressionFormatter(
     }
 
     /**
-     * Split [ExpressionContext] children into operands (rule contexts: ifExpr/whenExpr/baseExpr)
-     * and the binary-operator terminal tokens between them. Prefix tokens (`+`, `-`, `not`,
-     * `++`, `--`) before each operand are skipped.
+     * Split the operands (rule contexts: ifExpr/whenExpr/baseExpr) and the binary-operator terminal
+     * tokens between them out of an [ExpressionContext]. Prefix tokens (`+`, `-`, `not`, `++`, `--`)
+     * before each operand are skipped. The operators live in the `binaryExpr` child; a lambda
+     * expression has no binary operands and yields two empty lists.
      */
     private fun splitExpression(
         expr: ExpressionContext
-    ): Pair<List<ParserRuleContext>, List<org.antlr.v4.runtime.tree.TerminalNode>> {
+    ): Pair<List<ParserRuleContext>, List<TerminalNode>> {
+        val binary = expr.binaryExpr() ?: return Pair(emptyList(), emptyList())
         val operands = mutableListOf<ParserRuleContext>()
-        val binOps = mutableListOf<org.antlr.v4.runtime.tree.TerminalNode>()
+        val binOps = mutableListOf<TerminalNode>()
         var i = 0
-        val n = expr.childCount
+        val n = binary.childCount
         var afterOperand = false
         while (i < n) {
-            val c = expr.getChild(i)
-            when {
-                c is ParserRuleContext -> {
+            when (val c = binary.getChild(i)) {
+                is ParserRuleContext -> {
                     operands.add(c)
                     afterOperand = true
                 }
-                c is org.antlr.v4.runtime.tree.TerminalNode && afterOperand -> {
+
+                is TerminalNode if afterOperand -> {
                     // After an operand we may see a binary operator; the very first terminal
                     // after an operand begins the operator. Some ops are two tokens (`not in`).
                     binOps.add(c)
                     afterOperand = false
                     // skip a possible "in" if previous was "not"
                     if (c.symbol.text == "not" && i + 1 < n) {
-                        val nxt = expr.getChild(i + 1)
-                        if (nxt is org.antlr.v4.runtime.tree.TerminalNode && nxt.symbol.text == "in") {
+                        val nxt = binary.getChild(i + 1)
+                        if (nxt is TerminalNode && nxt.symbol.text == "in") {
                             i++
                         }
                     }

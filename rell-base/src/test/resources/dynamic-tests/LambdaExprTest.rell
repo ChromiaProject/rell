@@ -1,0 +1,339 @@
+// Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+//
+// Dynamic query test suite: the file name is the suite, each `query` is a test case. A test
+// passes iff its query runs without throwing; failures are raised by the `rell.test.assert_*`
+// functions. Discovered and executed by `RellQueryFileTest` (see the Kotlin @TestFactory).
+//
+// Holds the positive (compiles-and-runs) lambda tests. The negative "should not compile"
+// cases stay in `LambdaExprTest.kt`, since they cannot live in a file that must compile.
+//
+// The three former `print`-output tests are ported by recording into a captured list via the
+// unit helper `log_add`, which preserves the unit-body semantics under test while making the
+// side effect assertable (there is no stdout capture in this framework).
+
+// Higher-order takers reused across cases.
+function sum(xs: list<integer>, f: (integer) -> integer): integer {
+    var s = 0;
+    for (x in xs) s += f(x);
+    return s;
+}
+
+function apply2(a: integer, b: integer, f: (integer, integer) -> integer): integer = f(a, b);
+function apply1(x: integer, f: (integer) -> integer): integer = f(x);
+
+function each(xs: list<integer>, f: (integer) -> unit): integer {
+    for (x in xs) f(x);
+    return xs.size();
+}
+
+// Functions that return a lambda closing over their own parameter.
+function make_adder(n: integer): (integer) -> integer = x -> x + n;
+function outer_fn(a: integer): (integer) -> integer = b -> apply1(a, y -> y + b);
+
+function dbl(x: integer): integer = x * 2;
+function risky(x: integer): integer { require(x > 0, 'neg'); return x * x; }
+function check_pos(x: integer) { require(x > 0, 'neg'); }
+function checked_div(a: integer, b: integer): integer { require(b != 0, 'division by zero'); return a / b; }
+
+// Unit-typed recorder, so a unit lambda body has an observable side effect to assert.
+function log_add(log: list<text>, s: text) { log.add(s); }
+
+query single_param_expr_body() {
+    assert_equals(sum([1, 2, 3], x -> x * x), 14);
+    assert_equals(sum([1, 2, 3], x -> x + 1), 9);
+    assert_equals(sum([10, 20], x -> x), 30);
+    return 0;
+}
+
+query val_decl_infer_param_type() {
+    val f: (integer) -> integer = x -> x * 2;
+    assert_equals(f(3), 6);
+    val g: (integer) -> text = x -> 'v' + x;
+    assert_equals(g(7), 'v7');
+    return 0;
+}
+
+query multi_param_parenthesized() {
+    assert_equals(apply2(3, 4, (x, y) -> x + y), 7);
+    assert_equals(apply2(3, 4, (x, y) -> x * y), 12);
+    return 0;
+}
+
+query lambda_value_type() {
+    val f: (integer) -> integer = x -> x * 2;
+    assert_equals(_type_of(f), '(integer)->integer');
+    return 0;
+}
+
+query value_block_returns_value() {
+    assert_equals(sum([1, 2, 3], x -> { val y = x * 2; y + 1 }), 15);
+    assert_equals(sum([5], x -> { val a = x; val b = a * a; a + b }), 30);
+    return 0;
+}
+
+query value_block_locals_in_trailing_expr() {
+    val f: (integer) -> integer = x -> { val y = x + 1; y * 2 };
+    assert_equals(f(3), 8);
+    return 0;
+}
+
+query value_block_early_return() {
+    assert_equals(sum([1, -2, 3], x -> { if (x < 0) return 0; x }), 4);
+    return 0;
+}
+
+query value_block_unit_body() {
+    val log = list<text>();
+    val p: (integer) -> unit = x -> { log_add(log, 'v:' + x); };
+    p(5);
+    assert_equals(log, ['v:5']);
+    return 0;
+}
+
+query value_block_empty_unit_body() {
+    assert_equals(each([1, 2, 3], x -> {}), 3);
+    return 0;
+}
+
+query capture_single_local() {
+    val factor = 3;
+    assert_equals(sum([1, 2, 3], x -> x * factor), 18);
+    return 0;
+}
+
+query capture_multiple_locals() {
+    val a = 10;
+    val b = 100;
+    assert_equals(sum([1, 2], x -> x + a + b), 223);
+    return 0;
+}
+
+// Capture-by-value: the closure snapshots `n` (=7) at creation; a later mutation to 100 is not
+// observed. This is the determinism-critical contract for consensus code.
+query capture_by_value_snapshot() {
+    var n = 7;
+    val f: (integer) -> integer = x -> x + n;
+    n = 100;
+    assert_equals(f(1), 8);
+    return 0;
+}
+
+query capture_in_value_block_body() {
+    val base = 5;
+    assert_equals(sum([1, 2, 3], x -> { val y = x + base; y * 2 }), 42);
+    return 0;
+}
+
+// The lambda param `x` shadows the outer `x`; the outer value is not captured/used.
+query capture_shadowed_by_param() {
+    val x = 100;
+    assert_equals(sum([1, 2, 3], x -> x * 2), 12);
+    return 0;
+}
+
+query capture_text_type() {
+    val suffix = '!';
+    val f: (text) -> text = s -> s + suffix;
+    assert_equals(f('hi'), 'hi!');
+    return 0;
+}
+
+query capture_in_multi_param_lambda() {
+    val bonus = 5;
+    assert_equals(apply2(3, 4, (x, y) -> x + y + bonus), 12);
+    return 0;
+}
+
+// A function returning a lambda that closes over the function's own parameter.
+query capture_function_param_via_returned_lambda() {
+    assert_equals(make_adder(10)(5), 15);
+    assert_equals(make_adder(-3)(5), 2);
+    return 0;
+}
+
+// Inner lambda captures the outer lambda's parameter `a`; outer captures nothing.
+query capture_nested_lambda() {
+    assert_equals(outer_fn(100)(7), 107);
+    return 0;
+}
+
+// Global functions resolve globally and are not treated as captures.
+query global_not_captured() {
+    assert_equals(sum([1, 2, 3], x -> dbl(x)), 12);
+    return 0;
+}
+
+query zero_param() {
+    val f: () -> integer = () -> 42;
+    assert_equals(f(), 42);
+    return 0;
+}
+
+query zero_param_capture() {
+    val v = 99;
+    val f: () -> integer = () -> v;
+    assert_equals(f(), 99);
+    return 0;
+}
+
+query zero_param_value_block() {
+    val f: () -> integer = () -> { val a = 5; a * 2 };
+    assert_equals(f(), 10);
+    return 0;
+}
+
+query single_expr_unit_body() {
+    val log = list<text>();
+    each([1, 2], x -> log_add(log, 'v:' + x));
+    assert_equals(log, ['v:1', 'v:2']);
+    return 0;
+}
+
+// A unit-typed lambda whose value block ends in a non-unit expression: the trailing value is
+// discarded (it becomes a bare expression statement, not a return).
+query unit_value_block_with_trailing_expr() {
+    assert_equals(each([1, 2], x -> { x + 1 }), 2);
+    return 0;
+}
+
+// Member names (after `.`) are not capture candidates; the local `prefix` still is.
+query capture_with_member_access_in_body() {
+    val prefix = 'n=';
+    val f: (integer) -> text = x -> prefix + x.to_text();
+    assert_equals(f(5), 'n=5');
+    return 0;
+}
+
+// A `?.` member access in the body: the member name is not a capture candidate.
+query safe_nav_member_in_body() {
+    val f: (integer?) -> text? = x -> x?.to_text();
+    assert_equals(f(5), '5');
+    return 0;
+}
+
+// A captured collection is snapshotted by reference: an in-place mutation made after the lambda is
+// created is visible inside it - unlike a scalar var reassignment (capture_by_value_snapshot).
+query capture_mutable_object_shared() {
+    val xs = [1, 2, 3];
+    val f: () -> integer = () -> xs.size();
+    xs.add(4);
+    assert_equals(f(), 4);
+    return 0;
+}
+
+// No expected type at the binding: the annotation types the parameter, the return is inferred.
+query annotated_param_bottom_up() {
+    val f = (x: integer) -> x * 2;
+    assert_equals(f(3), 6);
+    val g = (x: integer) -> 'v' + x;
+    assert_equals(g(7), 'v7');
+    return 0;
+}
+
+query annotated_multi_param_bottom_up() {
+    val f = (x: integer, y: integer) -> x + y;
+    assert_equals(f(3, 4), 7);
+    return 0;
+}
+
+query annotated_return_type_inferred() {
+    val f = (x: integer) -> x * 2;
+    assert_equals(_type_of(f), '(integer)->integer');
+    val g = (x: integer) -> x > 0;
+    assert_equals(_type_of(g), '(integer)->boolean');
+    return 0;
+}
+
+query annotated_value_block_bottom_up() {
+    val f = (x: integer) -> { val y = x * 2; y + 1 };
+    assert_equals(f(3), 7);
+    return 0;
+}
+
+// Bottom-up value block whose trailing expression is unit-typed: the return type is inferred as
+// unit and the trailing value is discarded rather than returned (return of unit is illegal).
+query annotated_value_block_unit_trailing_bottom_up() {
+    val log = list<text>();
+    val f = (x: integer) -> { log_add(log, 'v:' + x) };
+    f(5);
+    assert_equals(_type_of(f), '(integer)->unit');
+    assert_equals(log, ['v:5']);
+    return 0;
+}
+
+// Zero parameters need no annotation and no expected type: there is nothing to type.
+query annotated_zero_param_bottom_up() {
+    val f = () -> 42;
+    assert_equals(f(), 42);
+    return 0;
+}
+
+// Annotation and expected type both present and structurally equal: accepted.
+query annotated_param_with_expected_type_equal() {
+    assert_equals(sum([1, 2, 3], (x: integer) -> x * x), 14);
+    return 0;
+}
+
+query annotated_param_capture_bottom_up() {
+    val bonus = 10;
+    val f = (x: integer) -> x + bonus;
+    assert_equals(f(5), 15);
+    return 0;
+}
+
+query try_call_value_lambda() {
+    assert_equals(_type_of(try_call(() -> risky(5))), 'integer?');
+    assert_equals(try_call(() -> risky(5)), 25);
+    assert_null(try_call(() -> risky(-5)));
+    return 0;
+}
+
+query try_call_unit_lambda() {
+    assert_equals(_type_of(try_call(() -> check_pos(1))), 'boolean');
+    assert_true(try_call(() -> check_pos(1)));
+    assert_false(try_call(() -> check_pos(-1)));
+    return 0;
+}
+
+query try_call_default_lambda() {
+    assert_equals(try_call(() -> risky(5), 99), 25);
+    assert_equals(try_call(() -> risky(-5), 99), 99);
+    return 0;
+}
+
+// Mirrors the Example section in doc/lambdas.md - keeps those snippets verifiably compiling.
+query doc_showcase() {
+    assert_equals(try_call(() -> { val h = checked_div(20, 4); h * h }), 25);
+    assert_null(try_call(() -> { val h = checked_div(20, 0); h * h }));
+    assert_equals(try_call(() -> checked_div(10, 0), -1), -1);
+    assert_equals([1, 2, 3].join_to_text(transform = x -> 'n' + x), 'n1, n2, n3');
+    return 0;
+}
+
+// Target typing reaches a lambda argument of a generic stdlib function - both positionally and by
+// name - so the parameter type need not be annotated. The element type `integer` is resolved from
+// the receiver and flows into the expected `(integer) -> text`.
+query target_typing_through_generic_arg() {
+    assert_equals([1, 2, 3].join_to_text('*', '<', '>', null, '...', x -> 'n' + x), '<n1*n2*n3>');
+    assert_equals([1, 2, 3].join_to_text(transform = x -> 'n' + x), 'n1, n2, n3');
+    assert_equals([10, 20].join_to_text(transform = x -> (x * 2).to_text()), '20, 40');
+    return 0;
+}
+
+// Freebie: a lambda body is itself an expression, so lambdas nest right-associatively into a curried
+// function - `x -> y -> e` is `x -> (y -> e)`. The function type nests the same direction.
+query curry_right_assoc() {
+    val add = (x: integer) -> (y: integer) -> x + y;
+    assert_equals(add(3)(4), 7);
+    assert_equals(_type_of(add), '(integer)->(integer)->integer');
+    return 0;
+}
+
+// Freebie: lambda values compose in data structures like any other value.
+query list_of_lambdas() {
+    val fs: list<(integer) -> integer> = [x -> x + 1, x -> x * 2, x -> x * x];
+    assert_equals(fs[0](10), 11);
+    assert_equals(fs[2](10), 100);
+    assert_equals(_type_of(fs), 'list<(integer)->integer>');
+    return 0;
+}

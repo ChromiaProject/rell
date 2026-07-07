@@ -599,7 +599,42 @@ internal object S_Grammar {
         if (tail.isEmpty()) head else S_BinaryExpr(head, tail.toImmList())
     }
 
-    private val expression: Parser<S_Expr> by binaryExpr
+    // --- Arrow lambdas. Mirrors the ANTLR `lambdaExpr` / `lambdaParam` / `lambdaBody` rules in
+    // Rell.g4; kept in sync so the differential grammar test sees identical ASTs from both parsers.
+    // A parenthesised parameter may carry an optional explicit type; a bare parameter never does.
+    private val lambdaParam by nameNode * optional(-COLON * typeRef) map { (nameNode, type) ->
+        S_LambdaParam(nameNode.value, type)
+    }
+
+    private val lambdaParamsBare by nameNode map {
+        S_PosValue(it.value.pos, immListOf(S_LambdaParam(it.value, null)))
+    }
+
+    private val lambdaParamsParen by commaSeparatedZeroMany(lambdaParam) map {
+        S_PosValue(it.startPos, it.items)
+    }
+
+    private val lambdaParams by lambdaParamsBare or lambdaParamsParen
+
+    private val lambdaBodyExpr: Parser<S_LambdaBody> by expressionRef map { S_LambdaBody_Expr(it) }
+
+    private val lambdaBodyBlock: Parser<S_LambdaBody> by
+            LCURL * zeroOrMore(statementRef) * optional(expressionRef) * RCURL map { (lcurl, stmts, result, rcurl) ->
+        S_LambdaBody_Block(S_PosRange(lcurl.pos, rcurl.pos), stmts.toImmList(), result)
+    }
+
+    private val lambdaBody by lambdaBodyBlock or lambdaBodyExpr
+
+    // ID/DOT/SAFECALL read back as `Parser<RellTokenMatch>` through the token delegate, but are
+    // RellToken instances at run time; the scanner needs the RellToken to identify matched tokens.
+    private val lambdaBodyWithNames =
+            LambdaBodyWithNamesParser(lambdaBody, ID as RellToken, DOT as RellToken, SAFECALL as RellToken)
+
+    private val lambdaExpr by lambdaParams * -ARROW * lambdaBodyWithNames map { (params, body) ->
+        S_LambdaExpr(params.pos, params.value, body.first, body.second)
+    }
+
+    private val expression: Parser<S_Expr> by lambdaExpr or binaryExpr
 
     private val emptyStmt by SEMI map { S_EmptyStatement(it.pos) }
 

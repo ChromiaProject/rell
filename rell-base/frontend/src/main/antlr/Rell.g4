@@ -369,6 +369,29 @@ updateTarget
 // ===========================================================================
 
 expression
+    : lambdaExpr
+    | binaryExpr
+    ;
+
+lambdaExpr
+    : lambdaParams '->' lambdaBody
+    ;
+
+lambdaParams
+    : RULE_ID
+    | '(' ( lambdaParam (',' lambdaParam)* ','? )? ')'
+    ;
+
+lambdaParam
+    : RULE_ID (':' type)?
+    ;
+
+lambdaBody
+    : expression                          # lambdaBodyExpr
+    | '{' statement* expression? '}'      # lambdaBodyBlock
+    ;
+
+binaryExpr
     : ('+' | '-' | 'not' | '++' | '--')* (ifExpr | whenExpr | baseExpr)
       (
         ('==' | '!=' | '<=' | '>=' | '<' | '>' | '===' | '!==' | '+' | '-' | '*' | '/'

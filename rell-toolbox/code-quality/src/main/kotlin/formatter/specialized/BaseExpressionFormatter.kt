@@ -5,7 +5,7 @@
 package net.postchain.rell.toolbox.formatter.specialized
 
 import net.postchain.rell.base.compiler.parser.antlr.RellParser.BaseExprContext
-import net.postchain.rell.base.compiler.parser.antlr.RellParser.ExpressionContext
+import net.postchain.rell.base.compiler.parser.antlr.RellParser.BinaryExprContext
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.ExpressionFormatter
@@ -49,16 +49,16 @@ class BaseExprFormatter(
 }
 
 /**
- * Formats inline binary operator tokens of an [ExpressionContext]. The new grammar inlines
- * the binary operators as direct terminal children of the expression context (instead of
- * wrapping them in a `binaryOperator` rule context as the legacy grammar did), so we walk
- * the children to surround each binary-operator token with a single space.
+ * Formats inline binary operator tokens of a [BinaryExprContext]. The grammar inlines the binary
+ * operators as direct terminal children of the `binaryExpr` context (rather than wrapping them in a
+ * `binaryOperator` rule context as the legacy grammar did), so we walk the children to surround each
+ * binary-operator token with a single space.
  *
  * For unary prefix tokens (`+`, `-`, `not`, `++`, `--`) that appear before an operand, we
  * also emit `noSpace` after them — except for `not` which needs one space after.
  */
-class ExpressionInlineOpFormatter : NodeFormatter<ExpressionContext> {
-    override fun format(node: ExpressionContext, doc: FormattableDocument) {
+class ExpressionInlineOpFormatter : NodeFormatter<BinaryExprContext> {
+    override fun format(node: BinaryExprContext, doc: FormattableDocument) {
         val n = node.childCount
         var afterOperand = false
         var i = 0

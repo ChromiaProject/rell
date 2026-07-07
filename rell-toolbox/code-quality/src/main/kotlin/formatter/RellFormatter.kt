@@ -80,7 +80,12 @@ class RellFormatter(
                     lineAnalyzer
                 )
             )
-            register(ExpressionContext::class.java, ExpressionInlineOpFormatter())
+            register(BinaryExprContext::class.java, ExpressionInlineOpFormatter())
+            register(
+                LambdaExprContext::class.java,
+                LambdaExprFormatter(braceFormatter, whitespaceFormatter, tokenAnalyzer)
+            )
+            register(LambdaBodyBlockContext::class.java, LambdaBodyBlockFormatter(tokenAnalyzer))
 
             register(
                 NonEmptyMapLiteralExprContext::class.java,
