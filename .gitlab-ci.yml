@@ -1,10 +1,10 @@
 image: container-registry.oracle.com/graalvm/jdk:21
 
 include:
-  - component: $CI_SERVER_FQDN/qodana/qodana/qodana-gitlab-ci@v2025.3
+  - component: $CI_SERVER_FQDN/qodana/qodana/qodana-gitlab-ci@v2026.1
     inputs:
       stage: qodana
-      args: --image,jetbrains/qodana-jvm-community:2025.3
+      args: --image,jetbrains/qodana-jvm-community:2026.1
   - local: .gitlab/ci/templates.yml
   - local: .gitlab/ci/build.yml
   - local: .gitlab/ci/dependency-check.yml
