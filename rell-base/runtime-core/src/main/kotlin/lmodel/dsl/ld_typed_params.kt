@@ -19,22 +19,52 @@ import kotlin.reflect.KProperty
  * the JVM call stack rather than a heap-allocated deque.
  */
 internal object Ld_CallArgs {
-    private val slot: ThreadLocal<List<Rt_Value>?> = ThreadLocal()
+    // Indexed by declaration position (receiver slots first, then parameters in declaration order).
+    // A null element marks an optional parameter omitted at the call site — including an *internal*
+    // gap, where a named argument skipped an earlier optional. Mandatory-parameter slots are never
+    // null. [Ld_ParamRef] / [Ld_OptParamRef] read this by declaration index.
+    private val slot: ThreadLocal<List<Rt_Value?>?> = ThreadLocal()
 
     /** Publish [args] as the current call's arguments; returns the previous value, for [restore]. */
-    fun enter(args: List<Rt_Value>): List<Rt_Value>? {
+    fun enter(args: List<Rt_Value?>): List<Rt_Value?>? {
         val prev = slot.get()
         slot.set(args)
         return prev
     }
 
     /** Undo an [enter], restoring the value it returned. */
-    fun restore(prev: List<Rt_Value>?) {
+    fun restore(prev: List<Rt_Value?>?) {
         slot.set(prev)
     }
 
-    fun current(): List<Rt_Value> =
+    fun current(): List<Rt_Value?> =
         slot.get() ?: error("No typed-body system-function call in progress on this thread")
+}
+
+/**
+ * Side-channel for the in-flight call's declaration-position mapping, published by the interpreter
+ * around a system-function call *only when the call has an internal gap* (a named argument skipped
+ * an earlier optional). The body funnel reads it to reconstruct the declaration-aligned argument
+ * list for [Ld_CallArgs]; when absent (the common case) the funnel uses the arguments verbatim.
+ *
+ * Values are indexed by declaration position: entry >= 0 means "present" (consume the next
+ * compacted argument), -1 means "omitted". A single per-thread slot, nested on the JVM call stack,
+ * mirroring [Ld_CallArgs].
+ */
+object Ld_CallArgAlign {
+    private val slot: ThreadLocal<List<Int>?> = ThreadLocal()
+
+    fun enter(mapping: List<Int>): List<Int>? {
+        val prev = slot.get()
+        slot.set(mapping)
+        return prev
+    }
+
+    fun restore(prev: List<Int>?) {
+        slot.set(prev)
+    }
+
+    fun current(): List<Int>? = slot.get()
 }
 
 /**
@@ -46,7 +76,11 @@ class Ld_ParamRef<T : Rt_Value> internal constructor(
     private val index: Int,
     private val type: Rt_ValueClass<T>,
 ): ReadOnlyProperty<Any?, T> {
-    override fun getValue(thisRef: Any?, property: KProperty<*>): T = type.cast(Ld_CallArgs.current()[index])
+    override fun getValue(thisRef: Any?, property: KProperty<*>): T {
+        // Mandatory parameter: its declaration slot is always filled (never an omitted-optional gap).
+        val value = Ld_CallArgs.current()[index] ?: error("Mandatory parameter at index $index is missing")
+        return type.cast(value)
+    }
 }
 
 /**

@@ -23,3 +23,14 @@ Two rendering fixes in the generated documentation site:
 
 Postchain has been upgraded from 3.49.12 to 3.49.15 (postchain-client from 3.39.1 to 3.39.4). No behavior changes
 are expected from the upgrade.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Library: Named arguments fixed for functions with multiple optional parameters
+
+Named arguments to standard-library functions with several optional parameters - such as `join_to_text` - now bind
+correctly in two cases that were broken:
+
+- reordering by name on a method call was ignored:
+  `[1, 2, 3].join_to_text(prefix = '<', separator = '*')` gave `*1<2<3` instead of `<1*2*3`;
+- skipping an earlier optional misplaced the value - a wrong result for `[1, 2, 3].join_to_text(prefix = '<')`
+  (`1<2<3` instead of `<1, 2, 3`), or a `ClassCastException` for `join_to_text(transform = f)`.

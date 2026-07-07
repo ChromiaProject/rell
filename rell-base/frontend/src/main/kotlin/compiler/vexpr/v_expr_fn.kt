@@ -19,14 +19,44 @@ class V_FunctionCallArgs(
     val exprs: ImmList<V_Expr>,
     val paramsToExprs: ImmList<Int>,
     val exprsToParams: ImmList<Int>,
+    // Declaration ordinal of each bound parameter, in `paramsToExprs` order. Identity for calls
+    // that bind a contiguous parameter prefix (all user calls, all non-gap lib calls); it has gaps
+    // only when a lib call skips a leading optional parameter by name. Drives the -1-encoded
+    // runtime mapping (see `declMapping`). Exempt from the inverse-permutation invariant below.
+    val paramDeclIndexes: ImmList<Int> = List(paramsToExprs.size) { it }.toImmList(),
 ) {
     init {
         checkEquals(this.paramsToExprs.size, this.exprs.size)
         checkEquals(this.exprsToParams.size, this.exprs.size)
+        checkEquals(this.paramDeclIndexes.size, this.paramsToExprs.size)
         for (i in exprs.indices) {
             checkEquals(this.paramsToExprs[this.exprsToParams[i]], i)
             checkEquals(this.exprsToParams[this.paramsToExprs[i]], i)
         }
+    }
+
+    /**
+     * The runtime call mapping, indexed by declaration position: entry >= 0 is an argument index,
+     * -1 marks a skipped optional. Equal to [paramsToExprs] for contiguous binding; only lib calls
+     * that skip a leading optional by name produce -1 gaps.
+     */
+    fun declMapping(): ImmList<Int> {
+        // Contiguous prefix from 0 (all user calls, non-gap lib calls): the mapping is exactly
+        // paramsToExprs, no holes.
+        val contiguousFromZero = paramDeclIndexes.withIndex().all { (i, d) -> d == i }
+        // A vararg binds several arguments to one declaration position, so paramDeclIndexes repeats
+        // and is not strictly increasing. Varargs cannot be skipped or named, so they never create a
+        // gap; keep the mapping compacted rather than misreading the repeats as holes.
+        val strictlyIncreasing = paramDeclIndexes.zipWithNext().all { (a, b) -> a < b }
+        if (contiguousFromZero || !strictlyIncreasing) return paramsToExprs
+        // Genuine gap: a leading optional was skipped by name. Emit a declaration-length mapping
+        // with -1 at the skipped positions.
+        val size = paramDeclIndexes.last() + 1
+        val out = IntArray(size) { -1 }
+        for (i in paramDeclIndexes.indices) {
+            out[paramDeclIndexes[i]] = paramsToExprs[i]
+        }
+        return out.toList().toImmList()
     }
 
     companion object {
@@ -136,11 +166,11 @@ class V_CommonFunctionCall_Full(
     override fun globalConstantRestriction() = target.globalConstantRestriction()
 
     override fun dbExprWhatCombinerInfo(rTarget: R_FunctionCallTarget, safe: Boolean): Db_AtWhatCombinerInfo {
-        return Db_AtWhatCombinerInfo.FunctionCall(returnType, rTarget, callFilePos, callArgs.paramsToExprs)
+        return Db_AtWhatCombinerInfo.FunctionCall(returnType, rTarget, callFilePos, callArgs.declMapping())
     }
 
     override fun rCall0(rTarget: R_FunctionCallTarget, rArgExprs: ImmList<R_Expr>): R_FunctionCall {
-        return R_FullFunctionCall(returnType, rTarget, callFilePos, rArgExprs, callArgs.paramsToExprs)
+        return R_FullFunctionCall(returnType, rTarget, callFilePos, rArgExprs, callArgs.declMapping())
     }
 
     override fun dbExpr(dbBase: Db_Expr?): Db_Expr {

@@ -11,6 +11,7 @@ import net.postchain.rell.base.model.rr.RR_Expr
 import net.postchain.rell.base.model.rr.RR_FunctionCall
 import net.postchain.rell.base.model.rr.RR_MemberCalculator
 import net.postchain.rell.base.model.rr.RR_WhenChooser
+import net.postchain.rell.base.lmodel.dsl.Ld_CallArgAlign
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.base.utils.toImmList
 
@@ -24,6 +25,36 @@ private fun isIdentityMapping(mapping: List<Int>, argCount: Int): Boolean {
             }
             return true
         }
+    }
+}
+
+/**
+ * Reorder evaluated arguments (source order) into the compacted parameter order the sys-fn body
+ * expects. [mapping] is indexed by declaration position: entry >= 0 is a source argument index,
+ * -1 marks an optional skipped by a named argument (dropped here; the gap is reconstructed for
+ * typed-param delegates via [withCallArgAlign]).
+ */
+private fun applyCallMapping(mapping: List<Int>, args: List<Rt_Value>): List<Rt_Value> {
+    if (isIdentityMapping(mapping, args.size)) return args
+    val out = ArrayList<Rt_Value>(args.size)
+    for (m in mapping) {
+        if (m >= 0) out.add(args[m])
+    }
+    return out
+}
+
+/**
+ * Publish [mapping] for the body funnel to rebuild the declaration-aligned argument list, but only
+ * when the call actually has a gap (a -1 entry). Non-gap calls — the overwhelming majority — skip
+ * the ThreadLocal entirely.
+ */
+private inline fun <T> withCallArgAlign(mapping: List<Int>, block: () -> T): T {
+    if (mapping.none { it < 0 }) return block()
+    val prev = Ld_CallArgAlign.enter(mapping)
+    try {
+        return block()
+    } finally {
+        Ld_CallArgAlign.restore(prev)
     }
 }
 
@@ -101,13 +132,11 @@ internal fun Rt_InterpreterImpl.evaluateFunctionCall(expr: RR_Expr.FunctionCall,
                 Rt_NullValue
             } else {
                 val args = call.args.map { evaluateExpr(it, frame) }
+                val mappedArgs = applyCallMapping(call.mapping, args)
 
-                val mappedArgs = if (isIdentityMapping(call.mapping, args.size))
-                    args
-                else
-                    call.mapping.map { args[it] }
-
-                callTarget(call.target, base, mappedArgs, frame, callPos = call.callPos)
+                withCallArgAlign(call.mapping) {
+                    callTarget(call.target, base, mappedArgs, frame, callPos = call.callPos)
+                }
             }
         }
 
@@ -170,13 +199,13 @@ internal fun Rt_InterpreterImpl.evaluateMemberCalculator(
 
     is RR_MemberCalculator.FunctionCall -> {
         when (val call = calc.call) {
-            is RR_FunctionCall.Full -> callTarget(
-                call.target,
-                base,
-                call.args.map { evaluateExpr(it, frame) },
-                frame,
-                callPos = call.callPos,
-            )
+            is RR_FunctionCall.Full -> {
+                val args = call.args.map { evaluateExpr(it, frame) }
+                val mappedArgs = applyCallMapping(call.mapping, args)
+                withCallArgAlign(call.mapping) {
+                    callTarget(call.target, base, mappedArgs, frame, callPos = call.callPos)
+                }
+            }
 
             is RR_FunctionCall.Partial -> {
                 val values = call.args.map { evaluateExpr(it, frame) }

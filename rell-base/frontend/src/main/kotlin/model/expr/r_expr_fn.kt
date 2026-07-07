@@ -19,7 +19,11 @@ class R_FullFunctionCall(
         val mapping: ImmList<Int>,
 ): R_FunctionCall(returnType) {
     init {
-        checkEquals(this.mapping.sorted(), this.args.indices.toList())
+        // `mapping` is indexed by declaration position: a value >= 0 is an argument index, while
+        // -1 marks a skipped optional parameter (arises only when a lib call skips a leading
+        // optional by name, leaving a gap). The non-negative entries must be a permutation of the
+        // argument indices.
+        checkEquals(this.mapping.filter { it >= 0 }.sorted(), this.args.indices.toList())
     }
 }
 

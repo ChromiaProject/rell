@@ -306,7 +306,11 @@ internal sealed class Tf_MemberAccessNode: Tf_ExprNode() {
             val callCtx = buildCallCtx(frame)
 
             return try {
-                invokeSysFn(callCtx, fn, displayName, mapped)
+                if (tfMappingHasGap(mapping)) {
+                    tfWithCallArgAlign(mapping) { invokeSysFn(callCtx, fn, displayName, mapped) }
+                } else {
+                    invokeSysFn(callCtx, fn, displayName, mapped)
+                }
             } catch (e: Rt_Exception) {
                 rethrowNested(tfRtFrame(frame), callPos, e)
             }
@@ -316,7 +320,8 @@ internal sealed class Tf_MemberAccessNode: Tf_ExprNode() {
          * Identity case: evaluate args directly into a pre-sized `Array<Rt_Value>` (slot 0 holds
          * `baseValue`, slots 1..n hold args) and wrap it in a [Tf_ArrayBackedList]. Skips the
          * `ArrayList` wrapper plus its `grow` cost — the dominant SysMemberFnCall arg-eval cost on
-         * stdlib-heavy workloads (~2% on `bench_locations`).
+         * stdlib-heavy workloads (~2% on `bench_locations`). A -1 in the mapping marks an optional
+         * skipped by a named argument; drop it (the gap is reconstructed by the body funnel).
          */
         @ExplodeLoop
         private fun buildArgList(frame: VirtualFrame, baseValue: Rt_Value): List<Rt_Value> {
@@ -334,10 +339,18 @@ internal sealed class Tf_MemberAccessNode: Tf_ExprNode() {
             val evaluated = Array(args.size) { args[it].execute(frame) }
 
             val mapping = this.mapping
-            val out = arrayOfNulls<Rt_Value>(mapping.size + 1)
+            var count = 0
+            for (m in mapping) {
+                if (m >= 0) count++
+            }
+            val out = arrayOfNulls<Rt_Value>(count + 1)
             out[0] = baseValue
-            for (i in mapping.indices) {
-                out[i + 1] = Tf_Unchecked.cast(evaluated[mapping[i]])
+            var k = 1
+            for (m in mapping) {
+                if (m >= 0) {
+                    out[k] = Tf_Unchecked.cast(evaluated[m])
+                    k++
+                }
             }
             @Suppress("UNCHECKED_CAST")
             return Tf_ArrayBackedList(out as Array<Rt_Value>)

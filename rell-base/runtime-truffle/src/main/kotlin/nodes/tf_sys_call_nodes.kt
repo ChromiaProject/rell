@@ -12,9 +12,31 @@ import com.oracle.truffle.api.profiles.BranchProfile
 import net.postchain.rell.base.model.DefinitionId
 import net.postchain.rell.base.model.ErrorPos
 import net.postchain.rell.base.model.FilePos
+import net.postchain.rell.base.lmodel.dsl.Ld_CallArgAlign
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.truffle.Tf_FrameInfo
 import net.postchain.rell.base.runtime.truffle.Tf_Unchecked
+
+/** True if [mapping] contains a -1 gap (an optional skipped by a named argument). */
+internal fun tfMappingHasGap(mapping: IntArray): Boolean {
+    for (m in mapping) {
+        if (m < 0) return true
+    }
+    return false
+}
+
+/**
+ * Publish [mapping] (declaration-position, may contain -1) so the sys-fn body funnel can rebuild
+ * the declaration-aligned argument list; used only for calls that actually have a gap.
+ */
+internal inline fun <T> tfWithCallArgAlign(mapping: IntArray, block: () -> T): T {
+    val prev = Ld_CallArgAlign.enter(mapping.asList())
+    try {
+        return block()
+    } finally {
+        Ld_CallArgAlign.restore(prev)
+    }
+}
 
 /**
  * Native: direct dispatch for sys-function calls (`RR_FunctionCallTarget.SysGlobal` and
@@ -186,7 +208,13 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
             val mapped: List<Rt_Value> = buildArgList(frame)
             val callCtx = buildCallCtx(frame)
             return try {
-                invokeSysFn(callCtx, fn, mapped)
+                // A gap (named argument skipping a leading optional) needs the declaration mapping
+                // published for the body funnel; folded away for the gapless common case.
+                if (tfMappingHasGap(mapping)) {
+                    tfWithCallArgAlign(mapping) { invokeSysFn(callCtx, fn, mapped) }
+                } else {
+                    invokeSysFn(callCtx, fn, mapped)
+                }
             } catch (e: Throwable) {
                 errorProfile.enter()
                 rethrowAfterDecorate(tfRtFrame(frame), callCtx, callPos, displayName, e)
@@ -197,7 +225,9 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
          * Identity case: evaluate args directly into a pre-sized `Array<Rt_Value>` and wrap it in
          * a [Tf_ArrayBackedList] view — no `ArrayList`/`grow` cost, one allocation pair (the array
          * + the wrapper). Non-identity case: keep a separate source-evaluated array because output
-         * positions may pull from any source (the mapping spec allows duplicates).
+         * positions may pull from any source (the mapping spec allows duplicates). A -1 in the
+         * mapping marks an optional skipped by a named argument; drop it, keeping the compacted
+         * arguments the body expects (the gap is reconstructed by the body funnel).
          */
         @ExplodeLoop
         private fun buildArgList(frame: VirtualFrame): List<Rt_Value> {
@@ -209,8 +239,20 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
             val evaluated = Array(args.size) { args[it].execute(frame) }
 
             val mapping = this.mapping
-            val out = Array<Rt_Value>(mapping.size) { Tf_Unchecked.cast(evaluated[mapping[it]]) }
-            return Tf_ArrayBackedList(out)
+            var count = 0
+            for (m in mapping) {
+                if (m >= 0) count++
+            }
+            val out = arrayOfNulls<Rt_Value>(count)
+            var k = 0
+            for (m in mapping) {
+                if (m >= 0) {
+                    out[k] = Tf_Unchecked.cast(evaluated[m])
+                    k++
+                }
+            }
+            @Suppress("UNCHECKED_CAST")
+            return Tf_ArrayBackedList(out as Array<Rt_Value>)
         }
     }
 
@@ -272,7 +314,11 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
             val mapped: List<Rt_Value> = buildArgList(frame, baseValue)
             val callCtx = buildCallCtx(frame)
             return try {
-                invokeSysFn(callCtx, fn, mapped)
+                if (tfMappingHasGap(mapping)) {
+                    tfWithCallArgAlign(mapping) { invokeSysFn(callCtx, fn, mapped) }
+                } else {
+                    invokeSysFn(callCtx, fn, mapped)
+                }
             } catch (e: Throwable) {
                 errorProfile.enter()
                 rethrowAfterDecorate(tfRtFrame(frame), callCtx, callPos, displayName, e)
@@ -284,6 +330,8 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
          * `baseValue`, slots 1..n hold args) and wrap it in a [Tf_ArrayBackedList]. Eliminates the
          * `ArrayList` / `grow` overhead that dominated sys-member arg-eval on stdlib-heavy
          * workloads. The interpreter's SysMember path passes `[base] + args`; mirror that exactly.
+         * A -1 in the mapping marks an optional skipped by a named argument; drop it (the gap is
+         * reconstructed by the body funnel).
          */
         @ExplodeLoop
         private fun buildArgList(frame: VirtualFrame, baseValue: Rt_Value): List<Rt_Value> {
@@ -301,10 +349,18 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
             val evaluated = Array(args.size) { args[it].execute(frame) }
 
             val mapping = this.mapping
-            val out = arrayOfNulls<Rt_Value>(mapping.size + 1)
+            var count = 0
+            for (m in mapping) {
+                if (m >= 0) count++
+            }
+            val out = arrayOfNulls<Rt_Value>(count + 1)
             out[0] = baseValue
-            for (i in mapping.indices) {
-                out[i + 1] = Tf_Unchecked.cast(evaluated[mapping[i]])
+            var k = 1
+            for (m in mapping) {
+                if (m >= 0) {
+                    out[k] = Tf_Unchecked.cast(evaluated[m])
+                    k++
+                }
             }
             @Suppress("UNCHECKED_CAST")
             return Tf_ArrayBackedList(out as Array<Rt_Value>)

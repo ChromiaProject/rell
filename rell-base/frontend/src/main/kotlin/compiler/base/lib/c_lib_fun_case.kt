@@ -240,7 +240,8 @@ private class C_LibMatchParams(
         }
 
         val paramsToExprs = argMatching.mapping.mapToImmList { it.index }
-        return V_FunctionCallArgs(exprs, paramsToExprs, argMatching.exprsToParams)
+        val paramDeclIndexes = argMatching.mapping.mapToImmList { it.param.index }
+        return V_FunctionCallArgs(exprs, paramsToExprs, argMatching.exprsToParams, paramDeclIndexes)
     }
 
     private fun checkRestrictions(ctx: C_ExprContext) {

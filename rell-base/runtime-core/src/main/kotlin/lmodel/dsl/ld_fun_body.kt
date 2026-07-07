@@ -17,6 +17,30 @@ import net.postchain.rell.base.runtime.R_SysFunction
 import net.postchain.rell.base.runtime.Rt_CallContext
 import net.postchain.rell.base.runtime.Rt_Value
 
+/**
+ * Expand a compacted argument list (receiver values, then present parameters in declaration order)
+ * into a declaration-aligned list where each optional skipped by a named argument becomes a null
+ * hole. [mapping] is indexed by declaration position: entry >= 0 means the parameter is present
+ * (consume the next compacted argument), -1 means it was omitted. The receiver values prepended
+ * ahead of the parameters are recovered as the leading, unmapped slots of [args].
+ */
+private fun alignCallArgs(args: List<Rt_Value>, mapping: List<Int>): List<Rt_Value?> {
+    val boundCount = mapping.count { it >= 0 }
+    val receiverSlots = args.size - boundCount
+    val out = arrayOfNulls<Rt_Value>(receiverSlots + mapping.size)
+    for (r in 0 until receiverSlots) {
+        out[r] = args[r]
+    }
+    var next = receiverSlots
+    for (declPos in mapping.indices) {
+        if (mapping[declPos] >= 0) {
+            out[receiverSlots + declPos] = args[next]
+            next++
+        }
+    }
+    return out.asList()
+}
+
 abstract class Ld_CommonFunctionBodyDslImpl(
     private val maker: Ld_CommonFunctionBodyMaker,
 ): Ld_CommonFunctionBodyDsl {
@@ -54,7 +78,16 @@ abstract class Ld_CommonFunctionBodyDslImpl(
     // the JVM call stack rather than a heap-allocated deque.
     final override fun bodyContextN(rCode: (Rt_CallContext, List<Rt_Value>) -> Rt_Value): Ld_BodyResult =
         maker.bodyContextN { ctx, args ->
-            val prev = Ld_CallArgs.enter(args)
+            // Typed-param delegates (Ld_ParamRef) read by DECLARATION index. When the call has an
+            // internal gap (a named argument skipped an earlier optional), the interpreter publishes
+            // the declaration mapping via Ld_CallArgAlign; expand the compacted `args` into a
+            // declaration-aligned list with null holes for the skipped optionals. Consume the
+            // mapping immediately so it never leaks into nested calls made by the body.
+            val alignMapping = Ld_CallArgAlign.current()
+            if (alignMapping != null) Ld_CallArgAlign.restore(null)
+            val forParams: List<Rt_Value?> = if (alignMapping == null) args else alignCallArgs(args, alignMapping)
+            // `args` itself stays compacted and non-null for bodyN-style consumers.
+            val prev = Ld_CallArgs.enter(forParams)
             try {
                 rCode(ctx, args)
             } finally {
