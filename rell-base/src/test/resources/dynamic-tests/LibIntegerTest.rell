@@ -1,0 +1,197 @@
+// Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+//
+// Dynamic query test suite: the file name is the suite, each `query` is a test case. A test
+// passes iff its query runs without throwing; failures are raised by the `rell.test.assert_*`
+// functions. Discovered and executed by `RellQueryFileTest` (see the Kotlin @TestFactory).
+//
+// Converted from the former `LibIntegerTest.kt`. The three `ct_err` cases of that test —
+// `integer.from_text(123)`, `integer.from_hex()`, `integer.from_hex(123)` — checked that the
+// compiler *rejects* ill-typed calls; they cannot live in a file that must compile, so they
+// are intentionally not represented here.
+
+// `assert_fails` needs a `() -> T`, and partial application (`f(args, *)`) only yields one for a
+// non-overloaded function. `integer(...)` and `integer.from_text(...)` are overloaded, so their
+// failing cases are routed through these thin, single-signature wrappers. `integer.from_hex(...)`
+// has a single signature, so its failing cases use partial application directly.
+function parse_text(s: text) = integer.from_text(s);
+function parse_radix(s: text, radix: integer) = integer.from_text(s, radix);
+function ctor_radix(s: text, radix: integer) = integer(s, radix);
+
+query constants() {
+    assert_equals(integer.MIN_VALUE, -9223372036854775807 - 1);
+    assert_equals(integer.MAX_VALUE, 9223372036854775807);
+    return 0;
+}
+
+query constructor_text() {
+    // Only a few cases, as it's the same as integer.from_text().
+    assert_equals(integer('0'), 0);
+    assert_equals(integer('123456789'), 123456789);
+    assert_equals(integer('123456789', 20), 28365650969);
+    assert_fails(ctor_radix('123', 0, *));
+    assert_fails(ctor_radix('123', 1, *));
+    assert_fails(ctor_radix('123', 40, *));
+    assert_fails(ctor_radix('123', -1, *));
+    return 0;
+}
+
+query from_text() {
+    assert_equals(integer.from_text('0'), 0);
+    assert_equals(integer.from_text('123456789'), 123456789);
+    assert_equals(integer.from_text('9223372036854775807'), 9223372036854775807);
+    assert_fails(parse_text('9223372036854775808', *));
+    assert_equals(integer.from_text('-123456789'), -123456789);
+    assert_equals(integer.from_text('-9223372036854775808'), -9223372036854775807 - 1);
+    assert_fails(parse_text('-9223372036854775809', *));
+    assert_fails(parse_text('', *));
+    assert_fails(parse_text(' 123', *));
+    assert_fails(parse_text('123 ', *));
+    assert_equals(integer.from_text('0123'), 123);
+    assert_fails(parse_text('0x1234', *));
+    assert_fails(parse_text('aaa', *));
+
+    assert_fails(parse_radix('123', 0, *));
+    assert_fails(parse_radix('123', 1, *));
+    assert_fails(parse_radix('123', 40, *));
+    assert_fails(parse_radix('123', -1, *));
+    return 0;
+}
+
+query from_text_base2() {
+    assert_equals(integer.from_text('0', 2), 0);
+    assert_equals(integer.from_text('1111011', 2), 123);
+    assert_equals(integer.from_text('11111111', 2), 255);
+    assert_equals(integer.from_text('111111111111111111111111111111111111111111111111111111111111111', 2), 9223372036854775807);
+    assert_equals(integer.from_text('-1', 2), -1);
+    assert_equals(integer.from_text('-1000000000000000000000000000000000000000000000000000000000000000', 2), -9223372036854775807 - 1);
+    assert_fails(parse_radix('1000000000000000000000000000000000000000000000000000000000000000', 2, *));
+    assert_fails(parse_radix('-1000000000000000000000000000000000000000000000000000000000000001', 2, *));
+    return 0;
+}
+
+query from_text_base8() {
+    assert_equals(integer.from_text('0', 8), 0);
+    assert_equals(integer.from_text('173', 8), 123);
+    assert_equals(integer.from_text('377', 8), 255);
+    assert_equals(integer.from_text('777777777777777777777', 8), 9223372036854775807);
+    assert_equals(integer.from_text('-1', 8), -1);
+    assert_equals(integer.from_text('-1000000000000000000000', 8), -9223372036854775807 - 1);
+    assert_fails(parse_radix('1000000000000000000000', 8, *));
+    assert_fails(parse_radix('-1000000000000000000001', 8, *));
+    return 0;
+}
+
+query from_text_base10() {
+    assert_equals(integer.from_text('0', 10), 0);
+    assert_equals(integer.from_text('123456789', 10), 123456789);
+    assert_equals(integer.from_text('9223372036854775807', 10), 9223372036854775807);
+    assert_fails(parse_radix('9223372036854775808', 10, *));
+    assert_equals(integer.from_text('-123456789', 10), -123456789);
+    assert_equals(integer.from_text('-9223372036854775808', 10), -9223372036854775807 - 1);
+    assert_fails(parse_radix('-9223372036854775809', 10, *));
+    return 0;
+}
+
+query from_text_base16() {
+    assert_equals(integer.from_text('0', 16), 0);
+    assert_equals(integer.from_text('7b', 16), 123);
+    assert_equals(integer.from_text('ff', 16), 255);
+    assert_equals(integer.from_text('7fffffffffffffff', 16), 9223372036854775807);
+    assert_equals(integer.from_text('-1', 16), -1);
+    assert_equals(integer.from_text('-8000000000000000', 16), -9223372036854775807 - 1);
+    assert_fails(parse_radix('8000000000000000', 16, *));
+    assert_fails(parse_radix('-8000000000000001', 16, *));
+    return 0;
+}
+
+query from_hex() {
+    assert_equals(integer.from_hex('0'), 0);
+    assert_equals(integer.from_hex('7b'), 123);
+    assert_equals(integer.from_hex('ff'), 255);
+    assert_equals(integer.from_hex('7fffffffffffffff'), 9223372036854775807);
+    assert_equals(integer.from_hex('ffffffffffffffff'), -1);
+    assert_equals(integer.from_hex('8000000000000000'), -9223372036854775807 - 1);
+    assert_fails(integer.from_hex('-1', *));
+    assert_fails(integer.from_hex('10000000000000000', *));
+    assert_fails(integer.from_hex('', *));
+    assert_fails(integer.from_hex('ghi', *));
+    assert_fails(integer.from_hex('0x7b', *));
+    return 0;
+}
+
+query to_decimal() {
+    assert_equals((0).to_decimal(), 0.0);
+    assert_equals((123456).to_decimal(), 123456.0);
+    assert_equals((9223372036854775807).to_decimal(), 9223372036854775807.0);
+    assert_equals((-9223372036854775807 - 1).to_decimal(), -9223372036854775808.0);
+    return 0;
+}
+
+query to_hex() {
+    assert_equals((0).to_hex(), '0');
+    assert_equals((123).to_hex(), '7b');
+    assert_equals((255).to_hex(), 'ff');
+    assert_equals((9223372036854775807).to_hex(), '7fffffffffffffff');
+    assert_equals((-1).to_hex(), 'ffffffffffffffff');
+    assert_equals((-9223372036854775807 - 1).to_hex(), '8000000000000000');
+    return 0;
+}
+
+query to_text() {
+    assert_equals((0).to_text(), '0');
+    assert_equals((123).to_text(), '123');
+    assert_equals((255).to_text(), '255');
+    assert_equals((9223372036854775807).to_text(), '9223372036854775807');
+    assert_equals((-1).to_text(), '-1');
+    assert_equals((-9223372036854775807 - 1).to_text(), '-9223372036854775808');
+    return 0;
+}
+
+query to_text_base2() {
+    assert_equals((0).to_text(2), '0');
+    assert_equals((123).to_text(2), '1111011');
+    assert_equals((255).to_text(2), '11111111');
+    assert_equals((9223372036854775807).to_text(2), '111111111111111111111111111111111111111111111111111111111111111');
+    assert_equals((-1).to_text(2), '-1');
+    assert_equals((-9223372036854775807 - 1).to_text(2), '-1000000000000000000000000000000000000000000000000000000000000000');
+    return 0;
+}
+
+query to_text_base8() {
+    assert_equals((0).to_text(8), '0');
+    assert_equals((123).to_text(8), '173');
+    assert_equals((255).to_text(8), '377');
+    assert_equals((9223372036854775807).to_text(8), '777777777777777777777');
+    assert_equals((-1).to_text(8), '-1');
+    assert_equals((-9223372036854775807 - 1).to_text(8), '-1000000000000000000000');
+    return 0;
+}
+
+query to_text_base10() {
+    assert_equals((0).to_text(10), '0');
+    assert_equals((123).to_text(10), '123');
+    assert_equals((255).to_text(10), '255');
+    assert_equals((9223372036854775807).to_text(10), '9223372036854775807');
+    assert_equals((-1).to_text(10), '-1');
+    assert_equals((-9223372036854775807 - 1).to_text(10), '-9223372036854775808');
+    return 0;
+}
+
+query to_text_base16() {
+    assert_equals((0).to_text(16), '0');
+    assert_equals((123).to_text(16), '7b');
+    assert_equals((255).to_text(16), 'ff');
+    assert_equals((9223372036854775807).to_text(16), '7fffffffffffffff');
+    assert_equals((-1).to_text(16), '-1');
+    assert_equals((-9223372036854775807 - 1).to_text(16), '-8000000000000000');
+    return 0;
+}
+
+query sign() {
+    assert_equals((0).sign(), 0);
+    assert_equals((1).sign(), 1);
+    assert_equals((-1).sign(), -1);
+    assert_equals((-123456).sign(), -1);
+    assert_equals((123456).sign(), 1);
+    return 0;
+}
