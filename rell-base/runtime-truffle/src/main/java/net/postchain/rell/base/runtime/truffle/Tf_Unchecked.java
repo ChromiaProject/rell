@@ -24,6 +24,13 @@ import org.jetbrains.annotations.Contract;
 public final class Tf_Unchecked {
     private Tf_Unchecked() {}
 
+    /**
+     * Unchecked cast of {@code o} to {@code T}.
+     *
+     * @param <T> the target type
+     * @param o   the object to cast
+     * @return {@code o} cast to {@code T}
+     */
     @Contract(value = "_ -> param1", pure = true)
     @SuppressWarnings("unchecked")
     public static <T> T cast(Object o) {
@@ -39,6 +46,10 @@ public final class Tf_Unchecked {
      * isn't escape-stored), which adds an unnecessary heap allocation on the wave-3 inner
      * function-call hot path. In Java, passing an {@code Object[]} to {@code call(Object...)}
      * uses the array as-is (no copy).
+     *
+     * @param call      the {@link DirectCallNode} to invoke
+     * @param arguments the argument array passed as-is to the call target
+     * @return the value returned by the call target
      */
     public static Object callDirect(DirectCallNode call, Object[] arguments) {
         return call.call(arguments);

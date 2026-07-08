@@ -38,6 +38,9 @@ import java.util.List;
         contextPolicy = TruffleLanguage.ContextPolicy.SHARED
 )
 public final class Tf_LanguageProvider extends TruffleLanguageProvider {
+    /** Instantiated by Truffle's {@link java.util.ServiceLoader} via {@code META-INF/services}. */
+    public Tf_LanguageProvider() {}
+
     @Override
     protected String getLanguageClassName() {
         return Tf_Language.class.getName();
