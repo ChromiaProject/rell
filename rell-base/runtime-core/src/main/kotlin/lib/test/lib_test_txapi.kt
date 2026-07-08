@@ -532,7 +532,7 @@ private object Lib_Type_Tx {
                         ```
 
                         may be passed as a `struct<my_op>`:
-                        ```
+                        ```rell
                         rell.test.tx([
                             struct<my_op>(foo = 1, bar = ["a", "b"]),
                             struct<my_op>(foo = 2, bar = ["c", "d"])
@@ -563,7 +563,7 @@ private object Lib_Type_Tx {
                         ```
 
                         may be passed as a `struct<my_op>`:
-                        ```
+                        ```rell
                         rell.test.tx(
                             struct<my_op>(foo = 1, bar = ["a", "b"]),
                             struct<my_op>(foo = 2, bar = ["c", "d"])
@@ -669,7 +669,7 @@ private object Lib_Type_Tx {
                         ```
 
                         may be passed as a `struct<my_op>`:
-                        ```
+                        ```rell
                         my_transaction_builder.op([
                             struct<my_op>(foo = 1, bar = ["a", "b"]),
                             struct<my_op>(foo = 2, bar = ["c", "d"])
@@ -699,7 +699,7 @@ private object Lib_Type_Tx {
                         ```
 
                         may be passed as a `struct<my_op>`:
-                        ```
+                        ```rell
                         my_transaction_builder.op(
                             struct<my_op>(foo = 1, bar = ["a", "b"]),
                             struct<my_op>(foo = 2, bar = ["c", "d"])

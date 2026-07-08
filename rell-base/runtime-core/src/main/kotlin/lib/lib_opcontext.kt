@@ -94,7 +94,7 @@ object Lib_OpContext {
                         ```
 
                         a corresponding `struct<my_op>` can be instantiated and converted:
-                        ```
+                        ```rell
                         val x: struct<my_op> = struct<my_op>(foo = 1, bar = ["a", "b"]);
                         print(x.to_gtx_operation()); // prints gtx_operation{name=my_op,args=[1, ["a","b"]]}
                         ```

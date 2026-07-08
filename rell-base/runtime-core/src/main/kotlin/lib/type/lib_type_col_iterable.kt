@@ -33,7 +33,7 @@ object Lib_Type_Iterable {
                     - `range(10).join_to_text('', '', '', 5, 'more')` returns `'01234more'`.
 
                     Where the function `even` is defined:
-                    ```
+                    ```rell
                     function even(x: integer): text {
                        return if (x % 2 == 0) 'EVEN' else 'ODD';
                     }
