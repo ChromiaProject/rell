@@ -77,8 +77,10 @@ query value_block_locals_in_trailing_expr() {
     return 0;
 }
 
-query value_block_early_return() {
-    assert_equals(sum([1, -2, 3], x -> { if (x < 0) return 0; x }), 4);
+// A value block whose result is computed conditionally. `return` is prohibited inside a lambda, so
+// the branch is an if-expression and the trailing expression is the sole result.
+query value_block_conditional_result() {
+    assert_equals(sum([1, -2, 3], x -> { val v = if (x < 0) 0 else x; v }), 4);
     return 0;
 }
 

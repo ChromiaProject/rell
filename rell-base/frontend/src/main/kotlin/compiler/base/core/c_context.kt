@@ -469,6 +469,10 @@ class C_FunctionContext(
     name: String,
     val explicitReturnType: R_Type?,
     val statementVars: ImmTypedKeyMap,
+    // A lambda body is lifted into its own function context. A `return` there would return from the
+    // lifted function, not the enclosing definition - a non-local control flow with no clear meaning
+    // in an expression - so it is prohibited; the lambda's result is its final expression.
+    val insideLambda: Boolean = false,
 ) {
     val nsCtx = defCtx.nsCtx
     val modCtx = nsCtx.modCtx

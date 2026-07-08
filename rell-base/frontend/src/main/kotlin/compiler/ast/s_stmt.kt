@@ -154,6 +154,17 @@ internal class S_ReturnStatement(
     }
 
     private fun compileInternal(ctx: C_StmtContext): R_Statement {
+        // A lambda's result is its final expression; `return` there is a non-local control flow with
+        // no meaning in an expression and is prohibited (mirrors break/continue, which have no loop
+        // to target inside the lifted function).
+        if (ctx.fnCtx.insideLambda) {
+            ctx.msgCtx.error(
+                startPos, "lambda:return",
+                "Return is not allowed inside a lambda; the lambda's result is its final expression",
+            )
+            return C_ExprUtils.ERROR_STATEMENT
+        }
+
         var vExpr: V_Expr? = null
 
         if (expr != null) {

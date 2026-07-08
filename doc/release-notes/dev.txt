@@ -46,8 +46,8 @@ function value.
     (x, y) -> x + y            // parenthesised parameters
     () -> 42                   // no parameters
 
-The body is either a single expression (as above) or a value block whose trailing expression is the result -
-no return is needed:
+The body is either a single expression (as above) or a value block whose trailing expression is the result
+(return is not allowed inside a lambda - its result is the final expression):
 
     n -> {
         val doubled = n * 2;

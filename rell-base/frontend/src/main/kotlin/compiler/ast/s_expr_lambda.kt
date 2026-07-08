@@ -23,7 +23,7 @@ import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
 /**
  * Arrow lambda: `x -> e`, `(x, y) -> e`, `() -> e`, or with a value-block body
- * `x -> { stmt; ...; result }` (the trailing expression is the result; no `return` needed).
+ * `x -> { stmt; ...; result }` (the trailing expression is the result; `return` is not allowed).
  *
  * A parameter's type comes from its optional explicit annotation (parenthesised form only,
  * `(x: integer) -> e`) or, when unannotated, from the expected function type at the use site (target typing).
@@ -127,7 +127,7 @@ private object C_LambdaCompiler {
             map.toImmTypedKeyMap()
         }
 
-        val fnCtx = C_FunctionContext(defCtx, defName.appLevelName, explicitRetType, statementVars)
+        val fnCtx = C_FunctionContext(defCtx, defName.appLevelName, explicitRetType, statementVars, insideLambda = true)
         val frameCtx = C_FrameContext.create(fnCtx)
         val blkCtx = frameCtx.rootBlkCtx
 

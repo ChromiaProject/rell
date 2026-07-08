@@ -28,7 +28,7 @@ class LambdaExprTest: BaseRellTest() {
 
     @Test fun testCaptureIsImmutable() {
         // A captured local is bound by value and cannot be reassigned inside the lambda.
-        chkEx("{ var n = 7; val f: (integer) -> integer = x -> { n = x; return n; }; return f(1); }",
+        chkEx("{ var n = 7; val f: (integer) -> integer = x -> { n = x; n }; return f(1); }",
             "ct_err:expr_assign_val:n")
     }
 
@@ -66,6 +66,15 @@ class LambdaExprTest: BaseRellTest() {
     @Test fun testBareParamAnnotationIsSyntaxError() {
         // A type annotation on a bare (non-parenthesised) parameter does not parse.
         chkEx("{ val f = x: integer -> x; return 0; }", "ct_err:syntax")
+    }
+
+    @Test fun testReturnInLambdaIsError() {
+        // `return` is prohibited inside a lambda - the result is the lambda's final expression, and a
+        // `return` would be a non-local control flow (it cannot return from the enclosing definition).
+        // Holds for a value return, a bare return, and a return nested in a conditional.
+        chkEx("{ val f: (integer) -> integer = x -> { return x; }; return 0; }", "ct_err:lambda:return")
+        chkEx("{ val f: () -> unit = () -> { return; }; return 0; }", "ct_err:lambda:return")
+        chkEx("{ val f: (integer) -> integer = x -> { if (x > 0) return 1; x }; return 0; }", "ct_err:lambda:return")
     }
 
     @Test fun testLambdaInWhenArmNeedsAnnotation() {
