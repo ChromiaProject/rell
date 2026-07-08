@@ -55,7 +55,8 @@ internal const val RELL_HIGHLIGHT_JS: String = """
       '("(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\')', // 4: string
       '(0x[0-9A-Fa-f]+L?|\\d+\\.\\d+(?:[eE][+-]?\\d+)?|\\d+(?:[eE][+-]?\\d+)?L?)', // 5: number
       '(@[A-Za-z_][A-Za-z0-9_]*)',                      // 6: annotation
-      '([A-Za-z_][A-Za-z0-9_]*)',                       // 7: identifier (k/v lookup)
+      '(->)',                                            // 7: arrow (lambda / when / fn-type)
+      '([A-Za-z_][A-Za-z0-9_]*)',                       // 8: identifier (k/v lookup)
     ].join('|'),
     'g'
   );
@@ -78,11 +79,58 @@ internal const val RELL_HIGHLIGHT_JS: String = """
       else if (m[4])         cls = 'rhl-str';
       else if (m[5])         cls = 'rhl-num';
       else if (m[6])         cls = 'rhl-anno';
-      else if (m[7]) {
-        const w = m[7];
+      else if (m[7])         cls = 'rhl-op';
+      else if (m[8]) {
+        const w = m[8];
         if (KEYWORDS.has(w))      cls = 'rhl-kw';
         else if (LITERALS.has(w)) cls = 'rhl-lit';
         else if (TYPES.has(w))    cls = 'rhl-type';
+      }
+      out += cls ? '<span class="' + cls + '">' + escape(text) + '</span>' : escape(text);
+      last = m.index + text.length;
+    }
+    if (last < src.length) out += escape(src.slice(last));
+    return out;
+  }
+
+  // ── JavaScript highlighter ──────────────────────────────────────────────
+  const JS_KEYWORDS = new Set([
+    'var','let','const','function','return','if','else','while','for','do',
+    'new','delete','typeof','instanceof','in','of','void',
+    'class','extends','super','this','static','get','set',
+    'import','export','from','as','default',
+    'try','catch','finally','throw','switch','case','break','continue',
+    'async','await','yield','debugger',
+  ]);
+  const JS_LITERALS = new Set(['true','false','null','undefined','NaN','Infinity']);
+  const JS_TOKEN = new RegExp(
+    [
+      '(\\/\\*[\\s\\S]*?\\*\\/)',                         // 1: block comment
+      '(\\/\\/[^\\n]*)',                                  // 2: line comment
+      '(`(?:\\\\.|[^`\\\\])*`)',                          // 3: template literal
+      '("(?:\\\\.|[^"\\\\])*"|\'(?:\\\\.|[^\'\\\\])*\')', // 4: string
+      '(0[xX][0-9A-Fa-f]+n?|0[bB][01]+n?|0[oO][0-7]+n?|\\d+\\.\\d*(?:[eE][+-]?\\d+)?|\\d+(?:[eE][+-]?\\d+)?n?)', // 5: number
+      '([A-Za-z_$][A-Za-z0-9_$]*)',                      // 6: identifier
+    ].join('|'),
+    'g'
+  );
+
+  function highlightJs(src) {
+    let out = '';
+    let last = 0;
+    let m;
+    JS_TOKEN.lastIndex = 0;
+    while ((m = JS_TOKEN.exec(src)) !== null) {
+      if (m.index > last) out += escape(src.slice(last, m.index));
+      let cls = null;
+      const text = m[0];
+      if (m[1] || m[2])      cls = 'rhl-comment';
+      else if (m[3] || m[4]) cls = 'rhl-str';
+      else if (m[5])         cls = 'rhl-num';
+      else if (m[6]) {
+        const w = m[6];
+        if (JS_KEYWORDS.has(w))      cls = 'rhl-kw';
+        else if (JS_LITERALS.has(w)) cls = 'rhl-lit';
       }
       out += cls ? '<span class="' + cls + '">' + escape(text) + '</span>' : escape(text);
       last = m.index + text.length;
@@ -96,6 +144,12 @@ internal const val RELL_HIGHLIGHT_JS: String = """
       if (code.dataset.rhlDone === '1') return;
       const src = code.textContent || '';
       code.innerHTML = highlight(src);
+      code.dataset.rhlDone = '1';
+    });
+    document.querySelectorAll('pre > code.language-javascript, pre > code.language-js').forEach(function(code) {
+      if (code.dataset.rhlDone === '1') return;
+      const src = code.textContent || '';
+      code.innerHTML = highlightJs(src);
       code.dataset.rhlDone = '1';
     });
   }

@@ -513,6 +513,7 @@ hr.overload-sep { border: 0; border-top: 1px dashed var(--rule); margin: 1.4rem 
 .prose pre code .rhl-bytes   { color: #b07a1e; }
 .prose pre code .rhl-anno    { color: var(--primary); font-weight: 600; }
 .prose pre code .rhl-comment { color: var(--muted); font-style: italic; }
+.prose pre code .rhl-op      { color: var(--muted); }
 [data-theme="dark"] .prose pre code .rhl-type    { color: #9ab4d0; }
 [data-theme="dark"] .prose pre code .rhl-lit     { color: #7fb89a; }
 [data-theme="dark"] .prose pre code .rhl-num     { color: #7fb89a; }
