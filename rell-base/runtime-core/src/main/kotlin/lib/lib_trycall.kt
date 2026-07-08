@@ -272,11 +272,11 @@ internal object Lib_TryCall: KLogging() {
             if (needsSavepoint(ctx.exeCtx)) {
                 ctx.exeCtx.sysSqlExec.connection { con ->
                     withSavepoint(con) {
-                        doCall(fn, ctx, onSuccess)
+                        doCall(fn, onSuccess)
                     }
                 }
             } else {
-                doCall(fn, ctx, onSuccess)
+                doCall(fn, onSuccess)
             }
         } catch (e: Exception) {
             rethrowIfCancellation(e)
@@ -290,12 +290,8 @@ internal object Lib_TryCall: KLogging() {
 
     private fun doCall(
         fn: Rt_Value,
-        ctx: Rt_CallContext,
         onSuccess: (Rt_Value) -> Rt_Value = { it },
-    ): Rt_Value {
-        val v = (fn as Rt_FunctionValue).call(immListOf())
-        return onSuccess(v)
-    }
+    ): Rt_Value = onSuccess((fn as Rt_FunctionValue).call(immListOf()))
 
     private fun logException(e: Exception) {
         logger.info {
