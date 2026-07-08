@@ -42,6 +42,11 @@ object Lib_Type_Iterable {
                     Then:
                     - `range(10).join_to_text('->', '{', '}', 5, '...', even(*))` returns `{EVEN->ODD->EVEN->ODD->EVEN->...}`.
 
+                    `transform` can also be given as a lambda:
+                    - `[1, 2, 3].join_to_text(transform = x -> 'n' + x)` returns `'n1, n2, n3'`.
+                    - `range(10).join_to_text('->', '{', '}', 5, '...', x -> if (x % 2 == 0) 'EVEN' else 'ODD')` returns
+                      `{EVEN->ODD->EVEN->ODD->EVEN->...}`.
+
                     @return a textual representation of this iterable
                 """.comment()
                 val separator by paramOpt(

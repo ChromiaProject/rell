@@ -36,6 +36,10 @@ internal object Lib_TryCall: KLogging() {
                 function succeeds(): unit {}
                 try_call(fails(*)) // logs an out of bounds exception message and returns false
                 try_call(succeeds(*)) // logs nothing, returns true
+
+                // `fn` can also be written as a lambda:
+                try_call(() -> { list<integer>()[1]; }) // logs an out of bounds exception message and returns false
+                try_call(() -> {}) // logs nothing, returns true
                 ```
                 @return `true` if call returns without throwing any exceptions, `false` otherwise
             """.comment()
@@ -64,6 +68,10 @@ internal object Lib_TryCall: KLogging() {
                 function succeeds(): unit { return 0; }
                 try_call(fails(*)) // logs an out of bounds exception message and returns null
                 try_call(succeeds(*)) // logs nothing, returns 0
+
+                // `fn` can also be written as a lambda:
+                try_call(() -> list<integer>()[1]) // logs an out of bounds exception message and returns null
+                try_call(() -> 17) // logs nothing, returns 17
                 ```
                 @return the return value of `fn` if the call returns without throwing any exceptions, `null` otherwise
             """.comment()
@@ -93,6 +101,10 @@ internal object Lib_TryCall: KLogging() {
                 function succeeds(): unit { return 0; }
                 try_call(fails(*), 17) // logs an out of bounds exception message and returns 17
                 try_call(succeeds(*), 17) // logs nothing, returns 0
+
+                // `fn` can also be written as a lambda:
+                try_call(() -> list<integer>()[1], 17) // logs an out of bounds exception message and returns 17
+                try_call(() -> 42, 17) // logs nothing, returns 42
                 ```
                 @return the return value of `fn` if the call returns without throwing any exceptions, `default`
                 otherwise
@@ -134,6 +146,10 @@ internal object Lib_TryCall: KLogging() {
                 function succeeds(): integer { return 17; }
                 try_call_catch(fails(*)) // returns a try_call_result containing the error message
                 try_call_catch(succeeds(*)) // returns a try_call_result containing 17
+
+                // `fn` can also be written as a lambda:
+                try_call_catch(() -> { require(false, "This fails"); 0 }) // try_call_result containing the error message
+                try_call_catch(() -> 17) // returns a try_call_result containing 17
                 ```
                 @return a `try_call_result<T>` containing either the return value of `fn` or error information
             """.comment()

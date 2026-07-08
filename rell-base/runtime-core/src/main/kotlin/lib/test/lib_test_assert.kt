@@ -138,6 +138,8 @@ internal object Lib_Test_Assert {
                     // This test will pass.
                     function test_bad() {
                         rell.test.assert_fails(bad(*));
+                        // or inline:
+                        rell.test.assert_fails(() -> [0][1]);
                     }
                     ```
                 """.comment()
@@ -168,6 +170,8 @@ internal object Lib_Test_Assert {
                     // This test will pass.
                     function test_bad() {
                         rell.test.assert_fails("out of bounds", bad(*));
+                        // or inline:
+                        rell.test.assert_fails("out of bounds", () -> [0][1]);
                     }
                     ```
                 """.comment()

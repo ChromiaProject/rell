@@ -339,3 +339,79 @@ query list_of_lambdas() {
     assert_equals(_type_of(fs), 'list<(integer)->integer>');
     return 0;
 }
+
+// A `for` loop inside a lambda value block runs to completion; the trailing expression is the result.
+query for_loop_in_lambda_body() {
+    val f: (integer) -> integer = n -> { var s = 0; for (i in range(n)) s += i; s };
+    assert_equals(f(4), 6);
+    assert_equals(f(0), 0);
+    return 0;
+}
+
+// `break` inside a lambda's own `for` loop stops that loop only, then the trailing expression runs.
+query break_in_lambda_for_loop() {
+    val f: (integer) -> integer = n -> { var s = 0; for (i in range(n)) { if (i == 3) break; s += i; } s };
+    assert_equals(f(10), 3);
+    return 0;
+}
+
+// `continue` inside a lambda's own `for` loop skips the current iteration only.
+query continue_in_lambda_for_loop() {
+    val f: (integer) -> integer = n -> { var s = 0; for (i in range(n)) { if (i % 2 == 0) continue; s += i; } s };
+    assert_equals(f(6), 9);
+    return 0;
+}
+
+// A `while` loop with both `break` and `continue` resolves entirely within the lambda body.
+query while_loop_break_continue_in_lambda() {
+    val f: (integer) -> integer = cap -> {
+        var i = 0;
+        var s = 0;
+        while (true) {
+            i += 1;
+            if (i > cap) break;
+            if (i % 3 == 0) continue;
+            s += i;
+        }
+        s
+    };
+    assert_equals(f(7), 1 + 2 + 4 + 5 + 7);
+    return 0;
+}
+
+// Nested loops in a lambda: `break`/`continue` bind to the innermost loop, not the outer one.
+query nested_loops_break_continue_in_lambda() {
+    val f: (integer) -> integer = n -> {
+        var s = 0;
+        for (i in range(n)) {
+            for (j in range(n)) {
+                if (j == 2) break;
+                if (j == i) continue;
+                s += i * 10 + j;
+            }
+        }
+        s
+    };
+    // i=0: j=0 -> continue; j=1 -> +1. i=1: j=0 -> +10; j=1 -> continue. i=2: j=0 -> +20; j=1 -> +21.
+    assert_equals(f(3), 1 + 10 + 20 + 21);
+    return 0;
+}
+
+// The lambda's own loop and `break` are independent of the enclosing higher-order function's `for`
+// loop (`sum` iterates with a `for`). The `break` here must terminate the lambda's inner loop only,
+// leaving `sum`'s iteration over the list intact.
+query lambda_loop_independent_of_enclosing_for() {
+    // For each element x, sum 0..x but stop early at 2, i.e. min(x, 2 running sum) = 0+1 capped.
+    val g: (integer) -> integer = x -> { var s = 0; for (i in range(x)) { if (i >= 2) break; s += i; } s };
+    // g(1)=0, g(2)=1, g(3)=1 -> sum over sum()'s own for loop = 2.
+    assert_equals(sum([1, 2, 3], g), 2);
+    return 0;
+}
+
+// A loop inside a captured-closure lambda: the loop bound comes from a captured local.
+query loop_in_lambda_uses_captured_bound() {
+    val cap = 5;
+    val f: (integer) -> integer = start -> { var s = start; for (i in range(cap)) s += i; s };
+    assert_equals(f(100), 110);
+    return 0;
+}
