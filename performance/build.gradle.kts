@@ -14,7 +14,7 @@ allOpen.annotation("org.openjdk.jmh.annotations.State")
 // GraalVM is only required for actual JMH execution (libgraal/libjvmci). Compilation and the
 // empty `:performance:test` task must work on any JDK 21. The runtime assertion in
 // InterpreterBenchmark (Truffle.getRuntime() check) is the real guarantee that the JVM has
-// JVMCI/libgraal — toolchain vendor pinning was too brittle (Oracle GraalVM reports vendor
+// JVMCI/libgraal - toolchain vendor pinning was too brittle (Oracle GraalVM reports vendor
 // "Oracle Corporation", not "GraalVM", so a strict match broke CI on the official image).
 
 dependencies {
@@ -38,16 +38,16 @@ dependencies {
     // In-process `one.profiler.AsyncProfiler` for the `profile-sample` CLI.
     implementation(libs.async.profiler)
     // `one.convert.Main` re-renders the JFR file produced by async-profiler into a collapsed /
-    // flame-graph output that retains source-line attribution — essential for the butterfly
+    // flame-graph output that retains source-line attribution - essential for the butterfly
     // view, where the LLM needs the actual call-site line, not just the method name.
     implementation(libs.jfr.converter)
 }
 
-val prepareSamples by tasks.registering(Copy::class) {
+val prepareSamples = tasks.register<Copy>("prepareSamples") {
     description = "Stages real-world Rell sources from rell-toolbox fixtures and the local profiling dapp as " +
             "ParserBenchmark inputs."
 
-    group = "build"
+    group = LifecycleBasePlugin.BUILD_GROUP
 
     from(
         rootProject.file(
@@ -109,7 +109,7 @@ benchmark {
  * for `engine opt done`, `engine opt failed`, `engine transferToInterpreter`,
  * deoptimisation reasons, etc., without JMH's per-iteration framing in the way.
  */
-val traceTruffle by tasks.registering(JavaExec::class) {
+tasks.register<JavaExec>("traceTruffle") {
     group = LifecycleBasePlugin.VERIFICATION_GROUP
     description = "Run Truffle benchmark with -Dpolyglot.engine.TraceCompilation=true and friends."
     classpath = sourceSets["main"].runtimeClasspath
@@ -143,43 +143,40 @@ val traceTruffle by tasks.registering(JavaExec::class) {
     )
 }
 
-/**
- * Smoke test: compile + run each ft4 workload once on the tree-walker interpreter, no JMH
- * framing or GraalVM requirement. Catches Rell source errors and obvious runtime breakage
- * without paying for a full benchmark cycle.
+/*
+ * Smoke tests: compile + run each workload once on the tree-walker interpreter.
+ * Catches compilation errors and obvious runtime breakage without waiting for a full benchmark cycle.
  */
-val smokeFt4 by tasks.registering(JavaExec::class) {
-    group = "verification"
+
+tasks.register<JavaExec>("smokeFt4") {
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
     description = "Run each Ft4Benchmark workload once on the interpreter backend."
     classpath = sourceSets["main"].runtimeClasspath
     mainClass = "net.postchain.rell.performance.benchmarks.Ft4BenchmarkKt"
 }
 
-/** Same as `smokeFt4`, but for the mna-blockchain workloads in MnaBenchmark. */
-val smokeMna by tasks.registering(JavaExec::class) {
-    group = "verification"
+tasks.register<JavaExec>("smokeMna") {
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
     description = "Run each MnaBenchmark workload once on the interpreter backend."
     classpath = sourceSets["main"].runtimeClasspath
     mainClass = "net.postchain.rell.performance.benchmarks.MnaBenchmarkKt"
 }
 
-/** Same as `smokeFt4`, but for the cross-codebase struct workloads in StructBenchmark. */
-val smokeStruct by tasks.registering(JavaExec::class) {
-    group = "verification"
+tasks.register<JavaExec>("smokeStruct") {
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
     description = "Run each StructBenchmark workload once on the interpreter backend."
     classpath = sourceSets["main"].runtimeClasspath
     mainClass = "net.postchain.rell.performance.benchmarks.StructBenchmarkKt"
 }
 
-/** Same as `smokeFt4`, but for the Advent of Code 2024 workloads in AocBenchmark. */
-val smokeAoc by tasks.registering(JavaExec::class) {
-    group = "verification"
+tasks.register<JavaExec>("smokeAoc") {
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
     description = "Run each AocBenchmark workload once on the interpreter and kotlin backends."
     classpath = sourceSets["main"].runtimeClasspath
     mainClass = "net.postchain.rell.performance.benchmarks.AocBenchmarkKt"
 }
 
-val benchmarkHtmlReport by tasks.registering(JavaExec::class) {
+val benchmarkHtmlReport = tasks.register<JavaExec>("benchmarkHtmlReport") {
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
     description = "Render the latest kotlinx-benchmark JSON result as HTML."
     classpath = sourceSets["main"].runtimeClasspath
@@ -211,32 +208,9 @@ afterEvaluate {
     }
 }
 
-// ─── End-to-end profiler tasks (Kotlin port of the legacy `profiling/` Python suite) ────
-//
-// `profile`        — orchestrate build / node / async-profiler / workload / HTML report
-// `workload`       — generate transactions and queries against a running node
-// `provisionAsprof`— download async-profiler for the current OS/arch
-//
-// Each task uses the same JavaExec wiring as the smoke tasks above so the user can
-// pass `--args` from the command line. The CLI parsing lives in the Clikt commands.
+// End-to-end profiler tasks
 
-val provisionAsprof by tasks.registering(JavaExec::class) {
-    group = "performance"
-    description = "Download async-profiler into performance/async-profiler for the current OS."
-    classpath = sourceSets["main"].runtimeClasspath
-    mainClass = "net.postchain.rell.performance.profiler.ProvisionKt"
-    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
-}
-
-val workload by tasks.registering(JavaExec::class) {
-    group = "performance"
-    description = "Run the test-workload generator against a Chromia node (see --help)."
-    classpath = sourceSets["main"].runtimeClasspath
-    mainClass = "net.postchain.rell.performance.profiler.WorkloadKt"
-    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
-}
-
-val profileSample by tasks.registering(JavaExec::class) {
+ tasks.register<JavaExec>("profileSample") {
     group = "performance"
     description = "Profile a single sample query under async-profiler in-process; emits flat/tree/butterfly/collapsed text."
     classpath = sourceSets["main"].runtimeClasspath
@@ -265,7 +239,7 @@ val profileSample by tasks.registering(JavaExec::class) {
     )
 }
 
-val buildLocalChr by tasks.registering(JavaExec::class) {
+val buildLocalChr = tasks.register<JavaExec>("buildLocalChr") {
     group = LifecycleBasePlugin.BUILD_GROUP
     description = "Build the local chr binary against the freshly published Rell snapshot (replaces local-chr.sh)."
     dependsOn(":publishRellToMavenLocal")
@@ -285,7 +259,7 @@ val buildLocalChr by tasks.registering(JavaExec::class) {
     outputs.upToDateWhen { false }
 }
 
-val profile by tasks.registering(JavaExec::class) {
+val profile = tasks.register<JavaExec>("profile") {
     group = "performance"
     description = "End-to-end profiler: build chr, start node, attach async-profiler, run workload, render report."
     dependsOn(buildLocalChr)
@@ -294,7 +268,7 @@ val profile by tasks.registering(JavaExec::class) {
     javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
 }
 
-val regenerateProfileReport by tasks.registering(JavaExec::class) {
+val regenerateProfileReport = tasks.register<JavaExec>("regenerateProfileReport") {
     group = "performance"
     description = "Regenerate the profile HTML from existing performance/reports/ run data."
     classpath = sourceSets["main"].runtimeClasspath

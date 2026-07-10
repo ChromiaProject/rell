@@ -37,7 +37,7 @@ val flatcArchiveName: String? = flatcPlatform?.let {
 val flatcHome = layout.buildDirectory.dir("flatc").get().asFile
 val flatcBin = File(flatcHome, "flatc")
 
-val provisionFlatc by tasks.registering {
+val provisionFlatc = tasks.register("provisionFlatc") {
     description = "Downloads the flatc compiler"
     group = "flatbuffers"
 
@@ -95,7 +95,7 @@ val generatedKotlinDir = layout.buildDirectory.dir("generated/flatbuffers/kotlin
 
 val fbsRootSchema = fbsDir.file("app.fbs")
 
-val generateFlatBuffersKotlin by tasks.registering {
+val generateFlatBuffersKotlin = tasks.register("generateFlatBuffersKotlin") {
     description = "Generates Kotlin code from FlatBuffers schemas"
     group = "flatbuffers"
     dependsOn(provisionFlatc)
@@ -143,7 +143,7 @@ val generateFlatBuffersKotlin by tasks.registering {
 
 val generatedSchemaHashDir = layout.buildDirectory.dir("generated/schemaHash/kotlin")
 
-val generateSchemaHash by tasks.registering {
+val generateSchemaHash = tasks.register("generateSchemaHash") {
     description = "Computes SHA-256 of all .fbs files and emits it as a Kotlin constant"
     group = "flatbuffers"
 

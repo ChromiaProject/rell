@@ -11,7 +11,9 @@ kotlin {
 }
 
 // Configuration for sharing test code with other modules (similar to Maven's test-jar)
-val testJar by tasks.registering(Jar::class) {
+val testJar = tasks.register<Jar>("testJar") {
+    description = "Package test classes into a JAR for consumption by sibling modules."
+    group = LifecycleBasePlugin.BUILD_GROUP
     archiveClassifier = "tests"
     from(sourceSets.test.get().output)
 }

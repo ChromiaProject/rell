@@ -10,9 +10,11 @@ dependencies {
     testImplementation(libs.junit.jupiter)
 }
 
-val testConfiguration by configurations.creating
+val testConfiguration = configurations.create("testConfiguration")
 
-val testjar by tasks.register<Jar>("testJar") {
+val testjar = tasks.register<Jar>("testJar") {
+    description = "Package test classes into a JAR for consumption by sibling modules."
+    group = LifecycleBasePlugin.BUILD_GROUP
     from(sourceSets.test.get().output)
     archiveClassifier = "test"
 }

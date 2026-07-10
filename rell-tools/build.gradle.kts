@@ -62,7 +62,7 @@ tasks.generateGitProperties {
 // git-properties 4.x writes into a shared resources dir that sourcesJar also consumes; declare the dependency.
 tasks.sourcesJar { dependsOn(tasks.generateGitProperties) }
 
-val generateDependencyList by tasks.registering {
+val generateDependencyList = tasks.register("generateDependencyList") {
     group = LifecycleBasePlugin.BUILD_GROUP
     description = "Generates dependency list file"
 
@@ -121,7 +121,7 @@ val rellDistCopySpec: CopySpec = copySpec {
 }
 
 // Custom distribution tasks (separate from application plugin's distTar/distZip)
-val rellDistTar by tasks.registering(Tar::class) {
+val rellDistTar = tasks.register<Tar>("rellDistTar") {
     group = "distribution"
     description = "Creates Rell distribution tar.gz"
     archiveClassifier = "dist"
@@ -129,14 +129,14 @@ val rellDistTar by tasks.registering(Tar::class) {
     with(rellDistCopySpec)
 }
 
-val rellDistZip by tasks.registering(Zip::class) {
+val rellDistZip = tasks.register<Zip>("rellDistZip") {
     group = "distribution"
     description = "Creates Rell distribution zip"
     archiveClassifier = "dist"
     with(rellDistCopySpec)
 }
 
-val installRellDist by tasks.registering(Copy::class) {
+tasks.register<Copy>("installRellDist") {
     group = "distribution"
     description = "Installs Rell distribution for local development (used by work/*.sh scripts)"
     dependsOn(tasks.jar)

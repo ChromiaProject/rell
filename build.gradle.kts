@@ -55,7 +55,7 @@ val withLocales by extra(providers.gradleProperty("withLocales").isPresent)
 // Aggregator: publish every Rell module to ~/.m2 within this build graph. The chr bootstrap
 // (:performance:buildLocalChr) depends on this instead of shelling out to a nested
 // `./gradlew publishToMavenLocal` — a nested Gradle deadlocks on the journal-cache lock.
-val publishRellToMavenLocal by tasks.registering {
+tasks.register("publishRellToMavenLocal") {
     group = "publishing"
     description = "Publish all Rell modules to the local Maven repository (used by the chr bootstrap)."
 }

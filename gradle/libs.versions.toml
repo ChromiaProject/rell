@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.3.0"
-postchain = "3.49.15"
+postchain = "3.49.17"
 kotlinx-benchmark = "0.4.17"
 async-profiler = "4.4"
 
@@ -60,7 +60,7 @@ flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version
 jline = { module = "org.jline:jline", version.ref = "jline" }
 jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm", version.ref = "kotlinx-collections-immutable" }
-postchain-client = { module = "net.postchain.client:postchain-client", version = "3.39.4" }
+postchain-client = { module = "net.postchain.client:postchain-client", version = "3.39.6" }
 
 # common testing
 assertk = { module = "com.willowtreeapps.assertk:assertk-jvm", version.ref = "assertk" }

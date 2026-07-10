@@ -19,9 +19,9 @@ tasks.withType<Test> {
     systemProperty("rell.test.backend", findProperty("rellTestBackend") ?: "interpreter")
 }
 
-val testRoundTrip by tasks.registering(Test::class) {
+val testRoundTrip = tasks.register<Test>("testRoundTrip") {
     description = "Runs tests with RR serialization round-trip enabled"
-    group = "verification"
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
     useJUnitPlatform()
     // Custom Test tasks default to `sourceSets.test`, but Gradle 8+ doesn't auto-discover
     // test classes when the task is registered (vs inherited from `test`). Explicitly point at
@@ -40,9 +40,9 @@ val testRoundTrip by tasks.registering(Test::class) {
 val runningOnGraalVM = arrayOf("java.vm.name", "java.vendor.version", "java.runtime.name")
     .any { System.getProperty(it, "").contains("GraalVM", ignoreCase = true) }
 
-val testTruffle by tasks.registering(Test::class) {
+val testTruffle = tasks.register<Test>("testTruffle") {
     description = "Runs tests through the Truffle peer backend (Tf_Backend)"
-    group = "verification"
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
     useJUnitPlatform()
     testClassesDirs = sourceSets.test.get().output.classesDirs
     classpath = sourceSets.test.get().runtimeClasspath
@@ -128,8 +128,8 @@ tasks.generateGitProperties {
 
 tasks.sourcesJar { dependsOn(tasks.generateGitProperties) }
 
-val generateDependencyList by tasks.registering {
-    group = "build"
+val generateDependencyList = tasks.register("generateDependencyList") {
+    group = LifecycleBasePlugin.BUILD_GROUP
     description = "Generates dependency list file"
 
     val outputDir = layout.buildDirectory.dir("generated/resources/dependencies")

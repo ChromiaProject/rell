@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
 }
 
-val rellTestCasesConfiguration by configurations.creating {
+val rellTestCasesConfiguration = configurations.create("rellTestCasesConfiguration") {
     isCanBeConsumed = false
     isCanBeResolved = true
 }
@@ -26,7 +26,7 @@ dependencies {
 
 val testCasesDir = layout.buildDirectory.dir("rell-test-cases")
 
-val copyTestCases by tasks.registering(Copy::class) {
+val copyTestCases = tasks.register<Copy>("copyTestCases") {
     from(rellTestCasesConfiguration)
     into(testCasesDir.map { it.dir("test-cases") })
 }

@@ -6,7 +6,9 @@ plugins {
 description = "Rell integration with Postchain GTX: transaction handling, database init, and operation execution"
 
 // Configuration for sharing test code with other modules (similar to Maven's test-jar)
-val testJar by tasks.registering(Jar::class) {
+val testJar = tasks.register<Jar>("testJar") {
+    description = "Package test classes into a JAR for consumption by sibling modules."
+    group = LifecycleBasePlugin.BUILD_GROUP
     archiveClassifier = "tests"
     from(sourceSets.test.get().output)
 }
@@ -19,7 +21,8 @@ artifacts {
     add("testArtifacts", testJar)
 }
 
-val generateTestResources by tasks.registering(Copy::class) {
+val generateTestResources = tasks.register<Copy>("generateTestResources") {
+    description = "Expand version-templated test resources into the build directory."
     val rellVersion = project.version.toString().removeSuffix("-SNAPSHOT")
     inputs.property("rellVersion", rellVersion)
     from(layout.projectDirectory.dir("src/test/templates"))

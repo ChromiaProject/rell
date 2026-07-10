@@ -85,8 +85,7 @@ folds into a single inlined frame &mdash; both of which silently corrupt the pro
 ```
 
 `profile` auto-provisions async-profiler on first run (downloads into
-`performance/async-profiler/`); `:performance:provisionAsprof` exists as an opt-in
-escape hatch if you want the download cached ahead of time.
+`performance/async-profiler/`).
 
 Output: `performance/reports/report.html` (auto-opens in a browser when run from a desktop session) + `profile.jfr`, `flamegraph.html`, and PostgreSQL snapshot diffs.
 

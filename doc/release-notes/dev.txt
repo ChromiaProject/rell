@@ -21,8 +21,7 @@ Two rendering fixes in the generated documentation site:
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 3. Tools: Dependency updates
 
-Postchain has been upgraded from 3.49.12 to 3.49.15 (postchain-client from 3.39.1 to 3.39.4). No behavior changes
-are expected from the upgrade.
+Several dependencies has been upgraded. Notably, Postchain has been upgraded to 3.49.17. No behavior changes are expected.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 4. Library: Named arguments fixed for functions with multiple optional parameters

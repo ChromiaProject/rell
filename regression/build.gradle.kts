@@ -62,7 +62,7 @@ val launcher21 = javaToolchains.launcherFor {
     languageVersion = JavaLanguageVersion.of(21)
 }
 
-val regressionClone by tasks.registering(JavaExec::class) {
+val regressionClone = tasks.register<JavaExec>("regressionClone") {
     group = LifecycleBasePlugin.VERIFICATION_GROUP
     description = "Clone every configured project into regression/workdir."
     classpath = runtimeCp
@@ -79,7 +79,7 @@ val regressionClone by tasks.registering(JavaExec::class) {
     outputs.upToDateWhen { false }
 }
 
-val regressionReport by tasks.registering(JavaExec::class) {
+val regressionReport = tasks.register<JavaExec>("regressionReport") {
     group = LifecycleBasePlugin.VERIFICATION_GROUP
     description = "Merge reports/parts/*.json into results.json and render report.html."
     classpath = runtimeCp
@@ -147,12 +147,12 @@ fun Test.configureRegressionRun(includePrivate: Boolean) {
     setFinalizedBy(listOf(regressionReport))
 }
 
-val regression by tasks.registering(Test::class) {
+tasks.register<Test>("regression") {
     description = "Regression sweep over every configured project (public.json + private.json if present)."
     configureRegressionRun(includePrivate = true)
 }
 
-val regressionPublic by tasks.registering(Test::class) {
+tasks.register<Test>("regressionPublic") {
     description = "Same as :regression but reads public.json only (used by the manual CI job)."
     configureRegressionRun(includePrivate = false)
 }

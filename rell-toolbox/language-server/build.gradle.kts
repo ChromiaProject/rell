@@ -16,7 +16,8 @@ sentry {
     authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }
 
-val generateMainResources by tasks.registering(Copy::class) {
+val generateMainResources = tasks.register<Copy>("generateMainResources") {
+    description = "Expand version-templated resources so the language server can report its version at runtime."
     val projectVersion = project.version.toString()
     inputs.property("projectVersion", projectVersion)
     from(layout.projectDirectory.dir("src/main/templates"))
