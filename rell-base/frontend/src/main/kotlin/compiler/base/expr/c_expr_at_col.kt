@@ -49,7 +49,7 @@ class C_AtFrom_Iterable(
     private val innerExprCtx: C_ExprContext = let {
         outerExprCtx
             .updateVarStates(C_VarStatesDelta.changed(placeholderVar.varKey))
-            .copy(blkCtx = innerBlkCtx, atCtx = innerAtCtx)
+            .copy(blkCtx = innerBlkCtx, atCtx = innerAtCtx, insideStmt = false, loop = null)
     }
 
     override fun getAllExprs() = immListOf(item.vExpr)

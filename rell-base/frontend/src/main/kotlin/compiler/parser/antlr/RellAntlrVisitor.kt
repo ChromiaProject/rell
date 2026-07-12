@@ -928,13 +928,24 @@ class RellAntlrVisitor(
     private fun toLambdaBody(ctx: RellParser.LambdaBodyContext): S_LambdaBody = withCtx(ctx) {
         when (ctx) {
             is RellParser.LambdaBodyExprContext -> S_LambdaBody_Expr(toExpression(ctx.expression()))
-            is RellParser.LambdaBodyBlockContext -> {
-                val stmts = ctx.statement().map { toStatement(it) }.toImmList()
-                val result = ctx.expression()?.let { toExpression(it) }
-                S_LambdaBody_Block(S_PosRange(ctx.start.toPos(), ctx.stop.toPos()), stmts, result)
-            }
+            is RellParser.LambdaBodyBlockContext -> toValueBlock(ctx.valueBlock())
             else -> error("unknown lambdaBody: ${ctx.javaClass.simpleName}")
         }
+    }
+
+    private fun toValueBlock(ctx: RellParser.ValueBlockContext): S_LambdaBody_Block = withCtx(ctx) {
+        val stmts = ctx.statement().map { toStatement(it) }.toImmList()
+        val result = ctx.expression()?.let { toExpression(it) }
+        S_LambdaBody_Block(S_PosRange(ctx.start.toPos(), ctx.stop.toPos()), stmts, result)
+    }
+
+    private fun toValueBlockExpr(ctx: RellParser.ValueBlockContext): S_Expr = withCtx(ctx) {
+        return@withCtx S_ValueBlockExpr(toValueBlock(ctx))
+    }
+
+    private fun toExprOrValueBlock(ctx: RellParser.ExprOrValueBlockContext): S_Expr = withCtx(ctx) {
+        val block = ctx.valueBlock()
+        return@withCtx if (block != null) toValueBlockExpr(block) else toExpression(ctx.expression())
     }
 
     private fun toBinaryExpr(ctx: RellParser.BinaryExprContext): S_Expr = withCtx(ctx) {
@@ -1036,31 +1047,22 @@ class RellAntlrVisitor(
 
     private fun toIfExpr(ctx: RellParser.IfExprContext): S_Expr = withCtx(ctx) {
         val kwTok = ctx.start
-        val exprs = ctx.expression()
-        return S_IfExpr(kwTok.toPos(), toExpression(exprs[0]), toExpression(exprs[1]), toExpression(exprs[2]))
+        val cond = toExpression(ctx.expression())
+        val arms = ctx.exprOrValueBlock()
+        return S_IfExpr(kwTok.toPos(), cond, toExprOrValueBlock(arms[0]), toExprOrValueBlock(arms[1]))
     }
 
     private fun toWhenExpr(ctx: RellParser.WhenExprContext): S_Expr = withCtx(ctx) {
         val kwTok = ctx.start
         val conds = ctx.whenCondition().map { toWhenCondition(it) }
-        // The first ExpressionContext might be the optional `(expression)` subject; otherwise
-        // expressions are interleaved with conditions: cond -> expr ; cond -> expr ; ...
-        // grammar.kt: when '(' expression? ')' '{' (cond '->' expr) (';' cond '->' expr)* ';'? '}'
-        val allExprs = ctx.expression()
-        // If '(' is present (children[1] = '(' if subject), the first expression is the subject.
-        val hasSubject = ctx.children.let { ch ->
-            ch.size > 1 && ch[1] is TerminalNode && (ch[1] as TerminalNode).text == "("
-        }
-        val subject: S_Expr?
-        val caseExprs: List<S_Expr>
-        if (hasSubject) {
-            subject = toExpression(allExprs[0])
-            caseExprs = allExprs.drop(1).map { toExpression(it) }
-        } else {
-            subject = null
-            caseExprs = allExprs.map { toExpression(it) }
-        }
-        require(conds.size == caseExprs.size)
+        // The only direct ExpressionContext child is the optional `(expression)` subject; case
+        // arms are ExprOrValueBlockContext children.
+        // grammar.kt: when ('(' expression ')')? '{' oneOrMore(cond '->' exprOrValueBlock ';'?) '}'
+        val subject = ctx.expression()?.let { toExpression(it) }
+        val caseExprs = ctx.exprOrValueBlock().map { toExprOrValueBlock(it) }
+        // On a valid parse the counts match; under ANTLR error recovery a condition's arm may be
+        // missing (an ErrorNode), so zip's truncation drops the armless condition instead of
+        // crashing - this visitor must keep building a partial AST (see toBinaryExpr).
         val cases = conds.zip(caseExprs) { c, e -> S_WhenExprCase(c, e) }.toImmList()
         return S_WhenExpr(kwTok.toPos(), subject, cases)
     }

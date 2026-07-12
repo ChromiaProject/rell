@@ -1,0 +1,416 @@
+// Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+//
+// Positive (compiles-and-runs) tests for value blocks as `if`/`when` expression arms:
+//
+//   val x = if (cond) { stmt; ...; result } else other;
+//   val x = when { cond -> { stmt; ...; result } else -> other };
+//
+// The block syntax is the same as a value-block lambda body, but the semantics are those of a
+// plain code block: the block runs inline in the enclosing function's frame, so outer locals are
+// visible and assignable, `return` returns from the enclosing function, `break`/`continue` bind
+// to the enclosing loop, and at-expression scope applies. The trailing expression (no `;`) is the
+// block's result. The negative "should not compile" cases live in `ValueBlockExprTest.kt`, since
+// they cannot live in a file that must compile.
+
+// Unit-typed recorder, so a discarded arm has an observable side effect to assert.
+function log_add(log: list<text>, s: text) { log.add(s); }
+
+function pick(b: boolean): integer = if (b) { val x = 10; x + 1 } else { val y = 20; y + 2 };
+
+query if_block_then_arm() {
+    assert_equals(if (true) { val x = 1; x + 1 } else 0, 2);
+    assert_equals(if (false) { val x = 1; x + 1 } else 0, 0);
+    return 0;
+}
+
+query if_block_else_arm() {
+    assert_equals(if (true) 7 else { val y = 3; y * y }, 7);
+    assert_equals(if (false) 7 else { val y = 3; y * y }, 9);
+    return 0;
+}
+
+query if_block_both_arms() {
+    assert_equals(pick(true), 11);
+    assert_equals(pick(false), 22);
+    return 0;
+}
+
+// A block whose body is just the trailing result expression.
+query if_block_result_only() {
+    assert_equals(if (true) { 1 } else { 2 }, 1);
+    assert_equals(if (false) { 1 } else { 2 }, 2);
+    return 0;
+}
+
+query if_block_multiple_statements() {
+    val r = if (true) {
+        var s = 0;
+        for (i in range(5)) s += i;
+        val doubled = s * 2;
+        doubled + 1
+    } else 0;
+    assert_equals(r, 21);
+    return 0;
+}
+
+// The block reads enclosing locals directly.
+query if_block_captures_outer_locals() {
+    val a = 100;
+    val b = 23;
+    val r = if (a > b) { val d = a - b; d } else { val d = b - a; d };
+    assert_equals(r, 77);
+    return 0;
+}
+
+// Only the chosen arm evaluates; a side effect on an outer collection makes that observable.
+query if_block_only_chosen_arm_evaluates() {
+    val log = list<text>();
+    val r = if (log.size() == 0) { log_add(log, 'then'); 1 } else { log_add(log, 'else'); 2 };
+    assert_equals(r, 1);
+    assert_equals(log, ['then']);
+    return 0;
+}
+
+// Chained else-if with block arms.
+query if_block_else_if_chain() {
+    val f = (n: integer) -> if (n < 0) {
+        val v = -n;
+        'neg:' + v
+    } else if (n == 0) 'zero' else {
+        'pos:' + n
+    };
+    assert_equals(f(-5), 'neg:5');
+    assert_equals(f(0), 'zero');
+    assert_equals(f(9), 'pos:9');
+    return 0;
+}
+
+// Numeric promotion between a block arm and an expression arm.
+query if_block_numeric_promotion() {
+    val r = if (true) { val x = 1; x } else 2.5;
+    assert_equals(_type_of(r), 'decimal');
+    assert_equals(r, 1.0);
+    return 0;
+}
+
+// A block arm together with a null arm gives a nullable result type.
+query if_block_nullable_result() {
+    val r = if (false) { val x = 1; x } else null;
+    assert_equals(_type_of(r), 'integer?');
+    assert_null(r);
+    return 0;
+}
+
+query when_block_no_subject() {
+    val n = 7;
+    val r = when {
+        n < 0 -> {
+            val v = -n;
+            'neg:' + v
+        }
+        n == 0 -> 'zero';
+        else -> {
+            'pos:' + n
+        }
+    };
+    assert_equals(r, 'pos:7');
+    return 0;
+}
+
+query when_block_with_subject() {
+    val f = (n: integer) -> when (n) {
+        0 -> { 'zero' }
+        1, 2 -> {
+            val s = 'small';
+            s + ':' + n
+        }
+        else -> 'big'
+    };
+    assert_equals(f(0), 'zero');
+    assert_equals(f(1), 'small:1');
+    assert_equals(f(2), 'small:2');
+    assert_equals(f(3), 'big');
+    return 0;
+}
+
+// Expression arms and block arms mix; `;` after a case is now optional, so expression arms
+// may be separated by a line break alone (as in the `when` statement).
+query when_mixed_arms_optional_semicolons() {
+    val f = (n: integer) -> when (n) {
+        0 -> 'a'
+        1 -> { val s = 'b'; s }
+        2 -> 'c';
+        else -> { 'd' }
+    };
+    assert_equals(f(0), 'a');
+    assert_equals(f(1), 'b');
+    assert_equals(f(2), 'c');
+    assert_equals(f(3), 'd');
+    return 0;
+}
+
+enum color { red, green, blue }
+
+// Full enum coverage with block arms and no else.
+query when_block_enum_full_coverage() {
+    val f = (c: color) -> when (c) {
+        color.red -> { val s = 'r'; s }
+        color.green -> { 'g' }
+        color.blue -> 'b'
+    };
+    assert_equals(f(color.red), 'r');
+    assert_equals(f(color.green), 'g');
+    assert_equals(f(color.blue), 'b');
+    return 0;
+}
+
+// Only the matching when arm evaluates.
+query when_block_only_chosen_arm_evaluates() {
+    val log = list<text>();
+    val r = when (2) {
+        1 -> { log_add(log, 'one'); 'one' }
+        2 -> { log_add(log, 'two'); 'two' }
+        else -> { log_add(log, 'other'); 'other' }
+    };
+    assert_equals(r, 'two');
+    assert_equals(log, ['two']);
+    return 0;
+}
+
+// Nested: an if expression with block arms inside a when block arm.
+query nested_if_block_inside_when_block() {
+    val f = (n: integer) -> when {
+        n > 0 -> {
+            val label = if (n % 2 == 0) { 'even' } else { 'odd' };
+            label + ':' + n
+        }
+        else -> 'non-positive'
+    };
+    assert_equals(f(4), 'even:4');
+    assert_equals(f(3), 'odd:3');
+    assert_equals(f(-1), 'non-positive');
+    return 0;
+}
+
+// A lambda whose value block contains an if expression with block arms, and an if block arm
+// that itself creates and calls a lambda.
+query block_arm_and_lambda_interplay() {
+    val outer = 5;
+    val f: (integer) -> integer = x -> { if (x > 0) { x + outer } else { -x } };
+    assert_equals(f(1), 6);
+    assert_equals(f(-3), 3);
+
+    val r = if (outer > 0) {
+        val g: (integer) -> integer = y -> y * 2;
+        g(outer)
+    } else 0;
+    assert_equals(r, 10);
+    return 0;
+}
+
+// Block arms in a function short body and in a query-style expression position.
+function classify(n: integer): text = when {
+    n < 0 -> { 'neg' }
+    else -> { 'non-neg' }
+};
+
+query block_arm_in_function_short_body() {
+    assert_equals(classify(-1), 'neg');
+    assert_equals(classify(1), 'non-neg');
+    return 0;
+}
+
+// The result of a block arm can be a collection built up by statements inside the block.
+query block_arm_builds_collection() {
+    val r = if (true) {
+        val acc = list<integer>();
+        for (i in range(3)) acc.add(i * i);
+        acc
+    } else list<integer>();
+    assert_equals(r, [0, 1, 4]);
+    return 0;
+}
+
+// A when block arm reading several outer locals.
+query when_block_multiple_captures() {
+    val base = 10;
+    val step = 3;
+    val r = when (base % 2) {
+        0 -> {
+            val v = base + step;
+            v * 2
+        }
+        else -> { base - step }
+    };
+    assert_equals(r, 26);
+    return 0;
+}
+
+// --- Plain-block semantics: the block runs inline in the enclosing function's frame. ---
+
+// Assigning an outer variable inside a block arm is visible outside (no capture-by-value).
+query block_arm_mutates_outer_var() {
+    var count = 0;
+    val label = if (true) { count += 1; 'inc' } else 'none';
+    assert_equals(label, 'inc');
+    assert_equals(count, 1);
+    return 0;
+}
+
+// `return` inside a block arm returns from the enclosing function; the always-returning arm
+// yields no value, so the if-expression takes its type from the other arm.
+function classify_or_bail(n: integer): text {
+    val sign = if (n < 0) { return 'negative'; } else { 'non-negative' };
+    return sign + ':' + n;
+}
+
+query return_in_block_arm() {
+    assert_equals(classify_or_bail(-5), 'negative');
+    assert_equals(classify_or_bail(3), 'non-negative:3');
+    return 0;
+}
+
+// Same for when arms.
+function when_or_bail(n: integer): text {
+    val r = when (n) {
+        0 -> { return 'zero-fast'; }
+        else -> { 'v' + n }
+    };
+    return 'slow:' + r;
+}
+
+query return_in_when_block_arm() {
+    assert_equals(when_or_bail(0), 'zero-fast');
+    assert_equals(when_or_bail(7), 'slow:v7');
+    return 0;
+}
+
+// `break`/`continue` statements inside a block arm bind to the enclosing loop.
+query break_continue_in_block_arm() {
+    var s = 0;
+    for (i in range(10)) {
+        val v = if (true) {
+            if (i == 3) break;
+            if (i % 2 == 1) continue;
+            i * 10
+        } else 0;
+        s += v;
+    }
+    // i=0: +0; i=1: continue; i=2: +20; i=3: break.
+    assert_equals(s, 20);
+    return 0;
+}
+
+// A loop fully inside a block arm works, including its own break/continue.
+query loop_inside_block_arm() {
+    val total = if (true) {
+        var s = 0;
+        for (i in range(5)) {
+            if (i == 2) continue;
+            s += i;
+        }
+        s
+    } else 0;
+    assert_equals(total, 8);
+    return 0;
+}
+
+// At-expression scope: `$` is visible inside a block arm of a collection-at projection.
+query at_scope_in_block_arm() {
+    val r = [1, 2, 3] @* {} ( if ($ > 1) { val d = $ * 10; d + 1 } else 0 );
+    assert_equals(r, [0, 21, 31]);
+    return 0;
+}
+
+// Mutation from when block arms accumulates across loop iterations.
+query when_block_arm_accumulates() {
+    val log = list<text>();
+    for (i in range(3)) {
+        val tag = when (i) {
+            0 -> { log.add('zero'); 'z' }
+            else -> { log.add('n' + i); 'x' }
+        };
+        assert_true(tag == 'z' or tag == 'x');
+    }
+    assert_equals(log, ['zero', 'n1', 'n2']);
+    return 0;
+}
+
+// Nullability narrowing from the if-condition applies inside the block arm.
+query narrowing_inside_block_arm() {
+    var t: text? = 'abc';
+    val n = if (t != null) { val u = t.size(); u } else 0;
+    assert_equals(n, 3);
+    return 0;
+}
+
+// A block arm inside a loop that re-assigns an outer nullable var: the loop's analysis treats the
+// var as modified, and runtime behavior matches plain statements.
+query loop_var_reset_by_block_arm() {
+    var t: text? = 'ab';
+    var s = 0;
+    for (i in range(3)) {
+        if (t != null) s += t.size();
+        val z = if (i == 0) { t = null; 1 } else 2;
+        s += z;
+    }
+    // i=0: t='ab' -> +2, z=1; i=1: t=null, z=2; i=2: z=2.
+    assert_equals(s, 7);
+    return 0;
+}
+
+// An always-returning arm contributes its var states to nothing; the other arm's narrowing holds
+// after the conditional.
+function first_size(t: text?): integer {
+    val n = if (t == null) { return -1; } else { t.size() };
+    return n * 10;
+}
+
+query exiting_arm_narrowing() {
+    assert_equals(first_size(null), -1);
+    assert_equals(first_size('abcd'), 40);
+    return 0;
+}
+
+// --- Escapes from block arms buried in expression positions that the runtime may evaluate
+// --- through generic machinery (assignment destinations, partial application arguments).
+
+// break in a block arm inside the subscript key of an assignment destination. The right-hand
+// side evaluates first, then the key breaks and the store never happens.
+query break_in_assignment_subscript_key() {
+    val l = [0, 0, 0];
+    var n = 0;
+    for (i in range(5)) {
+        l[if (i == 2) { break; 0 } else i] = 7;
+        n += 1;
+    }
+    assert_equals(n, 2);
+    assert_equals(l, [7, 7, 0]);
+    return 0;
+}
+
+function add2(a: integer, b: integer): integer = a + b;
+
+// break in a block arm inside an eagerly-bound argument of a partial function application.
+query break_in_partial_call_arg() {
+    var s = 0;
+    for (i in range(5)) {
+        val g = add2(if (i == 3) { break; 0 } else i, *);
+        s += g(10);
+    }
+    // i=0..2 contribute 10+i each; i=3 breaks while binding the argument.
+    assert_equals(s, 33);
+    return 0;
+}
+
+// return in a block arm inside a partial application argument.
+function partial_or_bail(n: integer): integer {
+    val g = add2(if (n < 0) { return -1; } else n, *);
+    return g(100);
+}
+
+query return_in_partial_call_arg() {
+    assert_equals(partial_or_bail(-5), -1);
+    assert_equals(partial_or_bail(3), 103);
+    return 0;
+}

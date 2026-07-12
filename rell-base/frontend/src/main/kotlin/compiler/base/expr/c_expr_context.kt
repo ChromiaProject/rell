@@ -23,6 +23,13 @@ class C_ExprContext private constructor(
     val varStates: C_VarStates,
     val atCtx: C_AtContext?,
     val insideGuardBlock: Boolean,
+    // True when this expression is (transitively) part of a body statement of the current function
+    // - as opposed to e.g. a global constant, a default value or an at-expression body. Decides
+    // whether a value block used as an if/when expression arm may contain a `return`.
+    val insideStmt: Boolean,
+    // The nearest enclosing loop reachable without crossing a function or at-expression boundary;
+    // gives `break`/`continue` inside a value block arm their loop target.
+    val loop: C_LoopUid?,
 ): C_IdeCompletionsScopeProvider {
     val defCtx = blkCtx.defCtx
     val modCtx = defCtx.modCtx
@@ -44,6 +51,8 @@ class C_ExprContext private constructor(
         varStates: C_VarStates = this.varStates,
         atCtx: C_AtContext? = this.atCtx,
         insideGuardBlock: Boolean = this.insideGuardBlock,
+        insideStmt: Boolean = this.insideStmt,
+        loop: C_LoopUid? = this.loop,
     ): C_ExprContext {
         val insideGuardBlock2 = insideGuardBlock || this.insideGuardBlock
         return if (
@@ -51,11 +60,15 @@ class C_ExprContext private constructor(
             && varStates === this.varStates
             && atCtx === this.atCtx
             && insideGuardBlock2 == this.insideGuardBlock
+            && insideStmt == this.insideStmt
+            && loop == this.loop
         ) this else C_ExprContext(
             blkCtx = blkCtx,
             varStates = varStates,
             atCtx = atCtx,
             insideGuardBlock = insideGuardBlock2,
+            insideStmt = insideStmt,
+            loop = loop,
         )
     }
 
@@ -94,17 +107,23 @@ class C_ExprContext private constructor(
             varStates = C_VarStates.EMPTY,
             insideGuardBlock = false,
             atCtx = null,
+            insideStmt = false,
+            loop = null,
         )
     }
 }
 
 class C_StmtContext private constructor(
     val blkCtx: C_BlockContext,
-    val exprCtx: C_ExprContext,
+    exprCtx: C_ExprContext,
     val loop: C_LoopUid?,
     val afterGuardBlock: Boolean = false,
     val topLevel: Boolean = false,
 ) {
+    // Invariant: expressions compiled from statements know which loop (if any) encloses them, so a
+    // value block used as an if/when expression arm gives `break`/`continue` their loop target.
+    val exprCtx: C_ExprContext = exprCtx.copy(loop = loop)
+
     val appCtx = blkCtx.appCtx
     val fnCtx = blkCtx.fnCtx
     val defCtx = fnCtx.defCtx
@@ -152,8 +171,20 @@ class C_StmtContext private constructor(
 
     companion object {
         fun createRoot(blkCtx: C_BlockContext): C_StmtContext {
-            val exprCtx = C_ExprContext.createRoot(blkCtx)
+            // Body statements set insideStmt: expressions below them may contain a value block
+            // whose `return` targets this body. Expression-only roots (global constants, default
+            // values) never go through here, so the flag stays false there.
+            val exprCtx = C_ExprContext.createRoot(blkCtx).copy(insideStmt = true)
             return C_StmtContext(blkCtx, exprCtx, loop = null, topLevel = true)
+        }
+
+        /**
+         * A statement context for statements nested inside an expression (a value block used as an
+         * if/when expression arm): same frame, same var states, and the enclosing loop and
+         * insideStmt inherited from the expression context.
+         */
+        fun forExpr(exprCtx: C_ExprContext): C_StmtContext {
+            return C_StmtContext(exprCtx.blkCtx, exprCtx, loop = exprCtx.loop, topLevel = false)
         }
     }
 }

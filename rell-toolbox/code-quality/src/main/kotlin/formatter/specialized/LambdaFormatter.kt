@@ -4,8 +4,8 @@
 
 package net.postchain.rell.toolbox.formatter.specialized
 
-import net.postchain.rell.base.compiler.parser.antlr.RellParser.LambdaBodyBlockContext
 import net.postchain.rell.base.compiler.parser.antlr.RellParser.LambdaExprContext
+import net.postchain.rell.base.compiler.parser.antlr.RellParser.ValueBlockContext
 import net.postchain.rell.toolbox.formatter.BracePairTypes
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
@@ -18,7 +18,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
  * Formats a lambda expression `lambdaParams '->' lambdaBody`. The `->` is surrounded by a single
  * space; a parenthesised parameter list is tightened to `(x: integer, y: integer)`; the body is
  * delegated (an expression body falls through to the generic recursion, a value block to
- * [LambdaBodyBlockFormatter]).
+ * [ValueBlockFormatter]).
  */
 class LambdaExprFormatter(
     private val braceFormatter: BraceFormatter,
@@ -50,15 +50,15 @@ class LambdaExprFormatter(
 }
 
 /**
- * Formats a value-block lambda body `'{' statement* expression? '}'`. Mirrors [BlockStmtFormatter]
- * but also lays out the trailing result expression, and renders an empty body as `{}`. Statements
- * and the trailing expression each go on their own indented line; the closing brace drops to its
- * own line.
+ * Formats a value block `'{' statement* expression? '}'` — a lambda block body or an `if`/`when`
+ * expression block arm. Mirrors [BlockStmtFormatter] but also lays out the trailing result
+ * expression, and renders an empty body as `{}`. Statements and the trailing expression each go
+ * on their own indented line; the closing brace drops to its own line.
  */
-class LambdaBodyBlockFormatter(
+class ValueBlockFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
-) : NodeFormatter<LambdaBodyBlockContext> {
-    override fun format(node: LambdaBodyBlockContext, doc: FormattableDocument) {
+) : NodeFormatter<ValueBlockContext> {
+    override fun format(node: ValueBlockContext, doc: FormattableDocument) {
         val open = tokenAnalyzer.directTokenFor(node, "{")
         val close = tokenAnalyzer.directTokenFor(node, "}")
         val statements = node.statement()

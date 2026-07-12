@@ -28,9 +28,12 @@ import net.postchain.rell.base.utils.ide.IdeSymbolKind
 internal sealed class S_AtExprFrom(val startPos: S_Pos) {
     abstract fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext): C_AtFrom
     abstract fun compileJoin(ctx: C_ExprContext, fromCtx: C_AtFromContext, alias: C_Name?): C_AtFrom
+    internal abstract fun discoverVars(map: MutableTypedKeyMap): Set<Name>
 }
 
 internal class S_AtExprFrom_Simple(val expr: S_Expr): S_AtExprFrom(expr.startPos) {
+    override fun discoverVars(map: MutableTypedKeyMap) = expr.discoverVars(map)
+
     override fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext): C_AtFrom {
         return compileJoin(ctx, fromCtx, null)
     }
@@ -59,6 +62,8 @@ internal class S_AtExprFrom_Complex(
     startPos: S_Pos,
     private val items: ImmList<S_AtExprFromItem>,
 ): S_AtExprFrom(startPos) {
+    override fun discoverVars(map: MutableTypedKeyMap) = S_Expr.discoverVars(items.map { it.exprForVars() }, map)
+
     init {
         require(items.isNotEmpty())
     }
@@ -150,6 +155,8 @@ internal class S_AtExprFromItem(
     private val expr: S_Expr,
     private val comment: S_Comment?,
 ) {
+    internal fun exprForVars(): S_Expr = expr
+
     fun compile(ctx: C_ExprContext, fromCtx: C_AtFromContext, isDb: Boolean?): C_AtFromItem {
         if (modifiers.pos != null) {
             RESTRICTIONS.access(ctx.msgCtx, modifiers.pos)
@@ -184,6 +191,7 @@ internal class S_AtExprFromItem(
 
 internal sealed class S_AtExprWhat {
     abstract fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat
+    internal open fun discoverVars(map: MutableTypedKeyMap): Set<Name> = immSetOf()
 }
 
 internal class S_AtExprWhat_Default: S_AtExprWhat() {
@@ -221,6 +229,8 @@ internal class S_AtExprWhat_Complex(
     private val posRange: S_PosRange,
     private val fields: ImmList<S_AtExprWhatComplexField>,
 ): S_AtExprWhat() {
+    override fun discoverVars(map: MutableTypedKeyMap) = S_Expr.discoverVars(fields.map { it.expr }, map)
+
     override fun compile(ctx: C_ExprContext, from: C_AtFrom, subValues: MutableList<V_Expr>): C_AtWhat {
         ctx.blkCtx.frameCtx.ideCompCtx.trackScope(posRange, ctx)
 
@@ -481,6 +491,8 @@ internal class S_AtExprWhere(
     private val exprs: ImmList<S_Expr>,
     private val posRange: S_PosRange,
 ) {
+    internal fun discoverVars(map: MutableTypedKeyMap): Set<Name> = S_Expr.discoverVars(exprs, map)
+
     fun compile(ctx: C_ExprContext, atExprId: R_AtExprId, subValues: MutableList<V_Expr>): V_Expr? {
         ctx.blkCtx.frameCtx.ideCompCtx.trackScope(posRange, ctx)
 
@@ -638,6 +650,15 @@ internal class S_AtExpr(
     val limit: S_Expr?,
     val offset: S_Expr?,
 ): S_Expr(from.startPos) {
+    override fun discoverVars(map: MutableTypedKeyMap): Set<Name> {
+        val res = mutableSetOf<Name>()
+        res.addAll(from.discoverVars(map))
+        res.addAll(where.discoverVars(map))
+        res.addAll(what.discoverVars(map))
+        res.addAll(discoverVars(listOf(limit, offset), map))
+        return res
+    }
+
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         return compile0(ctx, null)
     }

@@ -103,3 +103,55 @@ lambda - only reassigning the variable is not. A captured variable is read-only 
     val h: () -> integer = () -> xs.size();
     xs.add(4);
     h();   // 4 - xs is captured by reference, so the in-place add IS seen
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+6. Language: Value blocks as if/when expression arms
+
+An arm of an if or when expression can now be a value block - the same block form as a value-block lambda body:
+zero or more statements followed by a trailing expression (no ;) that is the block's result.
+
+    val x = if (cond) {
+        val v = compute();
+        v * 2
+    } else fallback;
+
+    val y = when (n) {
+        0 -> 'zero';
+        1, 2 -> {
+            val s = 'small';
+            s + ':' + n
+        }
+        else -> 'big'
+    };
+
+Only the chosen arm evaluates. A block arm has plain-code-block semantics - it runs inline, in the enclosing
+function's frame:
+
+- Enclosing local variables are visible and assignable, and nullability analysis flows through the block.
+- return returns from the enclosing function. An arm that returns on all paths yields no value, and the
+  conditional takes its result type from the other arms:
+
+      val sign = if (n < 0) { return 'negative'; } else { 'non-negative' };
+
+- break and continue inside a block arm bind to the enclosing loop.
+- At-expression scope applies: attributes and the $ placeholder resolve inside a block arm of a
+  collection-at projection.
+
+The trailing expression (no ;) is the block's value; a block with statements only is unit-typed, which a
+conditional arm cannot be (unless it always returns).
+
+The ; separating the cases of a when expression is now optional after every case - a block arm reads naturally
+without one - instead of required between cases. All previously valid code parses as before.
+
+Restrictions:
+
+- In expression positions with no enclosing body statement - an at-expression body, a parameter or attribute
+  default value - return/break/continue cannot escape the block (there is nothing to unwind to); the block
+  itself is fine.
+- Inside a lambda body, return stays prohibited (the lambda rule), also within a block arm.
+- A value block cannot be used in a global constant's expression: its statements cannot be validated as
+  constant, so blocks are rejected there.
+- A block arm cannot be part of a database at-expression's SQL (like any non-SQL expression).
+- When omitting the ; after an expression arm of a when expression, note that the arm expression
+  binds greedily: if the NEXT case's condition starts with (, [, + or -, keep the ; so the
+  condition is not consumed as a continuation (call, subscript or binary operator) of the arm.

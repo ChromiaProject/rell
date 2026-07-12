@@ -245,6 +245,13 @@ class Rt_InterpreterImpl(
             Rt_UnitValue
         }
 
+        is RR_Expr.ValueBlock -> frame.block(expr.frameBlock) {
+            val stmtResult = executeStatements(expr.stmts, frame)
+            if (stmtResult != null) throw Rt_ValueBlockEscapeException(stmtResult)
+            val resultExpr = expr.result
+            if (resultExpr != null) evaluateExpr(resultExpr, frame) else Rt_UnitValue
+        }
+
         is RR_Expr.GlobalConstant -> {
             frame.appCtx.getGlobalConstant(rrApp.allConstants[expr.constDefIndex].constId)
         }
@@ -353,7 +360,15 @@ class Rt_InterpreterImpl(
 
     // --- Statement interpreter ---
 
-    fun executeStmt(stmt: RR_Statement, frame: Rt_CallFrame): Rt_StatementResult? = when (stmt) {
+    fun executeStmt(stmt: RR_Statement, frame: Rt_CallFrame): Rt_StatementResult? = try {
+        executeStmt0(stmt, frame)
+    } catch (e: Rt_ValueBlockEscapeException) {
+        // A return/break/continue escaping from a value block evaluated inside this statement's
+        // expressions; from here on it propagates as an ordinary statement result.
+        e.result
+    }
+
+    private fun executeStmt0(stmt: RR_Statement, frame: Rt_CallFrame): Rt_StatementResult? = when (stmt) {
         is RR_Statement.Empty -> null
         is RR_Statement.Var -> {
             val value = stmt.expr?.let { evaluateExpr(it, frame) }

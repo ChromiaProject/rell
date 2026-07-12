@@ -241,7 +241,13 @@ internal class Tf_AssignStmtNode(
     override fun execute(frame: VirtualFrame): Rt_Value {
         val value = valueExpr.execute(frame)
         val rt = tfRtFrame(frame)
-        store(rt, value)
+        try {
+            store(rt, value)
+        } catch (e: Rt_ValueBlockEscapeException) {
+            // The untranslated [dstExpr] subtree may contain a value block (e.g. in a subscript
+            // key) whose return/break/continue escapes out of `assignTo`.
+            tfConvertValueBlockEscape(e)
+        }
         return Rt_UnitValue
     }
 

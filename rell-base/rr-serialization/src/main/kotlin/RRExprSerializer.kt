@@ -222,6 +222,19 @@ private fun SerializerContext.serializeRRExprUnion(expr: RR_Expr): Pair<UByte, I
             ExprUnion.StatementExpr to StatementExpr.endStatementExpr(builder)
         }
 
+        is RR_Expr.ValueBlock -> {
+            val stmts = expr.stmts.map { serializeStmt(it) }.toIntArray()
+            val stmtsVec = builder.createVectorOfTables(stmts)
+            val result = expr.result?.let { serializeExpr(it) }
+            val fb = serializeFrameBlock(expr.frameBlock)
+            ValueBlockExpr.startValueBlockExpr(builder)
+            ValueBlockExpr.addType(builder, type)
+            ValueBlockExpr.addStmts(builder, stmtsVec)
+            if (result != null) ValueBlockExpr.addResult(builder, result)
+            ValueBlockExpr.addFrameBlock(builder, fb)
+            ExprUnion.ValueBlockExpr to ValueBlockExpr.endValueBlockExpr(builder)
+        }
+
         is RR_Expr.GlobalConstant -> {
             GlobalConstantExpr.startGlobalConstantExpr(builder)
             GlobalConstantExpr.addType(builder, type)

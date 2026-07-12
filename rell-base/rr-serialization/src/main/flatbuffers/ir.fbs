@@ -774,6 +774,14 @@ table StatementExpr {
     stmt: Stmt (required);
 }
 
+/// R_ValueBlockExpr: a value block `{ stmt; ...; result }` used as an if/when expression arm.
+table ValueBlockExpr {
+    type: Type;
+    stmts: [Stmt] (required);
+    result: Expr;
+    frame_block: FrameBlock (required);
+}
+
 table GlobalConstantExpr {
     type: Type (required);
     const_def_index: uint;
@@ -989,6 +997,7 @@ union ExprUnion {
     StructMemberExpr,
     ObjectValueExpr,
     LazyExpr,
+    ValueBlockExpr,
 }
 
 /// Wrapper table for R_Expr.

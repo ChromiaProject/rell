@@ -148,6 +148,13 @@ internal class RR_IrResolver(
             }
 
             is R_StatementExpr -> RR_Expr.StatementExpr(type, resolveStmt(expr.stmt))
+
+            is R_ValueBlockExpr -> RR_Expr.ValueBlock(
+                type,
+                expr.stmts.mapToImmList { resolveStmt(it) },
+                expr.result?.let { resolveExpr(it) },
+                expr.frameBlock.toRR(),
+            )
             is R_GlobalConstantExpr -> RR_Expr.GlobalConstant(type, expr.constId.index)
             is R_ChainHeightExpr -> RR_Expr.ChainHeight(type, expr.chain.index)
             is R_TypeAdapterExpr -> RR_Expr.TypeAdapter(type, resolveExpr(expr.expr), resolveTypeAdapter(expr.adapter))

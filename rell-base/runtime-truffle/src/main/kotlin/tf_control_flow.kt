@@ -4,30 +4,38 @@
 
 package net.postchain.rell.base.runtime.truffle
 
+import com.oracle.truffle.api.nodes.ControlFlowException
+import net.postchain.rell.base.runtime.Rt_Value
+
 /**
- * Status codes returned from [net.postchain.rell.base.runtime.truffle.nodes.Tf_ExprNode.executeStmt].
+ * Control-flow escapes for `return` / `break` / `continue`, following Truffle's conventional
+ * [ControlFlowException] design: statement nodes throw, loops catch `break`/`continue` around
+ * their body, and the function-body root catches [Tf_ReturnException]. The exceptions are
+ * stackless (no stack trace, no suppression); [Tf_BreakException] and [Tf_ContinueException] are
+ * singletons, and PE's escape analysis removes a [Tf_ReturnException] allocation whenever the
+ * throw and the catch land in one compilation unit.
  *
- * The Truffle backend used to encode `return` / `break` / `continue` as JVM exceptions
- * (`Tf_ReturnException` / `Tf_BreakException` / `Tf_ContinueException`). On FT4-style
- * workloads with many small Rell function calls and stdlib boundaries that block PE-inlining,
- * those exceptions are not folded by Graal — `ExceptionHandlerStub` / `UnwindException` /
- * `JVMCIRuntime::exception_handler_for_pc` dominated the profile (>60% of CPU time on
- * `rule_eval`).
- *
- * Replacement: every statement node returns one of these integer codes from `executeStmt`.
- * Loop and block nodes propagate or consume the code locally; the function-body root reads
- * the return value from the dedicated [TF_RETURN_VALUE_AUX_SLOT] aux slot when status is
- * [STATUS_RETURN]. No exception is thrown; PE compiles the status check to a primitive
- * integer comparison plus a [com.oracle.truffle.api.profiles.BranchProfile] for the cold
- * non-fallthrough branches.
+ * History: an earlier exception-based design was once replaced by integer status codes after
+ * FT4-style profiles (many small Rell calls, PE-inlining blocked at stdlib boundaries) showed
+ * unfolded exception handling dominating `rule_eval`. The exceptions are back deliberately: value
+ * blocks (`{ stmt; ...; result }` as if/when expression arms) need an exception channel anyway -
+ * an expression-shaped `execute` has no status to return - and one conventional mechanism for all
+ * control flow beats two coexisting ones. The ergonomics were judged worth the cost.
  */
-internal const val STATUS_FALLTHROUGH: Int = 0
+internal class Tf_ReturnException(
+    @JvmField val value: Rt_Value?,
+): ControlFlowException()
 
-/** Status: `return` — the return value (or null for `return;`) is in [TF_RETURN_VALUE_AUX_SLOT]. */
-internal const val STATUS_RETURN: Int = 1
+/** `break` - caught by the nearest enclosing loop node. */
+internal class Tf_BreakException private constructor(): ControlFlowException() {
+    companion object {
+        @JvmField val INSTANCE = Tf_BreakException()
+    }
+}
 
-/** Status: `break` — caught by the nearest enclosing loop. */
-internal const val STATUS_BREAK: Int = 2
-
-/** Status: `continue` — caught by the nearest enclosing loop. */
-internal const val STATUS_CONTINUE: Int = 3
+/** `continue` - caught by the nearest enclosing loop node. */
+internal class Tf_ContinueException private constructor(): ControlFlowException() {
+    companion object {
+        @JvmField val INSTANCE = Tf_ContinueException()
+    }
+}

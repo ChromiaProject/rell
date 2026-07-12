@@ -16,6 +16,10 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.*
 import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.toImmSet
+import net.postchain.rell.base.utils.immSetOf
+import net.postchain.rell.base.utils.MutableTypedKeyMap
+import net.postchain.rell.base.compiler.base.core.C_StatementVars
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.mapNotNullToImmList
@@ -30,6 +34,8 @@ internal sealed class S_UpdateTarget {
         atExprId: R_AtExprId,
         subValues: MutableList<V_Expr>,
     ): C_UpdateTarget?
+
+    internal open fun discoverVars(map: MutableTypedKeyMap): Set<Name> = immSetOf()
 }
 
 internal class S_UpdateFromItem(
@@ -43,6 +49,8 @@ internal class S_UpdateTarget_Simple(
     private val from: ImmList<S_UpdateFromItem>,
     private val where: S_AtExprWhere,
 ): S_UpdateTarget() {
+    override fun discoverVars(map: MutableTypedKeyMap) = where.discoverVars(map)
+
     override fun compile(
         ctx: C_ExprContext,
         stmtPos: S_Pos,
@@ -105,6 +113,8 @@ internal class S_UpdateTarget_Simple(
 }
 
 internal class S_UpdateTarget_Expr(private val expr: S_Expr): S_UpdateTarget() {
+    override fun discoverVars(map: MutableTypedKeyMap) = expr.discoverVars(map)
+
     override fun compile(
             ctx: C_ExprContext,
             stmtPos: S_Pos,
@@ -220,6 +230,13 @@ internal class S_UpdateStatement(
     val target: S_UpdateTarget,
     val what: ImmList<S_UpdateWhat>,
 ): S_Statement(startPos, endPos) {
+    override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
+        val modified = mutableSetOf<Name>()
+        modified.addAll(target.discoverVars(map))
+        modified.addAll(S_Expr.discoverVars(what.map { it.expr }, map))
+        return C_StatementVars(immSetOf(), modified.toImmSet())
+    }
+
     override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         ctx.checkDbUpdateAllowed(startPos)
 
@@ -286,6 +303,10 @@ internal class S_DeleteStatement(
     endPos: S_Pos,
     private val target: S_UpdateTarget,
 ): S_Statement(startPos, endPos) {
+    override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
+        return C_StatementVars(immSetOf(), target.discoverVars(map).toImmSet())
+    }
+
     override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
         ctx.checkDbUpdateAllowed(startPos)
 

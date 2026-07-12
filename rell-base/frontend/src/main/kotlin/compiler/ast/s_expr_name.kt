@@ -14,6 +14,7 @@ import net.postchain.rell.base.model.R_EnumType
 import net.postchain.rell.base.model.R_NullType
 import net.postchain.rell.base.model.rr.RR_ConstantValue
 import net.postchain.rell.base.utils.ImmList
+import net.postchain.rell.base.utils.MutableTypedKeyMap
 import net.postchain.rell.base.utils.filterToImmList
 
 class S_NameExpr(val qName: S_QualifiedName): S_Expr(qName.pos) {
@@ -190,6 +191,8 @@ internal class S_AttrExpr(pos: S_Pos, private val name: S_Name): S_Expr(pos) {
 }
 
 internal class S_MemberExpr(val base: S_Expr, val name: S_Name): S_Expr(base.startPos) {
+    override fun discoverVars(map: MutableTypedKeyMap) = base.discoverVars(map)
+
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val nameHand = name.compile(ctx)
 
@@ -218,6 +221,8 @@ internal class S_MemberExpr(val base: S_Expr, val name: S_Name): S_Expr(base.sta
 }
 
 internal class S_SafeMemberExpr(val base: S_Expr, val name: S_Name): S_Expr(base.startPos) {
+    override fun discoverVars(map: MutableTypedKeyMap) = base.discoverVars(map)
+
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val cBase = base.compile(ctx)
         val vBase = cBase.vExpr()

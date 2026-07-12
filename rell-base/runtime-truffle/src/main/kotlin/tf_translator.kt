@@ -272,6 +272,25 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
 
         is RR_Expr.StatementExpr -> Tf_StatementExprNode(translateStmt(expr.stmt))
 
+        is RR_Expr.ValueBlock -> {
+            val resultExpr = expr.result
+            val children = ArrayList<Tf_ExprNode>(expr.stmts.size + 1)
+            for (st in expr.stmts) {
+                children.add(translateStmt(st))
+            }
+            if (resultExpr != null) {
+                children.add(Tf_ValueBlockResultStmtNode(translateExpr(resultExpr)))
+            }
+            val depth = blockDepth
+            blockDepth = depth + 1
+            val body = try {
+                makeBlockStmtNode(depth, expr.frameBlock, children.toTypedArray())
+            } finally {
+                blockDepth = depth
+            }
+            Tf_ValueBlockExprNode(body, hasResult = resultExpr != null)
+        }
+
         is RR_Expr.GlobalConstant -> {
             val constId = backend.rrApp.allConstants[expr.constDefIndex].constId
             when {
@@ -1143,9 +1162,8 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
 
     /**
      * Wraps a single [RR_Expr] (constant initialisers) in a body that emits the value as a
-     * [STATUS_RETURN] with the value placed in [TF_RETURN_VALUE_AUX_SLOT]. Keeps the
-     * Tf_*RootNode protocol uniform: every body either signals `return` with a value, or
-     * completes void.
+     * [Tf_ReturnException]. Keeps the Tf_*RootNode protocol uniform: every body either
+     * signals `return` with a value, or completes void.
      */
     fun buildExprAsBodyTarget(expr: RR_Expr, rrFrame: RR_FrameDescriptor, defId: DefinitionId): RootCallTarget {
         // Constant initialisers don't declare locals — the body is a single expression — so
@@ -1267,16 +1285,16 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
             builder.addSlot(kind, null, null)
         }
         val descriptor = builder.build()
-        // Reserve aux slot 0 for the Rt_CallFrame lazy cache, slot 1 for the body's
-        // return-value channel. findOrAddAuxiliarySlot is neverPartOfCompilation
-        // (build-time only) — fine to call here.
+        // Reserve aux slot 0 for the Rt_CallFrame lazy cache, slot 1 for the value-block
+        // result channel. findOrAddAuxiliarySlot is neverPartOfCompilation (build-time only)
+        // — fine to call here.
         val rtFrameAuxIndex = descriptor.findOrAddAuxiliarySlot(TF_RT_FRAME_AUX_KEY)
         check(rtFrameAuxIndex == TF_RT_FRAME_AUX_SLOT) {
             "expected Rt_CallFrame aux slot at index $TF_RT_FRAME_AUX_SLOT, got $rtFrameAuxIndex"
         }
-        val returnAuxIndex = descriptor.findOrAddAuxiliarySlot(TF_RETURN_VALUE_AUX_KEY)
-        check(returnAuxIndex == TF_RETURN_VALUE_AUX_SLOT) {
-            "expected return-value aux slot at index $TF_RETURN_VALUE_AUX_SLOT, got $returnAuxIndex"
+        val valueBlockAuxIndex = descriptor.findOrAddAuxiliarySlot(TF_VALUE_BLOCK_RESULT_AUX_KEY)
+        check(valueBlockAuxIndex == TF_VALUE_BLOCK_RESULT_AUX_SLOT) {
+            "expected value-block-result aux slot at index $TF_VALUE_BLOCK_RESULT_AUX_SLOT, got $valueBlockAuxIndex"
         }
         return descriptor
     }
@@ -1289,9 +1307,8 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
             return Rt_UnitValue
         }
 
-        override fun executeStmt(frame: VirtualFrame): Int {
-            frame.setAuxiliarySlot(TF_RETURN_VALUE_AUX_SLOT, inner.execute(frame))
-            return STATUS_RETURN
+        override fun executeStmt(frame: VirtualFrame) {
+            throw Tf_ReturnException(inner.execute(frame))
         }
     }
 

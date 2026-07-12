@@ -85,7 +85,7 @@ class RellFormatter(
                 LambdaExprContext::class.java,
                 LambdaExprFormatter(braceFormatter, whitespaceFormatter, tokenAnalyzer)
             )
-            register(LambdaBodyBlockContext::class.java, LambdaBodyBlockFormatter(tokenAnalyzer))
+            register(ValueBlockContext::class.java, ValueBlockFormatter(tokenAnalyzer))
 
             register(
                 NonEmptyMapLiteralExprContext::class.java,

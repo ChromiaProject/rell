@@ -28,19 +28,18 @@ internal const val TF_RT_FRAME_AUX_SLOT: Int = 0
 internal val TF_RT_FRAME_AUX_KEY: Any = "tf.rt-frame"
 
 /**
- * Index of the auxiliary slot that holds the body's return value when a statement node
- * returns [STATUS_RETURN]. Allocated on every Truffle [com.oracle.truffle.api.frame.FrameDescriptor]
- * built by [Tf_Translator.buildFrameDescriptor]; the function-body root and the user-fn
- * caller read from this slot after the body executes.
+ * Index of the auxiliary slot that carries a value block's trailing-expression value from the
+ * result child (executed inside the block's scope) to the enclosing `Tf_ValueBlockExprNode`.
+ * Written and read back-to-back within one node execution, so nested value blocks and recursion
+ * cannot interleave two uses of the slot in the same frame.
  *
- * Slot `1` (right after [TF_RT_FRAME_AUX_SLOT]). The value is either a [net.postchain.rell.base.runtime.Rt_Value]
- * or `null` (for parameterless `return;`). Slot is never read unless the most recent
- * `executeStmt` returned [STATUS_RETURN], so cross-call leakage is impossible.
+ * Slot `1` (right after [TF_RT_FRAME_AUX_SLOT]). A `return` value needs no slot: it travels in
+ * [net.postchain.rell.base.runtime.truffle.Tf_ReturnException].
  */
-internal const val TF_RETURN_VALUE_AUX_SLOT: Int = 1
+internal const val TF_VALUE_BLOCK_RESULT_AUX_SLOT: Int = 1
 
-/** Sentinel key for [TF_RETURN_VALUE_AUX_SLOT]. See [TF_RT_FRAME_AUX_KEY]. */
-internal val TF_RETURN_VALUE_AUX_KEY: Any = "tf.return-value"
+/** Sentinel key for [TF_VALUE_BLOCK_RESULT_AUX_SLOT]. See [TF_RT_FRAME_AUX_KEY]. */
+internal val TF_VALUE_BLOCK_RESULT_AUX_KEY: Any = "tf.value-block-result"
 
 /**
  * Slot-kind encoding for typed [com.oracle.truffle.api.frame.FrameSlotKind] specialisation.

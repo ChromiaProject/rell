@@ -27,6 +27,16 @@ sealed interface Rt_StatementResult {
 }
 
 /**
+ * Unwinds a `return`/`break`/`continue` escaping from a value block evaluated inside an
+ * expression, up to the nearest enclosing statement boundary, where it is converted back into an
+ * [Rt_StatementResult] (see `Rt_InterpreterImpl.executeStmt`). It never crosses a function
+ * boundary: a value block always sits inside some statement of the same function body, and the
+ * conversion happens at the innermost such statement. Stackless - it is pure control flow.
+ */
+class Rt_ValueBlockEscapeException(val result: Rt_StatementResult): RuntimeException(null, null, false, false)
+
+
+/**
  * Tree-walker activation record: a pluggable [Rt_FrameStorage] (defaulting to a heap-backed
  * `Array<Rt_Value?>`) plus block-scope bookkeeping. Implements the core-side [Rt_Frame] marker so
  * stdlib helpers can report errors against the current frame without a compile-time dependency on

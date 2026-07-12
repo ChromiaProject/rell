@@ -26,6 +26,19 @@ class R_StructMemberExpr(val base: R_Expr, val attr: R_Attribute): R_Destination
 
 class R_RRConstantValueExpr(type: R_Type, val rrValue: RR_ConstantValue): R_BaseExpr(type)
 
+/**
+ * A value block `{ stmt; ...; result }` used as an `if`/`when` expression arm: executes [stmts] in
+ * [frameBlock] (a sub-block of the enclosing function's frame), then evaluates [result] as the
+ * expression's value (`unit` when absent). A `return`/`break`/`continue` inside the statements
+ * escapes the whole enclosing expression, up to the nearest statement boundary.
+ */
+class R_ValueBlockExpr(
+    type: R_Type,
+    val stmts: ImmList<R_Statement>,
+    val result: R_Expr?,
+    val frameBlock: R_FrameBlock,
+): R_BaseExpr(type)
+
 class R_TupleExpr(
     override val type: R_TupleType,
     val exprs: ImmList<R_Expr>,

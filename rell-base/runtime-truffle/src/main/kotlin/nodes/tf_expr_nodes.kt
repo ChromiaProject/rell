@@ -264,12 +264,8 @@ internal class Tf_MapLiteralNode(
 
 /**
  * Native: statement-as-expression. Executes the wrapped statement node and returns
- * [Rt_UnitValue] (the only valid type for a statement-shaped expression).
- *
- * Propagates the body's `executeStmt` status when this node is itself used in a statement
- * context (e.g. wrapped by a [Tf_ExprStmtNode]) — preserving the prior exception-based
- * behaviour where a `return`/`break`/`continue` inside a statement-expression bubbled up
- * to the enclosing function body.
+ * [Rt_UnitValue] (the only valid type for a statement-shaped expression). A `return`/`break`/
+ * `continue` inside the statement propagates as its control-flow exception.
  */
 internal class Tf_StatementExprNode(@field:Child private var body: Tf_ExprNode): Tf_ExprNode() {
     override fun execute(frame: VirtualFrame): Rt_Value {
@@ -277,7 +273,7 @@ internal class Tf_StatementExprNode(@field:Child private var body: Tf_ExprNode):
         return Rt_UnitValue
     }
 
-    override fun executeStmt(frame: VirtualFrame): Int = body.executeStmt(frame)
+    override fun executeStmt(frame: VirtualFrame) = body.executeStmt(frame)
 }
 
 /**

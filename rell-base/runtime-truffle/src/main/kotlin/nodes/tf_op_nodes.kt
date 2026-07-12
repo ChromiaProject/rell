@@ -1261,9 +1261,7 @@ internal sealed class Tf_FunctionCallNode: Tf_ExprNode() {
                 // Pass the args array to Truffle through the Java helper so the array becomes
                 // `frame.arguments` directly (no spread copy on the way in). The callee root
                 // returns the function's return value directly (or [Rt_UnitValue] when the
-                // body falls through without an explicit `return`); reading from the
-                // [TF_RETURN_VALUE_AUX_SLOT] of the callee frame would require materialising
-                // it, so we channel the value through the call-target return slot instead.
+                // body falls through without an explicit `return`).
                 Tf_Unchecked.cast(Tf_Unchecked.callDirect(call, callArgs))
             } catch (e: Rt_Exception) {
                 // Mirror the tree-walker's `Rt_InterpreterImpl.callTarget` wrapping: at each call

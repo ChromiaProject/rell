@@ -176,6 +176,14 @@ private fun deserializeExprUnion(fb: FbExpr): RR_Expr = when (fb.exprType) {
         RR_Expr.StatementExpr(t, deserializeStmt(e.stmt))
     }
 
+    ExprUnion.ValueBlockExpr -> {
+        val e = ValueBlockExpr().also { fb.expr(it) }
+        val t = e.type?.let { deserializeType(it) } ?: RR_Type.Primitive(RR_PrimitiveKind.UNIT)
+        val stmts = (0 until e.stmtsLength).mapToImmList { deserializeStmt(e.stmts(it)) }
+        val result = e.result?.let { deserializeExpr(it) }
+        RR_Expr.ValueBlock(t, stmts, result, deserializeFrameBlock(e.frameBlock))
+    }
+
     ExprUnion.GlobalConstantExpr -> {
         val e = GlobalConstantExpr().also { fb.expr(it) }
         RR_Expr.GlobalConstant(deserializeType(e.type), e.constDefIndex.toInt())

@@ -46,22 +46,17 @@ class WhenExprFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<WhenExprContext> {
     override fun format(node: WhenExprContext, doc: FormattableDocument) {
-        // whenExpr: 'when' ('(' expression ')')? '{' (whenCondition '->' expression) (';' whenCondition '->' expression)* ';'? '}'
+        // whenExpr: 'when' ('(' expression ')')? '{' (whenCondition '->' exprOrValueBlock ';'?)+ '}'
         doc.interiorIndent(node)
         val whenTok = tokenAnalyzer.tokenFor(node, "when")
         if (whenTok != null) doc.append(whenTok) { it.oneSpace() }
-
-        val exprs = node.expression()
-        // The first expression *may* be the discriminator inside `(` `)`. We can't
-        // distinguish positionally; format all expressions with newline+space rules
-        // delegated below.
 
         val openingCurly = tokenAnalyzer.tokenFor(node, "{")
         if (openingCurly != null) doc.prepend(openingCurly) { it.oneSpace() }
         val closingCurly = tokenAnalyzer.tokenFor(node, "}")
         if (closingCurly != null) doc.prepend(closingCurly) { it.newLine() }
 
-        // Each whenCondition + the following expression form a case.
+        // Each whenCondition + the following arm form a case.
         val conds = node.whenCondition()
         for (i in conds.indices) {
             val cond = conds[i]
@@ -72,8 +67,8 @@ class WhenExprFormatter(
             }
             doc.format(cond)
         }
-        // Format expressions; they self-handle.
-        exprs.forEach { doc.format(it) }
+        node.expression()?.let { doc.surround(it) { c -> c.noSpace() }; doc.format(it) }
+        node.exprOrValueBlock().forEach { doc.format(it) }
     }
 }
 

@@ -11,6 +11,7 @@ import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_ConstantValueEvalContext
 import net.postchain.rell.base.compiler.vexpr.V_Expr
+import net.postchain.rell.base.compiler.vexpr.V_ValueBlockExpr
 import net.postchain.rell.base.compiler.vexpr.V_WhenChooserDetails
 import net.postchain.rell.base.compiler.vexpr.V_WhenExpr
 import net.postchain.rell.base.model.*
@@ -69,6 +70,8 @@ internal class C_WhenChooser(details: C_WhenChooserDetails) {
 }
 
 internal sealed class S_WhenCondition {
+    internal open fun discoverVars(map: MutableTypedKeyMap): Set<Name> = immSetOf()
+
     abstract fun compileBad(ctx: C_ExprContext)
 
     abstract fun compile(
@@ -82,6 +85,8 @@ internal sealed class S_WhenCondition {
 }
 
 internal class S_WhenConditionExpr(val exprs: ImmList<S_Expr>): S_WhenCondition() {
+    override fun discoverVars(map: MutableTypedKeyMap) = S_Expr.discoverVars(exprs, map)
+
     override fun compileBad(ctx: C_ExprContext) {
         for (expr in exprs) {
             expr.compileOpt(ctx)
@@ -194,6 +199,16 @@ internal class S_WhenExpr(
     val expr: S_Expr?,
     val cases: ImmList<S_WhenExprCase>,
 ): S_Expr(pos) {
+    override fun discoverVars(map: MutableTypedKeyMap): Set<Name> {
+        val res = mutableSetOf<Name>()
+        if (expr != null) res.addAll(expr.discoverVars(map))
+        for (case in cases) {
+            res.addAll(case.cond.discoverVars(map))
+            res.addAll(case.expr.discoverVars(map))
+        }
+        return res
+    }
+
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val conds = cases.map { it.cond }
 
@@ -216,26 +231,40 @@ internal class S_WhenExpr(
         val vRawExprs = cases.mapIndexedToImmList { i, case ->
             case.expr.compileWithVarStates(ctx, caseStates[i]).vExpr()
         }
-
-        val vExprs = C_BinOp_Common.promoteNumeric(ctx, vRawExprs)
-        if (vExprs.isEmpty()) {
+        if (vRawExprs.isEmpty()) {
             return Pair(R_CtErrorType, immListOf())
         }
 
-        val type = vExprs.withIndex().fold(vExprs[0].type) { t, (i, value) ->
-            C_Types.commonType(t, value.type, cases[i].expr.startPos) {
+        // An always-exiting arm (a value block with no trailing expression that returns on all
+        // paths) yields no value; it takes no part in numeric promotion, the result type or the
+        // unit checks - unless every arm exits, in which case the whole expression has no value
+        // and the plain unit errors apply.
+        val exits = vRawExprs.map { V_ValueBlockExpr.alwaysExits(it) }
+        val valueIndexes = if (exits.all { it }) vRawExprs.indices.toList() else {
+            vRawExprs.indices.filter { !exits[it] }
+        }
+
+        val vPromoted = C_BinOp_Common.promoteNumeric(ctx, valueIndexes.mapToImmList { vRawExprs[it] })
+        val vExprs = vRawExprs.toMutableList()
+        for ((k, i) in valueIndexes.withIndex()) {
+            vExprs[i] = vPromoted[k]
+        }
+
+        val first = valueIndexes.first()
+        val type = valueIndexes.fold(vExprs[first].type) { t, i ->
+            C_Types.commonType(t, vExprs[i].type, cases[i].expr.startPos) {
                 "expr_when_incompatible_type" toCodeMsg "When case expressions have incompatible types"
             }
         }
 
-        for (vExpr in vExprs) {
-            val exprType = vExpr.type
-            C_Utils.checkUnitType(ctx.msgCtx, vExpr.pos, exprType) {
+        for (i in valueIndexes) {
+            val exprType = vExprs[i].type
+            C_Utils.checkUnitType(ctx.msgCtx, vExprs[i].pos, exprType) {
                 "when_exprtype_unit" toCodeMsg "Expression returns nothing"
             }
         }
 
-        return Pair(type, vExprs)
+        return Pair(type, vExprs.toImmList())
     }
 
     companion object {

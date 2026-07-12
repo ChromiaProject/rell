@@ -11,6 +11,7 @@ import net.postchain.rell.base.compiler.vexpr.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.rr.RR_ConstantValue
+import net.postchain.rell.base.utils.MutableTypedKeyMap
 
 internal sealed class S_UnaryOp(val code: String) {
     abstract fun compile(ctx: C_ExprContext, startPos: S_Pos, opPos: S_Pos, expr: V_Expr): V_Expr
@@ -148,6 +149,8 @@ internal class S_UnaryExpr(
     private val op: S_PosValue<S_UnaryOp>,
     private val expr: S_Expr,
 ): S_Expr(startPos) {
+    override fun discoverVars(map: MutableTypedKeyMap) = expr.discoverVars(map)
+
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val cExpr = expr.compile(ctx)
         val vExpr = cExpr.vExpr()

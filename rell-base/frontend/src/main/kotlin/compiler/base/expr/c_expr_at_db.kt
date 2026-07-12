@@ -64,7 +64,7 @@ class C_AtFrom_Entities(
 ): C_AtFrom(outerExprCtx, fromCtx, fromBlock) {
     private val entities = this.items.mapToImmList { it.atEntity }
 
-    private val innerExprCtx = outerExprCtx.copy(blkCtx = innerBlkCtx, atCtx = innerAtCtx)
+    private val innerExprCtx = outerExprCtx.copy(blkCtx = innerBlkCtx, atCtx = innerAtCtx, insideStmt = false, loop = null)
 
     init {
         check(entities.isNotEmpty())
@@ -247,7 +247,7 @@ class C_AtFrom_Entities(
         val itemVarRef = itemVar.toRef(cBlock.rBlock.uid)
         val innerExprCtx2 = outerExprCtx
             .updateVarStates(C_VarStatesDelta.changed(itemVar.varKey))
-            .copy(blkCtx = innerBlkCtx2, atCtx = innerAtCtx)
+            .copy(blkCtx = innerBlkCtx2, atCtx = innerAtCtx, insideStmt = false, loop = null)
         val itemExpr: V_Expr = V_LocalVarExpr(innerExprCtx2, details.startPos, itemVarRef)
 
         val colWhat = details.base.what.allFields.mapIndexed { i, field ->

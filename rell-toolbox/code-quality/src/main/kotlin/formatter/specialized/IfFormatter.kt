@@ -84,11 +84,11 @@ class IfExprFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<IfExprContext> {
     override fun format(node: IfExprContext, doc: FormattableDocument) {
-        // ifExpr: 'if' '(' expression ')' expression 'else' expression
-        val expressions = node.expression()
-        val checkExpr = expressions[0]
-        val conditionalIfExpr = expressions[1]
-        val conditionalElseExpr = expressions[2]
+        // ifExpr: 'if' '(' expression ')' exprOrValueBlock 'else' exprOrValueBlock
+        val checkExpr = node.expression()
+        val arms = node.exprOrValueBlock()
+        val conditionalIfExpr = arms[0]
+        val conditionalElseExpr = arms[1]
 
         val ifTok = tokenAnalyzer.directTokenFor(node, "if") ?: tokenAnalyzer.tokenFor(node, "if")
         if (ifTok != null) doc.surround(ifTok) { it.oneSpace() }

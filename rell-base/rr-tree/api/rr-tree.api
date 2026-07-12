@@ -1679,6 +1679,24 @@ public final class net/postchain/rell/base/model/rr/RR_Expr$Unary : java/lang/Re
 	public fun type ()Lnet/postchain/rell/base/model/rr/RR_Type;
 }
 
+public final class net/postchain/rell/base/model/rr/RR_Expr$ValueBlock : java/lang/Record, net/postchain/rell/base/model/rr/RR_Expr {
+	public fun <init> (Lnet/postchain/rell/base/model/rr/RR_Type;Lkotlinx/collections/immutable/ImmutableList;Lnet/postchain/rell/base/model/rr/RR_Expr;Lnet/postchain/rell/base/model/rr/RR_FrameBlock;)V
+	public final fun component1 ()Lnet/postchain/rell/base/model/rr/RR_Type;
+	public final fun component2 ()Lkotlinx/collections/immutable/ImmutableList;
+	public final fun component3 ()Lnet/postchain/rell/base/model/rr/RR_Expr;
+	public final fun component4 ()Lnet/postchain/rell/base/model/rr/RR_FrameBlock;
+	public final fun copy (Lnet/postchain/rell/base/model/rr/RR_Type;Lkotlinx/collections/immutable/ImmutableList;Lnet/postchain/rell/base/model/rr/RR_Expr;Lnet/postchain/rell/base/model/rr/RR_FrameBlock;)Lnet/postchain/rell/base/model/rr/RR_Expr$ValueBlock;
+	public static synthetic fun copy$default (Lnet/postchain/rell/base/model/rr/RR_Expr$ValueBlock;Lnet/postchain/rell/base/model/rr/RR_Type;Lkotlinx/collections/immutable/ImmutableList;Lnet/postchain/rell/base/model/rr/RR_Expr;Lnet/postchain/rell/base/model/rr/RR_FrameBlock;ILjava/lang/Object;)Lnet/postchain/rell/base/model/rr/RR_Expr$ValueBlock;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun frameBlock ()Lnet/postchain/rell/base/model/rr/RR_FrameBlock;
+	public synthetic fun getType ()Lnet/postchain/rell/base/model/rr/RR_Type;
+	public fun hashCode ()I
+	public final fun result ()Lnet/postchain/rell/base/model/rr/RR_Expr;
+	public final fun stmts ()Lkotlinx/collections/immutable/ImmutableList;
+	public fun toString ()Ljava/lang/String;
+	public fun type ()Lnet/postchain/rell/base/model/rr/RR_Type;
+}
+
 public final class net/postchain/rell/base/model/rr/RR_Expr$Var : java/lang/Record, net/postchain/rell/base/model/rr/RR_Expr {
 	public fun <init> (Lnet/postchain/rell/base/model/rr/RR_Type;Lnet/postchain/rell/base/model/rr/RR_VarPtr;Ljava/lang/String;)V
 	public final fun component1 ()Lnet/postchain/rell/base/model/rr/RR_Type;

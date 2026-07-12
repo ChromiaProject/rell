@@ -388,7 +388,16 @@ lambdaParam
 
 lambdaBody
     : expression                          # lambdaBodyExpr
-    | '{' statement* expression? '}'      # lambdaBodyBlock
+    | valueBlock                          # lambdaBodyBlock
+    ;
+
+valueBlock
+    : '{' statement* expression? '}'
+    ;
+
+exprOrValueBlock
+    : valueBlock
+    | expression
     ;
 
 binaryExpr
@@ -401,11 +410,11 @@ binaryExpr
     ;
 
 ifExpr
-    : 'if' '(' expression ')' expression 'else' expression
+    : 'if' '(' expression ')' exprOrValueBlock 'else' exprOrValueBlock
     ;
 
 whenExpr
-    : 'when' ('(' expression ')')? '{' (whenCondition '->' expression) (';' whenCondition '->' expression)* ';'? '}'
+    : 'when' ('(' expression ')')? '{' (whenCondition '->' exprOrValueBlock ';'?)+ '}'
     ;
 
 baseExpr

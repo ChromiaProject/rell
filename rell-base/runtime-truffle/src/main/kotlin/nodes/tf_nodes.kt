@@ -136,27 +136,19 @@ internal abstract class Tf_ExprNode : Node() {
     abstract fun execute(frame: VirtualFrame): Rt_Value
 
     /**
-     * Statement-shaped execute path: runs the node for side effects and returns a control-flow
-     * status code (one of [STATUS_FALLTHROUGH], [STATUS_RETURN], [STATUS_BREAK],
-     * [STATUS_CONTINUE]). When the status is [STATUS_RETURN] the return value (or `null` for
-     * `return;`) is in the [TF_RETURN_VALUE_AUX_SLOT] aux slot.
-     *
-     * The default falls through: nodes that have no notion of `return`/`break`/`continue`
-     * (every expression node, the simple-var/assign nodes, the no-op statement, ...) execute
-     * for side effects and return [STATUS_FALLTHROUGH]. Statement nodes that *do* propagate
-     * control flow (`Tf_ReturnStmtNode`, `Tf_BreakStmtNode`, `Tf_ContinueStmtNode`,
-     * `Tf_BlockStmtNode_*`, `Tf_IfStmtNode`, `Tf_WhileStmtNode`, `Tf_ForStmtNode`,
-     * `Tf_WhenStmtNode`, `Tf_FallbackStmtNode`) override this to return the status directly.
+     * Statement-shaped execute path: runs the node for side effects. `return` / `break` /
+     * `continue` propagate as the conventional Truffle control-flow exceptions
+     * ([net.postchain.rell.base.runtime.truffle.Tf_ReturnException] /
+     * [net.postchain.rell.base.runtime.truffle.Tf_BreakException] /
+     * [net.postchain.rell.base.runtime.truffle.Tf_ContinueException]): loop nodes catch
+     * break/continue around their body, the function-body root catches return.
      *
      * Why the default is to call [execute] and discard: it lets every existing expression node
      * (binary ops, var reads, function calls, …) participate in a statement context — e.g. the
-     * `Tf_ExprStmtNode` wrapper — without each one re-overriding `executeStmt`. PE folds the
-     * `STATUS_FALLTHROUGH` constant return through, so loop and block nodes' `if (status != 0)`
-     * checks compile to a single primitive comparison.
+     * `Tf_ExprStmtNode` wrapper — without each one re-overriding `executeStmt`.
      */
-    open fun executeStmt(frame: VirtualFrame): Int {
+    open fun executeStmt(frame: VirtualFrame) {
         execute(frame)
-        return STATUS_FALLTHROUGH
     }
 
     /**
@@ -219,6 +211,22 @@ internal fun anyNeedsBlockState(nodes: Array<Tf_ExprNode>): Boolean {
 }
 
 /**
+ * Convert the tree-walker's value-block escape into the Truffle control-flow exceptions.
+ * Needed wherever a Truffle node hands an *untranslated* [RR_Expr] subtree to the delegate
+ * ([Tf_FallbackExprNode], the catch-all [Tf_AssignStmtNode]): a `return`/`break`/`continue`
+ * escaping from a value block inside that subtree leaves `delegate.evaluateExpr`/`assignTo`
+ * as an [Rt_ValueBlockEscapeException] (the interpreter converts it only at its own statement
+ * boundaries, which expression evaluation never crosses). `delegate.executeStmt` needs no such
+ * conversion — the interpreter's wrapper already turns the escape into an [Rt_StatementResult].
+ */
+internal fun tfConvertValueBlockEscape(e: Rt_ValueBlockEscapeException): Nothing =
+    when (val result = e.result) {
+        Rt_StatementResult.Break -> throw Tf_BreakException.INSTANCE
+        Rt_StatementResult.Continue -> throw Tf_ContinueException.INSTANCE
+        is Rt_StatementResult.Return -> throw Tf_ReturnException(result.value)
+    }
+
+/**
  * Catch-all expression node that delegates to [net.postchain.rell.base.runtime.Rt_InterpreterImpl].
  *
  * Used by the translator for any [RR_Expr] variant that doesn't yet have a hand-written Truffle
@@ -248,7 +256,13 @@ internal class Tf_FallbackExprNode(
      * parameter — non-materialised frames cannot cross a boundary) is satisfied while the
      * surrounding JIT graph still treats the fallback body as opaque.
      */
-    override fun execute(frame: VirtualFrame): Rt_Value = executeBoundary(tfRtFrame(frame))
+    override fun execute(frame: VirtualFrame): Rt_Value {
+        return try {
+            executeBoundary(tfRtFrame(frame))
+        } catch (e: Rt_ValueBlockEscapeException) {
+            tfConvertValueBlockEscape(e)
+        }
+    }
 
     @TruffleBoundary
     private fun executeBoundary(rt: Rt_CallFrame): Rt_Value = backend.delegate.evaluateExpr(expr, rt)
@@ -257,10 +271,10 @@ internal class Tf_FallbackExprNode(
 /**
  * Catch-all statement node that delegates to [net.postchain.rell.base.runtime.Rt_InterpreterImpl].
  *
- * Translates the tree-walker's [Rt_StatementResult] into the status-code protocol:
- * `Return → STATUS_RETURN` (writes value to [TF_RETURN_VALUE_AUX_SLOT]),
- * `Break → STATUS_BREAK`, `Continue → STATUS_CONTINUE`. Loop nodes consume the break/continue
- * codes locally; the function-body root reads the slot when it sees [STATUS_RETURN].
+ * Translates the tree-walker's [Rt_StatementResult] into the control-flow exceptions:
+ * `Return → Tf_ReturnException` (carrying the value), `Break → Tf_BreakException`,
+ * `Continue → Tf_ContinueException`. Loop nodes consume break/continue; the function-body root
+ * consumes return.
  */
 internal class Tf_FallbackStmtNode(
     private val backend: Tf_Backend,
@@ -280,16 +294,13 @@ internal class Tf_FallbackStmtNode(
      * call so the inner [executeStmtBoundary] satisfies the Truffle Bytecode DSL's rule that
      * `@TruffleBoundary` methods may not take a `VirtualFrame` parameter.
      */
-    override fun executeStmt(frame: VirtualFrame): Int {
+    override fun executeStmt(frame: VirtualFrame) {
         val rt = tfRtFrame(frame)
-        return when (val res = executeStmtBoundary(rt)) {
-            null -> STATUS_FALLTHROUGH
-            Rt_StatementResult.Break -> STATUS_BREAK
-            Rt_StatementResult.Continue -> STATUS_CONTINUE
-            is Rt_StatementResult.Return -> {
-                frame.setAuxiliarySlot(TF_RETURN_VALUE_AUX_SLOT, res.value)
-                STATUS_RETURN
-            }
+        when (val res = executeStmtBoundary(rt)) {
+            null -> {}
+            Rt_StatementResult.Break -> throw Tf_BreakException.INSTANCE
+            Rt_StatementResult.Continue -> throw Tf_ContinueException.INSTANCE
+            is Rt_StatementResult.Return -> throw Tf_ReturnException(res.value)
         }
     }
 

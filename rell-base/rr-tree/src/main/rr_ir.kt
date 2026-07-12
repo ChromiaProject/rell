@@ -111,6 +111,20 @@ sealed interface RR_Expr {
 
     @JvmRecord
     data class StatementExpr(override val type: RR_Type, val stmt: RR_Statement): RR_Expr
+
+    /**
+     * A value block `{ stmt; ...; result }` used as an if/when expression arm: executes [stmts]
+     * in [frameBlock], then evaluates [result] as the expression's value (`unit` when absent).
+     * A `return`/`break`/`continue` inside the statements escapes the whole enclosing expression,
+     * up to the nearest statement boundary.
+     */
+    @JvmRecord
+    data class ValueBlock(
+        override val type: RR_Type,
+        val stmts: ImmList<RR_Statement>,
+        val result: RR_Expr?,
+        val frameBlock: RR_FrameBlock,
+    ): RR_Expr
     @JvmRecord
     data class GlobalConstant(override val type: RR_Type, val constDefIndex: Int): RR_Expr
     @JvmRecord

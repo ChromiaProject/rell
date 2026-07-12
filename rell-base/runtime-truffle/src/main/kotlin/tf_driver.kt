@@ -192,7 +192,6 @@ internal open class Tf_RootNode(
         // frame without lazy allocation.
         val rt = Tf_Unchecked.cast<Rt_CallFrame>(frame.arguments[0])
         frame.setAuxiliarySlot(TF_RT_FRAME_AUX_SLOT, rt)
-        val status: Int
         if (needsBridge) {
             // Driver-built Rt_CallFrame is heap-backed: setParams wrote args into the
             // heap storage. Pull those args into the VirtualFrame, then swap the frame's
@@ -202,19 +201,17 @@ internal open class Tf_RootNode(
             // mirror, single source of truth.
             pullParamsInline(frame, rt)
             rt.storage = Tf_VirtualFrameStorage(frame)
-            status = body.executeStmt(frame)
         } else {
             // Fast path: pure hot-path body. Params arrive in [Rt_CallFrame.values];
             // pull them inline (no boundary) so PE can fold each slot read into the
-            // compiled graph.
+            // compiled graph. No push-back is needed afterwards: the body is pure
+            // hot-path — it never writes [Rt_CallFrame.values], only [VirtualFrame]
+            // slots. Callers that need legacy storage (REPL `dumpState`, fallback
+            // re-entry) reach a body whose `needsBlockState = true`, which takes the
+            // bridge branch above.
             pullParamsInline(frame, rt)
-            status = body.executeStmt(frame)
-            // No push-back needed: the body is pure hot-path — it never writes
-            // [Rt_CallFrame.values], only [VirtualFrame] slots. Callers that need
-            // legacy storage (REPL `dumpState`, fallback re-entry) reach a body whose
-            // `needsBlockState = true`, which takes the slow branch above.
         }
-        return readReturnOrUnit(frame, status)
+        return executeBodyForResult(body, frame)
     }
 
     /**
@@ -246,18 +243,19 @@ internal open class Tf_RootNode(
 }
 
 /**
- * Read the return value from [TF_RETURN_VALUE_AUX_SLOT] when [status] is [STATUS_RETURN];
- * otherwise return [Rt_UnitValue]. Falling-through bodies that never set the slot return
- * [Rt_UnitValue] just like the previous exception-based protocol's `catch` did when no
- * `Tf_ReturnException` was thrown.
- *
- * `STATUS_BREAK` / `STATUS_CONTINUE` should never reach a function-body root — the enclosing
- * loop must consume them. If one does, that's a translator bug; we treat it as fallthrough
- * so the caller observes [Rt_UnitValue] rather than crashing the workload.
+ * Run a body under the root's return protocol: a [Tf_ReturnException] carries the return value
+ * (`null` for a parameterless `return;`); falling through means the body completed without a
+ * `return` and the result is [Rt_UnitValue]. [Tf_BreakException] / [Tf_ContinueException] never
+ * reach a body root — the enclosing loop consumes them (the compiler rejects `break`/`continue`
+ * outside a loop).
  */
-internal fun readReturnOrUnit(frame: VirtualFrame, status: Int): Rt_Value {
-    if (status != STATUS_RETURN) return Rt_UnitValue
-    return Tf_Unchecked.cast(frame.getAuxiliarySlot(TF_RETURN_VALUE_AUX_SLOT) ?: return Rt_UnitValue)
+internal fun executeBodyForResult(body: Tf_ExprNode, frame: VirtualFrame): Rt_Value {
+    return try {
+        body.executeStmt(frame)
+        Rt_UnitValue
+    } catch (e: Tf_ReturnException) {
+        e.value ?: Rt_UnitValue
+    }
 }
 
 /**
@@ -307,7 +305,6 @@ internal class Tf_FunctionRootNode(
     override fun execute(frame: VirtualFrame): Any {
         val arguments = frame.arguments
         val arg0 = arguments[0]
-        val status: Int
         if (arg0 == null) {
             // Inner entry. Write each evaluated arg into its param slot directly. No
             // [Rt_CallFrame] is allocated here — the body executes against the
@@ -332,23 +329,18 @@ internal class Tf_FunctionRootNode(
             // [Tf_FrameSync] around their boundaries (see [Tf_VarStmtNode], [Tf_AssignStmtNode],
             // [Tf_FallbackExprNode]/[Tf_FallbackStmtNode]). The lazy [Rt_CallFrame] alloc
             // already pushed the param slots into `values[]` at materialisation time.
-            status = body.executeStmt(frame)
-            return readReturnOrUnit(frame, status)
+            return executeBodyForResult(body, frame)
         }
         // Outer entry — same as [Tf_RootNode.execute].
         val rt = Tf_Unchecked.cast<Rt_CallFrame>(arg0)
         frame.setAuxiliarySlot(TF_RT_FRAME_AUX_SLOT, rt)
+        pullParamsInline(frame, rt)
         if (needsBridge) {
-            // Heap-backed Rt_CallFrame from driver: pull params into VF, then swap
+            // Heap-backed Rt_CallFrame from driver: params pulled into VF, now swap
             // storage so subsequent slow-path writes share the VF with the hot path.
-            pullParamsInline(frame, rt)
             rt.storage = Tf_VirtualFrameStorage(frame)
-            status = body.executeStmt(frame)
-        } else {
-            pullParamsInline(frame, rt)
-            status = body.executeStmt(frame)
         }
-        return readReturnOrUnit(frame, status)
+        return executeBodyForResult(body, frame)
     }
 }
 
@@ -375,19 +367,10 @@ internal class Tf_ExprBodyRootNode(
     override fun execute(frame: VirtualFrame): Any {
         val rt = Tf_Unchecked.cast<Rt_CallFrame>(frame.arguments[0])
         frame.setAuxiliarySlot(TF_RT_FRAME_AUX_SLOT, rt)
-        val status: Int
-
-        if (needsBridge) {
-            try {
-                status = body.executeStmt(frame)
-            } finally {
-            }
-        } else {
+        if (!needsBridge) {
             pullParamsInline(frame, rt)
-            status = body.executeStmt(frame)
         }
-
-        return readReturnOrUnit(frame, status)
+        return executeBodyForResult(body, frame)
     }
 
     @ExplodeLoop

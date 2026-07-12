@@ -715,6 +715,8 @@ internal data object C_BinOp_Ampersand: C_BinOp_Common() {
 internal class S_BinaryExprTail(val op: S_PosValue<S_BinaryOp>, val expr: S_Expr)
 
 internal class S_BinaryExpr(val head: S_Expr, val tail: ImmList<S_BinaryExprTail>): S_Expr(head.startPos) {
+    override fun discoverVars(map: MutableTypedKeyMap) = discoverVars(listOf(head) + tail.map { it.expr }, map)
+
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val queue = LinkedList(tail)
         val tree = buildTree(head, queue, 0)

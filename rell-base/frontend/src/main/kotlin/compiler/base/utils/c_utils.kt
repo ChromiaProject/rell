@@ -21,6 +21,8 @@ import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.compiler.base.module.C_ModuleKey
 import net.postchain.rell.base.compiler.base.module.S_DefinitionContext
 import net.postchain.rell.base.compiler.base.utils.C_Parser.parse
+import net.postchain.rell.base.compiler.parser.RellTokenInput
+import net.postchain.rell.base.compiler.parser.RellTokenProducer
 import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.compiler.parser.RellTokenizerException
 import net.postchain.rell.base.compiler.parser.S_Grammar
@@ -490,13 +492,29 @@ object C_Parser {
             val seq = TokenMatchesSequence(tokenProd)
             when (val result = S_Grammar.rootParser.tryParse(seq, 0)) {
                 is ErrorResult -> throw ParseException(result)
-                is Parsed -> result.value
+                is Parsed -> {
+                    // tryParse silently accepts a strict prefix of the input; reject that.
+                    checkFullyConsumed(seq, result.nextPosition, tokenProd)
+                    result.value
+                }
             }
         } catch (e: RellTokenizerException) {
             throw e.toCError()
         } catch (_: ParseException) {
             val pos = tokenProd.getEndPos()
             throw C_Error.other(pos, "syntax", "Syntax error")
+        }
+    }
+
+    private fun checkFullyConsumed(seq: TokenMatchesSequence, fromPosition: Int, tokenProd: RellTokenProducer) {
+        var i = fromPosition
+        while (true) {
+            val match = seq[i] ?: return
+            if (!match.type.ignored) {
+                val pos = (match.input as? RellTokenInput)?.match?.pos ?: tokenProd.getEndPos()
+                throw C_Error.other(pos, "syntax", "Syntax error")
+            }
+            i++
         }
     }
 

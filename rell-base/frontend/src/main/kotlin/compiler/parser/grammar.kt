@@ -560,7 +560,16 @@ internal object S_Grammar {
         G_BaseExprTail.tailsToExpr(head, tails)
     }
 
-    private val ifExpr by IF * -LPAR * expressionRef * -RPAR * expressionRef * -ELSE * expressionRef map {
+    private val valueBlock by
+            LCURL * zeroOrMore(statementRef) * optional(expressionRef) * RCURL map { (lcurl, stmts, result, rcurl) ->
+        S_LambdaBody_Block(S_PosRange(lcurl.pos, rcurl.pos), stmts.toImmList(), result)
+    }
+
+    private val valueBlockExpr: Parser<S_Expr> by valueBlock map { S_ValueBlockExpr(it) }
+
+    private val exprOrValueBlock: Parser<S_Expr> by valueBlockExpr or expressionRef
+
+    private val ifExpr by IF * -LPAR * expressionRef * -RPAR * exprOrValueBlock * -ELSE * exprOrValueBlock map {
         (pos, cond, trueExpr, falseExpr) ->
         S_IfExpr(pos.pos, cond, trueExpr, falseExpr)
     }
@@ -571,12 +580,12 @@ internal object S_Grammar {
     private val whenConditionElse by ELSE map { S_WhenConditionElse(it.pos) }
     private val whenCondition by whenConditionExpr or whenConditionElse
 
-    private val whenExprCase by whenCondition * -ARROW * expressionRef map {
+    private val whenExprCase by whenCondition * -ARROW * exprOrValueBlock map {
         (cond, expr) ->
         S_WhenExprCase(cond, expr)
     }
 
-    private val whenExprCases by separatedTerms(whenExprCase, SEMI, false) * -optional(SEMI)
+    private val whenExprCases by oneOrMore(whenExprCase * -optional(SEMI))
 
     private val whenExpr by WHEN * optional(-LPAR * expressionRef * -RPAR) * -LCURL * whenExprCases * -RCURL map {
         (pos, expr, cases) ->
@@ -618,12 +627,7 @@ internal object S_Grammar {
 
     private val lambdaBodyExpr: Parser<S_LambdaBody> by expressionRef map { S_LambdaBody_Expr(it) }
 
-    private val lambdaBodyBlock: Parser<S_LambdaBody> by
-            LCURL * zeroOrMore(statementRef) * optional(expressionRef) * RCURL map { (lcurl, stmts, result, rcurl) ->
-        S_LambdaBody_Block(S_PosRange(lcurl.pos, rcurl.pos), stmts.toImmList(), result)
-    }
-
-    private val lambdaBody by lambdaBodyBlock or lambdaBodyExpr
+    private val lambdaBody: Parser<S_LambdaBody> by valueBlock or lambdaBodyExpr
 
     // ID/DOT/SAFECALL read back as `Parser<RellTokenMatch>` through the token delegate, but are
     // RellToken instances at run time; the scanner needs the RellToken to identify matched tokens.

@@ -8,7 +8,6 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.ExplodeLoop
-import com.oracle.truffle.api.nodes.LoopNode
 import com.oracle.truffle.api.profiles.BranchProfile
 import net.postchain.rell.base.model.rr.RR_FrameBlock
 import net.postchain.rell.base.model.rr.RR_IterableAdapterKind
@@ -22,9 +21,8 @@ internal class Tf_EmptyStmtNode : Tf_ExprNode() {
 }
 
 /**
- * Native: `return [expr]`. Writes the optional return value to [TF_RETURN_VALUE_AUX_SLOT]
- * and returns [STATUS_RETURN]; loop and block nodes propagate the status up to the function-
- * body root, which reads the slot.
+ * Native: `return [expr]`. Throws [Tf_ReturnException] carrying the optional return value; the
+ * function-body root catches it. Loops and blocks are transparent to it.
  */
 internal class Tf_ReturnStmtNode(
     @field:Child private var expr: Tf_ExprNode?,
@@ -34,29 +32,29 @@ internal class Tf_ReturnStmtNode(
         return Rt_UnitValue
     }
 
-    override fun executeStmt(frame: VirtualFrame): Int {
-        val value = expr?.execute(frame)
-        frame.setAuxiliarySlot(TF_RETURN_VALUE_AUX_SLOT, value)
-        return STATUS_RETURN
+    override fun executeStmt(frame: VirtualFrame) {
+        throw Tf_ReturnException(expr?.execute(frame))
     }
 }
 
-/** Native: `break`. */
+/** Native: `break`. Caught by the nearest enclosing loop node. */
 internal class Tf_BreakStmtNode : Tf_ExprNode() {
     override fun execute(frame: VirtualFrame): Rt_Value = Rt_UnitValue
-    override fun executeStmt(frame: VirtualFrame): Int = STATUS_BREAK
+    override fun executeStmt(frame: VirtualFrame): Unit = throw Tf_BreakException.INSTANCE
 }
 
-/** Native: `continue`. */
+/** Native: `continue`. Caught by the nearest enclosing loop node. */
 internal class Tf_ContinueStmtNode : Tf_ExprNode() {
     override fun execute(frame: VirtualFrame): Rt_Value = Rt_UnitValue
-    override fun executeStmt(frame: VirtualFrame): Int = STATUS_CONTINUE
+    override fun executeStmt(frame: VirtualFrame): Unit = throw Tf_ContinueException.INSTANCE
 }
 
 /**
  * Native: braced block with its own frame block-scope. Mirrors `RR_Statement.Block` —
  * runs children inside `frame.block(frameBlock) { ... }` so locals introduced inside the
- * block are zeroed on exit, matching the tree-walker's scoping discipline.
+ * block are zeroed on exit, matching the tree-walker's scoping discipline. Control-flow
+ * exceptions (`return`/`break`/`continue`) fly through; the `finally` keeps the scope
+ * bookkeeping exception-safe.
  *
  * **Why this is a tower of identical-shape classes**: Graal's partial evaluator throws
  * `PermanentBailoutException("Too deep inlining, probably caused by recursive inlining")`
@@ -103,14 +101,6 @@ internal sealed class Tf_BlockStmtNode : Tf_ExprNode() {
      */
     @JvmField @CompilationFinal protected var slowPathNeeded: Boolean = false
 
-    /**
-     * Cold-branch profile for non-fallthrough child results. Tripped only when a child
-     * `executeStmt` returned `return`/`break`/`continue` — the exit propagation path. PE
-     * uses the never-tripped state to fold the early-exit branch out of the JIT graph
-     * entirely until the workload actually exercises non-local control flow.
-     */
-    @JvmField protected val nonFallthroughProfile: BranchProfile = BranchProfile.create()
-
     /** Initialize the shared payload. Done outside the constructor so all subclasses share one path. */
     fun init(frameBlock: RR_FrameBlock, children: Array<Tf_ExprNode>) {
         this.blockUid = frameBlock.uid
@@ -132,22 +122,16 @@ internal class Tf_BlockStmtNode_0 : Tf_BlockStmtNode() {
     }
 
     @ExplodeLoop
-    override fun executeStmt(frame: VirtualFrame): Int {
+    override fun executeStmt(frame: VirtualFrame) {
         if (slowPathNeeded) {
             val rt = tfRtFrame(frame)
             val savedUid = rt.curBlockUid
             val savedOffset = rt.curBlockOffset
             val savedSize = rt.curBlockSize
             rt.enterBlockSet(blockUid, blockOffset, blockSize)
-            var status = STATUS_FALLTHROUGH
             try {
                 for (i in children) {
-                    val s = i.executeStmt(frame)
-                    if (s != STATUS_FALLTHROUGH) {
-                        nonFallthroughProfile.enter()
-                        status = s
-                        break
-                    }
+                    i.executeStmt(frame)
                 }
             } finally {
                 rt.enterBlockSet(savedUid, savedOffset, savedSize)
@@ -157,16 +141,10 @@ internal class Tf_BlockStmtNode_0 : Tf_BlockStmtNode() {
                 // [Rt_CallFrame.values], defeating [clearSlotsRange] above and tripping
                 // `setUnchecked(overwrite = false)`.
             }
-            return status
         } else {
             for (i in children) {
-                val s = i.executeStmt(frame)
-                if (s != STATUS_FALLTHROUGH) {
-                    nonFallthroughProfile.enter()
-                    return s
-                }
+                i.executeStmt(frame)
             }
-            return STATUS_FALLTHROUGH
         }
     }
 }
@@ -178,37 +156,25 @@ internal class Tf_BlockStmtNode_1 : Tf_BlockStmtNode() {
     }
 
     @ExplodeLoop
-    override fun executeStmt(frame: VirtualFrame): Int {
+    override fun executeStmt(frame: VirtualFrame) {
         if (slowPathNeeded) {
             val rt = tfRtFrame(frame)
             val savedUid = rt.curBlockUid
             val savedOffset = rt.curBlockOffset
             val savedSize = rt.curBlockSize
             rt.enterBlockSet(blockUid, blockOffset, blockSize)
-            var status = STATUS_FALLTHROUGH
             try {
                 for (i in children) {
-                    val s = i.executeStmt(frame)
-                    if (s != STATUS_FALLTHROUGH) {
-                        nonFallthroughProfile.enter()
-                        status = s
-                        break
-                    }
+                    i.executeStmt(frame)
                 }
             } finally {
                 rt.enterBlockSet(savedUid, savedOffset, savedSize)
                 rt.clearSlotsRange(blockOffset, blockSize)
             }
-            return status
         } else {
             for (i in children) {
-                val s = i.executeStmt(frame)
-                if (s != STATUS_FALLTHROUGH) {
-                    nonFallthroughProfile.enter()
-                    return s
-                }
+                i.executeStmt(frame)
             }
-            return STATUS_FALLTHROUGH
         }
     }
 }
@@ -220,37 +186,25 @@ internal class Tf_BlockStmtNode_2 : Tf_BlockStmtNode() {
     }
 
     @ExplodeLoop
-    override fun executeStmt(frame: VirtualFrame): Int {
+    override fun executeStmt(frame: VirtualFrame) {
         if (slowPathNeeded) {
             val rt = tfRtFrame(frame)
             val savedUid = rt.curBlockUid
             val savedOffset = rt.curBlockOffset
             val savedSize = rt.curBlockSize
             rt.enterBlockSet(blockUid, blockOffset, blockSize)
-            var status = STATUS_FALLTHROUGH
             try {
                 for (child in children) {
-                    val s = child.executeStmt(frame)
-                    if (s != STATUS_FALLTHROUGH) {
-                        nonFallthroughProfile.enter()
-                        status = s
-                        break
-                    }
+                    child.executeStmt(frame)
                 }
             } finally {
                 rt.enterBlockSet(savedUid, savedOffset, savedSize)
                 rt.clearSlotsRange(blockOffset, blockSize)
             }
-            return status
         } else {
             for (child in children) {
-                val s = child.executeStmt(frame)
-                if (s != STATUS_FALLTHROUGH) {
-                    nonFallthroughProfile.enter()
-                    return s
-                }
+                child.executeStmt(frame)
             }
-            return STATUS_FALLTHROUGH
         }
     }
 }
@@ -262,37 +216,25 @@ internal class Tf_BlockStmtNode_3 : Tf_BlockStmtNode() {
     }
 
     @ExplodeLoop
-    override fun executeStmt(frame: VirtualFrame): Int {
+    override fun executeStmt(frame: VirtualFrame) {
         if (slowPathNeeded) {
             val rt = tfRtFrame(frame)
             val savedUid = rt.curBlockUid
             val savedOffset = rt.curBlockOffset
             val savedSize = rt.curBlockSize
             rt.enterBlockSet(blockUid, blockOffset, blockSize)
-            var status = STATUS_FALLTHROUGH
             try {
                 for (child in children) {
-                    val s = child.executeStmt(frame)
-                    if (s != STATUS_FALLTHROUGH) {
-                        nonFallthroughProfile.enter()
-                        status = s
-                        break
-                    }
+                    child.executeStmt(frame)
                 }
             } finally {
                 rt.enterBlockSet(savedUid, savedOffset, savedSize)
                 rt.clearSlotsRange(blockOffset, blockSize)
             }
-            return status
         } else {
             for (child in children) {
-                val s = child.executeStmt(frame)
-                if (s != STATUS_FALLTHROUGH) {
-                    nonFallthroughProfile.enter()
-                    return s
-                }
+                child.executeStmt(frame)
             }
-            return STATUS_FALLTHROUGH
         }
     }
 }
@@ -304,37 +246,25 @@ internal class Tf_BlockStmtNode_4 : Tf_BlockStmtNode() {
     }
 
     @ExplodeLoop
-    override fun executeStmt(frame: VirtualFrame): Int {
+    override fun executeStmt(frame: VirtualFrame) {
         if (slowPathNeeded) {
             val rt = tfRtFrame(frame)
             val savedUid = rt.curBlockUid
             val savedOffset = rt.curBlockOffset
             val savedSize = rt.curBlockSize
             rt.enterBlockSet(blockUid, blockOffset, blockSize)
-            var status = STATUS_FALLTHROUGH
             try {
                 for (child in children) {
-                    val s = child.executeStmt(frame)
-                    if (s != STATUS_FALLTHROUGH) {
-                        nonFallthroughProfile.enter()
-                        status = s
-                        break
-                    }
+                    child.executeStmt(frame)
                 }
             } finally {
                 rt.enterBlockSet(savedUid, savedOffset, savedSize)
                 rt.clearSlotsRange(blockOffset, blockSize)
             }
-            return status
         } else {
             for (child in children) {
-                val s = child.executeStmt(frame)
-                if (s != STATUS_FALLTHROUGH) {
-                    nonFallthroughProfile.enter()
-                    return s
-                }
+                child.executeStmt(frame)
             }
-            return STATUS_FALLTHROUGH
         }
     }
 }
@@ -346,37 +276,25 @@ internal class Tf_BlockStmtNode_5 : Tf_BlockStmtNode() {
     }
 
     @ExplodeLoop
-    override fun executeStmt(frame: VirtualFrame): Int {
+    override fun executeStmt(frame: VirtualFrame) {
         if (slowPathNeeded) {
             val rt = tfRtFrame(frame)
             val savedUid = rt.curBlockUid
             val savedOffset = rt.curBlockOffset
             val savedSize = rt.curBlockSize
             rt.enterBlockSet(blockUid, blockOffset, blockSize)
-            var status = STATUS_FALLTHROUGH
             try {
                 for (i in children) {
-                    val s = i.executeStmt(frame)
-                    if (s != STATUS_FALLTHROUGH) {
-                        nonFallthroughProfile.enter()
-                        status = s
-                        break
-                    }
+                    i.executeStmt(frame)
                 }
             } finally {
                 rt.enterBlockSet(savedUid, savedOffset, savedSize)
                 rt.clearSlotsRange(blockOffset, blockSize)
             }
-            return status
         } else {
             for (i in children) {
-                val s = i.executeStmt(frame)
-                if (s != STATUS_FALLTHROUGH) {
-                    nonFallthroughProfile.enter()
-                    return s
-                }
+                i.executeStmt(frame)
             }
-            return STATUS_FALLTHROUGH
         }
     }
 }
@@ -406,10 +324,9 @@ internal fun makeBlockStmtNode(
 /**
  * Native: expression-statement: evaluate expression, discard the result.
  *
- * Forwards the status of the wrapped expression's [Tf_ExprNode.executeStmt] so a
- * `Tf_StatementExprNode` body's `return`/`break`/`continue` propagates up. For pure
- * expression children (the common case), the default `executeStmt` evaluates `execute`
- * and returns [STATUS_FALLTHROUGH] — same as before.
+ * Delegates to the wrapped expression's [Tf_ExprNode.executeStmt] so a `Tf_StatementExprNode`
+ * body executes statement-shaped; control-flow exceptions propagate. For pure expression
+ * children (the common case), the default `executeStmt` evaluates `execute` — same as before.
  */
 internal class Tf_ExprStmtNode(
     @field:Child private var expr: Tf_ExprNode,
@@ -419,7 +336,9 @@ internal class Tf_ExprStmtNode(
         return Rt_UnitValue
     }
 
-    override fun executeStmt(frame: VirtualFrame): Int = expr.executeStmt(frame)
+    override fun executeStmt(frame: VirtualFrame) {
+        expr.executeStmt(frame)
+    }
 }
 
 /** Native: REPL expression-statement: evaluate, then print to repl output. */
@@ -437,8 +356,8 @@ internal class Tf_ReplExprStmtNode(
  * Native: `if (cond) trueStmt else falseStmt`. Reads the condition through the typed
  * `executeBoolean` path so feeding comparisons skip the [net.postchain.rell.base.runtime.Rt_BooleanValue] box.
  *
- * Propagates `return`/`break`/`continue` from whichever branch was taken — the if itself
- * never consumes them.
+ * `return`/`break`/`continue` exceptions from whichever branch was taken propagate — the if
+ * itself never consumes them.
  */
 internal class Tf_IfStmtNode(
     @field:Child private var cond: Tf_ExprNode,
@@ -450,8 +369,9 @@ internal class Tf_IfStmtNode(
         return Rt_UnitValue
     }
 
-    override fun executeStmt(frame: VirtualFrame): Int =
+    override fun executeStmt(frame: VirtualFrame) {
         if (cond.executeBoolean(frame)) trueBranch.executeStmt(frame) else falseBranch.executeStmt(frame)
+    }
 }
 
 /**
@@ -459,10 +379,13 @@ internal class Tf_IfStmtNode(
  *
  * Plain Kotlin loop — the surrounding [net.postchain.rell.base.runtime.truffle.Tf_RootNode] is
  * already a JIT-compilable Truffle entry point, so partial evaluation will turn this into a
- * straight-line loop in compiled code. We don't wrap in [LoopNode] (which targets OSR) because
- * the body always runs within an already-compiled CallTarget. `break`/`continue` are consumed
- * locally by inspecting the body's [Tf_ExprNode.executeStmt] status code — no exception
- * handlers, no JVM unwind. `return` propagates up to the enclosing function-body root.
+ * straight-line loop in compiled code. We don't wrap in [com.oracle.truffle.api.nodes.LoopNode]
+ * (which targets OSR) because the body always runs within an already-compiled CallTarget.
+ *
+ * `break`/`continue` are caught per iteration around the **body only**: an escape thrown while
+ * evaluating the *condition* (a value block used as an if/when arm inside it) belongs to the
+ * enclosing loop — the condition is compiled against the outer loop context — so it must
+ * propagate past this node. `return` propagates up to the function-body root.
  */
 internal class Tf_WhileStmtNode(
     @field:Child private var cond: Tf_ExprNode,
@@ -488,8 +411,8 @@ internal class Tf_WhileStmtNode(
      */
     @CompilationFinal private val slowPathNeeded: Boolean = cond.needsBlockState || body.needsBlockState
 
-    /** Cold-branch profile for the `return` propagation path. */
-    private val returnProfile: BranchProfile = BranchProfile.create()
+    private val breakProfile: BranchProfile = BranchProfile.create()
+    private val continueProfile: BranchProfile = BranchProfile.create()
 
     override val needsBlockState: Boolean
         get() = slowPathNeeded
@@ -499,7 +422,7 @@ internal class Tf_WhileStmtNode(
         return Rt_UnitValue
     }
 
-    override fun executeStmt(frame: VirtualFrame): Int {
+    override fun executeStmt(frame: VirtualFrame) {
         if (slowPathNeeded) {
             // Per-iteration enter/restore is REQUIRED here. While the Tf_VarRead/Write fast
             // path ignores curBlockUid, fallback boundary calls (`backend.delegate.assignTo`,
@@ -512,36 +435,37 @@ internal class Tf_WhileStmtNode(
             val savedUid = rt.curBlockUid
             val savedOffset = rt.curBlockOffset
             val savedSize = rt.curBlockSize
-            while (true) {
-                if (!cond.executeBoolean(frame)) break
+            loop@ while (cond.executeBoolean(frame)) {
                 rt.enterBlockSet(blockUid, blockOffset, blockSize)
-                val s: Int
                 try {
-                    s = body.executeStmt(frame)
-                } finally {
-                    rt.enterBlockSet(savedUid, savedOffset, savedSize)
-                    rt.clearSlotsRange(blockOffset, blockSize)
-                    // Clear the VF mirror so the next iteration's slow-path
-                    // bind sees null in [Rt_CallFrame.values]; otherwise
-                    // [pushToLegacy] could rewrite the stale value before bind.
+                    try {
+                        body.executeStmt(frame)
+                    } finally {
+                        rt.enterBlockSet(savedUid, savedOffset, savedSize)
+                        rt.clearSlotsRange(blockOffset, blockSize)
+                        // Clear the VF mirror so the next iteration's slow-path
+                        // bind sees null in [Rt_CallFrame.values]; otherwise
+                        // [pushToLegacy] could rewrite the stale value before bind.
+                    }
+                } catch (e: Tf_ContinueException) {
+                    continueProfile.enter()
+                } catch (e: Tf_BreakException) {
+                    breakProfile.enter()
+                    break@loop
                 }
-                if (s == STATUS_FALLTHROUGH || s == STATUS_CONTINUE) continue
-                if (s == STATUS_BREAK) break
-                // STATUS_RETURN — propagate up to the function-body root.
-                returnProfile.enter()
-                return s
             }
         } else {
-            while (true) {
-                if (!cond.executeBoolean(frame)) break
-                val s = body.executeStmt(frame)
-                if (s == STATUS_FALLTHROUGH || s == STATUS_CONTINUE) continue
-                if (s == STATUS_BREAK) break
-                returnProfile.enter()
-                return s
+            loop@ while (cond.executeBoolean(frame)) {
+                try {
+                    body.executeStmt(frame)
+                } catch (e: Tf_ContinueException) {
+                    continueProfile.enter()
+                } catch (e: Tf_BreakException) {
+                    breakProfile.enter()
+                    break@loop
+                }
             }
         }
-        return STATUS_FALLTHROUGH
     }
 }
 
@@ -554,6 +478,9 @@ internal class Tf_WhileStmtNode(
  * same way the tree-walker does — preserving exact iteration order and parity. The tuple's
  * runtime type is precomputed at translate time when the declarator names a tuple type;
  * otherwise we fall back to the unit-typed placeholder the tree-walker uses.
+ *
+ * `break`/`continue` are caught per iteration around the body only; an escape from the
+ * iterable expression belongs to the enclosing loop (see [Tf_WhileStmtNode]).
  */
 internal class Tf_ForStmtNode(
     @field:Child private var iterableExpr: Tf_ExprNode,
@@ -574,15 +501,15 @@ internal class Tf_ForStmtNode(
     override val needsBlockState: Boolean
         get() = true
 
-    /** Cold-branch profile for the `return` propagation path. */
-    private val returnProfile: BranchProfile = BranchProfile.create()
+    private val breakProfile: BranchProfile = BranchProfile.create()
+    private val continueProfile: BranchProfile = BranchProfile.create()
 
     override fun execute(frame: VirtualFrame): Rt_Value {
         executeStmt(frame)
         return Rt_UnitValue
     }
 
-    override fun executeStmt(frame: VirtualFrame): Int {
+    override fun executeStmt(frame: VirtualFrame) {
         val iterable = iterableExpr.execute(frame)
         val iterator: Iterable<Rt_Value> = when (iterableAdapter) {
             RR_IterableAdapterKind.DIRECT -> (iterable as Rt_IterableValue)
@@ -596,36 +523,36 @@ internal class Tf_ForStmtNode(
         val savedUid = rt.curBlockUid
         val savedOffset = rt.curBlockOffset
         val savedSize = rt.curBlockSize
-        for (element in iterator) {
+        loop@ for (element in iterator) {
             rt.enterBlockSet(blockUid, blockOffset, blockSize)
-            val s: Int
             try {
-                // Mirror current [VirtualFrame] state for slots OUTSIDE this for-block's
-                // range into [Rt_CallFrame.values]. This makes the legacy mirror reflect
-                // any hot-path writes from previous iterations (e.g. loop-accumulator
-                // vars) so the subsequent [pullFromLegacy] doesn't clobber them with
-                // stale slow-path-init values. We exclude the for-block's own range
-                // because [bindLoopVar] requires those slots to be null
-                // (`overwrite = false` enforced by `frame.setUnchecked`).
-                bindLoopVar(rt, element)
-                // `bindLoopVar` writes to `Rt_CallFrame.values`; mirror those writes
-                // into [VirtualFrame] so the body's hot-path `Tf_VarReadNode` sees the
-                // loop variable.
-                s = body.executeStmt(frame)
-            } finally {
-                rt.enterBlockSet(savedUid, savedOffset, savedSize)
-                rt.clearSlotsRange(blockOffset, blockSize)
-                // Also clear the for-block's slots in [VirtualFrame] so the next
-                // iteration's [pushToLegacyExcept] doesn't see a stale value where
-                // [bindLoopVar] would re-init.
+                try {
+                    // Mirror current [VirtualFrame] state for slots OUTSIDE this for-block's
+                    // range into [Rt_CallFrame.values]. This makes the legacy mirror reflect
+                    // any hot-path writes from previous iterations (e.g. loop-accumulator
+                    // vars) so the subsequent [pullFromLegacy] doesn't clobber them with
+                    // stale slow-path-init values. We exclude the for-block's own range
+                    // because [bindLoopVar] requires those slots to be null
+                    // (`overwrite = false` enforced by `frame.setUnchecked`).
+                    bindLoopVar(rt, element)
+                    // `bindLoopVar` writes to `Rt_CallFrame.values`; mirror those writes
+                    // into [VirtualFrame] so the body's hot-path `Tf_VarReadNode` sees the
+                    // loop variable.
+                    body.executeStmt(frame)
+                } finally {
+                    rt.enterBlockSet(savedUid, savedOffset, savedSize)
+                    rt.clearSlotsRange(blockOffset, blockSize)
+                    // Also clear the for-block's slots in [VirtualFrame] so the next
+                    // iteration's [pushToLegacyExcept] doesn't see a stale value where
+                    // [bindLoopVar] would re-init.
+                }
+            } catch (e: Tf_ContinueException) {
+                continueProfile.enter()
+            } catch (e: Tf_BreakException) {
+                breakProfile.enter()
+                break@loop
             }
-            if (s == STATUS_FALLTHROUGH || s == STATUS_CONTINUE) continue
-            if (s == STATUS_BREAK) break
-            // STATUS_RETURN — propagate up.
-            returnProfile.enter()
-            return s
         }
-        return STATUS_FALLTHROUGH
     }
 
     @TruffleBoundary
@@ -639,8 +566,8 @@ internal class Tf_ForStmtNode(
  * matched and there is no else); statement-shaped whens silently skip a -1, matching the
  * tree-walker's `executeWhenStmt`.
  *
- * Propagates `return`/`break`/`continue` from the matched branch up to the enclosing block
- * or loop.
+ * `return`/`break`/`continue` exceptions from the matched branch propagate up to the enclosing
+ * block or loop.
  */
 internal class Tf_WhenStmtNode(
     @field:Child private var chooser: Tf_WhenChooserNode,
@@ -651,8 +578,10 @@ internal class Tf_WhenStmtNode(
         return Rt_UnitValue
     }
 
-    override fun executeStmt(frame: VirtualFrame): Int {
+    override fun executeStmt(frame: VirtualFrame) {
         val idx = chooser.chooseIndex(frame)
-        return if (idx >= 0) branches[idx].executeStmt(frame) else STATUS_FALLTHROUGH
+        if (idx >= 0) {
+            branches[idx].executeStmt(frame)
+        }
     }
 }

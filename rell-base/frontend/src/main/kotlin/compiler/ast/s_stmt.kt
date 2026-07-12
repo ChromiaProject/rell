@@ -137,9 +137,10 @@ class S_VarStatement(
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
+        val modified = expr?.discoverVars(map) ?: immSetOf()
         val declaredVars = mutableSetOf<Name>()
         declarator.discoverVars(declaredVars)
-        return C_StatementVars(declaredVars.toImmSet(), immSetOf())
+        return C_StatementVars(declaredVars.toImmSet(), modified.toImmSet())
     }
 }
 
@@ -161,6 +162,18 @@ internal class S_ReturnStatement(
             ctx.msgCtx.error(
                 startPos, "lambda:return",
                 "Return is not allowed inside a lambda; the lambda's result is its final expression",
+            )
+            return C_ExprUtils.ERROR_STATEMENT
+        }
+
+        // A value block is legal in any expression position, but `return` inside one is only
+        // meaningful where the expression is (transitively) part of a body statement - not in a
+        // global constant, a parameter/attribute default value or an at-expression body, where
+        // there is no enclosing statement to return from (and no runtime path to unwind).
+        if (!ctx.exprCtx.insideStmt) {
+            ctx.msgCtx.error(
+                startPos, "stmt_return_disallowed",
+                "Return is not allowed here",
             )
             return C_ExprUtils.ERROR_STATEMENT
         }
@@ -213,6 +226,11 @@ internal class S_ReturnStatement(
     }
 
     override fun returnsValue() = expr != null
+
+    override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
+        val modified = expr?.discoverVars(map) ?: immSetOf()
+        return C_StatementVars(immSetOf(), modified.toImmSet())
+    }
 }
 
 internal class S_BlockStatement(
@@ -275,6 +293,10 @@ internal class S_ExprStatement(
         val rStmt = if (repl) R_ReplExprStatement(rExpr) else R_ExprStatement(rExpr)
         return C_Statement(rStmt, rExpr.type == R_RellErrorType, vExpr.varStatesDelta.always)
     }
+
+    override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
+        return C_StatementVars(immSetOf(), expr.discoverVars(map).toImmSet())
+    }
 }
 
 internal class S_AssignStatement(
@@ -301,11 +323,14 @@ internal class S_AssignStatement(
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
+        val modified = mutableSetOf<Name>()
+        modified.addAll(dstExpr.discoverVars(map))
+        modified.addAll(srcExpr.discoverVars(map))
         val qName = dstExpr.asName()
-        return if (qName == null) C_StatementVars.EMPTY else {
-            val rName = qName.parts.first().getRNameSpecial()
-            C_StatementVars(immSetOf(), immSetOf(rName))
+        if (qName != null) {
+            modified.add(qName.parts.first().getRNameSpecial())
         }
+        return C_StatementVars(immSetOf(), modified.toImmSet())
     }
 }
 
@@ -360,9 +385,10 @@ internal class S_IfStatement(
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
+        val exprVars = expr.discoverVars(map)
         val trueVars = trueStmt.discoverVars(map)
         val falseVars = falseStmt?.discoverVars(map) ?: C_StatementVars.EMPTY
-        return C_StatementVars(immSetOf(), trueVars.modified + falseVars.modified)
+        return C_StatementVars(immSetOf(), (exprVars + trueVars.modified + falseVars.modified).toImmSet())
     }
 
     override fun returnsValue(): Boolean? {
@@ -409,7 +435,9 @@ internal class S_WhenStatement(
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
         val modified = mutableSetOf<Name>()
+        if (expr != null) modified.addAll(expr.discoverVars(map))
         for (case in cases) {
+            modified.addAll(case.cond.discoverVars(map))
             val caseVars = case.stmt.discoverVars(map)
             modified.addAll(caseVars.modified)
         }
@@ -472,8 +500,9 @@ internal class S_WhileStatement(
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
+        val exprVars = expr.discoverVars(map)
         val bodyVars = stmt.discoverVars(map)
-        return C_StatementVars(immSetOf(), bodyVars.modified)
+        return C_StatementVars(immSetOf(), (exprVars + bodyVars.modified).toImmSet())
     }
 
     override fun returnsValue() = stmt.returnsValue()
@@ -572,6 +601,8 @@ internal class S_ForStatement(
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
+        val exprVars = expr.discoverVars(map)
+
         val block = C_StatementVarsBlock()
 
         val declared = mutableSetOf<Name>()
@@ -583,7 +614,7 @@ internal class S_ForStatement(
         block.modified(bodyVars.modified)
 
         val modified = block.modified()
-        return C_StatementVars(immSetOf(), modified)
+        return C_StatementVars(immSetOf(), (exprVars + modified).toImmSet())
     }
 
     override fun returnsValue() = stmt.returnsValue()
@@ -640,5 +671,10 @@ internal class S_GuardStatement(
         val cSubStmt = stmt.compileSafe(ctx, repl)
         val rStmt = R_GuardStatement(cSubStmt.rStmt)
         return cSubStmt.copy(rStmt = rStmt, guardBlock = true)
+    }
+
+    override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
+        val vars = stmt.discoverVars(map)
+        return C_StatementVars(immSetOf(), vars.modified)
     }
 }

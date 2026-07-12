@@ -93,6 +93,20 @@ abstract class S_Expr(val startPos: S_Pos) {
 
     internal open fun asName(): S_QualifiedName? = null
     open fun constantValue(): RR_ConstantValue? = null
+
+    /**
+     * Feeds the function-body variable pre-scan (see [S_Statement.discoverVars]) through
+     * expressions: a value block used as an if/when expression arm contains statements, whose
+     * modified variables (and nested loops' pre-scan entries) must be discovered like any other
+     * statement's. Composite expressions forward to their children; leaves have nothing to report.
+     * Returns the names of variables modified inside the expression.
+     */
+    internal open fun discoverVars(map: MutableTypedKeyMap): Set<Name> = immSetOf()
+
+    companion object {
+        internal fun discoverVars(exprs: List<S_Expr?>, map: MutableTypedKeyMap): Set<Name> =
+            exprs.filterNotNull().flatMapTo(mutableSetOf()) { it.discoverVars(map) }
+    }
 }
 
 sealed class S_LiteralExpr(pos: S_Pos): S_Expr(pos) {
@@ -134,6 +148,8 @@ internal class S_SubscriptExpr(
     private val base: S_Expr,
     private val expr: S_Expr,
 ): S_Expr(base.startPos) {
+    override fun discoverVars(map: MutableTypedKeyMap) = discoverVars(listOf(base, expr), map)
+
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val vBase = base.compile(ctx).vExpr()
         val vExpr = expr.compile(ctx).vExpr()
@@ -255,6 +271,8 @@ internal class S_CreateExpr(
     private val args: ImmList<S_CallArgument>,
     private val argsPosRange: S_PosRange,
 ): S_Expr(pos) {
+    override fun discoverVars(map: MutableTypedKeyMap) = discoverVars(args.map { it.value.exprOrNull() }, map)
+
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         ctx.checkDbUpdateAllowed(startPos)
 
@@ -369,6 +387,8 @@ internal class S_CreateExpr(
 }
 
 internal class S_ParenthesesExpr(startPos: S_Pos, val expr: S_Expr): S_Expr(startPos) {
+    override fun discoverVars(map: MutableTypedKeyMap) = expr.discoverVars(map)
+
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val cExpr = expr.compile(ctx, hint)
         val vExpr = cExpr.vExpr()
@@ -382,6 +402,8 @@ internal class S_TupleExpr(
     startPos: S_Pos,
     private val fields: ImmList<S_GenericTupleAttr<S_Expr>>,
 ): S_Expr(startPos) {
+    override fun discoverVars(map: MutableTypedKeyMap) = discoverVars(fields.map { it.value }, map)
+
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         // ID needs to be allocated in advance, before processing sub-expressions (for correct numbering).
         val tupleIdeId = ctx.defCtx.tupleIdeId()
@@ -467,6 +489,8 @@ internal class S_IfExpr(
     private val trueExpr: S_Expr,
     private val falseExpr: S_Expr,
 ): S_Expr(pos) {
+    override fun discoverVars(map: MutableTypedKeyMap) = discoverVars(listOf(cond, trueExpr, falseExpr), map)
+
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val vCond = cond.compile(ctx).vExpr()
         val (cTrue, cFalse, resState) = compileTrueFalse(ctx, vCond, hint)
@@ -475,14 +499,23 @@ internal class S_IfExpr(
             "expr_if_cond_type" toCodeMsg "Wrong type of condition expression"
         }
 
-        checkUnitType(trueExpr, cTrue)
-        checkUnitType(falseExpr, cFalse)
+        // An always-exiting arm (a value block with no trailing expression that returns on all
+        // paths) yields no value; the result type comes from the other arm.
+        val trueExits = V_ValueBlockExpr.alwaysExits(cTrue)
+        val falseExits = V_ValueBlockExpr.alwaysExits(cFalse)
+
+        if (!trueExits || falseExits) checkUnitType(trueExpr, cTrue)
+        if (!falseExits || trueExits) checkUnitType(falseExpr, cFalse)
 
         val trueType = cTrue.type
         val falseType = cFalse.type
 
-        val resType = C_Types.commonType(trueType, falseType, startPos) {
-            "expr_if_restype" toCodeMsg "Incompatible types of if branches"
+        val resType = when {
+            trueExits && !falseExits -> falseType
+            falseExits && !trueExits -> trueType
+            else -> C_Types.commonType(trueType, falseType, startPos) {
+                "expr_if_restype" toCodeMsg "Incompatible types of if branches"
+            }
         }
 
         val vExpr = V_IfExpr(ctx, startPos, resType, vCond, cTrue, cFalse, resState)
@@ -500,9 +533,24 @@ internal class S_IfExpr(
 
         val vTrue0 = trueExpr.compileWithVarStates(ctx, trueVarStates, hint).vExpr()
         val vFalse0 = falseExpr.compileWithVarStates(ctx, falseVarStates, hint).vExpr()
-        val (vTrue, vFalse) = C_BinOp_Common.promoteNumeric(ctx, vTrue0, vFalse0)
 
-        val resTrueFalseVarStates = vTrue.varStatesDelta.always.or(vFalse.varStatesDelta.always)
+        val trueExits = V_ValueBlockExpr.alwaysExits(vTrue0)
+        val falseExits = V_ValueBlockExpr.alwaysExits(vFalse0)
+
+        val (vTrue, vFalse) = if (trueExits || falseExits) {
+            Pair(vTrue0, vFalse0)
+        } else {
+            C_BinOp_Common.promoteNumeric(ctx, vTrue0, vFalse0)
+        }
+
+        // Like statement branches, an always-exiting arm contributes no var states to the code
+        // after the conditional - only the arms that can fall through do.
+        val resTrueFalseVarStates = when {
+            trueExits && falseExits -> C_VarStatesDelta.EMPTY
+            trueExits -> vFalse.varStatesDelta.always
+            falseExits -> vTrue.varStatesDelta.always
+            else -> vTrue.varStatesDelta.always.or(vFalse.varStatesDelta.always)
+        }
         val resVarStates = condVarStates.always.and(resTrueFalseVarStates)
 
         return Triple(vTrue, vFalse, C_ExprVarStatesDelta.make(always = resVarStates))
@@ -514,6 +562,8 @@ internal class S_IfExpr(
 }
 
 internal class S_ListLiteralExpr(pos: S_Pos, val exprs: ImmList<S_Expr>): S_Expr(pos) {
+    override fun discoverVars(map: MutableTypedKeyMap) = discoverVars(exprs, map)
+
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val rHintElemType = getHintElemType(hint.typeHint)
         val elemHint = C_ExprHint(C_TypeHint.ofType(rHintElemType))
@@ -572,6 +622,8 @@ internal class S_ListLiteralExpr(pos: S_Pos, val exprs: ImmList<S_Expr>): S_Expr
 }
 
 internal class S_MapLiteralExpr(startPos: S_Pos, val entries: ImmList<Pair<S_Expr, S_Expr>>): S_Expr(startPos) {
+    override fun discoverVars(map: MutableTypedKeyMap) = discoverVars(entries.flatMap { listOf(it.first, it.second) }, map)
+
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val rHintKeyValueTypes = getHintKeyValueType(hint.typeHint)
         val keyHint = C_ExprHint(C_TypeHint.ofType(rHintKeyValueTypes?.key))
@@ -662,9 +714,12 @@ internal class S_MapLiteralExpr(startPos: S_Pos, val entries: ImmList<Pair<S_Exp
 
 sealed class S_CallArgumentValue {
     internal abstract fun compile(ctx: C_ExprContext, typeHint: C_TypeHint): C_CallArgumentValue
+    internal open fun exprOrNull(): S_Expr? = null
 }
 
 internal class S_CallArgumentValue_Expr(val expr: S_Expr): S_CallArgumentValue() {
+    override fun exprOrNull() = expr
+
     override fun compile(ctx: C_ExprContext, typeHint: C_TypeHint): C_CallArgumentValue {
         val exprHint = C_ExprHint(typeHint)
         val cExpr = expr.compile(ctx, exprHint)
@@ -704,6 +759,9 @@ internal class S_CallExpr(
     private val base: S_Expr,
     private val args: S_CallArguments,
 ): S_Expr(base.startPos) {
+    override fun discoverVars(map: MutableTypedKeyMap) =
+        discoverVars(listOf(base) + args.list.map { it.value.exprOrNull() }, map)
+
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
         val cBase = base.compileSafe(ctx, C_ExprHint.DEFAULT_CALLABLE)
         return cBase.call(ctx, base.startPos, args, hint.typeHint)
