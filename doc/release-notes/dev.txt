@@ -148,10 +148,8 @@ Restrictions:
 - In expression positions with no enclosing body statement - an at-expression body, a parameter or attribute
   default value - return/break/continue cannot escape the block (there is nothing to unwind to); the block
   itself is fine.
-- Inside a lambda body, return stays prohibited (the lambda rule), also within a block arm.
 - A value block cannot be used in a global constant's expression: its statements cannot be validated as
   constant, so blocks are rejected there.
-- A block arm cannot be part of a database at-expression's SQL (like any non-SQL expression).
 - When omitting the ; after an expression arm of a when expression, note that the arm expression
   binds greedily: if the NEXT case's condition starts with (, [, + or -, keep the ; so the
   condition is not consumed as a continuation (call, subscript or binary operator) of the arm.
