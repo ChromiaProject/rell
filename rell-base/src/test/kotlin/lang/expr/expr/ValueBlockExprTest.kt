@@ -94,4 +94,21 @@ class ValueBlockExprTest: BaseRellTest() {
         chkEx("{ var u: integer; val q = if (true) { u } else 2; return q; }",
             "ct_err:expr_var_uninit:u")
     }
+
+    @Test fun testWhenExpressionArmStillRequiresSemicolon() {
+        // Block arms did not relax the ';' between expression arms: an expression arm is
+        // ';'-terminated (except the last case), exactly as before block arms existed.
+        chk("when { 1 > 2 -> 'a' else -> 'b' }", "ct_err:syntax")
+        chk("when { 1 > 2 -> 'a'; 2 > 3 -> 'b' else -> 'c' }", "ct_err:syntax")
+        chk("when { 1 > 2 -> 'a'; else -> 'b' }", "text[b]")
+        chk("when { 1 > 2 -> 'a'; else -> 'b'; }", "text[b]")
+    }
+
+    @Test fun testWhenBlockArmTakesNoSemicolon() {
+        // A block arm ends at its '}' - a ';' after it does not parse, mirroring the `when`
+        // statement, where a block arm is a block statement with no ';'.
+        chk("when { 1 > 2 -> { 'a' }; else -> 'b' }", "ct_err:syntax")
+        chk("when { 1 > 2 -> 'a'; else -> { 'b' }; }", "ct_err:syntax")
+        chk("when { 1 > 2 -> { 'a' } else -> 'b' }", "text[b]")
+    }
 }

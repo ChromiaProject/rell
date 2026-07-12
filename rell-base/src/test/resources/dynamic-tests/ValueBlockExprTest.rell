@@ -133,11 +133,12 @@ query when_block_with_subject() {
     return 0;
 }
 
-// Expression arms and block arms mix; `;` after a case is now optional, so expression arms
-// may be separated by a line break alone (as in the `when` statement).
-query when_mixed_arms_optional_semicolons() {
+// Expression arms and block arms mix. An expression arm keeps its `;` terminator (the last case
+// may omit it, as before); a block arm ends at its `}` and takes no `;` - the missing `;` is the
+// mark of the yielded trailing expression, not a general separator relaxation.
+query when_mixed_arms_semicolons() {
     val f = (n: integer) -> when (n) {
-        0 -> 'a'
+        0 -> 'a';
         1 -> { val s = 'b'; s }
         2 -> 'c';
         else -> { 'd' }

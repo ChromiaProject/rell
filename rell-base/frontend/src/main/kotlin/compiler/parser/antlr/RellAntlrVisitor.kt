@@ -1054,17 +1054,31 @@ class RellAntlrVisitor(
 
     private fun toWhenExpr(ctx: RellParser.WhenExprContext): S_Expr = withCtx(ctx) {
         val kwTok = ctx.start
-        val conds = ctx.whenCondition().map { toWhenCondition(it) }
-        // The only direct ExpressionContext child is the optional `(expression)` subject; case
-        // arms are ExprOrValueBlockContext children.
-        // grammar.kt: when ('(' expression ')')? '{' oneOrMore(cond '->' exprOrValueBlock ';'?) '}'
         val subject = ctx.expression()?.let { toExpression(it) }
-        val caseExprs = ctx.exprOrValueBlock().map { toExprOrValueBlock(it) }
-        // On a valid parse the counts match; under ANTLR error recovery a condition's arm may be
-        // missing (an ErrorNode), so zip's truncation drops the armless condition instead of
-        // crashing - this visitor must keep building a partial AST (see toBinaryExpr).
-        val cases = conds.zip(caseExprs) { c, e -> S_WhenExprCase(c, e) }.toImmList()
-        return S_WhenExpr(kwTok.toPos(), subject, cases)
+        val cases = mutableListOf<S_WhenExprCase>()
+        for (caseCtx in ctx.whenExprCase()) {
+            toWhenExprCase(caseCtx.whenCondition(), caseCtx.valueBlock(), caseCtx.expression())?.let { cases.add(it) }
+        }
+        ctx.whenExprLastCase()?.let { lastCtx ->
+            toWhenExprCase(lastCtx.whenCondition(), lastCtx.valueBlock(), lastCtx.expression())?.let { cases.add(it) }
+        }
+        return S_WhenExpr(kwTok.toPos(), subject, cases.toImmList())
+    }
+
+    private fun toWhenExprCase(
+        condCtx: RellParser.WhenConditionContext?,
+        blockCtx: RellParser.ValueBlockContext?,
+        exprCtx: RellParser.ExpressionContext?,
+    ): S_WhenExprCase? {
+        // Under ANTLR error recovery the condition or the arm may be missing; drop the incomplete
+        // case so the visitor keeps building a partial AST (see toBinaryExpr).
+        condCtx ?: return null
+        val arm = when {
+            blockCtx != null -> toValueBlockExpr(blockCtx)
+            exprCtx != null -> toExpression(exprCtx)
+            else -> return null
+        }
+        return S_WhenExprCase(toWhenCondition(condCtx), arm)
     }
 
     private fun toBaseExpr(ctx: RellParser.BaseExprContext): S_Expr = withCtx(ctx) {

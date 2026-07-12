@@ -413,8 +413,18 @@ ifExpr
     : 'if' '(' expression ')' exprOrValueBlock 'else' exprOrValueBlock
     ;
 
+// An expression arm is ';'-terminated (the last case may omit it, as before); a block arm ends
+// at its '}' and takes no ';'.
 whenExpr
-    : 'when' ('(' expression ')')? '{' (whenCondition '->' exprOrValueBlock ';'?)+ '}'
+    : 'when' ('(' expression ')')? '{' whenExprCase* whenExprLastCase '}'
+    ;
+
+whenExprCase
+    : whenCondition '->' (valueBlock | expression ';')
+    ;
+
+whenExprLastCase
+    : whenCondition '->' (valueBlock | expression ';'?)
     ;
 
 baseExpr

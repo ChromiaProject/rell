@@ -140,8 +140,9 @@ function's frame:
 The trailing expression (no ;) is the block's value; a block with statements only is unit-typed, which a
 conditional arm cannot be (unless it always returns).
 
-The ; separating the cases of a when expression is now optional after every case - a block arm reads naturally
-without one - instead of required between cases. All previously valid code parses as before.
+Semicolons in a when expression are unchanged for expression arms: an expression arm is terminated by ; (the last
+case may omit it, as before). A block arm ends at its closing } and takes no ; - like a block in a when statement.
+All previously valid code parses as before.
 
 Restrictions:
 
@@ -150,6 +151,3 @@ Restrictions:
   itself is fine.
 - A value block cannot be used in a global constant's expression: its statements cannot be validated as
   constant, so blocks are rejected there.
-- When omitting the ; after an expression arm of a when expression, note that the arm expression
-  binds greedily: if the NEXT case's condition starts with (, [, + or -, keep the ; so the
-  condition is not consumed as a continuation (call, subscript or binary operator) of the arm.

@@ -580,12 +580,25 @@ internal object S_Grammar {
     private val whenConditionElse by ELSE map { S_WhenConditionElse(it.pos) }
     private val whenCondition by whenConditionExpr or whenConditionElse
 
-    private val whenExprCase by whenCondition * -ARROW * exprOrValueBlock map {
+    private val whenExprCaseBlock by whenCondition * -ARROW * valueBlockExpr map {
         (cond, expr) ->
         S_WhenExprCase(cond, expr)
     }
 
-    private val whenExprCases by oneOrMore(whenExprCase * -optional(SEMI))
+    private val whenExprCaseExpr by whenCondition * -ARROW * expressionRef map {
+        (cond, expr) ->
+        S_WhenExprCase(cond, expr)
+    }
+
+    // An expression arm is ';'-terminated (the last case may omit it, as before); a block arm ends
+    // at its '}' and takes no ';'.
+    private val whenExprCase by whenExprCaseBlock or (whenExprCaseExpr * -SEMI)
+
+    private val whenExprCases by (
+            oneOrMore(whenExprCase) * optional(whenExprCaseExpr) map { (cases, last) -> cases + listOfNotNull(last) }
+    ) or (
+            whenExprCaseExpr map { listOf(it) }
+    )
 
     private val whenExpr by WHEN * optional(-LPAR * expressionRef * -RPAR) * -LCURL * whenExprCases * -RCURL map {
         (pos, expr, cases) ->
