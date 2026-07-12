@@ -46,7 +46,7 @@ class WhenExprFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<WhenExprContext> {
     override fun format(node: WhenExprContext, doc: FormattableDocument) {
-        // whenExpr: 'when' ('(' expression ')')? '{' (whenCondition '->' exprOrValueBlock ';'?)+ '}'
+        // whenExpr: 'when' ('(' expression ')')? '{' whenExprCase* whenExprLastCase '}'
         doc.interiorIndent(node)
         val whenTok = tokenAnalyzer.tokenFor(node, "when")
         if (whenTok != null) doc.append(whenTok) { it.oneSpace() }
@@ -56,19 +56,20 @@ class WhenExprFormatter(
         val closingCurly = tokenAnalyzer.tokenFor(node, "}")
         if (closingCurly != null) doc.prepend(closingCurly) { it.newLine() }
 
-        // Each whenCondition + the following arm form a case.
-        val conds = node.whenCondition()
-        for (i in conds.indices) {
-            val cond = conds[i]
+        node.expression()?.let { doc.surround(it) { c -> c.noSpace() }; doc.format(it) }
+
+        // Each case is a whenCondition '->' arm (valueBlock or expression).
+        val cases = node.whenExprCase().map { it.whenCondition() to (it.valueBlock() ?: it.expression()) } +
+            node.whenExprLastCase().let { it.whenCondition() to (it.valueBlock() ?: it.expression()) }
+        for ((cond, arm) in cases) {
             doc.prepend(cond) { it.newLine() }
             doc.append(cond) {
                 it.oneSpace()
                 it.highPriority()
             }
             doc.format(cond)
+            doc.format(arm)
         }
-        node.expression()?.let { doc.surround(it) { c -> c.noSpace() }; doc.format(it) }
-        node.exprOrValueBlock().forEach { doc.format(it) }
     }
 }
 

@@ -50,7 +50,7 @@ dependencyCheck {
     nvd.apiKey = providers.environmentVariable("NVD_API_KEY").orNull
 }
 
-val withLocales by extra(providers.gradleProperty("withLocales").isPresent)
+val withLocales = providers.gradleProperty("withLocales").isPresent
 
 // Aggregator: publish every Rell module to ~/.m2 within this build graph. The chr bootstrap
 // (:performance:buildLocalChr) depends on this instead of shelling out to a nested
