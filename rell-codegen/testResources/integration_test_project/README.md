@@ -36,6 +36,8 @@ To run the tests manually:
 
 
 2. Executing stub test from within frontend folder either javascript, or typescript
-   1. Install dependencies by running `npm install`
+   1. Install dependencies by running `npm ci` (the integration tests use the checked-in
+`package-lock.json` for reproducible installs — after changing dependencies in `package.json`,
+regenerate it with `npm install --package-lock-only` and commit it)
    2. Update nodeUrlPool in client config to target `"http://localhost:7740"`
    3. Execute test by running `npm run test`

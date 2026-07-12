@@ -103,7 +103,7 @@ class JavascriptCodegenITTest {
                 MountableFile.forHostPath(projectFrontendPath),
                 projectFrontendPathInContainer
             )
-            nodeContainer.execInContainer("npm", "install")
+            nodeContainer.execInContainer("npm", "ci")
         }
     }
 
