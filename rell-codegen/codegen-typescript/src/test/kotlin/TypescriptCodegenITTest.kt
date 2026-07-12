@@ -30,9 +30,8 @@ class TypescriptCodegenITTest {
 
     @Test
     fun `integration test project uses latest postchain-client`() {
-        val latest = fetchLatestNpmVersion("postchain-client")
-        val packageJsonContent = readClasspathResourceText("/integration_test_project/frontend/typescript/package.json")
-        val spec = parseNpmDependencySpecFromPackageJson(packageJsonContent, "postchain-client")
+        val latest = fetchLatestPostchainClientVersion()
+        val spec = parsePostchainClientSpecFromPackageJson(readPackageJsonText())
 
         if (!isUpToDateNpmSpec(spec, latest)) {
             throw AssertionError(
@@ -126,16 +125,17 @@ class TypescriptCodegenITTest {
         expected(errorMessage)
     }
 
-    private fun readClasspathResourceText(path: String): String {
+    private fun readPackageJsonText(): String {
+        val path = "/integration_test_project/frontend/typescript/package.json"
         val url = checkNotNull(this::class.java.getResource(path)) { "$path not found on test classpath" }
         return File(url.toURI()).readText()
     }
 
-    private fun parseNpmDependencySpecFromPackageJson(packageJson: String, packageName: String): String {
-        val regex = """"$packageName"\s*:\s*"([^"]+)""""
+    private fun parsePostchainClientSpecFromPackageJson(packageJson: String): String {
+        val regex = """"postchain-client"\s*:\s*"([^"]+)""""
             .toRegex(setOf(RegexOption.MULTILINE))
         return regex.find(packageJson)?.groupValues?.get(1)
-            ?: throw AssertionError("Could not find \"$packageName\": \"...\" in package.json")
+            ?: throw AssertionError("Could not find \"postchain-client\": \"...\" in package.json")
     }
 
     private fun isUpToDateNpmSpec(spec: String, latest: String): Boolean {
@@ -145,22 +145,22 @@ class TypescriptCodegenITTest {
         return base == latest
     }
 
-    private fun fetchLatestNpmVersion(packageName: String): String {
+    private fun fetchLatestPostchainClientVersion(): String {
         val client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build()
         val request = HttpRequest.newBuilder()
-            .uri(URI.create("https://registry.npmjs.org/$packageName/latest"))
+            .uri(URI.create("https://registry.npmjs.org/postchain-client/latest"))
             .timeout(Duration.ofSeconds(10))
             .GET()
             .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofString())
         if (response.statusCode() != 200) {
-            throw AssertionError("Could not fetch latest $packageName version: HTTP ${response.statusCode()}")
+            throw AssertionError("Could not fetch latest postchain-client version: HTTP ${response.statusCode()}")
         }
         val versionRegex = """"version"\s*:\s*"([^"]+)"""".toRegex()
         return versionRegex.find(response.body())
             ?.groupValues?.get(1)
-            ?: throw AssertionError("Could not parse version from npm registry response for $packageName")
+            ?: throw AssertionError("Could not parse version from npm registry response for postchain-client")
     }
 }
