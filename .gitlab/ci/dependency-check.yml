@@ -19,9 +19,10 @@ dependency-check:
   tags: [ saas-linux-medium-amd64 ]
   interruptible: true
   # A cold seed (empty nvd cache) downloads the full CVE history via vulnz and builds the H2
-  # database from scratch; warm runs are minutes. 2 h leaves headroom for the cold path, which
-  # used to blow the default 1 h timeout.
-  timeout: 2h
+  # database from scratch; warm runs are minutes. 3 h (the gitlab.com instance-runner maximum)
+  # leaves headroom for the cold path — a timed-out job never pushes its cache, so the seed
+  # must complete within the timeout or every subsequent run starts cold again.
+  timeout: 3h
   # The NVD API can still throw transient 503/429 at vulnz during the mirror refresh. The script
   # wipes the mirror if vulnz fails (a partial download must never be cached), so a retry starts
   # clean and lets a later attempt catch NVD healthy.
@@ -53,6 +54,9 @@ dependency-check:
   # root project. With org.gradle.parallel=true (gradle.properties), Gradle 9 rejects that
   # cross-project resolution ("attempted without an exclusive lock").
   script:
+    # vulnz reads NVD_API_KEY from the environment; without it, it throttles to the anonymous
+    # NVD rate and a cold seed blows even the 3 h timeout. Fail fast instead.
+    - test -n "$NVD_API_KEY" || { echo "NVD_API_KEY is not set — aborting"; exit 1; }
     - curl -fsSL "https://github.com/jeremylong/open-vulnerability-cli/releases/download/v${VULNZ_VERSION}/vulnz-${VULNZ_VERSION}.jar" -o /tmp/vulnz.jar
     - java -Xmx2g -jar /tmp/vulnz.jar cve --cache --directory nvd-cache || { rm -rf nvd-cache; exit 1; }
     - ./gradlew $GRADLE_FLAGS_MEDIUM --no-configuration-cache --no-parallel dependencyCheckAggregate
