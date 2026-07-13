@@ -11,6 +11,7 @@ import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_ValueBlockExpr
 import net.postchain.rell.base.model.Name
+import net.postchain.rell.base.model.R_NothingType
 import net.postchain.rell.base.model.R_UnitType
 import net.postchain.rell.base.utils.MutableTypedKeyMap
 
@@ -56,8 +57,10 @@ internal class S_ValueBlockExpr(val block: S_LambdaBody_Block): S_Expr(block.pos
 
         val frameBlock = subBlkCtx.buildBlock()
 
-        val resType = vResult?.type ?: R_UnitType
         val alwaysExits = vResult == null && blockCode.alwaysReturns
+        // An always-exiting block yields no value; its type is the bottom type, which the
+        // surrounding conditional's common-type computation absorbs.
+        val resType = vResult?.type ?: if (alwaysExits) R_NothingType else R_UnitType
 
         val resVarStates = if (vResult == null) {
             C_ExprVarStatesDelta.make(always = blockCode.varStatesDelta)

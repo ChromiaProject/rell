@@ -401,12 +401,18 @@ exprOrValueBlock
     ;
 
 binaryExpr
-    : ('+' | '-' | 'not' | '++' | '--')* (ifExpr | whenExpr | baseExpr)
+    : ('+' | '-' | 'not' | '++' | '--')* (ifExpr | whenExpr | jumpExpr | baseExpr)
       (
         ('==' | '!=' | '<=' | '>=' | '<' | '>' | '===' | '!==' | '+' | '-' | '*' | '/'
          | '%'  | 'and' | 'or' | '&'  | 'in' | 'not' 'in' | '?:')
-        ('+' | '-' | 'not' | '++' | '--')* (ifExpr | whenExpr | baseExpr)
+        ('+' | '-' | 'not' | '++' | '--')* (ifExpr | whenExpr | jumpExpr | baseExpr)
       )*
+    ;
+
+jumpExpr
+    : 'return' expression?    # returnExpr
+    | 'break'                 # breakExpr
+    | 'continue'              # continueExpr
     ;
 
 ifExpr

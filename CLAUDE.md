@@ -27,6 +27,20 @@ Rell — Kotlin/Gradle multi-module implementation of the Rell blockchain langua
 
 Other `work/` wrappers over the installed dist: `rellcfg.sh`, `multigen.sh`, `multirun.sh`, `psql/psql-shell.sh`. IntelliJ run configs: `work/All_tests.run.xml`, `work/Kotlin_ABI_Dump.run.xml`.
 
+### Coverage check for new code
+
+After implementing a feature, verify the new code is actually exercised — per class and per changed line, not module-level percentages:
+
+```bash
+./gradlew testCodeCoverageReport   # → coverage-report-aggregate/build/reports/jacoco/testCodeCoverageReport/ (XML + HTML)
+```
+
+Parse the XML for the classes/sourcefiles you touched (`class`/`sourcefile` elements carry LINE/BRANCH/METHOD counters and per-line `mi`/`ci`). Caveats that make raw numbers lie:
+
+- The aggregate only includes each module's `test` task. Code exercised solely by `testTruffle`, `testRoundTrip`, or `:rell-toolbox:ast:grammarTest` (e.g. runtime-truffle paths, the better-parse `S_Grammar` — production parsing goes through ANTLR + `RellAntlrVisitor`) shows as uncovered even when those suites pass.
+- If the Docker daemon is unavailable, exclude the Testcontainers suites: `-x :rell-codegen:codegen-typescript:test -x :rell-codegen:codegen-javascript:test -x :rell-codegen:codegen-python:test`.
+- A 0%-covered new class is either a missing test or dead code — decide which and fix that (delete unreachable code rather than writing a test to reach it).
+
 ## Project Structure
 
 ### rell-base sub-modules

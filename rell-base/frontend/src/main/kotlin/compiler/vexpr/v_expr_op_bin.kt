@@ -9,6 +9,7 @@ import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprUtils
 import net.postchain.rell.base.compiler.base.expr.C_ExprVarStatesDelta
+import net.postchain.rell.base.compiler.base.expr.C_VarStatesDelta
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.*
 
@@ -56,7 +57,21 @@ class V_ElvisExpr(
     private val right: V_Expr,
 ): V_Expr(exprCtx, pos) {
     override fun exprInfo0() = V_ExprInfo.simple(resType, left, right)
-    override fun varStatesDelta0() = C_ExprVarStatesDelta.forExpressions(left) // left is always evaluated, right is not
+
+    override fun varStatesDelta0(): C_ExprVarStatesDelta {
+        // Left is always evaluated, right is not.
+        val leftDelta = C_ExprVarStatesDelta.forExpressions(left)
+        if (!V_ValueBlockExpr.alwaysExits(right)) {
+            return leftDelta
+        }
+        // `x ?: return ...` - the right operand never produces a value, so control continues past
+        // the elvis only when the left operand was non-null: smart-cast it.
+        return C_ExprVarStatesDelta.make(
+            always = leftDelta.always.and(C_VarStatesDelta.forNotNull(left)),
+            whenTrue = leftDelta.whenTrue,
+            whenFalse = leftDelta.whenFalse,
+        )
+    }
 
     override fun toRExpr(): R_Expr {
         val rLeft = left.toRExpr()

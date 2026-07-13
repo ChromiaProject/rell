@@ -31,6 +31,7 @@ private val PRIMITIVE_KIND_MAP = mapOf(
     RR_PrimitiveKind.GTV to PrimitiveTypeKind.GTV,
     RR_PrimitiveKind.RANGE to PrimitiveTypeKind.RANGE,
     RR_PrimitiveKind.UNIT to PrimitiveTypeKind.UNIT,
+    RR_PrimitiveKind.NOTHING to PrimitiveTypeKind.NOTHING,
 )
 
 private fun SerializerContext.serializeTypeUnion(type: RR_Type): Pair<UByte, Int> = when (type) {

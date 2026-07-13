@@ -605,7 +605,16 @@ internal object S_Grammar {
         S_WhenExpr(pos.pos, expr, cases.toImmList())
     }
 
-    private val operandExpr: Parser<S_Expr> by ( baseExpr or ifExpr or whenExpr )
+    // Jump expressions: `return`/`break`/`continue` used as an expression. Mirrors the ANTLR
+    // `jumpExpr` rule in Rell.g4. The `return` operand is greedy - everything to the right of
+    // `return` binds to it; the `;` always belongs to the enclosing statement or when-arm.
+    private val jumpExpr: Parser<S_Expr> by (
+            ( RETURN * optional(expressionRef) map { (kw, expr) -> S_ReturnExpr(kw.pos, expr) } )
+            or ( BREAK map { S_BreakExpr(it.pos) } )
+            or ( CONTINUE map { S_ContinueExpr(it.pos) } )
+    )
+
+    private val operandExpr: Parser<S_Expr> by ( jumpExpr or baseExpr or ifExpr or whenExpr )
 
     private val unaryExpr by zeroOrMore(unaryPrefixOperator) * operandExpr map { (ops, expr) ->
         var res = expr

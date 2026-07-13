@@ -569,16 +569,17 @@ internal class S_ListLiteralExpr(pos: S_Pos, val exprs: ImmList<S_Expr>): S_Expr
         val elemHint = C_ExprHint(C_TypeHint.ofType(rHintElemType))
         val vExprs = exprs.mapToImmList { it.compile(ctx, elemHint).vExpr() }
 
-        val listType = ctx.msgCtx.consumeError { compileType(vExprs, rHintElemType) }
+        val listType = ctx.msgCtx.consumeError { compileType(ctx, vExprs, rHintElemType) }
         listType ?: return C_ExprUtils.errorExpr(ctx, startPos)
 
         val vExpr = V_ListLiteralExpr(ctx, startPos, vExprs, listType)
         return C_ValueExpr(vExpr)
     }
 
-    private fun compileType(vExprs: List<V_Expr>, hintElemType: R_Type?): R_ListType {
+    private fun compileType(ctx: C_ExprContext, vExprs: List<V_Expr>, hintElemType: R_Type?): R_ListType {
         for (vExpr in vExprs) {
             C_Utils.checkUnitType(vExpr.pos, vExpr.type) { "expr_list_unit" toCodeMsg "Element expression returns nothing" }
+            C_Utils.warnUnreachableValue(ctx.msgCtx, vExpr.pos, vExpr.type)
         }
 
         val rElemType = compileElementType(vExprs, hintElemType)
@@ -651,6 +652,8 @@ internal class S_MapLiteralExpr(startPos: S_Pos, val entries: ImmList<Pair<S_Exp
             val valueExpr = entries[i].second
             C_Utils.checkUnitType(keyExpr.startPos, keyType) { "expr_map_key_unit" toCodeMsg "Key expression returns nothing" }
             C_Utils.checkUnitType(valueExpr.startPos, valueType) { "expr_map_value_unit" toCodeMsg "Value expression returns nothing" }
+            C_Utils.warnUnreachableValue(ctx.msgCtx, keyExpr.startPos, keyType)
+            C_Utils.warnUnreachableValue(ctx.msgCtx, valueExpr.startPos, valueType)
             C_Utils.checkMapKeyType(ctx.defCtx, valueExpr.startPos, keyType)
         }
 

@@ -226,6 +226,7 @@ object L_TypeUtils {
             RR_PrimitiveKind.GTV -> R_GtvType
             RR_PrimitiveKind.RANGE -> R_RangeType
             RR_PrimitiveKind.UNIT -> R_UnitType
+            RR_PrimitiveKind.NOTHING -> R_NothingType
         }
         is RR_Type.Null -> R_NullType
         else -> error("Unsupported RR_Type for library type: $rrType")

@@ -92,4 +92,10 @@ enum class RR_PrimitiveKind {
     GTV,
     RANGE,
     UNIT,
+
+    /**
+     * Bottom type of an expression that exits on all paths (a jump expression or an
+     * always-exiting value block). No value of this kind ever exists at runtime.
+     */
+    NOTHING,
 }

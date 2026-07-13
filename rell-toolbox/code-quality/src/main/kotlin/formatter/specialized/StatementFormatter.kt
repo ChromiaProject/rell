@@ -47,6 +47,17 @@ class ReturnStmtFormatter(
     }
 }
 
+/** `return` used as a jump expression: like the statement form, minus the `;`. */
+class ReturnExprFormatter(
+    private val tokenAnalyzer: TokenAnalyzer,
+) : NodeFormatter<ReturnExprContext> {
+    override fun format(node: ReturnExprContext, doc: FormattableDocument) {
+        val ret = tokenAnalyzer.directTokenFor(node, "return") ?: tokenAnalyzer.tokenFor(node, "return")
+        if (ret != null) doc.append(ret) { it.oneSpace() }
+        node.expression()?.let { doc.format(it) }
+    }
+}
+
 class WhileStmtFormatter(
     val expressionFormatter: ExpressionFormatter,
     val lineAnalyzer: LineAnalyzer,

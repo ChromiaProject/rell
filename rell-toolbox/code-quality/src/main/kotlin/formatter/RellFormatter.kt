@@ -237,6 +237,7 @@ class RellFormatter(
 
             register(BlockStmtContext::class.java, BlockStmtFormatter())
             register(ReturnStmtAltContext::class.java, ReturnStmtFormatter(whitespaceFormatter, tokenAnalyzer))
+            register(ReturnExprContext::class.java, ReturnExprFormatter(tokenAnalyzer))
             register(
                 WhileStmtAltContext::class.java,
                 WhileStmtFormatter(

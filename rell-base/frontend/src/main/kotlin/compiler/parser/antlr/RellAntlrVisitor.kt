@@ -948,6 +948,15 @@ class RellAntlrVisitor(
         return@withCtx if (block != null) toValueBlockExpr(block) else toExpression(ctx.expression())
     }
 
+    private fun toJumpExpr(ctx: RellParser.JumpExprContext): S_Expr = withCtx(ctx) {
+        when (ctx) {
+            is RellParser.ReturnExprContext -> S_ReturnExpr(ctx.start.toPos(), ctx.expression()?.let { toExpression(it) })
+            is RellParser.BreakExprContext -> S_BreakExpr(ctx.start.toPos())
+            is RellParser.ContinueExprContext -> S_ContinueExpr(ctx.start.toPos())
+            else -> error("unknown jumpExpr: ${ctx.javaClass.simpleName}")
+        }
+    }
+
     private fun toBinaryExpr(ctx: RellParser.BinaryExprContext): S_Expr = withCtx(ctx) {
         // Children are: prefix-op* operand (binary-op prefix-op* operand)*
         // - operand = ifExpr | whenExpr | baseExpr
@@ -983,6 +992,7 @@ class RellAntlrVisitor(
             var opExpr: S_Expr = when (opCtx) {
                 is RellParser.IfExprContext -> toIfExpr(opCtx)
                 is RellParser.WhenExprContext -> toWhenExpr(opCtx)
+                is RellParser.JumpExprContext -> toJumpExpr(opCtx)
                 is RellParser.BaseExprContext -> toBaseExpr(opCtx)
                 else -> {
                     // ErrorNode / unexpected TerminalNode: synthesize a placeholder name expr at

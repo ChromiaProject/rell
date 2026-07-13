@@ -27,6 +27,8 @@ class RtTypeGtvConversionParityTest {
         val expected = RR_PrimitiveKind.values().toList()
             .filter { it != RR_PrimitiveKind.GUID && it != RR_PrimitiveKind.SIGNER }
             .filter { it != RR_PrimitiveKind.RANGE && it != RR_PrimitiveKind.UNIT }
+            // The bottom type has no values, hence no GTV conversion.
+            .filter { it != RR_PrimitiveKind.NOTHING }
         // Guard against a future enum refactor that empties this list (which would make the loop vacuous).
         assertTrue(expected.isNotEmpty(), "expected at least one comparable primitive kind")
         for (kind in expected) {

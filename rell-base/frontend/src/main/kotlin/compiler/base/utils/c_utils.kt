@@ -140,6 +140,19 @@ object C_Utils {
         return true
     }
 
+    /**
+     * Warns when [type] is the bottom type [R_NothingType]: evaluating the expression escapes
+     * the enclosing statement, so the value it supposedly supplies (and everything depending on
+     * it) is unreachable. Positions that legitimately consume a bottom-typed expression - an
+     * if/when arm, the right operand of `?:`, a value block's trailing expression, a return
+     * operand - do not call this.
+     */
+    fun warnUnreachableValue(msgCtx: C_MessageContext, pos: S_Pos, type: R_Type) {
+        if (type == R_NothingType) {
+            msgCtx.warning(pos, "expr:unreachable", "Expression never produces a value")
+        }
+    }
+
     fun checkMapKeyType(ctx: C_DefinitionContext, pos: S_Pos, type: R_Type) {
         checkMapKeyType0(ctx.appCtx, pos, type, "expr_map_keytype", "as a map key")
     }

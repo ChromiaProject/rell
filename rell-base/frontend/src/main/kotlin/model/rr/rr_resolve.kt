@@ -499,6 +499,7 @@ private class RR_Resolver(private val rApp: R_App, private val resolverRuntime: 
         is R_GtvType -> RR_Type.Primitive(RR_PrimitiveKind.GTV)
         is R_RangeType -> RR_Type.Primitive(RR_PrimitiveKind.RANGE)
         is R_UnitType -> RR_Type.Primitive(RR_PrimitiveKind.UNIT)
+        R_NothingType -> RR_Type.Primitive(RR_PrimitiveKind.NOTHING)
         is R_NullType -> RR_Type.Null
 
         is R_EntityType -> RR_Type.Entity(registerEntity(rType.rEntity))

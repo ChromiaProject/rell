@@ -11,6 +11,7 @@ import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.model.Name
 import net.postchain.rell.base.model.R_BooleanType
+import net.postchain.rell.base.model.R_NothingType
 import net.postchain.rell.base.model.R_RellErrorType
 import net.postchain.rell.base.model.R_UnitType
 import net.postchain.rell.base.model.expr.R_Expr
@@ -127,13 +128,18 @@ class S_VarStatement(
         val vExpr = expr?.compileSafe(ctx.exprCtx, exprHint)?.vExpr()
         val rExpr = vExpr?.toRExpr()
 
+        if (vExpr != null) {
+            C_Utils.warnUnreachableValue(ctx.msgCtx, vExpr.pos, vExpr.type)
+        }
+
         val declaratorRes = cDeclarator.compile(rExpr?.type)
         val rStmt = R_VarStatement(declaratorRes.rDeclarator, rExpr)
 
         val valueVarStates = vExpr?.varStatesDelta?.always ?: C_VarStatesDelta.EMPTY
         val resVarStates = valueVarStates.and(declaratorRes.varStatesDelta)
 
-        return C_Statement(rStmt, false, resVarStates)
+        val alwaysReturns = vExpr != null && vExpr.type == R_NothingType
+        return C_Statement(rStmt, alwaysReturns, resVarStates)
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
@@ -150,79 +156,8 @@ internal class S_ReturnStatement(
     private val expr: S_Expr?,
 ): S_Statement(startPos, endPos) {
     override fun compile(ctx: C_StmtContext, repl: Boolean): C_Statement {
-        val rStmt = compileInternal(ctx)
+        val rStmt = compileReturn(ctx, startPos, expr)
         return C_Statement(rStmt, true)
-    }
-
-    private fun compileInternal(ctx: C_StmtContext): R_Statement {
-        // A lambda's result is its final expression; `return` there is a non-local control flow with
-        // no meaning in an expression and is prohibited (mirrors break/continue, which have no loop
-        // to target inside the lifted function).
-        if (ctx.fnCtx.insideLambda) {
-            ctx.msgCtx.error(
-                startPos, "lambda:return",
-                "Return is not allowed inside a lambda; the lambda's result is its final expression",
-            )
-            return C_ExprUtils.ERROR_STATEMENT
-        }
-
-        // A value block is legal in any expression position, but `return` inside one is only
-        // meaningful where the expression is (transitively) part of a body statement - not in a
-        // global constant, a parameter/attribute default value or an at-expression body, where
-        // there is no enclosing statement to return from (and no runtime path to unwind).
-        if (!ctx.exprCtx.insideStmt) {
-            ctx.msgCtx.error(
-                startPos, "stmt_return_disallowed",
-                "Return is not allowed here",
-            )
-            return C_ExprUtils.ERROR_STATEMENT
-        }
-
-        var vExpr: V_Expr? = null
-
-        if (expr != null) {
-            val cExpr = expr.compileOpt(ctx, C_ExprHint.ofType(ctx.fnCtx.explicitReturnType))
-            vExpr = cExpr?.vExprOrNull(ctx.msgCtx)
-            vExpr ?: return C_ExprUtils.ERROR_STATEMENT
-
-            if (!C_Utils.checkUnitType(ctx.msgCtx, startPos, vExpr.type, "stmt_return_unit", "Expression returns nothing")) {
-                return C_ExprUtils.ERROR_STATEMENT
-            }
-        }
-
-        vExpr = processExpr(ctx, vExpr)
-        val rExpr = vExpr?.toRExpr()
-        return R_ReturnStatement(rExpr)
-    }
-
-    private fun processExpr(ctx: C_StmtContext, vExpr: V_Expr?): V_Expr? {
-        var vResExpr = vExpr
-
-
-        when (val defType = ctx.defCtx.definitionType) {
-            C_DefinitionType.OPERATION -> {
-                if (vExpr != null) {
-                    ctx.msgCtx.error(startPos, "stmt_return_op_value", "Operation must return nothing")
-                }
-            }
-            C_DefinitionType.FUNCTION, C_DefinitionType.QUERY -> {
-                if (defType == C_DefinitionType.QUERY && vExpr == null) {
-                    ctx.msgCtx.error(startPos, "stmt_return_query_novalue", "Query must return a value")
-                }
-
-                val rRetType = vExpr?.type ?: R_UnitType
-                val adapter = ctx.fnCtx.matchReturnType(startPos, rRetType)
-
-                if (vExpr != null) {
-                    vResExpr = adapter.adaptExpr(ctx.exprCtx, vExpr)
-                }
-            }
-            else -> {
-                ctx.msgCtx.error(startPos, "stmt_return_disallowed:$defType", "Return is not allowed here")
-            }
-        }
-
-        return vResExpr
     }
 
     override fun returnsValue() = expr != null
@@ -230,6 +165,77 @@ internal class S_ReturnStatement(
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {
         val modified = expr?.discoverVars(map) ?: immSetOf()
         return C_StatementVars(immSetOf(), modified.toImmSet())
+    }
+
+    companion object {
+        /** Shared by the statement form (`return x;`) and the jump-expression form (`return x`). */
+        internal fun compileReturn(ctx: C_StmtContext, startPos: S_Pos, expr: S_Expr?): R_Statement {
+            // A lambda's result is its final expression; `return` there is a non-local control flow with
+            // no meaning in an expression and is prohibited (mirrors break/continue, which have no loop
+            // to target inside the lifted function).
+            if (ctx.fnCtx.insideLambda) {
+                ctx.msgCtx.error(
+                    startPos, "lambda:return",
+                    "Return is not allowed inside a lambda; the lambda's result is its final expression",
+                )
+                return C_ExprUtils.ERROR_STATEMENT
+            }
+
+            // A value block is legal in any expression position, but `return` inside one is only
+            // meaningful where the expression is (transitively) part of a body statement - not in a
+            // global constant, a parameter/attribute default value or an at-expression body, where
+            // there is no enclosing statement to return from (and no runtime path to unwind).
+            if (!ctx.exprCtx.insideStmt) {
+                ctx.msgCtx.error(
+                    startPos, "stmt_return_disallowed",
+                    "Return is not allowed here",
+                )
+                return C_ExprUtils.ERROR_STATEMENT
+            }
+
+            var vExpr: V_Expr? = null
+
+            if (expr != null) {
+                val cExpr = expr.compileOpt(ctx, C_ExprHint.ofType(ctx.fnCtx.explicitReturnType))
+                vExpr = cExpr?.vExprOrNull(ctx.msgCtx)
+                vExpr ?: return C_ExprUtils.ERROR_STATEMENT
+
+                if (!C_Utils.checkUnitType(ctx.msgCtx, startPos, vExpr.type, "stmt_return_unit", "Expression returns nothing")) {
+                    return C_ExprUtils.ERROR_STATEMENT
+                }
+            }
+
+            vExpr = processExpr(ctx, startPos, vExpr)
+            val rExpr = vExpr?.toRExpr()
+            return R_ReturnStatement(rExpr)
+        }
+
+        private fun processExpr(ctx: C_StmtContext, startPos: S_Pos, vExpr: V_Expr?): V_Expr? {
+            var vResExpr = vExpr
+
+            when (val defType = ctx.defCtx.definitionType) {
+                C_DefinitionType.OPERATION -> {
+                    if (vExpr != null) {
+                        ctx.msgCtx.error(startPos, "stmt_return_op_value", "Operation must return nothing")
+                    }
+                }
+                C_DefinitionType.FUNCTION, C_DefinitionType.QUERY -> {
+                    if (defType == C_DefinitionType.QUERY && vExpr == null) {
+                        ctx.msgCtx.error(startPos, "stmt_return_query_novalue", "Query must return a value")
+                    }
+
+                    val rRetType = vExpr?.type ?: R_UnitType
+                    val adapter = ctx.fnCtx.matchReturnType(startPos, rRetType)
+
+                    if (vExpr != null) {
+                        vResExpr = adapter.adaptExpr(ctx.exprCtx, vExpr)
+                    }
+                }
+                else -> ctx.msgCtx.error(startPos, "stmt_return_disallowed:$defType", "Return is not allowed here")
+            }
+
+            return vResExpr
+        }
     }
 }
 
@@ -291,7 +297,7 @@ internal class S_ExprStatement(
         val vExpr = expr.compile(ctx).vExpr()
         val rExpr = vExpr.toRExpr()
         val rStmt = if (repl) R_ReplExprStatement(rExpr) else R_ExprStatement(rExpr)
-        return C_Statement(rStmt, rExpr.type == R_RellErrorType, vExpr.varStatesDelta.always)
+        return C_Statement(rStmt, rExpr.type == R_RellErrorType || rExpr.type == R_NothingType, vExpr.varStatesDelta.always)
     }
 
     override fun discoverVars0(map: MutableTypedKeyMap): C_StatementVars {

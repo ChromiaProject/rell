@@ -5,6 +5,7 @@
 package net.postchain.rell.base.runtime
 
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
+import net.postchain.rell.base.model.rr.RR_Type
 
 object Rt_PrimitiveTypes {
     init {
@@ -45,6 +46,17 @@ fun primitiveValueClass(kind: RR_PrimitiveKind): Rt_ValueClass<*>? = when (kind)
     RR_PrimitiveKind.RANGE -> Rt_RangeValue
     RR_PrimitiveKind.UNIT -> Rt_UnitValue
     RR_PrimitiveKind.GUID, RR_PrimitiveKind.SIGNER -> null
+    RR_PrimitiveKind.NOTHING -> Rt_NothingType
+}
+
+/**
+ * Runtime stand-in for the bottom type of an always-exiting expression. No value of this type
+ * ever exists at runtime - evaluating such an expression escapes the enclosing statement - so
+ * the class carries no capabilities; it only lets nothing-typed slots resolve.
+ */
+object Rt_NothingType: Rt_ValueClass<Rt_Value> {
+    override val name get() = "nothing"
+    override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.NOTHING)
 }
 
 

@@ -17,6 +17,8 @@ enum PrimitiveTypeKind : ubyte {
     GTV,
     RANGE,
     UNIT,
+    /// Bottom type of an expression that exits on all paths; no runtime value.
+    NOTHING,
 }
 
 /// Tuple field: optional name + type.

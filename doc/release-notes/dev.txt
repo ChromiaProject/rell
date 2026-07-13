@@ -138,7 +138,7 @@ function's frame:
   collection-at projection.
 
 The trailing expression (no ;) is the block's value; a block with statements only is unit-typed, which a
-conditional arm cannot be (unless it always returns).
+conditional arm cannot be (unless it always returns - such a block is bottom-typed, see section 7).
 
 Semicolons in a when expression are unchanged for expression arms: an expression arm is terminated by ; (the last
 case may omit it, as before). A block arm ends at its closing } and takes no ; - like a block in a when statement.
@@ -151,3 +151,56 @@ Restrictions:
   itself is fine.
 - A value block cannot be used in a global constant's expression: its statements cannot be validated as
   constant, so blocks are rejected there.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+7. Language: Jump expressions - return, break and continue as expressions
+
+return, break and continue can now be used as expressions, in addition to their statement forms. A jump
+expression never produces a value - evaluating it escapes the enclosing statement - so its type is an internal
+bottom type that is assignable to every type and absorbed when computing a conditional's result type. The bottom
+type cannot be written in Rell code; it only appears through inference.
+
+This makes a bare jump legal exactly where an expression is expected, most usefully:
+
+- As an if/when arm - including the trailing expression of a value block arm, which now needs no ;
+  (consistent with the trailing-expression form of section 6):
+
+      val a = if (b) { return 'early' } else null;
+      val v = if (n < 0) return -n else n * 2;
+
+- As the right operand of ?:, giving guard clauses; the elvis result type is the left operand's value type,
+  and afterwards the left operand is smart-cast to non-null:
+
+      function f(x: integer?): integer {
+          val y = x ?: return -1;    // y: integer
+          return x + y;              // x is known non-null here
+      }
+
+  This includes the fetch-or-return guard over an at-expression with @? cardinality - the jump
+  evaluates after the query produced null, outside the at-expression body, so the result is the
+  non-nullable row type:
+
+      val u = user @? { .name == n } ?: return 'no such user';
+      // u: user
+
+- break and continue in loop bodies, binding to the enclosing loop:
+
+      s += if (x < 0) break else if (x == 0) continue else x;
+
+The return operand is greedy: everything to the right of return binds to it (x ?: return 1 + 2 returns 3).
+In a when expression, a jump arm is an ordinary expression arm and is ;-terminated as before (section 6).
+
+A jump expression follows the same placement rules as the corresponding statement: return stays prohibited
+inside lambda bodies (its result is the final expression), jumps cannot appear where no enclosing body statement
+or loop exists (at-expression bodies, parameter/attribute default values, global constants), and a bottom-typed
+expression can never be part of a database at-expression's SQL.
+
+A conditional whose arms all jump is itself bottom-typed, and the statements after it are dead code. Consuming a
+jump expression's value where a value is actually needed - a call argument, a val/var initializer, a collection
+literal element - compiles with a warning (expr:unreachable), since the value never materializes. Operands of
+binary operators are not absorbed: 1 + (return 2) is still a type error.
+
+Errors and warnings changed as a result. Code where every arm of an if/when expression returns, previously rejected
+with expr_if_unit or when_exprtype_unit, now compiles (the conditional is bottom-typed); any statements following it
+are reported as dead code (stmt_deadcode). Compile-error tests matching those codes may need updating. No previously
+valid code changes its meaning.

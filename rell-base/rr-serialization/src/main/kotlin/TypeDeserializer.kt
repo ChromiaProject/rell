@@ -25,6 +25,7 @@ private val FB_TO_PRIMITIVE_KIND = mapOf(
     PrimitiveTypeKind.GTV to RR_PrimitiveKind.GTV,
     PrimitiveTypeKind.RANGE to RR_PrimitiveKind.RANGE,
     PrimitiveTypeKind.UNIT to RR_PrimitiveKind.UNIT,
+    PrimitiveTypeKind.NOTHING to RR_PrimitiveKind.NOTHING,
 )
 
 fun deserializeType(fb: FbType?): RR_Type = withDeserializerDepth { deserializeTypeInner(fb) }

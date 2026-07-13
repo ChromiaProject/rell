@@ -1,0 +1,158 @@
+// Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
+//
+// Positive (compiles-and-runs) tests for jump expressions: `return`/`break`/`continue` used as
+// an expression. A jump expression's type is the non-denotable bottom type: evaluating it never
+// produces a value - it escapes the enclosing statement exactly like the corresponding statement
+// form. The surrounding expression's type comes from the arms that can produce a value.
+// The negative "should not compile" cases live in `JumpExprTest.kt`.
+
+// The original motivating form: a bare jump as an if-arm value block's trailing expression.
+function motivating(b: boolean): text {
+    val a = if (b) { return 'early' } else null;
+    return 'late:' + (a ?: 'null');
+}
+
+query jump_in_block_arm() {
+    assert_equals(motivating(true), 'early');
+    assert_equals(motivating(false), 'late:null');
+    return 0;
+}
+
+// `x ?: return ...` guard clause; the elvis result type is the left operand's value type.
+function guard_clause(x: integer?): integer {
+    val y = x ?: return -1;
+    return y * 10;
+}
+
+query elvis_return_guard() {
+    assert_equals(guard_clause(7), 70);
+    assert_equals(guard_clause(null), -1);
+    return 0;
+}
+
+// After `x ?: return`, the left operand is smart-cast to non-null.
+function guard_smart_cast(x: integer?): integer {
+    val ignored = x ?: return 0;
+    return x + 1;
+}
+
+query elvis_return_smart_cast() {
+    assert_equals(guard_smart_cast(41), 42);
+    assert_equals(guard_smart_cast(null), 0);
+    return 0;
+}
+
+// A bare `return` (no operand) as a jump expression in a unit function.
+function bare_return(log: list<text>, b: boolean) {
+    val x = if (b) { return } else 1;
+    log.add('reached:' + x);
+}
+
+query bare_return_expr() {
+    val log = list<text>();
+    bare_return(log, true);
+    assert_equals(log.size(), 0);
+    bare_return(log, false);
+    assert_equals(log, ['reached:1']);
+    return 0;
+}
+
+// `break` and `continue` as if-arm expressions bind to the enclosing loop.
+function sum_until_negative(xs: list<integer>): integer {
+    var s = 0;
+    for (x in xs) {
+        s += if (x < 0) break else if (x == 0) continue else x;
+    }
+    return s;
+}
+
+query break_continue_exprs_in_loop() {
+    assert_equals(sum_until_negative([1, 2, 0, 3, -1, 100]), 6);
+    assert_equals(sum_until_negative([5, 5]), 10);
+    assert_equals(sum_until_negative([-1]), 0);
+    return 0;
+}
+
+// The fetch-or-return guard: an at-expression with `@?` cardinality as the elvis left operand.
+// The jump is the elvis right operand - it evaluates after the query produced null, outside the
+// at-expression body, so the no-jumps-inside-at-bodies restriction does not apply. The result is
+// typed as the non-nullable row type.
+function find_exact(xs: list<integer>, v: integer): integer {
+    val f = xs @? { $ == v } ?: return -1;
+    return f * 100;
+}
+
+query at_elvis_return_guard() {
+    assert_equals(find_exact([1, 5, 9], 5), 500);
+    assert_equals(find_exact([1, 2], 10), -1);
+    return 0;
+}
+
+// A jump expression as a when-expression arm (';'-terminated, like any expression arm).
+function classify(n: integer): text {
+    val r = when (n) {
+        0 -> return 'zero';
+        1 -> 'one';
+        else -> 'many'
+    };
+    return 'r=' + r;
+}
+
+query jump_in_when_arm() {
+    assert_equals(classify(0), 'zero');
+    assert_equals(classify(1), 'r=one');
+    assert_equals(classify(5), 'r=many');
+    return 0;
+}
+
+// `if (c) return a else b` as a full expression - the jump arm is absorbed, the type comes from
+// the other arm.
+function full_if(n: integer): integer {
+    val v = if (n < 0) return -n else n * 2;
+    return v + 1;
+}
+
+query jump_as_plain_if_arm() {
+    assert_equals(full_if(3), 7);
+    assert_equals(full_if(-3), 3);
+    return 0;
+}
+
+// The `return` operand is greedy: everything to its right binds to it.
+function greedy_operand(x: integer?): integer {
+    val v = x ?: return 1 + 2 * 3;
+    return v;
+}
+
+query return_operand_is_greedy() {
+    assert_equals(greedy_operand(null), 7);
+    assert_equals(greedy_operand(50), 50);
+    return 0;
+}
+
+// A jump expression nested inside a value block arm's trailing position.
+function nested(n: integer): text {
+    val r = if (n > 0) {
+        val half = n / 2;
+        if (half == 0) return 'tiny' else 'half:' + half
+    } else 'neg';
+    return r;
+}
+
+query jump_nested_in_block_arm() {
+    assert_equals(nested(1), 'tiny');
+    assert_equals(nested(8), 'half:4');
+    assert_equals(nested(-1), 'neg');
+    return 0;
+}
+
+// Only the taken path evaluates: a jump arm that is not chosen has no effect.
+query jump_arm_not_taken_has_no_effect() {
+    val log = list<text>();
+    for (i in [1, 2, 3]) {
+        val v = if (i == 99) break else i;
+        log.add('v:' + v);
+    }
+    assert_equals(log, ['v:1', 'v:2', 'v:3']);
+    return 0;
+}

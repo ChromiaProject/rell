@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_Errors
+import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallArgs
 import net.postchain.rell.base.compiler.vexpr.V_GlobalFunctionCall
@@ -282,6 +283,7 @@ private object C_InternalFnArgsUtils {
         arg: V_Expr,
     ): V_Expr {
         val argType = arg.type
+        C_Utils.warnUnreachableValue(ctx.msgCtx, arg.pos, argType)
         val m = matchArgType(ctx, callInfo, param, argType)
         return m?.adaptExpr(ctx, arg) ?: arg
     }

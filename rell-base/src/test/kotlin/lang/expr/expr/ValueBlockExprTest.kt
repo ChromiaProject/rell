@@ -41,10 +41,11 @@ class ValueBlockExprTest: BaseRellTest() {
         chkEx("{ return 1 + { 2 }; }", "ct_err:syntax")
     }
 
-    @Test fun testBothArmsAlwaysReturnIsError() {
-        // With every arm returning, the conditional yields no value.
+    @Test fun testBothArmsAlwaysReturnIsBottomTyped() {
+        // With every arm returning, the conditional never produces a value: it is bottom-typed
+        // (like a jump expression), so the statement always returns and the code after it is dead.
         chkEx("{ val q = if (true) { return 1; } else { return 2; }; return q; }",
-            "ct_err:expr_if_unit")
+            "ct_err:stmt_deadcode")
     }
 
     @Test fun testBreakOutsideLoopInBlockArmIsError() {

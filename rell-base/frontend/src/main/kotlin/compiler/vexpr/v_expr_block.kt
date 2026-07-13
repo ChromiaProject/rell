@@ -8,6 +8,7 @@ import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprVarStatesDelta
 import net.postchain.rell.base.model.R_FrameBlock
+import net.postchain.rell.base.model.R_NothingType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.expr.R_ValueBlockExpr
@@ -48,6 +49,12 @@ class V_ValueBlockExpr(
     override fun globalConstantRestriction() = V_GlobalConstantRestriction("value_block", "value block")
 
     companion object {
-        fun alwaysExits(vExpr: V_Expr): Boolean = vExpr is V_ValueBlockExpr && vExpr.alwaysExits
+        /**
+         * `true` for an expression that never produces a value: an always-exiting value block, a
+         * jump expression (which compiles to one), or any expression whose type is the bottom type
+         * (e.g. an `if` whose arms all jump).
+         */
+        fun alwaysExits(vExpr: V_Expr): Boolean =
+            (vExpr is V_ValueBlockExpr && vExpr.alwaysExits) || vExpr.type == R_NothingType
     }
 }

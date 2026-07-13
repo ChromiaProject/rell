@@ -2368,6 +2368,7 @@ public final class net/postchain/rell/base/model/rr/RR_PrimitiveKind : java/lang
 	public static final field GUID Lnet/postchain/rell/base/model/rr/RR_PrimitiveKind;
 	public static final field INTEGER Lnet/postchain/rell/base/model/rr/RR_PrimitiveKind;
 	public static final field JSON Lnet/postchain/rell/base/model/rr/RR_PrimitiveKind;
+	public static final field NOTHING Lnet/postchain/rell/base/model/rr/RR_PrimitiveKind;
 	public static final field RANGE Lnet/postchain/rell/base/model/rr/RR_PrimitiveKind;
 	public static final field ROWID Lnet/postchain/rell/base/model/rr/RR_PrimitiveKind;
 	public static final field SIGNER Lnet/postchain/rell/base/model/rr/RR_PrimitiveKind;

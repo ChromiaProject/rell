@@ -197,6 +197,11 @@ abstract class R_Type(
         mType.getParentType()?.let { L_TypeUtils.getRTypeOrNull(it) } ?: R_GenericType("any")
 
     open fun getTypeAdapter(sourceType: R_Type): C_TypeAdapter? {
+        // The bottom type of a jump expression is assignable to every type: the assignment
+        // never actually happens - evaluating the source escapes the enclosing statement.
+        if (sourceType == R_NothingType) {
+            return C_TypeAdapter_Direct
+        }
         val assignable = isAssignableFrom(sourceType)
         return if (assignable) C_TypeAdapter_Direct else null
     }
@@ -246,9 +251,9 @@ abstract class R_Type(
         private val NULLABLE_SQL_SWITCH = C_FeatureSwitch("0.13.10")
 
         fun commonTypeOpt(a: R_Type, b: R_Type): R_Type? {
-            if (a == R_CtErrorType || a == R_RellErrorType) {
+            if (a == R_CtErrorType || a == R_RellErrorType || a == R_NothingType) {
                 return b
-            } else if (b == R_CtErrorType || b == R_RellErrorType) {
+            } else if (b == R_CtErrorType || b == R_RellErrorType || b == R_NothingType) {
                 return a
             } else if (a.isError()) {
                 return b
@@ -266,6 +271,17 @@ abstract class R_Type(
             return res
         }
     }
+}
+
+/**
+ * Bottom type of a jump expression (`return`/`break`/`continue` used as an expression) or of a
+ * value block that exits on all paths. Inference-only: it has no denotable name in Rell and is
+ * never registered in a namespace; no value of this type ever exists at runtime. Like
+ * [R_RellErrorType] (the `error()` result type), it is absorbed by [R_Type.commonTypeOpt] and
+ * assignable to every type.
+ */
+object R_NothingType: R_UniqueType("nothing", C_LibUtils.defName("nothing")) {
+    override fun getLibType0() = C_LibType.make(this, DocCode.raw("nothing"))
 }
 
 object R_CtErrorType: R_UniqueType("<error>", C_LibUtils.defName("<error>")) {

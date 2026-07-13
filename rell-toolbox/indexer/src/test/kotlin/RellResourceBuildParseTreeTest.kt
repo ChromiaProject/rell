@@ -47,7 +47,7 @@ class RellResourceBuildParseTreeTest {
             // not by the rule's literal source order. Updated to match Rell.g4's emitted order
             // (the previous strings were captured from the legacy better-parse output).
             "extraneous input 'va' expecting {<EOF>, 'abstract', 'mutable', 'override', '@', 'entity', 'class', 'object', 'struct', 'record', 'enum', 'function', 'namespace', 'import', 'operation', 'query', 'include', 'val'}",
-            "extraneous input ';' expecting {'.', '(', 'false', 'true', 'null', 'struct', 'virtual', 'if', 'when', '++', '--', '+', '-', 'not', 'create', '\$', '[', RULE_ID, RULE_DECIMAL, RULE_BIG_INTEGER, RULE_NUMBER, RULE_BYTES, RULE_STRING}"
+            "extraneous input ';' expecting {'.', '(', 'false', 'true', 'null', 'struct', 'virtual', 'return', 'if', 'when', 'break', 'continue', '++', '--', '+', '-', 'not', 'create', '\$', '[', RULE_ID, RULE_DECIMAL, RULE_BIG_INTEGER, RULE_NUMBER, RULE_BYTES, RULE_STRING}"
         )
     }
 
