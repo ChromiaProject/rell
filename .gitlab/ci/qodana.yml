@@ -1,10 +1,32 @@
 # Qodana static analysis. The qodana-gitlab-ci component is included from the root
 # `.gitlab-ci.yml` (it injects the actual scan steps); this file only customises the job:
-# runner tag, cache, MR-vs-dev mode toggle, and SARIF artifact retention.
+# runner tag, cache, JDK seeding, MR-vs-dev mode toggle, and SARIF artifact retention.
 
 qodana:
   tags: [ saas-linux-large-amd64 ]
   variables: { QODANA_MR_MODE: "true" }
+  # The qodana-jvm-community image ships only the IDE's own JBR (25 as of 2026.1), so the
+  # Java 21 toolchain required by build.gradle.kts resolves only if a JDK 21 is already
+  # present — with no toolchain download repositories configured, Gradle can't fetch one.
+  # Seed a pinned Temurin 21 into the Qodana cache dir (mounted at /data/cache inside the
+  # linter container, where qodana sets GRADLE_USER_HOME=/data/cache/gradle) and point
+  # Gradle's toolchain detection at it explicitly. The JDK persists via the job cache, so
+  # the download only happens on a cold cache.
+  before_script:
+    - |
+      set -euo pipefail
+      JDK_NAME="jdk-21.0.11+10"
+      JDK_SHA256="4b2220e232a97997b436ca6ab15cbf70171ecff52958a46159dfa5a8c44ca4de"
+      JDK_URL="https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.11%2B10/OpenJDK21U-jdk_x64_linux_hotspot_21.0.11_10.tar.gz"
+      if [ ! -x ".qodana/cache/jdks/$JDK_NAME/bin/java" ]; then
+        mkdir -p .qodana/cache/jdks
+        wget -qO /tmp/temurin21.tar.gz "$JDK_URL"
+        echo "$JDK_SHA256  /tmp/temurin21.tar.gz" | sha256sum -c -
+        tar -xzf /tmp/temurin21.tar.gz -C .qodana/cache/jdks
+        rm /tmp/temurin21.tar.gz
+      fi
+      mkdir -p .qodana/cache/gradle
+      printf 'org.gradle.java.installations.paths=/data/cache/jdks/%s\n' "$JDK_NAME" > .qodana/cache/gradle/gradle.properties
   cache:
     key: "qodana-$CI_COMMIT_REF_SLUG"
     fallback_keys: [ qodana-dev ]
