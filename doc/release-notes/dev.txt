@@ -19,12 +19,19 @@ Two rendering fixes in the generated documentation site:
   so undocumented fields read as consecutive source lines.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-3. Tools: Dependency updates
+3. Docs: Misc documentation-generator improvements
+
+A few small fixes to the generated documentation site: syntax highlighting now covers JavaScript code blocks and
+the -> operator (previously unstyled in Rell code blocks), and several stdlib doc comments were switched to the
+```rell code-fence form so their examples get proper highlighting.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Tools: Dependency updates
 
 Several dependencies has been upgraded. Notably, Postchain has been upgraded to 3.49.17. No behavior changes are expected.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-4. Library: Named arguments fixed for functions with multiple optional parameters
+5. Library: Named arguments fixed for functions with multiple optional parameters
 
 Named arguments to standard-library functions with several optional parameters - such as join_to_text - now bind
 correctly in two cases that were broken:
@@ -35,7 +42,7 @@ correctly in two cases that were broken:
   (1<2<3 instead of <1, 2, 3), or a ClassCastException for join_to_text(transform = f).
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-5. Language: Lambda expressions
+6. Language: Lambda expressions
 
 Rell now has lambda expressions: anonymous functions written with arrow syntax (->) that evaluate to first-class
 function values. They can be stored in variables, passed to and returned from functions, and called like any other
@@ -104,8 +111,10 @@ lambda - only reassigning the variable is not. A captured variable is read-only 
     xs.add(4);
     h();   // 4 - xs is captured by reference, so the in-place add IS seen
 
+The code formatter supports lambda expressions, including value-block bodies.
+
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-6. Language: Value blocks as if/when expression arms
+7. Language: Value blocks as if/when expression arms
 
 An arm of an if or when expression can now be a value block - the same block form as a value-block lambda body:
 zero or more statements followed by a trailing expression (no ;) that is the block's result.
@@ -153,7 +162,7 @@ Restrictions:
   constant, so blocks are rejected there.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-7. Language: Jump expressions - return, break and continue as expressions
+8. Language: Jump expressions - return, break and continue as expressions
 
 return, break and continue can now be used as expressions, in addition to their statement forms. A jump
 expression never produces a value - evaluating it escapes the enclosing statement - so its type is an internal
