@@ -227,4 +227,33 @@ class LibTryCallTest: BaseRellTest() {
         // try_call_catch should not catch other errors than from `require`
         chk("try_call_catch(fails_not_require(*))", "rt_err:list:index:0:1")
     }
+
+    // Regression test: `default` is a lazy-typed argument, forced from inside try_call's own body.
+    // A jump expression escaping while forcing it used to be caught by handler of try_call and
+    // reported as a runtime error instead of performing the return/break.
+    @Test fun testJumpExpressionInLazyDefault() {
+        def("function fails(): integer = list<integer>()[1];")
+        def("""
+            function f(n: integer): integer {
+                val r = try_call(fails(*), if (n < 0) return -999 else 42);
+                return r;
+            }
+        """.trimIndent())
+        chk("f(5)", "int[42]")
+        chk("f(-5)", "int[-999]")
+    }
+
+    @Test fun testBreakExpressionInLazyDefault() {
+        def("function fails(): integer = list<integer>()[1];")
+        def("""
+            function f(): integer {
+                var last = -1;
+                for (i in range(5)) {
+                    last = try_call(fails(*), if (i == 3) break else i);
+                }
+                return last;
+            }
+        """.trimIndent())
+        chk("f()", "int[2]")
+    }
 }

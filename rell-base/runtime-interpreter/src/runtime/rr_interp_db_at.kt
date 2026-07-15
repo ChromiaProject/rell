@@ -366,13 +366,12 @@ private fun Rt_InterpreterImpl.applyCombiner(
             if (needsBase && base == Rt_NullValue) {
                 Rt_NullValue
             } else {
-                // Apply parameter mapping (paramsToExprs) if present — reorders call-site args to param order.
-                val args = if (call.mapping.isNotEmpty() && call.mapping != rawArgs.indices.toList()) {
-                    call.mapping.map { rawArgs[it] }
-                } else {
-                    rawArgs
+                // Apply parameter mapping (paramsToExprs) if present — reorders call-site args to param
+                // order, dropping entries for optional parameters skipped by a named argument (-1).
+                val args = applyCallMapping(call.mapping, rawArgs)
+                withCallArgAlign(call.mapping) {
+                    callTarget(call.target, base, args, frame, call.callPos)
                 }
-                callTarget(call.target, base, args, frame, call.callPos)
             }
         } else if (call is RR_FunctionCall.Partial) {
             // Partial application in what-clause: build a partial function value.

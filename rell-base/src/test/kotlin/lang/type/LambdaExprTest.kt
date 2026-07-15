@@ -81,4 +81,33 @@ class LambdaExprTest: BaseRellTest() {
         chkEx("{ val f: (integer) -> integer = when (1) { 1 -> x -> x + 1; else -> x -> x }; return 0; }",
             "ct_err:[lambda:no_type][lambda:no_type]")
     }
+
+    // Regression test: a when-condition that is a bare identifier immediately followed by a
+    // lambda arm used to be misparsed - the grammar's `whenCondition` accepted `lambdaExpr` as a
+    // condition value, so `NAME -> param -> body` was ambiguous between "condition NAME, arm is
+    // the lambda `param -> body`" and "condition is the lambda `NAME -> param`, arm is `body`",
+    // and ANTLR silently committed to the latter for any bare-identifier condition.
+    @Test fun testBareIdentifierConditionWithLambdaArm() {
+        chkEx("""
+            {
+                val threshold = 5;
+                val f: (integer) -> integer = when (5) {
+                    threshold -> (item: integer) -> item + 1;
+                    else -> (item: integer) -> item * 2;
+                };
+                return f(3);
+            }
+        """.trimIndent(), "int[4]")
+
+        chkEx("""
+            {
+                val threshold = 5;
+                val f: (integer) -> integer = when (99) {
+                    threshold -> (item: integer) -> item + 1;
+                    else -> (item: integer) -> item * 2;
+                };
+                return f(3);
+            }
+        """.trimIndent(), "int[6]")
+    }
 }

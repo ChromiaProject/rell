@@ -342,9 +342,15 @@ varDeclarator
     | '(' varDeclarator (',' varDeclarator)* ','? ')'              # tupleVarDeclarator
     ;
 
+// Each condition value is `binaryExpr`, not `expression`: `expression`'s `lambdaExpr` alternative
+// (`lambdaParams '->' lambdaBody`) is ambiguous with the mandatory `whenCondition '->' arm`
+// separator whenever a condition is a bare identifier — `NAME -> NAME2 -> body` parses equally
+// well as "condition NAME, arm is the lambda `NAME2 -> body`" or as "condition is the lambda
+// `NAME -> NAME2`, arm is `body`", and ANTLR silently commits to the latter. A parenthesized
+// lambda (`(x -> x + 1)`) still parses fine as a condition via `binaryExpr`'s tuple/paren atom.
 whenCondition
     : 'else'                                       # whenConditionElse
-    | expression (',' expression)* ','?            # whenConditionExpr
+    | binaryExpr (',' binaryExpr)* ','?            # whenConditionExpr
     ;
 
 // `updateTarget` is the only spot in the grammar where the choice between

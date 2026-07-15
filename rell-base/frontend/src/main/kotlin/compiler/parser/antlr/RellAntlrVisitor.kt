@@ -729,7 +729,7 @@ class RellAntlrVisitor(
         return when (ctx) {
             is RellParser.WhenConditionElseContext -> S_WhenConditionElse(ctx.start.toPos())
             is RellParser.WhenConditionExprContext -> {
-                val exprs = ctx.expression().map { toExpression(it) }.toImmList()
+                val exprs = ctx.binaryExpr().map { toBinaryExpr(it) }.toImmList()
                 S_WhenConditionExpr(exprs)
             }
             else -> error("unknown whenCondition: ${ctx.javaClass.simpleName}")

@@ -194,4 +194,20 @@ class LibRequireTest: BaseRellTest() {
         chkEx("{ rell.error(true); return 0; }", "ct_err:expr_call_badargs:[rell.error]:[boolean]")
         chkEx("{ rell.error(123); return 0; }", "ct_err:expr_call_badargs:[rell.error]:[integer]")
     }
+
+    // Regression test: `message` is a lazy-typed argument. A jump expression escaping while
+    // forcing it (from inside require()'s own body) used to be caught by the generic
+    // sys-function error handler and reported as a spurious runtime error instead of performing
+    // the return.
+    @Test fun testJumpExpressionInLazyMessage() {
+        def("""
+            function f(n: integer): integer {
+                require(n > 0, if (n < -100) return -1 else "n must be positive");
+                return n * 2;
+            }
+        """.trimIndent())
+        chk("f(5)", "int[10]")
+        chk("f(-5)", "req_err:[n must be positive]")
+        chk("f(-500)", "int[-1]")
+    }
 }

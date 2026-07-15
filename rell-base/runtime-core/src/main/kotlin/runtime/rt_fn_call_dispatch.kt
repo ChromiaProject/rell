@@ -60,6 +60,21 @@ private fun Rt_FunctionCallTarget.rrTargetName(): String = when (val rr = rrTarg
     is RR_FunctionCallTarget.FunctionValue -> "function_value"
 }
 
+/**
+ * Marker for a [Throwable] that represents interpreter-internal control flow, not a Rell-level
+ * error, and so must propagate through [R_SysFunctionUtils.decorateSysFnException] unchanged, the
+ * same way [RellInterpreterCrashException] does. Needed because forcing a `lazy`-typed stdlib
+ * argument (e.g. `try_call`'s `default`, `require()`'s `message`) can happen from inside a
+ * sys-function body and evaluate a jump expression (`return`/`break`/`continue`); the resulting
+ * escape must reach its designated unwind point rather than being caught here and reported as a
+ * spurious function-call error.
+ *
+ * Implemented by the tree-walking interpreter's `Rt_ValueBlockEscapeException` (in
+ * `runtime-interpreter`) — this seam lets `runtime-core` recognise it without depending on the
+ * interpreter back-end.
+ */
+interface Rt_ControlFlowSignal
+
 // =============================================================================
 // R_SysFunctionUtils — moved from model/expr/r_expr_fn.kt
 // =============================================================================
@@ -97,6 +112,8 @@ object R_SysFunctionUtils {
      *   [Rt_RequireError]; otherwise re-decorate with `"System function '<name>'"` extra and
      *   chain the cause.
      * - [RellInterpreterCrashException]: rethrown unchanged (interpreter crash signal).
+     * - [Rt_ControlFlowSignal]: rethrown unchanged (interpreter-internal control flow, e.g. a
+     *   jump expression escaping while forcing a `lazy` argument).
      * - [InterruptedException]: re-flag the thread's interrupt status before rethrowing.
      * - [java.sql.SQLException] with `isPostgresQueryCanceled`: rethrown unchanged so the
      *   query-cancel handler upstack can recognise it.
@@ -116,6 +133,7 @@ object R_SysFunctionUtils {
         }
 
         is RellInterpreterCrashException -> e
+        is Rt_ControlFlowSignal -> e
         is InterruptedException -> {
             Thread.currentThread().interrupt()
             e

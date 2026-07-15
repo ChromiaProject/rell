@@ -149,14 +149,19 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
      * that should leave the call boundary, plus the nested-frame stack decoration that the
      * tree-walker's [net.postchain.rell.base.runtime.Rt_InterpreterImpl.callTarget] applies.
      *
-     * Two-step decoration:
+     * Three-step decoration:
      *
      * 1. [R_SysFunctionUtils.decorateSysFnException] — the same catch-arm logic as the
      *    interpreter's `callAndCatch` (Rell-exception extra-message remap, JDK-exception wrap
      *    when `wrapFunctionCallErrors`, [net.postchain.rell.base.runtime.utils.RellInterpreterCrashException] /
      *    SQL-cancel /
-     *    `InterruptedException` passthroughs).
-     * 2. If the result is an [Rt_Exception], append the call site's stack frame via
+     *    `InterruptedException` passthroughs, [Rt_ControlFlowSignal] passthrough).
+     * 2. If the decorated throwable is an [Rt_ValueBlockEscapeException] — a jump expression
+     *    escaping while forcing a `lazy` argument from inside this sys-fn's body (e.g. `try_call`'s
+     *    `default`, `require()`'s `message`) — convert it to the matching Truffle control-flow
+     *    exception via [tfConvertValueBlockEscape], since nothing on the Truffle call stack above
+     *    this boundary catches the tree-walker's own escape type.
+     * 3. If the result is an [Rt_Exception], append the call site's stack frame via
      *    [tfRethrowNested]; otherwise rethrow as-is.
      *
      * `@TruffleBoundary`: the entire path involves Kotlin/JDK libraries and exception
@@ -172,6 +177,9 @@ internal sealed class Tf_SysCallNode : Tf_ExprNode() {
         e: Throwable,
     ): Nothing {
         val decorated = R_SysFunctionUtils.decorateSysFnException(callCtx, lazyOf(displayName), e)
+        if (decorated is Rt_ValueBlockEscapeException) {
+            tfConvertValueBlockEscape(decorated)
+        }
         if (decorated is Rt_Exception) {
             tfRethrowNested(rt, ErrorPos(callPos), decorated)
         }

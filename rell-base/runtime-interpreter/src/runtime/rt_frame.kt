@@ -33,7 +33,9 @@ sealed interface Rt_StatementResult {
  * boundary: a value block always sits inside some statement of the same function body, and the
  * conversion happens at the innermost such statement. Stackless - it is pure control flow.
  */
-class Rt_ValueBlockEscapeException(val result: Rt_StatementResult): RuntimeException(null, null, false, false)
+class Rt_ValueBlockEscapeException(
+    val result: Rt_StatementResult,
+): RuntimeException(null, null, false, false), Rt_ControlFlowSignal
 
 
 /**

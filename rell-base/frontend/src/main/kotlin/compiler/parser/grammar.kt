@@ -143,6 +143,7 @@ internal object S_Grammar {
 
     private val typeRef by parser(this::type)
     private val expressionRef by parser(this::expression)
+    private val binaryExprRef by parser(this::binaryExpr)
     private val statementRef by parser(this::statement)
 
     private val nameType by qualifiedName map { S_NameType(it) }
@@ -574,7 +575,10 @@ internal object S_Grammar {
         S_IfExpr(pos.pos, cond, trueExpr, falseExpr)
     }
 
-    private val whenConditionExpr by separatedTerms(expressionRef, COMMA, false) * -optional(COMMA) map {
+    // Each condition value is binaryExpr, not the full expression: expression's lambdaExpr
+    // alternative is ambiguous with the mandatory `whenCondition ARROW arm` separator whenever a
+    // condition is a bare identifier (see the matching comment on ANTLR's `whenCondition` rule).
+    private val whenConditionExpr by separatedTerms(binaryExprRef, COMMA, false) * -optional(COMMA) map {
         S_WhenConditionExpr(it.toImmList())
     }
     private val whenConditionElse by ELSE map { S_WhenConditionElse(it.pos) }

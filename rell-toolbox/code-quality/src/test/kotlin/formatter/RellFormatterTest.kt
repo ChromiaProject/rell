@@ -81,4 +81,30 @@ class RellFormatterTest {
         val formattedText = RellFormatter.formatString(originalFile.readText(), formatterOptions)
         assertThat(formattedText).isEqualTo(File(URI("$testFolder/with_spaces_2_tab_size.rell")).readText())
     }
+
+    // Regression test: under ANTLR error recovery, WhenExprContext.whenExprLastCase() (and the
+    // whenCondition()/valueBlock()/expression() of any case) can come back null for an incomplete
+    // when-expr. WhenExprFormatter used to dereference these unguarded and throw a
+    // NullPointerException, crashing format-on-save on a file being actively edited.
+    @Test
+    fun `Format incomplete when-expr does not throw`() {
+        val formatterOptions = FormatterOptions()
+        RellFormatter.formatString("function f() { val x = when {} }", formatterOptions)
+    }
+
+    @Test
+    fun `Format when-expr with stray semicolon after value-block arm does not throw`() {
+        val formatterOptions = FormatterOptions()
+        RellFormatter.formatString(
+            """
+                function f(): integer {
+                    return when {
+                        2 -> { val y = 5; y };
+                        else -> 0;
+                    };
+                }
+            """.trimIndent(),
+            formatterOptions,
+        )
+    }
 }

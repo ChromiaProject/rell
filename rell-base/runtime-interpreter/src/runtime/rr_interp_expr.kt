@@ -34,7 +34,7 @@ private fun isIdentityMapping(mapping: List<Int>, argCount: Int): Boolean {
  * -1 marks an optional skipped by a named argument (dropped here; the gap is reconstructed for
  * typed-param delegates via [withCallArgAlign]).
  */
-private fun applyCallMapping(mapping: List<Int>, args: List<Rt_Value>): List<Rt_Value> {
+internal fun applyCallMapping(mapping: List<Int>, args: List<Rt_Value>): List<Rt_Value> {
     if (isIdentityMapping(mapping, args.size)) return args
     val out = ArrayList<Rt_Value>(args.size)
     for (m in mapping) {
@@ -48,7 +48,7 @@ private fun applyCallMapping(mapping: List<Int>, args: List<Rt_Value>): List<Rt_
  * when the call actually has a gap (a -1 entry). Non-gap calls — the overwhelming majority — skip
  * the ThreadLocal entirely.
  */
-private inline fun <T> withCallArgAlign(mapping: List<Int>, block: () -> T): T {
+internal inline fun <T> withCallArgAlign(mapping: List<Int>, block: () -> T): T {
     if (mapping.none { it < 0 }) return block()
     val prev = Ld_CallArgAlign.enter(mapping)
     try {

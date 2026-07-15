@@ -381,6 +381,19 @@ class AtExprComplexWhatTest: BaseRellTest(useSql = true) {
         chkOut("77", "Y", "f:77,Y")
     }
 
+    // Regression test: a stdlib function call in the what-clause (no dbFunction(), so it's
+    // evaluated by RR_DbAtFieldCombiner.FunctionCall) with a named argument that skips an
+    // earlier optional parameter used to crash with an IndexOutOfBoundsException.
+    @Test fun testFunctionArgumentsNamedGapDb() {
+        initData()
+
+        chkSel("[.i, .i].join_to_text(prefix = '<')", "text",
+                "text[<111, 111]",
+                "text[<222, 222]",
+                "text[<333, 333]"
+        )
+    }
+
     @Test fun testCallOperation() {
         tst.testLib = true
         def("operation op(i: integer, t: text) {}")
