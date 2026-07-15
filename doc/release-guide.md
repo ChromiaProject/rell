@@ -27,6 +27,8 @@ Before branching, prepare on `dev`:
 
 Commit these changes to `dev`.
 
+**Pushing `dev`.** This commit only reaches `origin/dev` when you explicitly push it. If you push it now (the usual case), `origin/dev` and the eventual `version-A.B.C` branch both carry `A.B.C.txt` from the start. If you instead push straight to `version-A.B.C` without pushing `dev` first (e.g. to keep `origin/dev` untouched until the release is validated), `origin/dev` will visibly lack `A.B.C.txt` — and every other local `dev` commit made in this phase — until `dev` itself is pushed. That gap is expected in that case, not a lost file: `git show dev:doc/release-notes/A.B.C.txt` will confirm it exists locally, just not yet on `origin/dev`.
+
 ## 2. Create the Release Branch and Bump Version
 
 Create a branch named `version-A.B.C` from `dev`:
@@ -78,7 +80,7 @@ Switch back to the `dev` branch and perform these follow-up steps:
    ```
    Use the commit SHA of the release commit (the tagged commit).
 
-2. **Add the release notes file to `dev`** &mdash; copy `doc/release-notes/A.B.C.txt` (as finalized on the release branch) into the `dev` branch so that the full release notes history is available on `dev`.
+2. **Add the release notes file to `dev`** &mdash; copy `doc/release-notes/A.B.C.txt` (as finalized on the release branch) into the `dev` branch so that the full release notes history is available on `dev`. If `dev` already has it from step 1 and nothing changed on the release branch since, this is a no-op; it matters when release notes were corrected on `version-A.B.C` after cutting, or when `dev` was never pushed after step 1 (see the note there) and this is the point where it finally gets pushed.
 
 3. **Add the released version to `SUPPORTED_VERSIONS` on `dev`** &mdash; in `RellVersions.kt`, add `"A.B.C"` to the `SUPPORTED_VERSIONS` list, and only that: do not touch `VERSION_STR` or `build.gradle.kts`'s `version` here (that's step 4 below, and only for a major release). This is needed because the release branch's `SUPPORTED_VERSIONS` may be scoped to just what it shipped (see the note in step 2), but `dev` must recognize every released version, including ones that don't match its own current snapshot identity.
 
