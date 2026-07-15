@@ -19,6 +19,11 @@ Before branching, prepare on `dev`:
    UNRELEASED NOTES
    ```
 6. **Replace `RellVersions.SINCE_NOW` in standard library source files** &mdash; replace all uses of `RellVersions.SINCE_NOW` with the literal version string `"A.B.C"` in `since` annotations. This must be done on `dev` before branching so that both `dev` and the release branch carry the concrete version strings. If this step is deferred to the release branch, `dev` retains `SINCE_NOW` and the version history is lost there.
+7. **Verify the replacement was complete** by running the release-mode guard:
+   ```shell
+   ./gradlew verifyNoSinceNow -PreleaseMode=true
+   ```
+   This fails the build and lists every offending file if any `RellVersions.SINCE_NOW` reference was missed. Without `-PreleaseMode=true` the task is a no-op, so it never affects regular builds.
 
 Commit these changes to `dev`.
 

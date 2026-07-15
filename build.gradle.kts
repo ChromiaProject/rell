@@ -60,6 +60,34 @@ tasks.register("publishRellToMavenLocal") {
     description = "Publish all Rell modules to the local Maven repository (used by the chr bootstrap)."
 }
 
+// Release-mode guard (doc/release-guide.md step 1.6): run with -PreleaseMode=true after
+// replacing RellVersions.SINCE_NOW with the literal version, to confirm no reference was missed.
+// A no-op without -PreleaseMode=true, so it never affects regular builds.
+tasks.register("verifyNoSinceNow") {
+    group = "verification"
+    description = "Release mode: fails if RellVersions.SINCE_NOW is still referenced anywhere in the sources."
+    val releaseMode = providers.gradleProperty("releaseMode").map { it.toBoolean() }.orElse(false)
+    val projectDirs = rootProject.allprojects.map { it.projectDir }
+    val rootDirCaptured = rootDir
+    onlyIf { releaseMode.get() }
+    doLast {
+        val offenders = projectDirs.flatMap { dir ->
+            dir.walkTopDown()
+                .onEnter { it.name != "build" && it.name != ".gradle" }
+                .filter { it.isFile && it.extension == "kt" && it.name != "RellVersions.kt" }
+                .filter { it.readText().contains("SINCE_NOW") }
+                .toList()
+        }.distinct()
+        if (offenders.isNotEmpty()) {
+            throw GradleException(
+                "Release mode: found lingering RellVersions.SINCE_NOW references that must be replaced " +
+                    "with the literal release version before branching:\n" +
+                    offenders.joinToString("\n") { " - ${it.relativeTo(rootDirCaptured)}" }
+            )
+        }
+    }
+}
+
 subprojects {
     group = rootProject.group
     version = rootProject.version
