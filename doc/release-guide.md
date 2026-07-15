@@ -42,10 +42,14 @@ Update the version in two places:
   version = "A.B.C"
   ```
 
-- **`rell-base/src/main/kotlin/net/postchain/rell/base/utils/RellVersions.kt`** &mdash; change `VERSION_STR` to the release version:
+- **`rell-base/utils/src/utils/RellVersions.kt`** &mdash; change `VERSION_STR` to the release version:
   ```kotlin
   const val VERSION_STR = "A.B.C"
   ```
+
+**`SUPPORTED_VERSIONS` on the release branch.** In the common case &mdash; the release is cut straight from `dev`'s tip as `dev`'s own next minor/major &mdash; `A.B.C` is already `dev`'s `VERSION_STR` and is already present in `SUPPORTED_VERSIONS` (added by the previous release's step 5.4 below), so nothing more to do here.
+
+If `A.B.C` does **not** match `dev`'s currently-anticipated version &mdash; e.g. a patch release cut from `dev`'s current tip while `dev`'s own `VERSION_STR` is already snapshotted ahead at the next minor (`0.(B+1).0`) &mdash; the release branch's `SUPPORTED_VERSIONS` must reflect only what is actually shipping: remove `dev`'s not-yet-released anticipated version from the list and put `A.B.C` in its place instead of just appending. `dev` itself stays untouched by this (see step 5.3): its own `VERSION_STR` and `SUPPORTED_VERSIONS` snapshot identity is a separate, forward-looking concern from whatever gets tagged and shipped out of a point-in-time snapshot of it.
 
 Commit and push the branch. Pushing the `version-A.B.C` branch triggers the GitLab CI pipeline, which publishes the release automatically.
 
@@ -76,7 +80,7 @@ Switch back to the `dev` branch and perform these follow-up steps:
 
 2. **Add the release notes file to `dev`** &mdash; copy `doc/release-notes/A.B.C.txt` (as finalized on the release branch) into the `dev` branch so that the full release notes history is available on `dev`.
 
-3. **Add the released version to `SUPPORTED_VERSIONS` on `dev`** &mdash; in `RellVersions.kt`, add `"A.B.C"` to the `SUPPORTED_VERSIONS` list. This is needed because the release branch removes the current dev version from the list, but `dev` must know about all released versions.
+3. **Add the released version to `SUPPORTED_VERSIONS` on `dev`** &mdash; in `RellVersions.kt`, add `"A.B.C"` to the `SUPPORTED_VERSIONS` list, and only that: do not touch `VERSION_STR` or `build.gradle.kts`'s `version` here (that's step 4 below, and only for a major release). This is needed because the release branch's `SUPPORTED_VERSIONS` may be scoped to just what it shipped (see the note in step 2), but `dev` must recognize every released version, including ones that don't match its own current snapshot identity.
 
 4. **If this was a major release** (A or B changed), update `VERSION_STR` in `dev` to the next development snapshot:
    ```kotlin
