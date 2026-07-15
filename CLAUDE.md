@@ -114,3 +114,16 @@ At-expressions: `entity @{}` (one), `@?{}` (0-1), `@*{}` (list), `@+{}` (1+) —
 ## Coding Conventions, Testing, ABI, Release Notes
 
 See `DEVELOPMENT.md` for full details. PostgreSQL is required for tests (prefer a local instance). Test knobs via project properties: `testJvmMaxHeap`, `junitParallelThreads`, `withLocales`, `regressionParallelism`, `regressionTestHeap`. Build failure with ABI errors → `./gradlew apiDump`, review `*.api` changes. Release notes live in `doc/release-notes/`, dev changes in `dev.txt`; for formatting and checklist, invoke the `write-release-notes` skill.
+
+## Release Process
+
+Full procedure: `doc/release-guide.md`. Key facts, and a hard rule to avoid mis-stating what "the current/next release" is:
+
+- `RellVersions.VERSION_STR` (in `rell-base/utils/src/utils/RellVersions.kt`) and `build.gradle.kts`'s `version` reflect **`dev`'s own version**, not necessarily the release that's actually in flight. A patch release (e.g. `0.16.1`) is commonly branched from an existing release commit/tag, not from `dev` — `dev` can simultaneously be sitting on a higher, unrelated version (e.g. `0.17.0-SNAPSHOT`) for the next major/minor release.
+- `doc/release-notes/dev.txt` describes unreleased changes accumulating on `dev`; it is not automatically the changelog for whatever release is currently being cut.
+- **Never state a release version, or draft release notes/announcements, from `dev.txt` or `VERSION_STR` alone.** Always cross-check the actual release branches and tags first:
+  ```shell
+  git branch -a | grep '^\(remotes/origin/\)\?version-'
+  git tag -l
+  ```
+  The branch/tag actually being worked (e.g. `version-0.16.1`) — and its own `doc/release-notes/<version>.txt` — is the source of truth for what that release contains. If unsure which release the user means, ask.
