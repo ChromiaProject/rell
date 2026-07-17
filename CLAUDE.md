@@ -4,6 +4,16 @@ Rell — Kotlin/Gradle multi-module implementation of the Rell blockchain langua
 
 **Read DEVELOPMENT.md for complex tasks** — coding conventions, testing, `local.properties`, ABI, release process. Its project-structure section may lag the build; `settings.gradle.kts` is authoritative for the module list.
 
+## Kotlin code intelligence: use JetBrains MCP
+
+This codebase is too large for grep-based Kotlin work — symbol search, references, diagnostics, and renames should go through real code intelligence. If you don't have it set up yet, do so; it pays for itself immediately:
+
+1. **JetBrains (IntelliJ) MCP — preferred.** Open this project in IntelliJ IDEA and connect Claude Code to the IDE's MCP server (bundled in recent IDEA versions; expose it and register it in `.mcp.json` as `IntelliJ`). You get the full IDE index: `search_symbol`, `get_symbol_info`, `get_file_problems`, `rename_refactoring`, `find_files_by_glob`, run configurations, and the debugger. The `jetbrains-mcp` project skill (`.claude/skills/jetbrains-mcp/SKILL.md`) catalogs the tools and workflow patterns.
+2. **Kotlin LSP — fallback.** The checked-in `.claude/settings.json` enables the `kotlin-lsp` plugin. Use the `LSP` tool against `kotlin-lsp` (JetBrains Kotlin LSP server on `PATH`) when no IDE is running — and always in git worktrees, where the IDE index covers the wrong tree.
+3. Do not degrade to `grep`/`rg` for Kotlin symbol work; plain text search remains fine for non-Kotlin files, string literals, config, and docs.
+
+The shared hooks in `.claude/settings.json` reinforce this: a session-start reminder, an advisory nudge on `.kt`/`.kts` edits, and a stop-hook reminder about `doc/release-notes/dev.txt` for user-facing changes.
+
 ## Quick Reference
 
 ### Prerequisites

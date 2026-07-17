@@ -47,6 +47,14 @@ bin/
 
 CLAUDE.local.md
 .mcp.json
-.claude
+# Claude Code: share project-wide settings, skills and hooks; keep everything else
+# (settings.local.json, projects/, worktrees/, personal hooks) machine-local.
+.claude/*
+!.claude/settings.json
+!.claude/skills/
+!.claude/hooks/
+.claude/hooks/*
+!.claude/hooks/edit_guard.py
+!.claude/hooks/stop_devtxt_check.py
 .junie/
 .ai/

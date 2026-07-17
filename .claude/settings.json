@@ -1,0 +1,42 @@
+{
+  "enabledPlugins": {
+    "kotlin-lsp@claude-plugins-official": true
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"REMINDER: For Kotlin work, prefer mcp__IntelliJ__* (probe with mcp__IntelliJ__get_project_modules). If IntelliJ MCP is unavailable — worktree, no IDE running, plugin down — fall back to the Kotlin LSP tool (kotlin-lsp). Do NOT fall back to Grep/Glob on .kt files for symbol work. See the jetbrains-mcp skill for the tool catalog.\"}}'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/edit_guard.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_devtxt_check.py\"",
+            "timeout": 10,
+            "statusMessage": "Checking dev.txt + verification reminder"
+          }
+        ]
+      }
+    ]
+  }
+}
