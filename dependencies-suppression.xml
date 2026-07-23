@@ -21,4 +21,30 @@
         <cve>CVE-2020-8908</cve>
         <cve>CVE-2023-2976</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        kotlin-faker 1.x bundles jackson-databind 2.21.1 inside its own jar and no fixed 1.x
+        release exists (2.0.0 is still RC and restructures the API). Faker is only used by the
+        rell-toolbox seeder to generate fake test data; the bundled Jackson never deserializes
+        attacker-controlled input. Re-evaluate when kotlin-faker 2.0.0 goes stable.
+        file name: kotlin-faker-1.16.1.jar (shaded: com.fasterxml.jackson.core:jackson-databind:2.21.1)
+        ]]></notes>
+        <filePath regex="true">.*kotlin-faker-.*\.jar.*jackson-databind.*</filePath>
+        <cve>CVE-2026-54512</cve>
+        <cve>CVE-2026-54513</cve>
+        <cve>CVE-2026-54514</cve>
+        <cve>CVE-2026-54516</cve>
+        <cve>CVE-2026-54517</cve>
+        <cve>CVE-2026-54518</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        False positive. kotlinx-benchmark-runtime is matched against cpe:/a:jetbrains:runtime,
+        which is the JetBrains Runtime (JBR); CVE-2025-29903 is fixed in JBR 21.0.6b872.80 and
+        has nothing to do with the benchmark library.
+        file name: kotlinx-benchmark-runtime-jvm-0.4.17.jar
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.jetbrains\.kotlinx/kotlinx-benchmark-runtime.*$</packageUrl>
+        <cpe>cpe:/a:jetbrains:runtime</cpe>
+    </suppress>
 </suppressions>
