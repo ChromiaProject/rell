@@ -18,55 +18,51 @@ data class LinterOptions(
     var ruleConstantDetection: Boolean? = null,
     var ruleUnusedVariable: Boolean? = null,
     var ruleOuterJoinCartesianProduct: Boolean? = null,
+    var ruleReplaceIfWithWhen: Boolean? = null,
+    var ruleSimplifyBooleanReturn: Boolean? = null,
+    var ruleRedundantBooleanComparison: Boolean? = null,
+    var ruleSimplifyNullableIf: Boolean? = null,
+    var rulePreferVal: Boolean? = null,
+    var rulePreferEmpty: Boolean? = null,
+    var ruleAtCardinalityMisuse: Boolean? = null,
 ) {
     fun updateOptionsFromFile(configFile: File) {
         EditorConfigParser.parse(configFile)?.let {
-            it.sections.forEach { section ->
-                section.properties.forEach { property ->
-                    when (property.key) {
-                        "rule_naming_convention" -> {
-                            ruleNamingConvention = parseBoolean(property.value)
+            for (section in it.sections) {
+                for ((key, value) in section.properties) {
+                    when (key) {
+                        "rule_naming_convention" -> ruleNamingConvention = parseBoolean(value)
+                        "rule_import_from_non_module" -> ruleImportFromNonModule = parseBoolean(value)
+
+                        "rule_quote_format" -> ruleQuoteFormat = when (value.sourceValue.trim()) {
+                            "double" -> Quote.DOUBLE
+                            "single" -> Quote.SINGLE
+                            else -> null
                         }
 
-                        "rule_import_from_non_module" -> {
-                            ruleImportFromNonModule = parseBoolean(property.value)
-                        }
-
-                        "rule_quote_format" -> {
-                            ruleQuoteFormat = when (property.value.sourceValue.trim()) {
-                                "double" -> Quote.DOUBLE
-                                "single" -> Quote.SINGLE
-                                else -> null
-                            }
-                        }
-
-                        "rule_formatter" -> {
-                            ruleFormatter = parseBoolean(property.value)
-                        }
-
-                        "rule_constant_detection" -> {
-                            ruleConstantDetection = parseBoolean(property.value)
-                        }
-
-                        "rule_unused_variable" -> {
-                            ruleUnusedVariable = parseBoolean(property.value)
-                        }
-                        "rule_outer_join_cartesian_product" -> {
-                            ruleOuterJoinCartesianProduct = parseBoolean(property.value)
-                        }
+                        "rule_formatter" -> ruleFormatter = parseBoolean(value)
+                        "rule_constant_detection" -> ruleConstantDetection = parseBoolean(value)
+                        "rule_unused_variable" -> ruleUnusedVariable = parseBoolean(value)
+                        "rule_outer_join_cartesian_product" -> ruleOuterJoinCartesianProduct = parseBoolean(value)
+                        "rule_replace_if_with_when" -> ruleReplaceIfWithWhen = parseBoolean(value)
+                        "rule_simplify_boolean_return" -> ruleSimplifyBooleanReturn = parseBoolean(value)
+                        "rule_redundant_boolean_comparison" -> ruleRedundantBooleanComparison = parseBoolean(value)
+                        "rule_simplify_nullable_if" -> ruleSimplifyNullableIf = parseBoolean(value)
+                        "rule_prefer_val" -> rulePreferVal = parseBoolean(value)
+                        "rule_prefer_empty" -> rulePreferEmpty = parseBoolean(value)
+                        "rule_at_cardinality_misuse" -> ruleAtCardinalityMisuse = parseBoolean(value)
                     }
                 }
             }
+
             enable()
         } ?: disable()
     }
 
-    private fun parseBoolean(value: Property): Boolean? {
-        return when (value.sourceValue.trim()) {
-            "true" -> true
-            "false" -> false
-            else -> null
-        }
+    private fun parseBoolean(value: Property): Boolean? = when (value.sourceValue.trim()) {
+        "true" -> true
+        "false" -> false
+        else -> null
     }
 
     fun disable() {

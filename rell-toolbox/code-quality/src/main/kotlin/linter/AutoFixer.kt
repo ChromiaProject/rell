@@ -24,7 +24,7 @@ class AutoFixer {
         return linterIssues.mapNotNull {
             it.fix()?.let { fix ->
                 val startOffset = positionToOffset(sourceText, Position(fix.line, fix.charPositionInLine))
-                val endOffset = positionToOffset(sourceText, Position(fix.line, fix.charPositionInLine + fix.length))
+                val endOffset = positionToOffset(sourceText, Position(fix.endLine, fix.endCharPositionInLine))
                 TextReplacement(startOffset, endOffset, fix.newText)
             }
         }

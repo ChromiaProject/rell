@@ -1,0 +1,10 @@
+function checks(xs: list<integer>): boolean {
+    val a = xs.size() == 0;
+    val b = xs.size() != 0;
+    val c = xs.size() > 0;
+    val d = xs.size() < 1;
+    val e = 0 == xs.size();
+    val f = xs.size() >= 1;
+    val g = xs.size() == 2;
+    return a and b and c and d and e and f and g;
+}

@@ -1,0 +1,23 @@
+function shape_a(x: integer): boolean {
+    if (x > 0) return true; else return false;
+}
+function shape_a_neg(x: integer): boolean {
+    if (x > 0) return false; else return true;
+}
+function shape_a_block(x: integer): boolean {
+    if (x > 0) { return true; } else { return false; }
+}
+function shape_b(x: integer): boolean {
+    return if (x > 0) true else false;
+}
+function shape_b_neg(x: integer): boolean {
+    return if (x > 0) false else true;
+}
+function not_flagged(x: integer): boolean {
+    if (x > 0) return true; else return true;
+}
+function else_if_chain(x: integer): boolean {
+    if (x == 1) return true;
+    else if (x == 2) return true;
+    else return false;
+}

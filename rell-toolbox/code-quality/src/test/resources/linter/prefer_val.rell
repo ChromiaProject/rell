@@ -1,0 +1,43 @@
+function reassigned(): integer {
+    var a = 1;
+    a = 2;
+    return a;
+}
+function compound_assign(): integer {
+    var b = 1;
+    b += 5;
+    return b;
+}
+function post_inc(): integer {
+    var c = 1;
+    c++;
+    return c;
+}
+function pre_inc(): integer {
+    var d = 1;
+    ++d;
+    return d;
+}
+function never(): integer {
+    var e = 1;
+    return e + 1;
+}
+function expr_post_inc(): integer {
+    var x = 0;
+    val y = x++;
+    return x + y;
+}
+function expr_pre_inc(): integer {
+    var w = 0;
+    val z = ++w;
+    return w + z;
+}
+function tuple_var(): integer {
+    var (p, q) = (1, 2);
+    return p + q;
+}
+function suppressed(): integer {
+    // rell-lint-disable-next-line
+    var s = 1;
+    return s + 1;
+}

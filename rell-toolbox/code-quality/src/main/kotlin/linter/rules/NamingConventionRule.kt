@@ -29,7 +29,8 @@ class NamingConventionRule(config: LinterOptions, resource: Resource, linterCont
         const val RULE_ID = "rule_naming_convention"
     }
 
-    override val ruleId = RULE_ID
+    override val ruleId
+        get() = RULE_ID
 
     override fun visitFunctionDef(ctx: RellParser.FunctionDefContext) =
         checkFirstIdentifier(ctx, uppercaseAllowed = false)
@@ -64,7 +65,7 @@ class NamingConventionRule(config: LinterOptions, resource: Resource, linterCont
         checkFirstIdentifier(ctx, uppercaseAllowed = false)
 
     override fun visitConstantDef(ctx: RellParser.ConstantDefContext) {
-        // Top-level `val NAME = ...` constants — SCREAMING_SNAKE allowed.
+        // Top-level `val NAME = ...` constants - SCREAMING_SNAKE allowed.
         val nameId = ctx.RULE_ID() ?: return
         check(nameId, uppercaseAllowed = true)
     }

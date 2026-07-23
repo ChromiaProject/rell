@@ -25,7 +25,8 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
         const val RULE_ID = "rule_constant_detection"
     }
 
-    override val ruleId = RULE_ID
+    override val ruleId
+        get() = RULE_ID
 
     private val referenceIndexer = ReferenceIndexer(resource.workspaceUri, mutableMapOf(resource.fileUri to resource))
 
@@ -63,8 +64,9 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
                 Position(name.stop.line - 1, name.stop.charPositionInLine + name.text.length)
             )
             constants[varRange] = constantContext
-            references.forEach {
-                varReferences[it.range] = constantContext
+
+            for ((_, range) in references) {
+                varReferences[range] = constantContext
             }
         }
     }
@@ -111,23 +113,25 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
 
     override fun visitFile(ctx: RellParser.FileContext) {
         super.visitFile(ctx)
-        constants.forEach {
-            if (!hasIgnoreCommentOnTop(it.value.parserRuleContext.start)) {
-                val varMessage = "Variable '${it.value.varName}' is never modified"
-                val message = if (it.value.isTupleDeclarator) {
+
+        for ((_, value) in constants) {
+            if (!hasIgnoreCommentOnTop(value.parserRuleContext.start)) {
+                val varMessage = "Variable '${value.varName}' is never modified"
+                val message = if (value.isTupleDeclarator) {
                     varMessage
                 } else {
                     "$varMessage, so it can be declared using 'val'"
                 }
                 report(
                     ConstantDetectionIssue(
-                        it.value.parserRuleContext,
+                        value.parserRuleContext,
                         ruleId,
                         message
                     )
                 )
             }
         }
+
         varReferences.clear()
         constants.clear()
     }

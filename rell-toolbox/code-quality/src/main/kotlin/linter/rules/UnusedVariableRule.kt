@@ -21,7 +21,8 @@ class UnusedVariableRule(config: LinterOptions, resource: Resource, linterContex
         const val RULE_ID = "rule_unused_variable"
     }
 
-    override val ruleId = RULE_ID
+    override val ruleId
+        get() = RULE_ID
 
     override fun visitVarStmtAlt(ctx: RellParser.VarStmtAltContext) {
         if (isDisabled(config.ruleUnusedVariable) || hasIgnoreCommentOnTop(ctx.start) || hasSemanticErrors()) {

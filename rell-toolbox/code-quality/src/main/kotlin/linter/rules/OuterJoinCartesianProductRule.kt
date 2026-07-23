@@ -26,7 +26,8 @@ import org.antlr.v4.runtime.tree.TerminalNode
 class OuterJoinCartesianProductRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
 
-    override val ruleId = RULE_ID
+    override val ruleId
+        get() = RULE_ID
 
     override fun visitAtExpr(ctx: RellParser.AtExprContext) {
         if (isDisabled(config.ruleOuterJoinCartesianProduct)) {

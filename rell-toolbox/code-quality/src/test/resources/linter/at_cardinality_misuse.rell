@@ -1,0 +1,20 @@
+entity user { name: text; }
+
+function not_null(): user {
+    return user @? { .name == 'a' }!!;
+}
+function not_null_chained(): struct<user> {
+    return user @? { .name == 'a' }!!.to_struct();
+}
+function indexed(): user {
+    return (user @* { .name == 'a' })[0];
+}
+function size_check(): boolean {
+    return (user @* { .name == 'a' }).size() == 0;
+}
+function empty_check(): boolean {
+    return (user @* { .name == 'a' }).empty();
+}
+function non_empty(): boolean {
+    return (user @+ { .name == 'a' }).empty();
+}

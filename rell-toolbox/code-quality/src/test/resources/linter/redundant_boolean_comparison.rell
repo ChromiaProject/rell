@@ -1,0 +1,13 @@
+function checks(active: boolean): boolean {
+    val a = active == false;
+    val b = active == true;
+    val c = active != false;
+    val d = active != true;
+    return a and b and c and d;
+}
+
+entity account { mutable is_input: boolean; }
+
+function in_where(): list<account> {
+    return account @* { .is_input == false };
+}

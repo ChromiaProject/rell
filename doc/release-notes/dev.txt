@@ -10,3 +10,27 @@ the server keeps working once the JDK removes the API. On JDK 21-24 behavior is 
 
 Existing index cache files are in the old format; the server discards and rebuilds them automatically on first
 start, so the first startup after upgrading re-indexes the workspace.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Tools: New opt-in linter inspections
+
+The language server's linter gained six inspections, each enabled per-rule in the .rell_lint config file and off
+by default. Most carry an auto-fix, offered both as a per-issue quick-fix and through "Fix all auto-fixable
+issues". The comparison-with-boolean and at-expression checks are reported as diagnostics in the cases where a
+purely syntactic rewrite could change behavior. The rule keys are:
+
+  - rule_simplify_boolean_return: an if/else whose branches return only boolean literals collapses to a return of
+    the condition itself, in both the statement and the if-expression form; swapped branches give the negated
+    condition.
+  - rule_redundant_boolean_comparison: reports a comparison against a boolean literal, such as x == true or
+    x != false, outside at-expression where-clauses. Diagnostic only - the rule has no type information, and the
+    rewrite is unsafe when the operand is a nullable boolean, so no auto-fix is offered.
+  - rule_simplify_nullable_if: a null guard of the form "if (x != null) x else y" becomes an elvis expression, and
+    "if (x != null) x.f else null" becomes a safe-access expression.
+  - rule_prefer_val: a local var that is never reassigned is flagged in favor of val.
+  - rule_prefer_empty: a size() comparison against zero, such as size() == 0 or size() > 0, becomes an empty()
+    call or its negation.
+  - rule_at_cardinality_misuse: a zero-or-one at-expression followed by a not-null assertion becomes a
+    single-cardinality at-expression, auto-fixed when the assertion is the final operation. Indexing a list
+    at-expression at zero, and existence checks that materialize a list such as size() == 0 or empty(), are
+    reported as diagnostics.

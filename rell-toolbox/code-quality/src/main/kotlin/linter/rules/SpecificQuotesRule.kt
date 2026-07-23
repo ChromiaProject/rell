@@ -13,7 +13,8 @@ import net.postchain.rell.toolbox.linter.issues.SpecificQuotesIssue
 class SpecificQuotesRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
 
-    override val ruleId = RULE_ID
+    override val ruleId
+        get() = RULE_ID
 
     override fun visitStringExpr(ctx: RellParser.StringExprContext) {
         if (!config.enabled || config.ruleQuoteFormat == null || hasIgnoreCommentOnTop(ctx.start)) {

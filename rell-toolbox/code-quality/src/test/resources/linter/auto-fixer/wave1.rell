@@ -1,0 +1,18 @@
+entity user { name: text; }
+
+function f_empty(xs: list<integer>): boolean {
+    return xs.size() == 0;
+}
+function f_ret(n: integer): boolean {
+    if (n > 0) return true; else return false;
+}
+function f_elvis(o: integer?): integer {
+    return if (o != null) o else 0;
+}
+function f_val(): integer {
+    var d = 1;
+    return d + 1;
+}
+function f_notnull(): user {
+    return user @? { .name == 'x' }!!;
+}

@@ -20,7 +20,8 @@ class ImportFromNonModuleRule(config: LinterOptions, resource: Resource, linterC
         const val RULE_ID = "rule_import_from_non_module"
     }
 
-    override val ruleId = RULE_ID
+    override val ruleId
+        get() = RULE_ID
 
     override fun visitFile(ctx: RellParser.FileContext) {
         hasModuleHeader = ctx.moduleHeader() != null

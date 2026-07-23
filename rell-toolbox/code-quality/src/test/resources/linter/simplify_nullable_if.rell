@@ -1,0 +1,25 @@
+entity account { balance: integer; }
+
+function find(): integer? = 1;
+
+function elvis(x: integer?, y: integer): integer {
+    return if (x != null) x else y;
+}
+function safe_access(a: account?): integer? {
+    return if (a != null) a.balance else null;
+}
+function null_first(x: integer?, y: integer): integer {
+    return if (null != x) x else y;
+}
+function compound(x: integer?): integer {
+    return 1 + if (x != null) x else 0;
+}
+function has_call(): integer? {
+    return if (find() != null) find() else null;
+}
+function not_flagged(x: integer?, y: integer): integer {
+    return if (x != null) y else x;
+}
+function compound_else(flag: boolean?, a: boolean, b: boolean): boolean {
+    return if (flag != null) flag else a or b;
+}

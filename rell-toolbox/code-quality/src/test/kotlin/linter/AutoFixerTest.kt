@@ -54,6 +54,21 @@ class AutoFixerTest {
         checkAutofix("delete.rell", LinterOptions(enabled = true, ruleFormatter = true, ruleQuoteFormat = Quote.DOUBLE))
     }
 
+    @Test
+    fun `should apply all Wave 1 fixes end-to-end`() {
+        checkAutofix(
+            "wave1.rell",
+            LinterOptions(
+                enabled = true,
+                rulePreferEmpty = true,
+                ruleSimplifyBooleanReturn = true,
+                ruleSimplifyNullableIf = true,
+                rulePreferVal = true,
+                ruleAtCardinalityMisuse = true,
+            )
+        )
+    }
+
     private fun checkAutofix(fileName: String, linterOptions: LinterOptions) {
         val fixedContent = autofix(fileName, linterOptions)
         val expectedContent = getExpectedContent(fileName)

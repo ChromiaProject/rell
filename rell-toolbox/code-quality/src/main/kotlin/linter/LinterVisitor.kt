@@ -22,6 +22,13 @@ class LinterVisitor(
         UnusedVariableRule(config, resource, linterContext),
         ImportFromNonModuleRule(config, resource, linterContext),
         OuterJoinCartesianProductRule(config, resource, linterContext),
+        ReplaceIfWithWhenRule(config, resource, linterContext),
+        SimplifyBooleanReturnRule(config, resource, linterContext),
+        RedundantBooleanComparisonRule(config, resource, linterContext),
+        SimplifyNullableIfRule(config, resource, linterContext),
+        PreferValRule(config, resource, linterContext),
+        PreferEmptyRule(config, resource, linterContext),
+        AtCardinalityMisuseRule(config, resource, linterContext),
     )
 
     override fun visitChildren(node: RuleNode) {

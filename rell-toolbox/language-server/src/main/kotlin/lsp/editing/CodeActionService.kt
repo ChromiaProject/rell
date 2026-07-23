@@ -114,7 +114,7 @@ object CodeActionService {
         val fix = linterIssue.fix() ?: return mapOf(fileUri.toString() to listOf())
         val range = Range(
             Position(fix.line, fix.charPositionInLine),
-            Position(fix.line, fix.charPositionInLine + fix.length)
+            Position(fix.endLine, fix.endCharPositionInLine)
         )
         val edit = TextEdit(range, fix.newText)
         return mapOf(fileUri.toString() to listOf(edit))

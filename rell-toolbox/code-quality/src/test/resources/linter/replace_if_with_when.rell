@@ -1,0 +1,22 @@
+function multi_line(input: text): integer {
+    if (input == 'a') {
+        return 1;
+    } else if (input == 'b') {
+        return 2;
+    } else {
+        return 3;
+    }
+}
+
+function single_line(x: integer) {
+    if (x == 1) print('one'); else if (x == 2) print('two');
+}
+
+function no_chain(x: integer): integer {
+    if (x > 0) return 1; else return 2;
+}
+
+function suppressed(input: text): integer {
+    // rell-lint-disable-next-line
+    if (input == 'a') { return 1; } else if (input == 'b') { return 2; } else { return 3; }
+}
