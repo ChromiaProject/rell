@@ -41,7 +41,9 @@ open class DiagnosticsPublisher(
     }
 
     open fun clearDiagnostics(uris: Collection<URI>) {
-        uris.forEach { clearDiagnostics(it) }
+        for (uri in uris) {
+            clearDiagnostics(uri)
+        }
     }
 
     private fun sendDiagnosticsToClient(uri: URI, issues: List<RellIssue>) {

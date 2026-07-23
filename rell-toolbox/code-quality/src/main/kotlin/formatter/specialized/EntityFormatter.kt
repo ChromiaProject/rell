@@ -83,11 +83,14 @@ class KeyIndexFormatter(
 
         val (attributeDefs, trailingComma) = node.getAttrItems()
         whitespaceFormatter.formatTrailingComma(trailingComma, doc)
-        attributeDefs.forEach { attributeDef ->
+
+        for (attributeDef in attributeDefs) {
             doc.prepend(attributeDef) { it.oneSpace() }
-            attributeDef.modifiers().modifier().forEach {
-                doc.append(it) { it.oneSpace() }
+
+            for (ctx in attributeDef.modifiers().modifier()) {
+                doc.append(ctx) { it.oneSpace() }
             }
+
             doc.format(attributeDef.attrHeader())
             attributeDef.expression()?.let { doc.prepend(it) { c -> c.oneSpace() } }
             doc.append(attributeDef) { it.noSpace() }
@@ -101,8 +104,8 @@ class BaseAttributeDefFormatter(
     override fun format(node: BaseAttributeDefinitionContext, doc: FormattableDocument) {
         doc.append(node) { it.noSpace() }
         doc.prepend(node) { it.newLine() }
-        node.modifiers().modifier().forEach {
-            doc.append(it) { it.oneSpace() }
+        for (ctx in node.modifiers().modifier()) {
+            doc.append(ctx) { it.oneSpace() }
         }
         doc.format(node.attrHeader())
         val equalSign = tokenAnalyzer.tokenFor(node, "=")

@@ -59,7 +59,10 @@ class ListExprFormatter(
         val lineSeparate = lineAnalyzer.formatAsMultiLine(items)
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
         argumentFormatter.formatArguments(items, doc)
-        items.forEach { doc.format(it) }
+
+        for (i in items) {
+            doc.format(i)
+        }
     }
 }
 

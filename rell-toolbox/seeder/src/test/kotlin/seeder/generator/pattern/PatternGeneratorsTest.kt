@@ -27,29 +27,21 @@ class PatternGeneratorsTest {
 
     @Test
     fun `all generators generate correct values`() {
-        FakerGeneratorFactory.default.getRegistry().getAllGenerators().forEach { id, generator ->
+        for ((id, generator) in FakerGeneratorFactory.default.getRegistry().getAllGenerators()) {
             val ctx = createDataGeneratorContext(id, generator)
             val value = generator.generate(ctx)
+
             if (id == "random.enum") {
                 assertThat(value).isInstanceOf(Int::class)
-                return@forEach
+                continue
             }
+
             when (generator.type) {
-                is R_TextType -> {
-                    assertThat(value).isInstanceOf(String::class)
-                }
-                is R_BooleanType -> {
-                    assertThat(value).isInstanceOf(Boolean::class)
-                }
-                is R_DecimalType -> {
-                    assertThat(value).isInstanceOf(Double::class)
-                }
-                is R_IntegerType -> {
-                    assertThat(value).isInstanceOf(Long::class)
-                }
-                else -> {
-                    fail { "generator type ${generator.type} not supported" }
-                }
+                is R_TextType -> assertThat(value).isInstanceOf(String::class)
+                is R_BooleanType -> assertThat(value).isInstanceOf(Boolean::class)
+                is R_DecimalType -> assertThat(value).isInstanceOf(Double::class)
+                is R_IntegerType -> assertThat(value).isInstanceOf(Long::class)
+                else -> fail { "generator type ${generator.type} not supported" }
             }
         }
     }

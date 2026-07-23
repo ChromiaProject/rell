@@ -220,9 +220,9 @@ class RellIndexingManager(
 
     // TODO: Clean up depth of nesting
     override fun cleanUpOrphans(indexers: Map<URI, WorkspaceIndexer>) {
-        indexers.values.forEach { indexer ->
-            orphanIndexers.forEach { orphanIndexer ->
-                orphanIndexer.value.fileUriResourceMap.keys.forEach { uri ->
+        for (indexer in indexers.values) {
+            for (orphanIndexer in orphanIndexers) {
+                for (uri in orphanIndexer.value.fileUriResourceMap.keys) {
                     if (indexer.fileUriResourceMap[uri] != null) {
                         orphanIndexer.value.removeFileUriResourceMap(uri)
                     }

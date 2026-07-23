@@ -13,49 +13,47 @@ class ModuleConfigSerializer {
         return buildString {
             appendLine("module: ${config.moduleName}")
 
-            config.entityConfigs.forEach { entity ->
+            for ((_, entityConfig) in config.entityConfigs) {
                 appendLine("")
-                appendLine("${entity.value.name}:")
-                appendLine("  count: ${entity.value.count}")
-                if (entity.value.attributes.isNotEmpty()) {
+                appendLine("${entityConfig.name}:")
+                appendLine("  count: ${entityConfig.count}")
+                if (entityConfig.attributes.isNotEmpty()) {
                     appendLine("  attributes:")
-                    entity.value.attributes.forEach { field ->
-                        val fieldValue = field.value
-                        appendLine("    ${field.key}:")
-                        when (fieldValue) {
+                    for ((key, attributeConfig) in entityConfig.attributes) {
+                        appendLine("    $key:")
+
+                        when (attributeConfig) {
                             is AttributeConfig.PredefinedValues -> {
                                 appendLine("      generator: predefined")
                                 appendLine(
-                                    "      values: ${fieldValue.values.joinToString(", ", prefix = "[", postfix = "]")}"
+                                    "      values: ${attributeConfig.values.joinToString(", ", prefix = "[", postfix = "]")}"
                                 )
-                                fieldValue.distribution?.let {
+                                attributeConfig.distribution?.let {
                                     appendLine("      distribution: ${it.name.lowercase()}")
                                 }
                             }
 
                             is AttributeConfig.Range -> {
                                 appendLine("      generator: range")
-                                appendLine("      min: ${fieldValue.min}")
-                                appendLine("      max: ${fieldValue.max}")
+                                appendLine("      min: ${attributeConfig.min}")
+                                appendLine("      max: ${attributeConfig.max}")
                             }
 
                             is AttributeConfig.TextConfig -> {
                                 appendLine("      generator: text")
-                                fieldValue.min?.let { min -> appendLine("      min: $min") }
-                                fieldValue.max?.let { max -> appendLine("      max: $max") }
+                                attributeConfig.min?.let { min -> appendLine("      min: $min") }
+                                attributeConfig.max?.let { max -> appendLine("      max: $max") }
                             }
 
                             is AttributeConfig.ByteArrayConfig -> {
                                 appendLine("      generator: byte_array")
-                                fieldValue.size?.let { size -> appendLine("      size: $size") }
+                                attributeConfig.size?.let { size -> appendLine("      size: $size") }
                             }
 
-                            is AttributeConfig.DataPatternConfig -> {
-                                appendLine("      generator: ${fieldValue.pattern}")
-                            }
+                            is AttributeConfig.DataPatternConfig -> appendLine("      generator: ${attributeConfig.pattern}")
 
                             else -> throw IllegalArgumentException(
-                                "Unsupported field value type: ${fieldValue.javaClass.name}"
+                                "Unsupported field value type: ${attributeConfig.javaClass.name}"
                             )
                         }
                     }

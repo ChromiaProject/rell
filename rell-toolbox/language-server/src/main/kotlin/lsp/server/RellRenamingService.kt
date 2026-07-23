@@ -54,7 +54,7 @@ class RellRenamingService(
         val locations = getReferenceLocations(fileUri, position, true)
         val changes = mutableMapOf<String, MutableList<TextEdit>>()
 
-        locations.forEach { location ->
+        for (location in locations) {
             val change = renameLocation(
                 indexer,
                 location,
@@ -64,6 +64,7 @@ class RellRenamingService(
             )
             changes[location.uri]?.add(change) ?: changes.put(location.uri, mutableListOf(change))
         }
+
         return WorkspaceEdit(changes)
     }
 

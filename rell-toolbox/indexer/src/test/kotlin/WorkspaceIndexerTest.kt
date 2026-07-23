@@ -55,8 +55,8 @@ class WorkspaceIndexerTest {
         workspaceIndexer.initialFileIndexBuild()
 
         assertThat(workspaceIndexer.fileUriResourceMap.size).isEqualTo(2)
-        workspaceIndexer.fileUriResourceMap.forEach {
-            assertThat(it.value.parseTree.children).isNotEmpty()
+        for ((_, value) in workspaceIndexer.fileUriResourceMap) {
+            assertThat(value.parseTree.children).isNotEmpty()
         }
     }
 
@@ -118,9 +118,10 @@ class WorkspaceIndexerTest {
         workspaceIndexer.initialFileIndexBuild()
 
         assertThat(workspaceIndexer.fileUriResourceMap.size).isEqualTo(2)
-        workspaceIndexer.fileUriResourceMap.forEach {
-            assertThat(it.value.parseTree.children).isNotEmpty()
-            assertThat(it.value.fileSpecificSemanticErrors.size).isEqualTo(1)
+
+        for ((_, value) in workspaceIndexer.fileUriResourceMap) {
+            assertThat(value.parseTree.children).isNotEmpty()
+            assertThat(value.fileSpecificSemanticErrors.size).isEqualTo(1)
         }
     }
 
@@ -152,9 +153,9 @@ class WorkspaceIndexerTest {
             WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         workspaceIndexer.initialFileIndexBuild()
 
-        workspaceIndexer.fileUriResourceMap.forEach {
-            assertThat(it.value.parseTree.children).isNotEmpty()
-            assertThat(it.value.fileSpecificSemanticErrors.size).isEqualTo(1)
+        for ((_, value) in workspaceIndexer.fileUriResourceMap) {
+            assertThat(value.parseTree.children).isNotEmpty()
+            assertThat(value.fileSpecificSemanticErrors.size).isEqualTo(1)
         }
     }
 

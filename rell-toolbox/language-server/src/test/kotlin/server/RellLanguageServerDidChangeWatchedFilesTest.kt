@@ -347,7 +347,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
             "file:${tempDir.toURI().path}src/main.rell",
         )
 
-        issues.forEach { (uri, issues) ->
+        for ((uri, issues) in issues) {
             if (uri.toString().endsWith("main.rell")) {
                 assertThat(issues.size).isEqualTo(1)
                 assertThat(issues.first().message).isEqualTo("Module 'submodule' not found")

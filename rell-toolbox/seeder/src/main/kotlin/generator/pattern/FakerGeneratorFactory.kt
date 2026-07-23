@@ -62,7 +62,9 @@ class FakerGeneratorFactory {
             BarcodeGenerators(registry),
         )
 
-        generatorCategories.forEach { it.register() }
+        for (category in generatorCategories) {
+            category.register()
+        }
     }
 
     fun getAttributeFakerGenerator(entity: Entity, attribute: Attribute): FakerGenerator {

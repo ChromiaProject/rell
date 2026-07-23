@@ -133,7 +133,7 @@ class WorkspaceIndexer(
         val linterOptionsMatch = ideConfigOptionsMatch(cachedIndexer)
         val alreadyLintedFiles = mutableSetOf<URI>()
 
-        sources.forEach { (fileUri, fileContent) ->
+        for ((fileUri, fileContent) in sources) {
             val checksum = calculateChecksum(fileContent)
             val cachedResource = cachedIndexer.getResource(fileUri)
             if (cachedResource != null && cachedResource.checksum == checksum && getResource(fileUri) == null) {
@@ -163,28 +163,30 @@ class WorkspaceIndexer(
 
     fun getAllIssues(): Map<URI, List<RellIssue>> {
         val issues: MutableMap<URI, List<RellIssue>> = mutableMapOf()
-        fileUriResourceMap.forEach { (uri, resource) ->
+
+        for ((uri, resource) in fileUriResourceMap) {
             issues[uri] = collectIssues(resource)
         }
+
         return issues
     }
 
     fun getAllLintAndFormatIssues(): Map<URI, List<RellIssue>> {
         val issues: MutableMap<URI, List<RellIssue>> = mutableMapOf()
-        fileUriResourceMap.forEach { (uri, resource) ->
+
+        for ((uri, resource) in fileUriResourceMap) {
             issues[uri] = getLinterIssues(resource) + getFormatterIssues(resource)
         }
+
         return issues
     }
 
-    private fun collectIssues(resource: Resource): List<RellIssue> {
-        return listOf(
-            getSyntaxErrors(resource),
-            getSemanticErrors(resource),
-            getLinterIssues(resource),
-            getFormatterIssues(resource)
-        ).flatten()
-    }
+    private fun collectIssues(resource: Resource): List<RellIssue> = listOf(
+        getSyntaxErrors(resource),
+        getSemanticErrors(resource),
+        getLinterIssues(resource),
+        getFormatterIssues(resource)
+    ).flatten()
 
     private fun getSyntaxErrors(resource: Resource): List<RellIssue> {
         return resource.syntaxErrors.map(RellIssue::fromSyntaxError)
@@ -281,7 +283,7 @@ class WorkspaceIndexer(
 
         val implicitImports = calculateImplicitImports(shallowCopy)
 
-        shallowCopy.forEach { (key, value) ->
+        for ((key, value) in shallowCopy) {
             if (value.imports.contains(changedFileResource.rName) ||
                 implicitImports[value.rName]?.contains(changedFileResource.rName) == true ||
                 value.rName == changedFileResource.rName
@@ -294,12 +296,14 @@ class WorkspaceIndexer(
 
     private fun calculateImplicitImports(resourceMap: Map<URI, Resource>): Map<ModuleName, Collection<ModuleName>> {
         val implicitImports: MutableMap<ModuleName, Collection<ModuleName>> = mutableMapOf()
-        resourceMap.forEach { (fileUri, value) ->
+
+        for ((fileUri, value) in resourceMap) {
             val moduleName = value.rName
             if (fileUri.toString().endsWith("/module.rell") && moduleName != null) {
                 implicitImports[moduleName] = value.imports
             }
         }
+
         return implicitImports
     }
 
@@ -321,7 +325,7 @@ class WorkspaceIndexer(
     }
 
     fun runLinter() {
-        fileUriResourceMap.entries.forEach { (fileUri, resource) ->
+        for ((fileUri, resource) in fileUriResourceMap.entries) {
             val fileContent = File(fileUri).readText()
             runLinter(resource, fileContent)
         }

@@ -87,7 +87,7 @@ class RellSymbolRenameTest {
             Position(7, 4),
         )
 
-        restrictedSymbolPositions.forEach { position ->
+        for (position in restrictedSymbolPositions) {
             val result = server.textDocumentService.prepareRename(
                 PrepareRenameParams(
                     TextDocumentIdentifier(fileOfRenamingEvent),
@@ -1228,7 +1228,7 @@ class RellSymbolRenameTest {
         RenameParams(TextDocumentIdentifier(fileOfRenamingEvent), position, newName)
 
     private fun applyChanges(changes: Map<String, List<TextEdit>>) {
-        changes.forEach { (fileOfRenamingEvent, textEdits) ->
+        for ((fileOfRenamingEvent, textEdits) in changes) {
             val uri = URI(fileOfRenamingEvent)
             val document = documentManager.getOpenDocument(uri) ?: Document(uri, 1, uri.toPath().readText())
 

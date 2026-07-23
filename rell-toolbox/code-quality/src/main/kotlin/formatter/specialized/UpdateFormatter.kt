@@ -56,6 +56,8 @@ class UpdateTargetAtFormatter(
         val lineSeparate = lineAnalyzer.lineSeparateArguments(atExprWhere, BracePairTypes.CURLY)
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
         argumentFormatter.formatArguments(expressionRef, doc, formatAsMultiLine = lineSeparate)
-        expressionRef.forEach { doc.format(it) }
+        for (ctx in expressionRef) {
+            doc.format(ctx)
+        }
     }
 }

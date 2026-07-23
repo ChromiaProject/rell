@@ -16,20 +16,21 @@ class RellFormatterTest {
     fun `Format whole test suite`() {
         val testFolderUri = javaClass.classLoader.getResource("formatting-test-suite")?.toURI()!!
 
-        val files =
-            File(testFolderUri).walkTopDown().filter { it.isFile && it.name.endsWith(".rell") }
-                .map { it.path to it.readText() }.toMap()
+        val files = File(testFolderUri)
+            .walkTopDown()
+            .filter { it.isFile && it.name.endsWith(".rell") }
+            .associate { it.path to it.readText() }
 
         val formatterOptions = FormatterOptions()
         // TODO: Should reformat all formatted files to use tabs
         formatterOptions.insertSpaces = true
         var i = 1
         val nrOfTestCases = files.size / 2
-        files.forEach {
-            if (!it.key.contains("formatted")) {
-                println("File: ${it.key}")
-                val formattedText = RellFormatter.formatString(it.value, formatterOptions)
-                val expectedText = files[it.key.replace(".rell", "_formatted.rell")]
+        for ((key, value) in files) {
+            if (!key.contains("formatted")) {
+                println("File: $key")
+                val formattedText = RellFormatter.formatString(value, formatterOptions)
+                val expectedText = files[key.replace(".rell", "_formatted.rell")]
                 assertThat(formattedText).isEqualTo(expectedText)
                 println("Completed Test Cases: $i / $nrOfTestCases")
                 i++
@@ -95,6 +96,7 @@ class RellFormatterTest {
     @Test
     fun `Format when-expr with stray semicolon after value-block arm does not throw`() {
         val formatterOptions = FormatterOptions()
+
         RellFormatter.formatString(
             """
                 function f(): integer {

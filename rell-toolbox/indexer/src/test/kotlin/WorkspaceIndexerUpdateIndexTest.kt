@@ -64,7 +64,11 @@ class WorkspaceIndexerUpdateIndexTest {
         val updateFileUriResourceMap = workspaceIndexer.fileUriResourceMap
 
         assertThat(updateFileUriResourceMap.size).isEqualTo(prevUriResourceMap.size)
-        prevUriResourceMap.keys.forEach { assertNotNull(updateFileUriResourceMap[it]) }
+
+        for (uri in prevUriResourceMap.keys) {
+            assertNotNull(updateFileUriResourceMap[uri])
+        }
+
         assertThat(updateFileUriResourceMap[rellFileUri]!!.parseTree.children.size).isNotEqualTo(
             prevUriResourceMap[rellFileUri]!!.parseTree.children.size
         )

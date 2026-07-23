@@ -84,13 +84,13 @@ class FileChangeHandler(
         val deletedFiles = mutableListOf<URI>()
         val dirtyFiles = mutableListOf<URI>()
 
-        deletedFolders.forEach { uri ->
+        for (uri in deletedFolders) {
             indexerRegistry.getIndexerForOrNull(uri)?.let { indexer ->
                 deletedFiles.addAll(indexer.getFileUrisWithPrefix(uri))
             }
         }
 
-        dirtyFolders.forEach { uri ->
+        for (uri in dirtyFolders) {
             findRellFilesInWorkspace(File(uri), dirtyFiles)
         }
 
@@ -104,7 +104,7 @@ class FileChangeHandler(
         updateAffectedFiles: Boolean,
         affectedUris: MutableSet<URI>
     ) {
-        deletedFiles.forEach { uri ->
+        for (uri in deletedFiles) {
             indexerRegistry.getIndexerFor(uri).let { indexer ->
                 if (updateAffectedFiles) {
                     affectedUris.addAll(indexer.findAffectedFiles(uri))
@@ -120,7 +120,7 @@ class FileChangeHandler(
         updateAffectedFiles: Boolean,
         affectedUris: MutableSet<URI>
     ) {
-        dirtyFiles.forEach { uri ->
+        for (uri in dirtyFiles) {
             indexerRegistry.getIndexerFor(uri).let { indexer ->
                 val updatedResource = indexer.updateFileUriResourceMap(uri)
                 if (updateAffectedFiles && updatedResource != null) {
@@ -131,7 +131,7 @@ class FileChangeHandler(
     }
 
     private fun updateAffectedFiles(affectedUris: Set<URI>) {
-        affectedUris.forEach { uri ->
+        for (uri in affectedUris) {
             indexerRegistry.getIndexerFor(uri).updateFileUriResourceMap(uri)
         }
     }

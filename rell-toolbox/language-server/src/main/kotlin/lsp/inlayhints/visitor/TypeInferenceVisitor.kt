@@ -40,8 +40,7 @@ class TypeInferenceVisitor(
     }
 
     override fun visitConstantDef(ctx: RellParser.ConstantDefContext) {
-        // If an explicit type is present (`val x : T = ...`), the second child
-        // of `:` will be a TypeContext — skip the hint.
+        // If an explicit type is present (`val x : T = ...`), the second child of `:` will be a TypeContext - skip the hint.
         if (ctx.type() != null) return super.visitConstantDef(ctx).let { }
 
         val nameTerminal = ctx.RULE_ID() ?: return super.visitConstantDef(ctx).let { }

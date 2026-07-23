@@ -55,7 +55,7 @@ class BaseExprFormatter(
  * binary-operator token with a single space.
  *
  * For unary prefix tokens (`+`, `-`, `not`, `++`, `--`) that appear before an operand, we
- * also emit `noSpace` after them — except for `not` which needs one space after.
+ * also emit `noSpace` after them, except for `not` which needs one space after.
  */
 class ExpressionInlineOpFormatter : NodeFormatter<BinaryExprContext> {
     override fun format(node: BinaryExprContext, doc: FormattableDocument) {

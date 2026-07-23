@@ -221,11 +221,6 @@ class ExpressionFormatter(
         formatLabelEquals(parent, doc)
     }
 
-    /**
-     * For each item (an expression context), find its anchor: the closest preceding RULE_ID
-     * terminal that is itself preceded by an item-boundary (`(`, `,`) — or fall back to the
-     * expression itself if no label exists.
-     */
     private fun collectLabeledItemAnchors(
         parent: ParserRuleContext,
         items: List<ParserRuleContext>,
@@ -249,7 +244,7 @@ class ExpressionFormatter(
                         (prev.symbol.text == "(" || prev.symbol.text == ",")
                     ) {
                         foundLabel = c
-                        // Don't break — we want the latest one before itemStartIdx.
+                        // Don't break - we want the latest one before itemStartIdx.
                     }
                 }
             }

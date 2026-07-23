@@ -49,15 +49,7 @@ class LambdaExprFormatter(
     }
 }
 
-/**
- * Formats a value block `'{' statement* expression? '}'` — a lambda block body or an `if`/`when`
- * expression block arm. Mirrors [BlockStmtFormatter] but also lays out the trailing result
- * expression, and renders an empty body as `{}`. Statements and the trailing expression each go
- * on their own indented line; the closing brace drops to its own line.
- */
-class ValueBlockFormatter(
-    private val tokenAnalyzer: TokenAnalyzer,
-) : NodeFormatter<ValueBlockContext> {
+class ValueBlockFormatter(private val tokenAnalyzer: TokenAnalyzer) : NodeFormatter<ValueBlockContext> {
     override fun format(node: ValueBlockContext, doc: FormattableDocument) {
         val open = tokenAnalyzer.directTokenFor(node, "{")
         val close = tokenAnalyzer.directTokenFor(node, "}")
@@ -73,11 +65,12 @@ class ValueBlockFormatter(
 
         doc.interiorIndent(node)
 
-        statements.forEach { statement ->
+        for (statement in statements) {
             doc.prepend(statement) {
                 it.setNewLines(1, 1, 2)
                 it.highPriority()
             }
+
             doc.format(statement)
         }
 

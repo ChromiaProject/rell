@@ -28,10 +28,12 @@ open class AbstractRuleTest {
         importedModuleFileNames: List<String> = listOf()
     ): List<LinterIssue> {
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
-        importedModuleFileNames.forEach { moduleFileName ->
+
+        for (moduleFileName in importedModuleFileNames) {
             val dependencyUri = getFileUri(moduleFileName)
             resourceFactory.buildRellResource(dependencyUri, fileMap)
         }
+
         val fileUri = getFileUri(fileName)
         val resource = resourceFactory.buildRellResource(fileUri, fileMap)
         return rellLinter.lint(config, resource)

@@ -27,19 +27,19 @@ data class FormatterOptions(
     }
 
     private fun updateFormatterOptions(editorConfig: EditorConfig) {
-        editorConfig.sections.forEach { section ->
-            section.properties.forEach { property ->
-                when (property.key) {
+        for (section in editorConfig.sections) {
+            for ((key, value) in section.properties) {
+                when (key) {
                     "max_line_width" -> {
-                        maxLineWidth = property.value.sourceValue.trim().toInt()
+                        maxLineWidth = value.sourceValue.trim().toInt()
                     }
 
                     "insert_spaces" -> {
-                        insertSpaces = property.value.sourceValue.trim() == "true"
+                        insertSpaces = value.sourceValue.trim() == "true"
                     }
 
                     "tab_size" -> {
-                        tabSize = property.value.sourceValue.trim().toInt()
+                        tabSize = value.sourceValue.trim().toInt()
                     }
                 }
             }

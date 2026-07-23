@@ -32,12 +32,15 @@ class RellResourceFactory(
     private val chromiaModelProvider: ChromiaModelProvider
 ) {
     val rellCompilerUtils = RellCompilerUtils()
+
     fun buildFileMap(sources: Map<URI, String>): ConcurrentHashMap<C_SourcePath, C_SourceFile> {
         val fileMap = ConcurrentHashMap<C_SourcePath, C_SourceFile>()
-        sources.forEach { (fileUri, fileContent) ->
+
+        for ((fileUri, fileContent) in sources) {
             val (sourcePath, sourceFile) = buildCSourceFile(fileUri, fileContent)
             fileMap[sourcePath] = sourceFile
         }
+
         return fileMap
     }
 

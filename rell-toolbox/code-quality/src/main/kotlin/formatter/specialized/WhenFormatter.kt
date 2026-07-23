@@ -71,7 +71,7 @@ class WhenExprFormatter(
 
         // Each case is a whenCondition '->' arm (valueBlock or expression). Under ANTLR error
         // recovery (e.g. an incomplete when-expr mid-edit), whenExprLastCase()/whenCondition()/
-        // valueBlock()/expression() can all come back null — skip anything incomplete instead of
+        // valueBlock()/expression() can all come back null - skip anything incomplete instead of
         // crashing the whole format request.
         val cases = node.whenExprCase().mapNotNull { caseOf(it.whenCondition(), it.valueBlock(), it.expression()) } +
             listOfNotNull(node.whenExprLastCase()?.let { caseOf(it.whenCondition(), it.valueBlock(), it.expression()) })

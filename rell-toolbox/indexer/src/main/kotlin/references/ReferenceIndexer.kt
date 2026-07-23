@@ -26,8 +26,8 @@ class ReferenceIndexer(private val workspaceUri: URI, fileUriResourceMap: Mutabl
     }
 
     private fun update(fileUriResourceMap: Map<URI, Resource>) {
-        fileUriResourceMap.forEach { (uri, resource) ->
-            resource.symbolInfos.forEach { (position, symbolInfo) ->
+        for ((uri, resource) in fileUriResourceMap) {
+            for ((position, symbolInfo) in resource.symbolInfos) {
                 addToIndex(position, symbolInfo, uri)
             }
         }

@@ -172,6 +172,8 @@ class AtExprWhatCmplxFormatter(
             }
         }
 
-        items.forEach { doc.format(it) }
+        for (i in items) {
+            doc.format(i)
+        }
     }
 }

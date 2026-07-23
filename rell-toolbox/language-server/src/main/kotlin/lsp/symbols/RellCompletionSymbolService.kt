@@ -69,7 +69,7 @@ class RellCompletionSymbolService(private val symbolService: RellSymbolService) 
                 // The ANTLR-backed outline can produce an `import` Package node whose range spans
                 // adjacent definitions when the import is malformed (e.g. a bare `import` keyword
                 // with no path). Only accept the Package as an active import path when its text
-                // actually contains a `.` — without one there is nothing to resolve.
+                // actually contains a `.` - without one there is nothing to resolve.
                 SymbolKind.Package -> if (packageSymbolHasImportPath(symbol, document)) symbol else null
                 SymbolKind.Namespace -> symbol.children?.let { findPackageSymbol(it, offset, document) }
                 else -> null
@@ -121,7 +121,7 @@ class RellCompletionSymbolService(private val symbolService: RellSymbolService) 
 
         val matchingChild = findChildContainingPosition(node, position)
         // A malformed `import` (Package child with no dotted path) should not block file-scope
-        // recognition — its outline range can spuriously overlap adjacent definitions on the
+        // recognition - its outline range can spuriously overlap adjacent definitions on the
         // ANTLR-backed parser. Treat such a child as if it were absent.
         val effectiveChild = matchingChild?.takeUnless {
             it.kind == SymbolKind.Package && !packageSymbolHasImportPath(it, document)

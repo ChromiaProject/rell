@@ -23,7 +23,7 @@ class RellDiagnosticsManager {
     }
 
     fun reportAllDiagnostics(indexers: Collection<WorkspaceIndexer>) {
-        indexers.forEach { indexer ->
+        for (indexer in indexers) {
             reportDiagnostics(indexer)
         }
     }
@@ -43,7 +43,7 @@ class RellDiagnosticsManager {
     }
 
     private fun publishDiagnostics(issues: Map<URI, List<RellIssue>>, skipCache: Boolean = false) {
-        issues.forEach { (uri, issueList) ->
+        for ((uri, issueList) in issues) {
             diagnosticsPublisher.publishDiagnostics(uri, issueList, skipCache)
         }
     }
@@ -55,7 +55,9 @@ class RellDiagnosticsManager {
     }
 
     fun clearDiagnostics(fileUris: List<URI>) {
-        fileUris.forEach { clearDiagnostics(it) }
+        for (uri in fileUris) {
+            clearDiagnostics(uri)
+        }
     }
 
     fun sendNotification(type: NotificationType, messsage: String) {

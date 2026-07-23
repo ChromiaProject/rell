@@ -10,12 +10,6 @@ import org.antlr.v4.runtime.tree.TerminalNode
 
 /**
  * Finds the first defining-name identifier under a parser rule context.
- *
- * In the legacy `Rell.g4` grammar, name-introducing positions were wrapped in a synthetic
- * `RuleX_NameNode` rule, so the finder simply visited that node. In the canonical
- * `Rell.g4` grammar there is no such wrapper — names are bare `RULE_ID` terminals.
- * We approximate the old behaviour by descending into the parse tree and returning the
- * first `RULE_ID` terminal encountered (depth-first, left-to-right).
  */
 class NameNodesFinder {
     fun getFirstNodeUnder(parent: ParserRuleContext): ParserRuleContext? {

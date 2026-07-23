@@ -36,8 +36,8 @@ class ConfigurationSerializer {
 
         configFile.bufferedWriter().use { writer ->
             writer.appendLine("modules:")
-            modulePaths.forEach {
-                writer.appendLine("  - \"$it\"")
+            for (path in modulePaths) {
+                writer.appendLine("  - \"$path\"")
             }
         }
 

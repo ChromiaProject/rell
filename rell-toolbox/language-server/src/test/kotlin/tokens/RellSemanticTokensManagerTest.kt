@@ -98,8 +98,8 @@ class RellSemanticTokensManagerTest {
             RellTokenType.STRUCT_ATTR_VAL,
         )
         val tokenTypes = RellSemanticTokensManager().getSemanticTokens(resource).map { it.tokenType }.distinct()
-        tokenTypes.forEach {
-            assertThat(mappingTypes).contains(it)
+        for (type in tokenTypes) {
+            assertThat(mappingTypes).contains(type)
         }
     }
 
@@ -149,8 +149,8 @@ class RellSemanticTokensManagerTest {
         )
         val tokenTypes = RellSemanticTokensManager().getSemanticTokens(resource).map { it.tokenType }.distinct()
 
-        tokenTypes.forEach {
-            assertThat(mappingTypes).contains(it)
+        for (type in tokenTypes) {
+            assertThat(mappingTypes).contains(type)
         }
     }
 
@@ -186,8 +186,8 @@ class RellSemanticTokensManagerTest {
             RellTokenType.QUERY
         )
         val tokenTypes = RellSemanticTokensManager().getSemanticTokens(resource).map { it.tokenType }.distinct()
-        tokenTypes.forEach {
-            assertThat(mappingTypes).contains(it)
+        for (type in tokenTypes) {
+            assertThat(mappingTypes).contains(type)
         }
     }
 

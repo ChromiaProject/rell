@@ -78,7 +78,7 @@ class RootFormattableDocument(
         val comments = tokenStream.tokens.filter {
             it.channel == RellCustomTokenChannels.COMMENTS.channel && tokenStream.isRellDocComment(it)
         }
-        comments.forEach { token ->
+        for (token in comments) {
             val prependChange = Changes(token.startIndex, token.startIndex, formatterOptions).apply {
                 setNewLines(1, 1, 2)
                 highPriority()
@@ -158,12 +158,15 @@ class RootFormattableDocument(
 
     fun createReplacements(): List<TextReplacement> {
         val sortedChanges = changes.filter { !it.blockIndent }.sortedBy { it.startOffset }
-        val blockIndents = changes.filter { it.blockIndent }
+
+        val blockIndents = changes
+            .filter { it.blockIndent }
             .map { Interval.of(it.startOffset, it.stopOffset) }
 
         val resolvedChanges = mutableListOf<Changes>()
         var previous: Changes? = null
-        sortedChanges.forEach { changes ->
+
+        for (changes in sortedChanges) {
             if (overlap(previous, changes)) {
                 previous?.mergeValuesFrom(changes)
             } else {
@@ -176,6 +179,7 @@ class RootFormattableDocument(
         for (resolvedChange in resolvedChanges) {
             val interval = Interval.of(resolvedChange.startOffset, resolvedChange.stopOffset)
             val indentCount = countIndents(interval, blockIndents)
+
             if (indentCount > 0) {
                 var replacementText = resolvedChange.getTextChanges()
                 val lastNewLineIndex = replacementText.lastIndexOf(formatterOptions.newLineString)

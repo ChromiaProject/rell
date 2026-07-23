@@ -64,7 +64,7 @@ class OutlineTreeBuilder(
         var antlrNode: ParserRuleContext? = attachment.node
         // The S_Node attachment for a function/operation/etc. is the inner def context
         // (e.g. FunctionDefContext). Annotations live on the enclosing AnnotatedDefContext.
-        // Walk up until we find one — works whether the attachment points to the inner def
+        // Walk up until we find one - works whether the attachment points to the inner def
         // or directly at the AnnotatedDefContext.
         while (antlrNode != null && antlrNode !is RellParser.AnnotatedDefContext) {
             antlrNode = antlrNode.parent as? ParserRuleContext
@@ -73,7 +73,7 @@ class OutlineTreeBuilder(
         val modifiers = antlrNode.modifiers() ?: return emptyList()
         return modifiers.modifier().mapNotNull { mod ->
             // `modifier` is `'abstract' | 'mutable' | 'override' | annotation`. We only care
-            // about `annotation` (e.g. `@test`, `@disabled`) — return its identifier text.
+            // about `annotation` (e.g. `@test`, `@disabled`) - return its identifier text.
             mod.annotation()?.RULE_ID()?.text
         }
     }

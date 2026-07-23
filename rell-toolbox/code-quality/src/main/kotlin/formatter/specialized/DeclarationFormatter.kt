@@ -37,7 +37,10 @@ class TupleVarDecFormatter(
         val lineSeparate = lineAnalyzer.formatAsMultiLine(varDeclarators)
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
         argumentFormatter.formatArguments(varDeclarators, doc)
-        varDeclarators.forEach { xVarDec -> doc.format(xVarDec) }
+
+        for (xVarDec in varDeclarators) {
+            doc.format(xVarDec)
+        }
     }
 }
 

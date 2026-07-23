@@ -190,7 +190,8 @@ class RellSymbolServiceTest {
         val symbols = rellSymbolService.getDocumentSymbols(rellFileUri, document, resource)
 
         assertThat(symbols).isNotNull()
-        symbols!!.children.forEach { symbol ->
+
+        for (symbol in symbols!!.children) {
             assertThat(symbol.selectionRange).isInBetween(symbol.range)
         }
     }

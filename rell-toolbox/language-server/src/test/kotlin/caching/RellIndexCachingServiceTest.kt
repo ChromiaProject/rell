@@ -235,9 +235,9 @@ class RellIndexCachingServiceTest {
             WorkspaceIndexer(workspaceFolderUri, rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
         val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
 
-        sourceFiles.forEach {
-            val fileUri = workspaceFolderUri.resolve(it.filePath)
-            File(fileUri).writeText(it.fileContent)
+        for (file in sourceFiles) {
+            val fileUri = workspaceFolderUri.resolve(file.filePath)
+            File(fileUri).writeText(file.fileContent)
             indexer.fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileMap)
         }
 

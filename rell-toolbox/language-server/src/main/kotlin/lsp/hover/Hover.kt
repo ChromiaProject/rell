@@ -11,6 +11,7 @@ import net.postchain.rell.base.utils.doc.DocSymbol
 fun formatDocSymbol(docSymbol: DocSymbol?): String {
     if (docSymbol == null) return ""
     val declaration = createDocDeclaration(docSymbol.declaration)
+
     return buildString {
         append(declaration)
         docSymbol.comment?.let { comment ->
@@ -18,14 +19,16 @@ fun formatDocSymbol(docSymbol: DocSymbol?): String {
             appendLine()
             appendLine(comment.description)
             mappedTags[DocCommentTag.SINCE.code]?.let { tag -> appendLine("\n*since:* ${tag.first().text}") }
+
             mappedTags[DocCommentTag.SEE.code]?.let { tag ->
                 appendLine(
                     "\n*See also:* ${tag.joinToString(", ") { it.text }}"
                 )
             }
+
             mappedTags[DocCommentTag.PARAM.code]?.let { items ->
-                items.forEach {
-                    appendLine("\n*@param* `${it.key}` - ${it.text}")
+                for (i in items) {
+                    appendLine("\n*@param* `${i.key}` - ${i.text}")
                 }
             }
             mappedTags[DocCommentTag.RETURN.code]?.let { tag -> appendLine("\n*@return* - ${tag.first().text}") }

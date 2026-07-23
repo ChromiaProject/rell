@@ -83,10 +83,10 @@ class TestDataBuilder {
         wsDir = target.toFile()
         srcDir = File(wsDir, "src")
         srcDir?.mkdirs()
-        sourceFiles.forEach { (name, content) ->
+        for ((name, content) in sourceFiles) {
             createFileOnDisk(srcDir!!, name, content())
         }
-        workspaceFiles.forEach { (name, content) ->
+        for ((name, content) in workspaceFiles) {
             createFileOnDisk(wsDir!!, name, content())
         }
         configFile = configBuilder.createFile(target)
