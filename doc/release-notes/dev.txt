@@ -1,1 +1,12 @@
 UNRELEASED NOTES
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Tools: Language server runs without sun.misc.Unsafe on JDK 25+
+
+The language server's workspace-index cache serialization was migrated from the discontinued Fury 0.4.1 library
+to its successor Apache Fory 1.4.0. On JDK 25 and later, Fory (and with it the language server) no longer uses
+the deprecated-for-removal sun.misc.Unsafe memory-access API, so the JVM's Unsafe usage warnings disappear and
+the server keeps working once the JDK removes the API. On JDK 21-24 behavior is unchanged.
+
+Existing index cache files are in the old format; the server discards and rebuilds them automatically on first
+start, so the first startup after upgrading re-indexes the workspace.

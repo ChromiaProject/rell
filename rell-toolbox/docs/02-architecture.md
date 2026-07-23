@@ -139,7 +139,7 @@ WorkspaceIndexer.index()
 ```
 
 **Cache Strategy**:
-- Serialized using **Fury** (high-performance binary format)
+- Serialized using **Fory** (high-performance binary format)
 - Stored in OS temp directory (`/tmp` or equivalent)
 - Keyed by workspace path
 
@@ -323,12 +323,12 @@ Export to chosen format
 - ❌ Must manually sync grammar with upstream Rell compiler
 - ✅ IDE features work even with syntax errors
 
-### Why Fury for Serialization?
+### Why Fory for Serialization?
 
-**Decision**: Use Fury instead of Java serialization or Protocol Buffers.
+**Decision**: Use Fory (formerly Fury) instead of Java serialization or Protocol Buffers.
 
 **Rationale**:
-- **Performance**: Fury is 5-10x faster than Java serialization
+- **Performance**: Fory is 5-10x faster than Java serialization
 
 
 ### Why Koin for Dependency Injection?

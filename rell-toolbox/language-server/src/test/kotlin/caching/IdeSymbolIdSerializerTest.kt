@@ -18,7 +18,7 @@ class IdeSymbolIdSerializerTest {
 
     @Test
     fun `IdeSymbolId instance is serialized correctly`() {
-        val fury = RellIndexSerializer.getFury()
+        val fory = RellIndexSerializer.getFory()
         val ideSymbolId = IdeSymbolId(
             IdeSymbolCategory.FUNCTION,
             "dummyFunction",
@@ -28,12 +28,12 @@ class IdeSymbolIdSerializerTest {
             ).toImmList()
         )
 
-        val symIdAsBytes = fury.serialize(ideSymbolId)
+        val symIdAsBytes = fory.serialize(ideSymbolId)
 
         assertThat(symIdAsBytes).isNotNull()
         assertThat(symIdAsBytes).isNotEmpty()
 
-        val deserializedSymbolId = fury.deserialize(symIdAsBytes)
+        val deserializedSymbolId = fory.deserialize(symIdAsBytes)
 
         assertThat(deserializedSymbolId).isNotNull()
         assertThat(deserializedSymbolId).isEqualTo(ideSymbolId)

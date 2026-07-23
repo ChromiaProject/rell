@@ -3,7 +3,7 @@
 ### `.caching`
 
 * The RellIndexSerializer class in the caching package provides functionality for serializing and deserializing a
-  WorkspaceIndexer object. It leverages the Fury library for serialization purposes, using the default serializer
+  WorkspaceIndexer object. It leverages the Fory library for serialization purposes, using the default serializer
   except for the type IdeSymbolId were the custom serializer IdeSymbolIdSerializer is used. Key functionalities include
   converting Resource and IdeSymbolInfo instances into their serializable counterparts
   (SerializableResource and SerializableSymbolInfo)

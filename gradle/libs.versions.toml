@@ -22,7 +22,7 @@ junit = "6.1.0"
 # rell-toolbox dependencies
 commons-collections4 = "4.5.0"
 ec4j = "1.2.0"
-fury-core = "0.4.1"
+fory-core = "1.4.0"
 java-diff-utils = "4.17"
 json-schema-validator = "3.0.6"
 koin = "4.2.2"
@@ -92,7 +92,7 @@ junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params" }
 # rell-toolbox libraries
 commons-collections4 = { module = "org.apache.commons:commons-collections4", version.ref = "commons-collections4" }
 ec4j = { module = "org.ec4j.core:ec4j-core", version.ref = "ec4j" }
-fury-core = { module = "org.furyio:fury-core", version.ref = "fury-core" }
+fory-core = { module = "org.apache.fory:fory-core", version.ref = "fory-core" }
 jackson-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 java-diff-utils = { module = "io.github.java-diff-utils:java-diff-utils", version.ref = "java-diff-utils" }

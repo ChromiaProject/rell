@@ -24,7 +24,7 @@
 
 ### Serialization
 
-- Serialization of document resource data is handled using the `io.fury.Fury` library.
+- Serialization of document resource data is handled using the `org.apache.fory.Fory` library.
 - The [RellIndexSerializer](../language-server/src/main/kotlin/net/postchain/rell/toolbox/lsp/caching/RellIndexSerializer.kt) class
   manages the serialization and deserialization process.
 - What gets cached is a serializable representation of document
@@ -35,6 +35,6 @@
 
 #### IdeSymbolIdSerializer
 
-The default serializer from Fury was not able to serialize `net.postchain.rell.base.utils.ide.IdeSymbolId` so the custom
+The default serializer from Fory was not able to serialize `net.postchain.rell.base.utils.ide.IdeSymbolId` so the custom
 serializer [IdeSymbolIdSerializer](../language-server/src/main/kotlin/net/postchain/rell/toolbox/lsp/caching/IdeSymbolIdSerializer.kt)
 handle the serialization and deserialization of the type `IdeSymbolId`.

@@ -4,8 +4,8 @@
 
 package net.postchain.rell.toolbox.lsp.caching
 
-import io.fury.Fury
-import io.fury.config.Language
+import org.apache.fory.Fory
+import org.apache.fory.config.Language
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
@@ -34,10 +34,10 @@ class RellIndexSerializer(
     fun serializeAsBytes(indexer: WorkspaceIndexer): ByteArray = serialize(toSerializableWorkspaceIndexer(indexer))
 
     private fun deserialize(indexAsBytes: ByteArray) =
-        getFury().deserialize(indexAsBytes) as SerializableWorkspaceIndexer
+        getFory().deserialize(indexAsBytes) as SerializableWorkspaceIndexer
 
     private fun serialize(serializableData: SerializableWorkspaceIndexer): ByteArray =
-        getFury().serialize(serializableData)
+        getFory().serialize(serializableData)
 
     private fun toSerializableWorkspaceIndexer(indexer: WorkspaceIndexer): SerializableWorkspaceIndexer {
         val linterOptions = linterOptionsResolver.getLinterConfig(indexer.workspaceUri)
@@ -154,15 +154,18 @@ class RellIndexSerializer(
     }
 
     companion object {
-        fun getFury(): Fury {
-            val fury = Fury.builder().withLanguage(Language.JAVA)
+        fun getFory(): Fory {
+            val fory = Fory.builder().withLanguage(Language.JAVA)
                 .requireClassRegistration(false)
                 .withRefTracking(true)
                 .suppressClassRegistrationWarnings(true)
                 .withCodegen(false)
+                // The cache holds ANTLR parse trees, which nest far deeper than Fory's default
+                // depth guard of 50; the data is written by the LSP itself, not untrusted input.
+                .withMaxDepth(100_000)
                 .build()
-            fury.registerSerializer(IdeSymbolId::class.java, IdeSymbolIdSerializer(fury))
-            return fury
+            fory.registerSerializer(IdeSymbolId::class.java, IdeSymbolIdSerializer(fory.config))
+            return fory
         }
     }
 }

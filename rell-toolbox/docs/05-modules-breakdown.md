@@ -260,7 +260,7 @@ This is the **primary deliverable** of Rell Toolbox.
 ### LSP Features Implemented
 
 
-### Caching (Fury Serialization)
+### Caching (Fory Serialization)
 
 **File**: `caching/IndexCache.kt`
 **Purpose**: Serialize workspace index to disk for fast startup.
@@ -271,7 +271,7 @@ This is the **primary deliverable** of Rell Toolbox.
 **External**:
 - `org.eclipse.lsp4j:org.eclipse.lsp4j` - LSP protocol
 - `io.insert-koin:koin-core` - Dependency injection
-- `org.furyio:fury-core` - Serialization
+- `org.apache.fory:fory-core` - Serialization
 - `io.sentry:sentry-log4j2` - Error tracking
 
 **Internal**:

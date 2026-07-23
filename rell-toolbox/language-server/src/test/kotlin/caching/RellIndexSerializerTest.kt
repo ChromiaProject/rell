@@ -151,7 +151,7 @@ class RellIndexSerializerTest {
             metaData = null
         )
 
-        val serializedBytes = RellIndexSerializer.getFury().serialize(serializableIndexer)
+        val serializedBytes = RellIndexSerializer.getFory().serialize(serializableIndexer)
 
         val exception = assertThrows<IllegalStateException> {
             rellIndexSerializer.deserializeAsWorkspaceIndexer(serializedBytes)

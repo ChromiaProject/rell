@@ -4,29 +4,30 @@
 
 package net.postchain.rell.toolbox.lsp.caching
 
-import io.fury.Fury
-import io.fury.memory.MemoryBuffer
-import io.fury.serializer.Serializer
+import org.apache.fory.config.Config
+import org.apache.fory.context.ReadContext
+import org.apache.fory.context.WriteContext
+import org.apache.fory.serializer.Serializer
 import net.postchain.rell.base.model.Name
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.toImmList
 
-class IdeSymbolIdSerializer(fury: Fury?) : Serializer<IdeSymbolId>(fury, IdeSymbolId::class.java) {
+class IdeSymbolIdSerializer(config: Config) : Serializer<IdeSymbolId>(config, IdeSymbolId::class.java) {
     private val regex = Regex("""(\w+)\[([^]]+)]""")
     private val ideSymbolCategoryMap = IdeSymbolCategory.entries.associateBy { it.code }
 
-    override fun write(buffer: MemoryBuffer, value: IdeSymbolId?) {
+    override fun write(context: WriteContext, value: IdeSymbolId?) {
         if (value == null) {
-            buffer.writeBytesWithSizeEmbedded(byteArrayOf())
+            context.buffer.writeBytesWithSize(byteArrayOf())
             return
         }
         val encodedAsBytes = value.encode().toByteArray()
-        buffer.writeBytesWithSizeEmbedded(encodedAsBytes)
+        context.buffer.writeBytesWithSize(encodedAsBytes)
     }
 
-    override fun read(buffer: MemoryBuffer): IdeSymbolId? {
-        val bytes = buffer.readBytesWithSizeEmbedded()
+    override fun read(context: ReadContext): IdeSymbolId? {
+        val bytes = context.buffer.readBytesAndSize()
         if (bytes.isEmpty()) return null
         val encodedAsString = String(bytes)
         return decodeSymId(encodedAsString)
