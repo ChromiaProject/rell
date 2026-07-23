@@ -5,9 +5,11 @@
 package net.postchain.rell.toolbox.lsp.editing
 
 import net.postchain.rell.toolbox.formatter.FormatterIssue
+import net.postchain.rell.toolbox.indexer.RellIssue
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.linter.LinterIssue
+import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsConverter
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.net.URI
@@ -29,7 +31,7 @@ object CodeActionService {
     fun getCodeActionForFile(fileUri: URI, indexer: WorkspaceIndexer): CodeAction {
         val resource = indexer.getResource(fileUri) ?: return CodeAction()
         val codeAction = CodeAction(CodeActionTitles.AUTO_FIXABLE.title)
-        codeAction.kind = "quickfix"
+        codeAction.kind = CodeActionKind.SourceFixAll
 
         val linterEdits = resource.linterIssues.map {
             getEditsForLinterIssue(fileUri, it)
@@ -59,30 +61,41 @@ object CodeActionService {
         formatterIssues: List<FormatterIssue>,
         range: Range
     ): List<Either<Command, CodeAction>> {
+        // Fixes are tied to the diagnostic they resolve and marked preferred, so a client ranks the
+        // actual fix above the suppression and the whole-file action instead of ordering by title.
         val linterCodeActions = linterIssues.filter {
             it.fix() != null
         }.map {
             val action = CodeAction(it.message)
-            action.kind = "quickfix"
+            action.kind = CodeActionKind.QuickFix
             action.edit = WorkspaceEdit(getEditsForLinterIssue(fileUri, it))
+            action.diagnostics = DiagnosticsConverter.toDiagnostics(listOf(RellIssue.fromLinterIssue(it)))
+            action.isPreferred = true
             Either.forRight<Command, CodeAction>(action)
         }
         val formatterCodeActions = formatterIssues.map {
             val action = CodeAction(it.message)
-            action.kind = "quickfix"
+            action.kind = CodeActionKind.QuickFix
             action.edit = WorkspaceEdit(getEditsForFormatterIssue(fileUri, it))
+            action.diagnostics = DiagnosticsConverter.toDiagnostics(listOf(RellIssue.fromFormatterIssue(it)))
+            action.isPreferred = true
             Either.forRight<Command, CodeAction>(action)
         }
         val codeActions = linterCodeActions + formatterCodeActions
 
+        // Rewrites the whole file rather than the diagnostic under the cursor, so it is a source
+        // action rather than a quick-fix.
         val autoFixAll = CodeAction(CodeActionTitles.AUTO_FIXABLE.title)
-        autoFixAll.kind = "quickfix"
+        autoFixAll.kind = CodeActionKind.SourceFixAll
         autoFixAll.data = mapOf("fileUri" to fileUri)
+        autoFixAll.isPreferred = false
         val autoFixAllEither = Either.forRight<Command, CodeAction>(autoFixAll)
 
+        // Suppressing the inspection is the escape hatch, never the recommended action.
         val disableNextLine = CodeAction(CodeActionTitles.DISABLE_LINTER.title)
-        disableNextLine.kind = "quickfix"
+        disableNextLine.kind = CodeActionKind.QuickFix
         disableNextLine.edit = getEditsForDisableNextLine(fileUri, range)
+        disableNextLine.isPreferred = false
         val disableNextLineEither = Either.forRight<Command, CodeAction>(disableNextLine)
 
         return if (codeActions.isNotEmpty()) {

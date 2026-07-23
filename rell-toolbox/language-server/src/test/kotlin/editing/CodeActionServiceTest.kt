@@ -17,6 +17,7 @@ import net.postchain.rell.toolbox.lsp.TestTextEdit
 import net.postchain.rell.toolbox.testing.testData
 import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.eclipse.lsp4j.CodeAction
+import org.eclipse.lsp4j.CodeActionKind
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.junit.jupiter.api.BeforeEach
@@ -95,6 +96,27 @@ class CodeActionServiceTest {
         val titles = codeActionsAt(fixableLine).map { it.title }
         assertThat(titles).contains(CodeActionTitles.DISABLE_LINTER.title)
         assertThat(titles).contains(CodeActionTitles.AUTO_FIXABLE.title)
+    }
+
+    @Test
+    fun `should rank the fix above the suppression and the whole-file action`() {
+        val actions = codeActionsAt(fixableLine)
+        val quickFix = actions.first { it.title == PREFER_EMPTY_TITLE }
+        val disable = actions.first { it.title == CodeActionTitles.DISABLE_LINTER.title }
+        val fixAll = actions.first { it.title == CodeActionTitles.AUTO_FIXABLE.title }
+
+        // Only the actual fix is preferred; suppressing or rewriting the file never is.
+        assertThat(quickFix.isPreferred).isEqualTo(true)
+        assertThat(disable.isPreferred).isEqualTo(false)
+        assertThat(fixAll.isPreferred).isEqualTo(false)
+
+        // Rewriting the whole file is a source action rather than a quick-fix.
+        assertThat(fixAll.kind).isEqualTo(CodeActionKind.SourceFixAll)
+        assertThat(disable.kind).isEqualTo(CodeActionKind.QuickFix)
+
+        // The fix declares the diagnostic it resolves, so a client can associate the two.
+        assertThat(quickFix.diagnostics.map { it.code.left })
+            .isEqualTo(listOf("linter_issue:rule_prefer_empty"))
     }
 
     @Test
