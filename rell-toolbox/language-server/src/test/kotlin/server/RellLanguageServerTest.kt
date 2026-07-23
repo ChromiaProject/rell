@@ -631,12 +631,15 @@ class RellLanguageServerTest {
             )
             addFile(
                 "single_syntax_error.rell",
+                // `a` is read on the next line so the file carries no inspection findings once the
+                // missing semicolon is added; the tests assert exact diagnostic counts.
                 """
                     module;
 
 
                     function a() {
                         val a = 2
+                        print(a);
                     }
                 """.trimIndent()
             )

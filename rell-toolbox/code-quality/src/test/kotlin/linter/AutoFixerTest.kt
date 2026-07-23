@@ -12,6 +12,7 @@ import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.RellResourceFactory
 import net.postchain.rell.toolbox.parser.AntlrRellParser
+import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.junit.jupiter.api.Test
 import java.net.URI
 
@@ -28,44 +29,43 @@ class AutoFixerTest {
 
     @Test
     fun `should fix all formatting issues`() {
-        checkAutofix("formatting.rell", LinterOptions(enabled = true, ruleFormatter = true))
+        checkAutofix("formatting.rell", testLinterOptions { ruleFormatter = true })
     }
 
     @Test
     fun `should fix all quote issues`() {
-        checkAutofix("quotes.rell", LinterOptions(enabled = true, ruleQuoteFormat = Quote.DOUBLE))
+        checkAutofix("quotes.rell", testLinterOptions { ruleQuoteFormat = Quote.DOUBLE })
     }
 
     @Test
     fun `should fix all auto-fixable issues`() {
-        checkAutofix("all.rell", LinterOptions(enabled = true, ruleFormatter = true, ruleQuoteFormat = Quote.DOUBLE))
+        checkAutofix("all.rell", testLinterOptions { ruleFormatter = true; ruleQuoteFormat = Quote.DOUBLE })
     }
 
     @Test
     fun `should remove extra trailing new line`() {
         checkAutofix(
             "end_of_line.rell",
-            LinterOptions(enabled = true, ruleFormatter = true, ruleQuoteFormat = Quote.DOUBLE)
+            testLinterOptions { ruleFormatter = true; ruleQuoteFormat = Quote.DOUBLE }
         )
     }
 
     @Test
     fun `should delete newline and indent`() {
-        checkAutofix("delete.rell", LinterOptions(enabled = true, ruleFormatter = true, ruleQuoteFormat = Quote.DOUBLE))
+        checkAutofix("delete.rell", testLinterOptions { ruleFormatter = true; ruleQuoteFormat = Quote.DOUBLE })
     }
 
     @Test
     fun `should apply all Wave 1 fixes end-to-end`() {
         checkAutofix(
             "wave1.rell",
-            LinterOptions(
-                enabled = true,
-                rulePreferEmpty = true,
-                ruleSimplifyBooleanReturn = true,
-                ruleSimplifyNullableIf = true,
-                rulePreferVal = true,
-                ruleAtCardinalityMisuse = true,
-            )
+            testLinterOptions {
+                rulePreferEmpty = true
+                ruleSimplifyBooleanReturn = true
+                ruleSimplifyNullableIf = true
+                ruleConstantDetection = true
+                ruleAtCardinalityMisuse = true
+            }
         )
     }
 

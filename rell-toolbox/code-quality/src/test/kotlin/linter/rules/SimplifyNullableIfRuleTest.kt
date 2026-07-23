@@ -8,7 +8,7 @@ import assertk.assertThat
 import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
-import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.junit.jupiter.api.Test
 
 class SimplifyNullableIfRuleTest : AbstractRuleTest() {
@@ -16,17 +16,17 @@ class SimplifyNullableIfRuleTest : AbstractRuleTest() {
 
     @Test
     fun `should be disabled when enabled is false`() {
-        assertThat(lint(fileName, LinterOptions(enabled = false, ruleSimplifyNullableIf = true))).isEmpty()
+        assertThat(lint(fileName, testLinterOptions(enabled = false) { ruleSimplifyNullableIf = true })).isEmpty()
     }
 
     @Test
     fun `should be disabled when rule is null`() {
-        assertThat(lint(fileName, LinterOptions(enabled = true, ruleSimplifyNullableIf = null))).isEmpty()
+        assertThat(lint(fileName, testLinterOptions { ruleSimplifyNullableIf = null })).isEmpty()
     }
 
     @Test
     fun `should rewrite null guards to elvis and safe-access`() {
-        val result = lint(fileName, LinterOptions(enabled = true, ruleSimplifyNullableIf = true))
+        val result = lint(fileName, testLinterOptions { ruleSimplifyNullableIf = true })
         assertThat(result).hasSize(5)
         for (issue in result) {
             assertThat(issue.ruleId).isEqualTo(SimplifyNullableIfRule.RULE_ID)

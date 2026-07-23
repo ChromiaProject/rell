@@ -58,7 +58,7 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
             val varName = name.text
             // A tuple declarator is one whose enclosing declarator chain reaches a TupleVarDeclarator.
             val isTupleDeclarator = isInsideTupleDeclarator(declarator)
-            val constantContext = ConstantDetectionRuleContext(varName, name, isTupleDeclarator)
+            val constantContext = ConstantDetectionRuleContext(varName, name, isTupleDeclarator, ctx)
             val varRange = Range(
                 Position(name.start.line - 1, name.stop.charPositionInLine),
                 Position(name.stop.line - 1, name.stop.charPositionInLine + name.text.length)
@@ -126,7 +126,10 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
                     ConstantDetectionIssue(
                         value.parserRuleContext,
                         ruleId,
-                        message
+                        message,
+                        // A tuple declarator shares one `var` keyword across several names, so it
+                        // can only be rewritten once every name in it is unmodified: no fix here.
+                        if (value.isTupleDeclarator) null else value.varStmtCtx
                     )
                 )
             }
@@ -150,7 +153,9 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
 class ConstantDetectionRuleContext(
     val varName: String,
     val parserRuleContext: ParserRuleContext,
-    val isTupleDeclarator: Boolean
+    val isTupleDeclarator: Boolean,
+    /** The enclosing `var` statement, used to rewrite the keyword to `val`. */
+    val varStmtCtx: RellParser.VarStmtAltContext,
 )
 
 class SimpleVarDeclaratorCollector : RellBaseVisitor<Unit>() {

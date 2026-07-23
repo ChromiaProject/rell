@@ -8,24 +8,24 @@ import assertk.assertThat
 import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
 import net.postchain.rell.toolbox.linter.LinterFix
-import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.Quote
+import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.junit.jupiter.api.Test
 
 class SpecificQuotesRuleTest : AbstractRuleTest() {
     @Test
     fun `should be disabled when enabled is false`() {
-        assertThat(lint("quotes.rell", LinterOptions(enabled = false, ruleQuoteFormat = Quote.DOUBLE))).isEmpty()
+        assertThat(lint("quotes.rell", testLinterOptions(enabled = false) { ruleQuoteFormat = Quote.DOUBLE })).isEmpty()
     }
 
     @Test
     fun `should be disabled when rule is null`() {
-        assertThat(lint("quotes.rell", LinterOptions(enabled = true, ruleQuoteFormat = null))).isEmpty()
+        assertThat(lint("quotes.rell", testLinterOptions { ruleQuoteFormat = null })).isEmpty()
     }
 
     @Test
     fun `should find strings which are not double quote`() {
-        val result = lint("quotes.rell", LinterOptions(enabled = true, ruleQuoteFormat = Quote.DOUBLE))
+        val result = lint("quotes.rell", testLinterOptions { ruleQuoteFormat = Quote.DOUBLE })
         assertThat(result).hasSize(3)
         assertThat(result[0]).matches(
             2,
@@ -52,7 +52,7 @@ class SpecificQuotesRuleTest : AbstractRuleTest() {
 
     @Test
     fun `should find strings which are not single quote`() {
-        val result = lint("quotes.rell", LinterOptions(enabled = true, ruleQuoteFormat = Quote.SINGLE))
+        val result = lint("quotes.rell", testLinterOptions { ruleQuoteFormat = Quote.SINGLE })
         assertThat(result).hasSize(3)
         assertThat(result[0]).matches(
             8,

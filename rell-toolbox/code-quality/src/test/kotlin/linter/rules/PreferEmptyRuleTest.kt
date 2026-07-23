@@ -8,7 +8,7 @@ import assertk.assertThat
 import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
-import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.junit.jupiter.api.Test
 
 class PreferEmptyRuleTest : AbstractRuleTest() {
@@ -16,17 +16,17 @@ class PreferEmptyRuleTest : AbstractRuleTest() {
 
     @Test
     fun `should be disabled when enabled is false`() {
-        assertThat(lint(fileName, LinterOptions(enabled = false, rulePreferEmpty = true))).isEmpty()
+        assertThat(lint(fileName, testLinterOptions(enabled = false) { rulePreferEmpty = true })).isEmpty()
     }
 
     @Test
     fun `should be disabled when rule is null`() {
-        assertThat(lint(fileName, LinterOptions(enabled = true, rulePreferEmpty = null))).isEmpty()
+        assertThat(lint(fileName, testLinterOptions { rulePreferEmpty = null })).isEmpty()
     }
 
     @Test
     fun `should flag size comparisons and skip non-emptiness checks`() {
-        val result = lint(fileName, LinterOptions(enabled = true, rulePreferEmpty = true))
+        val result = lint(fileName, testLinterOptions { rulePreferEmpty = true })
         assertThat(result).hasSize(6)
 
         for (issue in result) {

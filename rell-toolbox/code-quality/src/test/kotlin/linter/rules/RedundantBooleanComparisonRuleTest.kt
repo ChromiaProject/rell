@@ -9,7 +9,7 @@ import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
-import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.junit.jupiter.api.Test
 
 class RedundantBooleanComparisonRuleTest : AbstractRuleTest() {
@@ -17,17 +17,17 @@ class RedundantBooleanComparisonRuleTest : AbstractRuleTest() {
 
     @Test
     fun `should be disabled when enabled is false`() {
-        assertThat(lint(fileName, LinterOptions(enabled = false, ruleRedundantBooleanComparison = true))).isEmpty()
+        assertThat(lint(fileName, testLinterOptions(enabled = false) { ruleRedundantBooleanComparison = true })).isEmpty()
     }
 
     @Test
     fun `should be disabled when rule is null`() {
-        assertThat(lint(fileName, LinterOptions(enabled = true, ruleRedundantBooleanComparison = null))).isEmpty()
+        assertThat(lint(fileName, testLinterOptions { ruleRedundantBooleanComparison = null })).isEmpty()
     }
 
     @Test
     fun `should flag boolean-literal comparisons as diagnostics and exempt where-clauses`() {
-        val result = lint(fileName, LinterOptions(enabled = true, ruleRedundantBooleanComparison = true))
+        val result = lint(fileName, testLinterOptions { ruleRedundantBooleanComparison = true })
         assertThat(result).hasSize(4)
 
         for (issue in result) {

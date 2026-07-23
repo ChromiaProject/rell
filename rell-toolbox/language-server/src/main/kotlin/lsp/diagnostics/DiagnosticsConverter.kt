@@ -39,6 +39,7 @@ object DiagnosticsConverter {
         return when (severity) {
             RellIssueSeverity.ERROR -> DiagnosticSeverity.Error
             RellIssueSeverity.WARNING -> DiagnosticSeverity.Warning
+            RellIssueSeverity.WEAK_WARNING -> DiagnosticSeverity.Information
         }
     }
 }

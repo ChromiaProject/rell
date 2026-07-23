@@ -12,12 +12,22 @@ Existing index cache files are in the old format; the server discards and rebuil
 start, so the first startup after upgrading re-indexes the workspace.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-2. Tools: New opt-in linter inspections
+2. Tools: Linter inspections run by default, with severities
 
-The language server's linter gained six inspections, each enabled per-rule in the .rell_lint config file and off
-by default. Most carry an auto-fix, offered both as a per-issue quick-fix and through "Fix all auto-fixable
-issues". The comparison-with-boolean and at-expression checks are reported as diagnostics in the cases where a
-purely syntactic rewrite could change behavior. The rule keys are:
+Inspections now run out of the box. Previously every rule stayed off until it was switched on in .rell_lint, so a
+rule nobody enabled reported nothing; the config file now exists to tune inspections or switch them off rather
+than to switch them on. Linter findings also carry a severity. Style suggestions surface as weak warnings,
+reported to editors as information-level diagnostics, so they are visible without being intrusive, while findings
+that point at a likely defect stay full warnings: unused variables, imports outside a module, outer-join
+cartesian products and at-expression cardinality misuse.
+
+Two settings remain opt-in: rule_quote_format, because a project has to choose single or double quotes, and
+rule_formatter, which gates the formatter rather than an inspection.
+
+Existing inspections are unchanged except that rule_constant_detection now offers a quick-fix rewriting the
+reported var to val, for declarators that are not part of a tuple.
+
+Five inspections are new:
 
   - rule_simplify_boolean_return: an if/else whose branches return only boolean literals collapses to a return of
     the condition itself, in both the statement and the if-expression form; swapped branches give the negated
@@ -27,7 +37,6 @@ purely syntactic rewrite could change behavior. The rule keys are:
     rewrite is unsafe when the operand is a nullable boolean, so no auto-fix is offered.
   - rule_simplify_nullable_if: a null guard of the form "if (x != null) x else y" becomes an elvis expression, and
     "if (x != null) x.f else null" becomes a safe-access expression.
-  - rule_prefer_val: a local var that is never reassigned is flagged in favor of val.
   - rule_prefer_empty: a size() comparison against zero, such as size() == 0 or size() > 0, becomes an empty()
     call or its negation.
   - rule_at_cardinality_misuse: a zero-or-one at-expression followed by a not-null assertion becomes a

@@ -8,27 +8,27 @@ import assertk.assertThat
 import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
 import net.postchain.rell.toolbox.linter.LinterFix
-import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.junit.jupiter.api.Test
 
 class ReplaceIfWithWhenRuleTest : AbstractRuleTest() {
     @Test
     fun `should be disabled when enabled is false`() {
         assertThat(
-            lint("replace_if_with_when.rell", LinterOptions(enabled = false, ruleReplaceIfWithWhen = true))
+            lint("replace_if_with_when.rell", testLinterOptions(enabled = false) { ruleReplaceIfWithWhen = true })
         ).isEmpty()
     }
 
     @Test
     fun `should be disabled when rule is null`() {
         assertThat(
-            lint("replace_if_with_when.rell", LinterOptions(enabled = true, ruleReplaceIfWithWhen = null))
+            lint("replace_if_with_when.rell", testLinterOptions { ruleReplaceIfWithWhen = null })
         ).isEmpty()
     }
 
     @Test
     fun `should report if-else-if chains with a when replacement`() {
-        val result = lint("replace_if_with_when.rell", LinterOptions(enabled = true, ruleReplaceIfWithWhen = true))
+        val result = lint("replace_if_with_when.rell", testLinterOptions { ruleReplaceIfWithWhen = true })
         assertThat(result).hasSize(2)
 
         val multiLineWhen = "when {\n" +

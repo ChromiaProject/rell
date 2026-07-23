@@ -5,6 +5,7 @@
 package net.postchain.rell.toolbox.linter.issues
 
 import net.postchain.rell.base.compiler.parser.antlr.RellParser
+import net.postchain.rell.toolbox.indexer.RellIssueSeverity
 import net.postchain.rell.toolbox.linter.LinterFix
 import net.postchain.rell.toolbox.linter.LinterIssue
 import org.antlr.v4.runtime.ParserRuleContext
@@ -23,7 +24,7 @@ class AtCardinalityMisuseIssue(
     ruleId: String,
     message: String,
     private val fixData: NotNullToUnitFix?,
-) : LinterIssue(anchorCtx, ruleId, message) {
+) : LinterIssue(anchorCtx, ruleId, message, RellIssueSeverity.WARNING) {
 
     override fun fix(): LinterFix? {
         val fd = fixData ?: return null

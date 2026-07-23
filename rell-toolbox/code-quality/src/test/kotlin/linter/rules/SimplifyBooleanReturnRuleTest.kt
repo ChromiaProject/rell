@@ -8,7 +8,7 @@ import assertk.assertThat
 import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
-import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.junit.jupiter.api.Test
 
 class SimplifyBooleanReturnRuleTest : AbstractRuleTest() {
@@ -16,17 +16,17 @@ class SimplifyBooleanReturnRuleTest : AbstractRuleTest() {
 
     @Test
     fun `should be disabled when enabled is false`() {
-        assertThat(lint(fileName, LinterOptions(enabled = false, ruleSimplifyBooleanReturn = true))).isEmpty()
+        assertThat(lint(fileName, testLinterOptions(enabled = false) { ruleSimplifyBooleanReturn = true })).isEmpty()
     }
 
     @Test
     fun `should be disabled when rule is null`() {
-        assertThat(lint(fileName, LinterOptions(enabled = true, ruleSimplifyBooleanReturn = null))).isEmpty()
+        assertThat(lint(fileName, testLinterOptions { ruleSimplifyBooleanReturn = null })).isEmpty()
     }
 
     @Test
     fun `should simplify boolean-literal if statements and expressions`() {
-        val result = lint(fileName, LinterOptions(enabled = true, ruleSimplifyBooleanReturn = true))
+        val result = lint(fileName, testLinterOptions { ruleSimplifyBooleanReturn = true })
         assertThat(result).hasSize(5)
         for (issue in result) {
             assertThat(issue.ruleId).isEqualTo(SimplifyBooleanReturnRule.RULE_ID)

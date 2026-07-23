@@ -7,7 +7,7 @@ package net.postchain.rell.toolbox.linter.rules
 import assertk.assertThat
 import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
-import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.junit.jupiter.api.Test
 
 class OuterJoinCartesianProductRuleTest : AbstractRuleTest() {
@@ -16,7 +16,7 @@ class OuterJoinCartesianProductRuleTest : AbstractRuleTest() {
         assertThat(
             lint(
                 "outer_join_cartesian_product.rell",
-                LinterOptions(enabled = false, ruleOuterJoinCartesianProduct = true)
+                testLinterOptions(enabled = false) { ruleOuterJoinCartesianProduct = true }
             )
         ).isEmpty()
     }
@@ -26,7 +26,7 @@ class OuterJoinCartesianProductRuleTest : AbstractRuleTest() {
         assertThat(
             lint(
                 "outer_join_cartesian_product.rell",
-                LinterOptions(enabled = true, ruleOuterJoinCartesianProduct = false)
+                testLinterOptions { ruleOuterJoinCartesianProduct = false }
             )
         ).isEmpty()
     }
@@ -36,7 +36,7 @@ class OuterJoinCartesianProductRuleTest : AbstractRuleTest() {
         assertThat(
             lint(
                 "outer_join_cartesian_product.rell",
-                LinterOptions(enabled = true, ruleOuterJoinCartesianProduct = null)
+                testLinterOptions { ruleOuterJoinCartesianProduct = null }
             )
         ).isEmpty()
     }
@@ -46,7 +46,7 @@ class OuterJoinCartesianProductRuleTest : AbstractRuleTest() {
         val result =
             lint(
                 "outer_join_cartesian_product.rell",
-                LinterOptions(enabled = true, ruleOuterJoinCartesianProduct = true)
+                testLinterOptions { ruleOuterJoinCartesianProduct = true }
             )
         assertThat(result).hasSize(2)
         assertThat(

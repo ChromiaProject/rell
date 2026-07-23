@@ -11,6 +11,8 @@ import net.postchain.rell.toolbox.linter.LinterIssue
 import net.postchain.rell.toolbox.parser.SyntaxError
 
 enum class RellIssueSeverity {
+    /** Renders as a subtle hint rather than a warning; the default for style inspections. */
+    WEAK_WARNING,
     WARNING,
     ERROR
 }
@@ -53,7 +55,7 @@ data class RellIssue(
             return RellIssue(
                 message = linterIssue.message,
                 code = "linter_issue:${linterIssue.ruleId}",
-                severity = RellIssueSeverity.WARNING,
+                severity = linterIssue.severity,
                 line = linterIssue.ctx.start.line,
                 column = linterIssue.ctx.start.charPositionInLine + 1
             )

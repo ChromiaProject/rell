@@ -9,7 +9,7 @@ import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
-import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.junit.jupiter.api.Test
 
 class AtCardinalityMisuseRuleTest : AbstractRuleTest() {
@@ -17,17 +17,17 @@ class AtCardinalityMisuseRuleTest : AbstractRuleTest() {
 
     @Test
     fun `should be disabled when enabled is false`() {
-        assertThat(lint(fileName, LinterOptions(enabled = false, ruleAtCardinalityMisuse = true))).isEmpty()
+        assertThat(lint(fileName, testLinterOptions(enabled = false) { ruleAtCardinalityMisuse = true })).isEmpty()
     }
 
     @Test
     fun `should be disabled when rule is null`() {
-        assertThat(lint(fileName, LinterOptions(enabled = true, ruleAtCardinalityMisuse = null))).isEmpty()
+        assertThat(lint(fileName, testLinterOptions { ruleAtCardinalityMisuse = null })).isEmpty()
     }
 
     @Test
     fun `should flag cardinality misuse with a fix only for the trailing-free not-null form`() {
-        val result = lint(fileName, LinterOptions(enabled = true, ruleAtCardinalityMisuse = true))
+        val result = lint(fileName, testLinterOptions { ruleAtCardinalityMisuse = true })
         assertThat(result).hasSize(6)
 
         for (issue in result) {

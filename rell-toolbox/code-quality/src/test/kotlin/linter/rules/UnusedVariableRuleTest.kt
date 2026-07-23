@@ -7,28 +7,28 @@ package net.postchain.rell.toolbox.linter.rules
 import assertk.assertThat
 import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
-import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.junit.jupiter.api.Test
 
 class UnusedVariableRuleTest : AbstractRuleTest() {
     @Test
     fun `should be disabled when enabled is false`() {
-        assertThat(lint("unused_var.rell", LinterOptions(enabled = false, ruleUnusedVariable = true))).isEmpty()
+        assertThat(lint("unused_var.rell", testLinterOptions(enabled = false) { ruleUnusedVariable = true })).isEmpty()
     }
 
     @Test
     fun `should be disabled when rule is false`() {
-        assertThat(lint("unused_var.rell", LinterOptions(enabled = true, ruleUnusedVariable = false))).isEmpty()
+        assertThat(lint("unused_var.rell", testLinterOptions { ruleUnusedVariable = false })).isEmpty()
     }
 
     @Test
     fun `should be disabled when rule is null`() {
-        assertThat(lint("unused_var.rell", LinterOptions(enabled = true, ruleUnusedVariable = null))).isEmpty()
+        assertThat(lint("unused_var.rell", testLinterOptions { ruleUnusedVariable = null })).isEmpty()
     }
 
     @Test
     fun `should find vars which are never used`() {
-        val result = lint("unused_var.rell", LinterOptions(enabled = true, ruleUnusedVariable = true))
+        val result = lint("unused_var.rell", testLinterOptions { ruleUnusedVariable = true })
         assertThat(result).hasSize(7)
         assertThat(result[0]).matches(3, 9, UnusedVariableRule.RULE_ID, "Variable 'y' is never used")
         assertThat(result[1]).matches(4, 9, UnusedVariableRule.RULE_ID, "Variable 'z' is never used")

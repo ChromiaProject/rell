@@ -10,12 +10,12 @@ import assertk.assertions.isEqualTo
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
-import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.TestPosition
 import net.postchain.rell.toolbox.lsp.TestRange
 import net.postchain.rell.toolbox.lsp.TestTextEdit
 import net.postchain.rell.toolbox.testing.testData
+import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.eclipse.lsp4j.CodeAction
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
@@ -36,11 +36,10 @@ class CodeActionServiceTest {
     private val formatterOptions = FormatterOptions()
 
     // rule_prefer_empty carries an auto-fix; rule_redundant_boolean_comparison is diagnostic-only.
-    private val linterOptions = LinterOptions(
-        enabled = true,
-        rulePreferEmpty = true,
-        ruleRedundantBooleanComparison = true,
-    )
+    private val linterOptions = testLinterOptions {
+        rulePreferEmpty = true
+        ruleRedundantBooleanComparison = true
+    }
 
     @TempDir
     private lateinit var tempDir: File

@@ -6,6 +6,7 @@ package net.postchain.rell.toolbox.lsp.server
 
 import assertk.assertThat
 import assertk.assertions.*
+import net.postchain.rell.toolbox.indexer.RellIssueSeverity
 import net.postchain.rell.toolbox.lsp.TestClient
 import net.postchain.rell.toolbox.lsp.TestClientServerLauncher
 import net.postchain.rell.toolbox.lsp.TestServerModule
@@ -118,7 +119,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
     }
 
     @Test
-    fun `didChangeWatched linter config created at a wrong location will not add linter issues to diagnostics`() {
+    fun `didChangeWatched linter config created at a wrong location is ignored`() {
         val rellFilePath = "code.rell"
         val testDataBuilder = testData(tempDir) {
             addFile(
@@ -138,9 +139,11 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
         val configFileUri = File(testDataBuilder.workspaceFolder.toString(), ".rell_lint").apply {
             writeText(
+                // Switching the inspection off here must have no effect, because the file sits
+                // outside the project root where the linter config is looked up.
                 """
                 [*.rell]
-                rule_naming_convention=true
+                rule_naming_convention=false
                 """.trimIndent()
             )
         }.toURI()
@@ -159,15 +162,11 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         val diagnostics = testClient.diagnostics
         assertThat(indexer.fileUriResourceMap.keys).containsOnly(rellFileUri)
         assertThat(diagnostics.keys).containsOnly(rellFileUri.toString())
-        assertThat(diagnostics[rellFileUri.toString()]!!).containsOnly(
-            Diagnostic(
-                Range(Position(2, 2), Position(2, 2)),
-                "Invalid comment tag: @returned",
-                DiagnosticSeverity.Warning,
-                null,
-                "comment:tag:unknown:returned"
-            ),
-        )
+        val codes = diagnostics[rellFileUri.toString()]!!.map { it.code.left }
+        // The compiler warning is reported as usual...
+        assertThat(codes).contains("comment:tag:unknown:returned")
+        // ...and the misplaced config did not switch off the naming inspection, which is on by default.
+        assertThat(codes).contains("linter_issue:rule_naming_convention")
     }
 
     @Test
@@ -325,8 +324,10 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         clientServerLauncher.initializeServer(testDataBuilder.sourceFolderUri)
         val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
 
+        // Inspections are on by default, so the fixture legitimately carries weak warnings here;
+        // what matters as a baseline is that nothing fails to compile.
         indexer.getAllIssues().forEach { (_, issues) ->
-            assertThat(issues.size).isEqualTo(0)
+            assertThat(issues.none { it.severity == RellIssueSeverity.ERROR }).isTrue()
         }
 
         val submoduleFolder = testDataBuilder.sourceFolder.listFiles()!!.first { it.endsWith("submodule") }
@@ -349,10 +350,12 @@ class RellLanguageServerDidChangeWatchedFilesTest {
 
         for ((uri, issues) in issues) {
             if (uri.toString().endsWith("main.rell")) {
-                assertThat(issues.size).isEqualTo(1)
-                assertThat(issues.first().message).isEqualTo("Module 'submodule' not found")
+                // Renaming the folder breaks the import; inspections may add weak warnings alongside.
+                assertThat(issues.map { it.message }).contains("Module 'submodule' not found")
             } else {
-                assertThat(issues.size).isEqualTo(0)
+                // Inspections are on by default, so weak warnings are expected; the rename must
+                // simply not leave anything broken.
+                assertThat(issues.none { it.severity == RellIssueSeverity.ERROR }).isTrue()
             }
         }
     }
