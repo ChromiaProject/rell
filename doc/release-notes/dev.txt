@@ -24,11 +24,13 @@ cartesian products and at-expression cardinality misuse.
 Two settings remain opt-in: rule_quote_format, because a project has to choose single or double quotes, and
 rule_formatter, which gates the formatter rather than an inspection.
 
-Existing inspections are unchanged except that rule_constant_detection now offers a quick-fix rewriting the
+Among the inspections that already existed, rule_constant_detection additionally gained a quick-fix rewriting the
 reported var to val, for declarators that are not part of a tuple.
 
-Five inspections are new:
+Six inspections are new:
 
+  - rule_replace_if_with_when: a chain of if and else-if branches is rewritten as a when block. A plain if/else
+    with no else-if is left alone.
   - rule_simplify_boolean_return: an if/else whose branches return only boolean literals collapses to a return of
     the condition itself, in both the statement and the if-expression form; swapped branches give the negated
     condition.
