@@ -1,10 +1,10 @@
-# GitLab Pages deployments: the static portal index plus the four manual report jobs
-# (docs / benchmarks / profile / regression). The index is republished automatically after each
-# manual job so the listing stays current.
+# GitLab Pages deployments: the static portal index plus the five manual report jobs
+# (docs / benchmarks / profile / lsp / regression). The index is republished automatically after
+# each manual job so the listing stays current.
 
 # Client-side portal index listing every available `pages:docs` / `pages:benchmarks` /
-# `pages:profile` / `pages:regression` deployment, plus a profile-diff tool. The project is
-# private, so anonymous client-side fetches against the Environments API 401 — build-index.sh
+# `pages:profile` / `pages:lsp` / `pages:regression` deployment, plus a profile-diff tool. The
+# project is private, so anonymous client-side fetches against the Environments API 401 — build-index.sh
 # bakes the list into `manifest.json` at publish time via `glab api`, and the app fetches that +
 # per-deployment /data/main.json from the browser.
 #
@@ -49,6 +49,11 @@ pages:index:after-profile:
   stage: index
   needs: [ pages:profile ]
 
+pages:index:after-lsp:
+  extends: .pages-index
+  stage: index
+  needs: [ pages:lsp ]
+
 pages:index:after-regression:
   extends: .pages-index
   stage: index
@@ -90,6 +95,12 @@ pages:mr-comment:after-profile:
   extends: .pages-mr-comment
   needs:
     - job: pages:profile
+      artifacts: true
+
+pages:mr-comment:after-lsp:
+  extends: .pages-mr-comment
+  needs:
+    - job: pages:lsp
       artifacts: true
 
 pages:mr-comment:after-regression:
@@ -182,6 +193,56 @@ pages:profile:
   artifacts:
     when: always
     paths: [ public ]
+    reports:
+      dotenv: mr-comment.env
+    expire_in: 30 days
+
+# Manual language-server startup profiler: two profiled child-JVM LSP sessions (cold and hot index
+# cache) against the in-repo `alice-mysterious-seed` workspace, rendered to HTML.
+#
+# Deliberately not extending `.setup` / `.local-chr-cache`: `:performance:profileLsp` needs neither
+# PostgreSQL nor Docker nor a chr build — just the language-server shadow JAR and a workspace that
+# ships with the repo. It does need `tar`/`gzip`, which the GraalVM image lacks, to unpack the
+# async-profiler release tarball that `provisionAsprof()` downloads.
+#
+# Only `report.html` and the two flame graphs it iframes are published; the rest of the run
+# directory (JFR recordings, collapsed stacks, and the `cache-home/` index cache the cold run
+# persists for the hot run) stays out of Pages and is kept as a job artifact for debugging.
+pages:lsp:
+  stage: portal
+  tags: [ saas-linux-medium-amd64 ]
+  interruptible: true
+  rules:
+    - when: manual
+      allow_failure: true
+  needs: []
+  before_script:
+    - microdnf install -y tar gzip
+    - !reference [ .setup-fragments, develocity-inject ]
+  script:
+    - ./gradlew $GRADLE_FLAGS_MEDIUM :performance:profileLsp
+    - mkdir -p public
+    - cp performance/reports/lsp-startup/report.html performance/reports/lsp-startup/flamegraph-*.html public/
+    - echo "LSP startup report - $CI_PAGES_URL/report.html"
+    # Hand the portal links to the MR-comment follow-up (consumed via dotenv on MR pipelines).
+    - |
+      {
+        echo "PORTAL_KEY=lsp"
+        echo "PORTAL_BULLET=**LSP startup** (\`$CI_COMMIT_SHORT_SHA\`): [report]($CI_PAGES_URL/report.html)"
+      } > mr-comment.env
+  pages:
+    path_prefix: "lsp-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+    expire_in: never
+  environment:
+    name: "lsp/$CI_COMMIT_REF_SLUG/$CI_COMMIT_SHORT_SHA"
+    url: "$CI_PAGES_URL/report.html"
+  artifacts:
+    when: always
+    paths:
+      - public
+      - performance/reports/lsp-startup/milestones-*.json
+      - performance/reports/lsp-startup/system-info.json
+      - performance/reports/lsp-startup/server-stderr-*.log
     reports:
       dotenv: mr-comment.env
     expire_in: 30 days

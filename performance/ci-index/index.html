@@ -153,10 +153,11 @@
   <div class="doc-head-inner">
     <h1 class="doc-title">Rell Developer Portal</h1>
     <p class="doc-strap">
-      CI jobs may publish four kinds of artifacts per commit:
+      CI jobs may publish five kinds of artifacts per commit:
       <strong>Docs</strong> (Dokka-rendered Rell stdlib reference),
       <strong>Benchmarks</strong> (JMH microbenchmarks), <strong>Profile</strong> (end-to-end
-      async-profiler run against a Chromia node + workload), and <strong>Regression</strong>
+      async-profiler run against a Chromia node + workload), <strong>LSP</strong> (language-server
+      startup with a cold and a hot index cache), and <strong>Regression</strong>
       (clone a curated list of external Rell projects and verify whether the snapshot Rell is still
       valid in them). Benchmark and profile deployments also expose JSON at
       <code>&lt;deployment&gt;/data/main.json</code> — the <strong>compare</strong> tool below
@@ -245,12 +246,13 @@ function renderReports(commits) {
     reportCell(c.docs,       false, "browse") +
     reportCell(c.benchmarks, true,  "report") +
     reportCell(c.profile,    true,  "report") +
+    reportCell(c.lsp,        false, "report") +
     reportCell(c.regression, false, "report") +
     "</tr>").join("");
   host.innerHTML =
     "<table><thead><tr>" +
     "<th>Branch</th><th>Commit</th><th>When</th>" +
-    "<th>Docs</th><th>Benchmarks</th><th>Profile</th><th>Regression</th>" +
+    "<th>Docs</th><th>Benchmarks</th><th>Profile</th><th>LSP</th><th>Regression</th>" +
     "</tr></thead><tbody>" + rows + "</tbody></table>";
 }
 

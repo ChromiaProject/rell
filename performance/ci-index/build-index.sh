@@ -1,6 +1,6 @@
 #!/bin/sh
 # Builds the Rell Developer Portal index: a static client-side app (index.html) plus a
-# manifest.json describing every currently-available docs / benchmark / profile / regression
+# manifest.json describing every currently-available docs / benchmark / profile / lsp / regression
 # Pages deployment. The Environments API requires authentication even on public projects, so the
 # manifest is baked here at publish time; the browser app then fetches it — and the
 # per-deployment data/main.json files it points at — anonymously.
@@ -52,7 +52,7 @@ fi
 # resolves (force-push, deleted branch) is simply left without a title.
 commit_titles="{}"
 for sha in $(printf '%s' "$envs_json" | jq -r '
-  [ .[] | select(.name | test("^(docs|benchmarks|profile|regression)/[^/]+/[^/]+$"))
+  [ .[] | select(.name | test("^(docs|benchmarks|profile|lsp|regression)/[^/]+/[^/]+$"))
         | (.name | capture("/(?<s>[^/]+)$")).s ] | unique | .[]'); do
   title=$(glab api "projects/${CI_PROJECT_ID}/repository/commits/${sha}" 2>/dev/null \
             | jq -r '.title // empty' 2>/dev/null || true)
@@ -81,9 +81,10 @@ done
 
 generated_at=$(date -u +"%Y-%m-%d %H:%M UTC")
 
-# Env names follow the schema `benchmarks/<branch>/<sha>`, `profile/<branch>/<sha>` and
-# `regression/<branch>/<sha>` — per-commit so that same-branch reruns don't clobber each
-# other (diffing two profiles needs both deployments coexisting). Group by (branch, sha)
+# Env names follow the schema `benchmarks/<branch>/<sha>`, `profile/<branch>/<sha>`,
+# `lsp/<branch>/<sha>` and `regression/<branch>/<sha>` — per-commit so that same-branch reruns
+# don't clobber each other (diffing two profiles needs both deployments coexisting). Group by
+# (branch, sha)
 # into one entry per commit; sort newest first within each branch, dev/master pinned to the
 # top. `data` is the deployment's machine-readable JSON (kotlinx-benchmark scores for
 # benchmarks, the profile summary written by writeProfileData() for profiles) — the app
@@ -97,16 +98,17 @@ printf '%s' "$envs_json" | jq \
   def branch_rank(b): if b == "dev" then 0 elif b == "master" then 1 else 2 end;
   # path_prefix mirrors the CI config: `benchmarks/dev/<sha>` -> `bench-dev-<sha>`,
   # `profile/dev/<sha>` -> `profile-dev-<sha>`, `regression/dev/<sha>` -> `regression-dev-<sha>`,
-  # `docs/dev/<sha>` -> `docs-dev-<sha>`.
+  # `docs/dev/<sha>` -> `docs-dev-<sha>`, `lsp/dev/<sha>` -> `lsp-dev-<sha>`.
   def env_prefix(k; b; s):
     (if k == "benchmarks" then "bench"
      elif k == "regression" then "regression"
      elif k == "docs" then "docs"
+     elif k == "lsp" then "lsp"
      else "profile" end) + "-" + b + "-" + s;
   # Every deployment serves its report at `<root>/report.html`; the parseable JSON sits at
   # `<root>/data/main.json`.
   def data_url(u): (u | sub("/report\\.html$"; "")) + "/data/main.json";
-  # `data` is attached only when `withData` is set (benchmarks / profiles, not regression)
+  # `data` is attached only when `withData` is set (benchmarks / profiles, not lsp / regression)
   # AND the data URL was confirmed reachable by the HTTP probe — `index` is null (falsy)
   # for an unverified URL, so the deployment falls through to a `url`-only entry.
   def link(entry; withData):
@@ -119,10 +121,10 @@ printf '%s' "$envs_json" | jq \
   {
     generated_at: $ts,
     commits: (
-      map(select(.name | test("^(docs|benchmarks|profile|regression)/[^/]+/[^/]+$")))
+      map(select(.name | test("^(docs|benchmarks|profile|lsp|regression)/[^/]+/[^/]+$")))
       | map(select(.external_url != null))
       | map(
-          (.name | capture("^(?<k>docs|benchmarks|profile|regression)/(?<b>[^/]+)/(?<s>[^/]+)$")) as $c
+          (.name | capture("^(?<k>docs|benchmarks|profile|lsp|regression)/(?<b>[^/]+)/(?<s>[^/]+)$")) as $c
           | {
               kind: $c.k,
               branch: $c.b,
@@ -143,6 +145,7 @@ printf '%s' "$envs_json" | jq \
           docs:       link((map(select(.kind == "docs"))       | first); false),
           benchmarks: link((map(select(.kind == "benchmarks")) | first); true),
           profile:    link((map(select(.kind == "profile"))    | first); true),
+          lsp:        link((map(select(.kind == "lsp"))        | first); false),
           regression: link((map(select(.kind == "regression")) | first); false)
         })
       # Order newest-first within a branch. Sort on the full deployment timestamp `ts`,

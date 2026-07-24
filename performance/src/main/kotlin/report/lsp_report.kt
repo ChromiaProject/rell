@@ -148,12 +148,12 @@ fun renderLspReport(outDir: Path) {
                     ),
                 )
                 main {
+                    renderSysInfo(sysInfo)
                     renderHeadlineMetrics(runs)
                     renderMilestones(runs)
                     renderComponents(runs)
                     renderHotMethods(runs)
                     renderFlamegraphs()
-                    renderSysInfo(sysInfo)
                 }
                 renderColophon("profileLsp · cold + hot index cache", generatedAt)
             }
@@ -181,10 +181,6 @@ private fun FlowContent.renderHeadlineMetrics(runs: List<LspRunData>) {
             val hot = runs.last().milestone("initializeResponseSec")
             if (cold != null && hot != null && hot > 0) {
                 metric("cold / hot", "%.1f".formatRoot(cold / hot), "×", "initialize speedup from index cache")
-            }
-            runs.forEach { run ->
-                metric("${run.name} · active work", "%.1f".formatRoot(run.activeSeconds), "s",
-                    "thread time across all threads")
             }
         }
     }
