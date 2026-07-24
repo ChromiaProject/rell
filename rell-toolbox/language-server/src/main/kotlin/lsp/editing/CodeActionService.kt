@@ -61,18 +61,17 @@ object CodeActionService {
         formatterIssues: List<FormatterIssue>,
         range: Range
     ): List<Either<Command, CodeAction>> {
-        // Fixes are tied to the diagnostic they resolve and marked preferred, so a client ranks the
-        // actual fix above the suppression and the whole-file action instead of ordering by title.
-        val linterCodeActions = linterIssues.filter {
-            it.fix() != null
-        }.map {
-            val action = CodeAction(it.message)
-            action.kind = CodeActionKind.QuickFix
-            action.edit = WorkspaceEdit(getEditsForLinterIssue(fileUri, it))
-            action.diagnostics = DiagnosticsConverter.toDiagnostics(listOf(RellIssue.fromLinterIssue(it)))
-            action.isPreferred = true
-            Either.forRight<Command, CodeAction>(action)
-        }
+        val linterCodeActions = linterIssues
+            .filterNot { it.fix() == null }
+            .map {
+                val action = CodeAction(it.message)
+                action.kind = CodeActionKind.QuickFix
+                action.edit = WorkspaceEdit(getEditsForLinterIssue(fileUri, it))
+                action.diagnostics = DiagnosticsConverter.toDiagnostics(listOf(RellIssue.fromLinterIssue(it)))
+                action.isPreferred = true
+                Either.forRight<Command, CodeAction>(action)
+            }
+
         val formatterCodeActions = formatterIssues.map {
             val action = CodeAction(it.message)
             action.kind = CodeActionKind.QuickFix
@@ -81,6 +80,7 @@ object CodeActionService {
             action.isPreferred = true
             Either.forRight<Command, CodeAction>(action)
         }
+
         val codeActions = linterCodeActions + formatterCodeActions
 
         // Rewrites the whole file rather than the diagnostic under the cursor, so it is a source
@@ -91,9 +91,12 @@ object CodeActionService {
         autoFixAll.isPreferred = false
         val autoFixAllEither = Either.forRight<Command, CodeAction>(autoFixAll)
 
-        // Suppressing the inspection is the escape hatch, never the recommended action.
+        // Suppressing the inspection is the escape hatch, never the recommended action. Emitting it as
+        // a `source` action rather than a `quickfix` keeps LSP4IJ from listing it in the diagnostic's
+        // quick-fix group next to the real fix; the popup sorts that group by title (ignoring
+        // isPreferred), which would otherwise rank "Disable..." above the actual fix.
         val disableNextLine = CodeAction(CodeActionTitles.DISABLE_LINTER.title)
-        disableNextLine.kind = CodeActionKind.QuickFix
+        disableNextLine.kind = CodeActionKind.Source
         disableNextLine.edit = getEditsForDisableNextLine(fileUri, range)
         disableNextLine.isPreferred = false
         val disableNextLineEither = Either.forRight<Command, CodeAction>(disableNextLine)
@@ -127,7 +130,7 @@ object CodeActionService {
         val fix = linterIssue.fix() ?: return mapOf(fileUri.toString() to listOf())
         val range = Range(
             Position(fix.line, fix.charPositionInLine),
-            Position(fix.endLine, fix.endCharPositionInLine)
+            Position(fix.endLine, fix.endCharPositionInLine),
         )
         val edit = TextEdit(range, fix.newText)
         return mapOf(fileUri.toString() to listOf(edit))

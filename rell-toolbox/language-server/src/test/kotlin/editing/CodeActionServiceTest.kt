@@ -110,9 +110,10 @@ class CodeActionServiceTest {
         assertThat(disable.isPreferred).isEqualTo(false)
         assertThat(fixAll.isPreferred).isEqualTo(false)
 
-        // Rewriting the whole file is a source action rather than a quick-fix.
+        // Neither the whole-file rewrite nor the suppression is a quick-fix, so LSP4IJ keeps them out
+        // of the diagnostic's quick-fix group and below the real fix in the popup.
         assertThat(fixAll.kind).isEqualTo(CodeActionKind.SourceFixAll)
-        assertThat(disable.kind).isEqualTo(CodeActionKind.QuickFix)
+        assertThat(disable.kind).isEqualTo(CodeActionKind.Source)
 
         // The fix declares the diagnostic it resolves, so a client can associate the two.
         assertThat(quickFix.diagnostics.map { it.code.left })
