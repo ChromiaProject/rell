@@ -1,9 +1,10 @@
 # Rell Performance Suite
 
-Two complementary tools, one Gradle module:
+Three complementary tools, one Gradle module:
 
 - **JMH microbenchmarks** &mdash; parser, interpreter, and Truffle backends pushed through hand-tuned and real-world Rell workloads. Output: kotlinx-benchmark JSON → HTML report.
 - **End-to-end profiler** &mdash; builds local Rell, starts a Chromia node with a test dapp, attaches async-profiler via the HotSpot Attach API, runs a workload, and renders an HTML report with component breakdown (Rell / Postchain / PostgreSQL / JVM), hot methods, PG stats, and an embedded interactive flame graph.
+- **LSP startup profiler** &mdash; launches the language-server shadow JAR with async-profiler attached from JVM start, drives a real `initialize` against a workspace twice (cold index cache, then hot), and renders an HTML report comparing the two runs.
 
 ## Quick start &mdash; JMH benchmarks
 
@@ -76,6 +77,34 @@ The Gradle task already passes `-XX:+UnlockDiagnosticVMOptions
 `-XX:CompileCommand=dontinline,…ProfileSampleHotLoop.runOnce`. Without these, hot
 tight-loop methods get attributed to the next safepoint poll and the rep loop
 folds into a single inlined frame &mdash; both of which silently corrupt the profile.
+
+## Quick start &mdash; LSP startup profiler
+
+```bash
+# Default workspace: the largest in-repo real-world example (CI-runnable, no checkouts).
+./gradlew :performance:profileLsp
+
+# Point at a real project, e.g. ft4-lib.
+./gradlew :performance:profileLsp --args="--workspace ../ft4-lib"
+```
+
+No PostgreSQL, no Docker &mdash; the task builds the `:rell-toolbox:language-server` shadow JAR,
+provisions async-profiler, and runs **two** child-JVM sessions against the workspace:
+
+1. **cold** &mdash; the index cache directory (isolated via `XDG_CACHE_HOME`, never your real
+   `~/.cache`) is wiped, so `initialize` walks, parses, and compiles everything, then persists
+   the Fory index cache;
+2. **hot** &mdash; the same session re-run against that cache, measuring the cache-deserialization
+   startup a returning user gets on every editor restart.
+
+Each session speaks real LSP over stdio (`initialize` → `initialized` → quiesce →
+`shutdown`/`exit`); workspace indexing runs inside the `initialize` request, so
+"initialize → response" is the delay before the editor becomes functional. Sampling is
+wall-clock (`--interval-ms`, default 2 ms) from JVM start via `-agentpath`.
+
+Output: `performance/reports/lsp-startup/report.html` (milestones, active-time-by-component
+and hot-method tables for both runs, embedded flame graphs) plus per-run `profile-<run>.jfr`,
+`collapsed-<run>.txt`, `flamegraph-<run>.html`, `milestones-<run>.json`.
 
 ## Quick start &mdash; end-to-end profiler
 

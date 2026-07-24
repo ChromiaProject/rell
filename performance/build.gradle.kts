@@ -268,6 +268,40 @@ val profile = tasks.register<JavaExec>("profile") {
     javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
 }
 
+// The language server's shadow JAR, consumed through the `shadow` configuration the Shadow
+// plugin publishes — configuration-cache-safe, and carries the task dependency implicitly.
+val lspServerJar: Configuration by configurations.creating {
+    isCanBeConsumed = false
+}
+
+dependencies {
+    lspServerJar(project(path = ":rell-toolbox:language-server", configuration = "shadow"))
+}
+
+tasks.register<JavaExec>("profileLsp") {
+    group = "performance"
+    description = "Profile language-server startup (cold + hot index cache) against a workspace; renders HTML report. " +
+        "Pass --args=\"--workspace <path>\" to point at a real project."
+    inputs.files(lspServerJar)
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass = "net.postchain.rell.performance.profiler.ProfileLspKt"
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+    // Capture a Provider, not the Configuration/script, to stay configuration-cache-compatible.
+    val serverJarPath = lspServerJar.elements.map { it.single().asFile.absolutePath }
+    argumentProviders += CommandLineArgumentProvider {
+        listOf("--server-jar", serverJarPath.get())
+    }
+}
+
+tasks.register<JavaExec>("regenerateLspReport") {
+    group = "performance"
+    description = "Regenerate the LSP startup HTML from existing performance/reports/lsp-startup run data."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass = "net.postchain.rell.performance.report.Lsp_reportKt"
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+    args(layout.projectDirectory.dir("reports/lsp-startup").asFile.absolutePath)
+}
+
 val regenerateProfileReport = tasks.register<JavaExec>("regenerateProfileReport") {
     group = "performance"
     description = "Regenerate the profile HTML from existing performance/reports/ run data."
