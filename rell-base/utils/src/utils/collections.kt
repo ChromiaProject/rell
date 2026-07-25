@@ -5,6 +5,7 @@
 package net.postchain.rell.base.utils
 
 import kotlinx.collections.immutable.*
+import kotlinx.collections.immutable.puttingAll
 import kotlinx.collections.immutable.minus as kminus
 import kotlinx.collections.immutable.plus as kplus
 
@@ -48,10 +49,12 @@ private class ChainIterable<T>(private val head: T, private val nextGetter: (T) 
 fun <T> Iterable<T>.startsWith(prefix: Iterable<T>): Boolean {
     val iter1 = iterator()
     val iter2 = prefix.iterator()
+
     while (iter2.hasNext()) {
         if (!iter1.hasNext()) return false
         if (iter1.next() != iter2.next()) return false
     }
+
     return true
 }
 
@@ -87,21 +90,19 @@ inline fun <T, R> Iterable<T>.mapNotNullAllOrNull(f: (T) -> R?): ImmList<R>? {
 @Suppress("unused")
 inline fun <T, R> Iterable<T>.mapIndexedNotNullAllOrNull(f: (Int, T) -> R?): ImmList<R>? {
     val res: MutableList<R> = ArrayList()
-    for (entry in this.withIndex()) {
+    for ((_, value) in this.withIndex()) {
         val index = res.size
-        val resValue = f(index, entry.value)
+        val resValue = f(index, value)
         resValue ?: return null
         res.add(resValue)
     }
     return res.toImmList()
 }
 
-inline fun <T, K, V> Iterable<T>.associateNotNullValues(f: (T) -> Pair<K, V?>): ImmMap<K, V> {
-    return mapNotNull {
-        val (k, v) = f(it)
-        if (v == null) null else (k to v)
-    }.toImmMap()
-}
+inline fun <T, K, V> Iterable<T>.associateNotNullValues(f: (T) -> Pair<K, V?>): ImmMap<K, V> = mapNotNull {
+    val (k, v) = f(it)
+    if (v == null) null else (k to v)
+}.toImmMap()
 
 fun <T, R> Iterable<T>.mapView(op: (T) -> R): Iterable<R> = asSequence().map(op).asIterable()
 
@@ -112,6 +113,7 @@ inline fun <T> Iterable<T>.separated(block: (T, T) -> T): List<T> {
     val res = mutableListOf<T>()
     var prev: T? = null
     var first = true
+
     for (cur in this) {
         if (!first && prev != null) {
             val sep = block(prev, cur)
@@ -121,6 +123,7 @@ inline fun <T> Iterable<T>.separated(block: (T, T) -> T): List<T> {
         prev = cur
         first = false
     }
+
     return res.toImmList()
 }
 
@@ -417,7 +420,7 @@ fun <T> Iterable<T>.toPair(): Pair<T, T> = when (this) {
 }
 
 
-operator fun <E> ImmList<E>.plus(element: E): ImmList<E> = toPersistentList().add(element)
+operator fun <E> ImmList<E>.plus(element: E): ImmList<E> = toPersistentList().adding(element)
 operator fun <E> ImmList<E>.plus(elements: Iterable<E>): ImmList<E> = toPersistentList().kplus(elements)
 operator fun <E> ImmList<E>.plus(elements: Array<out E>): ImmList<E> = toPersistentList().kplus(elements)
 operator fun <E> ImmList<E>.plus(elements: Sequence<E>): ImmList<E> = toPersistentList().kplus(elements)
@@ -432,5 +435,8 @@ operator fun <E> ImmSet<E>.minus(elements: Iterable<E>): ImmSet<E> = toPersisten
 operator fun <K, V> ImmMap<out K, V>.plus(pair: Pair<K, V>): ImmMap<K, V> = toPersistentMap().kplus(pair)
 operator fun <K, V> ImmMap<out K, V>.plus(pairs: Iterable<Pair<K, V>>): ImmMap<K, V> = toPersistentMap().kplus(pairs)
 operator fun <K, V> ImmMap<out K, V>.plus(pairs: Array<out Pair<K, V>>): ImmMap<K, V> = toPersistentMap().kplus(pairs)
-operator fun <K, V> ImmMap<out K, V>.plus(pairs: Sequence<Pair<K, V>>): ImmMap<K, V> = toPersistentMap().putAll(pairs)
+
+operator fun <K, V> ImmMap<out K, V>.plus(pairs: Sequence<Pair<K, V>>): ImmMap<K, V> =
+    toPersistentMap().puttingAll(pairs)
+
 operator fun <K, V> ImmMap<out K, V>.plus(map: Map<out K, V>): ImmMap<K, V> = toPersistentMap().kplus(map)
