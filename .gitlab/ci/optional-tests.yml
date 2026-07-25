@@ -1,0 +1,43 @@
+# Manual-only test suites deliberately kept out of `check`, and therefore out of the `build` /
+# `deploy` jobs. Each is either slow, narrowly scoped, or both. Trigger them when touching the relevant area.
+#
+#   tests:round-trip - RR serialization round-trip; run when rr-tree / rr-serialization or the
+#                      R_ -> RR_ resolver changed.
+#   tests:grammar    - ANTLR grammar / hand-written parser correctness; run on grammar edits.
+#   tests:locales    - the full `check` under Turkish / Arabic / Japanese locales; run when
+#                      touching string handling, formatting, or collation.
+
+.optional-test:
+  stage: build
+  interruptible: true
+  rules:
+    - when: manual
+      allow_failure: true
+  needs: [ ]
+  artifacts:
+    when: always
+    paths: [ "**/build/test-results/**/*" ]
+    reports:
+      junit: [ "**/build/test-results/**/TEST-*.xml" ]
+    expire_in: 1 week
+
+# rell-base tests hit the shared DIND Postgres, so this extends `.setup` (xlarge + Postgres).
+# `testRoundTrip` re-runs the whole rell-base suite with `rell.test.roundtrip=true`.
+tests:round-trip:
+  extends: [ .setup, .optional-test ]
+  script:
+    - ./gradlew $GRADLE_FLAGS_XLARGE :rell-base:testRoundTrip
+
+# `grammarTest` reads its snippet corpus from a resource dir that `copyTestCases` fills from :rell-api-gtx's
+# `rellTestCases` configuration, which is `builtBy(:rell-base:test, :rell-gtx:test, :rell-api-base:test,
+# :rell-api-gtx:test)`.
+tests:grammar:
+  extends: [ .setup, .optional-test ]
+  script: [ "./gradlew $GRADLE_FLAGS_XLARGE -Ptest.snippets.recorder.enabled=true :rell-toolbox:ast:grammarTest" ]
+
+# `-PwithLocales` registers testTurkish / testArabic / testJapanese in every blockchain module and
+# wires them into `check.
+tests:locales:
+  extends: [ .setup, .optional-test ]
+  script:
+    - ./gradlew $GRADLE_FLAGS_XLARGE -PwithLocales check

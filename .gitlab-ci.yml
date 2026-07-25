@@ -8,6 +8,7 @@ include:
   - local: .gitlab/ci/templates.yml
   - local: .gitlab/ci/build.yml
   - local: .gitlab/ci/dependency-check.yml
+  - local: .gitlab/ci/optional-tests.yml
   - local: .gitlab/ci/pages.yml
   - local: .gitlab/ci/qodana.yml
 

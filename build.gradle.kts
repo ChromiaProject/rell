@@ -88,6 +88,21 @@ tasks.register("verifyNoSinceNow") {
     }
 }
 
+allprojects {
+    // `rell-base-maven.properties` / `rell-tools-maven.properties` embed the commit id, message
+    // and time (see the `gitProperties` blocks in rell-base and rell-tools). They land in those
+    // modules' resources, hence in their jars, hence on the runtime classpath of every downstream
+    // module — so every commit changed the cache key of every downstream Test task and the build
+    // cache sat at a 1% hit rate. Neither file affects compilation or test behaviour, so exclude
+    // both from runtime classpath fingerprinting. The jars still contain them.
+    normalization {
+        runtimeClasspath {
+            ignore("rell-base-maven.properties")
+            ignore("rell-tools-maven.properties")
+        }
+    }
+}
+
 subprojects {
     group = rootProject.group
     version = rootProject.version
@@ -217,9 +232,10 @@ subprojects {
         }
 
         tasks.withType<JacocoReport> {
-            // Exclude opt-in Test tasks (e.g. :rell-toolbox:ast:grammarTest) from Jacoco wiring,
-            // otherwise `test`'s `finalizedBy(jacocoTestReport)` would transitively run them.
-            dependsOn(tasks.withType<Test>().matching { it.name !in setOf("grammarTest") })
+            // Exclude opt-in Test tasks (e.g. :rell-toolbox:ast:grammarTest,
+            // :rell-base:testRoundTrip) from Jacoco wiring, otherwise `test`'s
+            // `finalizedBy(jacocoTestReport)` would transitively run them.
+            dependsOn(tasks.withType<Test>().matching { it.name !in setOf("grammarTest", "testRoundTrip") })
             reports {
                 xml.required = true
                 html.required = true
@@ -311,9 +327,15 @@ subprojects {
         extensions.configure<SigningExtension> {
             val signingKey = providers.gradleProperty("signingKey").orNull
             val signingPassword = providers.gradleProperty("signingPassword").orNull
-            isRequired = signingKey != null
+            // Snapshots are not signed: each signature adds a .asc plus its checksums to every
+            // artifact, and the GitLab Package Registry uploads them one round-trip at a time
+            // (~0.9s each), which dominated the publish tasks on `dev`. Release branches carry a
+            // literal version (`0.16.1`), so they keep full signing.
+            val isSnapshot = project.version.toString().endsWith("-SNAPSHOT")
+            val signArtifacts = signingKey != null && !isSnapshot
+            isRequired = signArtifacts
 
-            if (signingKey != null) {
+            if (signArtifacts) {
                 useInMemoryPgpKeys(signingKey, signingPassword)
                 val publishing = extensions.getByType(PublishingExtension::class.java)
                 sign(publishing.publications["mavenJava"])

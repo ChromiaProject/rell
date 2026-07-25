@@ -19,7 +19,7 @@ tasks.withType<Test> {
     systemProperty("rell.test.backend", findProperty("rellTestBackend") ?: "interpreter")
 }
 
-val testRoundTrip = tasks.register<Test>("testRoundTrip") {
+tasks.register<Test>("testRoundTrip") {
     description = "Runs tests with RR serialization round-trip enabled"
     group = LifecycleBasePlugin.VERIFICATION_GROUP
     useJUnitPlatform()
@@ -31,6 +31,10 @@ val testRoundTrip = tasks.register<Test>("testRoundTrip") {
     systemProperty("rell.test.roundtrip", "true")
     systemProperty("rell.test.backend", "interpreter")
     shouldRunAfter(tasks.test)
+    // Same reason as :rell-toolbox:ast:grammarTest — the root build's withType<Test> wires
+    // `finalizedBy(jacocoTestReport)` for every Test task, and that report depends on all the
+    // others, so leaving it attached would make a manual `testRoundTrip` run the whole suite.
+    setFinalizedBy(emptyList<Any>())
 }
 
 // Detect whether the Gradle daemon itself is running on a GraalVM
@@ -70,7 +74,6 @@ val testTruffle = tasks.register<Test>("testTruffle") {
 }
 
 tasks.check {
-    dependsOn(testRoundTrip)
     dependsOn(testTruffle)
 }
 
