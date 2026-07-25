@@ -10,10 +10,8 @@ import java.util.concurrent.ThreadFactory
 class IndexPersisterThreadFactory : ThreadFactory {
     private val defaultFactory = Executors.defaultThreadFactory()
 
-    override fun newThread(runnable: Runnable): Thread {
-        val thread = defaultFactory.newThread(runnable)
-        thread.isDaemon = true
-        thread.name = "Index-Cache-Persister-${thread.threadId()}"
-        return thread
+    override fun newThread(runnable: Runnable): Thread = defaultFactory.newThread(runnable).apply<Thread> {
+        this.isDaemon = true
+        this.name = "Index-Cache-Persister-${threadId()}"
     }
 }

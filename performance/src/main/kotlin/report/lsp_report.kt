@@ -31,6 +31,14 @@ private class LspRunData(
 ) {
     fun milestone(field: String): Double? =
         milestones.get(field)?.takeIf { !it.isNull }?.asDouble()
+
+    /**
+     * When the workspace finished indexing — the point at which the editor becomes fully functional.
+     * Runs recorded before indexing moved out of the initialize request reached both at once, so
+     * their initialize response is the same moment.
+     */
+    fun workspaceIndexedSec(): Double? =
+        milestone("indexingCompleteSec") ?: milestone("initializeResponseSec")
 }
 
 // ─── Component classification ────────────────────────────────────────────────────────────
@@ -165,22 +173,25 @@ fun renderLspReport(outDir: Path) {
 private fun FlowContent.renderHeadlineMetrics(runs: List<LspRunData>) {
     renderSection(
         "startup",
-        "Time from process spawn to the initialize response — workspace indexing runs inside the " +
-            "initialize request, so this is the delay before the editor becomes functional.",
+        "Time from process spawn until the workspace is indexed and diagnostics are published — the " +
+            "delay before the editor becomes fully functional. Indexing runs in the background, so the " +
+            "initialize response lands long before this and measures only the handshake.",
     ) {
         div(classes = "metrics") {
             runs.forEach { run ->
+                val initialize = run.milestone("initializeResponseSec")?.let { "%.2f".formatRoot(it) } ?: "—"
                 metric(
-                    "${run.name} · initialize",
-                    run.milestone("initializeResponseSec")?.let { "%.2f".formatRoot(it) } ?: "—",
+                    "${run.name} · workspace indexed",
+                    run.workspaceIndexedSec()?.let { "%.2f".formatRoot(it) } ?: "—",
                     "s",
-                    "${run.milestones.get("diagnosticsFiles")?.asInt() ?: 0} files diagnosed",
+                    "${run.milestones.get("diagnosticsFiles")?.asInt() ?: 0} files diagnosed · " +
+                        "initialize answered at $initialize s",
                 )
             }
-            val cold = runs.first().milestone("initializeResponseSec")
-            val hot = runs.last().milestone("initializeResponseSec")
+            val cold = runs.first().workspaceIndexedSec()
+            val hot = runs.last().workspaceIndexedSec()
             if (cold != null && hot != null && hot > 0) {
-                metric("cold / hot", "%.1f".formatRoot(cold / hot), "×", "initialize speedup from index cache")
+                metric("cold / hot", "%.1f".formatRoot(cold / hot), "×", "indexing speedup from index cache")
             }
         }
     }
@@ -189,7 +200,8 @@ private fun FlowContent.renderHeadlineMetrics(runs: List<LspRunData>) {
 private fun FlowContent.renderMilestones(runs: List<LspRunData>) {
     val rows = listOf(
         "First byte from server" to "firstByteSec",
-        "initialize response (workspace indexed)" to "initializeResponseSec",
+        "Initialize response" to "initializeResponseSec",
+        "Workspace indexed" to "indexingCompleteSec",
         "Last diagnostic published" to "lastDiagnosticSec",
         "Quiescent" to "quiescentSec",
         "Process exit" to "exitSec",
@@ -315,6 +327,40 @@ private const val HOT_COLOR = "#1D4ED8"
 private fun xmlEscape(s: String): String =
     s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
+/** Width of one character of `.lsp-bar-label` (10px monospace), for laying captions out. */
+private const val LABEL_CHAR_W = 6.0
+
+/** Vertical step between stacked caption lines. */
+private const val LABEL_LINE_H = 12
+
+/** A tick caption placed under a track: centred at [cx], on stacking line [row]. */
+private class TickLabel(val cx: Double, val text: String, val row: Int)
+
+/**
+ * Lay out a run's tick captions left to right, dropping a caption to the next line when it would
+ * overlap the one before it. Milestones can be arbitrarily close together in time, so the captions
+ * cannot simply share one line.
+ */
+private fun tickLabelsFor(run: LspRunData, x: (Double) -> Double): List<TickLabel> {
+    val ticks = listOf(
+        "firstByteSec" to "first byte",
+        "initializeResponseSec" to "initialize",
+        "indexingCompleteSec" to "indexed",
+    ).mapNotNull { (field, caption) ->
+        run.milestone(field)?.let { sec -> sec to "$caption ${"%.2f".formatRoot(sec)} s" }
+    }.sortedBy { it.first }
+
+    var occupiedUntil = Double.NEGATIVE_INFINITY
+    var row = 0
+    return ticks.map { (sec, text) ->
+        val cx = x(sec)
+        val halfWidth = text.length * LABEL_CHAR_W / 2.0
+        row = if (cx - halfWidth < occupiedUntil) row + 1 else 0
+        occupiedUntil = cx + halfWidth
+        TickLabel(cx, text, row)
+    }
+}
+
 /**
  * One horizontal track per run on a shared time axis: colored segments between consecutive
  * milestones (spawn → initialize response → quiescent → exit), tick markers for first byte
@@ -325,18 +371,27 @@ private fun milestoneTimelineSvg(runs: List<LspRunData>): String {
     val labelW = 60
     val plotW = width - labelW - 20
     val trackH = 16
-    val rowGap = 34
     val legendH = 26
     val axisH = 30
-    val height = legendH + runs.size * (trackH + rowGap) + axisH
 
     val maxSec = runs.maxOf { it.milestone("exitSec") ?: 0.0 }.coerceAtLeast(0.001)
     fun x(sec: Double): Double = labelW + plotW * sec / maxSec
 
-    // (label, from-field, to-field, color) — segments between consecutive milestones.
+    // Tick captions sit under each track, centred on their milestone. Since the server answers
+    // initialize without waiting for indexing, that milestone lands right next to the first byte and
+    // the two captions would print on top of each other — so overlapping ones drop to another line,
+    // and every track is spaced for the deepest stack.
+    val tickLabels = runs.map { run -> tickLabelsFor(run) { sec -> x(sec) } }
+    val rowGap = 34 + (tickLabels.flatten().maxOfOrNull { it.row } ?: 0) * LABEL_LINE_H
+    val height = legendH + runs.size * (trackH + rowGap) + axisH
+
+    // (label, from-field, to-field, color) — segments between consecutive milestones. Indexing is
+    // its own segment: it is the bulk of startup, and folding it into the run-up to quiescent would
+    // hide where the workspace actually became usable.
     val segments = listOf(
         Triple("spawn → initialize response", null to "initializeResponseSec", ACCENT_HEX),
-        Triple("→ quiescent", "initializeResponseSec" to "quiescentSec", HOT_COLOR),
+        Triple("→ workspace indexed", "initializeResponseSec" to "indexingCompleteSec", HOT_COLOR),
+        Triple("→ quiescent", "indexingCompleteSec" to "quiescentSec", "#7C93C9"),
         Triple("→ exit", "quiescentSec" to "exitSec", "#A8A9AE"),
     )
 
@@ -359,9 +414,15 @@ private fun milestoneTimelineSvg(runs: List<LspRunData>): String {
             """<text class="lsp-bar-name" x="${labelW - 10}" y="${y + trackH / 2 + 4}" text-anchor="end">""" +
                 """${xmlEscape(run.name)}</text>""",
         )
+        // Runs recorded before indexing left the initialize request have no indexingCompleteSec;
+        // resolving it to the initialize response collapses the indexing segment to nothing there
+        // rather than anchoring the next segment at zero.
+        fun at(field: String): Double? =
+            if (field == "indexingCompleteSec") run.workspaceIndexedSec() else run.milestone(field)
+
         segments.forEach { (_, fields, color) ->
-            val from = fields.first?.let { run.milestone(it) } ?: 0.0
-            val to = fields.second.let { run.milestone(it) } ?: return@forEach
+            val from = fields.first?.let { at(it) } ?: 0.0
+            val to = at(fields.second) ?: return@forEach
             if (to <= from) return@forEach
             sb.append(
                 """<rect x="${"%.2f".formatRoot(x(from))}" y="$y" """ +
@@ -369,16 +430,13 @@ private fun milestoneTimelineSvg(runs: List<LspRunData>): String {
             )
         }
         // Tick markers with per-run captions: first byte and initialize response.
-        listOf(
-            "firstByteSec" to "first byte",
-            "initializeResponseSec" to "initialize",
-        ).forEach { (field, caption) ->
-            val sec = run.milestone(field) ?: return@forEach
-            val mx = "%.2f".formatRoot(x(sec))
+        tickLabels[ri].forEach { tick ->
+            val mx = "%.2f".formatRoot(tick.cx)
             sb.append("""<line x1="$mx" y1="${y - 4}" x2="$mx" y2="${y + trackH + 4}" stroke="$INK_HEX" stroke-width="1"/>""")
             sb.append(
-                """<text class="lsp-bar-label" x="$mx" y="${y + trackH + 16}" text-anchor="middle">""" +
-                    """${xmlEscape(caption)} ${"%.2f".formatRoot(sec)} s</text>""",
+                """<text class="lsp-bar-label" x="$mx" """ +
+                    """y="${y + trackH + 16 + tick.row * LABEL_LINE_H}" text-anchor="middle">""" +
+                    """${xmlEscape(tick.text)}</text>""",
             )
         }
     }

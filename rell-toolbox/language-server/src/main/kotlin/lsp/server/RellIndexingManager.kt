@@ -29,7 +29,7 @@ class RellIndexingManager(
     private val formattingStyleLinter: FormattingStyleLinter,
     private val formatterOptionsResolver: RellFormatterOptionsResolver,
     private val linterOptionsResolver: RellLinterOptionsResolver
-) : IndexerRegistry {
+): IndexerRegistry {
     private val fileChangeHandler: FileChangeHandler = FileChangeHandler(diagnosticsManager, this)
     var indexCachingEnabled: Boolean = false
     val indexers: MutableMap<URI, WorkspaceIndexer> = ConcurrentHashMap()
@@ -41,10 +41,17 @@ class RellIndexingManager(
             requireNotNull(parseFileUri(it.uri)) { "Invalid workspace folder ${it.uri}" }
         }
 
+    /**
+     * Cheap setup that has to be in place before any request is served. Building the index itself is
+     * [buildInitialIndex], which the server runs in the background.
+     */
     fun initialize(workspaceFolders: List<WorkspaceFolder>) {
         this.workspaceFolders = workspaceFolders
         indexCachingService.cleanOldCacheFolder()
-        runIndexers()
+    }
+
+    fun buildInitialIndex(indexingStateHandler: ((IndexingState) -> Unit)? = null) {
+        runIndexers(indexingStateHandler)
         handleNestedIndexers()
     }
 
@@ -74,6 +81,7 @@ class RellIndexingManager(
             if (indexCachingEnabled) {
                 indexCachingService.persistOnDiskPeriodically(indexers.values, 1.minutes)
             }
+
             indexCachingService.cleanupOldCaches()
         } finally {
             indexingStateHandler?.invoke(IndexingState.END)
@@ -81,21 +89,22 @@ class RellIndexingManager(
     }
 
     fun indexFromRoots(chromiaConfigFiles: List<URI>) {
-        val newIndexers =
-            chromiaConfigFiles.map { IndexRoot.fromChromiaConfig(it.toPath()) }.map { indexRoot ->
-                doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri)
-            }.associateBy { it.workspaceUri }
+        val newIndexers = chromiaConfigFiles
+            .map { IndexRoot.fromChromiaConfig(it.toPath()) }
+            .map { indexRoot -> doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri) }
+            .associateBy { it.workspaceUri }
 
         indexers.putAll(newIndexers)
         cleanUpOrphans(newIndexers)
     }
 
     private fun createOrphanIndexers(excludeFolderUris: Set<URI>): Map<URI, WorkspaceIndexer> {
-        val result = workspaceFolderUris.map { workspaceFolder ->
-            doIndex(workspaceFolder, workspaceFolder, excludeFolderUris.map { it.toPath() }.toSet())
-        }.filter {
-            it.fileUriResourceMap.isNotEmpty()
-        }.associateBy { it.workspaceUri }
+        val result = workspaceFolderUris
+            .map { workspaceFolder ->
+                doIndex(workspaceFolder, workspaceFolder, excludeFolderUris.map { it.toPath() }.toSet())
+            }
+            .filter { it.fileUriResourceMap.isNotEmpty() }
+            .associateBy { it.workspaceUri }
 
         return result
     }
@@ -120,18 +129,17 @@ class RellIndexingManager(
 
         val (linterOptions, formatterOptions) = getLinterAndFormatterOptions(workspaceFolderUri)
 
-        val indexer =
-            WorkspaceIndexer(
-                resolvedSourceDirUri,
-                rellLinter,
-                linterOptions,
-                formattingStyleLinter,
-                formatterOptions,
-                workspaceFolderUri,
-                excludeFolders
-            )
-        indexer.initialFileIndexBuild(cachedIndexer)
-        return indexer
+        return WorkspaceIndexer(
+            resolvedSourceDirUri,
+            rellLinter,
+            linterOptions,
+            formattingStyleLinter,
+            formatterOptions,
+            workspaceFolderUri,
+            excludeFolders,
+        ).also {
+            it.initialFileIndexBuild(cachedIndexer)
+        }
     }
 
     private fun doSingleFileIndex(fileUri: URI): WorkspaceIndexer {
@@ -146,7 +154,7 @@ class RellIndexingManager(
             linterOptions,
             formattingStyleLinter,
             formatterOptions,
-            projectRootUri
+            projectRootUri,
         )
         val cachedIndexer = if (indexCachingEnabled) indexCachingService.getWorkspaceIndexer(sourceDirUri) else null
 
@@ -174,20 +182,20 @@ class RellIndexingManager(
     }
 
     override fun getIndexerForOrNull(fileUri: URI): WorkspaceIndexer? {
-        for (indexer in indexers.entries) {
+        for ((key, value) in indexers) {
             val filePath = fileUri.path.trimEnd('/')
-            val indexerPath = indexer.key.path?.trimEnd('/') ?: continue
+            val indexerPath = key.path?.trimEnd('/') ?: continue
             if (filePath.startsWith(indexerPath)) {
-                return indexer.value
+                return value
             }
         }
         return getOrphanIndexer(fileUri)
     }
 
     private fun getOrphanIndexer(fileUri: URI): WorkspaceIndexer? {
-        for (indexer in orphanIndexers.entries) {
-            if (fileUri.path.startsWith(indexer.value.projectRootUri?.path ?: continue)) {
-                return indexer.value
+        for ((_, value) in orphanIndexers) {
+            if (fileUri.path.startsWith(value.projectRootUri?.path ?: continue)) {
+                return value
             }
         }
         return null
@@ -206,13 +214,12 @@ class RellIndexingManager(
         diagnosticsManager.reportDiagnostics(indexer, listOf(fileUri), skipCache)
     }
 
-    fun handleFileChanges(dirtyFiles: List<URI>, deletedFiles: List<URI>, updateAffectedFiles: Boolean): List<URI> {
-        return fileChangeHandler.handleFileChanges(
+    fun handleFileChanges(dirtyFiles: List<URI>, deletedFiles: List<URI>, updateAffectedFiles: Boolean): List<URI> =
+        fileChangeHandler.handleFileChanges(
             dirtyFiles,
             deletedFiles,
-            updateAffectedFiles
+            updateAffectedFiles,
         )
-    }
 
     fun handleFolderChanges(dirtyFolders: List<URI>, deletedFolders: List<URI>) {
         fileChangeHandler.handleFolderChanges(dirtyFolders, deletedFolders)
@@ -221,10 +228,10 @@ class RellIndexingManager(
     // TODO: Clean up depth of nesting
     override fun cleanUpOrphans(indexers: Map<URI, WorkspaceIndexer>) {
         for (indexer in indexers.values) {
-            for (orphanIndexer in orphanIndexers) {
-                for (uri in orphanIndexer.value.fileUriResourceMap.keys) {
+            for ((_, value) in orphanIndexers) {
+                for (uri in value.fileUriResourceMap.keys) {
                     if (indexer.fileUriResourceMap[uri] != null) {
-                        orphanIndexer.value.removeFileUriResourceMap(uri)
+                        value.removeFileUriResourceMap(uri)
                     }
                 }
             }
@@ -232,20 +239,22 @@ class RellIndexingManager(
     }
 
     private fun handleNestedIndexers() {
-        val nestedProjects = indexers.keys.flatMap { key ->
-            indexers.keys.filter { it != key && it.startsWith(key) }
-                .takeIf { it.isNotEmpty() }
-                ?.toMutableList()
-                ?.apply { add(key) }
-                ?: emptyList()
-        }.map { it.path }
+        val nestedProjects = indexers.keys
+            .flatMap { key ->
+                indexers.keys.filter { it != key && it.startsWith(key) }
+                    .takeIf { it.isNotEmpty() }
+                    ?.toMutableList()
+                    ?.apply { add(key) }
+                    ?: emptyList()
+            }
+            .map { it.path }
 
         if (nestedProjects.isNotEmpty()) {
             diagnosticsManager.sendNotification(
                 NotificationType.WARNING,
                 "Nested Rell projects detected. The projects with overlapping paths:\n" +
-                    nestedProjects.joinToString() +
-                    "\n Consider restructuring the project directories to avoid nested configurations."
+                        nestedProjects.joinToString() +
+                        "\n Consider restructuring the project directories to avoid nested configurations.",
             )
         }
     }

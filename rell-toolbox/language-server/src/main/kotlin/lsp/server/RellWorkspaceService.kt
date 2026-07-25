@@ -166,7 +166,7 @@ class RellWorkspaceService(
         )
     }
 
-    private fun handleIndexingState(state: IndexingState) {
+    internal fun handleIndexingState(state: IndexingState) {
         val token = "rell-indexing"
 
         if (state == IndexingState.BEGIN) {

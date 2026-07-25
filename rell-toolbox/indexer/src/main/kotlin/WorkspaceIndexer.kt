@@ -8,7 +8,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.ModuleName
-import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.chromia.model.ChromiaModel
 import net.postchain.rell.toolbox.formatter.FormatterOptions
@@ -19,7 +18,11 @@ import net.postchain.rell.toolbox.parser.AntlrRellParser
 import java.io.File
 import java.net.URI
 import java.nio.file.Path
+import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
+import java.util.concurrent.ThreadFactory
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.toPath
 
 class WorkspaceIndexer(
@@ -85,30 +88,18 @@ class WorkspaceIndexer(
     fun initialFileIndexBuild(cachedIndexer: WorkspaceIndexer? = null, reindex: Boolean = false) {
         val rellUris = addRellFilesUri()
         val sources = readAllSource(rellUris)
-        fileMap = resourceFactory.buildFileMap(sources)
+        val parsedFiles = resourceFactory.parseFiles(sources)
+        fileMap = resourceFactory.buildFileMap(sources, parsedFiles)
 
         val alreadyLintedFiles = useDataFromCachedIndexer(cachedIndexer, sources)
-        val dirtyFiles = mutableListOf<URI>()
 
-        for (source in sources) {
-            val (fileUri, fileContent) = source
-            if (!isValidFileUri(fileUri)) {
-                continue
-            }
-            if (fileUriResourceMap.containsKey(fileUri) && !reindex) {
-                continue
-            }
-            val resource = resourceFactory.buildRellResource(fileUri, fileContent, fileMap)
-            if (resource.imports.isNotEmpty() || hasImplicitImports(resource)) {
-                dirtyFiles.add(fileUri)
-            }
-            fileUriResourceMap[fileUri] = resource
+        // A single pass suffices: fileMap covers the whole workspace before any file is compiled,
+        // so imports and modules resolve on the first compile. The second pass dates back to when
+        // fileMap was filled inside this loop, and files indexed early could not see later ones.
+        val filesToCompile = sources.keys.filter { fileUri ->
+            isValidFileUri(fileUri) && (reindex || !fileUriResourceMap.containsKey(fileUri))
         }
-
-        for (fileUri in dirtyFiles) {
-            val fileContent = sources[fileUri] ?: continue
-            fileUriResourceMap[fileUri] = resourceFactory.buildRellResource(fileUri, fileContent, fileMap)
-        }
+        compileResources(filesToCompile, sources, parsedFiles)
 
         for (source in sources) {
             val (fileUri, fileContent) = source
@@ -121,12 +112,47 @@ class WorkspaceIndexer(
         }
     }
 
+    /**
+     * Compile each file against the completed [fileMap]. Compilation dominates initial indexing and
+     * each file is independent — the AST holds no compilation state and every compile builds its own
+     * source-directory view — so the files are spread over a few threads.
+     *
+     * The first file is compiled on the calling thread: the library framework's class initialization
+     * is circular by construction, and driving it from several threads at once risks a class-init
+     * deadlock. Once it is initialized, the rest can run concurrently.
+     */
+    private fun compileResources(
+        fileUris: List<URI>,
+        sources: Map<URI, String>,
+        parsedFiles: Map<URI, ParsedRellFile>,
+    ) {
+        if (fileUris.isEmpty()) {
+            return
+        }
+
+        fun compile(fileUri: URI) {
+            val fileContent = sources[fileUri] ?: return
+            fileUriResourceMap[fileUri] =
+                resourceFactory.buildRellResource(fileUri, fileContent, fileMap, parsedFiles[fileUri])
+        }
+
+        compile(fileUris.first())
+        val rest = fileUris.drop(1)
+        if (rest.isEmpty()) {
+            return
+        }
+
+        val executor = Executors.newFixedThreadPool(indexingParallelism(), IndexingThreadFactory())
+        try {
+            executor.invokeAll(rest.map { fileUri -> Callable { compile(fileUri) } }).forEach { it.get() }
+        } finally {
+            executor.shutdown()
+        }
+    }
+
     private fun ideConfigOptionsMatch(cachedIndexer: WorkspaceIndexer? = null): Boolean {
         return linterOptions == cachedIndexer?.linterOptions && formatterOptions == cachedIndexer.formatterOptions
     }
-
-    private fun hasImplicitImports(resource: Resource) =
-        resource.locationInfo.filter { it.value.ideSymbolInfo.kind == IdeSymbolKind.UNKNOWN }.isNotEmpty()
 
     private fun useDataFromCachedIndexer(cachedIndexer: WorkspaceIndexer?, sources: Map<URI, String>): Set<URI> {
         if (cachedIndexer == null) return setOf()
@@ -308,10 +334,24 @@ class WorkspaceIndexer(
     }
 
     private fun addRellFilesUri(): List<URI> {
-        return File(workspaceUri).walkTopDown().filter {
-            it.isFile && it.extension == "rell" &&
-                excludeFolders.none { excludeFolder -> it.toPath().startsWith(excludeFolder) }
-        }.map { it.toURI() }.toList()
+        return File(workspaceUri).walkTopDown()
+            .onEnter { !isExcludedDir(it) }
+            // Extension is a pure string check; testing it before isFile avoids a stat() per
+            // non-Rell file, which dominates the walk in workspaces with node_modules.
+            .filter { it.extension == "rell" && it.isFile }
+            .map { it.toURI() }
+            .toList()
+    }
+
+    private fun isExcludedDir(dir: File): Boolean {
+        if (dir.name == ".git") {
+            return true
+        }
+        if (excludeFolders.isEmpty()) {
+            return false
+        }
+        val path = dir.toPath()
+        return excludeFolders.any { path.startsWith(it) }
     }
 
     fun getResource(uri: URI): Resource? {
@@ -350,12 +390,26 @@ class WorkspaceIndexer(
         ) && isInProjectRoot(uri)
     }
 
-    private fun isChromiaModelFile(uri: URI): Boolean {
-        return uri.toPath().fileName.toString() == ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME
-    }
+    private fun isChromiaModelFile(uri: URI): Boolean =
+        uri.toPath().fileName.toString() == ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME
 
     private fun isInProjectRoot(uri: URI): Boolean {
-        val parent = File(uri).parentFile ?: return false
-        return parent.toPath() == projectRootUri?.toPath()
+        val parent = uri.toPath().parent ?: return false
+        return parent == projectRootUri?.toPath()
+    }
+
+    private companion object {
+        /**
+         * Deliberately a small share of the machine: the language server is a background process
+         * next to the editor and a build, and indexing must not take the whole CPU.
+         */
+        private fun indexingParallelism(): Int = (Runtime.getRuntime().availableProcessors() / 4).coerceIn(1, 4)
+    }
+
+    private class IndexingThreadFactory : ThreadFactory {
+        private val counter = AtomicInteger()
+
+        override fun newThread(r: Runnable): Thread =
+            Thread(r, "rell-indexer-${counter.incrementAndGet()}").apply { isDaemon = true }
     }
 }

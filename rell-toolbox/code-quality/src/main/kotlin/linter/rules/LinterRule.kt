@@ -10,6 +10,7 @@ import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterIssue
 import net.postchain.rell.toolbox.linter.LinterOptions
+import org.antlr.v4.runtime.RuleContext
 import org.antlr.v4.runtime.Token
 
 abstract class LinterRule(
@@ -19,6 +20,13 @@ abstract class LinterRule(
 ) : RellBaseVisitor<Unit>() {
 
     abstract val ruleId: String
+
+    /**
+     * Parse-tree node types this rule inspects, i.e. the contexts whose visit method it overrides.
+     * [net.postchain.rell.toolbox.linter.LinterVisitor] offers a node to a rule only when its type is
+     * listed here, so a rule declares its own dispatch table instead of the visitor probing for it.
+     */
+    abstract val handledContexts: Set<Class<out RuleContext>>
 
     fun report(issue: LinterIssue) {
         linterContext.addIssue(issue)

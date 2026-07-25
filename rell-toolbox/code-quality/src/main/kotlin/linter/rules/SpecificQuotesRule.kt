@@ -9,12 +9,17 @@ import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.issues.SpecificQuotesIssue
+import org.antlr.v4.runtime.RuleContext
 
 class SpecificQuotesRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
 
     override val ruleId
         get() = RULE_ID
+
+    override val handledContexts: Set<Class<out RuleContext>> = setOf(
+        RellParser.StringExprContext::class.java,
+    )
 
     override fun visitStringExpr(ctx: RellParser.StringExprContext) {
         if (!config.enabled || config.ruleQuoteFormat == null || hasIgnoreCommentOnTop(ctx.start)) {

@@ -31,26 +31,12 @@ class LinterVisitor(
     )
 
     override fun visitChildren(node: RuleNode) {
+        val context = node.ruleContext
         for (rule in rules) {
-            if (isMethodDefined(
-                    rule.javaClass,
-                    "visit" + node.javaClass.simpleName.removeSuffix("Context"),
-                    node.ruleContext.javaClass
-                )
-            ) {
-                node.ruleContext.accept(rule)
+            if (context.javaClass in rule.handledContexts) {
+                context.accept(rule)
             }
         }
         super.visitChildren(node)
-    }
-
-    private fun isMethodDefined(clazz: Class<*>, methodName: String, vararg parameterTypes: Class<*>?): Boolean {
-        try {
-            clazz.getDeclaredMethod(methodName, *parameterTypes)
-            return true
-        } catch (@Suppress("SwallowedException") e: NoSuchMethodException) {
-            // Method not found, so it's not overridden.
-            return false
-        }
     }
 }

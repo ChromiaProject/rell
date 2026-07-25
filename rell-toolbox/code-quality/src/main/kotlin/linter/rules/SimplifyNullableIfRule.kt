@@ -12,6 +12,7 @@ import net.postchain.rell.toolbox.linter.asSimpleComparison
 import net.postchain.rell.toolbox.linter.isNullLiteral
 import net.postchain.rell.toolbox.linter.issues.SimplifyNullableIfIssue
 import net.postchain.rell.toolbox.linter.sourceText
+import org.antlr.v4.runtime.RuleContext
 import org.antlr.v4.runtime.tree.ParseTree
 
 /**
@@ -24,6 +25,10 @@ class SimplifyNullableIfRule(config: LinterOptions, resource: Resource, linterCo
 
     override val ruleId
         get() = RULE_ID
+
+    override val handledContexts: Set<Class<out RuleContext>> = setOf(
+        RellParser.IfExprContext::class.java,
+    )
 
     override fun visitIfExpr(ctx: RellParser.IfExprContext) {
         if (isDisabled(config.ruleSimplifyNullableIf) || hasIgnoreCommentOnTop(ctx.start)) {

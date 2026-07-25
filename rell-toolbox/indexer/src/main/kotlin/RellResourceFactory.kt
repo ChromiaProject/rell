@@ -33,50 +33,50 @@ class RellResourceFactory(
 ) {
     val rellCompilerUtils = RellCompilerUtils()
 
-    fun buildFileMap(sources: Map<URI, String>): ConcurrentHashMap<C_SourcePath, C_SourceFile> {
+    fun parseFiles(sources: Map<URI, String>): Map<URI, ParsedRellFile> =
+        sources.mapValues { (fileUri, fileContent) -> parseFile(fileUri, fileContent) }
+
+    fun parseFile(fileUri: URI, fileContent: String): ParsedRellFile {
+        val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
+        val parseResult = this.buildParseTree(fileContent)
+        val ast = buildRellAstWithCompilerErrors(
+            rellCompilerSourcePath,
+            parseResult.parseTree,
+            parseResult.tokenStream,
+        )
+        return ParsedRellFile(rellCompilerSourcePath, parseResult, ast.first)
+    }
+
+    fun buildFileMap(
+        sources: Map<URI, String>,
+        parsedFiles: Map<URI, ParsedRellFile> = parseFiles(sources),
+    ): ConcurrentHashMap<C_SourcePath, C_SourceFile> {
         val fileMap = ConcurrentHashMap<C_SourcePath, C_SourceFile>()
 
         for ((fileUri, fileContent) in sources) {
-            val (sourcePath, sourceFile) = buildCSourceFile(fileUri, fileContent)
-            fileMap[sourcePath] = sourceFile
+            val parsed = parsedFiles[fileUri] ?: parseFile(fileUri, fileContent)
+            fileMap[parsed.sourcePath] = parsed.toSourceFile(fileContent)
         }
 
         return fileMap
     }
 
-    private fun buildCSourceFile(fileUri: URI, fileContent: String): Pair<C_SourcePath, C_SourceFile> {
-        val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
-        val parseResult = this.buildParseTree(fileContent)
-        val ast = buildRellAstWithCompilerErrors(
-            rellCompilerSourcePath,
-            parseResult.parseTree,
-            parseResult.tokenStream,
-        )
-        return rellCompilerSourcePath to AstSourceFile.make(
-            ast.first,
-            IdeSourcePathFilePath(rellCompilerSourcePath),
-            fileContent
-        )
-    }
-
     fun updateFileMap(fileMap: MutableMap<C_SourcePath, C_SourceFile>, fileUri: URI, fileContent: String) {
-        val (sourcePath, sourceFile) = buildCSourceFile(fileUri, fileContent)
-        fileMap[sourcePath] = sourceFile
+        val parsed = parseFile(fileUri, fileContent)
+        fileMap[parsed.sourcePath] = parsed.toSourceFile(fileContent)
     }
 
     fun buildRellResource(
         fileUri: URI,
         fileContent: String,
-        fileMap: MutableMap<C_SourcePath, C_SourceFile>
+        fileMap: MutableMap<C_SourcePath, C_SourceFile>,
+        parsedFile: ParsedRellFile? = null,
     ): Resource {
-        val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
-        val parseResult = this.buildParseTree(fileContent)
-        val ast = buildRellAstWithCompilerErrors(
-            rellCompilerSourcePath,
-            parseResult.parseTree,
-            parseResult.tokenStream,
-        )
-        val compilationResult = compileResult(rellCompilerSourcePath, ast.first, fileMap, fileContent)
+        val parsed = parsedFile ?: parseFile(fileUri, fileContent)
+        val rellCompilerSourcePath = parsed.sourcePath
+        val parseResult = parsed.parseResult
+        val ast = parsed.ast
+        val compilationResult = compileResult(rellCompilerSourcePath, ast, fileMap, fileContent)
         val symbolInfo = compilationResult?.symbolInfos ?: mapOf()
         val locationInfo = createLocationInfo(symbolInfo)
         val tokenStream = parseResult.tokenStream as RellCommonTokenStream
@@ -84,10 +84,10 @@ class RellResourceFactory(
 
         return Resource(
             parseResult.parseTree,
-            IdeApi.getModuleInfo(IdeDirApi.mapDir(fileMap), rellCompilerSourcePath, ast.first),
+            IdeApi.getModuleInfo(IdeDirApi.mapDir(fileMap), rellCompilerSourcePath, ast),
             fileUri,
             workspaceUri,
-            ast.first,
+            ast,
             parseResult.syntaxErrors,
             compilationResult?.messages ?: listOf(),
             listOf(),
@@ -96,7 +96,7 @@ class RellResourceFactory(
             symbolInfo.asSequence().filter { it.value.defId != null }.associate { it.value.defId!! to it.key },
             locationInfo,
             checksum,
-            tokenStream
+            tokenStream,
         )
     }
 
@@ -129,12 +129,14 @@ class RellResourceFactory(
         }
 
         val rellLanguageVersion = chromiaModelProvider.getRellLanguageVersion()
-        val options = C_CompilerOptions.builder()
-            .compatibility(R_LangVersion.of(rellLanguageVersion))
-            .symbolInfoFile(compilerSrcPath)
-            .ideDocSymbolsEnabled(true)
-            .ide(true)
-            .build()
+
+        val options = C_CompilerOptions.builder().apply {
+            compatibility(R_LangVersion.of(rellLanguageVersion))
+            symbolInfoFile(compilerSrcPath)
+            ideDocSymbolsEnabled(true)
+            ide(true)
+        }.build()
+
         val idePath = IdeSourcePathFilePath(compilerSrcPath)
         val mainFile = AstSourceFile.make(ast, idePath, fileContent)
         fileMap[compilerSrcPath] = mainFile
@@ -143,7 +145,7 @@ class RellResourceFactory(
             IdeApi.compile(
                 selfDir,
                 immListOf(moduleName),
-                options
+                options,
             )
         } catch (e: Exception) {
             logger.warn(e) { "Compilation failed for file: ${compilerSrcPath.str()}" }
@@ -153,6 +155,7 @@ class RellResourceFactory(
 
     fun buildParseTree(fileContent: String): ParsingResult {
         val errorListener = SyntaxErrorCollector()
+
         return try {
             buildParseTreeFromSource(fileContent, errorListener)
         } catch (e: Exception) {

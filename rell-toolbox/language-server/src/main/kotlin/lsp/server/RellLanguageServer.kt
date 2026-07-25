@@ -78,10 +78,19 @@ class RellLanguageServer(
             )
         languageClient.logMessage(message)
 
-        return requestManager.runWrite {
-            workspaceManager.initialize(workspaceFolders, diagnosticsPublisher, ::sendNotification)
-            result
+        // Set up everything a request may touch before answering, then index in the background: the
+        // editor completes its handshake immediately instead of waiting out the whole workspace scan.
+        // Writes queue behind the indexing task and reads wait for it, so nothing sees a partial index.
+        workspaceManager.initialize(workspaceFolders, diagnosticsPublisher, ::sendNotification)
+
+        val indexing = requestManager.runWrite {
+            workspaceManager.buildInitialIndex(workspaceService::handleIndexingState)
         }
+        // handle(), not thenApply(): a failed index has to release readers too, or every later
+        // request would wait forever.
+        requestManager.blockReadsUntil(indexing.handle { _, _ -> })
+
+        return CompletableFuture.completedFuture(result)
     }
 
     private fun registerFileWatchers(workspaceFolders: List<WorkspaceFolder>?) {

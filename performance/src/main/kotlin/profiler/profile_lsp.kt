@@ -5,6 +5,7 @@
 
 package net.postchain.rell.performance.profiler
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -26,6 +27,7 @@ import java.nio.file.Path
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.*
 import one.convert.Arguments as JfrConverterArgs
@@ -105,9 +107,9 @@ class ProfileLspCommand : CliktCommand(name = "profile-lsp") {
         log("profile-lsp", "server jar: $serverJar")
         log("profile-lsp", "workspace:  $ws")
 
-        val cold = runSession("cold", outDir, ws, agentLib, log4jConfig, cacheHome)
+        runSession("cold", outDir, ws, agentLib, log4jConfig, cacheHome)
         awaitCacheFile(cacheHome)
-        val hot = runSession("hot", outDir, ws, agentLib, log4jConfig, cacheHome)
+        runSession("hot", outDir, ws, agentLib, log4jConfig, cacheHome)
 
         writeSystemInfo(outDir)
 
@@ -150,11 +152,10 @@ class ProfileLspCommand : CliktCommand(name = "profile-lsp") {
         fun elapsed(): Double = (System.nanoTime() - spawnedAt) / 1e9
 
         val milestones = SessionMilestones(run = run)
+        val client = LspStdioClient(proc.inputStream, proc.outputStream) {
+            if (milestones.firstByteSec == null) milestones.firstByteSec = elapsed()
+        }
         try {
-            val client = LspStdioClient(proc.inputStream, proc.outputStream) {
-                if (milestones.firstByteSec == null) milestones.firstByteSec = elapsed()
-            }
-
             client.sendRequest(INITIALIZE_ID, "initialize", initializeParams(ws))
             val deadline = System.nanoTime() + initializeTimeoutSec * 1_000_000_000L
             while (client.initializeResponseAt == null) {
@@ -170,9 +171,19 @@ class ProfileLspCommand : CliktCommand(name = "profile-lsp") {
 
             client.sendNotification("initialized", mapper.createObjectNode())
 
+            val capNanos = System.nanoTime() + 120 * 1_000_000_000L
+
+            // The server answers initialize before the workspace is indexed, and is silent while it
+            // indexes, so silence alone would look like "startup finished" seconds before any
+            // diagnostic is published. Wait for the indexing progress to end first; a server that
+            // never reports it falls through to the quiesce below once the cap expires.
+            while (System.nanoTime() < capNanos && client.indexingEndAt == null) {
+                Thread.sleep(50)
+            }
+            milestones.indexingCompleteSec = client.indexingEndAt?.let { (it - spawnedAt) / 1e9 }
+
             // Quiesce: startup is over once the server has been silent for --quiesce seconds.
             val quiesceNanos = quiesceSec * 1_000_000_000L
-            val capNanos = System.nanoTime() + 120 * 1_000_000_000L
             while (System.nanoTime() < capNanos) {
                 if (System.nanoTime() - client.lastActivityNanos > quiesceNanos) break
                 Thread.sleep(100)
@@ -198,9 +209,13 @@ class ProfileLspCommand : CliktCommand(name = "profile-lsp") {
         convertJfr(jfrFile, outDir / "flamegraph-$run.html", "html")
         mapper.writerWithDefaultPrettyPrinter()
             .writeValue((outDir / "milestones-$run.json").toFile(), milestones)
+        mapper.writerWithDefaultPrettyPrinter()
+            .writeValue((outDir / "diagnostics-$run.json").toFile(), client.diagnosticsByUri)
 
-        log("profile-lsp", "$run: initialize→response %.2f s, %d files diagnosed".formatRoot(
-            milestones.initializeResponseSec ?: -1.0, milestones.diagnosticsFiles))
+        log("profile-lsp", "$run: initialize→response %.2f s, workspace indexed %.2f s, %d files diagnosed".formatRoot(
+            milestones.initializeResponseSec ?: -1.0,
+            milestones.indexingCompleteSec ?: -1.0,
+            milestones.diagnosticsFiles))
         return milestones
     }
 
@@ -253,13 +268,13 @@ class ProfileLspCommand : CliktCommand(name = "profile-lsp") {
     private fun writeLog4jOverride(outDir: Path): Path {
         val file = outDir / "log4j2-profiling.properties"
         file.writeText(
-            """
+            $$"""
             status=warn
             name=LspStartupProfilerLogger
             appender.rolling.type=RollingFile
             appender.rolling.name=RollingFile
-            appender.rolling.fileName=${'$'}{sys:java.io.tmpdir}/rell-language-server/lsp.log
-            appender.rolling.filePattern=${'$'}{sys:java.io.tmpdir}/rell-language-server/lsp-%i.log
+            appender.rolling.fileName=${sys:java.io.tmpdir}/rell-language-server/lsp.log
+            appender.rolling.filePattern=${sys:java.io.tmpdir}/rell-language-server/lsp-%i.log
             appender.rolling.layout.type=PatternLayout
             appender.rolling.layout.pattern=%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
             appender.rolling.policies.type=Policies
@@ -339,6 +354,7 @@ data class SessionMilestones(
     var lastDiagnosticSec: Double? = null,
     var quiescentSec: Double? = null,
     var exitSec: Double? = null,
+    var indexingCompleteSec: Double? = null,
     var diagnosticsFiles: Int = 0,
     var exitCode: Int? = null,
 )
@@ -352,6 +368,9 @@ data class SessionMilestones(
  * Server→client requests are acknowledged with a `null` result, which satisfies everything
  * the server asks during startup (`client/registerCapability` etc.).
  */
+/** Work-done progress token the language server reports workspace indexing under. */
+private const val INDEXING_PROGRESS_TOKEN = "rell-indexing"
+
 internal class LspStdioClient(
     private val input: InputStream,
     private val output: OutputStream,
@@ -363,6 +382,12 @@ internal class LspStdioClient(
     @Volatile var lastActivityNanos: Long = System.nanoTime(); private set
     @Volatile var diagnosticsFiles: Int = 0; private set
     @Volatile var lastDiagnosticAt: Long? = null; private set
+
+    /** When the server reported its workspace indexing finished, via the work-done progress token. */
+    @Volatile var indexingEndAt: Long? = null; private set
+
+    /** Last diagnostics published per file URI, so two runs can be diffed for behaviour changes. */
+    val diagnosticsByUri: MutableMap<String, JsonNode> = ConcurrentSkipListMap()
 
     init {
         Thread(::readLoop, "lsp-client-reader").apply {
@@ -433,11 +458,23 @@ internal class LspStdioClient(
         when {
             // Server→client request: acknowledge and move on.
             id != null && method != null -> sendResponseNull(id.asText())
+
             id?.asInt() == 1 && (msg.has("result") || msg.has("error")) ->
                 initializeResponseAt = System.nanoTime()
+
+            method == "$/progress" -> {
+                val params = msg.get("params")
+                val token = params?.get("token")?.asText()
+                val kind = params?.get("value")?.get("kind")?.asText()
+                if (token == INDEXING_PROGRESS_TOKEN && kind == "end") indexingEndAt = System.nanoTime()
+            }
+
             method == "textDocument/publishDiagnostics" -> {
                 diagnosticsFiles++
                 lastDiagnosticAt = System.nanoTime()
+                msg.get("params")?.let { params ->
+                    params.get("uri")?.asText()?.let { diagnosticsByUri[it] = params.get("diagnostics") }
+                }
             }
         }
     }

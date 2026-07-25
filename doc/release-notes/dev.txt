@@ -45,3 +45,35 @@ Six inspections are new:
     single-cardinality at-expression, auto-fixed when the assertion is the final operation. Indexing a list
     at-expression at zero, and existence checks that materialize a list such as size() == 0 or empty(), are
     reported as diagnostics.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tools: Faster language server startup
+
+Opening a workspace is substantially faster, and no longer blocks the editor. Reported diagnostics are unchanged.
+
+The initialize request used to index the whole workspace before answering, so the editor waited for the entire
+scan before it finished connecting. Indexing now runs in the background: the server replies immediately and
+reports progress while it works, and diagnostics arrive when the index is ready. Requests that need the index
+wait for it rather than answering from a half-built one, so results are unchanged - they just no longer hold up
+the handshake.
+
+The indexing itself also got faster, both with an empty index cache and against a warm one, most noticeably on
+large projects. Four things account for that.
+
+Each file used to be parsed two or three times and compiled twice. Indexing built a source map for the whole
+workspace, then parsed every file again to build its resource, then repeated that for every file with imports.
+The repeat pass dates back to when the source map was filled in as the loop went along, so a file indexed early
+could not see one indexed later; the map has been built up front since, and the second pass no longer changed
+anything. Files are now parsed once and compiled once.
+
+Compilation, which dominates indexing, is spread over a few threads rather than run one file at a time. The
+worker count is deliberately a small share of the machine - a quarter of the available processors, at most four -
+because the language server shares a machine with an editor and usually a build.
+
+Linter rules are dispatched from a declared table of the syntax nodes each rule handles. Previously the linter
+asked, for every rule at every node in the file, whether that rule overrode the matching visit method, and used
+the resulting exception as the answer; building those stack traces cost more than running the rules.
+
+Scanning the workspace for Rell files no longer inspects every file it walks past, and skips .git and excluded
+folders instead of walking into them and discarding the results. This mostly helps projects carrying a large
+node_modules directory.

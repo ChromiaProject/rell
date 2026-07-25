@@ -14,6 +14,7 @@ import net.postchain.rell.toolbox.linter.asSimpleComparison
 import net.postchain.rell.toolbox.linter.issues.AtCardinalityMisuseIssue
 import net.postchain.rell.toolbox.linter.issues.NotNullToUnitFix
 import net.postchain.rell.toolbox.linter.singleBaseExpr
+import org.antlr.v4.runtime.RuleContext
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
 
@@ -29,6 +30,11 @@ class AtCardinalityMisuseRule(config: LinterOptions, resource: Resource, linterC
 
     override val ruleId
         get() = RULE_ID
+
+    override val handledContexts: Set<Class<out RuleContext>> = setOf(
+        RellParser.BaseExprContext::class.java,
+        RellParser.BinaryExprContext::class.java,
+    )
 
     override fun visitBaseExpr(ctx: RellParser.BaseExprContext) {
         if (isDisabled(config.ruleAtCardinalityMisuse) || hasIgnoreCommentOnTop(ctx.start)) {

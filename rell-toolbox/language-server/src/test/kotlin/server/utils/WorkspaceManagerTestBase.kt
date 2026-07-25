@@ -108,10 +108,12 @@ open class WorkspaceManagerTestBase {
     protected fun initializeWorkspace(workspace: File = this.workspace) {
         val workspaceFolders = listOf(WorkspaceFolder(workspace.toURI().toString(), TEST_WORKSPACE_NAME))
         workspaceManager.initialize(workspaceFolders, diagnosticsPublisher, ::populateNotifications)
+        workspaceManager.buildInitialIndex()
     }
 
     protected fun initializeWorkspaces(workspaces: List<File>) {
         val workspaceFolders = workspaces.map { WorkspaceFolder(it.toURI().toString(), TEST_WORKSPACE_NAME) }
         workspaceManager.initialize(workspaceFolders, diagnosticsPublisher, ::populateNotifications)
+        workspaceManager.buildInitialIndex()
     }
 }

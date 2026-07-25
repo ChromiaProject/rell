@@ -12,6 +12,7 @@ import net.postchain.rell.toolbox.linter.asBooleanLiteral
 import net.postchain.rell.toolbox.linter.asSimpleComparison
 import net.postchain.rell.toolbox.linter.isInsideAtWhere
 import net.postchain.rell.toolbox.linter.issues.RedundantBooleanComparisonIssue
+import org.antlr.v4.runtime.RuleContext
 
 /**
  * Flags comparisons of a value against a boolean literal (`x == true`, `x != false`, ...).
@@ -21,6 +22,10 @@ class RedundantBooleanComparisonRule(config: LinterOptions, resource: Resource, 
 
     override val ruleId
         get() = RULE_ID
+
+    override val handledContexts: Set<Class<out RuleContext>> = setOf(
+        RellParser.BinaryExprContext::class.java,
+    )
 
     override fun visitBinaryExpr(ctx: RellParser.BinaryExprContext) {
         if (isDisabled(config.ruleRedundantBooleanComparison) || hasIgnoreCommentOnTop(ctx.start)) {

@@ -9,12 +9,17 @@ import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.issues.ReplaceIfWithWhenIssue
+import org.antlr.v4.runtime.RuleContext
 
 class ReplaceIfWithWhenRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
 
     override val ruleId
         get() = RULE_ID
+
+    override val handledContexts: Set<Class<out RuleContext>> = setOf(
+        RellParser.IfStmtAltContext::class.java,
+    )
 
     override fun visitIfStmtAlt(ctx: RellParser.IfStmtAltContext) {
         if (isDisabled(config.ruleReplaceIfWithWhen) || hasIgnoreCommentOnTop(ctx.start)) {

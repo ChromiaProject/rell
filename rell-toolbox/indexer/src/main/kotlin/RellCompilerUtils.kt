@@ -11,15 +11,19 @@ import net.postchain.rell.base.utils.ide.IdeDirApi
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.immMapOf
 import net.postchain.rell.toolbox.compiler.RellCompilerFilePath
-import java.io.File
 import java.net.URI
+import kotlin.io.path.name
+import kotlin.io.path.pathString
+import kotlin.io.path.relativeTo
+import kotlin.io.path.toPath
 
 class RellCompilerUtils {
 
     fun createCompilerSourcePath(uri: URI, workspaceUri: URI): C_SourcePath {
-        var relativePath = File(uri).relativeTo(File(workspaceUri)).toString()
+        var relativePath = uri.toPath().relativeTo(workspaceUri.toPath()).pathString
+
         if (relativePath.isEmpty()) {
-            relativePath = File(uri).name
+            relativePath = uri.toPath().name
         }
 
         val compilerSourcePath = IdeDirApi.parseSourcePath(relativePath)

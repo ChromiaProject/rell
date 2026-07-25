@@ -11,6 +11,7 @@ import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.TerminalNameContext
 import net.postchain.rell.toolbox.linter.issues.NamingConventionIssue
+import org.antlr.v4.runtime.RuleContext
 import org.antlr.v4.runtime.misc.Interval
 import org.antlr.v4.runtime.tree.TerminalNode
 
@@ -31,6 +32,22 @@ class NamingConventionRule(config: LinterOptions, resource: Resource, linterCont
 
     override val ruleId
         get() = RULE_ID
+
+    override val handledContexts: Set<Class<out RuleContext>> = setOf(
+        RellParser.FunctionDefContext::class.java,
+        RellParser.QueryDefContext::class.java,
+        RellParser.OpDefContext::class.java,
+        RellParser.EntityDefContext::class.java,
+        RellParser.StructDefContext::class.java,
+        RellParser.ObjectDefContext::class.java,
+        RellParser.EnumDefContext::class.java,
+        RellParser.NamespaceDefContext::class.java,
+        RellParser.ConstantDefContext::class.java,
+        RellParser.FormalParameterContext::class.java,
+        RellParser.NameTypeAttrHeaderContext::class.java,
+        RellParser.AnonAttrHeaderContext::class.java,
+        RellParser.SimpleVarDeclaratorContext::class.java,
+    )
 
     override fun visitFunctionDef(ctx: RellParser.FunctionDefContext) =
         checkFirstIdentifier(ctx, uppercaseAllowed = false)

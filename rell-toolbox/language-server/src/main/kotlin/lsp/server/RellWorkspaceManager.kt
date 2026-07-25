@@ -8,6 +8,7 @@ import com.google.gson.JsonObject
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
+import net.postchain.rell.toolbox.indexer.IndexingState
 import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsPublisher
 import net.postchain.rell.toolbox.lsp.editing.CodeActionService
@@ -38,6 +39,10 @@ class RellWorkspaceManager(
         diagnosticsManager.setDiagnosticsPublisher(diagnosticsPublisher)
         diagnosticsManager.setNotificationPublisher(notificationPublisher)
         indexingManager.initialize(workspaceFolders)
+    }
+
+    fun buildInitialIndex(indexingStateHandler: (IndexingState) -> Unit = {}) {
+        indexingManager.buildInitialIndex(indexingStateHandler)
     }
 
     fun getHoverDocumentation(params: HoverParams): MarkupContent {

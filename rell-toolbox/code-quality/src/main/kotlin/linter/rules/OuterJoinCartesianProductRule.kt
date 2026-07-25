@@ -10,6 +10,7 @@ import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.issues.OuterJoinCartesianProductIssue
 import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.RuleContext
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
 
@@ -28,6 +29,10 @@ class OuterJoinCartesianProductRule(config: LinterOptions, resource: Resource, l
 
     override val ruleId
         get() = RULE_ID
+
+    override val handledContexts: Set<Class<out RuleContext>> = setOf(
+        RellParser.AtExprContext::class.java,
+    )
 
     override fun visitAtExpr(ctx: RellParser.AtExprContext) {
         if (isDisabled(config.ruleOuterJoinCartesianProduct)) {

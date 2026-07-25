@@ -14,6 +14,7 @@ import net.postchain.rell.toolbox.linter.asSimpleComparison
 import net.postchain.rell.toolbox.linter.containsAtOperation
 import net.postchain.rell.toolbox.linter.singleBaseExpr
 import net.postchain.rell.toolbox.linter.issues.PreferEmptyIssue
+import org.antlr.v4.runtime.RuleContext
 
 /**
  * Flags collection existence checks written through `.size()`:
@@ -32,6 +33,10 @@ class PreferEmptyRule(config: LinterOptions, resource: Resource, linterContext: 
 
     override val ruleId
         get() = RULE_ID
+
+    override val handledContexts: Set<Class<out RuleContext>> = setOf(
+        RellParser.BinaryExprContext::class.java,
+    )
 
     override fun visitBinaryExpr(ctx: RellParser.BinaryExprContext) {
         if (isDisabled(config.rulePreferEmpty) || hasIgnoreCommentOnTop(ctx.start)) {

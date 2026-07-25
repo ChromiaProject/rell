@@ -11,6 +11,7 @@ import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.NameNodesFinder
 import net.postchain.rell.toolbox.linter.isUnderscore
+import org.antlr.v4.runtime.RuleContext
 import org.antlr.v4.runtime.misc.Interval
 
 class UnusedVariableRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
@@ -23,6 +24,10 @@ class UnusedVariableRule(config: LinterOptions, resource: Resource, linterContex
 
     override val ruleId
         get() = RULE_ID
+
+    override val handledContexts: Set<Class<out RuleContext>> = setOf(
+        RellParser.VarStmtAltContext::class.java,
+    )
 
     override fun visitVarStmtAlt(ctx: RellParser.VarStmtAltContext) {
         if (isDisabled(config.ruleUnusedVariable) || hasIgnoreCommentOnTop(ctx.start) || hasSemanticErrors()) {

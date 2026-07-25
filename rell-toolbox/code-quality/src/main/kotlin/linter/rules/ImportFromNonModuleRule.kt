@@ -10,6 +10,7 @@ import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.issues.ImportFromNonModuleIssue
 import java.nio.file.Paths
+import org.antlr.v4.runtime.RuleContext
 
 class ImportFromNonModuleRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
@@ -22,6 +23,11 @@ class ImportFromNonModuleRule(config: LinterOptions, resource: Resource, linterC
 
     override val ruleId
         get() = RULE_ID
+
+    override val handledContexts: Set<Class<out RuleContext>> = setOf(
+        RellParser.FileContext::class.java,
+        RellParser.ImportDefContext::class.java,
+    )
 
     override fun visitFile(ctx: RellParser.FileContext) {
         hasModuleHeader = ctx.moduleHeader() != null

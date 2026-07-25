@@ -11,6 +11,7 @@ import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.asBooleanLiteral
 import net.postchain.rell.toolbox.linter.issues.SimplifyBooleanReturnIssue
 import net.postchain.rell.toolbox.linter.singleBaseExpr
+import org.antlr.v4.runtime.RuleContext
 
 /**
  * Simplifies boolean-literal `if` chains that only pick between `true` and `false`:
@@ -23,6 +24,11 @@ class SimplifyBooleanReturnRule(config: LinterOptions, resource: Resource, linte
 
     override val ruleId
         get() = RULE_ID
+
+    override val handledContexts: Set<Class<out RuleContext>> = setOf(
+        RellParser.IfStmtAltContext::class.java,
+        RellParser.ReturnStmtAltContext::class.java,
+    )
 
     override fun visitIfStmtAlt(ctx: RellParser.IfStmtAltContext) {
         if (isDisabled(config.ruleSimplifyBooleanReturn) || hasIgnoreCommentOnTop(ctx.start)) {

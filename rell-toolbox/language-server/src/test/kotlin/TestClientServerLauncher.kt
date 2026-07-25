@@ -10,6 +10,7 @@ import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.eclipse.lsp4j.Diagnostic
 import org.eclipse.lsp4j.InitializeParams
 import org.eclipse.lsp4j.InitializedParams
+import org.eclipse.lsp4j.WorkDoneProgressEnd
 import org.eclipse.lsp4j.WorkspaceFolder
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.LanguageServer
@@ -53,6 +54,12 @@ class TestClientServerLauncher(private val koinApp: KoinApplication) {
 
         val server = koinApp.koin.get<RellLanguageServer>()
         await().until { server.initialized.isDone }
+
+        // initialize returns before the workspace is indexed, so tests would otherwise inspect an
+        // empty index. The server reports indexing through a work-done progress token; its "end"
+        // is the point at which the initial index exists.
+        await().until { testClient.progressNotifications.any { it.value?.left is WorkDoneProgressEnd } }
+        testClient.progressNotifications.clear()
 
         if (clearDiagnostic) {
             // Initial-indexing diagnostics are queued via `initialized.thenAccept`

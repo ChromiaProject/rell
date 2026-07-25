@@ -16,6 +16,7 @@ import net.postchain.rell.toolbox.linter.NameNodesFinder
 import net.postchain.rell.toolbox.linter.isUnderscore
 import net.postchain.rell.toolbox.linter.issues.ConstantDetectionIssue
 import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.RuleContext
 import org.antlr.v4.runtime.misc.Interval
 
 class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
@@ -27,6 +28,12 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
 
     override val ruleId
         get() = RULE_ID
+
+    override val handledContexts: Set<Class<out RuleContext>> = setOf(
+        RellParser.VarStmtAltContext::class.java,
+        RellParser.BaseExprContext::class.java,
+        RellParser.FileContext::class.java,
+    )
 
     private val referenceIndexer = ReferenceIndexer(resource.workspaceUri, mutableMapOf(resource.fileUri to resource))
 
@@ -140,7 +147,7 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
     }
 
     private fun isInsideTupleDeclarator(declarator: RellParser.SimpleVarDeclaratorContext): Boolean {
-        var p: org.antlr.v4.runtime.RuleContext? = declarator.parent
+        var p: RuleContext? = declarator.parent
         while (p != null) {
             if (p is RellParser.TupleVarDeclaratorContext) return true
             if (p is RellParser.VarStmtAltContext) return false
