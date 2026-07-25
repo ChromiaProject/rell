@@ -12,7 +12,8 @@ The authoritative procedure is in [doc/release-guide.md](../../../doc/release-gu
 - Never push to `origin/dev`, push the `version-A.B.C` branch, create the Git tag, or post to Zulip without an explicit go-ahead from the user. Ask once per push/tag/announce step.
 - Never amend or force-push.
 - Never delete or rename files outside the steps below.
-- **The release is not done until the tag `A.B.C` exists on `origin`.** A green pipeline on `version-A.B.C` is not the finish line — every prior release (`git tag --list` on `dev`) has a matching `A.B.C` tag. Before declaring the release complete, run `git ls-remote --tags origin A.B.C` and confirm it returns a SHA. If it doesn't, you skipped Phase 3 — go back and tag.
+- **The release is not done until the tag `A.B.C` exists on `origin`.** A green pipeline on `version-A.B.C` is not the finish line. Before declaring the release complete, run `git ls-remote --tags origin A.B.C` and confirm it returns a SHA. If it doesn't, you skipped Phase 3 — go back and tag.
+- **Never judge tag state from local tags.** `git tag -l`, `git tag A.B.C`, and `git describe` all read the local namespace, which in older clones is polluted with stale local-only tags — including names in the live `0.16.x` range — that point at unrelated `dev` merge commits and were never on `origin`. `git ls-remote --tags origin` is the only source of truth. This is exactly how `0.16.1` shipped untagged: the local `0.16.1` tag already existed (pointing at an ancient merge), `git tag` failed, and the failure was read as "already tagged".
 
 ## Phase 1 — Finalise release notes on `dev`
 
@@ -46,20 +47,21 @@ Commit on `version-A.B.C` with: `Bump version to A.B.C`.
 
 ## Phase 3 — Tag the release commit (mandatory)
 
-**Do not skip this phase.** Pushing the version branch starts the publish pipeline, but only the `A.B.C` tag marks the release as cut — every prior release in `git tag --list` has one. After CI succeeds (verify in GitLab), tag the release commit:
+**Do not skip this phase.** Pushing the version branch starts the publish pipeline, but only the `A.B.C` tag marks the release as cut — every prior release has one on `origin`. After CI succeeds (verify in GitLab), tag the release commit:
 
 ```bash
 # Verify CI is green on the tip first
 glab api "projects/chromaway%2Frell/pipelines?ref=version-A.B.C&per_page=1"
 
-# Tag the tip of version-A.B.C
+# Push the tag straight to origin by SHA — no local tag involved
 SHA=$(git rev-parse origin/version-A.B.C)
-git tag A.B.C "$SHA"
-git push origin A.B.C
+git push origin "$SHA:refs/tags/A.B.C"
 
 # Confirm the tag is on the remote
 git ls-remote --tags origin A.B.C
 ```
+
+Push by SHA rather than `git tag A.B.C && git push origin A.B.C`: the two-step form dies on a stale local tag of the same name (see the hard rules above), and its failure is easy to misread as "already tagged".
 
 Confirm with the user before pushing the tag. After pushing, the `git ls-remote` check is the gate to Phase 4 — if the tag isn't on `origin`, the release is not done.
 
@@ -98,6 +100,7 @@ Commit with: `Post-release cleanup for A.B.C`. Ask the user before pushing.
 
 - **CI fails on the version branch**: don't tag. Investigate the failure, push a fix as a new commit on `version-A.B.C` (not an amend — preserve the failed commit for diagnosis), wait for green CI, then tag the latest commit. Update the SHA in the all-releases entry to match.
 - **Forgot to replace `SINCE_NOW` on `dev` before branching**: cherry-pick the replacement commit onto both `dev` and `version-A.B.C`. The `since` annotations are version-history metadata; losing them on `dev` is a real defect.
+- **`git tag A.B.C` fails with `fatal: tag 'A.B.C' already exists`, or `git fetch --tags` says `[rejected] ... (would clobber existing tag)`**: a stale local-only tag, not a tagged release. Check `git ls-remote --tags origin A.B.C` — if it returns nothing, push by SHA (`git push origin <sha>:refs/tags/A.B.C`). Clean up locally afterwards only if you want working local tags: `git tag -d A.B.C && git fetch --tags --force`.
 - **Tag pushed to wrong commit**: delete the remote tag (`git push origin :refs/tags/A.B.C`), retag locally on the right SHA, push. Coordinate with anyone who may have already pulled the tag.
 - **Patch release vs. major release confusion**: a patch release (only `C` changed) does NOT bump the dev snapshot; a major release (`A` or `B` changed) does.
 - **CI fails with `IllegalStateException` from `RellVersions.<init>` and 100% test failures**: you bumped `VERSION_STR` but forgot to add the new version to `SUPPORTED_VERSIONS` on the release branch. Push a follow-up commit appending `"A.B.C"` to the list (see Phase 2).

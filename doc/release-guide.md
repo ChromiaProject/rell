@@ -64,6 +64,26 @@ git tag A.B.C <commit-sha>
 git push origin A.B.C
 ```
 
+**The release is not published until the tag exists on `origin`.** A green pipeline is not the finish line. Always verify against the remote, never against `git tag -l`:
+
+```shell
+git ls-remote --tags origin A.B.C
+```
+
+**Local tags are not evidence.** Older clones carry stale local-only tags — including names in the current `0.16.x` range — left over from a previous tagging scheme; they point at unrelated `dev` merge commits and do not exist on `origin`. Two symptoms of a polluted local tag namespace:
+
+- `git tag A.B.C <sha>` fails with `fatal: tag 'A.B.C' already exists`.
+- `git fetch --tags` reports `[rejected] X.Y.Z -> X.Y.Z (would clobber existing tag)`.
+
+Neither means the release was tagged. Push the tag by SHA, which bypasses the local namespace entirely and needs no local tag at all:
+
+```shell
+git push origin <commit-sha>:refs/tags/A.B.C
+git ls-remote --tags origin A.B.C
+```
+
+Only fix the local tags (`git tag -d A.B.C`, then `git fetch --tags --force`) if you need them locally; the remote tag is what matters.
+
 ## 4. Announce the Release
 
 After the CI pipeline completes successfully, report the new version on **Zulip**.
