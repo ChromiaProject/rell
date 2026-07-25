@@ -9,21 +9,23 @@
 # re-render. The `pages:mr-comment:after-*` jobs share a per-MR `resource_group`, so these
 # read-modify-write cycles run one at a time and can't race into duplicate notes.
 #
-# Auth: QODANA_GITLAB_TOKEN — the `qodana-ci` project access token (api scope, Reporter). Unlike
-# GITLAB_TOKEN it is *not* protected, so it is exposed on MR/feature branches; a Reporter can create
-# and edit MR notes. CI_JOB_TOKEN can't (the notes endpoint isn't on its allowlist — 403/404).
+# Auth: PORTAL_GITLAB_TOKEN — the `rell-portal-ci` project access token (api scope, Reporter), kept
+# separate from the `qodana-ci` token so the note is attributed to its own bot rather than to code
+# quality reporting. Like that token it must be *unprotected* to be exposed on MR/feature branches;
+# a Reporter can create and edit MR notes. CI_JOB_TOKEN can't (the notes endpoint isn't on its
+# allowlist — 403/404).
 #
-# Inputs (from GitLab CI): CI_API_V4_URL, CI_PROJECT_ID, CI_MERGE_REQUEST_IID, QODANA_GITLAB_TOKEN,
+# Inputs (from GitLab CI): CI_API_V4_URL, CI_PROJECT_ID, CI_MERGE_REQUEST_IID, PORTAL_GITLAB_TOKEN,
 #   and PORTAL_KEY / PORTAL_BULLET from the upstream job's dotenv artifact.
 set -eu
 
 : "${CI_MERGE_REQUEST_IID:?only meaningful in a merge request pipeline}"
-: "${QODANA_GITLAB_TOKEN:?QODANA_GITLAB_TOKEN is required (qodana-ci token, api scope)}"
+: "${PORTAL_GITLAB_TOKEN:?PORTAL_GITLAB_TOKEN is required (rell-portal-ci token, api scope)}"
 : "${PORTAL_KEY:?PORTAL_KEY is required (set in the upstream pages job dotenv)}"
 : "${PORTAL_BULLET:?PORTAL_BULLET is required (set in the upstream pages job dotenv)}"
 
 api="$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/notes"
-auth="PRIVATE-TOKEN: $QODANA_GITLAB_TOKEN"
+auth="PRIVATE-TOKEN: $PORTAL_GITLAB_TOKEN"
 marker="<!-- rell-portal-links -->"
 state_open="<!-- rell-portal-state:"
 state_close=" -->"

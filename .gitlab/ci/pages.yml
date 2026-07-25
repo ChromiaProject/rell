@@ -72,8 +72,9 @@ pages:index:after-docs:
 # re-run), so repeated dispatches never stack duplicate comments. The shared per-MR `resource_group`
 # serialises these read-modify-write cycles so concurrent dispatches can't race.
 #
-# Auth is QODANA_GITLAB_TOKEN (the `qodana-ci` token) — unlike GITLAB_TOKEN it is unprotected, so it
-# is exposed on MR/feature branches, and its `api` scope allows writing notes.
+# Auth is PORTAL_GITLAB_TOKEN — a dedicated `rell-portal-ci` project access token (api scope,
+# Reporter) so the note is authored by its own bot instead of the `qodana-ci` one. Like that token it
+# must be unprotected to be exposed on MR/feature branches; its `api` scope allows writing notes.
 .pages-mr-comment:
   image: registry.gitlab.com/gitlab-org/cli:latest
   stage: index
