@@ -11,14 +11,20 @@ import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.asSimpleComparison
 import net.postchain.rell.toolbox.linter.isNullLiteral
 import net.postchain.rell.toolbox.linter.issues.SimplifyNullableIfIssue
+import net.postchain.rell.toolbox.linter.singleBaseExpr
 import net.postchain.rell.toolbox.linter.sourceText
+import net.postchain.rell.toolbox.parser.RellCustomTokenChannels
 import org.antlr.v4.runtime.RuleContext
+import org.antlr.v4.runtime.Token
+import org.antlr.v4.runtime.misc.Interval
 import org.antlr.v4.runtime.tree.ParseTree
 
 /**
  * Rewrites pure-expression null guards:
  *   `if (x != null) x else y`   → `x ?: y`
  *   `if (x != null) x.f else null` → `x?.f`
+ * and the statement form, where the guard only jumps out of the enclosing function or loop:
+ *   `val x = f(); if (x == null) return null;` → `val x = f() ?: return null;`
  */
 class SimplifyNullableIfRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
@@ -28,13 +34,14 @@ class SimplifyNullableIfRule(config: LinterOptions, resource: Resource, linterCo
 
     override val handledContexts: Set<Class<out RuleContext>> = setOf(
         RellParser.IfExprContext::class.java,
+        RellParser.IfStmtAltContext::class.java,
     )
 
     override fun visitIfExpr(ctx: RellParser.IfExprContext) {
         if (isDisabled(config.ruleSimplifyNullableIf) || hasIgnoreCommentOnTop(ctx.start)) {
             return
         }
-        val checked = notNullOperand(ctx.expression()) ?: return
+        val checked = nullComparisonOperand(ctx.expression(), "!=") ?: return
         if (hasCall(checked)) {
             return
         }
@@ -70,10 +77,101 @@ class SimplifyNullableIfRule(config: LinterOptions, resource: Resource, linterCo
         }
     }
 
-    /** The non-null operand of a `<expr> != null` / `null != <expr>` condition, else null. */
-    private fun notNullOperand(cond: RellParser.ExpressionContext): RellParser.BaseExprContext? {
+    override fun visitIfStmtAlt(ctx: RellParser.IfStmtAltContext) {
+        if (isDisabled(config.ruleSimplifyNullableIf)) {
+            return
+        }
+        val stmts = ctx.statement()
+        // An else-arm means the guard picks between two paths, not "leave early or carry on".
+        if (stmts.size != 1) {
+            return
+        }
+        val jumpText = jumpText(stmts[0]) ?: return
+        val checked = nullComparisonOperand(ctx.expression(), "==") ?: return
+        // Only a plain variable is a candidate: the guard has to name the declaration above it, so a
+        // member access (`a.b == null`) is not one.
+        val name = checked.takeIf { it.childCount == 1 }
+            ?.let { it.baseExprHead() as? RellParser.NameExprContext }?.singleName() ?: return
+        val decl = guardedDeclaration(ctx, name) ?: return
+        if (hasIgnoreCommentOnTop(ctx.start) || hasIgnoreCommentOnTop(decl.start)) {
+            return
+        }
+        val initExpr = decl.expression()
+        val declText = decl.start.inputStream.getText(Interval.of(decl.start.startIndex, initExpr.stop.stopIndex))
+        // The fix replaces both statements, so a comment between them would be lost: report it, but
+        // leave the rewrite to the reader.
+        val newText = if (hasCommentsBetween(decl.stop, ctx.stop)) null else "$declText ?: $jumpText;"
+        report(SimplifyNullableIfIssue(ctx, ruleId, GUARD_MESSAGE, newText, decl.start, ctx.stop))
+    }
+
+    /**
+     * The `val` declaration of [name] directly above the guard, when merging the two is safe.
+     * Requires the initialiser to be a single operand: `?:` binds tighter than `or`, `and`, `in` and
+     * the comparisons, so appending it to a compound initialiser would regroup the expression.
+     */
+    private fun guardedDeclaration(ctx: RellParser.IfStmtAltContext, name: String): RellParser.VarStmtAltContext? {
+        val siblings = when (val parent = ctx.parent) {
+            is RellParser.BlockStmtContext -> parent.statement()
+            is RellParser.ValueBlockContext -> parent.statement()
+            else -> return null
+        }
+        val index = siblings.indexOfFirst { it === ctx }
+        // `var` is left alone: the rewrite drops the null from the inferred type, which a later
+        // assignment of null would no longer accept.
+        val decl = siblings.getOrNull(index - 1) as? RellParser.VarStmtAltContext ?: return null
+        if (decl.start.text != "val") {
+            return null
+        }
+        // A declared type is kept verbatim by the rewrite, so `val x: T? = f() ?: return` would leave
+        // x nullable and break the code below the guard, which counts on it being non-null.
+        val header = (decl.varDeclarator() as? RellParser.SimpleVarDeclaratorContext)
+            ?.attrHeader() as? RellParser.AnonAttrHeaderContext ?: return null
+        // `childCount == 1` excludes `val x?`, whose declared type is nullable as well.
+        if (header.childCount != 1 || header.qualifiedName().singleName() != name) {
+            return null
+        }
+        if (decl.expression()?.binaryExpr()?.singleBaseExpr() == null) {
+            return null
+        }
+        return decl
+    }
+
+    /** The guard body as a jump expression, when it is nothing but a jump. */
+    private fun jumpText(stmt: RellParser.StatementContext): String? {
+        val jump = if (stmt is RellParser.BlockStmtAltContext) {
+            stmt.blockStmt().statement().singleOrNull()
+        } else {
+            stmt
+        }
+        return when (jump) {
+            // A `return` value needs no parentheses: as the right operand of `?:` it extends to the
+            // end of the expression anyway.
+            is RellParser.ReturnStmtAltContext -> jump.expression()?.let { "return ${it.sourceText()}" } ?: "return"
+            is RellParser.BreakStmtAltContext -> "break"
+            is RellParser.ContinueStmtAltContext -> "continue"
+            else -> null
+        }
+    }
+
+    /** The name behind a one-segment qualified name (`x`), else null (`a.b`, an at-alias, ...). */
+    private fun RellParser.NameExprContext.singleName(): String? = qualifiedName().singleName()
+
+    private fun RellParser.QualifiedNameContext?.singleName(): String? {
+        val ids = this?.RULE_ID() ?: return null
+        return if (ids.size == 1) ids[0].text else null
+    }
+
+    private fun hasCommentsBetween(from: Token, to: Token): Boolean {
+        val tokens = resource.tokenStream
+        return (from.tokenIndex + 1..to.tokenIndex).any {
+            tokens.get(it).channel == RellCustomTokenChannels.COMMENTS.channel
+        }
+    }
+
+    /** The non-null operand of a `<expr> OP null` / `null OP <expr>` condition, else null. */
+    private fun nullComparisonOperand(cond: RellParser.ExpressionContext, op: String): RellParser.BaseExprContext? {
         val cmp = cond.binaryExpr()?.asSimpleComparison() ?: return null
-        if (cmp.op.text != "!=") {
+        if (cmp.op.text != op) {
             return null
         }
         val leftNull = cmp.left.isNullLiteral()
@@ -116,6 +214,7 @@ class SimplifyNullableIfRule(config: LinterOptions, resource: Resource, linterCo
         const val RULE_ID = "rule_simplify_nullable_if"
         private const val ELVIS_MESSAGE = "Replace 'if' with the elvis operator '?:'"
         private const val SAFE_ACCESS_MESSAGE = "Replace 'if' with safe-access '?.'"
+        private const val GUARD_MESSAGE = "Null guard can be merged into the declaration with '?:'"
         private val SINGLE_MEMBER = Regex("^\\.[A-Za-z_][A-Za-z0-9_]*$")
     }
 }

@@ -23,3 +23,76 @@ function not_flagged(x: integer?, y: integer): integer {
 function compound_else(flag: boolean?, a: boolean, b: boolean): boolean {
     return if (flag != null) flag else a or b;
 }
+
+function guard_return(): integer? {
+    val x = find();
+    if (x == null) return null;
+    return x;
+}
+function guard_null_first(): integer? {
+    val x = find();
+    if (null == x) return null;
+    return x;
+}
+function guard_block_body(): integer {
+    val x = find();
+    if (x == null) { return 0; }
+    return x;
+}
+function guard_continue(xs: list<integer?>): integer {
+    var total = 0;
+    for (item in xs) {
+        val v = item;
+        if (v == null) continue;
+        total += v;
+    }
+    return total;
+}
+function guard_with_comment(): integer? {
+    val x = find();
+    // the value may be missing
+    if (x == null) return null;
+    return x;
+}
+function guard_var(): integer? {
+    var x = find();
+    if (x == null) return null;
+    return x;
+}
+function guard_declared_type(): integer? {
+    val x: integer? = find();
+    if (x == null) return null;
+    return x;
+}
+function guard_with_else(): integer {
+    val x = find();
+    if (x == null) return 0; else return x;
+}
+function guard_body_not_jump(): integer? {
+    val x = find();
+    if (x == null) print('missing');
+    return x;
+}
+function guard_not_adjacent(): integer? {
+    val x = find();
+    print('checking');
+    if (x == null) return null;
+    return x;
+}
+function guard_compound_init(a: integer?, b: integer?): integer? {
+    val x = a ?: b;
+    if (x == null) return null;
+    return x;
+}
+function guard_in_value_block(o: integer?, flag: boolean): integer {
+    return if (flag) {
+        val v = o;
+        if (v == null) return 0;
+        v
+    } else 0;
+}
+function guard_other_name(y: integer?): integer? {
+    val x = find();
+    if (y == null) return null;
+    return x;
+}

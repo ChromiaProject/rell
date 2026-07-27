@@ -16,3 +16,8 @@ function f_val(): integer {
 function f_notnull(): user {
     return user @? { .name == 'x' }!!;
 }
+function f_guard(o: integer?): integer? {
+    val v = o;
+    if (v == null) return null;
+    return v + 1;
+}

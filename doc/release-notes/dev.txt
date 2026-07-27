@@ -38,7 +38,10 @@ Six inspections are new:
     x != false, outside at-expression where-clauses. Diagnostic only - the rule has no type information, and the
     rewrite is unsafe when the operand is a nullable boolean, so no auto-fix is offered.
   - rule_simplify_nullable_if: a null guard of the form "if (x != null) x else y" becomes an elvis expression, and
-    "if (x != null) x.f else null" becomes a safe-access expression.
+    "if (x != null) x.f else null" becomes a safe-access expression. A guard that only leaves early is merged into
+    the declaration above it, so "val x = f(); if (x == null) return null;" becomes "val x = f() ?: return null;";
+    the same applies to a guard that breaks or continues a loop. Declarations with an explicit type and var
+    declarations are left alone, because the rewrite makes the declared type non-null.
   - rule_prefer_empty: a size() comparison against zero, such as size() == 0 or size() > 0, becomes an empty()
     call or its negation.
   - rule_at_cardinality_misuse: a zero-or-one at-expression followed by a not-null assertion becomes a
