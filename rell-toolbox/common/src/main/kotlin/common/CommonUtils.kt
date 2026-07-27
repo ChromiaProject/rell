@@ -4,6 +4,11 @@
 
 package net.postchain.rell.toolbox.common
 
+import java.net.URI
+
+// Only the last segment of a URI may end up in logs: full paths leak user names and project layout.
+fun URI.fileName(): String = path?.trimEnd('/')?.substringAfterLast('/').orEmpty()
+
 fun offsetToPosition(content: String, offset: Int): Position {
     val contentLength = content.length
     if (offset !in 0..contentLength) {

@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
 import net.postchain.rell.toolbox.chromia.model.ChromiaModel
+import net.postchain.rell.toolbox.common.fileName
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.AbstractFormattingStyleLinter
 import net.postchain.rell.toolbox.linter.AbstractRellLinter
@@ -179,7 +180,7 @@ class WorkspaceIndexer(
             val fileContent = try {
                 File(fileUri).readText()
             } catch (@Suppress("SwallowedException") e: Exception) {
-                logger.warn { "Could not read file $fileUri" }
+                logger.warn { "Could not read file ${fileUri.fileName()}" }
                 continue
             }
             sources[fileUri] = fileContent
@@ -278,11 +279,11 @@ class WorkspaceIndexer(
 
     private fun isValidFileUri(fileUri: URI): Boolean {
         if (isGitScheme(fileUri)) {
-            logger.info { "Skipping indexing of file $fileUri because it is a git file" }
+            logger.info { "Skipping indexing of file ${fileUri.fileName()} because it is a git file" }
             return false
         }
         if (isInsideDotGitFolder(fileUri)) {
-            logger.info { "Skipping indexing of file $fileUri because it is inside a .git folder" }
+            logger.info { "Skipping indexing of file ${fileUri.fileName()} because it is inside a .git folder" }
             return false
         }
         return true

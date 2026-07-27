@@ -4,8 +4,6 @@
 
 package net.postchain.rell.toolbox.lsp.caching
 
-import org.apache.fory.Fory
-import org.apache.fory.config.Language
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
@@ -18,6 +16,8 @@ import net.postchain.rell.toolbox.linter.RellLinter
 import net.postchain.rell.toolbox.lsp.editorconfig.RellFormatterOptionsResolver
 import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.server.VersionInfo
+import org.apache.fory.Fory
+import org.apache.fory.config.Language
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 

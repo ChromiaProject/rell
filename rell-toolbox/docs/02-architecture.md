@@ -270,11 +270,11 @@ Export to chosen format
 **Strategies**:
 1. **Parser Errors**: ANTLR4 error recovery continues parsing after syntax errors
 2. **Compilation Errors**: Collected and converted to LSP diagnostics
-3. **Runtime Errors**: Caught at LSP request boundaries; logged to Sentry
+3. **Runtime Errors**: Caught at LSP request boundaries; written to the local log
 4. **Cache Corruption**: Falls back to full re-indexing
 
 **Logging**:
-- **Production**: Log4J2 with Sentry integration for errors
+- **Production**: Log4J2 to a local rolling file and the console
 - **Development**: Verbose logging to console
 
 ### Performance Considerations
@@ -300,7 +300,9 @@ Export to chosen format
 **Threat Model**: LSP server runs locally, trusted input from IDE.
 
 **Mitigations**:
-- No network access (except Sentry error reporting)
+- No network access, and no error or usage reporting: the language server never
+  transmits anything. Reporting a problem is the host IDE plugin's job, since only it
+  can ask the user for consent
 - No code execution (Rell code is analyzed, not executed)
 - File system access limited to workspace directory
 

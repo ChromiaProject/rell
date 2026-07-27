@@ -29,7 +29,7 @@ object EditorConfigParser {
             )
             handler.editorConfig
         } catch (e: Exception) {
-            logger.warn(e) { "Could not parse $configFile file" }
+            logger.warn(e) { "Could not parse ${configFile.name} file" }
             null
         }
     }

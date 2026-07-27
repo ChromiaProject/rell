@@ -9,8 +9,8 @@ import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.issues.ImportFromNonModuleIssue
-import java.nio.file.Paths
 import org.antlr.v4.runtime.RuleContext
+import java.nio.file.Paths
 
 class ImportFromNonModuleRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {

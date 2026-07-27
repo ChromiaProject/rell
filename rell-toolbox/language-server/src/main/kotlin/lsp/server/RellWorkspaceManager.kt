@@ -8,6 +8,7 @@ import com.google.gson.JsonObject
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
+import net.postchain.rell.toolbox.common.fileName
 import net.postchain.rell.toolbox.indexer.IndexingState
 import net.postchain.rell.toolbox.lsp.completion.RellCompletionService
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsPublisher
@@ -81,7 +82,7 @@ class RellWorkspaceManager(
     fun didSave(fileUri: URI) {
         val contents = documentManager.getOpenDocument(fileUri)
         if (contents == null) {
-            logger.warn { "The document $fileUri has not been opened." }
+            logger.warn { "The document ${fileUri.fileName()} has not been opened." }
             return
         }
         val indexer = indexingManager.getIndexerFor(fileUri)
@@ -190,7 +191,7 @@ class RellWorkspaceManager(
                 )
             }
         } catch (e: Exception) {
-            logger.error(e) { "Error resolving completion item for $fileUri at offset $offset" }
+            logger.error(e) { "Error resolving completion item for ${fileUri.fileName()} at offset $offset" }
             unresolved
         }
     }

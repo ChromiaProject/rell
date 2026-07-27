@@ -5,6 +5,7 @@
 package net.postchain.rell.toolbox.lsp.diagnostics
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import net.postchain.rell.toolbox.common.fileName
 import net.postchain.rell.toolbox.indexer.RellIssue
 import org.eclipse.lsp4j.PublishDiagnosticsParams
 import org.eclipse.lsp4j.services.LanguageClient
@@ -53,7 +54,7 @@ open class DiagnosticsPublisher(
                 publishDiagnosticsParams.uri = uri.toString()
                 publishDiagnosticsParams.diagnostics = DiagnosticsConverter.toDiagnostics(issues)
 
-                logger.debug { "Publishing ${issues.size} diagnostics for $uri" }
+                logger.debug { "Publishing ${issues.size} diagnostics for ${uri.fileName()}" }
                 languageClient.publishDiagnostics(publishDiagnosticsParams)
             }
         } else {

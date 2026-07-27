@@ -4,14 +4,14 @@
 
 package net.postchain.rell.toolbox.lsp.caching
 
-import org.apache.fory.config.Config
-import org.apache.fory.context.ReadContext
-import org.apache.fory.context.WriteContext
-import org.apache.fory.serializer.Serializer
 import net.postchain.rell.base.model.Name
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.toImmList
+import org.apache.fory.config.Config
+import org.apache.fory.context.ReadContext
+import org.apache.fory.context.WriteContext
+import org.apache.fory.serializer.Serializer
 
 class IdeSymbolIdSerializer(config: Config) : Serializer<IdeSymbolId>(config, IdeSymbolId::class.java) {
     private val regex = Regex("""(\w+)\[([^]]+)]""")

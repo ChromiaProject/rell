@@ -11,6 +11,7 @@ import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.div
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.name
 import kotlin.io.path.toPath
 
 class ChromiaModelProvider(private val workspaceRootUri: URI?) {
@@ -73,7 +74,7 @@ class ChromiaModelProvider(private val workspaceRootUri: URI?) {
             return try {
                 parseModel(chromiaModelFile)
             } catch (@Suppress("SwallowedException") e: Exception) {
-                logger.warn(e) { "Failed to parse Chromia model file: $chromiaModelFile" }
+                logger.warn(e) { "Failed to parse Chromia model file: ${chromiaModelFile.name}" }
                 null
             }
         }

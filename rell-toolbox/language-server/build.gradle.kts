@@ -1,38 +1,14 @@
 import com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer
 
-val sentryEnabled = System.getenv("SENTRY_AUTH_TOKEN") != null
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     application
     alias(libs.plugins.shadow)
-    alias(libs.plugins.sentry)
-}
-
-sentry {
-    includeSourceContext = sentryEnabled
-    org = "chromaway-ab-za"
-    projectName = "rell-toolbox"
-    authToken = System.getenv("SENTRY_AUTH_TOKEN")
-}
-
-val generateMainResources = tasks.register<Copy>("generateMainResources") {
-    description = "Expand version-templated resources so the language server can report its version at runtime."
-    val projectVersion = project.version.toString()
-    inputs.property("projectVersion", projectVersion)
-    from(layout.projectDirectory.dir("src/main/templates"))
-    into(layout.buildDirectory.dir("generated/resources/main"))
-    expand("version" to projectVersion)
-}
-
-sourceSets.main {
-    resources.srcDir(generateMainResources)
 }
 
 dependencies {
     implementation(libs.oshai)
     implementation(libs.slf4j)
-    implementation(libs.sentry.log4j2)
     implementation(libs.bundles.lsp4j)
     implementation(libs.bundles.logging)
     implementation(libs.bundles.koin)
@@ -47,10 +23,6 @@ dependencies {
     testImplementation(libs.testcontainers)
     testImplementation(libs.bundles.toolbox.testing)
     testImplementation(projects.rellApiBase)
-}
-
-tasks.sourcesJar {
-    dependsOn(tasks.generateSentryDebugMetaPropertiesjava, tasks.collectExternalDependenciesForSentry)
 }
 
 application.mainClass = "net.postchain.rell.toolbox.lsp.StdioMainKt"

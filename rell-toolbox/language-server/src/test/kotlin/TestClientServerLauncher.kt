@@ -7,11 +7,7 @@ package net.postchain.rell.toolbox.lsp
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
 import net.postchain.rell.toolbox.lsp.server.LauncherType
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
-import org.eclipse.lsp4j.Diagnostic
-import org.eclipse.lsp4j.InitializeParams
-import org.eclipse.lsp4j.InitializedParams
-import org.eclipse.lsp4j.WorkDoneProgressEnd
-import org.eclipse.lsp4j.WorkspaceFolder
+import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.LanguageServer
 import org.koin.core.KoinApplication

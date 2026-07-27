@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.lsp.launcher
 
-import io.sentry.Sentry
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.lsp.server.RellLanguageServer
 import org.eclipse.lsp4j.jsonrpc.RemoteEndpoint
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError
@@ -25,8 +25,12 @@ abstract class AbstractServerLauncher(
     protected fun defaultExceptionHandler(throwable: Throwable, args: Array<String>): ResponseError? {
         if (!args.contains(devMode)) {
             val reportedException = throwable.cause ?: throwable
-            Sentry.captureException(reportedException)
+            logger.warn(reportedException) { "Unhandled error while serving a request" }
         }
         return RemoteEndpoint.DEFAULT_EXCEPTION_HANDLER.apply(throwable)
+    }
+
+    private companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

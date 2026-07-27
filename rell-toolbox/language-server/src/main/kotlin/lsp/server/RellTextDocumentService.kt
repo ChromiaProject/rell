@@ -5,7 +5,7 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import com.google.gson.JsonObject
-import io.sentry.Sentry
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.postchain.rell.toolbox.lsp.editing.CodeActionTitles
 import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvider
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsManager
@@ -25,6 +25,8 @@ class RellTextDocumentService(
     private val lspSystemPropertiesProvider: LspSystemPropertiesProvider,
     private val inlayHintsManager: RellInlayHintsManager
 ) : TextDocumentService {
+    private val logger = KotlinLogging.logger {}
+
     override fun didOpen(params: DidOpenTextDocumentParams) {
         val textDocument = params.textDocument
         val uri = parseFileUri(textDocument.uri) ?: return
@@ -83,7 +85,7 @@ class RellTextDocumentService(
                 try {
                     workspaceManager.getDefinitionLocations(fileUri, params.position)
                 } catch (e: IndexOutOfBoundsException) {
-                    Sentry.captureException(e)
+                    logger.warn(e) { "Failed to resolve definition locations" }
                     null
                 }
             } else {
@@ -109,7 +111,7 @@ class RellTextDocumentService(
             try {
                 Hover(workspaceManager.getHoverDocumentation(params))
             } catch (e: IndexOutOfBoundsException) {
-                Sentry.captureException(e)
+                logger.warn(e) { "Failed to build hover documentation" }
                 Hover()
             }
         }
@@ -206,7 +208,7 @@ class RellTextDocumentService(
                 Either.forLeft(workspaceManager.getCompletions(fileUri, params.position))
             )
         } catch (e: IndexOutOfBoundsException) {
-            Sentry.captureException(e)
+            logger.warn(e) { "Failed to compute completions" }
             CompletableFuture.completedFuture(Either.forLeft(listOf()))
         }
     }

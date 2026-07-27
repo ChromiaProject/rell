@@ -272,7 +272,6 @@ This is the **primary deliverable** of Rell Toolbox.
 - `org.eclipse.lsp4j:org.eclipse.lsp4j` - LSP protocol
 - `io.insert-koin:koin-core` - Dependency injection
 - `org.apache.fory:fory-core` - Serialization
-- `io.sentry:sentry-log4j2` - Error tracking
 
 **Internal**:
 - `ast/` - Parsing

@@ -5,6 +5,7 @@
 package net.postchain.rell.toolbox.lsp.caching
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import net.postchain.rell.toolbox.common.fileName
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.indexer.sha256
 import java.net.URI
@@ -31,11 +32,11 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
             val indexAsBytes = cacheFile.readBytes()
             indexSerializer.deserializeAsWorkspaceIndexer(indexAsBytes)
         } catch (e: Exception) {
-            logger.warn(e) { "Failed to deserialize index cache file: $cacheFile" }
+            logger.warn(e) { "Failed to deserialize index cache file: ${cacheFile.name}" }
             try {
                 cacheFile.deleteIfExists()
             } catch (e: Exception) {
-                logger.warn(e) { "Failed to delete cache file: $cacheFile" }
+                logger.warn(e) { "Failed to delete cache file: ${cacheFile.name}" }
             }
             null
         }
@@ -59,7 +60,7 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
                 val indexAsBytes = indexSerializer.serializeAsBytes(indexer)
                 cacheFile.writeBytes(indexAsBytes)
             } catch (e: Exception) {
-                logger.warn { "Failed to persist workspace index: ${indexer.workspaceUri} ${e.message}" }
+                logger.warn { "Failed to persist workspace index: ${indexer.workspaceUri.fileName()} ${e.message}" }
             }
         }
     }
@@ -96,7 +97,7 @@ class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
         try {
             cacheFile.deleteIfExists()
         } catch (e: Exception) {
-            logger.warn(e) { "Failed to delete cache file: $cacheFile" }
+            logger.warn(e) { "Failed to delete cache file: ${cacheFile.name}" }
         }
     }
 
