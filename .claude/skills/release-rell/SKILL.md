@@ -81,7 +81,16 @@ Switch back to `dev` and apply these follow-ups in one commit (or a tightly grou
      GitLab: https://gitlab.com/chromaway/rell/-/tree/<commit-sha>/
    ```
 
-   Use the actual commit SHA of the tagged release commit.
+   This file is the hand-maintained index of every published release — version, notes filename, and the tree of the commit it was built from. Nothing generates or checks it, so a skipped update goes unnoticed. Rules:
+
+   - Insert directly under the blank line after the `1. Releases: List of all Rell versions` heading, above the previous release. Never append at the bottom.
+   - Plain text, no markdown and no backticks, same as the release notes.
+   - `Notes:` is a bare filename relative to `doc/release-notes/`; the file must exist on `dev` (step 2 below).
+   - `GitLab:` uses the full 40-character SHA of the **tagged** commit — the one `git ls-remote --tags origin A.B.C` returned — with a trailing slash. Not `dev`'s tip, and not the pre-fix commit if CI forced an extra commit onto the version branch.
+   - Only released versions are listed; the list legitimately has gaps (0.14.4, 0.14.6, …) and never mentions `dev.txt`.
+   - Leave the `ALL RELEASES (YYYY-MM-DD)` header date alone — it tracks restructurings of the file, not individual entries.
+
+   Full description: [doc/release-guide.md](../../../doc/release-guide.md#the-all-releasestxt-index).
 
 2. **Add the release-notes file to `dev`** — copy `doc/release-notes/A.B.C.txt` from the release branch back into `dev` so the full history is on `dev` too. (`git checkout version-A.B.C -- doc/release-notes/A.B.C.txt`.)
 
@@ -101,6 +110,7 @@ Commit with: `Post-release cleanup for A.B.C`. Ask the user before pushing.
 - **CI fails on the version branch**: don't tag. Investigate the failure, push a fix as a new commit on `version-A.B.C` (not an amend — preserve the failed commit for diagnosis), wait for green CI, then tag the latest commit. Update the SHA in the all-releases entry to match.
 - **Forgot to replace `SINCE_NOW` on `dev` before branching**: cherry-pick the replacement commit onto both `dev` and `version-A.B.C`. The `since` annotations are version-history metadata; losing them on `dev` is a real defect.
 - **`git tag A.B.C` fails with `fatal: tag 'A.B.C' already exists`, or `git fetch --tags` says `[rejected] ... (would clobber existing tag)`**: a stale local-only tag, not a tagged release. Check `git ls-remote --tags origin A.B.C` — if it returns nothing, push by SHA (`git push origin <sha>:refs/tags/A.B.C`). Clean up locally afterwards only if you want working local tags: `git tag -d A.B.C && git fetch --tags --force`.
+- **A released version is missing from `all-releases.txt`**: Phase 5 step 1 was skipped for it. Fix it by inserting the entry in version order (not necessarily at the top, if newer releases were added meanwhile), using the SHA from `git ls-remote --tags origin <version>`. Nothing detects this automatically — when cutting a release, check that the previous release is present before prepending the new one.
 - **Tag pushed to wrong commit**: delete the remote tag (`git push origin :refs/tags/A.B.C`), retag locally on the right SHA, push. Coordinate with anyone who may have already pulled the tag.
 - **Patch release vs. major release confusion**: a patch release (only `C` changed) does NOT bump the dev snapshot; a major release (`A` or `B` changed) does.
 - **CI fails with `IllegalStateException` from `RellVersions.<init>` and 100% test failures**: you bumped `VERSION_STR` but forgot to add the new version to `SUPPORTED_VERSIONS` on the release branch. Push a follow-up commit appending `"A.B.C"` to the list (see Phase 2).

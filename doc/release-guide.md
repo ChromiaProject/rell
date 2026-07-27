@@ -98,7 +98,7 @@ Switch back to the `dev` branch and perform these follow-up steps:
      Notes: A.B.C.txt
      GitLab: https://gitlab.com/chromaway/rell/-/tree/<commit-sha>/
    ```
-   Use the commit SHA of the release commit (the tagged commit).
+   Use the commit SHA of the release commit (the tagged commit). See [The `all-releases.txt` index](#the-all-releasestxt-index) below for the file's structure and rules.
 
 2. **Add the release notes file to `dev`** &mdash; copy `doc/release-notes/A.B.C.txt` (as finalized on the release branch) into the `dev` branch so that the full release notes history is available on `dev`. If `dev` already has it from step 1 and nothing changed on the release branch since, this is a no-op; it matters when release notes were corrected on `version-A.B.C` after cutting, or when `dev` was never pushed after step 1 (see the note there) and this is the point where it finally gets pushed.
 
@@ -113,3 +113,30 @@ Switch back to the `dev` branch and perform these follow-up steps:
    ```kotlin
    version = "0.(B+1).0-SNAPSHOT"
    ```
+
+## The `all-releases.txt` index
+
+`doc/release-notes/all-releases.txt` is the index of every published Rell release: which versions exist, where their notes are, and which commit each one was built from. It is maintained by hand as part of the post-release cleanup in step 5.1 &mdash; nothing generates or validates it, so a missed update is invisible until someone reads the file. It lives on `dev` and is not expected to be updated on release branches.
+
+The file is plain text with the same conventions as the release notes themselves (see [doc/release-notes-guide.md](release-notes-guide.md)): no markdown, no backticks. Its structure is
+
+```
+ALL RELEASES (YYYY-MM-DD)
+
+@@@@@@@@@@@@@@@@ ... (80 characters)
+1. Releases: List of all Rell versions
+
+- A.B.C
+  Notes: A.B.C.txt
+  GitLab: https://gitlab.com/chromaway/rell/-/tree/<commit-sha>/
+...
+```
+
+Rules for the entries:
+
+- Newest first. A new release is prepended directly under the blank line that follows the section heading, never appended at the bottom.
+- `Notes:` is a bare filename relative to `doc/release-notes/`, and the file it names must exist on `dev` &mdash; that is what step 5.2 guarantees.
+- `GitLab:` points at the tree of the tagged release commit, full 40-character SHA, with a trailing slash. If CI forced a fix commit onto `version-A.B.C` after the first attempt, this is the SHA that was actually tagged, not the original one.
+- Only released versions appear. There is no entry for `dev.txt`, and the list has gaps (0.14.4, 0.14.6, 0.14.7, …) where a version number was skipped or never published &mdash; those gaps are correct, not missing entries.
+
+The date on the `ALL RELEASES` header line records when the file itself was last restructured; in practice it has not been bumped for individual release entries.
