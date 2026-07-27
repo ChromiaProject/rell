@@ -118,8 +118,10 @@ class RellIndexCachingServiceTest {
 
     @Test
     fun `Should return null when reading from cache file fails`() {
+        val mockFile = mockk<Path>()
+        every { mockFile.fileName } returns Path("index.cache")
+
         withMockedStatic("java.nio.file.Files") {
-            val mockFile = mockk<Path>()
             every { cachingService.getCacheFile(workspaceFolderUri) } returns mockFile
             every { mockFile.exists() } returns true
             every { mockFile.readBytes() } throws IOException()
@@ -132,8 +134,11 @@ class RellIndexCachingServiceTest {
     @Suppress("SameParameterValue")
     private inline fun withMockedStatic(staticName: String, block: () -> Unit) {
         mockkStatic(staticName)
-        block()
-        unmockkStatic(staticName)
+        try {
+            block()
+        } finally {
+            unmockkStatic(staticName)
+        }
     }
 
     @Test
