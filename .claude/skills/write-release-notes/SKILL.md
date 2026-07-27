@@ -69,6 +69,7 @@ Skip pure refactors that aren't observable by Rell users. If unsure, err on the 
 - Test-only changes.
 - Build-tool plumbing that users don't touch.
 - Doc-only changes (those land in the guide directly).
+- Routine dependency bumps. Only a Postchain *minor or major* upgrade earns an entry (`1. Upgrade to Postchain 3.7.0`); a Postchain patch bump and everything else — log4j, json-schema-validator, kotlinx-collections-immutable — gets nothing. A dependency change with a visible effect (changed on-disk format, new JDK requirement) is written up as that effect, not as a version bump.
 
 ## Editing flow
 
@@ -94,6 +95,7 @@ When referring to another section in the same file, use `§N` or "see §N" (lowe
 
 ## Common pitfalls
 
+- **Don't decide from first principles whether a change is worth an entry.** Grep the released `doc/release-notes/*.txt` for how that kind of change was handled before, and follow the precedent. A single past exception is not the pattern.
 - **Don't introduce a new category prefix** without reason. Stick to the standard set above. If a change spans two categories, pick the most user-facing one.
 - **Don't merge unrelated changes into one section** to save numbering. Each logical change gets its own section.
 - **Don't omit code examples** for new library functions. The reader needs to see usage.

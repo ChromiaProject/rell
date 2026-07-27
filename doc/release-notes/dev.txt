@@ -77,3 +77,25 @@ the resulting exception as the answer; building those stack traces cost more tha
 Scanning the workspace for Rell files no longer inspects every file it walks past, and skips .git and excluded
 folders instead of walking into them and discarding the results. This mostly helps projects carrying a large
 node_modules directory.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Tools: Linter fixes rank above the suppression in the quick-fix menu
+
+An inspection with an auto-fix used to lose its own quick-fix menu to its escape hatch: editors listed "Disable
+linter for this line" first and preselected it, pushing the actual fix to the bottom. The protocol has no ordering
+field, so the server now sends the metadata clients rank by. A fix is marked as the preferred action and names the
+diagnostic it resolves. The two actions that are not a fix for the diagnostic under the cursor are reported as
+source actions rather than quick-fixes: "Fix all auto-fixable issues" as source.fixAll, which is what the server
+already advertised in its capabilities, and "Disable linter for this line" as a plain source action. Both remain
+available, they just no longer compete with the fix.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Tools: Language server no longer reports errors to Sentry
+
+The language server used to send unhandled exceptions and error-level log records to a Chromia-hosted Sentry
+project. That integration is gone: the distributed server no longer bundles the Sentry client, the Sentry log
+appender or a sentry.properties resource, and reports nothing off the developer's machine. What used to become a
+Sentry event is now a warning in the server's own log.
+
+Relatedly, log records that mention a file now name only the file rather than its full URI, so a log excerpt
+shared for debugging no longer discloses user names or project layout.

@@ -143,6 +143,16 @@ For significant bug fixes, explain the impact:
 (2) Conversion from gtv big integer value to decimal.
 ```
 
+### Dependency Updates
+
+Routine dependency bumps are not documented. Upgrades of log4j, json-schema-validator, kotlinx-collections-immutable and the like get no entry, however many of them a release contains. The exception is Postchain, and only for a minor or major upgrade:
+
+```
+1. Upgrade to Postchain 3.7.0
+```
+
+A Postchain patch bump (e.g. 3.49.17 to 3.49.18) does not qualify. Any dependency change *does* get an entry when it has an effect the reader must know about — a changed on-disk format, a new JDK requirement, a behavior difference — but then the entry describes that effect, not the version numbers.
+
 ## Review Checklist
 
 Before publishing new release's notes, verify:
