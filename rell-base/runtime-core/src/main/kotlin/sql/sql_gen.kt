@@ -9,6 +9,7 @@ import net.postchain.rell.base.model.Index
 import net.postchain.rell.base.model.Key
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.*
+import net.postchain.rell.base.utils.formatEx
 import net.postchain.rell.base.utils.immMapOf
 import org.jooq.*
 import org.jooq.impl.DSL
@@ -479,7 +480,7 @@ class SqlNameGen(private val pattern: String, existingNames: Collection<String>)
 
     fun nextName(): String {
         while (true) {
-            val name = pattern.format(nextIndex)
+            val name = pattern.formatEx(nextIndex)
             if (existingNames.add(name)) {
                 return name
             }

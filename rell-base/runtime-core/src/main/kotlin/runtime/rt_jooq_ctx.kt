@@ -9,16 +9,21 @@ import org.jooq.QueryPart
 import org.jooq.SQLDialect
 import org.jooq.conf.*
 import org.jooq.impl.DSL
+import java.util.Locale
 
 /**
  * jOOQ render context shared across the runtime SQL emitter:
  * PostgreSQL dialect, always-quoted identifiers, uppercase keywords, no formatting,
  * indexed `?` placeholders. Generated SQL is rendered once per query and paired with the
  * parallel `Rt_Value` bind list tracked by `DbSqlGen` (in `runtime-interpreter`).
+ *
+ * The locale is pinned: jOOQ defaults to `Locale.getDefault()` when case-folding keywords, which
+ * turns `insert` into `İNSERT` on a Turkish node and produces SQL PostgreSQL cannot parse.
  */
 val JOOQ_CTX: DSLContext = DSL.using(
     SQLDialect.POSTGRES,
     Settings()
+        .withLocale(Locale.ROOT)
         .withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
         .withRenderKeywordCase(RenderKeywordCase.UPPER)
         .withRenderOptionalAsKeywordForTableAliases(RenderOptionalKeyword.OFF)

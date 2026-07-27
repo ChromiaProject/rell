@@ -102,3 +102,22 @@ Sentry event is now a warning in the server's own log.
 
 Relatedly, log records that mention a file now name only the file rather than its full URI, so a log excerpt
 shared for debugging no longer discloses user names or project layout.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+6. Runtime: SQL generation no longer depends on the host locale
+
+Generated SQL used to be shaped by the default locale of the machine running the node, in two places. Both are
+fixed; the emitted SQL is now identical on every host.
+
+The first was keyword casing. SQL keywords are rendered in upper case, and the case conversion used the host
+locale, so on a tr_TR or az_AZ machine the letter i in a keyword became the dotted capital
+İ, turning insert into İNSERT and exists into EXİSTS.
+
+The second was numeric formatting. At-expression table aliases and the generated names of keys and indexes are
+built from a counter, and the counter was formatted using the host locale's digits. On locales that default to
+Arabic-Indic digits, notably Arabic (ar_SA), the alias A00 came out as A٠٠ and the query was rejected. Because key
+and index names are stored in the database, this also meant that two nodes with different locales would create
+different schema objects for the same Rell code.
+
+Most deployments run in containers that default to en_US, where neither symptom appears, so this was unlikely to
+be hit in production. See also the locale-independence fix for text.upper_case() and text.lower_case() in 0.14.13.

@@ -9,6 +9,7 @@ import net.postchain.rell.base.model.expr.Rt_AtExprExtras
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.DbSqlGen.Companion.SAFE_ALIAS_REGEX
 import net.postchain.rell.base.runtime.DbSqlGen.Companion.columnField
+import net.postchain.rell.base.utils.formatEx
 import net.postchain.rell.base.utils.toImmList
 import org.jooq.*
 import org.jooq.conf.RenderQuotedNames
@@ -76,7 +77,7 @@ internal class DbSqlGen private constructor(
         }
     }
 
-    private fun nextAlias() = "A%02d".format(aliasCounter.next())
+    private fun nextAlias() = "A%02d".formatEx(aliasCounter.next())
 
     /** Creates a child context for correlated sub-queries; alias counter and bind list are shared. */
     private fun createSub(innerEntities: List<RR_DbAtEntity>): DbSqlGen =
