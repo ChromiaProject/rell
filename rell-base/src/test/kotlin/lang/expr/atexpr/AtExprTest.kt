@@ -476,27 +476,27 @@ class AtExprTest: BaseRellTest(useSql = true) {
     @Test fun testEntityReferenceSqlAt() {
         chkSql()
         chk("user @ {} ( .company ) limit 1", "company[100]")
-        chkSql("""SELECT A00."company" FROM "c0.user" A00 ORDER BY A00."rowid" LIMIT ?""")
+        chkSql("""select A00."company" from "c0.user" A00 order by A00."rowid" LIMIT ?""")
         chk("user @ {} ( .company.rowid ) limit 1", "rowid[100]")
-        chkSql("""SELECT A00."company" FROM "c0.user" A00 ORDER BY A00."rowid" LIMIT ?""")
+        chkSql("""select A00."company" from "c0.user" A00 order by A00."rowid" LIMIT ?""")
 
         chk("user @ {} ( .company.name ) limit 1", "text[Facebook]")
-        val join = """JOIN "c0.company" A01 ON A00."company" = A01."rowid""""
-        chkSql("""SELECT A01."name" FROM "c0.user" A00 $join ORDER BY A00."rowid" LIMIT ?""")
+        val join = """join "c0.company" A01 on A00."company" = A01."rowid""""
+        chkSql("""select A01."name" from "c0.user" A00 $join order by A00."rowid" LIMIT ?""")
     }
 
     @Test fun testEntityReferenceSqlVar() {
-        val sql1 = """SELECT A00."rowid" FROM "c0.user" A00 ORDER BY A00."rowid" LIMIT ?"""
+        val sql1 = """select A00."rowid" from "c0.user" A00 order by A00."rowid" LIMIT ?"""
 
         chkSql()
         chkEx("{ val u = user @ {} limit 1; return u.company; }", "company[100]")
         chkSql(sql1, """SELECT A00."company" FROM "c0.user" A00 WHERE A00."rowid" = ?""")
         chkEx("{ val u = user @ {} limit 1; return u.company.rowid; }", "rowid[100]")
-        chkSql(sql1, """SELECT A00."company" FROM "c0.user" A00 WHERE A00."rowid" = ?""")
+        chkSql(sql1, """select A00."company" from "c0.user" A00 where A00."rowid" = ?""")
 
         chkEx("{ val u = user @ {} limit 1; return u.company.name; }", "text[Facebook]")
-        val join = """JOIN "c0.company" A01 ON A00."company" = A01."rowid""""
-        chkSql(sql1, """SELECT A01."name" FROM "c0.user" A00 $join WHERE A00."rowid" = ?""")
+        val join = """join "c0.company" A01 on A00."company" = A01."rowid""""
+        chkSql(sql1, """select A01."name" from "c0.user" A00 $join where A00."rowid" = ?""")
     }
 
     @Test fun testFromAnnotations() {

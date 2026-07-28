@@ -585,7 +585,9 @@ class EntityTest: BaseRellTest() {
         chkSql()
         chkEx("{ val e = data@{}; return e.value; }", "int[123]")
         chkSql(
-            """SELECT A00."rowid" FROM "c0.data" A00""",
+            """select A00."rowid" from "c0.data" A00""",
+            // The lazy attribute-read path builds its SELECT as a raw string, hence the casing
+            // difference from the jOOQ-rendered at-expression query above.
             """SELECT A00."value" FROM "c0.data" A00 WHERE A00."rowid" = ?""",
         )
     }
@@ -598,8 +600,8 @@ class EntityTest: BaseRellTest() {
         chkSql()
         chkEx("{ val e = data@{}; return e.to_struct(); }", "struct<data>[value=int[123]]")
         chkSql(
-            """SELECT A00."rowid" FROM "c0.data" A00""",
-            """SELECT A00."value" FROM "c0.data" A00 WHERE A00."rowid" = ?""",
+            """select A00."rowid" from "c0.data" A00""",
+            """select A00."value" from "c0.data" A00 where A00."rowid" = ?""",
         )
     }
 

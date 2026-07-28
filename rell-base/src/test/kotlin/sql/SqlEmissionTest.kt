@@ -149,7 +149,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_one_simple",
                 """
-                    sql=SELECT A00."rowid" FROM "c0.user" A00 WHERE A00."name" = ?
+                    sql=select A00."rowid" from "c0.user" A00 where A00."name" = ?
                     binds=[text]
                 """.trimIndent(),
             ) { tst ->
@@ -160,7 +160,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_list",
                 """
-                    sql=SELECT A00."rowid" FROM "c0.user" A00 ORDER BY A00."rowid"
+                    sql=select A00."rowid" from "c0.user" A00 order by A00."rowid"
                     binds=[]
                 """.trimIndent(),
             ) { tst ->
@@ -171,7 +171,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_path_join",
                 """
-                    sql=SELECT A00."rowid" FROM "c0.emp" A00 JOIN "c0.company" A01 ON A00."company" = A01."rowid" WHERE A01."name" = ? ORDER BY A00."rowid"
+                    sql=select A00."rowid" from "c0.emp" A00 join "c0.company" A01 on A00."company" = A01."rowid" where A01."name" = ? order by A00."rowid"
                     binds=[text]
                 """.trimIndent(),
             ) { tst ->
@@ -184,7 +184,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_two_entity_join",
                 """
-                    sql=SELECT A00."rowid", A01."rowid" FROM "c0.emp" A00, "c0.company" A01 WHERE A00."company" = A01."rowid" ORDER BY A00."rowid", A01."rowid"
+                    sql=select A00."rowid", A01."rowid" from "c0.emp" A00, "c0.company" A01 where A00."company" = A01."rowid" order by A00."rowid", A01."rowid"
                     binds=[]
                 """.trimIndent(),
             ) { tst ->
@@ -197,7 +197,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_aggr_sum",
                 """
-                    sql=SELECT COALESCE(SUM(A00."k"),0) FROM "c0.data" A00
+                    sql=select COALESCE(SUM(A00."k"),0) from "c0.data" A00
                     binds=[]
                 """.trimIndent(),
             ) { tst ->
@@ -208,7 +208,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_aggr_group",
                 """
-                    sql=SELECT A00."k", COALESCE(SUM(?),0) FROM "c0.data" A00 GROUP BY A00."k" ORDER BY A00."k"
+                    sql=select A00."k", COALESCE(SUM(?),0) from "c0.data" A00 group by A00."k" order by A00."k"
                     binds=[long]
                 """.trimIndent(),
             ) { tst ->
@@ -222,7 +222,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_aggr_min_max",
                 """
-                    sql=SELECT MIN(A00."k"), MAX(A00."k") FROM "c0.data" A00
+                    sql=select MIN(A00."k"), MAX(A00."k") from "c0.data" A00
                     binds=[]
                 """.trimIndent(),
             ) { tst ->
@@ -233,7 +233,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_sort_asc",
                 """
-                    sql=SELECT A00."k" FROM "c0.data" A00 ORDER BY A00."k", A00."rowid"
+                    sql=select A00."k" from "c0.data" A00 order by A00."k", A00."rowid"
                     binds=[]
                 """.trimIndent(),
             ) { tst ->
@@ -244,7 +244,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_sort_desc",
                 """
-                    sql=SELECT A00."k" FROM "c0.data" A00 ORDER BY A00."k" DESC, A00."rowid"
+                    sql=select A00."k" from "c0.data" A00 order by A00."k" DESC, A00."rowid"
                     binds=[]
                 """.trimIndent(),
             ) { tst ->
@@ -257,7 +257,7 @@ class SqlEmissionTest {
                 // through the DESC wrapping, instead of re-rendering the field to raw SQL text.
                 "at_sort_desc_parameterized",
                 """
-                    sql=SELECT A00."k" + ? FROM "c0.data" A00 ORDER BY A00."k" + ? DESC, A00."rowid"
+                    sql=select A00."k" + ? from "c0.data" A00 order by A00."k" + ? DESC, A00."rowid"
                     binds=[long,long]
                 """.trimIndent(),
             ) { tst ->
@@ -269,7 +269,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_limit",
                 """
-                    sql=SELECT A00."k" FROM "c0.data" A00 ORDER BY A00."k", A00."rowid" LIMIT ?
+                    sql=select A00."k" from "c0.data" A00 order by A00."k", A00."rowid" LIMIT ?
                     binds=[long]
                 """.trimIndent(),
             ) { tst ->
@@ -280,7 +280,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_offset",
                 """
-                    sql=SELECT A00."k" FROM "c0.data" A00 ORDER BY A00."k", A00."rowid" OFFSET ?
+                    sql=select A00."k" from "c0.data" A00 order by A00."k", A00."rowid" OFFSET ?
                     binds=[long]
                 """.trimIndent(),
             ) { tst ->
@@ -291,7 +291,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_limit_offset",
                 """
-                    sql=SELECT A00."k" FROM "c0.data" A00 ORDER BY A00."k", A00."rowid" LIMIT ? OFFSET ?
+                    sql=select A00."k" from "c0.data" A00 order by A00."k", A00."rowid" LIMIT ? OFFSET ?
                     binds=[long,long]
                 """.trimIndent(),
             ) { tst ->
@@ -302,7 +302,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_where_when_if",
                 """
-                    sql=SELECT A00."rowid" FROM "c0.data" A00 WHERE CASE WHEN A00."k" = ? THEN A00."v" = ? ELSE A00."v" = ? END ORDER BY A00."rowid"
+                    sql=select A00."rowid" from "c0.data" A00 where case when A00."k" = ? then A00."v" = ? else A00."v" = ? end order by A00."rowid"
                     binds=[long,text,text]
                 """.trimIndent(),
             ) { tst ->
@@ -313,7 +313,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_in_operator",
                 """
-                    sql=SELECT A00."rowid" FROM "c0.data" A00 WHERE A00."k" IN (?,?) ORDER BY A00."rowid"
+                    sql=select A00."rowid" from "c0.data" A00 where A00."k" IN (?,?) order by A00."rowid"
                     binds=[long,long]
                 """.trimIndent(),
             ) { tst ->
@@ -324,7 +324,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_exists",
                 """
-                    sql=SELECT A00."rowid" FROM "c0.company" A00 WHERE A00."name" = ? ORDER BY A00."rowid"
+                    sql=select A00."rowid" from "c0.company" A00 where A00."name" = ? order by A00."rowid"
                     binds=[text]
                 """.trimIndent(),
             ) { tst ->
@@ -336,7 +336,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_empty",
                 """
-                    sql=SELECT A00."rowid" FROM "c0.user" A00 WHERE A00."name" = ? ORDER BY A00."rowid"
+                    sql=select A00."rowid" from "c0.user" A00 where A00."name" = ? order by A00."rowid"
                     binds=[text]
                 """.trimIndent(),
             ) { tst ->
@@ -346,7 +346,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_decimal_aggr",
                 """
-                    sql=SELECT ROUND(COALESCE(SUM(ROUND(A00."balance", 20)),0), 20) FROM "c0.acct" A00
+                    sql=select ROUND(COALESCE(SUM(ROUND(A00."balance", 20)),0), 20) from "c0.acct" A00
                     binds=[]
                 """.trimIndent(),
             ) { tst ->
@@ -357,7 +357,7 @@ class SqlEmissionTest {
             SqlCase(
                 "at_boolean_filter",
                 """
-                    sql=SELECT A00."rowid" FROM "c0.flag" A00 WHERE A00."active" ORDER BY A00."rowid"
+                    sql=select A00."rowid" from "c0.flag" A00 where A00."active" order by A00."rowid"
                     binds=[]
                 """.trimIndent(),
             ) { tst ->
@@ -370,7 +370,7 @@ class SqlEmissionTest {
             SqlCase(
                 "create_single_attr",
                 """
-                    sql=INSERT INTO "c0.user" ("rowid", "name", "firstName", "lastName", "score") VALUES ("c0.make_rowid"(), ?, ?, ?, ?) RETURNING "rowid"
+                    sql=insert into "c0.user" ("rowid", "name", "firstName", "lastName", "score") values ("c0.make_rowid"(), ?, ?, ?, ?) returning "rowid"
                     binds=[text,text,text,long]
                 """.trimIndent(),
             ) { tst ->
@@ -380,10 +380,10 @@ class SqlEmissionTest {
             SqlCase(
                 "create_with_ref",
                 """
-                    sql=SELECT A00."rowid" FROM "c0.company" A00 WHERE A00."name" = ?
+                    sql=select A00."rowid" from "c0.company" A00 where A00."name" = ?
                     binds=[text]
 
-                    sql=INSERT INTO "c0.emp" ("rowid", "name", "company", "salary") VALUES ("c0.make_rowid"(), ?, ?, ?) RETURNING "rowid"
+                    sql=insert into "c0.emp" ("rowid", "name", "company", "salary") values ("c0.make_rowid"(), ?, ?, ?) returning "rowid"
                     binds=[text,long,long]
                 """.trimIndent(),
             ) { tst ->
@@ -395,7 +395,7 @@ class SqlEmissionTest {
             SqlCase(
                 "update_single_attr",
                 """
-                    sql=UPDATE "c0.user" A00 SET "score" = ? WHERE A00."name" = ? RETURNING A00."rowid"
+                    sql=update "c0.user" A00 set "score" = ? where A00."name" = ? returning A00."rowid"
                     binds=[long,text]
                 """.trimIndent(),
             ) { tst ->
@@ -406,7 +406,7 @@ class SqlEmissionTest {
             SqlCase(
                 "update_multi_attr",
                 """
-                    sql=UPDATE "c0.user" A00 SET "firstName" = ?, "lastName" = ?, "score" = ? WHERE A00."name" = ? RETURNING A00."rowid"
+                    sql=update "c0.user" A00 set "firstName" = ?, "lastName" = ?, "score" = ? where A00."name" = ? returning A00."rowid"
                     binds=[text,text,long,text]
                 """.trimIndent(),
             ) { tst ->
@@ -417,7 +417,7 @@ class SqlEmissionTest {
             SqlCase(
                 "update_with_join",
                 """
-                    sql=UPDATE "c0.emp" A00 SET "salary" = ? FROM "c0.company" A01 WHERE ((A00."company" = A01."rowid") AND A01."name" = ?) RETURNING A00."rowid"
+                    sql=update "c0.emp" A00 set "salary" = ? from "c0.company" A01 where ((A00."company" = A01."rowid") and A01."name" = ?) returning A00."rowid"
                     binds=[long,text]
                 """.trimIndent(),
             ) { tst ->
@@ -430,7 +430,7 @@ class SqlEmissionTest {
             SqlCase(
                 "delete_simple",
                 """
-                    sql=DELETE FROM "c0.user" A00 WHERE A00."name" = ? RETURNING A00."rowid"
+                    sql=delete from "c0.user" A00 where A00."name" = ? returning A00."rowid"
                     binds=[text]
                 """.trimIndent(),
             ) { tst ->
@@ -441,7 +441,7 @@ class SqlEmissionTest {
             SqlCase(
                 "delete_with_join",
                 """
-                    sql=DELETE FROM "c0.emp" A00 USING "c0.company" A01 WHERE ((A00."company" = A01."rowid") AND A01."name" = ?) RETURNING A00."rowid"
+                    sql=delete from "c0.emp" A00 using "c0.company" A01 where ((A00."company" = A01."rowid") and A01."name" = ?) returning A00."rowid"
                     binds=[text]
                 """.trimIndent(),
             ) { tst ->
@@ -454,7 +454,7 @@ class SqlEmissionTest {
             SqlCase(
                 "delete_all",
                 """
-                    sql=DELETE FROM "c0.data" A00 RETURNING A00."rowid"
+                    sql=delete from "c0.data" A00 returning A00."rowid"
                     binds=[]
                 """.trimIndent(),
             ) { tst ->
@@ -467,13 +467,13 @@ class SqlEmissionTest {
             SqlCase(
                 "create_then_read",
                 """
-                    sql=INSERT INTO "c0.user" ("rowid", "name", "firstName", "lastName", "score") VALUES ("c0.make_rowid"(), ?, ?, ?, ?) RETURNING "rowid"
+                    sql=insert into "c0.user" ("rowid", "name", "firstName", "lastName", "score") values ("c0.make_rowid"(), ?, ?, ?, ?) returning "rowid"
                     binds=[text,text,text,long]
 
-                    sql=INSERT INTO "c0.user" ("rowid", "name", "firstName", "lastName", "score") VALUES ("c0.make_rowid"(), ?, ?, ?, ?) RETURNING "rowid"
+                    sql=insert into "c0.user" ("rowid", "name", "firstName", "lastName", "score") values ("c0.make_rowid"(), ?, ?, ?, ?) returning "rowid"
                     binds=[text,text,text,long]
 
-                    sql=SELECT A00."name" FROM "c0.user" A00 ORDER BY A00."name", A00."rowid"
+                    sql=select A00."name" from "c0.user" A00 order by A00."name", A00."rowid"
                     binds=[]
                 """.trimIndent(),
             ) { tst ->
@@ -484,10 +484,10 @@ class SqlEmissionTest {
             SqlCase(
                 "update_then_read",
                 """
-                    sql=UPDATE "c0.user" A00 SET "score" = A00."score" * ? RETURNING A00."rowid"
+                    sql=update "c0.user" A00 set "score" = A00."score" * ? returning A00."rowid"
                     binds=[long]
 
-                    sql=SELECT A00."name", A00."score" FROM "c0.user" A00 ORDER BY A00."name", A00."rowid"
+                    sql=select A00."name", A00."score" from "c0.user" A00 order by A00."name", A00."rowid"
                     binds=[]
                 """.trimIndent(),
             ) { tst ->

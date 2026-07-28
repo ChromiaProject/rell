@@ -783,7 +783,7 @@ class UpdateDeleteTest: BaseRellTest(useSql = true) {
         def("entity user { name; mutable value: integer; }")
         insert("c0.user", "name,value", "1,'Bob',123")
 
-        val sql = """UPDATE "c0.user" A00 SET "value" = ? RETURNING A00."rowid""""
+        val sql = """update "c0.user" A00 set "value" = ? returning A00."rowid""""
         chkOpSql("update user @? {} ( .value = 500 );", sql)
         chkOpSql("update user @  {} ( .value = 501 );", sql)
         chkOpSql("update user @+ {} ( .value = 502 );", sql)
@@ -795,7 +795,7 @@ class UpdateDeleteTest: BaseRellTest(useSql = true) {
         insert("c0.user", "name,value", "1,'Bob',123")
         insert("c0.user", "name,value", "2,'Alice',456")
 
-        val sql = """DELETE FROM "c0.user" A00 WHERE A00."name" = ? RETURNING A00."rowid""""
+        val sql = """delete from "c0.user" A00 where A00."name" = ? returning A00."rowid""""
         chkOpSql("delete user @? { 'Trudy' };", sql)
         chkOpSql("delete user @  { 'Bob'   };", sql)
         chkOpSql("delete user @+ { 'Alice' };", sql)

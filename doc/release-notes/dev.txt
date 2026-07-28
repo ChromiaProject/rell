@@ -109,9 +109,12 @@ shared for debugging no longer discloses user names or project layout.
 Generated SQL used to be shaped by the default locale of the machine running the node, in two places. Both are
 fixed; the emitted SQL is now identical on every host.
 
-The first was keyword casing. SQL keywords are rendered in upper case, and the case conversion used the host
-locale, so on a tr_TR or az_AZ machine the letter i in a keyword became the dotted capital
-İ, turning insert into İNSERT and exists into EXİSTS.
+The first was keyword casing. SQL keywords used to be rendered in upper case, and the case conversion used the
+host locale, so on a tr_TR or az_AZ machine the letter i in a keyword became the dotted capital İ, turning insert
+into İNSERT and exists into EXİSTS. The SQL library used for rendering applies the host locale here regardless of
+its configured locale, so keywords are now emitted in lower case exactly as authored, with no case conversion at
+all. Generated SQL therefore reads "insert into" where it used to read "INSERT INTO" - visible in SQL logging
+output; the SQL itself is equivalent, since PostgreSQL keywords are case-insensitive.
 
 The second was numeric formatting. At-expression table aliases and the generated names of keys and indexes are
 built from a counter, and the counter was formatted using the host locale's digits. On locales that default to

@@ -13,19 +13,22 @@ import java.util.Locale
 
 /**
  * jOOQ render context shared across the runtime SQL emitter:
- * PostgreSQL dialect, always-quoted identifiers, uppercase keywords, no formatting,
+ * PostgreSQL dialect, always-quoted identifiers, lowercase keywords, no formatting,
  * indexed `?` placeholders. Generated SQL is rendered once per query and paired with the
  * parallel `Rt_Value` bind list tracked by `DbSqlGen` (in `runtime-interpreter`).
  *
- * The locale is pinned: jOOQ defaults to `Locale.getDefault()` when case-folding keywords, which
- * turns `insert` into `İNSERT` on a Turkish node and produces SQL PostgreSQL cannot parse.
+ * Keywords must render `AS_IS` (jOOQ authors them in lowercase ASCII): `UPPER` case-folds with
+ * `String.toUpperCase()` in the default locale — ignoring both `Settings.locale` and
+ * `Settings.renderLocale` — and caches the result, so a Turkish node turns `insert` into `İNSERT`
+ * and produces SQL PostgreSQL cannot parse (jOOQ 3.21.6, `KeywordImpl.render`). The settings
+ * locale is still pinned for the render paths that do consult it.
  */
 val JOOQ_CTX: DSLContext = DSL.using(
     SQLDialect.POSTGRES,
     Settings()
         .withLocale(Locale.ROOT)
         .withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
-        .withRenderKeywordCase(RenderKeywordCase.UPPER)
+        .withRenderKeywordCase(RenderKeywordCase.AS_IS)
         .withRenderOptionalAsKeywordForTableAliases(RenderOptionalKeyword.OFF)
         .withRenderOptionalAsKeywordForFieldAliases(RenderOptionalKeyword.OFF)
         .withRenderFormatted(false)

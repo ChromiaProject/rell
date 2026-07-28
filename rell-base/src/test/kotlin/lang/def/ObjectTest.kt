@@ -345,7 +345,7 @@ class ObjectTest: BaseRellTest(useSql = true) {
         def("object state { mutable value: integer = 123; }")
         chkSql()
         chk("state.value", "int[123]")
-        chkSql("""SELECT A00."value" FROM "c0.state" A00""")
+        chkSql("""select A00."value" from "c0.state" A00""")
     }
 
     @Test fun testToStructSql() {
@@ -353,7 +353,7 @@ class ObjectTest: BaseRellTest(useSql = true) {
         def("object state { mutable value: integer = 123; }")
         chkSql()
         chk("state.to_struct()", "struct<state>[value=int[123]]")
-        chkSql("""SELECT A00."value" FROM "c0.state" A00""")
+        chkSql("""select A00."value" from "c0.state" A00""")
     }
 
     @Test fun testBadAttrModifiersSemanticErr() {

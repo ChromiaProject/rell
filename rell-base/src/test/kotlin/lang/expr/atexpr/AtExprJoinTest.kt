@@ -133,18 +133,18 @@ class AtExprJoinTest: BaseRellTest(useSql = true) {
         initData()
 
         val sqlWhat = """A00."rowid", A01."rowid""""
-        val sqlTail = """ORDER BY A00."rowid", A01."rowid""""
+        val sqlTail = """order by A00."rowid", A01."rowid""""
         val exp = "[(100,200), (101,201), (101,202)]"
 
         chk("(p: person, h: home @* { h.person == p }) @* {} (_=p.rowid, _=h.rowid)", exp)
-        chkSql("""SELECT $sqlWhat FROM "c0.person" A00 JOIN "c0.home" A01 ON A01."person" = A00."rowid" $sqlTail""")
+        chkSql("""select $sqlWhat from "c0.person" A00 join "c0.home" A01 on A01."person" = A00."rowid" $sqlTail""")
 
         val expAll = "[(100,200), (100,201), (100,202), (101,200), (101,201), (101,202), (102,200), (102,201), (102,202)]"
         chk("(p: person, h: home @* { true }) @* {} (_=p.rowid, _=h.rowid)", expAll)
-        chkSql("""SELECT $sqlWhat FROM "c0.person" A00, "c0.home" A01 $sqlTail""")
+        chkSql("""select $sqlWhat from "c0.person" A00, "c0.home" A01 $sqlTail""")
 
         chk("(p: person, h: home @* { false }) @* {} (_=p.rowid, _=h.rowid)", "[]")
-        chkSql("""SELECT $sqlWhat FROM "c0.person" A00 JOIN "c0.home" A01 ON ? $sqlTail""")
+        chkSql("""select $sqlWhat from "c0.person" A00 join "c0.home" A01 on ? $sqlTail""")
     }
 
     @Test fun testJoinPathExpression() {
@@ -154,15 +154,15 @@ class AtExprJoinTest: BaseRellTest(useSql = true) {
             "[(h=home[201],c=company[300])]")
 
         val expSql = """
-            SELECT A00."rowid", A01."rowid"
-            FROM "c0.home" A00
-            JOIN "c0.city" A02 ON A00."city" = A02."rowid"
-            JOIN "c0.country" A03 ON A02."country" = A03."rowid"
-            JOIN ("c0.company" A01
-            JOIN "c0.city" A04 ON A01."city" = A04."rowid"
-            JOIN "c0.country" A05 ON A04."country" = A05."rowid")
-            ON A03."name" = A05."name"
-            ORDER BY A00."rowid", A01."rowid"
+            select A00."rowid", A01."rowid"
+            from "c0.home" A00
+            join "c0.city" A02 on A00."city" = A02."rowid"
+            join "c0.country" A03 on A02."country" = A03."rowid"
+            join ("c0.company" A01
+            join "c0.city" A04 on A01."city" = A04."rowid"
+            join "c0.country" A05 on A04."country" = A05."rowid")
+            on A03."name" = A05."name"
+            order by A00."rowid", A01."rowid"
         """
         chkSql(expSql.unwrap(" "))
     }
@@ -263,25 +263,25 @@ class AtExprJoinTest: BaseRellTest(useSql = true) {
         chk("(p: person, @outer h: home @* { h.person == p }) @* {} ( _=p, _=h )",
             "[(person[100],home[200]), (person[101],home[201]), (person[101],home[202]), (person[102],null)]")
         chkSql("""
-           SELECT A00."rowid", A01."rowid" FROM "c0.person" A00
-           LEFT OUTER JOIN "c0.home" A01 ON A01."person" = A00."rowid"
-           ORDER BY A00."rowid", A01."rowid"
+           select A00."rowid", A01."rowid" from "c0.person" A00
+           left outer join "c0.home" A01 on A01."person" = A00."rowid"
+           order by A00."rowid", A01."rowid"
         """.unwrap(" "))
 
         chk("(p: person, @outer h: home @* { h.person == p }) @* {} ( _=p, _=h )",
             "[(person[100],home[200]), (person[101],home[201]), (person[101],home[202]), (person[102],null)]")
         chkSql("""
-           SELECT A00."rowid", A01."rowid" FROM "c0.person" A00
-           LEFT OUTER JOIN "c0.home" A01 ON A01."person" = A00."rowid"
-           ORDER BY A00."rowid", A01."rowid"
+           select A00."rowid", A01."rowid" from "c0.person" A00
+           left outer join "c0.home" A01 on A01."person" = A00."rowid"
+           order by A00."rowid", A01."rowid"
         """.unwrap(" "))
 
         chk("(p: person, @outer h: home @* { h.person == p }) @* {} ( _=p, _=h?.city )",
             "[(person[100],city[210]), (person[101],city[211]), (person[101],city[213]), (person[102],null)]")
         chkSql("""
-           SELECT A00."rowid", A01."city" FROM "c0.person" A00
-           LEFT OUTER JOIN "c0.home" A01 ON A01."person" = A00."rowid"
-           ORDER BY A00."rowid", A01."rowid"
+           select A00."rowid", A01."city" from "c0.person" A00
+           left outer join "c0.home" A01 on A01."person" = A00."rowid"
+           order by A00."rowid", A01."rowid"
         """.unwrap(" "))
     }
 
@@ -291,20 +291,20 @@ class AtExprJoinTest: BaseRellTest(useSql = true) {
         chk("(p: person, @outer h: home @* { h.person == p }) @* {} ( _=p, _=h?.city?.country )",
             "[(person[100],country[220]), (person[101],country[221]), (person[101],country[223]), (person[102],null)]")
         chkSql("""
-            SELECT A00."rowid", A02."country" FROM "c0.person" A00
-            LEFT OUTER JOIN ("c0.home" A01 JOIN "c0.city" A02 ON A01."city" = A02."rowid") ON A01."person" = A00."rowid"
-            ORDER BY A00."rowid", A01."rowid"
+            select A00."rowid", A02."country" from "c0.person" A00
+            left outer join ("c0.home" A01 join "c0.city" A02 on A01."city" = A02."rowid") on A01."person" = A00."rowid"
+            order by A00."rowid", A01."rowid"
         """.unwrap(" "))
 
         chk("(p: person, @outer h: home @* { h.person == p }) @* {} ( _=p, _=h?.city?.country?.name )",
             "[(person[100],UK), (person[101],France), (person[101],Italy), (person[102],null)]")
         chkSql("""
-            SELECT A00."rowid", A03."name" FROM "c0.person" A00
-            LEFT OUTER JOIN ("c0.home" A01
-            JOIN "c0.city" A02 ON A01."city" = A02."rowid"
-            JOIN "c0.country" A03 ON A02."country" = A03."rowid")
-            ON A01."person" = A00."rowid"
-            ORDER BY A00."rowid", A01."rowid"
+            select A00."rowid", A03."name" from "c0.person" A00
+            left outer join ("c0.home" A01
+            join "c0.city" A02 on A01."city" = A02."rowid"
+            join "c0.country" A03 on A02."country" = A03."rowid")
+            on A01."person" = A00."rowid"
+            order by A00."rowid", A01."rowid"
         """.unwrap(" "))
     }
 
@@ -315,15 +315,15 @@ class AtExprJoinTest: BaseRellTest(useSql = true) {
             "[(h=home[200],c=null), (h=home[201],c=company[300]), (h=home[202],c=null)]")
 
         val expSql = """
-            SELECT A00."rowid", A01."rowid"
-            FROM "c0.home" A00
-            JOIN "c0.city" A02 ON A00."city" = A02."rowid"
-            JOIN "c0.country" A03 ON A02."country" = A03."rowid"
-            LEFT OUTER JOIN ("c0.company" A01
-            JOIN "c0.city" A04 ON A01."city" = A04."rowid"
-            JOIN "c0.country" A05 ON A04."country" = A05."rowid")
-            ON A03."name" = A05."name"
-            ORDER BY A00."rowid", A01."rowid"
+            select A00."rowid", A01."rowid"
+            from "c0.home" A00
+            join "c0.city" A02 on A00."city" = A02."rowid"
+            join "c0.country" A03 on A02."country" = A03."rowid"
+            left outer join ("c0.company" A01
+            join "c0.city" A04 on A01."city" = A04."rowid"
+            join "c0.country" A05 on A04."country" = A05."rowid")
+            on A03."name" = A05."name"
+            order by A00."rowid", A01."rowid"
         """
         chkSql(expSql.unwrap(" "))
     }
@@ -476,9 +476,9 @@ class AtExprJoinTest: BaseRellTest(useSql = true) {
 
         chk("(p: person, @outer c: company) @* {} ( _=p.name, _=c?.name )", all)
         chkSql("""
-           SELECT A00."name", A01."name" FROM "c0.person" A00
-           LEFT OUTER JOIN "c0.company" A01 ON TRUE
-           ORDER BY A00."rowid", A01."rowid"
+           select A00."name", A01."name" from "c0.person" A00
+           left outer join "c0.company" A01 on TRUE
+           order by A00."rowid", A01."rowid"
         """.unwrap(" "))
 
         chk("(p: person, @outer c: company @* {true}) @* {} ( _=p.name, _=c?.name )", all)
