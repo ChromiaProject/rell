@@ -1,0 +1,126 @@
+UNRELEASED NOTES
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Tools: Language server runs without sun.misc.Unsafe on JDK 25+
+
+The language server's workspace-index cache serialization was migrated from the discontinued Fury 0.4.1 library
+to its successor Apache Fory 1.4.0. On JDK 25 and later, Fory (and with it the language server) no longer uses
+the deprecated-for-removal sun.misc.Unsafe memory-access API, so the JVM's Unsafe usage warnings disappear and
+the server keeps working once the JDK removes the API. On JDK 21-24 behavior is unchanged.
+
+Existing index cache files are in the old format; the server discards and rebuilds them automatically on first
+start, so the first startup after upgrading re-indexes the workspace.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Tools: Linter inspections run by default, with severities
+
+Inspections now run out of the box. Previously every rule stayed off until it was switched on in .rell_lint, so a
+rule nobody enabled reported nothing; the config file now exists to tune inspections or switch them off rather
+than to switch them on. Linter findings also carry a severity. Style suggestions surface as weak warnings,
+reported to editors as information-level diagnostics, so they are visible without being intrusive, while findings
+that point at a likely defect stay full warnings: unused variables, imports outside a module, outer-join
+cartesian products and at-expression cardinality misuse.
+
+Two settings remain opt-in: rule_quote_format, because a project has to choose single or double quotes, and
+rule_formatter, which gates the formatter rather than an inspection.
+
+Among the inspections that already existed, rule_constant_detection additionally gained a quick-fix rewriting the
+reported var to val, for declarators that are not part of a tuple.
+
+Six inspections are new:
+
+  - rule_replace_if_with_when: a chain of if and else-if branches is rewritten as a when block. A plain if/else
+    with no else-if is left alone.
+  - rule_simplify_boolean_return: an if/else whose branches return only boolean literals collapses to a return of
+    the condition itself, in both the statement and the if-expression form; swapped branches give the negated
+    condition.
+  - rule_redundant_boolean_comparison: reports a comparison against a boolean literal, such as x == true or
+    x != false, outside at-expression where-clauses. Diagnostic only - the rule has no type information, and the
+    rewrite is unsafe when the operand is a nullable boolean, so no auto-fix is offered.
+  - rule_simplify_nullable_if: a null guard of the form "if (x != null) x else y" becomes an elvis expression, and
+    "if (x != null) x.f else null" becomes a safe-access expression. A guard that only leaves early is merged into
+    the declaration above it, so "val x = f(); if (x == null) return null;" becomes "val x = f() ?: return null;";
+    the same applies to a guard that breaks or continues a loop. Declarations with an explicit type and var
+    declarations are left alone, because the rewrite makes the declared type non-null.
+  - rule_prefer_empty: a size() comparison against zero, such as size() == 0 or size() > 0, becomes an empty()
+    call or its negation.
+  - rule_at_cardinality_misuse: a zero-or-one at-expression followed by a not-null assertion becomes a
+    single-cardinality at-expression, auto-fixed when the assertion is the final operation. Indexing a list
+    at-expression at zero, and existence checks that materialize a list such as size() == 0 or empty(), are
+    reported as diagnostics.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tools: Faster language server startup
+
+Opening a workspace is substantially faster, and no longer blocks the editor. Reported diagnostics are unchanged.
+
+The initialize request used to index the whole workspace before answering, so the editor waited for the entire
+scan before it finished connecting. Indexing now runs in the background: the server replies immediately and
+reports progress while it works, and diagnostics arrive when the index is ready. Requests that need the index
+wait for it rather than answering from a half-built one, so results are unchanged - they just no longer hold up
+the handshake.
+
+The indexing itself also got faster, both with an empty index cache and against a warm one, most noticeably on
+large projects. Four things account for that.
+
+Each file used to be parsed two or three times and compiled twice. Indexing built a source map for the whole
+workspace, then parsed every file again to build its resource, then repeated that for every file with imports.
+The repeat pass dates back to when the source map was filled in as the loop went along, so a file indexed early
+could not see one indexed later; the map has been built up front since, and the second pass no longer changed
+anything. Files are now parsed once and compiled once.
+
+Compilation, which dominates indexing, is spread over a few threads rather than run one file at a time. The
+worker count is deliberately a small share of the machine - a quarter of the available processors, at most four -
+because the language server shares a machine with an editor and usually a build.
+
+Linter rules are dispatched from a declared table of the syntax nodes each rule handles. Previously the linter
+asked, for every rule at every node in the file, whether that rule overrode the matching visit method, and used
+the resulting exception as the answer; building those stack traces cost more than running the rules.
+
+Scanning the workspace for Rell files no longer inspects every file it walks past, and skips .git and excluded
+folders instead of walking into them and discarding the results. This mostly helps projects carrying a large
+node_modules directory.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Tools: Linter fixes rank above the suppression in the quick-fix menu
+
+An inspection with an auto-fix used to lose its own quick-fix menu to its escape hatch: editors listed "Disable
+linter for this line" first and preselected it, pushing the actual fix to the bottom. The protocol has no ordering
+field, so the server now sends the metadata clients rank by. A fix is marked as the preferred action and names the
+diagnostic it resolves. The two actions that are not a fix for the diagnostic under the cursor are reported as
+source actions rather than quick-fixes: "Fix all auto-fixable issues" as source.fixAll, which is what the server
+already advertised in its capabilities, and "Disable linter for this line" as a plain source action. Both remain
+available, they just no longer compete with the fix.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Tools: Language server no longer reports errors to Sentry
+
+The language server used to send unhandled exceptions and error-level log records to a Chromia-hosted Sentry
+project. That integration is gone: the distributed server no longer bundles the Sentry client, the Sentry log
+appender or a sentry.properties resource, and reports nothing off the developer's machine. What used to become a
+Sentry event is now a warning in the server's own log.
+
+Relatedly, log records that mention a file now name only the file rather than its full URI, so a log excerpt
+shared for debugging no longer discloses user names or project layout.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+6. Runtime: SQL generation no longer depends on the host locale
+
+Generated SQL used to be shaped by the default locale of the machine running the node, in two places. Both are
+fixed; the emitted SQL is now identical on every host.
+
+The first was keyword casing. SQL keywords used to be rendered in upper case, and the case conversion used the
+host locale, so on a tr_TR or az_AZ machine the letter i in a keyword became the dotted capital İ, turning insert
+into İNSERT and exists into EXİSTS. The SQL library used for rendering applies the host locale here regardless of
+its configured locale, so keywords are now emitted in lower case exactly as authored, with no case conversion at
+all. Generated SQL therefore reads "insert into" where it used to read "INSERT INTO" - visible in SQL logging
+output; the SQL itself is equivalent, since PostgreSQL keywords are case-insensitive.
+
+The second was numeric formatting. At-expression table aliases and the generated names of keys and indexes are
+built from a counter, and the counter was formatted using the host locale's digits. On locales that default to
+Arabic-Indic digits, notably Arabic (ar_SA), the alias A00 came out as A٠٠ and the query was rejected. Because key
+and index names are stored in the database, this also meant that two nodes with different locales would create
+different schema objects for the same Rell code.
+
+Most deployments run in containers that default to en_US, where neither symptom appears, so this was unlikely to
+be hit in production. See also the locale-independence fix for text.upper_case() and text.lower_case() in 0.14.13.
