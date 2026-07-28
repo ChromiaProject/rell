@@ -113,7 +113,7 @@ class SystemLibTest {
 
 /**
  * Output directory slug for the system lib. Pinned to the legacy Dokka `DModule` name
- * "Rell System Library" (not the longer page title) for URL compatibility — see
+ * "Rell System Library" (not the page title) for URL compatibility — see
  * `RellDokkaPluginConfiguration.SYSTEM_MODULE_NAME`.
  */
 internal const val SYSTEM_MODULE_SLUG: String = "-rell -system -library"

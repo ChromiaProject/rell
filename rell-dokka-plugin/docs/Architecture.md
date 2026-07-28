@@ -72,7 +72,7 @@ Hidden packages are `config.filteredModules - config.additionalModules` (system-
 `RellDokkaPluginConfigurationBuilder` &mdash; **the public API**. Two constructors:
 
 - `RellDokkaPluginConfigurationBuilder(title: String, modules: List<String>?, projectRoot: File)` for project docs.
-- `RellDokkaPluginConfigurationBuilder.SYSTEM` / `newSystemBuilder()` for stdlib docs (title hard-coded to `"Rell System Library API Reference"`).
+- `RellDokkaPluginConfigurationBuilder.SYSTEM` / `newSystemBuilder()` for stdlib docs (title hard-coded to `"Rell Docgen"`).
 
 Fluent setters: `targetFolder`, `customStyleSheets`, `customAssets`, `footerMessage`, `includes`, `filteredModules`, `additionalModules`, `addSourceLink`, `cliEnv`. The `.build()` method is `internal`; only `RellDokkaGenerator` calls it.
 

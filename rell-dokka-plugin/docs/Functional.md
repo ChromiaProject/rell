@@ -56,7 +56,7 @@ Two distinct sources of input &mdash; Rell project source trees and the in-proce
 
 ### System Library Documentation
 
-1. Caller (CLI `--system`, or `RellDokkaPluginConfigurationBuilder.SYSTEM` programmatically) flips `system = true` and forces `title = "Rell System Library API Reference"`.
+1. Caller (CLI `--system`, or `RellDokkaPluginConfigurationBuilder.SYSTEM` programmatically) flips `system = true` and forces `title = "Rell Docgen"`.
 2. `ModuleDocs.load(includes, additionalTexts = [bundled rell.md])` is called &mdash; the bundled fragments populate package summaries automatically.
 3. `SystemBuild.build(...)` walks `Lib_Rell.MODULE.lModule.namespace` then `Lib_RellTest.MODULE.lModule.namespace`, accumulating defs into a `parentQname → defs` map. Both namespaces share the same buckets, so contributions to the same package merge (e.g. `rell.test.keypairs` plus extensions to `rell`).
 4. The single resulting `Doc_Module` is wrapped in a `Doc_Site` with `system = true` and rendered.

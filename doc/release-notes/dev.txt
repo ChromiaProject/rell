@@ -18,3 +18,11 @@ expression:
             };
 
 A plain if/else expression with no else-if is still left alone.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Docs: Generated documentation site header renamed to "Rell Docgen"
+
+The documentation generator titled its output "Rell System Library API Reference", and the same header appeared
+on documentation sites generated for libraries other than the system library. The site header (and the matching
+page titles and breadcrumbs) now reads "Rell Docgen". Page URLs are unchanged: the output directory slug stays
+pinned to the legacy "Rell System Library" name, so existing links keep working.

@@ -35,7 +35,8 @@ internal data class Doc_SourceLink(
 
 /**
  * One "module" in the site — a top-level grouping that becomes a directory under the site root.
- * For the system library this is "Rell System Library API Reference" (`-rell -system -library -a-p-i -reference`).
+ * For the system library the name is "Rell Docgen" while the slug stays pinned to the legacy
+ * "Rell System Library" directory (`-rell -system -library`).
  * For an application this is the dapp title (e.g. "My Dapp" → `-my -dapp`).
  *
  * `slug` is the on-disk directory name; we keep it on the model so the renderer doesn't need to
