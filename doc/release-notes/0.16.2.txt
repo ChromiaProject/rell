@@ -1,4 +1,4 @@
-UNRELEASED NOTES
+RELEASE NOTES 0.16.2 (2026-07-28)
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 1. Tools: Language server runs without sun.misc.Unsafe on JDK 25+
