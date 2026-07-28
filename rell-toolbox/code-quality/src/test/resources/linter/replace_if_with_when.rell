@@ -20,3 +20,21 @@ function suppressed(input: text): integer {
     // rell-lint-disable-next-line
     if (input == 'a') { return 1; } else if (input == 'b') { return 2; } else { return 3; }
 }
+
+function expr_chain(a: integer): integer {
+    val b = if (a == 1) 1 else if (a == 2) 0 else 3;
+    return b;
+}
+
+function expr_chain_block_arm(a: integer): integer {
+    return if (a == 1) { 1 } else if (a == 2) 2 else 3;
+}
+
+function expr_no_chain(a: integer): integer {
+    return if (a > 0) 1 else 2;
+}
+
+function expr_suppressed(a: integer): integer {
+    // rell-lint-disable-next-line
+    return if (a == 1) 1 else if (a == 2) 0 else 3;
+}

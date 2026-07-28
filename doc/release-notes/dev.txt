@@ -1,1 +1,20 @@
 UNRELEASED NOTES
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Tools: Linter reports if-expression chains for rule_replace_if_with_when
+
+The rule_replace_if_with_when inspection only looked at if statements, so a chain of if and else-if branches in
+expression position went unreported:
+
+    val b = if (a == 1) 1 else if (a == 2) 0 else 3;
+
+Such chains are now reported like their statement counterparts, and the quick-fix rewrites them as a when
+expression:
+
+    val b = when {
+                a == 1 -> 1;
+                a == 2 -> 0;
+                else -> 3;
+            };
+
+A plain if/else expression with no else-if is still left alone.

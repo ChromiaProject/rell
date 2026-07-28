@@ -10,15 +10,15 @@ import net.postchain.rell.toolbox.linter.LinterIssue
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.misc.Interval
 
-class ReplaceIfWithWhenIssue(
-    private val ifCtx: RellParser.IfStmtAltContext,
+sealed class ReplaceIfWithWhenIssue(
+    ctx: ParserRuleContext,
     ruleId: String,
     message: String
-) : LinterIssue(ifCtx, ruleId, message) {
+) : LinterIssue(ctx, ruleId, message) {
 
-    override fun fix(): LinterFix {
-        val start = ifCtx.start
-        val stop = ifCtx.stop
+    final override fun fix(): LinterFix {
+        val start = ctx.start
+        val stop = ctx.stop
         return LinterFix(
             line = start.line - 1,
             charPositionInLine = start.charPositionInLine,
@@ -29,8 +29,31 @@ class ReplaceIfWithWhenIssue(
         )
     }
 
-    private fun buildWhenText(): String {
-        val indent = " ".repeat(ifCtx.start.charPositionInLine)
+    protected abstract fun buildWhenText(): String
+
+    protected val indent: String
+        get() = " ".repeat(ctx.start.charPositionInLine)
+
+    protected fun sourceText(ctx: ParserRuleContext): String {
+        return ctx.start.inputStream.getText(Interval.of(ctx.start.startIndex, ctx.stop.stopIndex))
+    }
+
+    // Arms sit one level deeper than the original `if`, so continuation lines
+    // of multi-line conditions and blocks are shifted by one indent unit.
+    protected fun reindent(text: String): String {
+        return text.lines().mapIndexed { index, line ->
+            if (index == 0 || line.isBlank()) line else INDENT_UNIT + line
+        }.joinToString("\n")
+    }
+}
+
+class ReplaceIfStmtWithWhenIssue(
+    private val ifCtx: RellParser.IfStmtAltContext,
+    ruleId: String,
+    message: String
+) : ReplaceIfWithWhenIssue(ifCtx, ruleId, message) {
+
+    override fun buildWhenText(): String {
         val armIndent = indent + INDENT_UNIT
         val sb = StringBuilder("when {\n")
         var current = ifCtx
@@ -55,20 +78,51 @@ class ReplaceIfWithWhenIssue(
         }
         return sb.append(indent).append("}").toString()
     }
+}
 
-    private fun sourceText(ctx: ParserRuleContext): String {
-        return ctx.start.inputStream.getText(Interval.of(ctx.start.startIndex, ctx.stop.stopIndex))
+class ReplaceIfExprWithWhenIssue(
+    private val ifCtx: RellParser.IfExprContext,
+    ruleId: String,
+    message: String
+) : ReplaceIfWithWhenIssue(ifCtx, ruleId, message) {
+
+    override fun buildWhenText(): String {
+        val armIndent = indent + INDENT_UNIT
+        val sb = StringBuilder("when {\n")
+        var current = ifCtx
+        while (true) {
+            sb.append(armIndent)
+                .append(reindent(sourceText(current.expression())))
+                .append(" -> ")
+                .append(armText(current.exprOrValueBlock(0)))
+                .append("\n")
+            val next = current.elseIfChainNext()
+            if (next == null) {
+                sb.append(armIndent)
+                    .append("else -> ")
+                    .append(armText(current.exprOrValueBlock(1)))
+                    .append("\n")
+                break
+            }
+            current = next
+        }
+        return sb.append(indent).append("}").toString()
     }
 
-    // Arms sit one level deeper than the original `if`, so continuation lines
-    // of multi-line conditions and blocks are shifted by one indent unit.
-    private fun reindent(text: String): String {
-        return text.lines().mapIndexed { index, line ->
-            if (index == 0 || line.isBlank()) line else INDENT_UNIT + line
-        }.joinToString("\n")
-    }
-
-    companion object {
-        private const val INDENT_UNIT = "    "
+    // A `when` expression arm is ';'-terminated unless it is a value block.
+    private fun armText(branch: RellParser.ExprOrValueBlockContext): String {
+        val text = reindent(sourceText(branch))
+        return if (branch.valueBlock() != null) text else "$text;"
     }
 }
+
+/**
+ * The `else` arm of an if-expression when it is a bare nested if-expression, i.e. the next
+ * link of an if/else-if chain; null when the chain ends at this `if`.
+ */
+internal fun RellParser.IfExprContext.elseIfChainNext(): RellParser.IfExprContext? {
+    val binary = exprOrValueBlock(1).expression()?.binaryExpr() ?: return null
+    return if (binary.childCount == 1) binary.getChild(0) as? RellParser.IfExprContext else null
+}
+
+private const val INDENT_UNIT = "    "
