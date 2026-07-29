@@ -86,7 +86,9 @@ class RellLanguageServerTest {
         val watcher = registerOptions.getAsJsonArray("watchers").first().asJsonObject
 
         assertThat(watcher.get("globPattern")).isNotNull()
-        assertThat(watcher.get("globPattern").asJsonObject.get("pattern").asString).isEqualTo("**/*")
+        // "**", not "**/*": under IntelliJ's nio-style glob matching "**/*" misses root-level
+        // files such as .rell_lint (see RellLanguageServer.registerFileWatchers).
+        assertThat(watcher.get("globPattern").asJsonObject.get("pattern").asString).isEqualTo("**")
 
         assertThat(watcher.get("kind")).isNotNull()
         assertThat(watcher.get("kind").asInt).isEqualTo(7)

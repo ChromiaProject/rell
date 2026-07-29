@@ -96,7 +96,10 @@ class RellLanguageServer(
     private fun registerFileWatchers(workspaceFolders: List<WorkspaceFolder>?) {
         workspaceFolders?.forEach { folder ->
             val allFilesWatcher = FileSystemWatcher()
-            allFilesWatcher.globPattern = Either.forRight(RelativePattern(Either.forLeft(folder), "**/*"))
+            // "**", not "**/*": IntelliJ matches watcher globs with java.nio semantics, where
+            // "**/*" requires a path separator and so never matches root-level files like
+            // .rell_lint — their changes would not be sent at all.
+            allFilesWatcher.globPattern = Either.forRight(RelativePattern(Either.forLeft(folder), "**"))
             allFilesWatcher.kind = WatchKind.Create or WatchKind.Change or WatchKind.Delete
 
             val registrationOptions = DidChangeWatchedFilesRegistrationOptions(listOf(allFilesWatcher))

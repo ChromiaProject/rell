@@ -184,15 +184,16 @@ class RellTextDocumentService(
     }
 
     override fun resolveCodeAction(unresolved: CodeAction): CompletableFuture<CodeAction> {
-        val data = unresolved.data as? JsonObject ?: return CompletableFuture.completedFuture(CodeAction())
-        val fileUri = parseFileUri(data.get("fileUri").asString)
-            ?: return CompletableFuture.completedFuture(CodeAction())
-
-        return if (unresolved.title == CodeActionTitles.AUTO_FIXABLE.title) {
-            CompletableFuture.completedFuture(workspaceManager.getCodeActionForFile(fileUri))
-        } else {
-            CompletableFuture.completedFuture(CodeAction())
+        // Only the fix-all action defers its edit to resolution; every other action is already
+        // complete, and returning it unchanged keeps its edit or command intact.
+        if (unresolved.title != CodeActionTitles.AUTO_FIXABLE.title) {
+            return CompletableFuture.completedFuture(unresolved)
         }
+        val data = unresolved.data as? JsonObject ?: return CompletableFuture.completedFuture(unresolved)
+        val fileUri = parseFileUri(data.get("fileUri").asString)
+            ?: return CompletableFuture.completedFuture(unresolved)
+
+        return CompletableFuture.completedFuture(workspaceManager.getCodeActionForFile(fileUri))
     }
 
     override fun codeAction(params: CodeActionParams): CompletableFuture<List<Either<Command, CodeAction>>> {

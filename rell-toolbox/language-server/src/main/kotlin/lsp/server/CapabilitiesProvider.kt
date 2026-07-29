@@ -4,6 +4,7 @@
 
 package net.postchain.rell.toolbox.lsp.server
 
+import net.postchain.rell.toolbox.lsp.editing.CodeActionService
 import net.postchain.rell.toolbox.lsp.includeDefinition.LspSystemPropertiesProvider
 import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
 import org.eclipse.lsp4j.*
@@ -44,6 +45,7 @@ class CapabilitiesProvider(private val lspSystemPropertiesProvider: LspSystemPro
                     )
                 ).apply { this.resolveProvider = true }
             )
+            executeCommandProvider = ExecuteCommandOptions(listOf(CodeActionService.DISABLE_RULE_COMMAND))
             setInlayHintProvider(true)
         }
 

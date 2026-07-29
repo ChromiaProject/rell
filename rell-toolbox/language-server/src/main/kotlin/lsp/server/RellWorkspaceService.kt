@@ -5,8 +5,13 @@
 package net.postchain.rell.toolbox.lsp.server
 
 import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import net.postchain.rell.toolbox.indexer.IndexingState
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.linter.LinterOptions
+import net.postchain.rell.toolbox.lsp.editing.CodeActionService
+import net.postchain.rell.toolbox.lsp.editing.LinterConfigEditor
+import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsConfig
 import net.postchain.rell.toolbox.lsp.inlayhints.RellInlayHintsManager
 import net.postchain.rell.toolbox.lsp.server.events.FileEventsBatcher
@@ -28,7 +33,7 @@ class RellWorkspaceService(
     private val diagnosticsManager: RellDiagnosticsManager,
     private val symbolService: RellSymbolService,
     private val inlayHintsManager: RellInlayHintsManager
-) : WorkspaceService, LanguageClientAware {
+): WorkspaceService, LanguageClientAware {
     private lateinit var languageClient: LanguageClient
     private lateinit var fileEventsBatcher: FileEventsBatcher
     private lateinit var fileEventsProcessor: FileEventsProcessor
@@ -65,7 +70,7 @@ class RellWorkspaceService(
         val newConfig = RellInlayHintsConfig(
             isParameterNamesEnabled = changes["parameterHints"]?.asBoolean ?: current.isParameterNamesEnabled,
             isReturnTypesEnabled = changes["returnTypeHints"]?.asBoolean ?: current.isReturnTypesEnabled,
-            isVariableTypesEnabled = changes["variableTypeHints"]?.asBoolean ?: current.isVariableTypesEnabled
+            isVariableTypesEnabled = changes["variableTypeHints"]?.asBoolean ?: current.isVariableTypesEnabled,
         )
 
         inlayHintsManager.updateConfig(newConfig)
@@ -111,7 +116,7 @@ class RellWorkspaceService(
                 }
 
                 uri.isDependencyMarkerFile() &&
-                    change.type in setOf(FileChangeType.Changed, FileChangeType.Created) -> {
+                        change.type in setOf(FileChangeType.Changed, FileChangeType.Created) -> {
                     indexingManager.runIndexers(::handleIndexingState, skipCache = true)
                 }
 
@@ -154,17 +159,51 @@ class RellWorkspaceService(
         createdChromiaConfig: List<URI>
     ): Boolean {
         return dirtyFiles.isNotEmpty() ||
-            deletedFiles.isNotEmpty() ||
-            dirtyFolders.isNotEmpty() ||
-            createdChromiaConfig.isNotEmpty()
+                deletedFiles.isNotEmpty() ||
+                dirtyFolders.isNotEmpty() ||
+                createdChromiaConfig.isNotEmpty()
     }
 
-    override fun symbol(params: WorkspaceSymbolParams):
-        CompletableFuture<Either<List<SymbolInformation>, List<WorkspaceSymbol>>> {
-        return CompletableFuture.completedFuture(
-            Either.forRight(symbolService.getWorkspaceSymbols(params.query, indexingManager.getAllIndexers()))
-        )
+    override fun executeCommand(params: ExecuteCommandParams): CompletableFuture<Any> {
+        if (params.command == CodeActionService.DISABLE_RULE_COMMAND) {
+            val ruleId = stringArg(params, 0)
+            val fileUri = stringArg(params, 1)?.let(::parseFileUri)
+            if (ruleId != null && fileUri != null) {
+                requestManager.runWrite {
+                    disableRule(ruleId, fileUri)
+                }
+            }
+        }
+        return CompletableFuture.completedFuture(Unit)
     }
+
+    /**
+     * Writes `ruleId=false` into the `.rell_lint` the linter reads for [fileUri]'s workspace
+     * (creating one at the workspace root when none exists), then reloads the options and
+     * republishes diagnostics, so the rule's issues disappear as soon as the action is applied.
+     */
+    private fun disableRule(ruleId: String, fileUri: URI) {
+        val indexer = indexingManager.getIndexerFor(fileUri)
+        val configFile = RellLinterOptionsResolver.findLinterConfigFile(indexer.workspaceUri)
+            ?: File(File(indexer.workspaceUri), LinterOptions.CONFIG_FILE_NAME)
+        LinterConfigEditor.disableRule(configFile, ruleId)
+        indexer.reloadLinterConfig(configFile)
+        diagnosticsManager.reportDiagnostics(indexer)
+    }
+
+    // Arguments arrive as gson primitives over the wire but as plain strings from in-process calls.
+    private fun stringArg(params: ExecuteCommandParams, index: Int): String? =
+        when (val arg = params.arguments?.getOrNull(index)) {
+            is String -> arg
+            is JsonPrimitive -> arg.takeIf { it.isString }?.asString
+            else -> null
+        }
+
+    override fun symbol(params: WorkspaceSymbolParams):
+            CompletableFuture<Either<List<SymbolInformation>, List<WorkspaceSymbol>>> =
+        CompletableFuture.completedFuture(
+            Either.forRight(symbolService.getWorkspaceSymbols(params.query, indexingManager.getAllIndexers())),
+        )
 
     internal fun handleIndexingState(state: IndexingState) {
         val token = "rell-indexing"
@@ -172,7 +211,7 @@ class RellWorkspaceService(
         if (state == IndexingState.BEGIN) {
             val startIndexingProgress = ProgressParams(
                 Either.forLeft(token),
-                Either.forLeft(WorkDoneProgressBegin().apply { title = token })
+                Either.forLeft(WorkDoneProgressBegin().apply { title = token }),
             )
             languageClient.notifyProgress(startIndexingProgress)
         }
@@ -186,6 +225,7 @@ class RellWorkspaceService(
         if (this::fileEventsBatcher.isInitialized) {
             fileEventsBatcher.shutdown()
         }
+
         if (this::fileEventsProcessor.isInitialized) {
             fileEventsProcessor.shutdown()
         }

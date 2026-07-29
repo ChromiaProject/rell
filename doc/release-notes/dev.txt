@@ -73,7 +73,9 @@ requested kinds (a requested kind also matches its sub-kinds), and each channel 
 6. Tools: Quick fix to disable an inspection globally in .rell_lint
 
 Every linter diagnostic now carries a second quick fix, "Disable '<rule>' in .rell_lint", next to the
-existing per-line suppression. Applying it switches the whole rule off for the project: the property
-"<rule>=false" is appended to the .rell_lint file the linter actually reads (workspace root or up to two
-parent directories); when no such file exists, one is created at the workspace root with an [*.rell]
-section. Formatter diagnostics get the same action for their gating rule_formatter key.
+existing per-line suppression. Applying it switches the whole rule off for the project: the server sets
+"<rule>=false" in the .rell_lint file the linter actually reads (workspace root or up to two parent
+directories), creating one at the workspace root with an [*.rell] section when none exists. The edit
+runs server-side (workspace/executeCommand), so the linter options reload and the rule's diagnostics
+disappear immediately, and repeating the action rewrites the existing assignment instead of appending
+duplicates. Formatter diagnostics get the same action for their gating rule_formatter key.

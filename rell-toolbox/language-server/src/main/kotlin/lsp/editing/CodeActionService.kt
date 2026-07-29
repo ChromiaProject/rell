@@ -12,10 +12,8 @@ import net.postchain.rell.toolbox.linter.LinterFix
 import net.postchain.rell.toolbox.linter.LinterIssue
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsConverter
-import net.postchain.rell.toolbox.lsp.editorconfig.RellLinterOptionsResolver
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
-import java.io.File
 import java.net.URI
 
 enum class CodeActionTitles(val title: String) {
@@ -32,7 +30,14 @@ object CodeActionService {
     // The `.rell_lint` key gating the formatter diagnostics (see LinterOptions.updateOptionsFromFile).
     private const val FORMATTER_RULE_ID = "rule_formatter"
 
-    private const val SECTION_HEADER = "[*.rell]"
+    /**
+     * `workspace/executeCommand` command that disables a linter rule in `.rell_lint`. The server
+     * performs the config edit itself (rather than sending a `WorkspaceEdit`) so it can reload the
+     * options and republish diagnostics immediately — a client-applied edit sits unsaved in the
+     * editor, invisible to the server, until the client decides to save.
+     * Arguments: `[ruleId, fileUri]`.
+     */
+    const val DISABLE_RULE_COMMAND = "rell.disableRule"
 
     fun getCodeActions(
         fileUri: URI,
@@ -43,7 +48,7 @@ object CodeActionService {
         val resource = indexer.getResource(fileUri) ?: return mutableListOf()
         val linterIssues = findLinterIssuesForRange(range, resource)
         val formatterIssues = findFormatterIssuesForRange(range, resource)
-        return createCodeActions(fileUri, indexer.workspaceUri, linterIssues, formatterIssues, range)
+        return createCodeActions(fileUri, linterIssues, formatterIssues, range)
             .filter { it.isLeft || matchesKindFilter(it.right.kind, only) }
     }
 
@@ -76,7 +81,6 @@ object CodeActionService {
 
     private fun createCodeActions(
         fileUri: URI,
-        workspaceUri: URI,
         linterIssues: List<LinterIssue>,
         formatterIssues: List<FormatterIssue>,
         range: Range
@@ -106,12 +110,12 @@ object CodeActionService {
         // off in `.rell_lint`, listed in the diagnostic's quick-fix group after the real fix.
         val disableRuleActions = buildList {
             for ((ruleId, issues) in linterIssues.groupBy { it.ruleId }) {
-                add(disableRuleGloballyAction(workspaceUri, ruleId, issues.map(RellIssue::fromLinterIssue)))
+                add(disableRuleGloballyAction(fileUri, ruleId, issues.map(RellIssue::fromLinterIssue)))
             }
             if (formatterIssues.isNotEmpty()) {
                 add(
                     disableRuleGloballyAction(
-                        workspaceUri,
+                        fileUri,
                         FORMATTER_RULE_ID,
                         formatterIssues.map(RellIssue::fromFormatterIssue),
                     )
@@ -147,49 +151,19 @@ object CodeActionService {
         }
     }
 
-    private fun disableRuleGloballyAction(workspaceUri: URI, ruleId: String, issues: List<RellIssue>): CodeAction {
-        val action = CodeAction(CodeActionTitles.disableRuleGlobally(ruleId))
+    /**
+     * The config edit runs server-side via [DISABLE_RULE_COMMAND] so the linter reloads and the
+     * rule's diagnostics disappear the moment the action is applied; the action stays idempotent
+     * because a second run finds the key already set (see LinterConfigEditor).
+     */
+    private fun disableRuleGloballyAction(fileUri: URI, ruleId: String, issues: List<RellIssue>): CodeAction {
+        val title = CodeActionTitles.disableRuleGlobally(ruleId)
+        val action = CodeAction(title)
         action.kind = CodeActionKind.QuickFix
-        action.edit = disableRuleGloballyEdit(workspaceUri, ruleId)
+        action.command = Command(title, DISABLE_RULE_COMMAND, listOf(ruleId, fileUri.toString()))
         action.diagnostics = DiagnosticsConverter.toDiagnostics(issues)
         action.isPreferred = false
         return action
-    }
-
-    /**
-     * Switches [ruleId] off in the `.rell_lint` the linter actually reads (workspace root or up to
-     * two parent directories); when none exists, the edit creates one at the workspace root.
-     * Appending the property at the end of the file wins over any earlier assignment of the same
-     * key, and a section header is added to a section-less file because properties outside a
-     * section are ignored by the parser.
-     */
-    private fun disableRuleGloballyEdit(workspaceUri: URI, ruleId: String): WorkspaceEdit {
-        val configFile = RellLinterOptionsResolver.findLinterConfigFile(workspaceUri)
-            ?: return createConfigWithDisabledRule(workspaceUri, ruleId)
-
-        val content = configFile.readText()
-        val hasSection = content.lineSequence().any { it.trim().startsWith("[") }
-        val insertion = buildString {
-            if (content.isNotEmpty() && !content.endsWith("\n")) append('\n')
-            if (!hasSection) append("$SECTION_HEADER\n")
-            append("$ruleId=false\n")
-        }
-        val lines = content.split("\n")
-        val end = Position(lines.size - 1, lines.last().length)
-        return WorkspaceEdit(mapOf(configFile.toURI().toString() to listOf(TextEdit(Range(end, end), insertion))))
-    }
-
-    private fun createConfigWithDisabledRule(workspaceUri: URI, ruleId: String): WorkspaceEdit {
-        val configUri = File(workspaceUri).resolve(LinterOptions.CONFIG_FILE_NAME).toURI().toString()
-        val insert = TextEdit(Range(Position(0, 0), Position(0, 0)), "$SECTION_HEADER\n$ruleId=false\n")
-        return WorkspaceEdit(
-            listOf(
-                Either.forRight<TextDocumentEdit, ResourceOperation>(CreateFile(configUri)),
-                Either.forLeft<TextDocumentEdit, ResourceOperation>(
-                    TextDocumentEdit(VersionedTextDocumentIdentifier(configUri, null), listOf(insert))
-                ),
-            )
-        )
     }
 
     /** LSP `CodeActionContext.only`: a requested kind also matches its sub-kinds ("source" matches "source.fixAll"). */

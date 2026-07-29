@@ -8,6 +8,7 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
+import assertk.assertions.isNull
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
@@ -19,7 +20,6 @@ import net.postchain.rell.toolbox.testing.testData
 import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.eclipse.lsp4j.CodeAction
 import org.eclipse.lsp4j.CodeActionKind
-import org.eclipse.lsp4j.CreateFile
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.junit.jupiter.api.BeforeEach
@@ -142,7 +142,7 @@ class CodeActionServiceTest {
     }
 
     @Test
-    fun `disable-globally quickfix should create the config with the rule off when none exists`() {
+    fun `disable-globally quickfix should carry the server-side command`() {
         val actions = codeActionsAt(diagnosticOnlyLine)
         val disableRule = actions.first { it.title == DISABLE_REDUNDANT_COMPARISON_TITLE }
 
@@ -151,27 +151,12 @@ class CodeActionServiceTest {
         assertThat(disableRule.diagnostics.map { it.code.left })
             .isEqualTo(listOf("linter_issue:rule_redundant_boolean_comparison"))
 
-        val configUri = File(tempDir, ".rell_lint").toURI().toString()
-        val documentChanges = disableRule.edit.documentChanges
-        val createFile = documentChanges[0].right as CreateFile
-        assertThat(createFile.uri).isEqualTo(configUri)
-        val documentEdit = documentChanges[1].left
-        assertThat(documentEdit.textDocument.uri).isEqualTo(configUri)
-        assertThat(documentEdit.edits.single().newText)
-            .isEqualTo("[*.rell]\nrule_redundant_boolean_comparison=false\n")
-    }
-
-    @Test
-    fun `disable-globally quickfix should append to an existing config`() {
-        val configFile = File(tempDir, ".rell_lint")
-        configFile.writeText("[*.rell]\nrule_quote_format=double\n")
-
-        val actions = codeActionsAt(diagnosticOnlyLine)
-        val disableRule = actions.first { it.title == DISABLE_REDUNDANT_COMPARISON_TITLE }
-
-        val edit = disableRule.edit.changes[configFile.toURI().toString()]!!.single()
-        assertThat(edit.range.start).isEqualTo(Position(2, 0))
-        assertThat(edit.newText).isEqualTo("rule_redundant_boolean_comparison=false\n")
+        // The config edit happens server-side (executeCommand) so diagnostics refresh immediately;
+        // the action carries no client-applied edit.
+        assertThat(disableRule.edit).isNull()
+        assertThat(disableRule.command.command).isEqualTo(CodeActionService.DISABLE_RULE_COMMAND)
+        assertThat(disableRule.command.arguments)
+            .isEqualTo(listOf<Any>("rule_redundant_boolean_comparison", mainFileUri.toString()))
     }
 
     @Test

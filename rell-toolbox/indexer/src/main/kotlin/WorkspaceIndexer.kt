@@ -372,6 +372,16 @@ class WorkspaceIndexer(
         }
     }
 
+    /**
+     * Reloads the linter options from [configFile] and re-lints the workspace. Unlike
+     * [updateConfig], this accepts a config living in a parent of the workspace root, matching
+     * the lookup the initial options load uses.
+     */
+    fun reloadLinterConfig(configFile: File) {
+        linterOptions.updateOptionsFromFile(configFile)
+        runLinter()
+    }
+
     private fun runLinter(resource: Resource, fileContent: String) {
         rellLinter.enhanceWithLintIssues(linterOptions, resource)
         formattingStyleLinter.enhanceWithFormatterIssues(linterOptions, formatterOptions, resource, fileContent)
