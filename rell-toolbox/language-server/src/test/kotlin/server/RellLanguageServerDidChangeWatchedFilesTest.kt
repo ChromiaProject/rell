@@ -119,7 +119,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
     }
 
     @Test
-    fun `didChangeWatched linter config created at a wrong location is ignored`() {
+    fun `didChangeWatched linter config created in a parent folder is honored`() {
         val rellFilePath = "code.rell"
         val testDataBuilder = testData(tempDir) {
             addFile(
@@ -139,8 +139,8 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         val indexer = indexingManager.indexers[testDataBuilder.sourceFolderUri]!!
         val configFileUri = File(testDataBuilder.workspaceFolder.toString(), ".rell_lint").apply {
             writeText(
-                // Switching the inspection off here must have no effect, because the file sits
-                // outside the project root where the linter config is looked up.
+                // The parent of the workspace root is one of the folders the options loader reads
+                // configs from, so creating a config there must reload the linter.
                 """
                 [*.rell]
                 rule_naming_convention=false
@@ -165,7 +165,50 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         val codes = diagnostics[rellFileUri.toString()]!!.map { it.code.left }
         // The compiler warning is reported as usual...
         assertThat(codes).contains("comment:tag:unknown:returned")
-        // ...and the misplaced config did not switch off the naming inspection, which is on by default.
+        // ...and the new config switched off the naming inspection.
+        assertThat(codes).doesNotContain("linter_issue:rule_naming_convention")
+    }
+
+    @Test
+    fun `didChangeWatched linter config created at a wrong location is ignored`() {
+        val rellFilePath = "code.rell"
+        val testDataBuilder = testData(tempDir) {
+            addFile(
+                rellFilePath,
+                """
+                module;
+                function Foo() {
+                    val x = 123;
+                }
+                """.trimIndent()
+            )
+        }
+        clientServerLauncher.initializeServer(testDataBuilder.sourceFolderUri)
+        val configFileUri = File(testDataBuilder.sourceFolder, "nested/.rell_lint").apply {
+            parentFile.mkdirs()
+            writeText(
+                // Switching the inspection off here must have no effect: a nested subfolder is not
+                // one of the locations the linter config is looked up in.
+                """
+                [*.rell]
+                rule_naming_convention=false
+                """.trimIndent()
+            )
+        }.toURI()
+
+        val rellFile = testDataBuilder.sourceFile(rellFilePath)
+        rellFile.appendText("\n")
+        val rellFileUri = rellFile.toURI()
+        val fileEvent = FileEvent(configFileUri.toString(), FileChangeType.Created)
+        val rellFileUpdate = FileEvent(rellFileUri.toString(), FileChangeType.Changed)
+        val didChangeParams = DidChangeWatchedFilesParams(listOf(fileEvent, rellFileUpdate))
+
+        server.workspaceService.didChangeWatchedFiles(didChangeParams)
+
+        await().until { testClient.diagnostics.isNotEmpty() }
+
+        val codes = testClient.diagnostics[rellFileUri.toString()]!!.map { it.code.left }
+        // The misplaced config did not switch off the naming inspection, which is on by default.
         assertThat(codes).contains("linter_issue:rule_naming_convention")
     }
 
