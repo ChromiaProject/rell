@@ -18,18 +18,20 @@ class RellLinterOptionsResolver {
         } ?: LinterOptions()
     }
 
-    private fun findLinterConfigFile(projectRootUri: URI): File? {
-        val projectRootFolder = File(projectRootUri)
-        val inCurrentFolder = projectRootFolder.resolve(LinterOptions.CONFIG_FILE_NAME)
-        val inParentFolder = projectRootFolder.parentFile?.resolve(LinterOptions.CONFIG_FILE_NAME)
-        val inGrandparentFolder = projectRootFolder.parentFile?.parentFile?.resolve(LinterOptions.CONFIG_FILE_NAME)
+    companion object {
+        fun findLinterConfigFile(projectRootUri: URI): File? {
+            val projectRootFolder = File(projectRootUri)
+            val inCurrentFolder = projectRootFolder.resolve(LinterOptions.CONFIG_FILE_NAME)
+            val inParentFolder = projectRootFolder.parentFile?.resolve(LinterOptions.CONFIG_FILE_NAME)
+            val inGrandparentFolder = projectRootFolder.parentFile?.parentFile?.resolve(LinterOptions.CONFIG_FILE_NAME)
 
-        return when {
-            inCurrentFolder.exists() && inCurrentFolder.isFile -> inCurrentFolder
-            inParentFolder != null && inParentFolder.exists() && inParentFolder.isFile -> inParentFolder
-            inGrandparentFolder != null &&
-                inGrandparentFolder.exists() && inGrandparentFolder.isFile -> inGrandparentFolder
-            else -> null
+            return when {
+                inCurrentFolder.exists() && inCurrentFolder.isFile -> inCurrentFolder
+                inParentFolder != null && inParentFolder.exists() && inParentFolder.isFile -> inParentFolder
+                inGrandparentFolder != null &&
+                    inGrandparentFolder.exists() && inGrandparentFolder.isFile -> inGrandparentFolder
+                else -> null
+            }
         }
     }
 }

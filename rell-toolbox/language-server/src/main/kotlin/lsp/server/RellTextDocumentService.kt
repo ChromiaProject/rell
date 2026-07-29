@@ -197,7 +197,9 @@ class RellTextDocumentService(
 
     override fun codeAction(params: CodeActionParams): CompletableFuture<List<Either<Command, CodeAction>>> {
         val fileUri = parseFileUri(params.textDocument.uri) ?: return CompletableFuture.completedFuture(listOf())
-        return CompletableFuture.completedFuture(workspaceManager.getCodeActions(fileUri, params.range))
+        return CompletableFuture.completedFuture(
+            workspaceManager.getCodeActions(fileUri, params.range, params.context?.only)
+        )
     }
 
     override fun completion(params: CompletionParams): CompletableFuture<Either<List<CompletionItem>, CompletionList>> {

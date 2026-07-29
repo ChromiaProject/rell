@@ -59,3 +59,21 @@ now carry the real span of the offending code:
 
 Compiler errors and syntax errors still report a single position; widening those requires end positions in
 the compiler and is unchanged for now.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Tools: Language server honors the code-action kind filter
+
+The code-action endpoint ignored the "only" kind filter of the request, so clients asking for quick fixes
+alone still received the source actions ("Disable linter for this line", "Fix all auto-fixable issues").
+IntelliJ requests quick fixes for a diagnostic and intention actions for the caret separately, so the same
+suppression action appeared twice in the editor popup. The server now filters the returned actions by the
+requested kinds (a requested kind also matches its sub-kinds), and each channel gets only its own actions.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+6. Tools: Quick fix to disable an inspection globally in .rell_lint
+
+Every linter diagnostic now carries a second quick fix, "Disable '<rule>' in .rell_lint", next to the
+existing per-line suppression. Applying it switches the whole rule off for the project: the property
+"<rule>=false" is appended to the .rell_lint file the linter actually reads (workspace root or up to two
+parent directories); when no such file exists, one is created at the workspace root with an [*.rell]
+section. Formatter diagnostics get the same action for their gating rule_formatter key.

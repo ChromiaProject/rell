@@ -6,6 +6,7 @@ package net.postchain.rell.toolbox.lsp.editing
 
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
@@ -18,6 +19,7 @@ import net.postchain.rell.toolbox.testing.testData
 import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.eclipse.lsp4j.CodeAction
 import org.eclipse.lsp4j.CodeActionKind
+import org.eclipse.lsp4j.CreateFile
 import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.junit.jupiter.api.BeforeEach
@@ -122,9 +124,54 @@ class CodeActionServiceTest {
 
     @Test
     fun `should offer no quick fix for a diagnostic-only issue`() {
-        // The issue is reported on this line, but it has no fix, so only the disable action remains.
+        // The issue is reported on this line, but it has no fix, so only the disable actions remain.
         val titles = codeActionsAt(diagnosticOnlyLine).map { it.title }
-        assertThat(titles).isEqualTo(listOf(CodeActionTitles.DISABLE_LINTER.title))
+        assertThat(titles).isEqualTo(
+            listOf(DISABLE_REDUNDANT_COMPARISON_TITLE, CodeActionTitles.DISABLE_LINTER.title)
+        )
+    }
+
+    @Test
+    fun `quickfix-only request should exclude the source actions`() {
+        val titles = codeActionsAt(fixableLine, only = listOf("quickfix")).map { it.title }
+
+        assertThat(titles).contains(PREFER_EMPTY_TITLE)
+        assertThat(titles).contains(DISABLE_PREFER_EMPTY_TITLE)
+        assertThat(titles).doesNotContain(CodeActionTitles.DISABLE_LINTER.title)
+        assertThat(titles).doesNotContain(CodeActionTitles.AUTO_FIXABLE.title)
+    }
+
+    @Test
+    fun `disable-globally quickfix should create the config with the rule off when none exists`() {
+        val actions = codeActionsAt(diagnosticOnlyLine)
+        val disableRule = actions.first { it.title == DISABLE_REDUNDANT_COMPARISON_TITLE }
+
+        assertThat(disableRule.kind).isEqualTo("quickfix")
+        assertThat(disableRule.isPreferred).isEqualTo(false)
+        assertThat(disableRule.diagnostics.map { it.code.left })
+            .isEqualTo(listOf("linter_issue:rule_redundant_boolean_comparison"))
+
+        val configUri = File(tempDir, ".rell_lint").toURI().toString()
+        val documentChanges = disableRule.edit.documentChanges
+        val createFile = documentChanges[0].right as CreateFile
+        assertThat(createFile.uri).isEqualTo(configUri)
+        val documentEdit = documentChanges[1].left
+        assertThat(documentEdit.textDocument.uri).isEqualTo(configUri)
+        assertThat(documentEdit.edits.single().newText)
+            .isEqualTo("[*.rell]\nrule_redundant_boolean_comparison=false\n")
+    }
+
+    @Test
+    fun `disable-globally quickfix should append to an existing config`() {
+        val configFile = File(tempDir, ".rell_lint")
+        configFile.writeText("[*.rell]\nrule_quote_format=double\n")
+
+        val actions = codeActionsAt(diagnosticOnlyLine)
+        val disableRule = actions.first { it.title == DISABLE_REDUNDANT_COMPARISON_TITLE }
+
+        val edit = disableRule.edit.changes[configFile.toURI().toString()]!!.single()
+        assertThat(edit.range.start).isEqualTo(Position(2, 0))
+        assertThat(edit.newText).isEqualTo("rule_redundant_boolean_comparison=false\n")
     }
 
     @Test
@@ -135,9 +182,9 @@ class CodeActionServiceTest {
         assertThat(editsOf(action)).isEqualTo(listOf(expectedEdit))
     }
 
-    private fun codeActionsAt(line: Int): List<CodeAction> {
+    private fun codeActionsAt(line: Int, only: List<String>? = null): List<CodeAction> {
         val range = Range(Position(line, 0), Position(line, 0))
-        return CodeActionService.getCodeActions(mainFileUri, range, indexer).map { it.right }
+        return CodeActionService.getCodeActions(mainFileUri, range, indexer, only).map { it.right }
     }
 
     private fun editsOf(action: CodeAction): List<TestTextEdit> =
@@ -146,5 +193,8 @@ class CodeActionServiceTest {
     companion object {
         // The action is titled after what the fix does, not after the diagnostic message.
         private const val PREFER_EMPTY_TITLE = "Replace with 'xs.empty()'"
+        private const val DISABLE_PREFER_EMPTY_TITLE = "Disable 'rule_prefer_empty' in .rell_lint"
+        private const val DISABLE_REDUNDANT_COMPARISON_TITLE =
+            "Disable 'rule_redundant_boolean_comparison' in .rell_lint"
     }
 }

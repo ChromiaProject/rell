@@ -146,9 +146,9 @@ class RellWorkspaceManager(
     }
 
 
-    fun getCodeActions(fileUri: URI, range: Range): List<Either<Command, CodeAction>> {
+    fun getCodeActions(fileUri: URI, range: Range, only: List<String>? = null): List<Either<Command, CodeAction>> {
         val indexer = indexingManager.getIndexerFor(fileUri)
-        return CodeActionService.getCodeActions(fileUri, range, indexer)
+        return CodeActionService.getCodeActions(fileUri, range, indexer, only)
     }
 
     fun getCodeActionForFile(fileUri: URI): CodeAction {
