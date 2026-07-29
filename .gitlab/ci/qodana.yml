@@ -4,16 +4,21 @@
 
 qodana:
   tags: [ saas-linux-large-amd64 ]
-  variables: { QODANA_MR_MODE: "true" }
+  variables:
+    QODANA_MR_MODE: "true"
+    # Override the global GRADLE_USER_HOME ($CI_PROJECT_DIR/.gradle): that dir is neither
+    # cached by this job nor where the toolchain gradle.properties below is written, so the
+    # IDE's Gradle sync would never see the seeded JDK. Pointing it into .qodana/cache also
+    # persists the Gradle wrapper and dependency caches via the job cache.
+    GRADLE_USER_HOME: "$CI_PROJECT_DIR/.qodana/cache/gradle"
   # The qodana-jvm-community image ships only the IDE's own JBR (25 as of 2026.1), so the
   # Java 21 toolchain required by build.gradle.kts resolves only if a JDK 21 is already
   # present — with no toolchain download repositories configured, Gradle can't fetch one.
   # Seed a pinned Temurin 21 into the Qodana cache dir and point Gradle's toolchain
-  # detection at it explicitly. The job runs natively inside the linter image; before the
-  # scan, the qodana-gitlab script copies .qodana/cache to $CI_BUILDS_DIR/.qodana/cache —
-  # the effective cache dir, where qodana sets GRADLE_USER_HOME=<cache>/gradle — and copies
-  # it back afterwards, so the JDK persists via the job cache and the download only happens
-  # on a cold cache.
+  # detection at it via GRADLE_USER_HOME/gradle.properties. The JDK path uses
+  # $CI_PROJECT_DIR (where before_script extracts it), so it stays valid regardless of how
+  # the qodana-gitlab script relocates its own cache copy under $CI_BUILDS_DIR. The JDK
+  # persists via the job cache, so the download only happens on a cold cache.
   before_script:
     - |
       set -euo pipefail
@@ -27,8 +32,8 @@ qodana:
         tar -xzf /tmp/temurin21.tar.gz -C .qodana/cache/jdks
         rm /tmp/temurin21.tar.gz
       fi
-      mkdir -p .qodana/cache/gradle
-      printf 'org.gradle.java.installations.paths=%s/.qodana/cache/jdks/%s\n' "$CI_BUILDS_DIR" "$JDK_NAME" > .qodana/cache/gradle/gradle.properties
+      mkdir -p "$GRADLE_USER_HOME"
+      printf 'org.gradle.java.installations.paths=%s/.qodana/cache/jdks/%s\n' "$CI_PROJECT_DIR" "$JDK_NAME" > "$GRADLE_USER_HOME/gradle.properties"
   cache:
     key: "qodana-$CI_COMMIT_REF_SLUG"
     fallback_keys: [ qodana-dev ]
