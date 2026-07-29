@@ -16,7 +16,8 @@ class SpecificQuotesIssue(ctx: ParserRuleContext, ruleId: String, message: Strin
         val literal = quote.literal
         val content = escapeQuotes(string.substring(1, string.length - 1), quote)
         val fixedString = "$literal$content$literal"
-        return LinterFix(ctx.start.line - 1, ctx.start.charPositionInLine, string.length, fixedString)
+        val title = "Replace with ${quote.name.lowercase()} quotes"
+        return LinterFix(title, ctx.start.line - 1, ctx.start.charPositionInLine, string.length, fixedString)
     }
 
     private fun escapeQuotes(input: String, quote: Quote): String {

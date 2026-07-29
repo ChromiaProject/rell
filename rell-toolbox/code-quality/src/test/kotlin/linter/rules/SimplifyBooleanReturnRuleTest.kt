@@ -25,6 +25,13 @@ class SimplifyBooleanReturnRuleTest : AbstractRuleTest() {
     }
 
     @Test
+    fun `should highlight only the if keyword`() {
+        val result = lint(fileName, testLinterOptions { ruleSimplifyBooleanReturn = true })
+        assertThat(result).hasSize(5)
+        assertThat(result[0]).highlightsRange(2, 5, 2, 7)
+    }
+
+    @Test
     fun `should simplify boolean-literal if statements and expressions`() {
         val result = lint(fileName, testLinterOptions { ruleSimplifyBooleanReturn = true })
         assertThat(result).hasSize(5)

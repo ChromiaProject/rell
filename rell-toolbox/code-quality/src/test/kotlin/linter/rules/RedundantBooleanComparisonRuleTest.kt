@@ -26,6 +26,14 @@ class RedundantBooleanComparisonRuleTest : AbstractRuleTest() {
     }
 
     @Test
+    fun `should highlight the whole comparison expression`() {
+        val result = lint(fileName, testLinterOptions { ruleRedundantBooleanComparison = true })
+        assertThat(result).hasSize(4)
+        // `active == false` on line 2.
+        assertThat(result[0]).highlightsRange(2, 13, 2, 28)
+    }
+
+    @Test
     fun `should flag boolean-literal comparisons as diagnostics and exempt where-clauses`() {
         val result = lint(fileName, testLinterOptions { ruleRedundantBooleanComparison = true })
         assertThat(result).hasSize(4)

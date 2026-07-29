@@ -8,6 +8,7 @@ import net.postchain.rell.toolbox.formatter.FormatterIssue
 import net.postchain.rell.toolbox.indexer.RellIssue
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
+import net.postchain.rell.toolbox.linter.LinterFix
 import net.postchain.rell.toolbox.linter.LinterIssue
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsConverter
 import org.eclipse.lsp4j.*
@@ -33,8 +34,8 @@ object CodeActionService {
         val codeAction = CodeAction(CodeActionTitles.AUTO_FIXABLE.title)
         codeAction.kind = CodeActionKind.SourceFixAll
 
-        val linterEdits = resource.linterIssues.map {
-            getEditsForLinterIssue(fileUri, it)
+        val linterEdits = resource.linterIssues.mapNotNull { it.fix() }.map {
+            getEditsForLinterFix(fileUri, it)
         }
         val formatterEdits = resource.formatterIssues.map {
             getEditsForFormatterIssue(fileUri, it)
@@ -61,16 +62,15 @@ object CodeActionService {
         formatterIssues: List<FormatterIssue>,
         range: Range
     ): List<Either<Command, CodeAction>> {
-        val linterCodeActions = linterIssues
-            .filterNot { it.fix() == null }
-            .map {
-                val action = CodeAction(it.message)
-                action.kind = CodeActionKind.QuickFix
-                action.edit = WorkspaceEdit(getEditsForLinterIssue(fileUri, it))
-                action.diagnostics = DiagnosticsConverter.toDiagnostics(listOf(RellIssue.fromLinterIssue(it)))
-                action.isPreferred = true
-                Either.forRight<Command, CodeAction>(action)
-            }
+        val linterCodeActions = linterIssues.mapNotNull { issue ->
+            val fix = issue.fix() ?: return@mapNotNull null
+            val action = CodeAction(fix.title)
+            action.kind = CodeActionKind.QuickFix
+            action.edit = WorkspaceEdit(getEditsForLinterFix(fileUri, fix))
+            action.diagnostics = DiagnosticsConverter.toDiagnostics(listOf(RellIssue.fromLinterIssue(issue)))
+            action.isPreferred = true
+            Either.forRight<Command, CodeAction>(action)
+        }
 
         val formatterCodeActions = formatterIssues.map {
             val action = CodeAction(it.message)
@@ -126,8 +126,7 @@ object CodeActionService {
         return result
     }
 
-    private fun getEditsForLinterIssue(fileUri: URI, linterIssue: LinterIssue): Map<String, List<TextEdit>> {
-        val fix = linterIssue.fix() ?: return mapOf(fileUri.toString() to listOf())
+    private fun getEditsForLinterFix(fileUri: URI, fix: LinterFix): Map<String, List<TextEdit>> {
         val range = Range(
             Position(fix.line, fix.charPositionInLine),
             Position(fix.endLine, fix.endCharPositionInLine),

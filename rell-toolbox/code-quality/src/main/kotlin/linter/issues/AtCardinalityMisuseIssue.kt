@@ -42,6 +42,7 @@ class AtCardinalityMisuseIssue(
             sb.append(input.getText(Interval.of(bang.stop.stopIndex + 1, stop.stopIndex)))
         }
         return LinterFix(
+            title = "Replace '@?' with '@' and remove '!!'",
             line = start.line - 1,
             charPositionInLine = start.charPositionInLine,
             length = stop.stopIndex - start.startIndex + 1,

@@ -26,6 +26,13 @@ class SimplifyNullableIfRuleTest : AbstractRuleTest() {
     }
 
     @Test
+    fun `should highlight only the if keyword`() {
+        val result = lint(fileName, testLinterOptions { ruleSimplifyNullableIf = true })
+        assertThat(result).hasSize(11)
+        assertThat(result[0]).highlightsRange(6, 12, 6, 14)
+    }
+
+    @Test
     fun `should rewrite null guards to elvis and safe-access`() {
         val result = lint(fileName, testLinterOptions { ruleSimplifyNullableIf = true })
         assertThat(result).hasSize(11)

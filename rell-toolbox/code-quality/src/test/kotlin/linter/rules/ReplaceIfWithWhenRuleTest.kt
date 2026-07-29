@@ -27,6 +27,14 @@ class ReplaceIfWithWhenRuleTest : AbstractRuleTest() {
     }
 
     @Test
+    fun `should highlight only the leading if keyword`() {
+        val result = lint("replace_if_with_when.rell", testLinterOptions { ruleReplaceIfWithWhen = true })
+        assertThat(result).hasSize(4)
+        assertThat(result[0]).highlightsRange(2, 5, 2, 7)
+        assertThat(result[1]).highlightsRange(12, 5, 12, 7)
+    }
+
+    @Test
     fun `should report if-else-if chains with a when replacement`() {
         val result = lint("replace_if_with_when.rell", testLinterOptions { ruleReplaceIfWithWhen = true })
         assertThat(result).hasSize(4)
@@ -47,7 +55,7 @@ class ReplaceIfWithWhenRuleTest : AbstractRuleTest() {
             5,
             ReplaceIfWithWhenRule.RULE_ID,
             "Replace 'if' with 'when'",
-            LinterFix(1, 4, 123, multiLineWhen, 7, 5)
+            LinterFix("Replace 'if' with 'when'", 1, 4, 123, multiLineWhen, 7, 5)
         )
 
         val singleLineWhen = "when {\n" +
@@ -59,7 +67,7 @@ class ReplaceIfWithWhenRuleTest : AbstractRuleTest() {
             5,
             ReplaceIfWithWhenRule.RULE_ID,
             "Replace 'if' with 'when'",
-            LinterFix(11, 4, 56, singleLineWhen, 11, 60)
+            LinterFix("Replace 'if' with 'when'", 11, 4, 56, singleLineWhen, 11, 60)
         )
 
         val exprWhen = "when {\n" +
@@ -72,7 +80,7 @@ class ReplaceIfWithWhenRuleTest : AbstractRuleTest() {
             13,
             ReplaceIfWithWhenRule.RULE_ID,
             "Replace 'if' with 'when'",
-            LinterFix(24, 12, 39, exprWhen, 24, 51)
+            LinterFix("Replace 'if' with 'when'", 24, 12, 39, exprWhen, 24, 51)
         )
 
         val blockArmWhen = "when {\n" +
@@ -85,7 +93,7 @@ class ReplaceIfWithWhenRuleTest : AbstractRuleTest() {
             12,
             ReplaceIfWithWhenRule.RULE_ID,
             "Replace 'if' with 'when'",
-            LinterFix(29, 11, 43, blockArmWhen, 29, 54)
+            LinterFix("Replace 'if' with 'when'", 29, 11, 43, blockArmWhen, 29, 54)
         )
     }
 }

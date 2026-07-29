@@ -109,7 +109,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         assertThat(diagnostics.keys).containsOnly(rellFile.toString())
         assertThat(diagnostics[rellFile.toString()]!!).containsOnly(
             Diagnostic(
-                Range(Position(2, 8), Position(2, 8)),
+                Range(Position(2, 8), Position(2, 9)),
                 "Variable 'x' is never used",
                 DiagnosticSeverity.Warning,
                 null,

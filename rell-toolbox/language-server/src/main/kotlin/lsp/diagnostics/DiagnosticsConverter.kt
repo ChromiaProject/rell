@@ -31,7 +31,7 @@ object DiagnosticsConverter {
     private fun extractRange(issue: RellIssue): Range {
         // line and column numbers in LSP are 0-based
         val start = Position(max(0, issue.line - 1), max(0, issue.column - 1))
-        val end = Position(max(0, issue.line - 1), max(0, issue.column - 1))
+        val end = Position(max(0, issue.endLine - 1), max(0, issue.endColumn - 1))
         return Range(start, end)
     }
 

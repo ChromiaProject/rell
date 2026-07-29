@@ -6,6 +6,7 @@ package net.postchain.rell.toolbox.linter.rules
 
 import assertk.Assert
 import assertk.assertions.support.expected
+import net.postchain.rell.toolbox.indexer.RellIssue
 import net.postchain.rell.toolbox.linter.LinterFix
 import net.postchain.rell.toolbox.linter.LinterIssue
 
@@ -24,6 +25,25 @@ fun Assert<LinterIssue>.matches(
         "column=${actual.ctx.start.charPositionInLine + 1}, rule-id=${actual.ruleId}, " +
         "message=${actual.message}, fix=${actual.fix()}"
     expected(expectedAndActualData)
+}
+
+/** Asserts the editor-highlight span the issue reports, 1-based, end-exclusive. */
+fun Assert<LinterIssue>.highlightsRange(
+    expectedLine: Int,
+    expectedColumn: Int,
+    expectedEndLine: Int,
+    expectedEndColumn: Int,
+): Unit = given { actual ->
+    val issue = RellIssue.fromLinterIssue(actual)
+    if (issue.line == expectedLine && issue.column == expectedColumn &&
+        issue.endLine == expectedEndLine && issue.endColumn == expectedEndColumn
+    ) {
+        return
+    }
+    expected(
+        "highlight $expectedLine:$expectedColumn..$expectedEndLine:$expectedEndColumn " +
+            "but was ${issue.line}:${issue.column}..${issue.endLine}:${issue.endColumn}"
+    )
 }
 
 private fun actualMatchesExpected(

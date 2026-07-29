@@ -8,6 +8,7 @@ import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.toolbox.linter.LinterFix
 import net.postchain.rell.toolbox.linter.LinterIssue
 import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.misc.Interval
 
 sealed class ReplaceIfWithWhenIssue(
@@ -16,10 +17,14 @@ sealed class ReplaceIfWithWhenIssue(
     message: String
 ) : LinterIssue(ctx, ruleId, message) {
 
+    // The chain spans many lines; underline only the leading `if` keyword.
+    final override val highlightStop: Token get() = ctx.start
+
     final override fun fix(): LinterFix {
         val start = ctx.start
         val stop = ctx.stop
         return LinterFix(
+            title = "Replace 'if' with 'when'",
             line = start.line - 1,
             charPositionInLine = start.charPositionInLine,
             length = stop.stopIndex - start.startIndex + 1,

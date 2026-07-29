@@ -28,6 +28,16 @@ class ConstantDetectionRuleTest : AbstractRuleTest() {
     }
 
     @Test
+    fun `should highlight the var keyword, or the name inside a tuple declarator`() {
+        val result = lint("constant.rell", testLinterOptions { ruleConstantDetection = true })
+        assertThat(result).hasSize(8)
+        // Plain declarator: the rewritable `var` keyword.
+        assertThat(result[0]).highlightsRange(2, 5, 2, 8)
+        // Tuple declarator: the shared `var` cannot be rewritten, so the name is underlined.
+        assertThat(result[3]).highlightsRange(12, 10, 12, 11)
+    }
+
+    @Test
     fun `should find vars which are never modified`() {
         val result = lint("constant.rell", testLinterOptions { ruleConstantDetection = true })
         assertThat(result).hasSize(8)
@@ -37,21 +47,21 @@ class ConstantDetectionRuleTest : AbstractRuleTest() {
             9,
             ConstantDetectionRule.RULE_ID,
             "Variable 'x' is never modified, so it can be declared using 'val'",
-            LinterFix(1, 4, 3, "val", 1, 7)
+            LinterFix("Replace 'var' with 'val'", 1, 4, 3, "val", 1, 7)
         )
         assertThat(result[1]).matches(
             3,
             9,
             ConstantDetectionRule.RULE_ID,
             "Variable 'y' is never modified, so it can be declared using 'val'",
-            LinterFix(2, 4, 3, "val", 2, 7)
+            LinterFix("Replace 'var' with 'val'", 2, 4, 3, "val", 2, 7)
         )
         assertThat(result[2]).matches(
             10,
             9,
             ConstantDetectionRule.RULE_ID,
             "Variable 'last_one' is never modified, so it can be declared using 'val'",
-            LinterFix(9, 4, 3, "val", 9, 7)
+            LinterFix("Replace 'var' with 'val'", 9, 4, 3, "val", 9, 7)
         )
         // Tuple declarators share one `var` keyword, so they are reported without a fix.
         assertThat(result[3]).matches(12, 10, ConstantDetectionRule.RULE_ID, "Variable 'a' is never modified")

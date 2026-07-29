@@ -64,7 +64,7 @@ class SimplifyNullableIfRule(config: LinterOptions, resource: Resource, linterCo
             val wrappedElse = if (elseArmNeedsParens(elseExpr)) "($elseText)" else elseText
             val replacement = "$checkedText ?: $wrappedElse"
             val newText = if (needsParens(ctx)) "($replacement)" else replacement
-            report(SimplifyNullableIfIssue(ctx, ruleId, ELVIS_MESSAGE, newText))
+            report(SimplifyNullableIfIssue(ctx, ruleId, ELVIS_MESSAGE, ELVIS_TITLE, newText))
             return
         }
 
@@ -72,7 +72,7 @@ class SimplifyNullableIfRule(config: LinterOptions, resource: Resource, linterCo
         if (elseExpr != null && elseExpr.text == "null" && thenText.startsWith(checkedText)) {
             val rest = thenText.substring(checkedText.length)
             if (SINGLE_MEMBER.matches(rest)) {
-                report(SimplifyNullableIfIssue(ctx, ruleId, SAFE_ACCESS_MESSAGE, "$checkedText?$rest"))
+                report(SimplifyNullableIfIssue(ctx, ruleId, SAFE_ACCESS_MESSAGE, SAFE_ACCESS_TITLE, "$checkedText?$rest"))
             }
         }
     }
@@ -101,7 +101,7 @@ class SimplifyNullableIfRule(config: LinterOptions, resource: Resource, linterCo
         // The fix replaces both statements, so a comment between them would be lost: report it, but
         // leave the rewrite to the reader.
         val newText = if (hasCommentsBetween(decl.stop, ctx.stop)) null else "$declText ?: $jumpText;"
-        report(SimplifyNullableIfIssue(ctx, ruleId, GUARD_MESSAGE, newText, decl.start, ctx.stop))
+        report(SimplifyNullableIfIssue(ctx, ruleId, GUARD_MESSAGE, GUARD_TITLE, newText, decl.start, ctx.stop))
     }
 
     /**
@@ -213,8 +213,11 @@ class SimplifyNullableIfRule(config: LinterOptions, resource: Resource, linterCo
     companion object {
         const val RULE_ID = "rule_simplify_nullable_if"
         private const val ELVIS_MESSAGE = "Replace 'if' with the elvis operator '?:'"
+        private const val ELVIS_TITLE = "Replace 'if' with '?:'"
         private const val SAFE_ACCESS_MESSAGE = "Replace 'if' with safe-access '?.'"
+        private const val SAFE_ACCESS_TITLE = "Replace 'if' with '?.'"
         private const val GUARD_MESSAGE = "Null guard can be merged into the declaration with '?:'"
+        private const val GUARD_TITLE = "Merge the null guard into the declaration with '?:'"
         private val SINGLE_MEMBER = Regex("^\\.[A-Za-z_][A-Za-z0-9_]*$")
     }
 }

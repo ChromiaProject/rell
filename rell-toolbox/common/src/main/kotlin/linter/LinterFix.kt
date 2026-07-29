@@ -5,6 +5,8 @@
 package net.postchain.rell.toolbox.linter
 
 data class LinterFix(
+    /** User-facing action title describing what applying the fix does, e.g. "Replace 'var' with 'val'". */
+    val title: String,
     val line: Int,
     val charPositionInLine: Int,
     val length: Int,

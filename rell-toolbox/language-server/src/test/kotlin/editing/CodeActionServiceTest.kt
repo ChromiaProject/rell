@@ -144,6 +144,7 @@ class CodeActionServiceTest {
         action.edit.changes[mainFileUri.toString()].orEmpty().map { TestTextEdit(it) }
 
     companion object {
-        private const val PREFER_EMPTY_TITLE = "Use '.empty()' instead of a '.size()' comparison"
+        // The action is titled after what the fix does, not after the diagnostic message.
+        private const val PREFER_EMPTY_TITLE = "Replace with 'xs.empty()'"
     }
 }

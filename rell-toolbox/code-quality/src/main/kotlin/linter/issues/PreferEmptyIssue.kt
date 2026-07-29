@@ -22,6 +22,7 @@ class PreferEmptyIssue(
         val call = "$receiverText.empty()"
         val newText = if (empty) call else "not $call"
         return LinterFix(
+            title = "Replace with '$newText'",
             line = start.line - 1,
             charPositionInLine = start.charPositionInLine,
             length = stop.stopIndex - start.startIndex + 1,

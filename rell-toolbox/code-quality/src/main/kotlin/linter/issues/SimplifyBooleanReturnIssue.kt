@@ -9,6 +9,7 @@ import net.postchain.rell.toolbox.linter.LinterFix
 import net.postchain.rell.toolbox.linter.LinterIssue
 import net.postchain.rell.toolbox.linter.sourceText
 import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.Token
 
 class SimplifyBooleanReturnIssue(
     private val stmtCtx: ParserRuleContext,
@@ -17,12 +18,17 @@ class SimplifyBooleanReturnIssue(
     private val condExpr: RellParser.ExpressionContext,
     private val negate: Boolean,
 ) : LinterIssue(stmtCtx, ruleId, message) {
+
+    // The if/else spans several lines; underline only the leading `if` keyword.
+    override val highlightStop: Token get() = ctx.start
+
     override fun fix(): LinterFix {
         val start = stmtCtx.start
         val stop = stmtCtx.stop
         val condText = condExpr.sourceText()
         val body = if (negate) negated(condText) else condText
         return LinterFix(
+            title = "Replace with 'return $body;'",
             line = start.line - 1,
             charPositionInLine = start.charPositionInLine,
             length = stop.stopIndex - start.startIndex + 1,

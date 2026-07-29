@@ -23,6 +23,13 @@ data class RellIssue(
     val severity: RellIssueSeverity,
     val line: Int,
     val column: Int,
+    /**
+     * Exclusive end of the highlighted span, 1-based like [line]/[column]. Sources that only know
+     * a point (compiler messages, syntax errors) leave the default zero-width span, which editors
+     * render as a one-character highlight.
+     */
+    val endLine: Int = line,
+    val endColumn: Int = column,
 ) {
 
     companion object {
@@ -52,12 +59,17 @@ data class RellIssue(
         }
 
         fun fromLinterIssue(linterIssue: LinterIssue): RellIssue {
+            val start = linterIssue.highlightStart
+            val stop = linterIssue.highlightStop
             return RellIssue(
                 message = linterIssue.message,
                 code = "linter_issue:${linterIssue.ruleId}",
                 severity = linterIssue.severity,
-                line = linterIssue.ctx.start.line,
-                column = linterIssue.ctx.start.charPositionInLine + 1
+                line = start.line,
+                column = start.charPositionInLine + 1,
+                endLine = stop.line,
+                // A synthesized token (error recovery) has no text; degrade to a zero-width end.
+                endColumn = stop.charPositionInLine + (stop.text?.length ?: 0) + 1,
             )
         }
 

@@ -32,21 +32,21 @@ class SpecificQuotesRuleTest : AbstractRuleTest() {
             13,
             SpecificQuotesRule.RULE_ID,
             "Use double quotes for 'hello'",
-            LinterFix(1, 12, 7, "\"hello\"")
+            LinterFix("Replace with double quotes", 1, 12, 7, "\"hello\"")
         )
         assertThat(result[1]).matches(
             3,
             13,
             SpecificQuotesRule.RULE_ID,
             "Use double quotes for 'with \"quote\" inside'",
-            LinterFix(2, 12, 21, "\"with \\\"quote\\\" inside\"")
+            LinterFix("Replace with double quotes", 2, 12, 21, "\"with \\\"quote\\\" inside\"")
         )
         assertThat(result[2]).matches(
             4,
             13,
             SpecificQuotesRule.RULE_ID,
             "Use double quotes for 'with escaped \\\"quote\\\" inside'",
-            LinterFix(3, 12, 31, "\"with escaped \\\"quote\\\" inside\"")
+            LinterFix("Replace with double quotes", 3, 12, 31, "\"with escaped \\\"quote\\\" inside\"")
         )
     }
 
@@ -59,21 +59,21 @@ class SpecificQuotesRuleTest : AbstractRuleTest() {
             13,
             SpecificQuotesRule.RULE_ID,
             "Use single quotes for \"world\"",
-            LinterFix(7, 12, 7, "'world'")
+            LinterFix("Replace with single quotes", 7, 12, 7, "'world'")
         )
         assertThat(result[1]).matches(
             9,
             13,
             SpecificQuotesRule.RULE_ID,
             "Use single quotes for \"with 'quote' inside\"",
-            LinterFix(8, 12, 21, "'with \\'quote\\' inside'")
+            LinterFix("Replace with single quotes", 8, 12, 21, "'with \\'quote\\' inside'")
         )
         assertThat(result[2]).matches(
             10,
             13,
             SpecificQuotesRule.RULE_ID,
             "Use single quotes for \"with escaped \\'quote\\' inside\"",
-            LinterFix(9, 12, 31, "'with escaped \\'quote\\' inside'")
+            LinterFix("Replace with single quotes", 9, 12, 31, "'with escaped \\'quote\\' inside'")
         )
     }
 }

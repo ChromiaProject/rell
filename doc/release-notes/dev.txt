@@ -26,3 +26,36 @@ The documentation generator titled its output "Rell System Library API Reference
 on documentation sites generated for libraries other than the system library. The site header (and the matching
 page titles and breadcrumbs) now reads "Rell Docgen". Page URLs are unchanged: the output directory slug stays
 pinned to the legacy "Rell System Library" name, so existing links keep working.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tools: Linter quick fixes are titled after the edit they make
+
+A linter quick fix in the language server repeated the diagnostic message as its action title, so the editor
+popup showed the problem statement twice ("Variable 'state' is never modified, so it can be declared using
+'val'") and never said what applying the action would actually do. Each auto-fix now carries its own title
+describing the edit, for example:
+
+    Replace 'var' with 'val'
+    Replace 'if' with 'when'
+    Replace with 'xs.empty()'
+    Replace with double quotes
+
+Diagnostic messages are unchanged; only the quick-fix action titles differ.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Tools: Linter diagnostics underline the offending code instead of one character
+
+The language server published every diagnostic with an empty range, so editors highlighted only the single
+character at the issue's position (for example, just the "i" of an if that could be a when). Linter diagnostics
+now carry the real span of the offending code:
+
+- rule_replace_if_with_when, rule_simplify_boolean_return and rule_simplify_nullable_if underline the if
+  keyword of the reported conditional, following the IDE convention of marking the misused keyword rather
+  than the whole multi-line construct;
+- rule_constant_detection underlines the var keyword (or the variable name inside a tuple declarator, where
+  the shared var cannot be rewritten);
+- expression-level inspections (redundant boolean comparisons, .size() comparisons, quote style, unused
+  variables and the rest) underline the whole reported expression or name.
+
+Compiler errors and syntax errors still report a single position; widening those requires end positions in
+the compiler and is unchanged for now.
