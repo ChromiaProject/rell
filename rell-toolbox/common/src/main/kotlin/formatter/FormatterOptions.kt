@@ -15,15 +15,18 @@ data class FormatterOptions(
     var newLineString: String = NewLineStyle.LF.newLineString,
 ) {
     fun updateOptionsFromFile(configFile: File) {
-        val editorConfig = EditorConfigParser.parse(configFile)
-        if (editorConfig != null) {
-            updateFormatterOptions(editorConfig)
-        } else {
-            val defaultOptions = FormatterOptions()
-            maxLineWidth = defaultOptions.maxLineWidth
-            insertSpaces = defaultOptions.insertSpaces
-            tabSize = defaultOptions.tabSize
-        }
+        // The same instance is mutated across reloads, so a key removed from the file must fall
+        // back to its default instead of keeping the previously parsed value.
+        resetToDefaults()
+        EditorConfigParser.parse(configFile)?.let { updateFormatterOptions(it) }
+    }
+
+    private fun resetToDefaults() {
+        val defaults = FormatterOptions()
+        maxLineWidth = defaults.maxLineWidth
+        insertSpaces = defaults.insertSpaces
+        tabSize = defaults.tabSize
+        newLineString = defaults.newLineString
     }
 
     private fun updateFormatterOptions(editorConfig: EditorConfig) {

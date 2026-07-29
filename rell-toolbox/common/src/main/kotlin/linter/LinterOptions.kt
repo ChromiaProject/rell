@@ -34,6 +34,9 @@ data class LinterOptions(
     fun updateOptionsFromFile(configFile: File) {
         // A missing or unreadable config leaves the built-in defaults in place, so inspections stay on.
         EditorConfigParser.parse(configFile)?.let {
+            // The same instance is mutated across reloads, so a key removed from the file must fall
+            // back to its default instead of keeping the previously parsed value.
+            resetToDefaults()
             for (section in it.sections) {
                 for ((key, value) in section.properties) {
                     when (key) {
@@ -62,6 +65,23 @@ data class LinterOptions(
 
             enable()
         }
+    }
+
+    private fun resetToDefaults() {
+        val defaults = LinterOptions()
+        ruleQuoteFormat = defaults.ruleQuoteFormat
+        ruleNamingConvention = defaults.ruleNamingConvention
+        ruleImportFromNonModule = defaults.ruleImportFromNonModule
+        ruleFormatter = defaults.ruleFormatter
+        ruleConstantDetection = defaults.ruleConstantDetection
+        ruleUnusedVariable = defaults.ruleUnusedVariable
+        ruleOuterJoinCartesianProduct = defaults.ruleOuterJoinCartesianProduct
+        ruleReplaceIfWithWhen = defaults.ruleReplaceIfWithWhen
+        ruleSimplifyBooleanReturn = defaults.ruleSimplifyBooleanReturn
+        ruleRedundantBooleanComparison = defaults.ruleRedundantBooleanComparison
+        ruleSimplifyNullableIf = defaults.ruleSimplifyNullableIf
+        rulePreferEmpty = defaults.rulePreferEmpty
+        ruleAtCardinalityMisuse = defaults.ruleAtCardinalityMisuse
     }
 
     private fun parseBoolean(value: Property): Boolean? = when (value.sourceValue.trim()) {
