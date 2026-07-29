@@ -4,31 +4,13 @@
 
 rell-codegen follows a **3-layer pluggable architecture** that separates concerns and allows easy extension with new target languages.
 
-```
-┌─────────────────────────────────────────────────────┐
-│  CLI Layer (rellgen)                                │
-│  User-facing command-line interface                 │
-│  - Argument parsing (Clikt framework)               │
-│  - Language option groups                           │
-└─────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────┐
-│  Implementation Layer (codegen-X)                   │
-│  Language-specific code generation                  │
-│  - codegen-kotlin                                   │
-│  - codegen-typescript                               │
-│  - codegen-javascript                               │
-│  - codegen-python                                   │
-│  - codegen-mermaid                                  │
-└─────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────┐
-│  Core Logic Layer (codegen)                         │
-│  Abstract interfaces and orchestration              │
-│  - Rell parsing and compilation                     │
-│  - Type extraction and dependency analysis          │
-│  - Document and section abstractions                │
-└─────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    cli["<b>CLI layer</b> (rellgen)<br/>argument parsing (Clikt), language option groups"]
+    impl["<b>Implementation layer</b> (codegen-X)<br/>codegen-kotlin · codegen-typescript · codegen-javascript<br/>codegen-python · codegen-mermaid"]
+    core["<b>Core logic layer</b> (codegen)<br/>Rell parsing and compilation · type extraction and<br/>dependency analysis · document and section abstractions"]
+
+    cli --> impl --> core
 ```
 
 ## Design Pattern: Factory Pattern
@@ -123,12 +105,10 @@ For each, it resolves:
 ### 4. Dependency Graph Construction
 The system builds a directed graph of dependencies:
 
-```
-User (entity)
-  ↓ depends on
-Address (struct)
-  ↓ depends on
-Country (enum)
+```mermaid
+flowchart TD
+    user["User (entity)"] -->|depends on| address["Address (struct)"]
+    address -->|depends on| country["Country (enum)"]
 ```
 
 This ensures:
@@ -192,8 +172,7 @@ DocumentSaver.save(
 - `document/DocumentFactory.kt` - Factory interface
 - `document/Document.kt` - Document interface
 - `section/DocumentSection.kt` - Section interface
-- `deps/DependencyResolver.kt` - Dependency graph management
-- `util/TypeMapper.kt` - Rell-to-target type conversions
+- `deps/DependencyFinder.kt` - Dependency graph management
 
 **Responsibilities**:
 - Parse Rell source
@@ -201,20 +180,18 @@ DocumentSaver.save(
 - Coordinate code generation
 - Manage dependencies
 
-**Dependencies**: `rell-api-base`, `postchain-gtv`, `postchain-common`
-
 ### codegen-kotlin/ (Kotlin Implementation)
 **Location**: `rell-codegen/codegen-kotlin/`
 
 **Key Components**:
 - `KotlinDocumentFactory.kt` - Factory implementation
 - `KotlinDocument.kt` - Kotlin file representation
-- `section/KotlinEntity.kt` - Entity-to-data-class
-- `section/KotlinStruct.kt` - Struct-to-data-class
-- `section/KotlinQuery.kt` - Query extension methods
-- `section/KotlinOperation.kt` - Operation extension methods
-- `section/DataClassSection.kt` - Reusable data class generator
-- `type/KotlinBuiltinType.kt` - Builtin type mappings
+- `KotlinEntity.kt` - Entity-to-data-class
+- `KotlinStruct.kt` - Struct-to-data-class
+- `KotlinQuery.kt` - Query extension methods
+- `KotlinOperation.kt` - Operation extension methods
+- `DataClassSection.kt` - Reusable data class generator
+- `util/KotlinBuiltinType.kt` - Builtin type mappings
 
 **Output Style**:
 ```kotlin
@@ -234,12 +211,12 @@ fun TransactionBuilder.createUser(name: String, age: Long) { ... }
 **Key Components**:
 - `TypescriptDocumentFactory.kt`
 - `TypescriptDocument.kt`
-- `section/TypescriptEntity.kt`
-- `section/TypescriptStruct.kt`
-- `section/TypescriptQuery.kt`
-- `section/TypescriptOperation.kt`
-- `section/DataTypeSection.kt` - Interface/type definitions
-- `type/TypescriptBuiltinType.kt`
+- `TypescriptEntity.kt`
+- `TypescriptStruct.kt`
+- `TypescriptQuery.kt`
+- `TypescriptOperation.kt`
+- `DataTypeSection.kt` - Interface/type definitions
+- `util/TypescriptBuiltinType.kt`
 
 **Output Style**:
 ```typescript
@@ -279,8 +256,8 @@ def get_user(client: PostchainClient, user_id: int) -> User: ...
 **Key Components**:
 - `MermaidDocumentFactory.kt`
 - `MermaidDocument.kt`
-- `section/MermaidClass.kt` - Entity/Struct visualization
-- `section/MermaidEntityReference.kt` - Relationship arrows
+- `MermaidClass.kt` - Entity/Struct visualization
+- `MermaidEntityReference.kt` - Relationship arrows
 
 **Output Modes**:
 - **Class Diagrams**: Show all types and relationships
@@ -293,10 +270,9 @@ def get_user(client: PostchainClient, user_id: int) -> User: ...
 
 **Key Components**:
 - `App.kt` - Entry point (`main` function)
-- `CodeGenCommand.kt` - Clikt command class
-- `LanguageOption.kt` - Base for language options
-- `KotlinOptionGroup.kt` - Kotlin-specific CLI flags
-- `TypescriptOption.kt`, `JavascriptOption.kt`, etc.
+- `CodeGenCommand.kt` - Clikt command class, plus the per-language option groups declared in the same
+  file: `LanguageOption` (base), `KotlinOptionGroup`, `TypescriptOption`, `JavscriptOption`,
+  `PythonOption`, `MermaidOption`
 
 **Responsibilities**:
 - Parse CLI arguments

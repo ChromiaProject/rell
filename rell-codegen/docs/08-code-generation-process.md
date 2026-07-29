@@ -12,29 +12,21 @@ This document explains the internal workings of rell-codegen for developers who 
 
 ## High-Level Flow
 
-```
-1. CLI Invocation
-   ↓
-2. Parse CLI Arguments
-   ↓
-3. Compile Rell Source
-   ↓
-4. Extract Type Definitions
-   ↓
-5. Build Dependency Graph
-   ↓
-6. Create Document Sections
-   ↓
-7. Organize Sections into Documents
-   ↓
-8. Render Code
-   ↓
-9. Write Files to Disk
+```mermaid
+flowchart TD
+    a["1. CLI invocation"] --> b["2. Parse CLI arguments"]
+    b --> c["3. Compile Rell source"]
+    c --> d["4. Extract type definitions"]
+    d --> e["5. Build dependency graph"]
+    e --> f["6. Create document sections"]
+    f --> g["7. Organize sections into documents"]
+    g --> h["8. Render code"]
+    h --> i["9. Write files to disk"]
 ```
 
 ## Step 1: CLI Invocation
 
-**Entry Point:** `rellgen/src/main/kotlin/net/postchain/rell/tools/rellgen/App.kt`
+**Entry Point:** `rellgen/src/main/kotlin/App.kt`
 
 ```kotlin
 fun main(args: Array<String>) {
@@ -50,13 +42,13 @@ fun main(args: Array<String>) {
 **Language Option Groups:**
 - `KotlinOptionGroup` - Kotlin-specific flags (`--package`)
 - `TypescriptOption` - TypeScript flag
-- `JavascriptOption` - JavaScript flag
+- `JavscriptOption` - JavaScript flag (the name is misspelled in the source)
 - `PythonOption` - Python flag
 - `MermaidOption` - Mermaid diagram flags
 
 ## Step 2: Rell Compilation
 
-**Location:** `codegen/src/main/kotlin/net/postchain/rell/codegen/CodeGenerator.kt`
+**Location:** `codegen/src/main/kotlin/CodeGenerator.kt`
 
 The core orchestrator compiles Rell source using Rell's compiler API:
 
@@ -70,7 +62,6 @@ val compileResult = RellApiCompile.compileApp(
 ```
 
 **Rell Compiler API:**
-- Provided by `net.postchain.rell:rell-api-base` dependency
 - Parses `.rell` files into Abstract Syntax Tree (AST)
 - Performs semantic analysis (type checking, name resolution)
 - Produces compiled application with full type information
@@ -156,7 +147,7 @@ for (operation in app.operations) {
 
 ## Step 4: Dependency Graph Construction
 
-**Location:** `codegen/src/main/kotlin/net/postchain/rell/codegen/deps/DependencyResolver.kt`
+**Location:** `codegen/src/main/kotlin/deps/DependencyFinder.kt`
 
 The dependency resolver analyzes type references:
 
@@ -172,12 +163,9 @@ struct address {
 ```
 
 **Dependency Graph:**
-```
-User (entity)
-  ↓
-Address (struct)
-  ↓
-(no further dependencies)
+```mermaid
+flowchart TD
+    user["User (entity)"] --> address["Address (struct)"]
 ```
 
 **Purpose:**
@@ -197,7 +185,7 @@ For each language, a `DocumentFactory` implementation creates sections.
 
 **Example: Kotlin Entity Section**
 
-**Location:** `codegen-kotlin/src/main/kotlin/net/postchain/rell/codegen/kotlin/section/KotlinEntity.kt`
+**Location:** `codegen-kotlin/src/main/kotlin/KotlinEntity.kt`
 
 ```kotlin
 class KotlinEntity(val entity: EntityInfo) : DocumentSection {
@@ -435,7 +423,7 @@ fun PostchainQuery.getPoint(): Point {
 
 ## Step 9: File Writing
 
-**Location:** `codegen/src/main/kotlin/net/postchain/rell/codegen/document/DocumentSaver.kt`
+**Location:** `codegen/src/main/kotlin/document/DocumentSaver.kt`
 
 ```kotlin
 object DocumentSaver {
@@ -455,26 +443,9 @@ object DocumentSaver {
 
 **File Organization:**
 
-**Kotlin:**
-```
-output/
-└── com/
-    └── example/
-        └── app/
-            └── Main.kt
-```
-
-**TypeScript:**
-```
-output/
-└── main.ts
-```
-
-**Python:**
-```
-output/
-└── main.py
-```
+- Kotlin: `output/com/example/app/Main.kt` — the package name becomes the directory path
+- TypeScript: `output/main.ts`
+- Python: `output/main.py`
 
 ## Extension Point: Adding New Languages
 
@@ -482,23 +453,14 @@ To add a new target language:
 
 ### 1. Create New Module
 
-```
-codegen-<language>/
-├── src/
-│   ├── main/kotlin/net/postchain/rell/codegen/<language>/
-│   │   ├── <Language>DocumentFactory.kt
-│   │   ├── <Language>Document.kt
-│   │   ├── section/
-│   │   │   ├── <Language>Entity.kt
-│   │   │   ├── <Language>Struct.kt
-│   │   │   ├── <Language>Enum.kt
-│   │   │   ├── <Language>Query.kt
-│   │   │   └── <Language>Operation.kt
-│   │   └── type/
-│   │       └── <Language>BuiltinType.kt
-│   └── test/kotlin/
-└── build.gradle.kts
-```
+Add a `codegen-<language>` module with its own `build.gradle.kts` and register it in the root
+`settings.gradle.kts`. Sources go directly under `src/main/kotlin` (the existing language modules use
+flat source roots, no package directories):
+
+- `<Language>DocumentFactory.kt`, `<Language>Document.kt`
+- one file per section kind: `<Language>Entity.kt`, `<Language>Struct.kt`, `<Language>Enumeration.kt`,
+  `<Language>Query.kt`, `<Language>Operation.kt`
+- `util/<Language>BuiltinType.kt` for the type mappings
 
 ### 2. Implement DocumentFactory
 

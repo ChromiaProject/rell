@@ -33,15 +33,3 @@ Reads JSON-RPC from stdin, writes to stdout. Use this to test integration with I
 ### Socket Mode (from IDE)
 
 Run `com.chromaway.rell.tools.lsp.SocketMain` directly in IntelliJ for hot reload and debugging.
-
----
-
-## Code Quality
-
-Detekt static analysis runs as part of `check`. To run it standalone:
-
-```bash
-./gradlew :rell-toolbox:language-server:detekt
-```
-
-Report: `rell-toolbox/language-server/build/reports/detekt/detekt.html`

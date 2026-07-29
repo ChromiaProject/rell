@@ -11,7 +11,7 @@ It contains:
 
 ## Rell ANTLR4 Parser
 - Rell parser is generated using [ANTLR4](https://github.com/antlr/antlr4).
-- The grammar file is located in [Rell.g4](../ast/src/main/antlr/net.postchain.rell.toolbox.parser/Rell.g4).
+- The grammar file is located in [Rell.g4](../../rell-base/frontend/src/main/antlr/Rell.g4).
 - The parser is recoverable, which means that it can parse the code even if there are some errors in it.
   This is very useful for IDEs/Language server, because they can provide all their features even if the code is not valid.
 - Used by [Rell Language Server](../language-server) and [Rell Code Quality](../code-quality).
@@ -37,17 +37,18 @@ by `RellParser `
 which can be extended to create a visitor which only needs to handle a subset of the available methods.
 
 ### ANTLR parser classes generation
-- Rell ANTLR parser classes are generated from  [Rell.g4](../ast/src/main/antlr/net.postchain.rell.toolbox.parser/Rell.g4) grammar using `generateGrammarSource` gradle task.
-- Generated classes are located in `src/main/gen` directory.
-- Generated classes are committed to the repository
-- `generateGrammarSource` task is also executed before each build, so there is no need to run it manually.
+- Rell ANTLR parser classes are generated from the [Rell.g4](../../rell-base/frontend/src/main/antlr/Rell.g4)
+  grammar by the `generateGrammarSource` gradle task of `:rell-base:frontend`.
+- Generated classes land in that module's build directory (`build/generated/antlr`), in package
+  `net.postchain.rell.base.compiler.parser.antlr`. They are **not** committed to the repository.
+- `generateGrammarSource` runs as part of the build, so there is no need to invoke it manually.
 
 
 ## Rell ANTLR AST to Rell AST Converter
 Rell compiler uses non-recoverable parser, so it can't be used for IDEs/Language server.
 In order to make Rell compiler validate partially broken Rell code, we use ANTLR parser for recovery and then 
 convert ANTLR AST to Rell AST.
-`RellcAPI.antlrToRellAst()` method is responsible for this.
+`RellCompilerApi.antlrToRellAst()` method is responsible for this.
 Then Rell compiler uses Rell AST to validate the code.
 
 Whole process looks like this:
@@ -57,8 +58,8 @@ flowchart LR
 ```
 
 Related useful classes:
-- `AntlrToRell` - Defines list of transformers for each Rell ANTLR AST node type.
-- `RellcUtils` - Utilities for node conversion
+- `RellAntlrVisitor` (in `:rell-base:frontend`) - Hand-written visitor over the ANTLR parse tree that builds the Rell AST.
+- `RellCompilerUtils` (in `indexer`) - Utilities around compilation and node conversion.
 
 
 ## Rell Compiler API and Resources
@@ -74,5 +75,5 @@ This index is used by Rell LSP server to provide code semantic tokens, go to def
 ## Rell Semantic Tokens Provider
 Rell language server provides [semantic tokens](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_semanticTokens) 
 for Rell code. which are used by IDEs to highlight the code.
-`RellSemanticTokensProvider` class is responsible for this.
+`RellSemanticTokensManager` (in `language-server`) is responsible for this.
 

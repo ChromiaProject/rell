@@ -4,19 +4,16 @@ For prerequisites, general build/test instructions, and IDE setup, see the root 
 
 Integration tests require Docker (TestContainers).
 
-## Project Structure
+## Modules
 
-```
-rell-codegen/
-├── codegen/              # Core logic (abstract interfaces)
-├── codegen-kotlin/       # Kotlin implementation
-├── codegen-typescript/   # TypeScript implementation
-├── codegen-javascript/   # JavaScript implementation
-├── codegen-python/       # Python implementation
-├── codegen-mermaid/      # Mermaid diagram generation
-├── rellgen/              # CLI application
-└── testResources/        # Shared test Rell files
-```
+- `codegen` — Core logic (abstract interfaces)
+- `codegen-kotlin` — Kotlin implementation
+- `codegen-typescript` — TypeScript implementation
+- `codegen-javascript` — JavaScript implementation
+- `codegen-python` — Python implementation
+- `codegen-mermaid` — Mermaid diagram generation
+- `rellgen` — CLI application
+- `testResources/` — Shared test Rell files
 
 ## Running Tests
 

@@ -11,16 +11,14 @@ Assumes you've read **01-project-overview.md** and **02-architecture.md**.
 
 ## Module Overview Table
 
-| Module | Lines of Code (Approx) | Primary Responsibility | External Dependencies |
-|--------|----------------------|------------------------|----------------------|
-| `ast/` | ~5,000 | Parsing Rell code into AST | ANTLR4, Rell Compiler |
-| `common/` | ~1,000 | Shared utilities | Rell Compiler, EC4J |
-| `indexer/` | ~3,000 | Workspace symbol indexing | AST, Rell Compiler |
-| `code-quality/` | ~2,000 | Code formatting | AST, Indexer, Java Diff Utils |
-| `language-server/` | ~8,000 | LSP server implementation | LSP4J, All other modules |
-| `seeder/` | ~2,000 | Test data generation | Common, Kotlin Faker |
-
-*Note: Line counts are estimates based on typical module sizes; not measured.*
+| Module | Primary Responsibility |
+|--------|------------------------|
+| `ast/` | Parsing Rell code into AST |
+| `common/` | Shared utilities |
+| `indexer/` | Workspace symbol indexing |
+| `code-quality/` | Code formatting |
+| `language-server/` | LSP server implementation |
+| `seeder/` | Test data generation |
 
 ---
 
@@ -38,13 +36,8 @@ Parse Rell source code into Abstract Syntax Trees (AST) using **ANTLR4**, and tr
 
 ### Key Files
 
-#### `Rell.g4` - Grammar Definition
-
-**Purpose**: Defines Rell syntax in ANTLR4 format.
-
-**Maintenance**:
-- Must be manually synced with Rell compiler when language changes
-- Test cases validate grammar against compiler behavior
+The `Rell.g4` grammar and the lexer/parser generated from it live in `:rell-base:frontend`; this module
+depends on that for them.
 
 #### `AntlrRellParser.kt` - High-Level API
 
@@ -54,9 +47,9 @@ Parse Rell source code into Abstract Syntax Trees (AST) using **ANTLR4**, and tr
 - Collects syntax errors but continues parsing
 - Returns partial AST even with errors
 
-#### `AntlrToRell.kt` - AST Transformer
+#### `RellCompilerApi.kt` - AST Transformer
 
-**Purpose**: Converts ANTLR's parse tree into Rell compiler's AST format.
+**Purpose**: Converts ANTLR's parse tree into Rell compiler's AST format, delegating to the compiler's `RellAntlrVisitor`.
 
 **Why Needed**: Rell compiler's type checker and semantic analyzer expect specific AST node types (`S_*` classes).
 
@@ -65,11 +58,6 @@ Parse Rell source code into Abstract Syntax Trees (AST) using **ANTLR4**, and tr
 - Must handle partial AST from error recovery
 - Position information (line/column) must be preserved
 
-### Dependencies
-
-**External**:
-- `org.antlr:antlr4-runtime` - ANTLR runtime
-- `net.postchain.rell:rell-base` - Rell compiler (for AST classes)
 
 ### Testing Strategy
 
@@ -78,12 +66,16 @@ Parse Rell source code into Abstract Syntax Trees (AST) using **ANTLR4**, and tr
 2. **Error Recovery Tests**: Parse invalid code, verify partial AST
 3. **Transformation Tests**: Verify ANTLR AST → Rell AST correctness
 
-**Test Resources**: Sample Rell code snippets in `src/test/resources/`
+Grammar/parser correctness tests are slow and tagged `grammar`, so they are excluded from `test` and
+`check`. Run them explicitly after grammar or parser changes:
+
+```bash
+./gradlew :rell-toolbox:ast:grammarTest
+```
 
 ### Known Limitations
 
-1. **Grammar Sync**: Manual process to sync with Rell compiler
-2. **Error Messages**: ANTLR error messages may differ from compiler's
+**Error Messages**: ANTLR error messages may differ from the compiler's hand-written parser.
 
 ---
 
@@ -98,37 +90,26 @@ Provide **shared utilities** used across all modules to avoid code duplication.
 
 #### EditorConfig Support
 
-**File**: `editorconfig/RellFormatterOptionsResolver.kt`
+**File**: `editorconfig/EditorConfigParser.kt`
 
-**Purpose**: Read and parse `.editorconfig` files for formatting options.
+**Purpose**: Read and parse `.editorconfig` files for formatting and linter options.
 
-**Integration**: Used by `code-quality` module for formatting.
+**Integration**: `formatter/FormatterOptions.kt` and `linter/LinterOptions.kt` build on it; the language server resolves per-document options in `RellFormatterOptionsResolver`.
 
 #### Resource Abstraction
 
-**File**: `resources/RellResource.kt`
+**File**: `indexer/Resource.kt`
 
 **Purpose**: Represent compiled Rell files in a uniform way.
 
 **Why Needed**: Different sources (filesystem, memory, archive) need common interface.
 
-#### Workspace Utilities
+#### Shared Utilities
 
-**File**: `workspace/WorkspaceUtils.kt`
+**File**: `common/CommonUtils.kt`
 
-**Purpose**: Path handling, file discovery, workspace structure helpers.
+**Purpose**: URI handling and offset/position conversion used across modules.
 
-**Example Functions**:
-- `findRellFiles(directory)` - Recursively find `.rell` files
-- `resolveModulePath(module)` - Map module name to file path
-- `isWorkspaceRoot(directory)` - Detect workspace root (e.g., presence of `rell.json`)
-
-
-### Dependencies
-
-**External**:
-- `net.postchain.rell:rell-base` - Rell compiler
-- `org.ec4j.core:ec4j-core` - EditorConfig parsing
 
 
 ### Testing Strategy
@@ -144,14 +125,6 @@ Provide **shared utilities** used across all modules to avoid code duplication.
 Analyze entire Rell projects and build **symbol indexes** for IDE features (go-to-definition, find-references, code completion).
 
 
-### Dependencies
-
-**External**:
-- `net.postchain.rell:rell-base` - Rell compiler
-
-**Internal**:
-- `ast/` - Parsing
-- `common/` - Workspace utilities
 
 ### Caching Strategy
 
@@ -198,7 +171,7 @@ Apply **consistent formatting rules** to Rell code and provide **code quality an
 
 #### Diff Utilities
 
-**File**: `diff/DiffUtils.kt`
+**File**: `formatter/Diff.kt`
 
 **Purpose**: Compute minimal text edits (for LSP `TextEdit` format).
 
@@ -206,15 +179,6 @@ Apply **consistent formatting rules** to Rell code and provide **code quality an
 
 **Why Minimal Edits**: IDEs prefer minimal edits (preserves cursor position, undo history).
 
-### Dependencies
-
-**External**:
-- `io.github.java-diff-utils:java-diff-utils` - Diff computation
-
-**Internal**:
-- `ast/` - Parsing
-- `common/` - EditorConfig support
-- `indexer/` - Symbol information (possibly)
 
 ---
 
@@ -262,22 +226,10 @@ This is the **primary deliverable** of Rell Toolbox.
 
 ### Caching (Fory Serialization)
 
-**File**: `caching/IndexCache.kt`
+**File**: `caching/RellIndexCachingService.kt`
 **Purpose**: Serialize workspace index to disk for fast startup.
 **Cache Key**: Hash of workspace root path
 
-### Dependencies
-
-**External**:
-- `org.eclipse.lsp4j:org.eclipse.lsp4j` - LSP protocol
-- `io.insert-koin:koin-core` - Dependency injection
-- `org.apache.fory:fory-core` - Serialization
-
-**Internal**:
-- `ast/` - Parsing
-- `common/` - Utilities
-- `indexer/` - Symbol indexing
-- `code-quality/` - Formatting
 
 ### Build Artifacts
 
@@ -318,19 +270,11 @@ Generate realistic **test data** for Rell applications.
 
 #### Export Formats
 - **Rell** (`exporter/RellDataExporter.kt`)
-- **JSON** (`exporter/JsonExporter.kt`)
+- **JSON** (`exporter/JsonDataExporter.kt`)
 - **YAML** (`exporter/YamlDataExporter.kt`)
 - **SQL** (`exporter/SqlDataExporter.kt`)
 - **CSV** (`exporter/CsvDataExporter.kt`)
 
-### Dependencies
-
-**External**:
-- `io.github.serpro69:kotlin-faker` - Fake data generation
-- `com.fasterxml.jackson` - JSON/YAML serialization
-
-**Internal**:
-- `common/` - Workspace utilities
 
 ### Testing Strategy
 

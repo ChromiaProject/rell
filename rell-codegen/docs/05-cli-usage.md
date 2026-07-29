@@ -52,14 +52,7 @@ At least one language flag must be specified.
 rellgen ./rell-src ./target --kotlin --package com.example.myapp
 ```
 
-**Output Structure:**
-```
-target/
-└── com/
-    └── example/
-        └── myapp/
-            └── Main.kt
-```
+**Output:** `target/com/example/myapp/Main.kt` — the package name becomes the directory path.
 
 **Generated Code Style:**
 - Data classes for entities and structs
@@ -82,11 +75,7 @@ Generate TypeScript client code.
 rellgen ./rell-src ./target --typescript
 ```
 
-**Output Structure:**
-```
-target/
-└── main.ts
-```
+**Output:** `target/main.ts`
 
 **Generated Code Style:**
 - Interfaces for entities and structs
@@ -108,11 +97,7 @@ Generate JavaScript client code (no TypeScript types).
 rellgen ./rell-src ./target --javascript
 ```
 
-**Output Structure:**
-```
-target/
-└── main.js
-```
+**Output:** `target/main.js`
 
 **Generated Code Style:**
 - Plain JavaScript objects
@@ -135,11 +120,7 @@ Generate Python client code.
 rellgen ./rell-src ./target --python
 ```
 
-**Output Structure:**
-```
-target/
-└── main.py
-```
+**Output:** `target/main.py`
 
 **Generated Code Style:**
 - Dataclasses for entities and structs
@@ -172,11 +153,7 @@ rellgen ./rell-src ./target --mermaid --entity-relation
 rellgen ./rell-src ./target --mermaid --mdx
 ```
 
-**Output Structure:**
-```
-target/
-└── main.mmd
-```
+**Output:** `target/main.mmd`
 
 **Generated Content:**
 ````markdown

@@ -64,8 +64,3 @@ We explain each concept from first principles, covering:
 - Testing and contribution guidelines
 - Known limitations and gaps
 
-## Repository Information
-
-- **Primary Language**: Kotlin
-- **Build System**: Gradle
-

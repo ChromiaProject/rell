@@ -27,35 +27,38 @@ Rell Toolbox follows a **modular layered architecture** where:
 
 ## Module Dependency Graph
 
-```
-┌─────────────────────┐
-│  language-server    │  ← LSP protocol implementation (top layer)
-└──────────┬──────────┘
-           │ depends on
-           ├──────────────────┬────────────────┬──────────────┐
-           ▼                  ▼                ▼              ▼
-    ┌───────────┐      ┌──────────┐    ┌──────────┐   ┌──────────┐
-    │  indexer  │      │code-quality│    │   ast    │   │  common  │
-    └─────┬─────┘      └─────┬────┘    └────┬─────┘   └────┬─────┘
-          │                  │               │              │
-          └──────────────────┴───────────────┴──────────────┘
-                             depends on
-                                 ▼
-                          ┌──────────────┐
-                          │ Rell Compiler│  (external dependency)
-                          │ (postchain-  │
-                          │   base)      │
-                          └──────────────┘
+`language-server` is the top layer; `seeder` is standalone, depending only on `common` and the
+public tooling API.
 
-Standalone:
-    ┌──────────┐
-    │  seeder  │  ← Depends only on common (independent tool)
-    └─────┬────┘
-          │
-          ▼
-     ┌────────┐
-     │ common │
-     └────────┘
+```mermaid
+flowchart TD
+    ls["language-server<br/><i>LSP protocol implementation</i>"]
+    cq["code-quality"]
+    idx["indexer"]
+    ast["ast"]
+    common["common"]
+    seeder["seeder<br/><i>independent tool</i>"]
+    compiler[":rell-base<br/><i>Rell compiler</i>"]
+    api[":rell-api-base"]
+
+    ls --> cq
+    ls --> idx
+    ls --> ast
+    ls --> common
+    cq --> idx
+    cq --> ast
+    cq --> common
+    idx --> ast
+    idx --> common
+    ast --> common
+    seeder --> common
+    seeder --> api
+
+    ls --> compiler
+    cq --> compiler
+    idx --> compiler
+    ast --> compiler
+    common --> compiler
 ```
 
 ### Dependency Rules
@@ -76,29 +79,24 @@ Standalone:
 **Why It Exists**: The Rell compiler's native parser fails completely on syntax errors. IDEs need **error-tolerant parsing** to handle incomplete code as users type.
 
 **Key Components**:
-- `Rell.g4` - ANTLR4 grammar defining Rell syntax
-- `RellLexer`, `RellParser` - ANTLR4-generated lexer and parser
+- `RellLexer`, `RellParser` - ANTLR4-generated lexer and parser, produced from the compiler's `Rell.g4` in `:rell-base:frontend`
 - `AntlrRellParser` - High-level API for parsing Rell code
-- `AntlrToRell` - Transforms ANTLR AST into Rell compiler's internal AST format
+- `RellCompilerApi.antlrToRellAst()` - Turns an ANTLR parse tree into the compiler's internal AST, via the compiler's `RellAntlrVisitor`
 
 **Data Flow**:
-```
-Rell Source Code (String)
-    ↓
-RellLexer (ANTLR4 tokens)
-    ↓
-RellParser (ANTLR4 parse tree)
-    ↓
-AntlrToRell (AST transformation)
-    ↓
-Rell Compiler AST (S_* classes)
+```mermaid
+flowchart TD
+    src["Rell source code (String)"] --> lexer["RellLexer<br/><i>ANTLR4 tokens</i>"]
+    lexer --> parser["RellParser<br/><i>ANTLR4 parse tree</i>"]
+    parser --> conv["RellCompilerApi.antlrToRellAst()<br/><i>via RellAntlrVisitor</i>"]
+    conv --> ast["Rell compiler AST<br/><i>S_* classes</i>"]
 ```
 
 **Why Two AST Formats?**
 - **ANTLR AST**: Error-tolerant, IDE-friendly
 - **Rell Compiler AST**: Semantic analysis-friendly, type checking
 
-The `AntlrToRell` bridge allows IDE tools to benefit from both.
+The `RellCompilerApi.antlrToRellAst()` bridge allows IDE tools to benefit from both.
 
 ---
 
@@ -107,10 +105,9 @@ The `AntlrToRell` bridge allows IDE tools to benefit from both.
 **Responsibility**: Provide reusable utilities for all modules.
 
 **Key Components**:
-- **EditorConfig Support**: `RellFormatterOptionsResolver` reads `.editorconfig` files
-- **Resource Abstraction**: `RellResource` represents compiled Rell files
-- **Workspace Utilities**: Path handling, file system helpers
-- **Compiler API Wrappers**: Simplified access to Rell compiler internals
+- **EditorConfig Support**: `EditorConfigParser` reads `.editorconfig` files; `FormatterOptions` and `LinterOptions` interpret the properties
+- **Resource Abstraction**: `Resource` represents compiled Rell files
+- **Shared Utilities**: URI handling, offset/position conversion, text replacement
 
 **Why It Exists**: Prevents code duplication across modules.
 
@@ -127,15 +124,14 @@ The `AntlrToRell` bridge allows IDE tools to benefit from both.
 - Error collector (diagnostics from compilation)
 
 **Data Flow**:
-```
-Rell Project Directory
-    ↓
-WorkspaceIndexer.index()
-    ├─→ Parse all .rell files (via ast/)
-    ├─→ Compile modules (via Rell compiler)
-    ├─→ Extract symbols and references
-    ├─→ Build cross-reference graph
-    └─→ Serialize to disk cache
+```mermaid
+flowchart TD
+    dir["Rell project directory"] --> idx["WorkspaceIndexer.index()"]
+    idx --> parse["Parse all .rell files<br/><i>via ast/</i>"]
+    idx --> compile["Compile modules<br/><i>via Rell compiler</i>"]
+    idx --> symbols["Extract symbols and references"]
+    idx --> xref["Build cross-reference graph"]
+    idx --> cache["Serialize to disk cache"]
 ```
 
 **Cache Strategy**:
@@ -161,16 +157,12 @@ WorkspaceIndexer.index()
 - `.editorconfig` files (cross-language standard)
 
 **Data Flow**:
-```
-Rell Source Code
-    ↓
-Parse (via ast/)
-    ↓
-Apply Formatting Rules
-    ↓
-Generate TextEdits (LSP format)
-    ↓
-IDE applies edits
+```mermaid
+flowchart TD
+    src["Rell source code"] --> parse["Parse<br/><i>via ast/</i>"]
+    parse --> rules["Apply formatting rules"]
+    rules --> edits["Generate TextEdits<br/><i>LSP format</i>"]
+    edits --> ide["IDE applies edits"]
 ```
 
 **Integration**:
@@ -212,20 +204,14 @@ IDE applies edits
    - Entry: `com.chromaway.rell.tools.lsp.SocketMain`
 
 **Data Flow** (typical LSP request):
-```
-IDE (VS Code, IntelliJ)
-    ↓ JSON-RPC over stdio/socket
-RellLanguageServer (LSP4J)
-    ↓ Delegates to feature handler
-CompletionHandler (example)
-    ↓ Queries indexed workspace
-RellWorkspaceManager
-    ↓ Returns completion items
-CompletionHandler transforms to LSP format
-    ↓
-RellLanguageServer sends JSON-RPC response
-    ↓
-IDE displays completions
+```mermaid
+flowchart TD
+    ide["IDE (VS Code, IntelliJ)"] -->|"JSON-RPC over stdio/socket"| server["RellLanguageServer (LSP4J)"]
+    server -->|"delegates to feature handler"| handler["CompletionHandler (example)"]
+    handler -->|"queries indexed workspace"| mgr["RellWorkspaceManager"]
+    mgr -->|"returns completion items"| transform["CompletionHandler transforms to LSP format"]
+    transform --> response["RellLanguageServer sends JSON-RPC response"]
+    response --> display["IDE displays completions"]
 ```
 
 ---
@@ -241,16 +227,12 @@ IDE displays completions
 - Export serializers (JSON, YAML, SQL, CSV, Rell)
 
 **Data Flow**:
-```
-Rell Schema Definition (.rell files)
-    ↓
-Schema Parser extracts entities/attributes
-    ↓
-User config (seeds.yaml) specifies data counts
-    ↓
-Data Generator creates fake records
-    ↓
-Export to chosen format
+```mermaid
+flowchart TD
+    schema["Rell schema definition<br/><i>.rell files</i>"] --> parser["Schema parser extracts entities/attributes"]
+    parser --> config["User config (seeds.yaml) specifies data counts"]
+    config --> gen["Data generator creates fake records"]
+    gen --> export["Export to chosen format"]
 ```
 
 **Status**: Partially complete

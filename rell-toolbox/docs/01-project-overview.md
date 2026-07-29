@@ -64,7 +64,7 @@ An **ANTLR4-based parser** that:
 - Transforms ANTLR AST into Rell compiler's internal AST format
 
 **Location**: `ast/` module
-**Grammar File**: `ast/src/main/antlr/Rell.g4`
+**Grammar File**: `rell-base/frontend/src/main/antlr/Rell.g4` — the grammar is owned by the compiler; `ast/` consumes the parser generated from it
 
 **Why Separate Parser?**: The Rell compiler's native parser is **not recoverable** (fails completely on syntax errors). IDEs need parsers that can handle incomplete code typed in real-time.
 
@@ -110,20 +110,13 @@ Engineers maintaining or extending this toolbox itself.
 
 ---
 
-## Repository Structure (High-Level)
+## Modules
 
-```
-rell-toolbox/
-├── ast/                    # Parser (ANTLR4 grammar → Rell AST)
-├── common/                 # Shared utilities
-├── language-server/        # LSP server implementation ⭐ MAIN DELIVERABLE
-├── indexer/               # Workspace symbol indexing
-├── code-quality/          # Formatter and linting
-├── seeder/                # Test data generation
-├── docs/                  # Documentation (this file is here)
-├── buildSrc/              # Custom Gradle plugins
-├── build.gradle.kts       # Root build config
-└── settings.gradle.kts    # Module configuration
-```
+- `ast` — ANTLR parse tree → Rell compiler AST
+- `common` — Shared utilities
+- `language-server` — LSP server implementation, the main deliverable
+- `indexer` — Workspace symbol indexing
+- `code-quality` — Formatter and linting
+- `seeder` — Test data generation
 
 ---

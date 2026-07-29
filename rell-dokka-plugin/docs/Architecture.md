@@ -243,20 +243,7 @@ flowchart TD
 
 State management is trivial: every long-lived helper (`SiteIndex`, `Markdown`, `Navigation`, `SignatureRender`, `TypeRender`) is constructed once per `render()` call and discarded when the call returns.
 
-## Key Frameworks, Libraries, and Versions
-
-### Production Dependencies
-
-- `:rell-api-base`, `:rell-base` &mdash; Rell compiler frontend, runtime model, and in-process standard library. Same module versions as the rest of the repository.
-- `libs.kotlinx.html` &mdash; HTML DSL.
-- `libs.commonmark`, `libs.commonmark.ext.gfm.tables`, `libs.commonmark.ext.autolink` &mdash; Markdown.
-- `libs.clikt` &mdash; CLI parsing.
-
-### Test Dependencies
-
-- `kotlin("test-junit5")`
-- `libs.assertk` &mdash; fluent assertions
-- `libs.log4j.slf4j2.impl` &mdash; SLF4J implementation
+## Build Setup
 
 ### Gradle Plugin
 
