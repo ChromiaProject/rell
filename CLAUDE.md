@@ -18,7 +18,7 @@ The shared hooks in `.claude/settings.json` reinforce this: a session-start remi
 
 ### Prerequisites
 
-- JDK 21 (Gradle toolchain + `jvmTarget`; CI runs on `graalvm/jdk:21`).
+- JDK 21 (Gradle toolchain + `jvmTarget`; CI runs on the in-house `chromia-images/docker-graal21` image — GraalVM 21 on Ubuntu with the Docker CLI preinstalled).
 - PostgreSQL for tests: `./work/psql/psql-docker.sh` (runs a `postgres:16` container and applies `work/psql/init.sql`), or a local instance initialised with `work/psql/init.sql` — it creates the `postchain`/`postchain` user, the `postchain` DB (`C.UTF-8` collation) and the `wrong_collation` DB.
 - Docker-compatible daemon for Testcontainers-based tests (codegen IT, `regression`).
 - Maven repositories are GitLab package registries — full builds need `-PgitlabAuthHeaderValue=<token>` (header name comes from `gradle.properties`).

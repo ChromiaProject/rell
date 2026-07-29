@@ -1,10 +1,10 @@
-image: container-registry.oracle.com/graalvm/jdk:21
+image: registry.gitlab.com/chromaway/core-tools/chromia-images/docker-graal21:1.0.0@sha256:d054a351e35836f684518363e3208213b81336ab948d7291abf98cd80bd71cc0
 
 include:
   - component: $CI_SERVER_FQDN/qodana/qodana/qodana-gitlab-ci@v2026.1
     inputs:
       stage: qodana
-      image: jetbrains/qodana-jvm-community:2026.1
+      image: jetbrains/qodana-jvm-community:2026.1@sha256:f1c5d3efe2f550409c4d95d266c5dc2025a8069d82c9516781eae72e7383b55d
   - local: .gitlab/ci/templates.yml
   - local: .gitlab/ci/build.yml
   - local: .gitlab/ci/dependency-check.yml
@@ -80,7 +80,7 @@ variables:
   JACOCO_REPORT_DIR: coverage-report-aggregate/build/reports/jacoco/testCodeCoverageReport
 
 services:
-  - name: docker:28-dind
+  - name: docker:29.6.2-dind@sha256:bfec1f5159c63a81ca6fdedbd81404d2c0e16378ed0feec3bb3fbf3998847659
     alias: docker
     command: [ "--tls=false" ]
 

@@ -15,7 +15,7 @@
 # deployment. Re-published in the `index` stage after each manual click (see `pages:index:after-*`),
 # keeping the listing fresh when manual jobs are clicked days after the initial pipeline ran.
 .pages-index:
-  image: registry.gitlab.com/gitlab-org/cli:latest
+  image: registry.gitlab.com/gitlab-org/cli:v1.110.0@sha256:72e1006c314ffa626419c1e00fbe2e6450948354b23a0e9e7c9880e4e5e2cde1
   interruptible: true
   rules:
     - if: $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH =~ /^version-[0-9]+[.][0-9]+([.][0-9]+)?$/
@@ -76,7 +76,7 @@ pages:index:after-docs:
 # Reporter) so the note is authored by its own bot instead of the `qodana-ci` one. Like that token it
 # must be unprotected to be exposed on MR/feature branches; its `api` scope allows writing notes.
 .pages-mr-comment:
-  image: registry.gitlab.com/gitlab-org/cli:latest
+  image: registry.gitlab.com/gitlab-org/cli:v1.110.0@sha256:72e1006c314ffa626419c1e00fbe2e6450948354b23a0e9e7c9880e4e5e2cde1
   stage: index
   interruptible: true
   resource_group: "portal-mr-comment-$CI_MERGE_REQUEST_IID"
@@ -203,8 +203,7 @@ pages:profile:
 #
 # Deliberately not extending `.setup` / `.local-chr-cache`: `:performance:profileLsp` needs neither
 # PostgreSQL nor Docker nor a chr build — just the language-server shadow JAR and a workspace that
-# ships with the repo. It does need `tar`/`gzip`, which the GraalVM image lacks, to unpack the
-# async-profiler release tarball that `provisionAsprof()` downloads.
+# ships with the repo.
 #
 # Only `report.html` and the two flame graphs it iframes are published; the rest of the run
 # directory (JFR recordings, collapsed stacks, and the `cache-home/` index cache the cold run
@@ -218,7 +217,6 @@ pages:lsp:
       allow_failure: true
   needs: []
   before_script:
-    - microdnf install -y tar gzip
     - !reference [ .setup-fragments, develocity-inject ]
   script:
     - ./gradlew $GRADLE_FLAGS_MEDIUM :performance:profileLsp

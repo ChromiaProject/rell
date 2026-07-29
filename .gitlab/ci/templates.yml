@@ -4,20 +4,13 @@
 #
 # Composition: the `.setup-fragments` job below holds the individual before_script chunks; the
 # real `.setup` / `.setup-no-postgres` anchors splice them via `!reference` so jobs can opt out
-# of the DIND Postgres without duplicating the docker-CLI install or the Develocity injection.
+# of the DIND Postgres without duplicating the Develocity injection. The docker CLI, git, curl
+# and the JDK all come from the `docker-graal21` image set in the root `.gitlab-ci.yml`.
 # `pages:regression` is the only no-postgres consumer today — it manages per-project Postgres
 # via Testcontainers from inside the regression toolkit (see regression/src/regression/compile.kt
 # `withProjectPostgres`), so the shared DIND instance would just sit idle for it.
 
 .setup-fragments:
-  docker-cli-install:
-    - microdnf install -y ca-certificates curl tar gzip git glibc-langpack-en
-    - |
-      DOCKER_VERSION=28.1.1
-      curl -fsSL "https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz" -o /tmp/docker.tgz
-      tar -xzf /tmp/docker.tgz -C /tmp
-      install -m 0755 /tmp/docker/docker /usr/local/bin/docker
-      rm -rf /tmp/docker /tmp/docker.tgz
   # PGDATA on tmpfs — sized for the full parallel test load (rell-base runs `test`,
   # `testRoundTrip`, `testTruffle` against this single Postgres). The pages:profile job (medium)
   # only needs one schema; the cap is uniform anyway. pages:regression no longer extends `.setup`
@@ -71,7 +64,6 @@
 .setup:
   tags: [ saas-linux-xlarge-amd64 ]
   before_script:
-    - !reference [ .setup-fragments, docker-cli-install ]
     - !reference [ .setup-fragments, dind-postgres-start ]
     - !reference [ .setup-fragments, develocity-inject ]
   artifacts: !reference [ .setup-artifacts, artifacts ]
@@ -81,7 +73,6 @@
 .setup-no-postgres:
   tags: [ saas-linux-xlarge-amd64 ]
   before_script:
-    - !reference [ .setup-fragments, docker-cli-install ]
     - !reference [ .setup-fragments, develocity-inject ]
   artifacts: !reference [ .setup-artifacts, artifacts ]
 
@@ -109,8 +100,8 @@
       policy: pull-push
   before_script:
     - !reference [ .setup, before_script ]
-    # Symlink ~/.m2 into the project dir so cached deps survive. Remove ~/.m2 first — the
-    # GraalVM image ships an empty real dir, which would make `ln -s` nest inside it.
+    # Symlink ~/.m2 into the project dir so cached deps survive. Remove ~/.m2 first — if the
+    # image ships it as a real dir, `ln -s` would nest the link inside it instead.
     - rm -rf "$HOME/.m2"
     - mkdir -p "$CI_PROJECT_DIR/.m2/repository"
     - ln -s "$CI_PROJECT_DIR/.m2" "$HOME/.m2"
