@@ -27,4 +27,18 @@ class LinterOptionsTest {
         assertThat(options.rulePreferEmpty).isEqualTo(true)
         assertThat(options.ruleQuoteFormat).isEqualTo(Quote.DOUBLE)
     }
+
+    @Test
+    fun `a deleted config restores all defaults on reload`(@TempDir tempDir: File) {
+        val configFile = File(tempDir, LinterOptions.CONFIG_FILE_NAME)
+        val options = LinterOptions()
+
+        configFile.writeText("[*.rell]\nrule_prefer_empty=false\n")
+        options.updateOptionsFromFile(configFile)
+        assertThat(options.rulePreferEmpty).isEqualTo(false)
+
+        configFile.delete()
+        options.updateOptionsFromFile(configFile)
+        assertThat(options.rulePreferEmpty).isEqualTo(true)
+    }
 }

@@ -406,7 +406,19 @@ class WorkspaceIndexer(
 
     private fun isInProjectRoot(uri: URI): Boolean {
         val parent = uri.toPath().parent ?: return false
-        return parent == projectRootUri?.toPath()
+        // Accept every folder the options resolvers read configs from — the workspace root and up
+        // to two parents (see RellLinterOptionsResolver) — plus the chromia project root, so a
+        // config edit anywhere the config is honored also triggers a reload. Checking only the
+        // project root silently dropped change events for the very file the options were loaded
+        // from.
+        val workspacePath = workspaceUri.toPath()
+        val validRoots = listOfNotNull(
+            workspacePath,
+            workspacePath.parent,
+            workspacePath.parent?.parent,
+            projectRootUri?.toPath(),
+        )
+        return parent in validRoots
     }
 
     private companion object {

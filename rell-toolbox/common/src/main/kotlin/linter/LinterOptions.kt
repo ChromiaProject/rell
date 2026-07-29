@@ -32,11 +32,11 @@ data class LinterOptions(
     var ruleAtCardinalityMisuse: Boolean? = true,
 ) {
     fun updateOptionsFromFile(configFile: File) {
-        // A missing or unreadable config leaves the built-in defaults in place, so inspections stay on.
+        // Reset first: the same instance is mutated across reloads, so a key removed from the
+        // file — or the whole file going away — must fall back to its default instead of keeping
+        // the previously parsed value. A config that never existed thus behaves like defaults too.
+        resetToDefaults()
         EditorConfigParser.parse(configFile)?.let {
-            // The same instance is mutated across reloads, so a key removed from the file must fall
-            // back to its default instead of keeping the previously parsed value.
-            resetToDefaults()
             for (section in it.sections) {
                 for ((key, value) in section.properties) {
                     when (key) {
