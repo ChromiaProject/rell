@@ -10,7 +10,7 @@ import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.lsp.diagnostics.DiagnosticsPublisher
 import java.net.URI
 
-class RellDiagnosticsManager {
+internal class RellDiagnosticsManager {
     private lateinit var diagnosticsPublisher: DiagnosticsPublisher
     private lateinit var notificationPublisher: (type: NotificationType, message: String) -> Unit
 
@@ -74,7 +74,7 @@ class RellDiagnosticsManager {
 }
 
 
-enum class NotificationType {
+internal enum class NotificationType {
     ERROR,
     WARNING,
     INFO,

@@ -13,7 +13,7 @@ import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent
 import java.net.URI
 
-data class Document(val fileUri: URI, val version: Int, val content: String) {
+internal data class Document(val fileUri: URI, val version: Int, val content: String) {
 
     fun getOffSet(position: Position): Int {
         return positionToOffset(content, net.postchain.rell.toolbox.common.Position(position.line, position.character))

@@ -9,7 +9,7 @@ import org.eclipse.lsp4j.CompletionItemKind
 import org.eclipse.lsp4j.CompletionItemLabelDetails
 import org.eclipse.lsp4j.InsertTextFormat
 
-data class Snippet(
+internal data class Snippet(
     val prefix: String,
     val body: String,
     val description: String,

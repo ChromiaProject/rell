@@ -16,7 +16,7 @@ import java.io.File
 import java.net.URI
 import kotlin.io.path.createDirectories
 
-class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
+internal class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
 
     private val rellFilePath = "rell_file.rell"
     private val rellFileContent = """

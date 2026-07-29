@@ -15,7 +15,7 @@ import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
 import java.net.URI
 
-class RellCompletionSymbolService(private val symbolService: RellSymbolService) {
+internal class RellCompletionSymbolService(private val symbolService: RellSymbolService) {
     fun getActiveImportSymbol(
         fileUri: URI,
         offset: Int,

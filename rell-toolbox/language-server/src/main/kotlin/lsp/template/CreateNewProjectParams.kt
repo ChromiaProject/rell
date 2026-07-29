@@ -4,14 +4,14 @@
 
 package net.postchain.rell.toolbox.lsp.template
 
-data class CreateNewProjectParams(
+internal data class CreateNewProjectParams(
     val template: TemplateProject,
     val projectName: String,
     val targetDirUri: String,
     val options: TemplateOptions? = null,
 )
 
-data class AddToProjectParams(
+internal data class AddToProjectParams(
     val targetDirUri: String,
     val options: TemplateOptions,
 )

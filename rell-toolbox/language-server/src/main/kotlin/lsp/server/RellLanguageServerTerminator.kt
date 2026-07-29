@@ -7,7 +7,7 @@ package net.postchain.rell.toolbox.lsp.server
 import net.postchain.rell.toolbox.lsp.caching.RellIndexCachingService
 import kotlin.system.exitProcess
 
-class RellLanguageServerTerminator(
+internal class RellLanguageServerTerminator(
     private val requestManager: RellRequestManager,
     private val indexCachingService: RellIndexCachingService,
     private val workspaceService: RellWorkspaceService

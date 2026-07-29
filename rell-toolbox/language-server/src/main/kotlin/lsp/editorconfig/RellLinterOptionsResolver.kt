@@ -8,7 +8,7 @@ import net.postchain.rell.toolbox.linter.LinterOptions
 import java.io.File
 import java.net.URI
 
-class RellLinterOptionsResolver {
+internal class RellLinterOptionsResolver {
     fun getLinterConfig(workspaceUri: URI): LinterOptions = findLinterConfigFile(workspaceUri)?.let {
         LinterOptions().apply {
             updateOptionsFromFile(it)

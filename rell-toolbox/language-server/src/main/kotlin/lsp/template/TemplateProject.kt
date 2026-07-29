@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.lsp.template
 
-enum class TemplateProject(val displayName: String) {
+internal enum class TemplateProject(val displayName: String) {
     PLAIN("Plain"),
     PLAIN_MULTI("Plain Multi"),
     MINIMAL("Minimal"),

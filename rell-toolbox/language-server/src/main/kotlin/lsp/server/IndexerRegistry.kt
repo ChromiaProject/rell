@@ -8,7 +8,7 @@ import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import java.net.URI
 import java.nio.file.Path
 
-interface IndexerRegistry {
+internal interface IndexerRegistry {
     fun getAllIndexersMap(): MutableMap<URI, WorkspaceIndexer>
     fun getIndexerFor(fileUri: URI): WorkspaceIndexer
     fun getIndexerForOrNull(fileUri: URI): WorkspaceIndexer?

@@ -13,7 +13,7 @@ import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import kotlin.math.max
 
-object DiagnosticsConverter {
+internal object DiagnosticsConverter {
 
     fun toDiagnostics(issues: List<RellIssue>): List<Diagnostic> {
         return issues.map(::toDiagnostic)

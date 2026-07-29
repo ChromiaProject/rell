@@ -16,10 +16,10 @@ import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either3
 import java.net.URI
 
-val TYPE_DEFINITIONS =
+internal val TYPE_DEFINITIONS =
     setOf(IdeSymbolKind.DEF_ENTITY, IdeSymbolKind.DEF_STRUCT, IdeSymbolKind.DEF_ENUM, IdeSymbolKind.DEF_TYPE)
 
-class RellRenamingService(
+internal class RellRenamingService(
     private val rellSymbolService: RellSymbolService,
     private val documentManager: RellDocumentManager,
     private val indexingManager: RellIndexingManager

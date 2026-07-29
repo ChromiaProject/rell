@@ -9,7 +9,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.exists
 
-class ProjectTemplateService(private val templateRepository: TemplateRepository = RemoteTemplateRepository()) {
+internal class ProjectTemplateService(private val templateRepository: TemplateRepository = RemoteTemplateRepository()) {
     fun getAvailableTemplates(): List<NewProjectTemplate> = TemplateProject.entries.map {
         NewProjectTemplate(it.name, it.displayName)
     }

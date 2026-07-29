@@ -9,7 +9,7 @@ import net.postchain.rell.base.utils.doc.DocCodeTokenVisitor
 /**
  * Formats a signature directly from rell repo
  */
-class DocDeclarationVisitor(private val sb: StringBuilder) : DocCodeTokenVisitor {
+internal class DocDeclarationVisitor(private val sb: StringBuilder) : DocCodeTokenVisitor {
     override fun keyword(s: String) {
         sb.append(s)
     }

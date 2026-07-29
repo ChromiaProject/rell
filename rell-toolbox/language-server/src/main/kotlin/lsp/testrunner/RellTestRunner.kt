@@ -14,7 +14,7 @@ import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
 import java.net.URI
 
-class RellTestRunner(val indexingManager: RellIndexingManager, private val symbolService: RellSymbolService) {
+internal class RellTestRunner(val indexingManager: RellIndexingManager, private val symbolService: RellSymbolService) {
 
     fun getTestFiles(workspaceUri: URI): List<RellTestFile> {
         return indexingManager.getIndexerForFolderOrNull(workspaceUri)?.let { indexer ->
@@ -93,9 +93,9 @@ class RellTestRunner(val indexingManager: RellIndexingManager, private val symbo
     }
 }
 
-data class RellTestCase(val name: String, val range: Range, val uri: String)
+internal data class RellTestCase(val name: String, val range: Range, val uri: String)
 
-data class RellTestFile(
+internal data class RellTestFile(
     val uri: URI,
     val moduleName: String? = null,
     val canResolveChildren: Boolean = true,

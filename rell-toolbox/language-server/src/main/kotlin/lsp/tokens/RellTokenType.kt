@@ -7,7 +7,7 @@ package net.postchain.rell.toolbox.lsp.tokens
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
-enum class RellTokenModifier(
+internal enum class RellTokenModifier(
     val modifierStringId: String
 ) {
     READONLY("readonly"),
@@ -44,7 +44,7 @@ enum class RellTokenModifier(
     CALL("rell-call"),
 }
 
-enum class RellTokenType(
+internal enum class RellTokenType(
     val tokenStringId: String,
     vararg modifiers: RellTokenModifier
 ) {
@@ -103,7 +103,7 @@ enum class RellTokenType(
     val tokenId: Int = this.ordinal
 }
 
-fun tokenFromIdeSymbolInfo(info: IdeSymbolInfo): RellTokenType {
+internal fun tokenFromIdeSymbolInfo(info: IdeSymbolInfo): RellTokenType {
     val kind = info.kind
     return when (kind) {
         IdeSymbolKind.DEF_IMPORT_ALIAS -> RellTokenType.DEFAULT
@@ -147,6 +147,6 @@ fun tokenFromIdeSymbolInfo(info: IdeSymbolInfo): RellTokenType {
     }
 }
 
-fun getCallOrDefault(info: IdeSymbolInfo, call: RellTokenType, default: RellTokenType): RellTokenType {
+internal fun getCallOrDefault(info: IdeSymbolInfo, call: RellTokenType, default: RellTokenType): RellTokenType {
     return if (info.defId == null) call else default
 }

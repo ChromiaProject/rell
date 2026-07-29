@@ -8,7 +8,7 @@ import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.linter.LinterOptions
 import java.net.URI
 
-class SerializableWorkspaceIndexer(
+internal class SerializableWorkspaceIndexer(
     val workspaceUri: URI,
     val serializableResources: List<SerializableResource>,
     val linterOptions: LinterOptions,
@@ -17,6 +17,6 @@ class SerializableWorkspaceIndexer(
     val metaData: SerializableMetaData? = null,
 )
 
-class SerializableMetaData(
+internal class SerializableMetaData(
     val languageServerVersion: String,
 )

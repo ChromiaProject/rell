@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.lsp.template
 
 import java.nio.file.Path
 
-class MinimalTemplateFactory(templatesRoot: Path) : AbstractTemplateFactory(templatesRoot) {
+internal class MinimalTemplateFactory(templatesRoot: Path) : AbstractTemplateFactory(templatesRoot) {
     override fun createProjectFiles(targetDir: Path, projectName: String, options: TemplateOptions?) {
         with(FileBuilder(targetDir, "minimal", templatesRoot)) {
             createChromiaConfig(projectName)

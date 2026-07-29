@@ -10,7 +10,7 @@ import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 
-class CapabilitiesProvider(private val lspSystemPropertiesProvider: LspSystemPropertiesProvider) {
+internal class CapabilitiesProvider(private val lspSystemPropertiesProvider: LspSystemPropertiesProvider) {
 
     fun createServerCapabilities(params: InitializeParams): ServerCapabilities {
         val serverCapabilities = ServerCapabilities().apply {

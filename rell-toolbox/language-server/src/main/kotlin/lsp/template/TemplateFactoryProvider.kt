@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.lsp.template
 
 import java.nio.file.Path
 
-object TemplateFactoryProvider {
+internal object TemplateFactoryProvider {
     fun getFactory(template: TemplateProject, templatesRoot: Path): TemplateFactory = when (template) {
         TemplateProject.PLAIN -> PlainTemplateFactory(templatesRoot)
         TemplateProject.PLAIN_MULTI -> PlainMultiTemplateFactory(templatesRoot)

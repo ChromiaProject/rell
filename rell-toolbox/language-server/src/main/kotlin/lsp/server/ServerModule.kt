@@ -13,7 +13,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-val serverModule = module {
+internal val serverModule = module {
     includes(commonServerModule)
 
     single<LspSystemPropertiesProvider> { DefaultLspSystemPropertiesProvider() }
@@ -29,6 +29,6 @@ val serverModule = module {
     single(named(LauncherType.SOCKET)) { SocketServerLauncher(get()) } bind AbstractServerLauncher::class
 }
 
-enum class LauncherType {
+internal enum class LauncherType {
     SOCKET, STDIO
 }

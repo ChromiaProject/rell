@@ -15,7 +15,7 @@ import org.eclipse.lsp4j.TextEdit
 import java.io.File
 import java.net.URI
 
-class RellFormattingManager(
+internal class RellFormattingManager(
     private val indexingManager: RellIndexingManager,
     private val formatterOptionsResolver: RellFormatterOptionsResolver,
     private val documentManager: RellDocumentManager,

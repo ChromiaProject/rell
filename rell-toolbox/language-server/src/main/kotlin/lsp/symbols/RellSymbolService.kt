@@ -15,7 +15,7 @@ import org.antlr.v4.runtime.misc.Interval
 import org.eclipse.lsp4j.*
 import java.net.URI
 
-class RellSymbolService {
+internal class RellSymbolService {
 
     fun getSymbolLocations(document: Document, indexer: WorkspaceIndexer, position: Position): MutableList<Location> {
         val resource = indexer.getResource(document.fileUri) ?: return mutableListOf()

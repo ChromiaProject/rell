@@ -14,7 +14,7 @@ import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 
-class RellInlayHintsProvider {
+internal class RellInlayHintsProvider {
 
     fun provideInlayHints(resource: Resource, range: Range, config: RellInlayHintsConfig): List<InlayHint> =
         listOfNotNull(

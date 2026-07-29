@@ -1,0 +1,9 @@
+public final class net/postchain/rell/toolbox/lsp/SocketMainKt {
+	public static final fun main ([Ljava/lang/String;)V
+}
+
+public final class net/postchain/rell/toolbox/lsp/StdioMainKt {
+	public static final fun main ()V
+	public static synthetic fun main ([Ljava/lang/String;)V
+}
+

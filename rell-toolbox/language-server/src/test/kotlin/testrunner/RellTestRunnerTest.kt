@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
-class RellTestRunnerTest : WorkspaceManagerTestBase() {
+internal class RellTestRunnerTest : WorkspaceManagerTestBase() {
 
     @Test
     fun `Returns all test files in workspace`(@TempDir dir: File) {

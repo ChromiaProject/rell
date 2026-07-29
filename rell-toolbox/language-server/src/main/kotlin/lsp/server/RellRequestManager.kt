@@ -10,7 +10,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 
 @Suppress("UNUSED_PARAMETER")
-class RellRequestManager {
+internal class RellRequestManager {
     private val logger = KotlinLogging.logger {}
     private val parallelExecutorService = Executors.newCachedThreadPool(RequestManagerThreadFactory())
     private val queue = Executors.newSingleThreadExecutor(RequestManagerThreadFactory())
@@ -51,7 +51,7 @@ class RellRequestManager {
     }
 }
 
-class RequestManagerThreadFactory : ThreadFactory {
+internal class RequestManagerThreadFactory : ThreadFactory {
     private val defaultFactory = Executors.defaultThreadFactory()
 
     override fun newThread(runnable: Runnable): Thread = defaultFactory.newThread(runnable).apply {

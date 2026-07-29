@@ -26,7 +26,7 @@ import java.io.File
 import java.net.URI
 import java.util.concurrent.CompletableFuture
 
-class RellWorkspaceService(
+internal class RellWorkspaceService(
     private val workspaceManager: RellWorkspaceManager,
     private val requestManager: RellRequestManager,
     private val indexingManager: RellIndexingManager,

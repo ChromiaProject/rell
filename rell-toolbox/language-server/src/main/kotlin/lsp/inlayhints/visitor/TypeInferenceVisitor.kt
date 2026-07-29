@@ -25,7 +25,7 @@ import org.eclipse.lsp4j.Position
  * children of `statement`, and `attrHeader` exposes its `nameTypeAttrHeader`
  * vs. `anonAttrHeader` alts as sealed-style subclasses.
  */
-class TypeInferenceVisitor(
+internal class TypeInferenceVisitor(
     private val resource: Resource,
     private val range: org.eclipse.lsp4j.Range,
     private val hints: MutableList<InlayHint>

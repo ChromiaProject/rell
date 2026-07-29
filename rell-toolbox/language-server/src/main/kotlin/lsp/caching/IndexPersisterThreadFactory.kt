@@ -7,7 +7,7 @@ package net.postchain.rell.toolbox.lsp.caching
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 
-class IndexPersisterThreadFactory : ThreadFactory {
+internal class IndexPersisterThreadFactory : ThreadFactory {
     private val defaultFactory = Executors.defaultThreadFactory()
 
     override fun newThread(runnable: Runnable): Thread = defaultFactory.newThread(runnable).apply<Thread> {

@@ -12,7 +12,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.toPath
 
-object WorkspaceDirectoryResolver {
+internal object WorkspaceDirectoryResolver {
 
     private const val MAX_DEPTH = 5
 

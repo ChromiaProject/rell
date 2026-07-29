@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.lsp.editing
 
 import java.io.File
 
-object LinterConfigEditor {
+internal object LinterConfigEditor {
     /**
      * Sets `ruleId=false` in [configFile], creating the file when missing. Idempotent: an existing
      * assignment of the key is rewritten in place instead of appending a duplicate. A section

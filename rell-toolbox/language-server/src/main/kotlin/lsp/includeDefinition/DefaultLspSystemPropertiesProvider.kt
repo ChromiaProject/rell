@@ -4,13 +4,13 @@
 
 package net.postchain.rell.toolbox.lsp.includeDefinition
 
-interface LspSystemPropertiesProvider {
+internal interface LspSystemPropertiesProvider {
     fun getIncludeDefinition(): Boolean
     fun getIssueCaching(): Boolean
     fun getResolveCompletion(): Boolean
 }
 
-class DefaultLspSystemPropertiesProvider : LspSystemPropertiesProvider {
+internal class DefaultLspSystemPropertiesProvider : LspSystemPropertiesProvider {
     private val includeDefinition: Boolean =
         System.getProperty("LspIncludeDefinition", "true").toBoolean()
     private val issueCaching: Boolean =

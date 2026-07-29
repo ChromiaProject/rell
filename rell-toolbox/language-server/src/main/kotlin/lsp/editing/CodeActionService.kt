@@ -16,7 +16,7 @@ import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.net.URI
 
-enum class CodeActionTitles(val title: String) {
+internal enum class CodeActionTitles(val title: String) {
     AUTO_FIXABLE("Fix all auto-fixable issues"),
     DISABLE_LINTER("Disable linter for this line");
 
@@ -25,7 +25,7 @@ enum class CodeActionTitles(val title: String) {
     }
 }
 
-object CodeActionService {
+internal object CodeActionService {
 
     // The `.rell_lint` key gating the formatter diagnostics (see LinterOptions.updateOptionsFromFile).
     private const val FORMATTER_RULE_ID = "rule_formatter"

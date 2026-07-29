@@ -8,7 +8,7 @@ import net.postchain.rell.base.utils.doc.DocCommentTag
 import net.postchain.rell.base.utils.doc.DocDeclaration
 import net.postchain.rell.base.utils.doc.DocSymbol
 
-fun formatDocSymbol(docSymbol: DocSymbol?): String {
+internal fun formatDocSymbol(docSymbol: DocSymbol?): String {
     if (docSymbol == null) return ""
     val declaration = createDocDeclaration(docSymbol.declaration)
 

@@ -8,7 +8,7 @@ import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import net.postchain.rell.base.utils.ide.IdeSymbolLink
 
-class SerializableSymbolInfo(
+internal class SerializableSymbolInfo(
     val kind: IdeSymbolKind,
     val defId: IdeSymbolId?,
     val link: IdeSymbolLink?

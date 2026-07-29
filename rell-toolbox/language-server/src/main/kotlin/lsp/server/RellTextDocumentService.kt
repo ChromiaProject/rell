@@ -16,7 +16,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either3
 import org.eclipse.lsp4j.services.TextDocumentService
 import java.util.concurrent.CompletableFuture
 
-class RellTextDocumentService(
+internal class RellTextDocumentService(
     private val workspaceManager: RellWorkspaceManager,
     private val requestManager: RellRequestManager,
     private val semanticTokensManager: RellSemanticTokensManager,

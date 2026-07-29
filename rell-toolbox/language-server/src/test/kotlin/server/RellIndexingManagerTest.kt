@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import java.io.File
 
-class RellIndexingManagerTest : WorkspaceManagerTestBase() {
+internal class RellIndexingManagerTest : WorkspaceManagerTestBase() {
 
     private val rellFilePath = "rell_file.rell"
     private val rellFileContent = """

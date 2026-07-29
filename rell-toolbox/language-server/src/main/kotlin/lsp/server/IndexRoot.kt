@@ -10,7 +10,7 @@ import java.nio.file.Path
 import kotlin.io.path.toPath
 import kotlin.io.path.walk
 
-class IndexRoot(val chromiaConfigPath: Path, val sourceRootPath: Path) {
+internal class IndexRoot(val chromiaConfigPath: Path, val sourceRootPath: Path) {
     val sourceRootUri: URI by lazy {
         checkNotNull(parseFileUri(sourceRootPath.toUri().toString())) { "Failed to parse source path URI" }
     }

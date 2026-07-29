@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 
 
-open class DiagnosticsPublisher(
+internal open class DiagnosticsPublisher(
     private val languageClient: LanguageClient?,
     private val initialized: CompletableFuture<*>?,
     private val checkCacheBeforeSend : Boolean = true

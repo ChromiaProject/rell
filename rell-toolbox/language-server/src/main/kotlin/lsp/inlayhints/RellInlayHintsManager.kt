@@ -9,7 +9,7 @@ import org.eclipse.lsp4j.InlayHint
 import org.eclipse.lsp4j.Range
 import java.net.URI
 
-class RellInlayHintsManager(
+internal class RellInlayHintsManager(
     private val indexingManager: RellIndexingManager,
     private val inlayHintsProvider: RellInlayHintsProvider,
 ) {

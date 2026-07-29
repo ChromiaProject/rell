@@ -18,7 +18,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
 
-class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
+internal class RellIndexCachingService(val indexSerializer: RellIndexSerializer) {
     private val scheduledExecutorService = Executors.newScheduledThreadPool(1, IndexPersisterThreadFactory())
 
     fun getWorkspaceIndexer(workspaceFolderUri: URI): WorkspaceIndexer? {

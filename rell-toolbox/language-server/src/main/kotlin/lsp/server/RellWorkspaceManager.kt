@@ -22,7 +22,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either3
 import java.io.File
 import java.net.URI
 
-class RellWorkspaceManager(
+internal class RellWorkspaceManager(
     private val rellSymbolService: RellSymbolService,
     private val rellReferenceService: RellReferenceService,
     private val completionService: RellCompletionService,

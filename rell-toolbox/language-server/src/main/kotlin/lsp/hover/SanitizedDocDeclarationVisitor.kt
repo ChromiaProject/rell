@@ -12,7 +12,7 @@ import net.postchain.rell.toolbox.jacoco.annotations.ExcludeFromJacocoGeneratedR
  */
 // TODO Decide whether to extend or remove
 @ExcludeFromJacocoGeneratedReport
-class SanitizedDocDeclarationVisitor(val sb: StringBuilder) : DocCodeTokenVisitor {
+internal class SanitizedDocDeclarationVisitor(val sb: StringBuilder) : DocCodeTokenVisitor {
     var isOptional = false
     var hasStarted = false
 

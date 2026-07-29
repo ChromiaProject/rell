@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.lsp.template
 
 import java.nio.file.Path
 
-class PlainLibraryTemplateFactory(templatesRoot: Path) : AbstractTemplateFactory(templatesRoot) {
+internal class PlainLibraryTemplateFactory(templatesRoot: Path) : AbstractTemplateFactory(templatesRoot) {
     override fun createProjectFiles(targetDir: Path, projectName: String, options: TemplateOptions?) {
         val projectFileName = snakeCaseName(projectName)
         with(FileBuilder(targetDir, "plain-library", templatesRoot)) {

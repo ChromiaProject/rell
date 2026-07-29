@@ -13,7 +13,7 @@ import org.eclipse.lsp4j.WorkspaceSymbol
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 import java.net.URI
 
-class WorkspaceSymbolsBuilder(
+internal class WorkspaceSymbolsBuilder(
     val fileUri: URI,
     val filterPredicate: (WorkspaceSymbol) -> Boolean
 ) : IdeOutlineTreeBuilder {

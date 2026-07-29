@@ -9,7 +9,7 @@ import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
-fun parseFileUri(fileUri: String): URI? {
+internal fun parseFileUri(fileUri: String): URI? {
     if (!fileUri.startsWith("file:/")) {
         return null
     }
@@ -19,21 +19,21 @@ fun parseFileUri(fileUri: String): URI? {
     return URI(formattedUri)
 }
 
-fun URI.isRellFile(): Boolean {
+internal fun URI.isRellFile(): Boolean {
     return this.toString().endsWith(".rell")
 }
 
-fun URI.isChromiaConfig(): Boolean {
+internal fun URI.isChromiaConfig(): Boolean {
     return this.toString().endsWith(ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME)
 }
 
-const val DEPENDENCY_MARKER_FILE = ".deps"
+internal const val DEPENDENCY_MARKER_FILE = ".deps"
 
-fun URI.isDependencyMarkerFile(): Boolean {
+internal fun URI.isDependencyMarkerFile(): Boolean {
     return this.toString().endsWith(DEPENDENCY_MARKER_FILE)
 }
 
-fun URI.startsWith(other: URI?): Boolean {
+internal fun URI.startsWith(other: URI?): Boolean {
     return if (other == null) {
         false
     } else {

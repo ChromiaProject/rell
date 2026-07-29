@@ -11,7 +11,7 @@ import org.eclipse.lsp4j.launch.LSPLauncher
 import org.eclipse.lsp4j.services.LanguageClient
 import java.io.*
 
-class StdioServerLauncher(
+internal class StdioServerLauncher(
     private val serverInputStream: InputStream,
     private val serverOutputStream: OutputStream,
     languageServer: RellLanguageServer

@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
-class FileEventsBatcher(
+internal class FileEventsBatcher(
     private val batchTimeoutMs: Long = 2000,
 ) {
     private val pendingChanges = ConcurrentLinkedQueue<FileEvent>()

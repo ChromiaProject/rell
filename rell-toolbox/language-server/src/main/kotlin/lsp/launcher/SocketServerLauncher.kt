@@ -12,7 +12,7 @@ import java.io.PrintWriter
 import java.net.InetAddress
 import java.net.ServerSocket
 
-class SocketServerLauncher(languageServer: RellLanguageServer) : AbstractServerLauncher(languageServer) {
+internal class SocketServerLauncher(languageServer: RellLanguageServer) : AbstractServerLauncher(languageServer) {
 
     override fun launch(args: Array<String>) {
         try {

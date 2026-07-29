@@ -8,7 +8,7 @@ import net.postchain.rell.base.utils.toImmList
 import net.postchain.rell.toolbox.indexer.NodeInterval
 import net.postchain.rell.toolbox.indexer.Resource
 
-class RellSemanticTokensManager {
+internal class RellSemanticTokensManager {
 
     private val supportedModifiers = RellTokenModifier.entries
 

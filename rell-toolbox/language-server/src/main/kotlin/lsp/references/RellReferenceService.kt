@@ -13,7 +13,7 @@ import org.eclipse.lsp4j.Location
 import org.eclipse.lsp4j.Position
 import java.net.URI
 
-class RellReferenceService(val symbolService: RellSymbolService) {
+internal class RellReferenceService(val symbolService: RellSymbolService) {
 
     fun getReferenceLocations(
         fileUri: URI,

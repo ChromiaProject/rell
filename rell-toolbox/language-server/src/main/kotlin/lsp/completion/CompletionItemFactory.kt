@@ -17,7 +17,7 @@ import net.postchain.rell.toolbox.lsp.symbols.RellRelevantImportSymbol
 import org.eclipse.lsp4j.*
 import org.eclipse.lsp4j.jsonrpc.messages.Either
 
-class CompletionItemFactory {
+internal class CompletionItemFactory {
 
     fun createSnippetCompletions() = defaultSnippets.map(Snippet::toCompletionItem)
 

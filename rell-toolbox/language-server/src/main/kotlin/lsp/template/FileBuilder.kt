@@ -9,15 +9,13 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import kotlin.io.path.*
 
-@PublishedApi
 internal fun snakeCaseName(string: String): String = string.replace("-", "_")
 
-class FileBuilder(
-    @PublishedApi internal val targetDir: Path,
+internal class FileBuilder(
+    internal val targetDir: Path,
     sourceFolderName: String,
-    @PublishedApi internal val templatesRoot: Path,
+    internal val templatesRoot: Path,
 ) {
-    @PublishedApi
     internal val sourceDir: Path = templatesRoot / sourceFolderName
 
     inline fun createFile(
@@ -66,7 +64,6 @@ class FileBuilder(
         copyRootFile(".rell_format", init())
     }
 
-    @PublishedApi
     internal fun copyRootFile(name: String, extra: String) {
         val srcFile = templatesRoot / name
         check(srcFile.isRegularFile()) { "Template root file not found: $srcFile" }

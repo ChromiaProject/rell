@@ -25,7 +25,7 @@ import net.postchain.rell.toolbox.lsp.tokens.RellSemanticTokensManager
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
-val commonServerModule = module {
+internal val commonServerModule = module {
     singleOf(::RellSymbolService)
     singleOf(::RellCompletionSymbolService)
     single<TemplateRepository> { RemoteTemplateRepository() }

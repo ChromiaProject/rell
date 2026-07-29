@@ -9,7 +9,7 @@ import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 
-class DevContainerSupport(private val templatesRoot: Path) {
+internal class DevContainerSupport(private val templatesRoot: Path) {
 
     companion object {
         const val DEV_CONTAINER_FOLDER_NAME = ".devcontainer"

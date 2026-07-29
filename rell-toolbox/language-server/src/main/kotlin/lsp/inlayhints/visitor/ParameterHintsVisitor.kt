@@ -29,7 +29,7 @@ import org.eclipse.lsp4j.Range
  * so we walk `callArgs.children` directly to identify each argument and whether
  * it is anonymous (no `RULE_ID '='` prefix) or named.
  */
-class ParameterHintsVisitor(
+internal class ParameterHintsVisitor(
     private val resource: Resource,
     private val range: Range,
     private val hints: MutableList<InlayHint>

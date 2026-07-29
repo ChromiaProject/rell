@@ -10,7 +10,7 @@ import java.io.File
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 
-class RellDocumentManager {
+internal class RellDocumentManager {
 
     private val openDocuments = ConcurrentHashMap<URI, Document>()
 

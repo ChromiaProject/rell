@@ -10,7 +10,7 @@ import org.eclipse.lsp4j.jsonrpc.RemoteEndpoint
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError
 import java.io.PrintWriter
 
-abstract class AbstractServerLauncher(
+internal abstract class AbstractServerLauncher(
     protected val languageServer: RellLanguageServer
 ) {
     protected val trace = "-trace"

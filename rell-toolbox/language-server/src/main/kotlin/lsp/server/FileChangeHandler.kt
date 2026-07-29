@@ -9,7 +9,7 @@ import net.postchain.rell.toolbox.indexer.findRellFilesInWorkspace
 import java.io.File
 import java.net.URI
 
-class FileChangeHandler(
+internal class FileChangeHandler(
     private val diagnosticsManager: RellDiagnosticsManager,
     private val indexerRegistry: IndexerRegistry,
 ) {

@@ -13,7 +13,7 @@ import org.apache.fory.context.ReadContext
 import org.apache.fory.context.WriteContext
 import org.apache.fory.serializer.Serializer
 
-class IdeSymbolIdSerializer(config: Config) : Serializer<IdeSymbolId>(config, IdeSymbolId::class.java) {
+internal class IdeSymbolIdSerializer(config: Config) : Serializer<IdeSymbolId>(config, IdeSymbolId::class.java) {
     private val regex = Regex("""(\w+)\[([^]]+)]""")
     private val ideSymbolCategoryMap = IdeSymbolCategory.entries.associateBy { it.code }
 

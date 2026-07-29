@@ -9,7 +9,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
-class FileEventsProcessor(
+internal class FileEventsProcessor(
     private val fileEventsBatcher: FileEventsBatcher,
     private val eventProcessor: (List<FileEvent>) -> Unit,
 ) {

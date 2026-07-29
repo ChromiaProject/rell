@@ -17,7 +17,7 @@ import org.eclipse.lsp4j.Position
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.SymbolKind
 
-class OutlineTreeBuilder(
+internal class OutlineTreeBuilder(
     private val nodeInfo: NodeInfo,
     private val type: IdeOutlineNodeType?,
 ) : IdeOutlineTreeBuilder {
@@ -79,7 +79,7 @@ class OutlineTreeBuilder(
     }
 }
 
-class NodeInfo(
+internal class NodeInfo(
     val text: String,
     val nameRegion: Range?,
     val fullRegion: Range?,
@@ -91,7 +91,7 @@ class NodeInfo(
     }
 }
 
-class OutlineNode(
+internal class OutlineNode(
     builder: OutlineTreeBuilder,
     private val info: NodeInfo,
 ) {
@@ -112,7 +112,7 @@ class OutlineNode(
     fun getInfo(): NodeInfo = info
 }
 
-fun getFullRegion(node: S_Node, name: S_Node): Range {
+internal fun getFullRegion(node: S_Node, name: S_Node): Range {
     val attachment = node.attachment as AntlrRellNodeAttachment
     val nameAttachment = name.attachment as AntlrRellNodeAttachment
     // For annotated definitions (functions, operations, etc.), the visible "full region" must
@@ -152,7 +152,7 @@ fun getFullRegion(node: S_Node, name: S_Node): Range {
     }
 }
 
-fun getNameRegion(node: S_Node): Range {
+internal fun getNameRegion(node: S_Node): Range {
     val attachment = node.attachment as AntlrRellNodeAttachment
     val nodeLength = attachment.node.text.length
     val startPos = Position(attachment.node.start.line - 1, attachment.node.start.charPositionInLine)
@@ -167,7 +167,7 @@ fun getNameRegion(node: S_Node): Range {
     return Range(startPos, endPos)
 }
 
-fun getSymbolKind(type: IdeOutlineNodeType): SymbolKind = when (type) {
+internal fun getSymbolKind(type: IdeOutlineNodeType): SymbolKind = when (type) {
     IdeOutlineNodeType.ENTITY -> SymbolKind.Class
     IdeOutlineNodeType.OBJECT -> SymbolKind.Object
     IdeOutlineNodeType.STRUCT -> SymbolKind.Struct

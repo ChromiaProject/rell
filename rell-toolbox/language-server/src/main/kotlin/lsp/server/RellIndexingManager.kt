@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.minutes
 
-class RellIndexingManager(
+internal class RellIndexingManager(
     private val indexCachingService: RellIndexCachingService,
     private val diagnosticsManager: RellDiagnosticsManager,
     private val rellLinter: RellLinter,

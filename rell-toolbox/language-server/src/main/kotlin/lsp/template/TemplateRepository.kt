@@ -19,17 +19,17 @@ internal const val CHROMIA_TEMPLATES_REF = "0.11.4"
 internal const val CHROMIA_TEMPLATES_PATH =
     "chromia-build-tools/src/main/resources/com/chromia/build/tools/template"
 
-interface TemplateRepository {
+internal interface TemplateRepository {
     /** Directory containing the per-template subdirectories (`plain/`, `minimal/`, ...) plus the
      * root-level `.gitignore`, `.rell_format`, `.rell_lint`, `.devcontainer/`. */
     fun templatesRoot(): Path
 }
 
-class LocalDirTemplateRepository(private val root: Path): TemplateRepository {
+internal class LocalDirTemplateRepository(private val root: Path): TemplateRepository {
     override fun templatesRoot(): Path = root
 }
 
-class RemoteTemplateRepository(
+internal class RemoteTemplateRepository(
     private val cacheDir: Path = defaultCacheDir(),
     private val projectId: String = CHROMIA_TEMPLATES_PROJECT_ID,
     private val ref: String = CHROMIA_TEMPLATES_REF,

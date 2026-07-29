@@ -15,7 +15,7 @@ import net.postchain.rell.toolbox.parser.AbstractRellCommonTokenStream
 import net.postchain.rell.toolbox.parser.SyntaxError
 import java.net.URI
 
-data class SerializableResource(
+internal data class SerializableResource(
     val parseTree: RellParser.FileContext,
     val moduleInfo: IdeModuleInfo?,
     val fileUri: URI,

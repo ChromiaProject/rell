@@ -28,7 +28,7 @@ import java.io.File
 import java.net.URI
 import java.util.concurrent.CompletableFuture
 
-open class WorkspaceManagerTestBase {
+internal open class WorkspaceManagerTestBase {
     protected lateinit var workspaceManager: RellWorkspaceManager
     protected lateinit var indexingManager: RellIndexingManager
     protected var diagnostics = mutableMapOf<URI, List<RellIssue>>()

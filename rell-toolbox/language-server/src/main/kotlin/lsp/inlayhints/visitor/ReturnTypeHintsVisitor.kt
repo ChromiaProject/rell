@@ -20,7 +20,7 @@ import org.eclipse.lsp4j.Range
  * Inlay-hint visitor for inferred function/query return types.
  * Migrated from legacy `Rell.g4` to canonical `Rell.g4`.
  */
-class ReturnTypeHintsVisitor(
+internal class ReturnTypeHintsVisitor(
     private val resource: Resource,
     private val range: Range,
     private val hints: MutableList<InlayHint>

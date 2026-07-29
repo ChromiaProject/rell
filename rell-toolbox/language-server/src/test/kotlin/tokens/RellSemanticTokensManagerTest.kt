@@ -24,7 +24,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.io.File
 import java.util.stream.Stream
 
-class RellSemanticTokensManagerTest {
+internal class RellSemanticTokensManagerTest {
     private val rellFile = "rell_file.rell"
 
     @Test

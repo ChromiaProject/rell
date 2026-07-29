@@ -21,7 +21,7 @@ import org.apache.fory.config.Language
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
-class RellIndexSerializer(
+internal class RellIndexSerializer(
     private val rellLinter: RellLinter,
     private val formattingStyleLinter: FormattingStyleLinter,
     private val formatterOptionsResolver: RellFormatterOptionsResolver,

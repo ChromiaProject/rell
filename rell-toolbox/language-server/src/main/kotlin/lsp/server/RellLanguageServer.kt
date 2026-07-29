@@ -32,7 +32,7 @@ import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
-class RellLanguageServer(
+internal class RellLanguageServer(
     private val workspaceManager: RellWorkspaceManager,
     private val requestManager: RellRequestManager,
     private val languageServerTerminator: RellLanguageServerTerminator,

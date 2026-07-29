@@ -18,7 +18,7 @@ import org.antlr.v4.runtime.misc.Interval
 import org.eclipse.lsp4j.CompletionItem
 import java.net.URI
 
-class RellCompletionService(
+internal class RellCompletionService(
     private val rellSymbolService: RellCompletionSymbolService,
     private val completionItemFactory: CompletionItemFactory
 ) {

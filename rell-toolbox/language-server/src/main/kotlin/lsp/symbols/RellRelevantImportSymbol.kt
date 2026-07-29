@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.lsp.symbols
 
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
-enum class RellRelevantImportSymbol(
+internal enum class RellRelevantImportSymbol(
     val ideSymbolKind: IdeSymbolKind,
     val displayName: String
 ) {

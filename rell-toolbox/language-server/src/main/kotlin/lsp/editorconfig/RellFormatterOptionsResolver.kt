@@ -8,7 +8,7 @@ import net.postchain.rell.toolbox.formatter.FormatterOptions
 import java.io.File
 import java.net.URI
 
-class RellFormatterOptionsResolver {
+internal class RellFormatterOptionsResolver {
 
     fun getWorkspaceFormattingOptions(workspaceUri: URI): FormatterOptions {
         return getWorkspaceFormattingOptionsOrNull(workspaceUri) ?: FormatterOptions()
