@@ -185,6 +185,15 @@ subprojects {
                     layout.buildDirectory.dir("rell-test-cases").get().asFile.absolutePath,
                 )
                 systemProperty("test.snippets.recorder.zipfile", "false")
+
+                // The corpus is a side effect: it lands in `build/rell-test-cases`, which no task
+                // declares as an output, so a FROM-CACHE or UP-TO-DATE `test` leaves the directory
+                // empty and `:rell-toolbox:ast:grammarTest` dies on the missing `test-cases`
+                // classpath resource. Recording is opt-in and only ever precedes grammarTest, so
+                // force the suites to actually run instead of declaring a five-figure file count
+                // as a cacheable output.
+                outputs.upToDateWhen { false }
+                outputs.cacheIf { false }
             }
 
             testLogging {
