@@ -79,10 +79,16 @@ variables:
   TESTCONTAINERS_RYUK_DISABLED: "true"
   JACOCO_REPORT_DIR: coverage-report-aggregate/build/reports/jacoco/testCodeCoverageReport
 
+# `--feature=containerd-snapshotter=false` keeps dockerd on the overlay2 graphdriver. Docker 29
+# makes the containerd image store the default, and its overlayfs snapshotter loses races between
+# concurrent pulls of images that share base layers: the codegen tests start python:3.11 and
+# python:3.12 from one test task with JUnit parallelism on, and extraction dies with
+# "failed to Lchown <just-written file>: no such file or directory". Green on docker:28-dind until
+# the 29.6.2 bump; drop the flag once the snapshotter handles shared layers concurrently.
 services:
   - name: docker:29.6.2-dind@sha256:bfec1f5159c63a81ca6fdedbd81404d2c0e16378ed0feec3bb3fbf3998847659
     alias: docker
-    command: [ "--tls=false" ]
+    command: [ "--tls=false", "--feature=containerd-snapshotter=false" ]
 
 cache:
   key: "$CI_COMMIT_REF_SLUG"
