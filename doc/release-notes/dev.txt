@@ -12,10 +12,10 @@ Such chains are now reported like their statement counterparts, and the quick-fi
 expression:
 
     val b = when {
-                a == 1 -> 1;
-                a == 2 -> 0;
-                else -> 3;
-            };
+        a == 1 -> 1;
+        a == 2 -> 0;
+        else -> 3;
+    };
 
 A plain if/else expression with no else-if is still left alone.
 
@@ -95,3 +95,31 @@ Each index root reads its Chromia model (rellVersion, compile.source, libs) from
 file, including on watched-file changes to it and across a rename of its project root; cached index data
 compiled under a different settings file is not reused. Unusable entries are logged and skipped instead of
 failing initialize. Without the option, discovery behaves as before.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+8. Tools: Formatter keeps line breaks written at binary operators
+
+A line break the author put inside an expression only survived in if and while conditions, and only around
+and/or. Everywhere else the formatter pulled the operands back onto one line, so
+
+    val b = null
+        ?: 1;
+
+reformatted to val b = null ?: 1; on save.
+
+Such a break is now preserved wherever the expression appears, and normalized to the shape the and/or
+wrapping already used: the operator moves to the start of the continuation line, indented one level. Both
+
+    val b = null
+        ?: 1;
+
+and
+
+    val b = null ?:
+        1;
+
+format to the first of the two. An expression the author wrote on one line is untouched, so
+
+    val c = null ?: 3;
+
+stays as it is.

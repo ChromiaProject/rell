@@ -1,0 +1,15 @@
+module;
+
+function subject_less_when(a: integer): integer {
+    val b = when {
+        a == 1 -> 1;
+        a == 2 -> 2;
+        else -> 3;
+    };
+    val c = when {
+        a == 1 -> 1;
+        a == 2 -> 2;
+        else -> 3;
+    };
+    return b + c;
+}

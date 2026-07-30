@@ -54,40 +54,61 @@ class BaseExprFormatter(
  * `binaryOperator` rule context as the legacy grammar did), so we walk the children to surround each
  * binary-operator token with a single space.
  *
+ * A line break the author put on either side of an operator is preserved, with the operator moved to
+ * the start of the continuation line and indented one level. Both `a\n?: b` and `a ?:\nb` normalise to
+ *
+ *     a
+ *         ?: b
+ *
+ * while `a ?: b` stays on one line.
+ *
  * For unary prefix tokens (`+`, `-`, `not`, `++`, `--`) that appear before an operand, we
  * also emit `noSpace` after them, except for `not` which needs one space after.
  */
 class ExpressionInlineOpFormatter : NodeFormatter<BinaryExprContext> {
     override fun format(node: BinaryExprContext, doc: FormattableDocument) {
         val n = node.childCount
+        var previousOperand: ParserRuleContext? = null
         var afterOperand = false
         var i = 0
         while (i < n) {
             val c = node.getChild(i)
             when {
                 c is ParserRuleContext -> {
+                    previousOperand = c
                     afterOperand = true
                     doc.format(c)
                 }
                 c is TerminalNode -> {
                     val txt = c.symbol.text
                     if (afterOperand) {
-                        // Binary operator (possibly two-token `not in`).
+                        // Binary operator, possibly the two-token `not in`.
+                        var opEnd = c
+                        if (txt == "not" && i + 1 < n) {
+                            val nxt = node.getChild(i + 1)
+                            if (nxt is TerminalNode && nxt.symbol.text == "in") {
+                                opEnd = nxt
+                                i++
+                            }
+                        }
+                        val wraps = wrapsAtOperator(previousOperand, c, opEnd, node, i)
                         doc.prepend(c) {
-                            it.oneSpace()
+                            if (wraps) {
+                                it.noSpace()
+                                it.newLine()
+                                it.indent()
+                            } else {
+                                it.oneSpace()
+                            }
                             it.highPriority()
                         }
                         doc.append(c) {
                             it.oneSpace()
                             it.highPriority()
                         }
-                        if (txt == "not" && i + 1 < n) {
-                            val nxt = node.getChild(i + 1)
-                            if (nxt is TerminalNode && nxt.symbol.text == "in") {
-                                doc.prepend(nxt) { it.oneSpace() }
-                                doc.append(nxt) { it.oneSpace() }
-                                i++
-                            }
+                        if (opEnd !== c) {
+                            doc.prepend(opEnd) { it.oneSpace() }
+                            doc.append(opEnd) { it.oneSpace() }
                         }
                         afterOperand = false
                     } else {
@@ -103,5 +124,32 @@ class ExpressionInlineOpFormatter : NodeFormatter<BinaryExprContext> {
             }
             i++
         }
+    }
+
+    /**
+     * True when the author put a line break on either side of the operator spanning [opStart]..[opEnd],
+     * where [opEndIndex] is the child index of [opEnd].
+     */
+    private fun wrapsAtOperator(
+        previousOperand: ParserRuleContext?,
+        opStart: TerminalNode,
+        opEnd: TerminalNode,
+        node: BinaryExprContext,
+        opEndIndex: Int,
+    ): Boolean {
+        if (previousOperand == null) return false
+        if (previousOperand.stop.line != opStart.symbol.line) return true
+        val rhsLine = startLineOfChildAfter(node, opEndIndex) ?: return false
+        return opEnd.symbol.line != rhsLine
+    }
+
+    private fun startLineOfChildAfter(node: BinaryExprContext, index: Int): Int? {
+        for (j in index + 1 until node.childCount) {
+            when (val c = node.getChild(j)) {
+                is ParserRuleContext -> return c.start.line
+                is TerminalNode -> return c.symbol.line
+            }
+        }
+        return null
     }
 }

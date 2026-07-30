@@ -1,0 +1,13 @@
+function operator_wrapping(x: integer?, y: integer?): integer {
+    val a = x ?: 3;
+    val b = x
+        ?: 1;
+    val c = x ?:
+        2;
+    val d = x
+                ?:      y
+        ?: 4;
+    val e = 1 + 2
+        + 3;
+    return a + b + c + d + e;
+}
