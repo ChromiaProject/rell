@@ -12,7 +12,7 @@ import net.postchain.rell.toolbox.seeder.config.YamlSchemaValidator
 import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import java.nio.file.Path
 
-class ModuleConfigParser(
+internal class ModuleConfigParser(
     private val yamlSchemaValidator: YamlSchemaValidator,
     private val objectMapper: ObjectMapper,
     private val entityConfigParser: EntityConfigParser

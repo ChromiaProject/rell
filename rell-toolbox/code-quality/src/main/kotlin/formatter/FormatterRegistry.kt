@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.formatter
 
 import org.antlr.v4.runtime.ParserRuleContext
 
-class FormatterRegistry {
+internal class FormatterRegistry {
 
     private val formatters: MutableMap<Class<out ParserRuleContext>, NodeFormatter<out ParserRuleContext>> =
         mutableMapOf()

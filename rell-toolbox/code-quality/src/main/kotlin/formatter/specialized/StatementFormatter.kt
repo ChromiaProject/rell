@@ -10,7 +10,7 @@ import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.*
 
-class BlockStmtFormatter : NodeFormatter<BlockStmtContext> {
+internal class BlockStmtFormatter : NodeFormatter<BlockStmtContext> {
     override fun format(node: BlockStmtContext, doc: FormattableDocument) {
         doc.interiorIndent(node)
         // blockStmt: '{' statement* '}'
@@ -35,7 +35,7 @@ class BlockStmtFormatter : NodeFormatter<BlockStmtContext> {
     }
 }
 
-class ReturnStmtFormatter(
+internal class ReturnStmtFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<ReturnStmtAltContext> {
@@ -48,7 +48,7 @@ class ReturnStmtFormatter(
 }
 
 /** `return` used as a jump expression: like the statement form, minus the `;`. */
-class ReturnExprFormatter(
+internal class ReturnExprFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<ReturnExprContext> {
     override fun format(node: ReturnExprContext, doc: FormattableDocument) {
@@ -58,7 +58,7 @@ class ReturnExprFormatter(
     }
 }
 
-class WhileStmtFormatter(
+internal class WhileStmtFormatter(
     val expressionFormatter: ExpressionFormatter,
     val lineAnalyzer: LineAnalyzer,
     val tokenAnalyzer: TokenAnalyzer,
@@ -82,7 +82,7 @@ class WhileStmtFormatter(
     }
 }
 
-class ForStmtFormatter(
+internal class ForStmtFormatter(
     val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<ForStmtAltContext> {
     override fun format(node: ForStmtAltContext, doc: FormattableDocument) {
@@ -96,7 +96,7 @@ class ForStmtFormatter(
     }
 }
 
-class CreateExprFormatter(
+internal class CreateExprFormatter(
     private val braceFormatter: BraceFormatter,
     private val lineAnalyzer: LineAnalyzer,
     private val whitespaceFormatter: WhitespaceFormatter,
@@ -120,7 +120,7 @@ class CreateExprFormatter(
     }
 }
 
-class DeleteStmtFormatter(
+internal class DeleteStmtFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<DeleteStmtAltContext> {
@@ -137,7 +137,7 @@ class DeleteStmtFormatter(
  *
  * Formats inline assignment operators with surrounding spaces, plus semicolon.
  */
-class ExprStmtAltFormatter(
+internal class ExprStmtAltFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<ExprStmtAltContext> {
@@ -167,7 +167,7 @@ class ExprStmtAltFormatter(
  *
  * The `++`/`--` is a direct terminal child; no space between it and baseExpr.
  */
-class IncrementStmtAltFormatter(
+internal class IncrementStmtAltFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
 ) : NodeFormatter<IncrementStmtAltContext> {
     override fun format(node: IncrementStmtAltContext, doc: FormattableDocument) {

@@ -11,7 +11,7 @@ import net.postchain.rell.toolbox.linter.sourceText
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 
-class SimplifyBooleanReturnIssue(
+internal class SimplifyBooleanReturnIssue(
     private val stmtCtx: ParserRuleContext,
     ruleId: String,
     message: String,

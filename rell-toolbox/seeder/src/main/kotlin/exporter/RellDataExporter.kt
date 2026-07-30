@@ -17,7 +17,7 @@ import java.io.Writer
 import java.math.BigDecimal
 import java.nio.file.Path
 
-class RellDataExporter : BaseDataExporter() {
+internal class RellDataExporter : BaseDataExporter() {
     companion object {
         const val DEFAULT_BATCH_SIZE = 1000
         private val seederModuleWarning = """

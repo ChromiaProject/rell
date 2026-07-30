@@ -7,7 +7,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
 // Combined Business with finance provider
-class BusinessGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class BusinessGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register("credit_card.number") {
             selectGenerator(

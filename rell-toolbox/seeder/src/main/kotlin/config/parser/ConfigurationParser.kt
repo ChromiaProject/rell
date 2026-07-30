@@ -13,7 +13,7 @@ import net.postchain.rell.toolbox.seeder.config.YamlSchemaValidator
 import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import java.nio.file.Path
 
-class ConfigurationParser {
+internal class ConfigurationParser {
     companion object {
         private const val DEFAULT_CONFIG_SCHEMA_PATH = "/chromia-seeder-config-schema.json"
     }
@@ -67,7 +67,7 @@ class ConfigurationParser {
     }
 }
 
-object ResourceLoader {
+internal object ResourceLoader {
     fun getResourceContent(resourcePath: String): String {
         val resourceContent = this::class.java.getResourceAsStream(resourcePath)
             ?.bufferedReader()?.use { it.readText() }
@@ -75,5 +75,5 @@ object ResourceLoader {
     }
 }
 
-class ConfigurationValidationException(message: String, validationErrors: List<Error> = emptyList()) :
+internal class ConfigurationValidationException(message: String, validationErrors: List<Error> = emptyList()) :
     RuntimeException(message)

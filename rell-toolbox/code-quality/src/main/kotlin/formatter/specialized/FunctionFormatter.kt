@@ -10,7 +10,7 @@ import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.*
 
-class FunctionDefFormatter(
+internal class FunctionDefFormatter(
     private val braceFormatter: BraceFormatter,
     private val argumentFormatter: ArgumentFormatter,
     private val whitespaceFormatter: WhitespaceFormatter,
@@ -44,7 +44,7 @@ class FunctionDefFormatter(
 /**
  * functionBody: ';' | '=' expression ';' | blockStmt
  */
-class FunctionBodyFormatter(
+internal class FunctionBodyFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
 ) : NodeFormatter<FunctionBodyContext> {
     override fun format(node: FunctionBodyContext, doc: FormattableDocument) {
@@ -63,7 +63,7 @@ class FunctionBodyFormatter(
 /**
  * queryBody: '=' expression ';' | blockStmt
  */
-class QueryBodyFormatter(
+internal class QueryBodyFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
 ) : NodeFormatter<QueryBodyContext> {
     override fun format(node: QueryBodyContext, doc: FormattableDocument) {

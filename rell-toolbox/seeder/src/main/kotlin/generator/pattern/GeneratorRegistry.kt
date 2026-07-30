@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.seeder.generator.pattern
 
-class GeneratorRegistry {
+internal class GeneratorRegistry {
     private val generators = mutableMapOf<String, DataPatternGenerator>()
 
     fun register(generator: DataPatternGenerator) {
@@ -12,10 +12,6 @@ class GeneratorRegistry {
             "Generator with identifier '${generator.identifier}' already exists"
         }
         generators[generator.identifier] = generator
-    }
-
-    fun unregister(identifier: String) {
-        generators.remove(identifier)
     }
 
     fun getOrNull(identifier: String): DataPatternGenerator? = generators[identifier]

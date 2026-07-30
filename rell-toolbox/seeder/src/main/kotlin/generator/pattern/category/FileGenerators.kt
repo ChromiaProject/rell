@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class FileGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class FileGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register("file.extension") { selectGenerator(it, it.faker.file::extension, it.faker.file.unique::extension) }
         register("file.mimetype_application") {

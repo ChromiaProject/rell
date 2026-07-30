@@ -15,7 +15,7 @@ import net.postchain.rell.toolbox.compiler.RellCompilerFilePath
 import net.postchain.rell.toolbox.parser.AntlrRellParser
 import net.postchain.rell.toolbox.parser.SyntaxErrorCollector
 
-object TestSourceDir {
+internal object TestSourceDir {
     fun create(parser: AntlrRellParser, files: Map<String, String>): C_SourceDir {
         val map = mutableMapOf<C_SourcePath, C_SourceFile>()
         for (path in files.keys) {
@@ -28,7 +28,7 @@ object TestSourceDir {
     }
 }
 
-class TestSourceFile(
+internal class TestSourceFile(
     private val parser: AntlrRellParser,
     private val path: C_SourcePath,
     val text: String

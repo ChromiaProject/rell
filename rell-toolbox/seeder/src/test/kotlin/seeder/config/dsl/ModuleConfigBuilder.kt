@@ -7,7 +7,7 @@ package net.postchain.rell.toolbox.seeder.config.dsl
 import net.postchain.rell.toolbox.seeder.config.EntityConfig
 import net.postchain.rell.toolbox.seeder.config.ModuleConfig
 
-class ModuleConfigBuilder {
+internal class ModuleConfigBuilder {
     private var moduleName: String? = null
     private val entityConfigs = mutableMapOf<String, EntityConfig>()
 

@@ -7,7 +7,7 @@ package net.postchain.rell.toolbox.seeder.config.serializer
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.config.ModuleConfig
 
-class ModuleConfigSerializer {
+internal class ModuleConfigSerializer {
 
     fun serialize(config: ModuleConfig): String {
         return buildString {

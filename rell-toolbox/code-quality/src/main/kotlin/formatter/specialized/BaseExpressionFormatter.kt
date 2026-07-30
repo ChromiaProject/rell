@@ -15,7 +15,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
 
 
-class BaseExprFormatter(
+internal class BaseExprFormatter(
     private val expressionFormatter: ExpressionFormatter,
     private val lineAnalyzer: LineAnalyzer,
 ) : NodeFormatter<BaseExprContext> {
@@ -65,7 +65,7 @@ class BaseExprFormatter(
  * For unary prefix tokens (`+`, `-`, `not`, `++`, `--`) that appear before an operand, we
  * also emit `noSpace` after them, except for `not` which needs one space after.
  */
-class ExpressionInlineOpFormatter : NodeFormatter<BinaryExprContext> {
+internal class ExpressionInlineOpFormatter : NodeFormatter<BinaryExprContext> {
     override fun format(node: BinaryExprContext, doc: FormattableDocument) {
         val n = node.childCount
         var previousOperand: ParserRuleContext? = null

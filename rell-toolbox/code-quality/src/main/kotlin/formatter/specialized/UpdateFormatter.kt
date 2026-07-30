@@ -11,7 +11,7 @@ import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.*
 
-class UpdateStmtFormatter(
+internal class UpdateStmtFormatter(
     private val braceFormatter: BraceFormatter,
     private val lineAnalyzer: LineAnalyzer,
     private val whitespaceFormatter: WhitespaceFormatter,
@@ -40,7 +40,7 @@ class UpdateStmtFormatter(
     }
 }
 
-class UpdateTargetAtFormatter(
+internal class UpdateTargetAtFormatter(
     private val braceFormatter: BraceFormatter,
     private val lineAnalyzer: LineAnalyzer,
     private val whitespaceFormatter: WhitespaceFormatter,

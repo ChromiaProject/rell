@@ -19,7 +19,7 @@ import org.antlr.v4.runtime.RuleContext
  *   `return if (c) true else false;`           →  `return c;`
  * The swapped forms produce `return not c;`.
  */
-class SimplifyBooleanReturnRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
+internal class SimplifyBooleanReturnRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
 
     override val ruleId

@@ -11,7 +11,7 @@ import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.*
 
-class AnnotationFormatter(
+internal class AnnotationFormatter(
     @Suppress("unused") private val whitespaceFormatter: WhitespaceFormatter,
 ) : NodeFormatter<AnnotationContext> {
     override fun format(node: AnnotationContext, doc: FormattableDocument) {
@@ -26,7 +26,7 @@ class AnnotationFormatter(
     }
 }
 
-class AnnotArgsFormatter(
+internal class AnnotArgsFormatter(
     val braceFormatter: BraceFormatter,
     val argumentFormatter: ArgumentFormatter,
     val whitespaceFormatter: WhitespaceFormatter,

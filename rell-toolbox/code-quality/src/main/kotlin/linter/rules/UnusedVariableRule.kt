@@ -14,7 +14,7 @@ import net.postchain.rell.toolbox.linter.isUnderscore
 import org.antlr.v4.runtime.RuleContext
 import org.antlr.v4.runtime.misc.Interval
 
-class UnusedVariableRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
+internal class UnusedVariableRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
     private val referenceIndexer = ReferenceIndexer(resource.workspaceUri, mutableMapOf(resource.fileUri to resource))
 

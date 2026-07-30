@@ -12,7 +12,7 @@ import net.postchain.rell.toolbox.seeder.generator.pattern.category.*
 import net.postchain.rell.toolbox.seeder.schema.Attribute
 import net.postchain.rell.toolbox.seeder.schema.Entity
 
-class FakerGeneratorFactory {
+internal class FakerGeneratorFactory {
     private val registry = GeneratorRegistry()
     private val attributeFakerGenerators = mutableMapOf<String, FakerGenerator>()
 
@@ -88,4 +88,4 @@ class FakerGeneratorFactory {
     }
 }
 
-class FakerGenerator(val registry: GeneratorRegistry, val faker: Faker, val uniqueProducer: UniqueProducer<Any>)
+internal class FakerGenerator(val registry: GeneratorRegistry, val faker: Faker, val uniqueProducer: UniqueProducer<Any>)

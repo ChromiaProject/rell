@@ -8,7 +8,7 @@ import net.postchain.rell.toolbox.parser.RellCommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
 
-interface FormattableDocument {
+internal interface FormattableDocument {
     fun append(appendAfterNode: ParserRuleContext?, changeModifier: (Changes) -> Unit)
 
     fun append(appendAfterNode: TerminalNode?, changeModifier: (Changes) -> Unit)

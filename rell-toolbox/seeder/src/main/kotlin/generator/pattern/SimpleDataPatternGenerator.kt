@@ -8,7 +8,7 @@ import net.postchain.rell.base.model.R_TextType
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.toolbox.seeder.generator.DataGeneratorContext
 
-class SimpleDataPatternGenerator(
+internal class SimpleDataPatternGenerator(
     override val identifier: String,
     override val type: R_Type = R_TextType,
     private val generatorFn: (ctx: DataGeneratorContext) -> Any

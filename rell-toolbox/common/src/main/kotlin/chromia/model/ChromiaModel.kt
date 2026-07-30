@@ -45,7 +45,7 @@ data class RellLibraryModel(
 
 private val yamlMapper = ObjectMapper(YAMLFactory())
 
-fun parseModel(src: Path): ChromiaModel {
+internal fun parseModel(src: Path): ChromiaModel {
     val text = src.readText(Charsets.UTF_8)
 
     val raw: Map<*, *> = if (text.isBlank()) emptyMap<Any?, Any?>()

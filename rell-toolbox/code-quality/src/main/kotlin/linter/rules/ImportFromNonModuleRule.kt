@@ -12,7 +12,7 @@ import net.postchain.rell.toolbox.linter.issues.ImportFromNonModuleIssue
 import org.antlr.v4.runtime.RuleContext
 import java.nio.file.Paths
 
-class ImportFromNonModuleRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
+internal class ImportFromNonModuleRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
     private val fileName = Paths.get(resource.fileUri).fileName.toString()
     private var hasModuleHeader = false

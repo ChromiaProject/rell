@@ -9,7 +9,7 @@ import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGeneratorFactory
 import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import kotlin.random.Random
 
-class DataGenerator(
+internal class DataGenerator(
     private val generatorFactory: FakerGeneratorFactory = FakerGeneratorFactory(),
     randomSeed: Long = System.currentTimeMillis()
 ) {
@@ -34,4 +34,4 @@ class DataGenerator(
     }
 }
 
-class DataGenerationException(msg: String, cause: Throwable? = null) : RuntimeException(msg, cause)
+internal class DataGenerationException(msg: String, cause: Throwable? = null) : RuntimeException(msg, cause)

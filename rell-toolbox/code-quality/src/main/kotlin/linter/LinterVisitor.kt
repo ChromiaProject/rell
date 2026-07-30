@@ -9,7 +9,7 @@ import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.linter.rules.*
 import org.antlr.v4.runtime.tree.RuleNode
 
-class LinterVisitor(
+internal class LinterVisitor(
     val config: LinterOptions,
     val resource: Resource,
     linterContext: LinterContext

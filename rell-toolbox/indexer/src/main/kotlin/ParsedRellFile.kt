@@ -17,7 +17,7 @@ import net.postchain.rell.toolbox.compiler.AstSourceFile
  * previously built each from its own parse. The AST carries no compilation state, so a single
  * parse can serve both.
  */
-class ParsedRellFile(
+internal class ParsedRellFile(
     val sourcePath: C_SourcePath,
     val parseResult: ParsingResult,
     val ast: S_RellFile,

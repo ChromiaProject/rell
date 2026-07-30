@@ -101,7 +101,7 @@ internal fun BaseExprContext.tails(): List<BaseExprTail> {
     return result
 }
 
-class ExpressionFormatter(
+internal class ExpressionFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
     private val lineAnalyzer: LineAnalyzer,
     private val braceFormatter: BraceFormatter,
@@ -474,18 +474,6 @@ class ExpressionFormatter(
                 it.highPriority()
             }
         }
-    }
-
-    fun prependNodeList(
-        firstNode: ParserRuleContext,
-        nodeList: List<ParserRuleContext>?
-    ): List<ParserRuleContext> {
-        val expressions = mutableListOf<ParserRuleContext>()
-        expressions.add(firstNode)
-        if (nodeList != null) {
-            expressions.addAll(nodeList)
-        }
-        return expressions
     }
 
     private fun formatCallArgsAsMultiLine(callArgs: CallArgsContext): Boolean {

@@ -8,7 +8,7 @@ import net.postchain.rell.base.compiler.parser.antlr.RellParser.FormalParameterC
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import org.antlr.v4.runtime.ParserRuleContext
 
-class ArgumentFormatter(
+internal class ArgumentFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
     private val whitespaceFormatter: WhitespaceFormatter,
     private val lineAnalyzer: LineAnalyzer

@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class CreatureGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class CreatureGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register("ancient.god") {
             selectGenerator(it, it.faker.ancient::god, it.faker.ancient.unique::god)

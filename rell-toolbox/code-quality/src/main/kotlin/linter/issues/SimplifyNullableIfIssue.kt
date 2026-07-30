@@ -9,7 +9,7 @@ import net.postchain.rell.toolbox.linter.LinterIssue
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 
-class SimplifyNullableIfIssue(
+internal class SimplifyNullableIfIssue(
     anchorCtx: ParserRuleContext,
     ruleId: String,
     message: String,

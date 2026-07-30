@@ -10,7 +10,7 @@ import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import org.antlr.v4.runtime.misc.Interval
 import java.util.*
 
-fun intervalCompare(intervalA: Interval, intervalB: Interval): Int {
+internal fun intervalCompare(intervalA: Interval, intervalB: Interval): Int {
     return if (overlaps(intervalA, intervalB)
     ) {
         0

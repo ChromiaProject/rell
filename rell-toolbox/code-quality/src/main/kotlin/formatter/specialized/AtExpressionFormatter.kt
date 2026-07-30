@@ -15,7 +15,7 @@ import org.antlr.v4.runtime.ParserRuleContext
  * Formats `atExprModifiers`: `'limit' expression ('offset' expression)?`
  * or `'offset' expression ('limit' expression)?`. Surround the keyword tokens with one space.
  */
-class AtExprModFormatter(val tokenAnalyzer: TokenAnalyzer) : NodeFormatter<AtExprModifiersContext> {
+internal class AtExprModFormatter(val tokenAnalyzer: TokenAnalyzer) : NodeFormatter<AtExprModifiersContext> {
     override fun format(node: AtExprModifiersContext, doc: FormattableDocument) {
         val limit = tokenAnalyzer.tokenFor(node, "limit")
         val offset = tokenAnalyzer.tokenFor(node, "offset")
@@ -32,7 +32,7 @@ class AtExprModFormatter(val tokenAnalyzer: TokenAnalyzer) : NodeFormatter<AtExp
  *
  * The from-items list is flat as direct children of [AtExprContext] (no per-item wrapper rule).
  */
-class AtExprFromFormatter(
+internal class AtExprFromFormatter(
     val lineAnalyzer: LineAnalyzer,
     val braceFormatter: BraceFormatter,
     val whitespaceFormatter: WhitespaceFormatter,
@@ -109,7 +109,7 @@ class AtExprFromFormatter(
     }
 }
 
-class AtExprAtFormatter : NodeFormatter<AtExprAtContext> {
+internal class AtExprAtFormatter : NodeFormatter<AtExprAtContext> {
     override fun format(node: AtExprAtContext, doc: FormattableDocument) {
         doc.surround(node) {
             it.oneSpace()
@@ -118,7 +118,7 @@ class AtExprAtFormatter : NodeFormatter<AtExprAtContext> {
     }
 }
 
-class AtExprWhereFormatter(
+internal class AtExprWhereFormatter(
     val lineAnalyzer: LineAnalyzer,
     val braceFormatter: BraceFormatter,
     val whitespaceFormatter: WhitespaceFormatter,
@@ -136,12 +136,11 @@ class AtExprWhereFormatter(
     }
 }
 
-class AtExprWhatCmplxFormatter(
+internal class AtExprWhatCmplxFormatter(
     val lineAnalyzer: LineAnalyzer,
     val braceFormatter: BraceFormatter,
     val whitespaceFormatter: WhitespaceFormatter,
     val argumentFormatter: ArgumentFormatter,
-    val expressionFormatter: ExpressionFormatter,
 ) : NodeFormatter<AtExprWhatComplexContext> {
     override fun format(node: AtExprWhatComplexContext, doc: FormattableDocument) {
         doc.prepend(node) { it.oneSpace() }

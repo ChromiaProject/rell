@@ -18,7 +18,7 @@ import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.readText
 
-class YamlSchemaValidator {
+internal class YamlSchemaValidator {
     // Rell big_integer/decimal values are arbitrary-precision, so a predefined value may be far longer than
     // Jackson's default 1000-digit cap. Lift the limit on the mappers the schema registry uses to parse input.
     private val relaxedConstraints = StreamReadConstraints.builder().maxNumberLength(Int.MAX_VALUE).build()

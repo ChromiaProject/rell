@@ -11,7 +11,7 @@ import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.*
 import org.antlr.v4.runtime.ParserRuleContext
 
-class MapExprFormatter(
+internal class MapExprFormatter(
     val braceFormatter: BraceFormatter,
     val lineAnalyzer: LineAnalyzer,
     val whitespaceFormatter: WhitespaceFormatter,
@@ -47,7 +47,7 @@ class MapExprFormatter(
     }
 }
 
-class ListExprFormatter(
+internal class ListExprFormatter(
     val braceFormatter: BraceFormatter,
     val lineAnalyzer: LineAnalyzer,
     val whitespaceFormatter: WhitespaceFormatter,
@@ -69,7 +69,7 @@ class ListExprFormatter(
 /**
  * `# mirrorStructExpr` alt of `baseExprHead`: `'struct' '<' 'mutable'? type '>'`.
  */
-class MirrorStructExprFormatterImpl(
+internal class MirrorStructExprFormatterImpl(
     val braceFormatter: BraceFormatter,
 ) : NodeFormatter<MirrorStructExprContext> {
     override fun format(node: MirrorStructExprContext, doc: FormattableDocument) {
@@ -93,7 +93,7 @@ class MirrorStructExprFormatterImpl(
 /**
  * `# mirrorStructType` alt of `primaryType`: `'struct' '<' 'mutable'? type '>'`.
  */
-class MirrorStructTypeFormatter(
+internal class MirrorStructTypeFormatter(
     val braceFormatter: BraceFormatter,
 ) : NodeFormatter<MirrorStructTypeContext> {
     override fun format(node: MirrorStructTypeContext, doc: FormattableDocument) {
@@ -119,7 +119,7 @@ class MirrorStructTypeFormatter(
  *
  * (Was `RuleX_TupleExprContext` in the old grammar.)
  */
-class TupleHeadFormatter(
+internal class TupleHeadFormatter(
     val braceFormatter: BraceFormatter,
     val lineAnalyzer: LineAnalyzer,
     val whitespaceFormatter: WhitespaceFormatter,

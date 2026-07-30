@@ -13,13 +13,13 @@ import org.antlr.v4.runtime.misc.Interval
 import org.antlr.v4.runtime.tree.TerminalNode
 
 /** Fix data for `@? {...}!!` → `@ {...}`: drop the `?` cardinality marker and the trailing `!!`. */
-class NotNullToUnitFix(
+internal class NotNullToUnitFix(
     val baseCtx: RellParser.BaseExprContext,
     val qToken: TerminalNode,
     val bangCtx: RellParser.BaseExprTailNotNullContext,
 )
 
-class AtCardinalityMisuseIssue(
+internal class AtCardinalityMisuseIssue(
     anchorCtx: ParserRuleContext,
     ruleId: String,
     message: String,

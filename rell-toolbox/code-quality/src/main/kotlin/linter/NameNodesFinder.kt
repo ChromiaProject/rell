@@ -11,7 +11,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
 /**
  * Finds the first defining-name identifier under a parser rule context.
  */
-class NameNodesFinder {
+internal class NameNodesFinder {
     fun getFirstNodeUnder(parent: ParserRuleContext): ParserRuleContext? {
         val terminal = findFirstIdentifier(parent) ?: return null
         return TerminalNameContext(terminal)
@@ -38,7 +38,7 @@ class NameNodesFinder {
  * so existing rule code can keep using the `ctx.start`, `ctx.stop`, `ctx.text`
  * surface that the legacy `RuleX_NameNodeContext` exposed.
  */
-class TerminalNameContext(private val terminal: TerminalNode) : ParserRuleContext() {
+internal class TerminalNameContext(private val terminal: TerminalNode) : ParserRuleContext() {
     init {
         start = terminal.symbol
         stop = terminal.symbol

@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.formatter
 
 import org.antlr.v4.runtime.ParserRuleContext
 
-class FormattingVisitor(val formatterRegistry: FormatterRegistry) {
+internal class FormattingVisitor(val formatterRegistry: FormatterRegistry) {
     fun visit(node: ParserRuleContext, doc: FormattableDocument) {
         val nodeFormatter = formatterRegistry.findFormatter(node.javaClass)
         if (nodeFormatter != null) {

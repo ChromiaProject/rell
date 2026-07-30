@@ -9,7 +9,7 @@ import net.postchain.rell.toolbox.formatter.FormatterOptions
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 
-class LineAnalyzer(
+internal class LineAnalyzer(
     private val source: String,
     private val formatterOptions: FormatterOptions,
     private val braceFormatter: BraceFormatter

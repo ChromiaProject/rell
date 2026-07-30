@@ -17,7 +17,7 @@ import org.antlr.v4.runtime.RuleContext
 /**
  * Flags comparisons of a value against a boolean literal (`x == true`, `x != false`, ...).
  */
-class RedundantBooleanComparisonRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
+internal class RedundantBooleanComparisonRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
 
     override val ruleId

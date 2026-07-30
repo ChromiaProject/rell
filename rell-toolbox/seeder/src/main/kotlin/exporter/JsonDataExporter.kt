@@ -10,7 +10,7 @@ import net.postchain.rell.toolbox.seeder.generator.GeneratedData
 import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import java.nio.file.Path
 
-class JsonDataExporter : BaseDataExporter() {
+internal class JsonDataExporter : BaseDataExporter() {
     private val objectMapper = jacksonObjectMapper().apply {
         enable(SerializationFeature.INDENT_OUTPUT)
     }

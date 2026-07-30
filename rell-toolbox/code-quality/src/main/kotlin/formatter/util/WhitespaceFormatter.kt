@@ -8,7 +8,7 @@ import net.postchain.rell.toolbox.formatter.FormattableDocument
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
 
-class WhitespaceFormatter(private val tokenAnalyzer: TokenAnalyzer) {
+internal class WhitespaceFormatter(private val tokenAnalyzer: TokenAnalyzer) {
 
     fun formatSemicolon(node: ParserRuleContext, doc: FormattableDocument) {
         val semiColon = tokenAnalyzer.tokenFor(node, ";")

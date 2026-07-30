@@ -8,12 +8,10 @@ import net.postchain.rell.base.compiler.parser.antlr.RellParser.*
 import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.ExpressionFormatter
-import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
 import net.postchain.rell.toolbox.formatter.util.WhitespaceFormatter
 
-class RootNodeFormatter(
+internal class RootNodeFormatter(
     private val expressionFormatter: ExpressionFormatter,
-    private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<FileContext> {
     override fun format(node: FileContext, doc: FormattableDocument) {
         node.moduleHeader()?.let { doc.format(it) }
@@ -22,7 +20,7 @@ class RootNodeFormatter(
     }
 }
 
-class MooduleHeaderFormatter(
+internal class MooduleHeaderFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
 ) : NodeFormatter<ModuleHeaderContext> {
     override fun format(node: ModuleHeaderContext, doc: FormattableDocument) {
@@ -35,7 +33,7 @@ class MooduleHeaderFormatter(
     }
 }
 
-class ModifierFormatter(
+internal class ModifierFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
 ) : NodeFormatter<ModifierContext> {
     override fun format(node: ModifierContext, doc: FormattableDocument) {

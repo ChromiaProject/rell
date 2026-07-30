@@ -21,7 +21,7 @@ import kotlin.test.Test
 class SeederLibTest {
     private val generator = InitialConfigGenerator()
     private val testResourcesDir = File(javaClass.getResource("/seeder-lib-test/src")!!.toURI())
-    val schema = SchemaReader().readSchema(testResourcesDir, listOf("lib.my_lib"), isLibrary = true)
+    private val schema = SchemaReader().readSchema(testResourcesDir, listOf("lib.my_lib"), isLibrary = true)
 
     @Test
     fun `generate creates correct directory structure`(@TempDir tempDir: Path) {

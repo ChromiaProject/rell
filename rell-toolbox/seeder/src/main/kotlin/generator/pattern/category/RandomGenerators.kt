@@ -13,7 +13,7 @@ import net.postchain.rell.toolbox.seeder.generator.DataGenerationException
 import net.postchain.rell.toolbox.seeder.generator.DataGenerator
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class RandomGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class RandomGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register(
             "random.integer",

@@ -8,7 +8,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.math.max
 import kotlin.math.min
 
-class Changes(
+internal class Changes(
     var startOffset: Int,
     var stopOffset: Int,
     val formatterOptions: FormatterOptions,

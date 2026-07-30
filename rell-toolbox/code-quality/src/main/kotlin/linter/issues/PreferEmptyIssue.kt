@@ -8,7 +8,7 @@ import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.toolbox.linter.LinterFix
 import net.postchain.rell.toolbox.linter.LinterIssue
 
-class PreferEmptyIssue(
+internal class PreferEmptyIssue(
     private val binaryCtx: RellParser.BinaryExprContext,
     ruleId: String,
     message: String,

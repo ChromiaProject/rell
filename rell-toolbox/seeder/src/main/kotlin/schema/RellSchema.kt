@@ -12,7 +12,7 @@ import net.postchain.rell.base.model.rr.RR_EnumDefinition
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.utils.ImmList
 
-class RellSchema(
+internal class RellSchema(
     val entities: List<Entity>
 ) {
     val entitiesMap: Map<String, Entity> = entities.associateBy { it.uniqueName }
@@ -20,7 +20,7 @@ class RellSchema(
     fun getEntity(moduleName: String, qualifiedName: String): Entity? = entitiesMap["$moduleName:$qualifiedName"]
 }
 
-class Entity(
+internal class Entity(
     private val entityDef: RR_EntityDefinition,
     private val allEntities: ImmList<RR_EntityDefinition>,
     private val allEnums: ImmList<RR_EnumDefinition>,
@@ -36,7 +36,7 @@ class Entity(
     }
 }
 
-class Attribute(
+internal class Attribute(
     private val rrAttribute: RR_Attribute,
     private val allEntities: ImmList<RR_EntityDefinition>,
     private val allEnums: ImmList<RR_EnumDefinition>,

@@ -12,7 +12,7 @@ import net.postchain.rell.toolbox.formatter.util.ExpressionFormatter
 import net.postchain.rell.toolbox.formatter.util.LineAnalyzer
 import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
 
-class IfStmtFormatter(
+internal class IfStmtFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
     private val expressionFormatter: ExpressionFormatter,
     private val lineAnalyzer: LineAnalyzer,
@@ -80,7 +80,7 @@ class IfStmtFormatter(
     }
 }
 
-class IfExprFormatter(
+internal class IfExprFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<IfExprContext> {
     override fun format(node: IfExprContext, doc: FormattableDocument) {

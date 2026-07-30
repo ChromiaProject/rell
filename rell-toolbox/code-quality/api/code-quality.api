@@ -1,0 +1,26 @@
+public final class net/postchain/rell/toolbox/formatter/RellFormatter {
+	public static final field Companion Lnet/postchain/rell/toolbox/formatter/RellFormatter$Companion;
+}
+
+public final class net/postchain/rell/toolbox/formatter/RellFormatter$Companion {
+	public final fun formatString (Ljava/lang/String;Lnet/postchain/rell/toolbox/formatter/FormatterOptions;)Ljava/lang/String;
+	public final fun getFormattingChanges (Ljava/lang/String;Lnet/postchain/rell/toolbox/formatter/FormatterOptions;)Ljava/util/List;
+}
+
+public final class net/postchain/rell/toolbox/linter/AutoFixer {
+	public fun <init> ()V
+	public final fun fix (Lnet/postchain/rell/toolbox/indexer/Resource;Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class net/postchain/rell/toolbox/linter/FormattingStyleLinter : net/postchain/rell/toolbox/linter/AbstractFormattingStyleLinter {
+	public fun <init> ()V
+	public fun enhanceWithFormatterIssues (Lnet/postchain/rell/toolbox/linter/LinterOptions;Lnet/postchain/rell/toolbox/formatter/FormatterOptions;Lnet/postchain/rell/toolbox/indexer/Resource;Ljava/lang/String;)V
+	public fun lint (Lnet/postchain/rell/toolbox/linter/LinterOptions;Lnet/postchain/rell/toolbox/formatter/FormatterOptions;Ljava/lang/String;)Ljava/util/List;
+}
+
+public final class net/postchain/rell/toolbox/linter/RellLinter : net/postchain/rell/toolbox/linter/AbstractRellLinter {
+	public fun <init> ()V
+	public fun enhanceWithLintIssues (Lnet/postchain/rell/toolbox/linter/LinterOptions;Lnet/postchain/rell/toolbox/indexer/Resource;)V
+	public fun lint (Lnet/postchain/rell/toolbox/linter/LinterOptions;Lnet/postchain/rell/toolbox/indexer/Resource;)Ljava/util/List;
+}
+

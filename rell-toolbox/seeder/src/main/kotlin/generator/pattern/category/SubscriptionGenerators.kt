@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class SubscriptionGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class SubscriptionGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register("subscription.plan") {
             selectGenerator(it, it.faker.subscription::plans, it.faker.subscription.unique::plans)

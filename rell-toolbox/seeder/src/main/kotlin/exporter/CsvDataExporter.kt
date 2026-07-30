@@ -10,7 +10,7 @@ import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import java.io.File
 import java.nio.file.Path
 
-class CsvDataExporter : BaseDataExporter() {
+internal class CsvDataExporter : BaseDataExporter() {
     override fun export(data: GeneratedData, schema: RellSchema, outputPath: Path, mountName: String) {
         // For CSV, we'll create a directory and export each entity to a separate file
         val outputFile = outputPath.toFile()

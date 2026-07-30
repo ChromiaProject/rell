@@ -10,7 +10,7 @@ import net.postchain.rell.toolbox.linter.LinterIssue
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 
-class ConstantDetectionIssue(
+internal class ConstantDetectionIssue(
     ctx: ParserRuleContext,
     ruleId: String,
     message: String,

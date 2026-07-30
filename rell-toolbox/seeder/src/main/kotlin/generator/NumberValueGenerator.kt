@@ -11,7 +11,7 @@ import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGeneratorFactory
 import java.math.BigDecimal
 import java.math.BigInteger
 
-class NumberValueGenerator(val generatorFactory: FakerGeneratorFactory) {
+internal class NumberValueGenerator(val generatorFactory: FakerGeneratorFactory) {
     fun generateNumberInRange(ctx: DataGeneratorContext): Number {
         if (ctx.attributeConfig !is AttributeConfig.Range) {
             throw DataGenerationException("Wrong Range configuration for ${ctx.attribute.name}")

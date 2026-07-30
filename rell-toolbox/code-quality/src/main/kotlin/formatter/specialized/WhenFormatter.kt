@@ -10,7 +10,7 @@ import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
 import org.antlr.v4.runtime.ParserRuleContext
 
-class WhenStmtFormatter(
+internal class WhenStmtFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<WhenStmtAltContext> {
     override fun format(node: WhenStmtAltContext, doc: FormattableDocument) {
@@ -53,7 +53,7 @@ private fun caseOf(
     return cond?.let { it to arm }
 }
 
-class WhenExprFormatter(
+internal class WhenExprFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<WhenExprContext> {
     override fun format(node: WhenExprContext, doc: FormattableDocument) {
@@ -87,7 +87,7 @@ class WhenExprFormatter(
     }
 }
 
-class WhenCondExprFormatter : NodeFormatter<WhenConditionExprContext> {
+internal class WhenCondExprFormatter : NodeFormatter<WhenConditionExprContext> {
     override fun format(node: WhenConditionExprContext, doc: FormattableDocument) {
         val expressions = node.binaryExpr()
         expressions.forEachIndexed { index, xExprRef ->

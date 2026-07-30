@@ -13,7 +13,7 @@ import net.postchain.rell.toolbox.linter.issues.ReplaceIfStmtWithWhenIssue
 import net.postchain.rell.toolbox.linter.issues.elseIfChainNext
 import org.antlr.v4.runtime.RuleContext
 
-class ReplaceIfWithWhenRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
+internal class ReplaceIfWithWhenRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
 
     override val ruleId

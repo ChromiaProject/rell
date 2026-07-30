@@ -12,7 +12,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.TerminalNode
 
-class TokenAnalyzer(private val parser: RellParser) {
+internal class TokenAnalyzer(private val parser: RellParser) {
 
     fun tokenFor(node: ParserRuleContext?, tokenText: String): TerminalNode? {
         if (node == null) {

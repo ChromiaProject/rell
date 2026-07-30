@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class LoremGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class LoremGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         // Adjective
         register("adjective.positive") {

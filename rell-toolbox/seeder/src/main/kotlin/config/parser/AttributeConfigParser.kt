@@ -16,7 +16,7 @@ import net.postchain.rell.toolbox.seeder.generator.pattern.FakerGeneratorFactory
 import net.postchain.rell.toolbox.seeder.schema.Attribute
 import java.math.BigInteger
 
-class AttributeConfigParser {
+internal class AttributeConfigParser {
     fun createAttributeConfig(
         attributeNode: JsonNode,
         attribute: Attribute

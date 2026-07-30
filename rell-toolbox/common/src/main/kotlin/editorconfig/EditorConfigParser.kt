@@ -15,7 +15,7 @@ import org.ec4j.core.parser.ErrorHandler
 import java.io.File
 import java.nio.charset.StandardCharsets
 
-object EditorConfigParser {
+internal object EditorConfigParser {
     private val logger = KotlinLogging.logger {}
 
     fun parse(configFile: File): EditorConfig? {

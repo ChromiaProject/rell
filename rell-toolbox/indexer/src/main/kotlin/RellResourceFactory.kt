@@ -31,12 +31,12 @@ class RellResourceFactory(
     private val parser: AntlrRellParser,
     private val chromiaModelProvider: ChromiaModelProvider
 ) {
-    val rellCompilerUtils = RellCompilerUtils()
+    internal val rellCompilerUtils = RellCompilerUtils()
 
-    fun parseFiles(sources: Map<URI, String>): Map<URI, ParsedRellFile> =
+    internal fun parseFiles(sources: Map<URI, String>): Map<URI, ParsedRellFile> =
         sources.mapValues { (fileUri, fileContent) -> parseFile(fileUri, fileContent) }
 
-    fun parseFile(fileUri: URI, fileContent: String): ParsedRellFile {
+    internal fun parseFile(fileUri: URI, fileContent: String): ParsedRellFile {
         val rellCompilerSourcePath = rellCompilerUtils.createCompilerSourcePath(fileUri, workspaceUri)
         val parseResult = this.buildParseTree(fileContent)
         val ast = buildRellAstWithCompilerErrors(
@@ -47,7 +47,7 @@ class RellResourceFactory(
         return ParsedRellFile(rellCompilerSourcePath, parseResult, ast.first)
     }
 
-    fun buildFileMap(
+    internal fun buildFileMap(
         sources: Map<URI, String>,
         parsedFiles: Map<URI, ParsedRellFile> = parseFiles(sources),
     ): ConcurrentHashMap<C_SourcePath, C_SourceFile> {
@@ -61,12 +61,12 @@ class RellResourceFactory(
         return fileMap
     }
 
-    fun updateFileMap(fileMap: MutableMap<C_SourcePath, C_SourceFile>, fileUri: URI, fileContent: String) {
+    internal fun updateFileMap(fileMap: MutableMap<C_SourcePath, C_SourceFile>, fileUri: URI, fileContent: String) {
         val parsed = parseFile(fileUri, fileContent)
         fileMap[parsed.sourcePath] = parsed.toSourceFile(fileContent)
     }
 
-    fun buildRellResource(
+    internal fun buildRellResource(
         fileUri: URI,
         fileContent: String,
         fileMap: MutableMap<C_SourcePath, C_SourceFile>,
@@ -105,7 +105,7 @@ class RellResourceFactory(
         return buildRellResource(fileUri, fileContent, fileMap)
     }
 
-    fun compileResult(
+    internal fun compileResult(
         compilerSrcPath: C_SourcePath,
         ast: S_RellFile,
         fileMap: MutableMap<C_SourcePath, C_SourceFile>,
@@ -153,7 +153,7 @@ class RellResourceFactory(
         }
     }
 
-    fun buildParseTree(fileContent: String): ParsingResult {
+    internal fun buildParseTree(fileContent: String): ParsingResult {
         val errorListener = SyntaxErrorCollector()
 
         return try {
@@ -180,7 +180,7 @@ class RellResourceFactory(
         )
     }
 
-    fun buildRellAstWithCompilerErrors(
+    internal fun buildRellAstWithCompilerErrors(
         rellCompilerSourcePath: C_SourcePath,
         parseTree: net.postchain.rell.base.compiler.parser.antlr.RellParser.FileContext,
         manualTokenStream: org.antlr.v4.runtime.BufferedTokenStream? = null,

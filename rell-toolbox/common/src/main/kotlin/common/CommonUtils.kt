@@ -32,7 +32,7 @@ fun offsetToPosition(content: String, offset: Int): Position {
     return Position(line, column)
 }
 
-const val NL = '\n'
+internal const val NL = '\n'
 
 fun positionToOffset(content: String, position: Position): Int {
     var line = 0

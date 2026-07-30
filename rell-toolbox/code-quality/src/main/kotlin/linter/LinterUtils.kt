@@ -9,16 +9,16 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.misc.Interval
 import org.antlr.v4.runtime.tree.TerminalNode
 
-fun ParserRuleContext.isUnderscore(): Boolean = this.text == "_"
+internal fun ParserRuleContext.isUnderscore(): Boolean = this.text == "_"
 
 /** Verbatim source text spanned by this context, taken from the original input stream. */
-fun ParserRuleContext.sourceText(): String =
+internal fun ParserRuleContext.sourceText(): String =
     start.inputStream.getText(Interval.of(start.startIndex, stop.stopIndex))
 
 private val COMPARISON_OPS = setOf("==", "!=", "<", ">", "<=", ">=")
 
 /** A `binaryExpr` shaped as exactly `left OP right` with a single comparison operator. */
-class SimpleComparison(
+internal class SimpleComparison(
     val left: RellParser.BaseExprContext,
     val op: TerminalNode,
     val right: RellParser.BaseExprContext,
@@ -30,7 +30,7 @@ class SimpleComparison(
  * rewritten safely without precedence analysis. Returns that triple for a comparison
  * operator, or null otherwise.
  */
-fun RellParser.BinaryExprContext.asSimpleComparison(): SimpleComparison? {
+internal fun RellParser.BinaryExprContext.asSimpleComparison(): SimpleComparison? {
     val kids = children ?: return null
     if (kids.size != 3) return null
     val left = kids[0] as? RellParser.BaseExprContext ?: return null
@@ -41,7 +41,7 @@ fun RellParser.BinaryExprContext.asSimpleComparison(): SimpleComparison? {
 }
 
 /** `true`/`false` as a bare literal operand (no member access or other tails), else null. */
-fun RellParser.BaseExprContext.asBooleanLiteral(): Boolean? {
+internal fun RellParser.BaseExprContext.asBooleanLiteral(): Boolean? {
     if (childCount != 1) return null
     return when (baseExprHead()) {
         is RellParser.TrueExprContext -> true
@@ -51,28 +51,28 @@ fun RellParser.BaseExprContext.asBooleanLiteral(): Boolean? {
 }
 
 /** True if this operand is a bare `null` literal. */
-fun RellParser.BaseExprContext.isNullLiteral(): Boolean =
+internal fun RellParser.BaseExprContext.isNullLiteral(): Boolean =
     childCount == 1 && baseExprHead() is RellParser.NullExprContext
 
 /** Bare integer literal operand as a Long, else null. */
-fun RellParser.BaseExprContext.asIntLiteral(): Long? {
+internal fun RellParser.BaseExprContext.asIntLiteral(): Long? {
     if (childCount != 1) return null
     val head = baseExprHead() as? RellParser.IntExprContext ?: return null
     return head.text.toLongOrNull()
 }
 
 /** True if this expression's head or postfix chain includes an at-expression (`@`, `@?`, `@*`, `@+`). */
-fun RellParser.BaseExprContext.containsAtOperation(): Boolean =
+internal fun RellParser.BaseExprContext.containsAtOperation(): Boolean =
     baseExprHead() is RellParser.AtExprContext || (children?.any { it is RellParser.AtExprAtContext } ?: false)
 
 /** The sole `baseExpr` of a single-operand binary expression (no operators, no prefixes), else null. */
-fun RellParser.BinaryExprContext.singleBaseExpr(): RellParser.BaseExprContext? {
+internal fun RellParser.BinaryExprContext.singleBaseExpr(): RellParser.BaseExprContext? {
     if (childCount != 1) return null
     return getChild(0) as? RellParser.BaseExprContext
 }
 
 /** An argument-free method call `<receiver>.name()`. */
-class ArgFreeMethodCall(val name: String, val receiverText: String)
+internal class ArgFreeMethodCall(val name: String, val receiverText: String)
 
 /**
  * Detects `<receiver>.name()` with an empty argument list. Two parse shapes occur:
@@ -81,7 +81,7 @@ class ArgFreeMethodCall(val name: String, val receiverText: String)
  *  - tail-member (`(...).size()`, `foo().size()`): `.size` is a member tail after a call/paren/etc.
  * Returns null when this is not an argument-free method call (e.g. a bare `foo()` function call).
  */
-fun RellParser.BaseExprContext.asArgFreeMethodCall(): ArgFreeMethodCall? {
+internal fun RellParser.BaseExprContext.asArgFreeMethodCall(): ArgFreeMethodCall? {
     val kids = children ?: return null
     if (kids.size < 2) return null
     val last = kids[kids.size - 1]
@@ -106,7 +106,7 @@ fun RellParser.BaseExprContext.asArgFreeMethodCall(): ArgFreeMethodCall? {
 }
 
 /** True if this context sits (transitively) inside an at-expression where-clause. */
-fun ParserRuleContext.isInsideAtWhere(): Boolean {
+internal fun ParserRuleContext.isInsideAtWhere(): Boolean {
     var p = parent
     while (p != null) {
         if (p is RellParser.AtExprWhereContext) return true

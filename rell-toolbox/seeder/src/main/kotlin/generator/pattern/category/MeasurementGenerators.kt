@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class MeasurementGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class MeasurementGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register("measurement.height") {
             selectGenerator(it, it.faker.measurement::height, it.faker.measurement.unique::height)

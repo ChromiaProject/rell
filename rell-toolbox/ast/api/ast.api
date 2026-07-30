@@ -1,0 +1,56 @@
+public final class net/postchain/rell/toolbox/compiler/AstSourceFile : net/postchain/rell/base/compiler/base/utils/C_SourceFile {
+	public static final field Companion Lnet/postchain/rell/toolbox/compiler/AstSourceFile$Companion;
+	public synthetic fun <init> (Lnet/postchain/rell/base/compiler/ast/S_RellFile;Lnet/postchain/rell/base/utils/ide/IdeFilePath;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun idePath ()Lnet/postchain/rell/base/utils/ide/IdeFilePath;
+	public fun readAst (Lnet/postchain/rell/base/model/R_LangVersion;)Lnet/postchain/rell/base/compiler/ast/S_RellFile;
+	public fun readText ()Ljava/lang/String;
+}
+
+public final class net/postchain/rell/toolbox/compiler/AstSourceFile$Companion {
+	public final fun make (Lnet/postchain/rell/base/compiler/ast/S_RellFile;Lnet/postchain/rell/base/utils/ide/IdeFilePath;Ljava/lang/String;)Lnet/postchain/rell/base/compiler/base/utils/C_SourceFile;
+}
+
+public final class net/postchain/rell/toolbox/compiler/RellCompilerApi {
+	public static final field INSTANCE Lnet/postchain/rell/toolbox/compiler/RellCompilerApi;
+	public final fun antlrToRellAst (Lnet/postchain/rell/toolbox/compiler/RellCompilerFilePath;Lnet/postchain/rell/base/compiler/parser/antlr/RellParser$FileContext;Lorg/antlr/v4/runtime/BufferedTokenStream;)Lkotlin/Pair;
+	public static synthetic fun antlrToRellAst$default (Lnet/postchain/rell/toolbox/compiler/RellCompilerApi;Lnet/postchain/rell/toolbox/compiler/RellCompilerFilePath;Lnet/postchain/rell/base/compiler/parser/antlr/RellParser$FileContext;Lorg/antlr/v4/runtime/BufferedTokenStream;ILjava/lang/Object;)Lkotlin/Pair;
+}
+
+public final class net/postchain/rell/toolbox/compiler/RellCompilerFilePath {
+	public fun <init> (Lnet/postchain/rell/base/compiler/base/utils/C_SourcePath;Lnet/postchain/rell/base/utils/ide/IdeFilePath;)V
+}
+
+public final class net/postchain/rell/toolbox/parser/AntlrRellParser {
+	public fun <init> ()V
+	public final fun parse (Ljava/lang/String;Ljava/util/List;Ljava/util/List;)Lnet/postchain/rell/base/compiler/parser/antlr/RellParser$FileContext;
+	public static synthetic fun parse$default (Lnet/postchain/rell/toolbox/parser/AntlrRellParser;Ljava/lang/String;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lnet/postchain/rell/base/compiler/parser/antlr/RellParser$FileContext;
+	public final fun parserFor (Ljava/lang/String;Ljava/util/List;Ljava/util/List;)Lnet/postchain/rell/base/compiler/parser/antlr/RellParser;
+	public static synthetic fun parserFor$default (Lnet/postchain/rell/toolbox/parser/AntlrRellParser;Ljava/lang/String;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lnet/postchain/rell/base/compiler/parser/antlr/RellParser;
+}
+
+public final class net/postchain/rell/toolbox/parser/RellCommonTokenStream : net/postchain/rell/toolbox/parser/AbstractRellCommonTokenStream {
+	public static final field Companion Lnet/postchain/rell/toolbox/parser/RellCommonTokenStream$Companion;
+	public fun <init> (Lorg/antlr/v4/runtime/Lexer;)V
+	public fun getCommentLineAboveToken (Lorg/antlr/v4/runtime/Token;)Lorg/antlr/v4/runtime/Token;
+	public fun getPreviousRellDocCommentToken (I)Lorg/antlr/v4/runtime/Token;
+	public fun getPreviousTokenOnChannel (II)Lorg/antlr/v4/runtime/Token;
+	public fun isRellDocComment (Lorg/antlr/v4/runtime/Token;)Z
+}
+
+public final class net/postchain/rell/toolbox/parser/RellCommonTokenStream$Companion {
+}
+
+public final class net/postchain/rell/toolbox/parser/RellCustomTokenChannels : java/lang/Enum {
+	public static final field COMMENTS Lnet/postchain/rell/toolbox/parser/RellCustomTokenChannels;
+	public final fun getChannel ()I
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lnet/postchain/rell/toolbox/parser/RellCustomTokenChannels;
+	public static fun values ()[Lnet/postchain/rell/toolbox/parser/RellCustomTokenChannels;
+}
+
+public final class net/postchain/rell/toolbox/parser/SyntaxErrorCollector : org/antlr/v4/runtime/BaseErrorListener {
+	public fun <init> ()V
+	public final fun getErrors ()Ljava/util/List;
+	public fun syntaxError (Lorg/antlr/v4/runtime/Recognizer;Ljava/lang/Object;IILjava/lang/String;Lorg/antlr/v4/runtime/RecognitionException;)V
+}
+

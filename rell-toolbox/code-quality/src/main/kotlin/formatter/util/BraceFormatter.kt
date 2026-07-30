@@ -9,7 +9,7 @@ import net.postchain.rell.toolbox.formatter.FormattableDocument
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
 
-class BraceFormatter {
+internal class BraceFormatter {
     fun formatBracePairWithoutSpace(node: ParserRuleContext, doc: FormattableDocument, pair: BracePairTypes) {
         val (openingNode, closingNode) = bracePairFor(node, pair)
 

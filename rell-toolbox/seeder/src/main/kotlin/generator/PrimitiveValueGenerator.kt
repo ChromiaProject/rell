@@ -13,7 +13,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.random.Random
 
-class PrimitiveValueGenerator(
+internal class PrimitiveValueGenerator(
     private val random: Random,
     private val generatorFactory: FakerGeneratorFactory,
 ) {

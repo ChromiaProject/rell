@@ -11,7 +11,7 @@ import net.postchain.rell.toolbox.seeder.schema.Attribute
 import net.postchain.rell.toolbox.seeder.schema.Entity
 import net.postchain.rell.toolbox.seeder.schema.RellSchema
 
-class EntityConfigParser {
+internal class EntityConfigParser {
     private val attributeConfigParser = AttributeConfigParser()
 
 

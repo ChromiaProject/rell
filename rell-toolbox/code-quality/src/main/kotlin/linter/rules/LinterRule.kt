@@ -13,7 +13,7 @@ import net.postchain.rell.toolbox.linter.LinterOptions
 import org.antlr.v4.runtime.RuleContext
 import org.antlr.v4.runtime.Token
 
-abstract class LinterRule(
+internal abstract class LinterRule(
     val config: LinterOptions,
     val resource: Resource,
     private val linterContext: LinterContext

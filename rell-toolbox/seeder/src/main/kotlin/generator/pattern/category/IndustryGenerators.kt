@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class IndustryGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class IndustryGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register("industry") {
             selectGenerator(

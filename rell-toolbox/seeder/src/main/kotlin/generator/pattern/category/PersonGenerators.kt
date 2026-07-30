@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class PersonGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class PersonGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register("first_name") { selectGenerator(it, it.faker.name::firstName, it.faker.name.unique::firstName) }
         register("last_name") { selectGenerator(it, it.faker.name::lastName, it.faker.name.unique::lastName) }

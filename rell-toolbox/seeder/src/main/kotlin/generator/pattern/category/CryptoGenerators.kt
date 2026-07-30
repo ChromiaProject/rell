@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class CryptoGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class CryptoGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register("crypto.md5") { selectGenerator(it, it.faker.crypto::md5, it.faker.crypto.unique::md5) }
         register("crypto.sha1") { selectGenerator(it, it.faker.crypto::sha1, it.faker.crypto.unique::sha1) }

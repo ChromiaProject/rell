@@ -7,7 +7,7 @@ package net.postchain.rell.toolbox.seeder.config.dsl
 import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.config.Distribution
 
-class AttributesConfigBuilder(private val attributeConfigs: MutableMap<String, AttributeConfig>) {
+internal class AttributesConfigBuilder(private val attributeConfigs: MutableMap<String, AttributeConfig>) {
 
     fun attribute(name: String, block: AttributeConfigBuilder.() -> Unit) {
         val builder = AttributeConfigBuilder(name)
@@ -16,7 +16,7 @@ class AttributesConfigBuilder(private val attributeConfigs: MutableMap<String, A
     }
 }
 
-class AttributeConfigBuilder(private val name: String) {
+internal class AttributeConfigBuilder(private val name: String) {
     private var generatorType: String? = null
     private var min: Number? = null
     private var max: Number? = null

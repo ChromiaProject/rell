@@ -11,7 +11,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.misc.Interval
 
-sealed class ReplaceIfWithWhenIssue(
+internal sealed class ReplaceIfWithWhenIssue(
     ctx: ParserRuleContext,
     ruleId: String,
     message: String
@@ -52,7 +52,7 @@ sealed class ReplaceIfWithWhenIssue(
     }
 }
 
-class ReplaceIfStmtWithWhenIssue(
+internal class ReplaceIfStmtWithWhenIssue(
     private val ifCtx: RellParser.IfStmtAltContext,
     ruleId: String,
     message: String
@@ -85,7 +85,7 @@ class ReplaceIfStmtWithWhenIssue(
     }
 }
 
-class ReplaceIfExprWithWhenIssue(
+internal class ReplaceIfExprWithWhenIssue(
     private val ifCtx: RellParser.IfExprContext,
     ruleId: String,
     message: String

@@ -26,7 +26,7 @@ import org.antlr.v4.runtime.tree.ParseTree
  * and the statement form, where the guard only jumps out of the enclosing function or loop:
  *   `val x = f(); if (x == null) return null;` → `val x = f() ?: return null;`
  */
-class SimplifyNullableIfRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
+internal class SimplifyNullableIfRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
 
     override val ruleId

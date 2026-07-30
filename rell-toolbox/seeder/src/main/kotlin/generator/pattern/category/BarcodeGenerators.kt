@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class BarcodeGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class BarcodeGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register("barcode.ean8") { selectGenerator(it, it.faker.barcode::ean8, it.faker.barcode.unique::ean8) }
         register("barcode.ean13") { selectGenerator(it, it.faker.barcode::ean13, it.faker.barcode.unique::ean13) }

@@ -24,7 +24,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
  * This rule walks those children, slices them into per-item ranges at every comma, and applies
  * the legacy diagnostic to each slice.
  */
-class OuterJoinCartesianProductRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
+internal class OuterJoinCartesianProductRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
 
     override val ruleId

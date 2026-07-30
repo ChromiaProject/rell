@@ -19,7 +19,7 @@ import net.postchain.rell.toolbox.seeder.schema.Entity
 import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import kotlin.random.Random
 
-class FieldValueGenerator(
+internal class FieldValueGenerator(
     private val random: Random,
     private val generatorFactory: FakerGeneratorFactory,
 ) {

@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.config
 
 import net.postchain.rell.toolbox.seeder.schema.Attribute
 
-data class Configuration(
+internal data class Configuration(
     val modules: Map<String, ModuleConfig> = emptyMap()
 ) {
     // TODO: should we generate data for non-configured entities that isn't a reference?
@@ -23,18 +23,18 @@ data class Configuration(
 //  "fileMatch": [".chromia/seeder/**/config.yml"]
 //  Modules
 //  "fileMatch": [".chromia/seeder/**/modules/**/*.yml"]
-data class ModuleConfig(
+internal data class ModuleConfig(
     val moduleName: String,
     val entityConfigs: Map<String, EntityConfig> = emptyMap(),
 )
 
-data class EntityConfig(
+internal data class EntityConfig(
     val name: String,
     val attributes: Map<String, AttributeConfig> = emptyMap(),
     val count: Int = 10, // Default number of records to generate
 )
 
-sealed class AttributeConfig {
+internal sealed class AttributeConfig {
     data class PredefinedValues(
         val values: List<Any>,
         val distribution: Distribution? = null
@@ -57,7 +57,7 @@ sealed class AttributeConfig {
     data class CustomGenerator(val generator: (Attribute) -> Any?) : AttributeConfig()
 }
 
-enum class Distribution {
+internal enum class Distribution {
     SEQUENTIAL, // Use values in sequence
     RANDOM, // Pick values randomly
     WEIGHTED // Pick values based on weights (requires additional configuration)

@@ -20,7 +20,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
  * delegated (an expression body falls through to the generic recursion, a value block to
  * [ValueBlockFormatter]).
  */
-class LambdaExprFormatter(
+internal class LambdaExprFormatter(
     private val braceFormatter: BraceFormatter,
     private val whitespaceFormatter: WhitespaceFormatter,
     private val tokenAnalyzer: TokenAnalyzer,
@@ -49,7 +49,7 @@ class LambdaExprFormatter(
     }
 }
 
-class ValueBlockFormatter(private val tokenAnalyzer: TokenAnalyzer) : NodeFormatter<ValueBlockContext> {
+internal class ValueBlockFormatter(private val tokenAnalyzer: TokenAnalyzer) : NodeFormatter<ValueBlockContext> {
     override fun format(node: ValueBlockContext, doc: FormattableDocument) {
         val open = tokenAnalyzer.directTokenFor(node, "{")
         val close = tokenAnalyzer.directTokenFor(node, "}")

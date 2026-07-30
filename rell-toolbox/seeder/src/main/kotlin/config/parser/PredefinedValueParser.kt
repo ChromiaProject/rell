@@ -10,7 +10,7 @@ import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.toolbox.seeder.schema.Attribute
 import java.math.BigInteger
 
-object PredefinedValueParser {
+internal object PredefinedValueParser {
 
     fun parse(attribute: Attribute, nodes: JsonNode): List<Any> {
         val type = attribute.type

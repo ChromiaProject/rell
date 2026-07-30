@@ -1,0 +1,72 @@
+public final class net/postchain/rell/toolbox/indexer/FileUtilsKt {
+	public static final fun calculateChecksum (Ljava/io/File;)Ljava/lang/String;
+	public static final fun calculateChecksum (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun calculateChecksum (Ljava/net/URI;)Ljava/lang/String;
+	public static final fun findRellFilesInWorkspace (Ljava/io/File;Ljava/util/List;)V
+	public static final fun sha256 (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun sha256 ([B)Ljava/lang/String;
+}
+
+public final class net/postchain/rell/toolbox/indexer/IndexingState : java/lang/Enum {
+	public static final field BEGIN Lnet/postchain/rell/toolbox/indexer/IndexingState;
+	public static final field END Lnet/postchain/rell/toolbox/indexer/IndexingState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lnet/postchain/rell/toolbox/indexer/IndexingState;
+	public static fun values ()[Lnet/postchain/rell/toolbox/indexer/IndexingState;
+}
+
+public final class net/postchain/rell/toolbox/indexer/NodeInterval : org/antlr/v4/runtime/misc/Interval {
+	public fun <init> (Lorg/antlr/v4/runtime/ParserRuleContext;)V
+	public fun <init> (Lorg/antlr/v4/runtime/tree/TerminalNode;)V
+}
+
+public final class net/postchain/rell/toolbox/indexer/RellCompilerUtils {
+	public fun <init> ()V
+	public final fun createCompilerSourcePath (Ljava/net/URI;Ljava/net/URI;)Lnet/postchain/rell/base/compiler/base/utils/C_SourcePath;
+}
+
+public final class net/postchain/rell/toolbox/indexer/RellResourceFactory {
+	public static final field Companion Lnet/postchain/rell/toolbox/indexer/RellResourceFactory$Companion;
+	public fun <init> (Ljava/net/URI;Lnet/postchain/rell/toolbox/parser/AntlrRellParser;Lnet/postchain/rell/toolbox/chromia/ChromiaModelProvider;)V
+	public final fun buildRellResource (Ljava/net/URI;Ljava/util/Map;)Lnet/postchain/rell/toolbox/indexer/Resource;
+}
+
+public final class net/postchain/rell/toolbox/indexer/RellResourceFactory$Companion {
+}
+
+public final class net/postchain/rell/toolbox/indexer/SymbolUtilKt {
+	public static final fun createLocationInfo (Ljava/util/Map;)Ljava/util/Map;
+}
+
+public final class net/postchain/rell/toolbox/indexer/WorkspaceIndexer {
+	public fun <init> (Ljava/net/URI;Lnet/postchain/rell/toolbox/linter/AbstractRellLinter;Lnet/postchain/rell/toolbox/linter/LinterOptions;Lnet/postchain/rell/toolbox/linter/AbstractFormattingStyleLinter;Lnet/postchain/rell/toolbox/formatter/FormatterOptions;Ljava/net/URI;Ljava/util/Set;Ljava/net/URI;)V
+	public synthetic fun <init> (Ljava/net/URI;Lnet/postchain/rell/toolbox/linter/AbstractRellLinter;Lnet/postchain/rell/toolbox/linter/LinterOptions;Lnet/postchain/rell/toolbox/linter/AbstractFormattingStyleLinter;Lnet/postchain/rell/toolbox/formatter/FormatterOptions;Ljava/net/URI;Ljava/util/Set;Ljava/net/URI;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun findAffectedFiles (Ljava/net/URI;)Ljava/util/Set;
+	public final fun getAllIssues ()Ljava/util/Map;
+	public final fun getAllLintAndFormatIssues ()Ljava/util/Map;
+	public final fun getChromiaConfigUri ()Ljava/net/URI;
+	public final fun getExcludeFolders ()Ljava/util/Set;
+	public final fun getFileMap ()Ljava/util/concurrent/ConcurrentHashMap;
+	public final fun getFileUriResourceMap ()Ljava/util/concurrent/ConcurrentHashMap;
+	public final fun getFileUrisWithPrefix (Ljava/net/URI;)Ljava/util/Collection;
+	public final fun getProjectRootUri ()Ljava/net/URI;
+	public final fun getResource (Ljava/net/URI;)Lnet/postchain/rell/toolbox/indexer/Resource;
+	public final fun getResources ()Ljava/util/Collection;
+	public final fun getWorkspaceUri ()Ljava/net/URI;
+	public final fun initialFileIndexBuild (Lnet/postchain/rell/toolbox/indexer/WorkspaceIndexer;Z)V
+	public static synthetic fun initialFileIndexBuild$default (Lnet/postchain/rell/toolbox/indexer/WorkspaceIndexer;Lnet/postchain/rell/toolbox/indexer/WorkspaceIndexer;ZILjava/lang/Object;)V
+	public final fun isConfigFile (Ljava/net/URI;)Z
+	public final fun reloadLinterConfig (Ljava/io/File;)V
+	public final fun removeFileUriResourceMap (Ljava/net/URI;)V
+	public final fun setFileMap (Ljava/util/concurrent/ConcurrentHashMap;)V
+	public final fun setFileUriResourceMap (Ljava/util/concurrent/ConcurrentHashMap;)V
+	public final fun updateConfig (Ljava/net/URI;Lkotlin/jvm/functions/Function1;)V
+	public final fun updateFileUriResourceMap (Ljava/net/URI;)Lnet/postchain/rell/toolbox/indexer/Resource;
+	public final fun updateFileUriResourceMap (Ljava/net/URI;Ljava/lang/String;)V
+}
+
+public final class net/postchain/rell/toolbox/indexer/references/ReferenceIndexer {
+	public fun <init> (Ljava/net/URI;Ljava/util/Map;)V
+	public final fun findAllReferences (Ljava/net/URI;Lnet/postchain/rell/toolbox/indexer/IdeSymbolInfoWithInterval;)Ljava/util/List;
+}
+

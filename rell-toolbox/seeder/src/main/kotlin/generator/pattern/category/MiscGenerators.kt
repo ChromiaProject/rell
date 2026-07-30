@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class MiscGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class MiscGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         // Artist
         register("artist.names") {

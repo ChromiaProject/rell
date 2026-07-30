@@ -11,7 +11,7 @@ import net.postchain.rell.toolbox.seeder.generator.GeneratedData
 import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import java.nio.file.Path
 
-class YamlDataExporter : BaseDataExporter() {
+internal class YamlDataExporter : BaseDataExporter() {
     private val objectMapper = ObjectMapper(YAMLFactory()).apply {
         enable(SerializationFeature.INDENT_OUTPUT)
     }

@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class TravelGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class TravelGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         // Airport
         register("airport.usa.large") {

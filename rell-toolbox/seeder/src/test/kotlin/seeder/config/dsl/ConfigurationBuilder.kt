@@ -9,7 +9,7 @@ import net.postchain.rell.toolbox.seeder.config.ModuleConfig
 import net.postchain.rell.toolbox.seeder.config.serializer.ConfigurationSerializer
 import java.nio.file.Path
 
-class ConfigurationBuilder {
+internal class ConfigurationBuilder {
     private val modules = mutableMapOf<String, ModuleConfig>()
 
     fun module(moduleName: String, modulePath: String? = null, block: ModuleConfigBuilder.() -> Unit) {
@@ -29,13 +29,13 @@ class ConfigurationBuilder {
     }
 }
 
-fun configuration(block: ConfigurationBuilder.() -> Unit): Configuration {
+internal fun configuration(block: ConfigurationBuilder.() -> Unit): Configuration {
     val builder = ConfigurationBuilder()
     builder.block()
     return builder.build()
 }
 
-fun configFile(
+internal fun configFile(
     outputDirPath: Path,
     seederName: String = "test_chromia_seeder",
     block: ConfigurationFileBuilder.() -> Unit
@@ -49,7 +49,7 @@ fun configFile(
     return ConfigurationSerializer().serialize(config, outputDir.toPath())
 }
 
-class ConfigurationFileBuilder {
+internal class ConfigurationFileBuilder {
     var configuration: Configuration? = null
     fun configuration(block: ConfigurationBuilder.() -> Unit) {
         val builder = ConfigurationBuilder()

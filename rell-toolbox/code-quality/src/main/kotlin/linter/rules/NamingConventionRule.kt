@@ -23,7 +23,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
  * `RULE_ID` terminals at all definition sites, so this rule overrides every relevant
  * "definition" visitor and pulls the first identifier terminal out by hand.
  */
-class NamingConventionRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
+internal class NamingConventionRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
 
     companion object {

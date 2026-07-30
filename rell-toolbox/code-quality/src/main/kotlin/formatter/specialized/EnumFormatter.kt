@@ -12,7 +12,7 @@ import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
 import net.postchain.rell.toolbox.formatter.util.WhitespaceFormatter
 import net.postchain.rell.toolbox.formatter.util.getEnumValues
 
-class EnumDefFormatter(
+internal class EnumDefFormatter(
     private val lineAnalyzer: LineAnalyzer,
     private val whitespaceFormatter: WhitespaceFormatter,
     private val tokenAnalyzer: TokenAnalyzer,

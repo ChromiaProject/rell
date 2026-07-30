@@ -10,7 +10,7 @@ import net.postchain.rell.toolbox.seeder.generator.DataGeneratorContext
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 import net.postchain.rell.toolbox.seeder.generator.pattern.SimpleDataPatternGenerator
 
-abstract class GeneratorCategory(
+internal abstract class GeneratorCategory(
     protected val registry: GeneratorRegistry
 ) {
     abstract fun register()

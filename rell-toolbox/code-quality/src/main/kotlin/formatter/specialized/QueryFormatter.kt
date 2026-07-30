@@ -10,7 +10,7 @@ import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.*
 
-class QueryDefFormatter(
+internal class QueryDefFormatter(
     private val braceFormatter: BraceFormatter,
     private val lineAnalyzer: LineAnalyzer,
     private val whitespaceFormatter: WhitespaceFormatter,

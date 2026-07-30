@@ -13,7 +13,7 @@ import net.postchain.rell.toolbox.seeder.schema.Entity
 import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import java.nio.file.Path
 
-class InitialConfigGenerator {
+internal class InitialConfigGenerator {
 
     private val configSerializer = ConfigurationSerializer()
 

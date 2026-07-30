@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class EduGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class EduGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         // Educator
         register("educator.school_name") {

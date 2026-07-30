@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.seeder.exporter
 
-object DataExporterFactory {
+internal object DataExporterFactory {
     fun createExporter(format: OutputFormat): DataExporter {
         return when (format) {
             OutputFormat.RELL -> RellDataExporter()

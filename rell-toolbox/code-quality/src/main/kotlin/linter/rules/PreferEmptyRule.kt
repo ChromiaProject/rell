@@ -28,7 +28,7 @@ import org.antlr.v4.runtime.RuleContext
  * rare `json.size()` (json has no `.empty()`) or a user function named `size`; on those receivers
  * the fix produces a compile error the editor surfaces immediately. A type-aware check is Wave 2.
  */
-class PreferEmptyRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
+internal class PreferEmptyRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
 
     override val ruleId

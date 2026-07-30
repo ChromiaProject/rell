@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class TechGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class TechGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         // App
         register("app.name") { selectGenerator(it, it.faker.app::name, it.faker.app.unique::name) }

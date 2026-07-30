@@ -14,7 +14,7 @@ import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.misc.Interval
 import org.antlr.v4.runtime.tree.TerminalNode
 
-class RootFormattableDocument(
+internal class RootFormattableDocument(
     val formatter: RellFormatter,
     val tokenAnalyzer: TokenAnalyzer,
     val formatterOptions: FormatterOptions

@@ -11,7 +11,7 @@ import net.postchain.rell.toolbox.seeder.schema.Entity
 import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import kotlin.random.Random
 
-class EntityRecordGenerator(
+internal class EntityRecordGenerator(
     random: Random,
     val generatorFactory: FakerGeneratorFactory
 ) {

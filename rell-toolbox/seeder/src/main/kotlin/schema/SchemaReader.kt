@@ -10,7 +10,7 @@ import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.utils.RellVersions
 import java.io.File
 
-class SchemaReader {
+internal class SchemaReader {
     fun readSchema(
         sourceDir: File,
         modules: List<String>? = null,
@@ -47,4 +47,4 @@ class SchemaReader {
     }
 }
 
-class SchemaReaderException(message: String, cause: Throwable) : RuntimeException(message, cause)
+internal class SchemaReaderException(message: String, cause: Throwable) : RuntimeException(message, cause)

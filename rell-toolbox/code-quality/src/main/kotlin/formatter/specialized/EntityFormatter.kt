@@ -11,7 +11,7 @@ import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.*
 
 
-class EntityDefFormatter : NodeFormatter<EntityDefContext> {
+internal class EntityDefFormatter : NodeFormatter<EntityDefContext> {
     override fun format(node: EntityDefContext, doc: FormattableDocument) {
         doc.surround(node) { it.setNewLines(2) }
         doc.interiorIndent(node.entityBody())
@@ -21,7 +21,7 @@ class EntityDefFormatter : NodeFormatter<EntityDefContext> {
     }
 }
 
-class EntityBodyFormatter(
+internal class EntityBodyFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<EntityBodyContext> {
     override fun format(node: EntityBodyContext, doc: FormattableDocument) {
@@ -39,7 +39,7 @@ class EntityBodyFormatter(
     }
 }
 
-class EntityAnnotationsFormatter(
+internal class EntityAnnotationsFormatter(
     private val braceFormatter: BraceFormatter,
     private val argumentFormatter: ArgumentFormatter,
     private val whitespaceFormatter: WhitespaceFormatter,
@@ -73,7 +73,7 @@ class EntityAnnotationsFormatter(
     }
 }
 
-class KeyIndexFormatter(
+internal class KeyIndexFormatter(
     private val whitespaceFormatter: WhitespaceFormatter
 ) : NodeFormatter<KeyIndexClauseContext> {
     override fun format(node: KeyIndexClauseContext, doc: FormattableDocument) {
@@ -98,7 +98,7 @@ class KeyIndexFormatter(
     }
 }
 
-class BaseAttributeDefFormatter(
+internal class BaseAttributeDefFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<BaseAttributeDefinitionContext> {
     override fun format(node: BaseAttributeDefinitionContext, doc: FormattableDocument) {
@@ -114,7 +114,7 @@ class BaseAttributeDefFormatter(
     }
 }
 
-class NameTypeAttrHeadFormatter : NodeFormatter<NameTypeAttrHeaderContext> {
+internal class NameTypeAttrHeadFormatter : NodeFormatter<NameTypeAttrHeaderContext> {
     override fun format(node: NameTypeAttrHeaderContext, doc: FormattableDocument) {
         doc.append(node.RULE_ID()) { it.noSpace() }
         doc.prepend(node.type()) { it.oneSpace() }

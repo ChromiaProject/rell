@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class SportsGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class SportsGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         // Basketball
         register("basketball.teams") {

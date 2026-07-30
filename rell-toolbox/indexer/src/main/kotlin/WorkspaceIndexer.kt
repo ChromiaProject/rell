@@ -367,7 +367,7 @@ class WorkspaceIndexer(
         }
     }
 
-    fun runLinter() {
+    internal fun runLinter() {
         for ((fileUri, resource) in fileUriResourceMap.entries) {
             val fileContent = File(fileUri).readText()
             runLinter(resource, fileContent)

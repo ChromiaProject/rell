@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class InternetGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class InternetGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register("email") { selectGenerator(it, it.faker.internet::email, it.faker.internet.unique::email) }
         register("internet.domain") { selectGenerator(it, it.faker.internet::domain, it.faker.internet.unique::domain) }

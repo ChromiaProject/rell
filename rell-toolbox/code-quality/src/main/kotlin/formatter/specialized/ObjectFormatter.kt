@@ -10,7 +10,7 @@ import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
 import net.postchain.rell.toolbox.formatter.util.WhitespaceFormatter
 
-class ObjectDefFormatter(
+internal class ObjectDefFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
     private val whitespaceFormatter: WhitespaceFormatter,
 ) : NodeFormatter<ObjectDefContext> {

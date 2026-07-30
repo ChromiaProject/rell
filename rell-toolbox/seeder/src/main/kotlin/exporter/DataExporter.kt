@@ -8,6 +8,6 @@ import net.postchain.rell.toolbox.seeder.generator.GeneratedData
 import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import java.nio.file.Path
 
-interface DataExporter {
+internal interface DataExporter {
     fun export(data: GeneratedData, schema: RellSchema, outputPath: Path, mountName: String)
 }

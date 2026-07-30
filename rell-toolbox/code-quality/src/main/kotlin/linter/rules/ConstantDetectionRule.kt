@@ -19,7 +19,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.RuleContext
 import org.antlr.v4.runtime.misc.Interval
 
-class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
+internal class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
 
     companion object {
@@ -157,7 +157,7 @@ class ConstantDetectionRule(config: LinterOptions, resource: Resource, linterCon
     }
 }
 
-class ConstantDetectionRuleContext(
+internal class ConstantDetectionRuleContext(
     val varName: String,
     val parserRuleContext: ParserRuleContext,
     val isTupleDeclarator: Boolean,
@@ -165,7 +165,7 @@ class ConstantDetectionRuleContext(
     val varStmtCtx: RellParser.VarStmtAltContext,
 )
 
-class SimpleVarDeclaratorCollector : RellBaseVisitor<Unit>() {
+internal class SimpleVarDeclaratorCollector : RellBaseVisitor<Unit>() {
     val declarations = mutableListOf<RellParser.SimpleVarDeclaratorContext>()
     override fun visitSimpleVarDeclarator(ctx: RellParser.SimpleVarDeclaratorContext?) {
         if (ctx != null) {

@@ -13,7 +13,7 @@ import org.antlr.v4.runtime.BufferedTokenStream
  * in `:rell-base:frontend`; the parse tree is consumed by the visitor that builds
  * `S_RellFile` and by downstream tools (formatter/linter/language-server).
  */
-data class ParsingResult(
+internal data class ParsingResult(
     val parseTree: RellParser.FileContext,
     val syntaxErrors: List<SyntaxError>,
     val tokenStream: BufferedTokenStream?,

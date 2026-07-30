@@ -16,7 +16,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
  * `# genericTypeExpr` of `baseExprHead`:
  *   qualifiedName '<' type (',' type)* ','? '>' (callArgs | '.' RULE_ID)
  */
-class GenTypeExprFormatter(
+internal class GenTypeExprFormatter(
     private val braceFormatter: BraceFormatter,
     private val expressionFormatter: ExpressionFormatter,
 ) : NodeFormatter<GenericTypeExprContext> {
@@ -44,7 +44,7 @@ class GenTypeExprFormatter(
  * `# genericOrNameType` of `primaryType`:
  *   qualifiedName ('<' type (',' type)* ','? '>')?
  */
-class GenericTypeFormatter(
+internal class GenericTypeFormatter(
     private val braceFormatter: BraceFormatter,
     private val argumentFormatter: ArgumentFormatter,
     private val whitespaceFormatter: WhitespaceFormatter,

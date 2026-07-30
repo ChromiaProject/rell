@@ -1,0 +1,48 @@
+public final class net/postchain/rell/toolbox/seeder/InitialConfigurationParams {
+	public fun <init> (Ljava/io/File;Ljava/nio/file/Path;Ljava/util/List;Lnet/postchain/rell/base/model/R_LangVersion;Z)V
+	public final fun getModules ()Ljava/util/List;
+	public final fun getOutputPath ()Ljava/nio/file/Path;
+	public final fun getRellVersion ()Lnet/postchain/rell/base/model/R_LangVersion;
+	public final fun getSourceDir ()Ljava/io/File;
+	public final fun isLibrary ()Z
+}
+
+public final class net/postchain/rell/toolbox/seeder/InitialConfigurationParams$Builder {
+	public fun <init> ()V
+	public final fun build ()Lnet/postchain/rell/toolbox/seeder/InitialConfigurationParams;
+	public final fun isLibrary (Z)Lnet/postchain/rell/toolbox/seeder/InitialConfigurationParams$Builder;
+	public final fun modules (Ljava/util/List;)Lnet/postchain/rell/toolbox/seeder/InitialConfigurationParams$Builder;
+	public final fun outputPath (Ljava/nio/file/Path;)Lnet/postchain/rell/toolbox/seeder/InitialConfigurationParams$Builder;
+	public final fun rellVersion (Ljava/lang/String;)Lnet/postchain/rell/toolbox/seeder/InitialConfigurationParams$Builder;
+	public final fun sourceDir (Ljava/io/File;)Lnet/postchain/rell/toolbox/seeder/InitialConfigurationParams$Builder;
+}
+
+public final class net/postchain/rell/toolbox/seeder/SeederApi {
+	public static final field INSTANCE Lnet/postchain/rell/toolbox/seeder/SeederApi;
+	public final fun generate (Lnet/postchain/rell/toolbox/seeder/SeederParams;)V
+	public final fun generateDefaultConfigurations (Lnet/postchain/rell/toolbox/seeder/InitialConfigurationParams;)V
+}
+
+public final class net/postchain/rell/toolbox/seeder/SeederParams {
+	public fun <init> (Ljava/io/File;Ljava/nio/file/Path;Ljava/util/List;Lnet/postchain/rell/base/model/R_LangVersion;Ljava/nio/file/Path;ZLjava/lang/String;)V
+	public final fun getModules ()Ljava/util/List;
+	public final fun getMountName ()Ljava/lang/String;
+	public final fun getOutputPath ()Ljava/nio/file/Path;
+	public final fun getRellVersion ()Lnet/postchain/rell/base/model/R_LangVersion;
+	public final fun getSeederConfig ()Ljava/nio/file/Path;
+	public final fun getSourceDir ()Ljava/io/File;
+	public final fun isLibrary ()Z
+}
+
+public final class net/postchain/rell/toolbox/seeder/SeederParams$Builder {
+	public fun <init> ()V
+	public final fun build ()Lnet/postchain/rell/toolbox/seeder/SeederParams;
+	public final fun isLibrary (Z)Lnet/postchain/rell/toolbox/seeder/SeederParams$Builder;
+	public final fun modules (Ljava/util/List;)Lnet/postchain/rell/toolbox/seeder/SeederParams$Builder;
+	public final fun mountName (Ljava/lang/String;)Lnet/postchain/rell/toolbox/seeder/SeederParams$Builder;
+	public final fun outputPath (Ljava/nio/file/Path;)Lnet/postchain/rell/toolbox/seeder/SeederParams$Builder;
+	public final fun rellVersion (Ljava/lang/String;)Lnet/postchain/rell/toolbox/seeder/SeederParams$Builder;
+	public final fun rootConfig (Ljava/nio/file/Path;)Lnet/postchain/rell/toolbox/seeder/SeederParams$Builder;
+	public final fun sourceDir (Ljava/io/File;)Lnet/postchain/rell/toolbox/seeder/SeederParams$Builder;
+}
+

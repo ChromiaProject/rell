@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class StripeGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class StripeGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register("stripe.valid_card") {
             selectGenerator(

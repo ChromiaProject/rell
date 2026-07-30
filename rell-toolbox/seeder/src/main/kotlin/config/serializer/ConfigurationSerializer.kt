@@ -12,7 +12,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.div
 import kotlin.io.path.writeText
 
-class ConfigurationSerializer {
+internal class ConfigurationSerializer {
     private val moduleConfigurationSerializer = ModuleConfigSerializer()
     fun serialize(config: Configuration, outputDirPath: Path): Path {
         val outputDir = outputDirPath.apply { createDirectories() }

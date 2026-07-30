@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.compiler
 
-object RellCompilerFilePathHolder {
+internal object RellCompilerFilePathHolder {
     private val CURRENT_FILE_LOCAL = ThreadLocal<RellCompilerFilePath>()
 
     fun <T> overrideCurrentFile(path: RellCompilerFilePath, code: () -> T): T {
@@ -16,7 +16,4 @@ object RellCompilerFilePathHolder {
             CURRENT_FILE_LOCAL.set(oldPath)
         }
     }
-
-    val currentFile: RellCompilerFilePath
-        get() = CURRENT_FILE_LOCAL.get()
 }

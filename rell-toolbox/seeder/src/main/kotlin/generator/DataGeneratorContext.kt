@@ -9,7 +9,7 @@ import net.postchain.rell.toolbox.seeder.config.AttributeConfig
 import net.postchain.rell.toolbox.seeder.schema.Attribute
 import net.postchain.rell.toolbox.seeder.schema.Entity
 
-data class DataGeneratorContext(
+internal data class DataGeneratorContext(
     val attribute: Attribute,
     val entity: Entity,
     val attributeConfig: AttributeConfig?,

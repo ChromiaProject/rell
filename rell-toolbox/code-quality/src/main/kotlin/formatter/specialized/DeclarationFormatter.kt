@@ -11,7 +11,7 @@ import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.*
 
 
-class VarStmtFormatter(
+internal class VarStmtFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<VarStmtAltContext> {
@@ -25,7 +25,7 @@ class VarStmtFormatter(
     }
 }
 
-class TupleVarDecFormatter(
+internal class TupleVarDecFormatter(
     private val braceFormatter: BraceFormatter,
     private val argumentFormatter: ArgumentFormatter,
     private val whitespaceFormatter: WhitespaceFormatter,
@@ -44,7 +44,7 @@ class TupleVarDecFormatter(
     }
 }
 
-class ConstantDefFormatter(
+internal class ConstantDefFormatter(
     private val whitespaceFormatter: WhitespaceFormatter,
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<ConstantDefContext> {

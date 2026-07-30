@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class TeaGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class TeaGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register("tea.type") { selectGenerator(it, it.faker.tea::type, it.faker.tea.unique::type) }
         register("tea.variety.black") {

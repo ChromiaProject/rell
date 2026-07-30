@@ -39,7 +39,7 @@ object RellCompilerApi {
         ast to emptyList()
     }
 
-    fun validateSimple(srcDir: C_SourceDir, moduleName: String): String {
+    internal fun validateSimple(srcDir: C_SourceDir, moduleName: String): String {
         val modules = listOf(moduleName)
         val options: C_CompilerOptions = C_CompilerOptions.builder()
             .gtv(false)

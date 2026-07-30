@@ -30,12 +30,12 @@ class RellCompilerUtils {
         return checkNotNull(compilerSourcePath) { "Could not create source path for file: $uri" }
     }
 
-    fun createRellCompilerFilePath(compilerSourcePath: C_SourcePath): RellCompilerFilePath {
+    internal fun createRellCompilerFilePath(compilerSourcePath: C_SourcePath): RellCompilerFilePath {
         val idePath = IdeSourcePathFilePath(compilerSourcePath)
         return RellCompilerFilePath(compilerSourcePath, idePath)
     }
 
-    fun createInvalidFileCompilationResult(compilerSrcPath: C_SourcePath): IdeCompilationResult {
+    internal fun createInvalidFileCompilationResult(compilerSrcPath: C_SourcePath): IdeCompilationResult {
         val idePath = IdeSourcePathFilePath(compilerSrcPath)
         return IdeCompilationResult(
             immListOf(

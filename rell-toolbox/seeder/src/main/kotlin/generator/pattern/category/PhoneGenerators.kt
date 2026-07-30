@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class PhoneGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class PhoneGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register("phone_number") {
             selectGenerator(it, it.faker.phoneNumber::phoneNumber, it.faker.phoneNumber.unique::phoneNumber)

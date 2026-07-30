@@ -9,7 +9,7 @@ import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.TokenAnalyzer
 
-class NamespaceDefFormatter(
+internal class NamespaceDefFormatter(
     private val tokenAnalyzer: TokenAnalyzer,
 ) : NodeFormatter<NamespaceDefContext> {
     override fun format(node: NamespaceDefContext, doc: FormattableDocument) {

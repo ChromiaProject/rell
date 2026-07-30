@@ -25,7 +25,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
  *  - `(entity @* {...}).size() == 0` / `.empty()` → existence check; use `@?` + null-check or `exists()` (report)
  *  - `(entity @+ {...}).size() == 0` / `.empty()` → `@+` is always non-empty (report)
  */
-class AtCardinalityMisuseRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
+internal class AtCardinalityMisuseRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
 
     override val ruleId

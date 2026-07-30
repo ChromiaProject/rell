@@ -6,7 +6,7 @@ package net.postchain.rell.toolbox.seeder.generator.pattern.category
 
 import net.postchain.rell.toolbox.seeder.generator.pattern.GeneratorRegistry
 
-class MoneyGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
+internal class MoneyGenerators(registry: GeneratorRegistry) : GeneratorCategory(registry) {
     override fun register() {
         register("money.amount") {
             // TODO: Money amount generator is very slow, replace it with a faster implementation

@@ -16,9 +16,9 @@ import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.ParserRuleContext
 
-class RellFormatter(
-    val parser: RellParser,
-    val source: String,
+class RellFormatter internal constructor(
+    internal val parser: RellParser,
+    internal val source: String,
     formatterRequest: FormatterOptions
 ) {
     private val formatterRegistry = FormatterRegistry()
@@ -68,7 +68,6 @@ class RellFormatter(
                     braceFormatter,
                     whitespaceFormatter,
                     argumentFormatter,
-                    expressionFormatter,
                 )
             )
             register(AtExprModifiersContext::class.java, AtExprModFormatter(tokenAnalyzer))
@@ -231,7 +230,7 @@ class RellFormatter(
                 )
             )
 
-            register(FileContext::class.java, RootNodeFormatter(expressionFormatter, tokenAnalyzer))
+            register(FileContext::class.java, RootNodeFormatter(expressionFormatter))
             register(ModuleHeaderContext::class.java, MooduleHeaderFormatter(whitespaceFormatter))
             register(ModifierContext::class.java, ModifierFormatter(whitespaceFormatter))
 
@@ -326,7 +325,7 @@ class RellFormatter(
         }
     }
 
-    fun format(node: ParserRuleContext, doc: FormattableDocument) {
+    internal fun format(node: ParserRuleContext, doc: FormattableDocument) {
         visitor.visit(node, doc)
     }
 

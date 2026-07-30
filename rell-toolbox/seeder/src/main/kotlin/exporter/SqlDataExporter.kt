@@ -8,7 +8,7 @@ import net.postchain.rell.toolbox.seeder.generator.GeneratedData
 import net.postchain.rell.toolbox.seeder.schema.RellSchema
 import java.nio.file.Path
 
-class SqlDataExporter : BaseDataExporter() {
+internal class SqlDataExporter : BaseDataExporter() {
     override fun export(data: GeneratedData, schema: RellSchema, outputPath: Path, mountName: String) {
         val outputFile = prepareOutputFile(outputPath)
         outputFile.bufferedWriter().use { writer ->

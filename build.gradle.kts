@@ -23,7 +23,6 @@ apiValidation {
         "rell-base", "rr-serialization", "utils", "test-utils", "rell-gtx", "rell-tools",
         "frontend", "runtime-core", "runtime-interpreter", "runtime-truffle",
         // Imported projects — no API stability guarantees yet
-        "rell-toolbox", "common", "ast", "indexer", "code-quality", "seeder",
         "rell-codegen", "codegen", "codegen-kotlin", "codegen-typescript", "codegen-javascript",
         "codegen-python", "codegen-mermaid", "rellgen",
         "performance",
