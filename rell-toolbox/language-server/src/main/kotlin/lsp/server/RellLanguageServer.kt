@@ -122,7 +122,24 @@ internal class RellLanguageServer(
                 isParameterNamesEnabled = inlayHintsJson?.get("parameterHints")?.asBoolean ?: false
             )
             inlayHintManager.updateConfig(inlayHintsConfig)
+
+            // Chromia settings files chosen by the client (chr -s/--settings), merged with
+            // name-based discovery — see RellIndexingManager.explicitChromiaConfigFiles. A bad
+            // entry must never fail initialize: the client would be left without any server.
+            indexingManager.explicitChromiaConfigFiles = initializationOptions.get("chromiaConfigFiles")
+                ?.takeIf { it.isJsonArray }?.asJsonArray
+                ?.mapNotNull { element -> parseConfigFileUri(element) }
+                ?: emptyList()
         }
+    }
+
+    private fun parseConfigFileUri(element: com.google.gson.JsonElement): java.net.URI? = try {
+        element.takeIf { it.isJsonPrimitive }?.asString
+            ?.let(::parseFileUri)
+            ?.takeIf { File(it).isFile }
+    } catch (@Suppress("SwallowedException") e: Exception) {
+        logger.warn(e) { "Ignoring unusable chromiaConfigFiles entry: $element" }
+        null
     }
 
     override fun initialized(params: InitializedParams) {

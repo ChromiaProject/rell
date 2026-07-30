@@ -8,6 +8,8 @@ import assertk.assertThat
 import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.hasSize
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import net.postchain.rell.toolbox.lsp.TestClient
 import net.postchain.rell.toolbox.lsp.TestServerModule
 import net.postchain.rell.toolbox.lsp.launcher.AbstractServerLauncher
@@ -112,6 +114,42 @@ class InitializationTest {
         val expectedWorkspaceUri = parseFileUri("$pathAsString/")
         assertThat(indexers.keys).containsOnly(expectedWorkspaceUri)
         assertThat(indexers[expectedWorkspaceUri]!!.fileUriResourceMap).hasSize(0)
+    }
+
+    @Test
+    fun `Explicit chromia config files anchor index roots and disable name-based discovery`(@TempDir tempDir: Path) {
+        // testData always writes a chromia.yml at the workspace root; with the client-registered
+        // settings file below it must NOT be picked up.
+        val testDataBuilder = testData(tempDir) {
+            addFile("main.rell", "module;")
+        }
+        val alternateConfig = testDataBuilder.createWorkspaceFile(
+            "atbash.yml",
+            """
+            blockchains:
+              hello:
+                module: main
+            compile:
+              source: alt_src
+            """.trimIndent(),
+        )
+        val alternateSource = testDataBuilder.createWorkspaceFile("alt_src/main.rell", "module;")
+
+        val initParams = InitializeParams()
+        initParams.workspaceFolders = listOf(
+            WorkspaceFolder(testDataBuilder.workspaceFolderUri.toString(), "testWorkspace")
+        )
+        initParams.initializationOptions = JsonObject().apply {
+            add("chromiaConfigFiles", JsonArray().apply { add(alternateConfig.toURI().toString()) })
+        }
+
+        client.initialize(initParams).get()
+        client.initialized(InitializedParams())
+
+        await().until { indexingManager.indexers.isNotEmpty() }
+
+        val expectedSourceRoot = parseFileUri(alternateSource.parentFile.toURI().toString())
+        assertThat(indexingManager.indexers.keys).containsOnly(expectedSourceRoot)
     }
 
     private fun connectToServer(attempt: Int = 0): Socket {

@@ -21,6 +21,10 @@ internal class IndexRoot(val chromiaConfigPath: Path, val sourceRootPath: Path) 
         }
     }
 
+    val chromiaConfigUri: URI by lazy {
+        checkNotNull(parseFileUri(chromiaConfigPath.toUri().toString())) { "Failed to parse chromia model URI" }
+    }
+
     companion object {
         fun findIndexRoots(workspaceFolderUri: URI): List<IndexRoot> =
             findChromiaConfigFiles(workspacePath = workspaceFolderUri.toPath())

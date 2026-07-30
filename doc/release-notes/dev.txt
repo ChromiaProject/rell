@@ -79,3 +79,19 @@ directories), creating one at the workspace root with an [*.rell] section when n
 runs server-side (workspace/executeCommand), so the linter options reload and the rule's diagnostics
 disappear immediately, and repeating the action rewrites the existing assignment instead of appending
 duplicates. Formatter diagnostics get the same action for their gating rule_formatter key.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+7. Tools: Language server accepts client-chosen settings files (chromiaConfigFiles)
+
+The language server discovered its index roots by scanning workspace folders for files named chromia.yml,
+so projects built with an alternate settings file (chr -s/--settings, e.g. atbash.yml) got no index root:
+their compile.source and libs went unapplied and files fell back to single-file indexing. Clients can now
+pass the settings files to use as the chromiaConfigFiles initialization option (an array of file URIs).
+
+Registered files are merged with name-based discovery rather than replacing it (a client only knows about
+the projects it scanned, so dropping discovery would unanchor the rest), and each one shadows the
+chromia.yml of its own directory, so a project whose settings file is an alternate never anchors twice.
+Each index root reads its Chromia model (rellVersion, compile.source, libs) from exactly the registered
+file, including on watched-file changes to it and across a rename of its project root; cached index data
+compiled under a different settings file is not reused. Unusable entries are logged and skipped instead of
+failing initialize. Without the option, discovery behaves as before.

@@ -14,7 +14,11 @@ import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
 import kotlin.io.path.toPath
 
-class ChromiaModelProvider(private val workspaceRootUri: URI?) {
+class ChromiaModelProvider(
+    private val workspaceRootUri: URI?,
+    /** Explicit settings file to read instead of discovering `chromia.yml` by name (chr `-s/--settings`). */
+    private val chromiaConfigPath: Path? = null,
+) {
 
     private var chromiaModelCache: ChromiaModel? = null
 
@@ -40,8 +44,9 @@ class ChromiaModelProvider(private val workspaceRootUri: URI?) {
     }
 
     fun loadChromiaModel(): ChromiaModel? {
-        if (workspaceRootUri == null) return null
-        val chromiaModelFile = findChromiaModelFile(workspaceRootUri) ?: return null
+        val chromiaModelFile = chromiaConfigPath
+            ?: findChromiaModelFile(workspaceRootUri)
+            ?: return null
         return loadChromiaModelFromFile(chromiaModelFile)
     }
 

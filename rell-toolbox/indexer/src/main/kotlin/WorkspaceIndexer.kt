@@ -33,10 +33,12 @@ class WorkspaceIndexer(
     private val formattingStyleLinter: AbstractFormattingStyleLinter,
     private val formatterOptions: FormatterOptions,
     val projectRootUri: URI? = null,
-    val excludeFolders: Set<Path> = emptySet()
+    val excludeFolders: Set<Path> = emptySet(),
+    /** The settings file governing this index root when it is not a `chromia.yml` found by name. */
+    val chromiaConfigUri: URI? = null,
 ) {
     private val logger = KotlinLogging.logger {}
-    private val chromiaModelProvider = ChromiaModelProvider(projectRootUri)
+    private val chromiaModelProvider = ChromiaModelProvider(projectRootUri, chromiaConfigUri?.toPath())
     private var ignoreReportingUris: Set<URI> =
         chromiaModelProvider.resolveIgnoreReportingUris(workspaceUri)
     private val resourceFactory = RellResourceFactory(workspaceUri, AntlrRellParser(), chromiaModelProvider)
@@ -402,7 +404,8 @@ class WorkspaceIndexer(
     }
 
     private fun isChromiaModelFile(uri: URI): Boolean =
-        uri.toPath().fileName.toString() == ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME
+        (chromiaConfigUri != null && uri.toPath() == chromiaConfigUri.toPath()) ||
+            uri.toPath().fileName.toString() == ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_FILENAME
 
     private fun isInProjectRoot(uri: URI): Boolean {
         val parent = uri.toPath().parent ?: return false

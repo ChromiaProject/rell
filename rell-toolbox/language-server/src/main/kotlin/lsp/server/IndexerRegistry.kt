@@ -17,7 +17,8 @@ internal interface IndexerRegistry {
         resolvedSourceDirUri: URI,
         workspaceFolderUri: URI,
         excludeFolders: Set<Path> = emptySet(),
-        skipCache: Boolean = false
+        skipCache: Boolean = false,
+        chromiaConfigUri: URI? = null,
     ): WorkspaceIndexer
     fun cleanUpOrphans(indexers: Map<URI, WorkspaceIndexer>)
 }

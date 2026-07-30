@@ -32,6 +32,17 @@ internal class RellIndexingManager(
 ): IndexerRegistry {
     private val fileChangeHandler: FileChangeHandler = FileChangeHandler(diagnosticsManager, this)
     var indexCachingEnabled: Boolean = false
+
+    /**
+     * Settings files registered by the client (the `chromiaConfigFiles` initialization option,
+     * mirroring `chr -s/--settings`). These are merged with name-based `chromia.yml` discovery
+     * rather than replacing it — the client only knows about the projects it scanned, so dropping
+     * discovery would unanchor everything outside its reach. A registered file shadows discovery
+     * within its own directory, so a project whose active settings file is an alternate never
+     * double-anchors on its `chromia.yml` too.
+     */
+    var explicitChromiaConfigFiles: List<URI> = emptyList()
+
     val indexers: MutableMap<URI, WorkspaceIndexer> = ConcurrentHashMap()
     internal val orphanIndexers: MutableMap<URI, WorkspaceIndexer> = ConcurrentHashMap()
     private lateinit var workspaceFolders: List<WorkspaceFolder>
@@ -59,16 +70,19 @@ internal class RellIndexingManager(
         try {
             indexingStateHandler?.invoke(IndexingState.BEGIN)
 
-            val newIndexers = workspaceFolderUris.flatMap { workspaceFolder ->
-                val indexRoots = IndexRoot.findIndexRoots(workspaceFolder)
-                if (indexRoots.isEmpty()) {
-                    listOf(doIndex(WorkspaceDirectoryResolver.findSourceDirURI(workspaceFolder), workspaceFolder))
-                } else {
-                    indexRoots.map { indexRoot ->
-                        doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri, skipCache = skipCache)
+            val explicitRoots = explicitChromiaConfigFiles.map { IndexRoot.fromChromiaConfig(it.toPath()) }
+            val newIndexers = (
+                explicitRoots.map { indexRoot -> doIndex(indexRoot, skipCache) } +
+                    workspaceFolderUris.flatMap { workspaceFolder ->
+                        val indexRoots = IndexRoot.findIndexRoots(workspaceFolder)
+                            .filterNot { isShadowedByExplicitRoot(it, explicitRoots) }
+                        if (indexRoots.isEmpty() && explicitRoots.isEmpty()) {
+                            listOf(doIndex(WorkspaceDirectoryResolver.findSourceDirURI(workspaceFolder), workspaceFolder))
+                        } else {
+                            indexRoots.map { indexRoot -> doIndex(indexRoot, skipCache) }
+                        }
                     }
-                }
-            }.associateBy { it.workspaceUri }
+                ).associateBy { it.workspaceUri }
 
             val orphanIndexer = createOrphanIndexers(newIndexers.keys)
 
@@ -89,14 +103,34 @@ internal class RellIndexingManager(
     }
 
     fun indexFromRoots(chromiaConfigFiles: List<URI>) {
+        val explicitRoots = explicitChromiaConfigFiles.map { IndexRoot.fromChromiaConfig(it.toPath()) }
         val newIndexers = chromiaConfigFiles
             .map { IndexRoot.fromChromiaConfig(it.toPath()) }
-            .map { indexRoot -> doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri) }
+            // A chromia.yml appearing next to a client-registered settings file must not take the
+            // directory over: the client chose which file governs there.
+            .filterNot { isShadowedByExplicitRoot(it, explicitRoots) }
+            .map { indexRoot -> doIndex(indexRoot, skipCache = false) }
             .associateBy { it.workspaceUri }
+
+        if (newIndexers.isEmpty()) return
 
         indexers.putAll(newIndexers)
         cleanUpOrphans(newIndexers)
     }
+
+    /** Whether [indexRoot] was discovered by name in a directory a registered settings file owns. */
+    private fun isShadowedByExplicitRoot(indexRoot: IndexRoot, explicitRoots: List<IndexRoot>): Boolean =
+        explicitRoots.any { explicit ->
+            explicit.chromiaConfigPath.parent == indexRoot.chromiaConfigPath.parent &&
+                explicit.chromiaConfigPath != indexRoot.chromiaConfigPath
+        }
+
+    private fun doIndex(indexRoot: IndexRoot, skipCache: Boolean): WorkspaceIndexer = doIndex(
+        indexRoot.sourceRootUri,
+        indexRoot.chromiaConfigDirUri,
+        skipCache = skipCache,
+        chromiaConfigUri = indexRoot.chromiaConfigUri,
+    )
 
     private fun createOrphanIndexers(excludeFolderUris: Set<URI>): Map<URI, WorkspaceIndexer> {
         val result = workspaceFolderUris
@@ -120,9 +154,14 @@ internal class RellIndexingManager(
         workspaceFolderUri: URI,
         excludeFolders: Set<Path>,
         skipCache: Boolean,
+        chromiaConfigUri: URI?,
     ): WorkspaceIndexer {
         val cachedIndexer = if (indexCachingEnabled && !skipCache) {
+            // The cache is keyed by source directory, but several settings files can share one
+            // (chr -s picks between them). Reusing resources compiled under a different settings
+            // file would serve the previous file's rellVersion and libs, so require a match.
             indexCachingService.getWorkspaceIndexer(resolvedSourceDirUri)
+                ?.takeIf { it.chromiaConfigUri == chromiaConfigUri }
         } else {
             null
         }
@@ -137,6 +176,7 @@ internal class RellIndexingManager(
             formatterOptions,
             workspaceFolderUri,
             excludeFolders,
+            chromiaConfigUri = chromiaConfigUri,
         ).also {
             it.initialFileIndexBuild(cachedIndexer)
         }

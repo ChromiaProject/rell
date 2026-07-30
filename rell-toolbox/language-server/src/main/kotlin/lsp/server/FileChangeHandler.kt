@@ -8,6 +8,8 @@ import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.indexer.findRellFilesInWorkspace
 import java.io.File
 import java.net.URI
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.toPath
 
 internal class FileChangeHandler(
     private val diagnosticsManager: RellDiagnosticsManager,
@@ -64,13 +66,27 @@ internal class FileChangeHandler(
         indexer.projectRootUri?.path?.trimEnd('/') == deletedFolderUri.path.trimEnd('/')
 
     private fun folderRenameOnIndexerProjectRoot(indexer: WorkspaceIndexer, newFolderUri: URI) {
-        val indexRoots = IndexRoot.findIndexRoots(newFolderUri)
+        // A renamed root re-discovers by name, but the settings file the client registered for the
+        // old root still governs if it moved along — keep indexing from it rather than silently
+        // falling back to a chromia.yml sitting next to it.
+        val movedConfigUri = indexer.chromiaConfigUri?.let { oldConfigUri ->
+            val name = oldConfigUri.toPath().fileName.toString()
+            newFolderUri.toPath().resolve(name).takeIf { it.isRegularFile() }
+        }
+
+        val indexRoots = movedConfigUri
+            ?.let { listOf(IndexRoot.fromChromiaConfig(it)) }
+            ?: IndexRoot.findIndexRoots(newFolderUri)
 
         val newIndexers = if (indexRoots.isEmpty()) {
             listOf(indexerRegistry.doIndex(WorkspaceDirectoryResolver.findSourceDirURI(newFolderUri), newFolderUri))
         } else {
             indexRoots.map { indexRoot ->
-                indexerRegistry.doIndex(indexRoot.sourceRootUri, indexRoot.chromiaConfigDirUri)
+                indexerRegistry.doIndex(
+                    indexRoot.sourceRootUri,
+                    indexRoot.chromiaConfigDirUri,
+                    chromiaConfigUri = indexRoot.chromiaConfigUri,
+                )
             }
         }.associateBy { it.workspaceUri }
 
