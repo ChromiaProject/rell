@@ -33,7 +33,7 @@ internal class RellDokkaPluginConfiguration(
     val cliEnv: RellCliEnv?,
 ) {
     companion object {
-        const val SYSTEM_TITLE: String = "Rell Docgen"
+        const val SYSTEM_TITLE: String = "Rell Stdlib"
 
         /**
          * Module name used for the system-lib *output directory slug* — distinct from [SYSTEM_TITLE]

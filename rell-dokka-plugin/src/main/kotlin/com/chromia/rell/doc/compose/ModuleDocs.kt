@@ -22,7 +22,7 @@ import kotlin.io.path.readText
  * `# Package [root]` is keyed under `[root]` so the system-lib root package can pick it up.
  */
 internal class ModuleDocs(
-    /** Keyed on the dapp title (or "Rell Docgen" for system-lib docs). */
+    /** Keyed on the dapp title (or "Rell Stdlib" for system-lib docs). */
     private val moduleDocs: Map<String, String>,
     /** Keyed on the package qualified name (or `[root]`). */
     private val packageDocs: Map<String, String>,

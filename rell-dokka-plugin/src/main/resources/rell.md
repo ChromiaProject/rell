@@ -1,4 +1,4 @@
-# Module Rell Standard Library
+# Module Rell Stdlib
 
 The Rell Standard Library contains the essential building blocks for writing your rell dapp. It contains:
 - Basic data types

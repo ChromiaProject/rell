@@ -11,6 +11,13 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 /**
+ * Name of the documentation tool itself, as opposed to the library being documented (which is
+ * `Doc_Site.title` — "Rell Stdlib" for the system library, the dapp/library name otherwise).
+ * Shown in the sidebar version pill and as the `<title>` suffix on the site's entry pages.
+ */
+internal const val DOCGEN_BRAND: String = "Rell Docgen"
+
+/**
  * Renders one page (HTML string) from a `PageSpec`. Pages share a common shell — `<head>`
  * with embedded CSS + optional user-provided `customStyleSheets`, a sidebar containing the
  * navigation, and a `<main>` with the per-page body produced by `PageSpec.body`.
@@ -29,7 +36,7 @@ internal class Pages(
             head {
                 meta(charset = "utf-8")
                 meta(name = "viewport", content = "width=device-width, initial-scale=1")
-                title("${escapeHtml(spec.title)} — ${escapeHtml(site.title)}")
+                title(escapeHtml(headTitle(spec)))
                 for (font in PRELOAD_FONTS) {
                     link {
                         rel = "preload"
@@ -63,7 +70,7 @@ internal class Pages(
                                 }
                             }
                             span(classes = "version-pill") {
-                                +"Rell ${net.postchain.rell.base.utils.RellVersions.VERSION_STR}"
+                                +"$DOCGEN_BRAND ${net.postchain.rell.base.utils.RellVersions.VERSION_STR}"
                             }
                         }
                         div(classes = "sidebar-body") {
@@ -81,6 +88,14 @@ internal class Pages(
             }
         }
     }
+
+    /**
+     * `<title>` for one page: "abs() — Rell Stdlib". The site root and the module index name the
+     * library itself, so instead of repeating it ("Rell Stdlib — Rell Stdlib") they get the
+     * product name as the suffix: "Rell Stdlib — Rell Docgen".
+     */
+    private fun headTitle(spec: PageSpec): String =
+        if (spec.title == site.title) "${site.title} — $DOCGEN_BRAND" else "${spec.title} — ${site.title}"
 
     private fun renderBreadcrumbs(out: FlowContent, spec: PageSpec) {
         out.header(classes = "doc-head") {

@@ -20,12 +20,17 @@ expression:
 A plain if/else expression with no else-if is still left alone.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-2. Docs: Generated documentation site header renamed to "Rell Docgen"
+2. Docs: Generated documentation sites are named after the library they document
 
-The documentation generator titled its output "Rell System Library API Reference", and the same header appeared
-on documentation sites generated for libraries other than the system library. The site header (and the matching
-page titles and breadcrumbs) now reads "Rell Docgen". Page URLs are unchanged: the output directory slug stays
-pinned to the legacy "Rell System Library" name, so existing links keep working.
+The documentation generator titled its output "Rell System Library API Reference", and that same header appeared
+on sites generated for libraries other than the system library. A site is now named after what it documents:
+"Rell Stdlib" for the system library, the library's own name otherwise. The generator itself is named separately,
+in the sidebar version badge ("Rell Docgen 0.17.0") and as the browser title of a site's entry pages
+("Rell Stdlib - Rell Docgen"); pages below those read, for example, "crypto - Rell Stdlib".
+
+The system library's overview text, which was silently dropped because it was filed under a name no site used,
+is back on the front page. Page URLs are unchanged: the output directory slug stays pinned to the legacy
+"Rell System Library" name, so existing links keep working.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 3. Tools: Linter quick fixes are titled after the edit they make

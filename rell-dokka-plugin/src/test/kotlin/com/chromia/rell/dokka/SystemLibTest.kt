@@ -9,6 +9,7 @@ import assertk.assertions.contains
 import assertk.assertions.exists
 import assertk.assertions.isEqualTo
 import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
+import net.postchain.rell.base.utils.RellVersions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -43,6 +44,20 @@ class SystemLibTest {
         assertThat(out / "$moduleSlug/[root]/index.html").exists()
         assertThat(out / "$moduleSlug/rell.test/index.html").exists()
         assertThat(out / "$moduleSlug/crypto/index.html").exists()
+    }
+
+    @Test
+    fun `site is branded as the stdlib documented by Rell Docgen`() {
+        val out = generate()
+        val index = (out / "index.html").readText()
+        // Entry pages name the library, then the tool — not the library twice.
+        assertThat(index).contains("<title>Rell Stdlib — Rell Docgen</title>")
+        assertThat(index).contains("Rell Docgen ${RellVersions.VERSION_STR}")
+        // The bundled rell.md overview is keyed on the site title, so it lands on the index.
+        assertThat(index).contains("essential building blocks")
+        // Pages below the entry pages carry the library name, not the tool name.
+        val cryptoIndex = (out / "$SYSTEM_MODULE_SLUG/crypto/index.html").readText()
+        assertThat(cryptoIndex).contains("<title>crypto — Rell Stdlib</title>")
     }
 
     @Test
