@@ -18,3 +18,11 @@ rule_simplify_nullable_if in turn now recognizes conditions written with the nul
 suggestion does not hide the other. if (x??) x else y is reported as an elvis expression just like the
 comparison spelling, and a guard written as if (not x??) return null; is merged into the declaration above it,
 giving val x = f() ?: return null;.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Tools: Compact arms in the if-to-when quick fix
+
+The quick fix of rule_replace_if_with_when now writes an arm without braces when the branch is a block holding a
+single statement, or a value block holding nothing but its result expression. Branches that need the braces keep
+them, so a when can mix compact and block arms. A block around a single val or var declaration is also kept:
+dropping it would move the name into the enclosing scope.

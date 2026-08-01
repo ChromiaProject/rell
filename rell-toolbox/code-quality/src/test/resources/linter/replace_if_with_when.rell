@@ -38,3 +38,18 @@ function expr_suppressed(a: integer): integer {
     // rell-lint-disable-next-line
     return if (a == 1) 1 else if (a == 2) 0 else 3;
 }
+
+function stmt_block_kept(x: integer) {
+    if (x == 1) {
+        val y = x + 1;
+        print(y);
+    } else if (x == 2) {
+        val z = x;
+    } else {
+        print(3);
+    }
+}
+
+function expr_value_block_kept(a: integer): integer {
+    return if (a == 1) { val b = a; b } else if (a == 2) 2 else 3;
+}

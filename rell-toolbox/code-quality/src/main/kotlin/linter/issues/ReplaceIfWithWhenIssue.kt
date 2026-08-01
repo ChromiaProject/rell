@@ -66,7 +66,7 @@ internal class ReplaceIfStmtWithWhenIssue(
             sb.append(armIndent)
                 .append(reindent(sourceText(current.expression())))
                 .append(" -> ")
-                .append(reindent(sourceText(current.statement(0))))
+                .append(armText(current.statement(0)))
                 .append("\n")
             val elseBranch = if (current.statement().size > 1) current.statement(1) else null
             when (elseBranch) {
@@ -75,13 +75,24 @@ internal class ReplaceIfStmtWithWhenIssue(
                 else -> {
                     sb.append(armIndent)
                         .append("else -> ")
-                        .append(reindent(sourceText(elseBranch)))
+                        .append(armText(elseBranch))
                         .append("\n")
                     break
                 }
             }
         }
         return sb.append(indent).append("}").toString()
+    }
+
+    // A block wrapping a single statement adds nothing in a `when` arm, so unwrap it. A variable
+    // declaration keeps its block: without it the name would leak into the enclosing scope.
+    private fun armText(stmt: RellParser.StatementContext): String {
+        val single = (stmt as? RellParser.BlockStmtAltContext)?.blockStmt()?.statement()?.singleOrNull()
+        return when (single) {
+            null, is RellParser.VarStmtAltContext, is RellParser.EmptyStmtContext -> reindent(sourceText(stmt))
+            // The unwrapped statement already sits at the arm's indentation, so it is not reindented.
+            else -> sourceText(single)
+        }
     }
 }
 
@@ -114,10 +125,14 @@ internal class ReplaceIfExprWithWhenIssue(
         return sb.append(indent).append("}").toString()
     }
 
-    // A `when` expression arm is ';'-terminated unless it is a value block.
+    // A `when` expression arm is ';'-terminated unless it is a value block. A value block holding
+    // nothing but its result expression is unwrapped: the block buys nothing in an arm.
     private fun armText(branch: RellParser.ExprOrValueBlockContext): String {
-        val text = reindent(sourceText(branch))
-        return if (branch.valueBlock() != null) text else "$text;"
+        val block = branch.valueBlock()
+        if (block == null) return reindent(sourceText(branch)) + ";"
+        val result = block.expression()
+        // The unwrapped expression already sits at the arm's indentation, so it is not reindented.
+        return if (result != null && block.statement().isEmpty()) sourceText(result) + ";" else reindent(sourceText(branch))
     }
 }
 
