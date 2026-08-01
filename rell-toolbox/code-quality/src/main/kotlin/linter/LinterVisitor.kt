@@ -26,6 +26,7 @@ internal class LinterVisitor(
         SimplifyBooleanReturnRule(config, resource, linterContext),
         RedundantBooleanComparisonRule(config, resource, linterContext),
         SimplifyNullableIfRule(config, resource, linterContext),
+        PreferNullCheckOperatorRule(config, resource, linterContext),
         PreferEmptyRule(config, resource, linterContext),
         AtCardinalityMisuseRule(config, resource, linterContext),
     )

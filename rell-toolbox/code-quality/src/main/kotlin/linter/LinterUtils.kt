@@ -7,6 +7,7 @@ package net.postchain.rell.toolbox.linter
 import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.misc.Interval
+import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
 
 internal fun ParserRuleContext.isUnderscore(): Boolean = this.text == "_"
@@ -103,6 +104,111 @@ internal fun RellParser.BaseExprContext.asArgFreeMethodCall(): ArgFreeMethodCall
         }
         else -> null
     }
+}
+
+/** The non-null operand of a `<expr> OP null` / `null OP <expr>` condition, else null. */
+internal fun RellParser.ExpressionContext.nullComparisonOperand(op: String): RellParser.BaseExprContext? {
+    val cmp = binaryExpr()?.asSimpleComparison() ?: return null
+    if (cmp.op.text != op) return null
+    val leftNull = cmp.left.isNullLiteral()
+    val rightNull = cmp.right.isNullLiteral()
+    return when {
+        rightNull && !leftNull -> cmp.left
+        leftNull && !rightNull -> cmp.right
+        else -> null
+    }
+}
+
+/** True if a call appears anywhere in this subtree. */
+internal fun ParseTree.containsCall(): Boolean {
+    if (this is RellParser.CallArgsContext) return true
+    for (i in 0 until childCount) {
+        if (getChild(i).containsCall()) return true
+    }
+    return false
+}
+
+/** The trailing null-check operator of an operand written as `x??`, else null. */
+private fun RellParser.BaseExprContext.nullCheckTail(): RellParser.BaseExprTailUnaryPostfixOpContext? =
+    (getChild(childCount - 1) as? RellParser.BaseExprTailUnaryPostfixOpContext)?.takeIf { it.text == "??" }
+
+/** A "value is not null" test, however it is spelled. */
+internal class NullCheck(
+    /** Source text of the tested expression, without the test itself. */
+    val text: String,
+    /** True if the tested expression contains a call, which a rewrite must not duplicate. */
+    val hasCall: Boolean,
+)
+
+/** This expression as a not-null test - `x != null`, `null != x` or `x??` - else null. */
+internal fun RellParser.ExpressionContext.asNullCheck(): NullCheck? {
+    nullComparisonOperand("!=")?.let { return NullCheck(it.sourceText(), it.containsCall()) }
+    val base = binaryExpr()?.singleBaseExpr() ?: return null
+    val tail = base.nullCheckTail() ?: return null
+    val text = base.start.inputStream.getText(Interval.of(base.start.startIndex, tail.start.startIndex - 1))
+    return NullCheck(text, base.containsCall())
+}
+
+/**
+ * The name tested by a "value is null" guard - `x == null` or `not x??` - when the test is a plain
+ * variable. A member access (`a.b == null`) does not name a declaration, so it is not one.
+ */
+internal fun RellParser.ExpressionContext.nullGuardedName(): String? {
+    nullComparisonOperand("==")?.let { operand ->
+        if (operand.childCount != 1) return null
+        return (operand.baseExprHead() as? RellParser.NameExprContext)?.qualifiedName().singleName()
+    }
+    val bin = binaryExpr() ?: return null
+    // `not x??`: the `not` prefix and the operand are the whole expression.
+    if (bin.childCount != 2 || (bin.getChild(0) as? TerminalNode)?.text != "not") return null
+    val base = bin.getChild(1) as? RellParser.BaseExprContext ?: return null
+    if (base.childCount != 2 || base.nullCheckTail() == null) return null
+    return (base.baseExprHead() as? RellParser.NameExprContext)?.qualifiedName().singleName()
+}
+
+/** The name behind a one-segment qualified name (`x`), else null (`a.b`, an at-alias, ...). */
+internal fun RellParser.QualifiedNameContext?.singleName(): String? {
+    val ids = this?.RULE_ID() ?: return null
+    return if (ids.size == 1) ids[0].text else null
+}
+
+internal enum class NullGuardKind { ELVIS, SAFE_ACCESS }
+
+/** An `if`-expression that is nothing but a null guard around one value. */
+internal class NullGuardExpr(
+    val checkedText: String,
+    val thenExpr: RellParser.ExpressionContext,
+    val elseExpr: RellParser.ExpressionContext,
+    val kind: NullGuardKind,
+)
+
+private val SINGLE_MEMBER = Regex("^\\.[A-Za-z_][A-Za-z0-9_]*$")
+
+/**
+ * Recognises the pure-expression null guards that collapse to a null-aware operator:
+ *   `if (x != null) x else y`      → `x ?: y`     ([NullGuardKind.ELVIS])
+ *   `if (x != null) x.f else null` → `x?.f`       ([NullGuardKind.SAFE_ACCESS])
+ * The condition may equally be spelled `x??`. Calls in the checked expression disqualify it:
+ * repeating the call in the rewrite would run its side effects twice.
+ */
+internal fun RellParser.IfExprContext.asNullGuard(): NullGuardExpr? {
+    val check = expression().asNullCheck() ?: return null
+    if (check.hasCall) return null
+    val arms = exprOrValueBlock()
+    if (arms.size != 2) return null
+    val thenExpr = arms[0].expression() ?: return null
+    val elseExpr = arms[1].expression() ?: return null
+    val checkedText = check.text
+    val thenText = thenExpr.sourceText()
+    if (thenText == checkedText) {
+        return NullGuardExpr(checkedText, thenExpr, elseExpr, NullGuardKind.ELVIS)
+    }
+    if (elseExpr.text == "null" && thenText.startsWith(checkedText) &&
+        SINGLE_MEMBER.matches(thenText.substring(checkedText.length))
+    ) {
+        return NullGuardExpr(checkedText, thenExpr, elseExpr, NullGuardKind.SAFE_ACCESS)
+    }
+    return null
 }
 
 /** True if this context sits (transitively) inside an at-expression where-clause. */

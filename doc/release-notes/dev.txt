@@ -1,1 +1,20 @@
 UNRELEASED NOTES
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Tools: Linter inspection suggesting the null-check operator
+
+A new inspection, rule_prefer_null_check_operator, reports a comparison of the form x != null and offers to
+rewrite it as x??, the null-check operator. Both operand orders are recognized, so null != x is reported as well.
+The inspection is on by default, like the other style suggestions.
+
+Comparisons inside an at-expression where-clause are left alone: a where-clause is compiled to SQL, where the two
+forms are not interchangeable.
+
+The inspection yields to rule_simplify_nullable_if. When the whole conditional collapses to an elvis or
+safe-access expression - if (x != null) x else y, or if (x != null) x.f else null - rewriting only its condition
+is the worse of the two suggestions, so only the rewrite of the whole if is reported.
+
+rule_simplify_nullable_if in turn now recognizes conditions written with the null-check operator, so applying one
+suggestion does not hide the other. if (x??) x else y is reported as an elvis expression just like the
+comparison spelling, and a guard written as if (not x??) return null; is merged into the declaration above it,
+giving val x = f() ?: return null;.

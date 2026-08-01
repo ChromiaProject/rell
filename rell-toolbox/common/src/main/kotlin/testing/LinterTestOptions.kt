@@ -30,6 +30,7 @@ fun testLinterOptions(enabled: Boolean = true, configure: LinterOptions.() -> Un
         ruleSimplifyBooleanReturn = false,
         ruleRedundantBooleanComparison = false,
         ruleSimplifyNullableIf = false,
+        rulePreferNullCheckOperator = false,
         rulePreferEmpty = false,
         ruleAtCardinalityMisuse = false,
     ).apply(configure)

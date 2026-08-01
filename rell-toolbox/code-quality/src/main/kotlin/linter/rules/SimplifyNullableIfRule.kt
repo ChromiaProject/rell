@@ -8,16 +8,17 @@ import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.toolbox.indexer.Resource
 import net.postchain.rell.toolbox.linter.LinterContext
 import net.postchain.rell.toolbox.linter.LinterOptions
-import net.postchain.rell.toolbox.linter.asSimpleComparison
-import net.postchain.rell.toolbox.linter.isNullLiteral
+import net.postchain.rell.toolbox.linter.NullGuardKind
+import net.postchain.rell.toolbox.linter.asNullGuard
 import net.postchain.rell.toolbox.linter.issues.SimplifyNullableIfIssue
+import net.postchain.rell.toolbox.linter.nullGuardedName
 import net.postchain.rell.toolbox.linter.singleBaseExpr
+import net.postchain.rell.toolbox.linter.singleName
 import net.postchain.rell.toolbox.linter.sourceText
 import net.postchain.rell.toolbox.parser.RellCustomTokenChannels
 import org.antlr.v4.runtime.RuleContext
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.misc.Interval
-import org.antlr.v4.runtime.tree.ParseTree
 
 /**
  * Rewrites pure-expression null guards:
@@ -25,6 +26,7 @@ import org.antlr.v4.runtime.tree.ParseTree
  *   `if (x != null) x.f else null` → `x?.f`
  * and the statement form, where the guard only jumps out of the enclosing function or loop:
  *   `val x = f(); if (x == null) return null;` → `val x = f() ?: return null;`
+ * Either condition may equally be spelled with the null-check operator, `x??` and `not x??`.
  */
 internal class SimplifyNullableIfRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
     LinterRule(config, resource, linterContext) {
@@ -41,38 +43,23 @@ internal class SimplifyNullableIfRule(config: LinterOptions, resource: Resource,
         if (isDisabled(config.ruleSimplifyNullableIf) || hasIgnoreCommentOnTop(ctx.start)) {
             return
         }
-        val checked = nullComparisonOperand(ctx.expression(), "!=") ?: return
-        if (hasCall(checked)) {
-            return
-        }
-        val arms = ctx.exprOrValueBlock()
-        if (arms.size != 2) {
-            return
-        }
-        val thenExpr = arms[0].expression() ?: return
-        val elseExpr = arms[1].expression()
-        val checkedText = checked.sourceText()
-        val thenText = thenExpr.sourceText()
+        val guard = ctx.asNullGuard() ?: return
+        val checkedText = guard.checkedText
 
-        // Case A - elvis: then-arm is exactly the checked expression.
-        if (thenText == checkedText) {
-            elseExpr ?: return
-            // `?:` binds tighter than or/and/comparisons/in, so a compound (or lambda) else arm must
-            // be parenthesized to keep its grouping: `f ?: a or b` would otherwise reparse as
-            // `(f ?: a) or b`, and a bare lambda arm (`f ?: x -> x`) would not parse at all.
-            val elseText = elseExpr.sourceText()
-            val wrappedElse = if (elseArmNeedsParens(elseExpr)) "($elseText)" else elseText
-            val replacement = "$checkedText ?: $wrappedElse"
-            val newText = if (needsParens(ctx)) "($replacement)" else replacement
-            report(SimplifyNullableIfIssue(ctx, ruleId, ELVIS_MESSAGE, ELVIS_TITLE, newText))
-            return
-        }
-
-        // Case B - safe access: then-arm is `x.<member>` (single member, no call) and else is `null`.
-        if (elseExpr != null && elseExpr.text == "null" && thenText.startsWith(checkedText)) {
-            val rest = thenText.substring(checkedText.length)
-            if (SINGLE_MEMBER.matches(rest)) {
-                report(SimplifyNullableIfIssue(ctx, ruleId, SAFE_ACCESS_MESSAGE, SAFE_ACCESS_TITLE, "$checkedText?$rest"))
+        when (guard.kind) {
+            NullGuardKind.ELVIS -> {
+                // `?:` binds tighter than or/and/comparisons/in, so a compound (or lambda) else arm must
+                // be parenthesized to keep its grouping: `f ?: a or b` would otherwise reparse as
+                // `(f ?: a) or b`, and a bare lambda arm (`f ?: x -> x`) would not parse at all.
+                val elseText = guard.elseExpr.sourceText()
+                val wrappedElse = if (elseArmNeedsParens(guard.elseExpr)) "($elseText)" else elseText
+                val replacement = "$checkedText ?: $wrappedElse"
+                val newText = if (needsParens(ctx)) "($replacement)" else replacement
+                report(SimplifyNullableIfIssue(ctx, ruleId, ELVIS_MESSAGE, ELVIS_TITLE, newText))
+            }
+            NullGuardKind.SAFE_ACCESS -> {
+                val member = guard.thenExpr.sourceText().substring(checkedText.length)
+                report(SimplifyNullableIfIssue(ctx, ruleId, SAFE_ACCESS_MESSAGE, SAFE_ACCESS_TITLE, "$checkedText?$member"))
             }
         }
     }
@@ -87,11 +74,8 @@ internal class SimplifyNullableIfRule(config: LinterOptions, resource: Resource,
             return
         }
         val jumpText = jumpText(stmts[0]) ?: return
-        val checked = nullComparisonOperand(ctx.expression(), "==") ?: return
-        // Only a plain variable is a candidate: the guard has to name the declaration above it, so a
-        // member access (`a.b == null`) is not one.
-        val name = checked.takeIf { it.childCount == 1 }
-            ?.let { it.baseExprHead() as? RellParser.NameExprContext }?.singleName() ?: return
+        // The guard has to name the declaration above it, so only a plain variable is a candidate.
+        val name = ctx.expression().nullGuardedName() ?: return
         val decl = guardedDeclaration(ctx, name) ?: return
         if (hasIgnoreCommentOnTop(ctx.start) || hasIgnoreCommentOnTop(decl.start)) {
             return
@@ -153,46 +137,11 @@ internal class SimplifyNullableIfRule(config: LinterOptions, resource: Resource,
         }
     }
 
-    /** The name behind a one-segment qualified name (`x`), else null (`a.b`, an at-alias, ...). */
-    private fun RellParser.NameExprContext.singleName(): String? = qualifiedName().singleName()
-
-    private fun RellParser.QualifiedNameContext?.singleName(): String? {
-        val ids = this?.RULE_ID() ?: return null
-        return if (ids.size == 1) ids[0].text else null
-    }
-
     private fun hasCommentsBetween(from: Token, to: Token): Boolean {
         val tokens = resource.tokenStream
         return (from.tokenIndex + 1..to.tokenIndex).any {
             tokens.get(it).channel == RellCustomTokenChannels.COMMENTS.channel
         }
-    }
-
-    /** The non-null operand of a `<expr> OP null` / `null OP <expr>` condition, else null. */
-    private fun nullComparisonOperand(cond: RellParser.ExpressionContext, op: String): RellParser.BaseExprContext? {
-        val cmp = cond.binaryExpr()?.asSimpleComparison() ?: return null
-        if (cmp.op.text != op) {
-            return null
-        }
-        val leftNull = cmp.left.isNullLiteral()
-        val rightNull = cmp.right.isNullLiteral()
-        return when {
-            rightNull && !leftNull -> cmp.left
-            leftNull && !rightNull -> cmp.right
-            else -> null
-        }
-    }
-
-    private fun hasCall(node: ParseTree): Boolean {
-        if (node is RellParser.CallArgsContext) {
-            return true
-        }
-        for (i in 0 until node.childCount) {
-            if (hasCall(node.getChild(i))) {
-                return true
-            }
-        }
-        return false
     }
 
     // `?:` is a low-precedence binary operator; if the `if`-expr is combined with other operators
@@ -218,6 +167,5 @@ internal class SimplifyNullableIfRule(config: LinterOptions, resource: Resource,
         private const val SAFE_ACCESS_TITLE = "Replace 'if' with '?.'"
         private const val GUARD_MESSAGE = "Null guard can be merged into the declaration with '?:'"
         private const val GUARD_TITLE = "Merge the null guard into the declaration with '?:'"
-        private val SINGLE_MEMBER = Regex("^\\.[A-Za-z_][A-Za-z0-9_]*$")
     }
 }

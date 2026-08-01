@@ -96,3 +96,26 @@ function guard_other_name(y: integer?): integer? {
     if (y == null) return null;
     return x;
 }
+
+// The same guards, spelled with the null-check operator.
+function terse_elvis(x: integer?, y: integer): integer {
+    return if (x??) x else y;
+}
+function terse_safe_access(a: account?): integer? {
+    return if (a??) a.balance else null;
+}
+function terse_guard(): integer? {
+    val x = find();
+    if (not x??) return null;
+    return x;
+}
+function terse_guard_block(): integer {
+    val x = find();
+    if (not x??) { return 0; }
+    return x;
+}
+function terse_guard_other_name(y: integer?): integer? {
+    val x = find();
+    if (not y??) return null;
+    return x;
+}

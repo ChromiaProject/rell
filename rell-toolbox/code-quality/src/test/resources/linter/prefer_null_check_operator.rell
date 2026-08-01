@@ -1,0 +1,50 @@
+entity account { balance: integer; }
+
+function find(): integer? = 1;
+
+function plain(x: integer?): boolean {
+    return x != null;
+}
+function null_first(x: integer?): boolean {
+    return null != x;
+}
+function in_if(x: integer?): integer {
+    if (x != null) {
+        return x;
+    }
+    return 0;
+}
+function member(a: account?): boolean {
+    return a.balance != null;
+}
+function call_operand(): boolean {
+    return find() != null;
+}
+function already_terse(x: integer?): boolean {
+    return x??;
+}
+function null_equality(x: integer?): boolean {
+    return x == null;
+}
+function compound(x: integer?, flag: boolean): boolean {
+    return x != null and flag;
+}
+function in_where(): list<account> {
+    return account @* { .balance != null };
+}
+function ignored(x: integer?): boolean {
+    // rell-lint-disable-next-line
+    return x != null;
+}
+
+// The whole 'if' collapses to '?:' / '?.', which outranks rewriting just the condition.
+function elvis(x: integer?, y: integer): integer {
+    return if (x != null) x else y;
+}
+function safe_access(a: account?): integer? {
+    return if (a != null) a.balance else null;
+}
+// Not a null guard around one value, so the condition itself is still worth terser spelling.
+function if_expr_not_guard(x: integer?, y: integer): integer {
+    return if (x != null) y else 0;
+}

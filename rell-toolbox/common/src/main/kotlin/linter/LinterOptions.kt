@@ -28,6 +28,7 @@ data class LinterOptions(
     var ruleSimplifyBooleanReturn: Boolean? = true,
     var ruleRedundantBooleanComparison: Boolean? = true,
     var ruleSimplifyNullableIf: Boolean? = true,
+    var rulePreferNullCheckOperator: Boolean? = true,
     var rulePreferEmpty: Boolean? = true,
     var ruleAtCardinalityMisuse: Boolean? = true,
 ) {
@@ -57,6 +58,7 @@ data class LinterOptions(
                         "rule_simplify_boolean_return" -> ruleSimplifyBooleanReturn = parseBoolean(value)
                         "rule_redundant_boolean_comparison" -> ruleRedundantBooleanComparison = parseBoolean(value)
                         "rule_simplify_nullable_if" -> ruleSimplifyNullableIf = parseBoolean(value)
+                        "rule_prefer_null_check_operator" -> rulePreferNullCheckOperator = parseBoolean(value)
                         "rule_prefer_empty" -> rulePreferEmpty = parseBoolean(value)
                         "rule_at_cardinality_misuse" -> ruleAtCardinalityMisuse = parseBoolean(value)
                     }
@@ -80,6 +82,7 @@ data class LinterOptions(
         ruleSimplifyBooleanReturn = defaults.ruleSimplifyBooleanReturn
         ruleRedundantBooleanComparison = defaults.ruleRedundantBooleanComparison
         ruleSimplifyNullableIf = defaults.ruleSimplifyNullableIf
+        rulePreferNullCheckOperator = defaults.rulePreferNullCheckOperator
         rulePreferEmpty = defaults.rulePreferEmpty
         ruleAtCardinalityMisuse = defaults.ruleAtCardinalityMisuse
     }
