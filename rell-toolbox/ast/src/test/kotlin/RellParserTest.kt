@@ -94,7 +94,19 @@ class RellParserTest {
         val syntaxErrorCollector = SyntaxErrorCollector()
         parser.parse(code, listOf(), listOf(syntaxErrorCollector))
 
-        val expectedError = SyntaxError("extraneous input '#' expecting '('", 1, 14, "<unknown>")
+        val expectedError = SyntaxError("'(' expected, got '#'", 1, 14, "<unknown>")
+        assertThat(syntaxErrorCollector.errors).containsExactly(expectedError)
+    }
+
+    @Test
+    fun `Entity without a name is reported as a missing name`() {
+        val code = "entity {\n}"
+
+        val parser = AntlrRellParser()
+        val syntaxErrorCollector = SyntaxErrorCollector()
+        parser.parse(code, listOf(), listOf(syntaxErrorCollector))
+
+        val expectedError = SyntaxError("Name expected", 1, 7, "<unknown>")
         assertThat(syntaxErrorCollector.errors).containsExactly(expectedError)
     }
 

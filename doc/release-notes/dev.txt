@@ -48,42 +48,47 @@ Four cases where the formatter moved code away from where the author put it:
   call in the else arm had its arguments flush with the callee and its closing parenthesis dedented past it.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-4. Compiler: Plain-language syntax error messages
+4. Compiler: Friendlier error messages
 
-Syntax errors no longer expose the parser's internal token names and phrasing. A message that used to read
+Several error messages produced by the compiler and the runtime were rewritten in plain language. Error codes
+and error positions are unchanged throughout, so code and tests matching on them are unaffected.
+
+(a) Syntax errors no longer expose the parser's internal token names and phrasing, and read the way an IDE user
+expects. A message that used to read
 
     Syntax error: mismatched input '=' expecting {'(', RULE_ID}
 
 now reads
 
-    Syntax error: unexpected '=', expecting '(' or a name
+    Syntax error: '(' or name expected, got '='
 
-Grammar token names are translated to plain terms (a name, a number, a string, a byte array, end of file),
-keywords and punctuation are quoted as written, and a long list of alternatives is cut off after the first
-eight. The error code (syntax) and error positions are unchanged.
+and an entity declaration missing its name is reported simply as
 
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-5. Runtime: Null-assertion errors name the value
+    Name expected
 
-When a not-null assertion fails and the asserted value is a variable or a member path, the error names it:
+Grammar token names are translated to plain terms (name, number, string, byte array, end of file), keywords and
+punctuation are quoted as written. When the set of acceptable tokens is too wide to enumerate (more than eight
+alternatives), the message degrades to a plain form such as
+
+    Unexpected token ';'
+
+The language server reports the same messages, so diagnostics in the IDE match the compiler.
+
+(b) When a not-null assertion fails and the asserted value is a variable or a member path, the error names it:
 
     ERROR Value of 'x' is null
 
 Previously the message was just "Null value", which on a line with several nullable accesses did not say which
 one failed. For an asserted expression with no stable name (for example a call result) the old message is kept.
-The error code (null_value) is unchanged, so code and tests matching on it are unaffected.
 
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-6. Runtime: The no-database error says how to fix it
-
-Running code that touches entities or other database features without a configured database now reports
+(c) Running code that touches entities or other database features without a configured database now reports
 
     No database connection: database features require a database URL (e.g. --db-url in the Rell CLI)
 
-instead of the bare "No database connection". The error code (no_sql) is unchanged.
+instead of the bare "No database connection".
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-7. Tools: Linter inspection flagging row-by-row entity attribute reads in loops
+5. Tools: Linter inspection flagging row-by-row entity attribute reads in loops
 
 A new inspection, rule_prefer_at_projection, reports a for loop over an unprojected entity at-expression whose
 body only reads attributes of the loop variable. Each such read runs its own SQL query per row, while projecting
@@ -102,10 +107,18 @@ function, an update or delete target), an attribute is assigned to, an entity me
 is read, which costs no extra query.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-8. Tools: Editor diagnostics underline the whole token
+6. Tools: Correct source ranges in editor diagnostics and outline
 
-Compiler errors and syntax errors reported by the language server used to carry only a start position, so
-editors rendered them as a one-character underline. The diagnostic range now extends to the end of the token at
-the error position: for example, the deprecation warning on the class keyword underlines all of class instead
-of just its first letter. Errors with no token at their position (such as an unexpected end of file) keep the
-old one-character rendering.
+The ranges the language server reports to editors are now well-formed in error scenarios:
+
+- Compiler errors and syntax errors used to carry only a start position, so editors rendered them as a
+  one-character underline. The diagnostic range now extends to the end of the token at the error position:
+  for example, the deprecation warning on the class keyword underlines all of class instead of just its
+  first letter. Errors with no token at their position (such as an unexpected end of file) keep the old
+  one-character rendering.
+
+- The document symbols for an incomplete definition without a name (for example a bare class { } left over
+  while typing) used to cover the whole definition with the name range and could point past the end of a
+  line, which crashed editor features built on symbol ranges, such as sticky lines and breadcrumbs in
+  IntelliJ-based IDEs. The name range of such a definition now collapses to its leading keyword, and the
+  full range ends at the closing brace.

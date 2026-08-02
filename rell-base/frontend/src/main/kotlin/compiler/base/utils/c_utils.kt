@@ -35,9 +35,7 @@ import net.postchain.rell.base.utils.doc.DocModifiers
 import net.postchain.rell.base.utils.ide.IdeFilePath
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 import org.antlr.v4.runtime.*
-import org.antlr.v4.runtime.InputMismatchException
 import org.antlr.v4.runtime.atn.PredictionMode
-import org.antlr.v4.runtime.misc.IntervalSet
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import java.util.*
 
@@ -734,84 +732,6 @@ private class AntlrErrorCollector(
         val eof = token != null && token.type == Token.EOF
         val error = C_Error.other(pos, "syntax", "Syntax error: $msg")
         _errors.add(AntlrErrorEntry(error, eof))
-    }
-}
-
-/**
- * Formats ANTLR syntax errors for end users: raw grammar token names (`RULE_ID`) and internal
- * phrasing ("mismatched input", "no viable alternative") are replaced with plain language.
- * Recovery behavior is inherited from [DefaultErrorStrategy] unchanged — only the report methods
- * that compose user-visible messages are overridden.
- */
-private class RellParserErrorStrategy : DefaultErrorStrategy() {
-    override fun reportInputMismatch(recognizer: Parser, e: InputMismatchException) {
-        val msg = "unexpected ${displayToken(e.offendingToken)}${expectingSuffix(e.expectedTokens)}"
-        recognizer.notifyErrorListeners(e.offendingToken, msg, e)
-    }
-
-    override fun reportNoViableAlternative(recognizer: Parser, e: NoViableAltException) {
-        val token = e.offendingToken ?: e.startToken
-        recognizer.notifyErrorListeners(token, "unexpected ${displayToken(token)}", e)
-    }
-
-    override fun reportUnwantedToken(recognizer: Parser) {
-        if (inErrorRecoveryMode(recognizer)) return
-        beginErrorCondition(recognizer)
-        val token = recognizer.currentToken
-        val msg = "unexpected ${displayToken(token)}${expectingSuffix(getExpectedTokens(recognizer))}"
-        recognizer.notifyErrorListeners(token, msg, null)
-    }
-
-    override fun reportMissingToken(recognizer: Parser) {
-        if (inErrorRecoveryMode(recognizer)) return
-        beginErrorCondition(recognizer)
-        val token = recognizer.currentToken
-        val msg = "missing ${displayTokenSet(getExpectedTokens(recognizer))} before ${displayToken(token)}"
-        recognizer.notifyErrorListeners(token, msg, null)
-    }
-
-    private fun expectingSuffix(expected: IntervalSet?): String {
-        val display = displayTokenSet(expected)
-        return if (display.isEmpty()) "" else ", expecting $display"
-    }
-
-    private fun displayTokenSet(expected: IntervalSet?): String {
-        expected ?: return ""
-        val names = expected.toList().map { displayTokenType(it) }.distinct()
-        val shown = names.take(MAX_EXPECTED_TOKENS)
-        val more = names.size - shown.size
-        return when {
-            shown.isEmpty() -> ""
-            more > 0 -> shown.joinToString(", ") + " and $more more"
-            shown.size == 1 -> shown[0]
-            else -> shown.dropLast(1).joinToString(", ") + " or " + shown.last()
-        }
-    }
-
-    private fun displayToken(token: Token?): String = when {
-        token == null -> "input"
-        token.type == Token.EOF -> "end of file"
-        else -> "'${escapeTokenText(token.text ?: "")}'"
-    }
-
-    private fun displayTokenType(type: Int): String = when (type) {
-        Token.EOF -> "end of file"
-        RellLexer.RULE_ID -> "a name"
-        RellLexer.RULE_NUMBER, RellLexer.RULE_BIG_INTEGER, RellLexer.RULE_DECIMAL -> "a number"
-        RellLexer.RULE_STRING -> "a string"
-        RellLexer.RULE_BYTES -> "a byte array"
-        else -> RellParser.VOCABULARY.getLiteralName(type)
-            ?: "'${RellParser.VOCABULARY.getDisplayName(type)}'"
-    }
-
-    private fun escapeTokenText(text: String): String {
-        val escaped = text.replace("\\", "\\\\").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t")
-        return if (escaped.length <= MAX_TOKEN_TEXT) escaped else escaped.take(MAX_TOKEN_TEXT) + "..."
-    }
-
-    private companion object {
-        private const val MAX_EXPECTED_TOKENS = 8
-        private const val MAX_TOKEN_TEXT = 20
     }
 }
 

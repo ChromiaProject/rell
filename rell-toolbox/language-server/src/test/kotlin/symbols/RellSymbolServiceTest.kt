@@ -195,6 +195,49 @@ class RellSymbolServiceTest {
             assertThat(symbol.selectionRange).isInBetween(symbol.range)
         }
     }
+
+    @Test
+    fun `Unnamed definition gets in-bounds single-line selection range`(@TempDir dir: File) {
+        val content = """
+            module;
+
+            function boba() {
+            }
+
+
+            class {
+
+            }
+
+            query hello_world() = "Hello!";
+        """.trimIndent()
+        val testDataBuilder = testData(dir) {
+            addFile(rellFilePath, content)
+        }
+        val rellFile = testDataBuilder.sourceFile(rellFilePath)
+        val rellFileUri = rellFile.toURI()
+        val document = Document(rellFileUri, 1, rellFile.readText())
+        val indexer = WorkspaceIndexer(dir.toURI(), rellLinter, linterOptions, formattingStyleLinter, formatterOptions)
+        indexer.initialFileIndexBuild()
+        val resource = indexer.getResource(rellFileUri)!!
+
+        val symbols = rellSymbolService.getDocumentSymbols(rellFileUri, document, resource)
+
+        val unnamed = symbols!!.children.find { it.kind == SymbolKind.Class }!!
+        // Full range covers `class {` through the closing `}` (inclusive of the brace).
+        assertThat(unnamed.range).isEqualTo(Range(Position(6, 0), Position(8, 1)))
+        // The synthesized name has no token of its own - the selection range collapses to the
+        // `class` keyword instead of spanning the whole definition or pointing past a line end.
+        assertThat(unnamed.selectionRange).isEqualTo(Range(Position(6, 0), Position(6, 5)))
+        assertThat(unnamed.selectionRange).isInBetween(unnamed.range)
+
+        val lines = content.lines()
+        for (symbol in symbols.children) {
+            for (range in listOf(symbol.range, symbol.selectionRange)) {
+                assertThat(range.end.character).isLessThanOrEqualTo(lines[range.end.line].length)
+            }
+        }
+    }
 }
 
 fun Assert<Range>.isInBetween(full: Range): Unit = given { part ->

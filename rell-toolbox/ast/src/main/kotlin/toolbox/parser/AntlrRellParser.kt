@@ -4,6 +4,7 @@
 
 package net.postchain.rell.toolbox.parser
 
+import net.postchain.rell.base.compiler.parser.RellParserErrorStrategy
 import net.postchain.rell.base.compiler.parser.antlr.RellLexer
 import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.base.compiler.parser.antlr.RellParser.FileContext
@@ -44,6 +45,7 @@ class AntlrRellParser {
 
         parser.removeErrorListeners()
         parser.removeParseListeners()
+        parser.errorHandler = RellParserErrorStrategy()
 
         for (listener in parseListeners) {
             parser.addParseListener(listener)

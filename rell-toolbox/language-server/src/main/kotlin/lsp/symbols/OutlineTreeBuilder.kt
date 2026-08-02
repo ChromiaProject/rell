@@ -144,11 +144,13 @@ internal fun getFullRegion(node: S_Node, name: S_Node): Range {
             Position(regionNode.stop.line - 1, regionNode.stop.charPositionInLine)
         )
     } else {
-        val nodeLength = regionNode.text.length
-        Range(
-            startPos,
-            Position(nameAttachment.node.stop.line - 1, nameAttachment.node.stop.charPositionInLine + nodeLength)
-        )
+        // The region does not extend past the name - an incomplete or error-recovered
+        // definition (e.g. `entity foo` without a body, or an unnamed `class {}` whose
+        // synthesized name covers the whole context). End at the region's own stop token;
+        // inflating by the context text length can point past the end of the line, which
+        // editors reject (IDEA-361792-style sticky-line crashes).
+        val stop = regionNode.stop
+        Range(startPos, Position(stop.line - 1, stop.charPositionInLine + (stop.text?.length ?: 0)))
     }
 }
 
@@ -160,8 +162,14 @@ internal fun getNameRegion(node: S_Node): Range {
         attachment.node.start.charPositionInLine == attachment.node.stop.charPositionInLine
     ) {
         Position(attachment.node.stop.line - 1, attachment.node.stop.charPositionInLine + nodeLength)
-    } else {
+    } else if (attachment.node.start.line == attachment.node.stop.line) {
         Position(attachment.node.stop.line - 1, attachment.node.stop.charPositionInLine)
+    } else {
+        // A synthesized name (unnamed definition under error recovery) is attached to the whole
+        // multi-line context - collapse the selection range to the first token so it stays
+        // within one line and inside the full region.
+        val start = attachment.node.start
+        Position(start.line - 1, start.charPositionInLine + (start.text?.length ?: 1))
     }
 
     return Range(startPos, endPos)
