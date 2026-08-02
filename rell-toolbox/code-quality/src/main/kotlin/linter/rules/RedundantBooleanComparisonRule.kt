@@ -6,11 +6,7 @@ package net.postchain.rell.toolbox.linter.rules
 
 import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.toolbox.indexer.Resource
-import net.postchain.rell.toolbox.linter.LinterContext
-import net.postchain.rell.toolbox.linter.LinterOptions
-import net.postchain.rell.toolbox.linter.asBooleanLiteral
-import net.postchain.rell.toolbox.linter.asSimpleComparison
-import net.postchain.rell.toolbox.linter.isInsideAtWhere
+import net.postchain.rell.toolbox.linter.*
 import net.postchain.rell.toolbox.linter.issues.RedundantBooleanComparisonIssue
 import org.antlr.v4.runtime.RuleContext
 

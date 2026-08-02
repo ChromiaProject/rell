@@ -9,11 +9,7 @@ import net.postchain.rell.base.compiler.base.def.C_LocalAttrHeaderIdeData
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.*
 import net.postchain.rell.base.compiler.vexpr.V_Expr
-import net.postchain.rell.base.model.Name
-import net.postchain.rell.base.model.R_BooleanType
-import net.postchain.rell.base.model.R_NothingType
-import net.postchain.rell.base.model.R_RellErrorType
-import net.postchain.rell.base.model.R_UnitType
+import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.R_Expr
 import net.postchain.rell.base.model.stmt.*
 import net.postchain.rell.base.utils.*

@@ -5,7 +5,6 @@
 package net.postchain.rell.base.utils
 
 import kotlinx.collections.immutable.*
-import kotlinx.collections.immutable.puttingAll
 import kotlinx.collections.immutable.minus as kminus
 import kotlinx.collections.immutable.plus as kplus
 

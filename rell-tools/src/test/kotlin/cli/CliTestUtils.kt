@@ -4,15 +4,11 @@
 
 package net.postchain.rell.tools.cli
 
-import net.postchain.rell.tools.cli.CliTestUtils.createMatcher
-import net.postchain.rell.tools.cli.CliTestUtils.runCommand
+import net.postchain.rell.tools.cli.CliTestUtils.EXECUTABLE_ENV_VAR
+import net.postchain.rell.tools.cli.CliTestUtils.EXECUTABLE_PROPERTY
+import net.postchain.rell.tools.cli.CliTestUtils.OVERRIDABLE_SCRIPTS
 import java.util.concurrent.TimeUnit
-import kotlin.io.path.Path
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.div
-import kotlin.io.path.isDirectory
-import kotlin.io.path.isExecutable
-import kotlin.io.path.isRegularFile
+import kotlin.io.path.*
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.fail

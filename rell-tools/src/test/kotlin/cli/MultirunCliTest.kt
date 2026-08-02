@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import net.postchain.rell.base.testutils.BaseResourcefulTest
 import net.postchain.rell.base.testutils.SqlTestUtils
 import net.postchain.rell.base.utils.RellVersions
+import net.postchain.rell.tools.cli.MultirunCliTest.Companion.findFreePort
+import net.postchain.rell.tools.cli.MultirunCliTest.Companion.reservedPorts
 import org.junit.jupiter.api.Test
 import java.io.IOException
 import java.net.ServerSocket

@@ -20,11 +20,7 @@ import net.postchain.rell.base.compiler.base.expr.C_StmtContext
 import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.compiler.base.module.C_ModuleKey
 import net.postchain.rell.base.compiler.base.module.S_DefinitionContext
-import net.postchain.rell.base.compiler.parser.RellTokenInput
-import net.postchain.rell.base.compiler.parser.RellTokenProducer
-import net.postchain.rell.base.compiler.parser.RellTokenizer
-import net.postchain.rell.base.compiler.parser.RellTokenizerException
-import net.postchain.rell.base.compiler.parser.S_Grammar
+import net.postchain.rell.base.compiler.parser.*
 import net.postchain.rell.base.compiler.parser.antlr.RellAntlrVisitor
 import net.postchain.rell.base.compiler.parser.antlr.RellLexer
 import net.postchain.rell.base.compiler.parser.antlr.RellParser

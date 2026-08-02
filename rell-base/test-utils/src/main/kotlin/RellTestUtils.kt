@@ -22,7 +22,6 @@ import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.runtime.truffle.Tf_Backend
 import net.postchain.rell.base.sql.SqlManager
-import net.postchain.rell.base.testutils.RellTestUtils.BACKEND
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.serialization.deserializeRellApp
 import net.postchain.rell.serialization.serializeRellApp

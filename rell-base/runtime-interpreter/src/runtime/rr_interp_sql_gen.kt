@@ -8,7 +8,6 @@ import net.postchain.rell.base.lib.type.Lib_DecimalMath
 import net.postchain.rell.base.model.expr.Rt_AtExprExtras
 import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.DbSqlGen.Companion.SAFE_ALIAS_REGEX
-import net.postchain.rell.base.runtime.DbSqlGen.Companion.columnField
 import net.postchain.rell.base.utils.formatEx
 import net.postchain.rell.base.utils.toImmList
 import org.jooq.*

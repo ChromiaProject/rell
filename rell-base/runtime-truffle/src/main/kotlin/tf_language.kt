@@ -6,7 +6,6 @@ package net.postchain.rell.base.runtime.truffle
 
 import com.oracle.truffle.api.CallTarget
 import com.oracle.truffle.api.TruffleLanguage
-import net.postchain.rell.base.runtime.truffle.Tf_Language.Companion.LANG_ID
 import java.util.concurrent.atomic.AtomicReference
 
 /**

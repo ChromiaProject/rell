@@ -13,7 +13,10 @@ import net.postchain.rell.base.model.rr.RR_FrameBlock
 import net.postchain.rell.base.model.rr.RR_IterableAdapterKind
 import net.postchain.rell.base.model.rr.RR_VarDeclarator
 import net.postchain.rell.base.runtime.*
-import net.postchain.rell.base.runtime.truffle.*
+import net.postchain.rell.base.runtime.truffle.Tf_Backend
+import net.postchain.rell.base.runtime.truffle.Tf_BreakException
+import net.postchain.rell.base.runtime.truffle.Tf_ContinueException
+import net.postchain.rell.base.runtime.truffle.Tf_ReturnException
 
 /** Native: `;` no-op. */
 internal class Tf_EmptyStmtNode : Tf_ExprNode() {

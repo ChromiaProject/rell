@@ -6,7 +6,6 @@ package com.chromia.rell.dokka
 
 import assertk.assertThat
 import assertk.assertions.isEmpty
-import assertk.assertions.isEqualTo
 import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir

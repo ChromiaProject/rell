@@ -15,9 +15,6 @@ import net.postchain.rell.base.compiler.base.lib.C_LibUtils
 import net.postchain.rell.base.compiler.base.lib.C_TypeStaticMember
 import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.lmodel.L_TypeUtils
-import net.postchain.rell.base.model.R_LibTypeMemberRegistry.getStaticMembers
-import net.postchain.rell.base.model.R_LibTypeMemberRegistry.getTypeDef
-import net.postchain.rell.base.model.R_LibTypeMemberRegistry.getValueMembers
 import net.postchain.rell.base.mtype.*
 import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.doc.DocCode

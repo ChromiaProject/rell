@@ -11,7 +11,6 @@ import net.postchain.rell.base.model.rr.*
 import net.postchain.rell.base.runtime.Rt_ValueClass
 import net.postchain.rell.base.runtime.truffle.Tf_Language
 import net.postchain.rell.base.runtime.truffle.Tf_PolyglotBootstrap
-import net.postchain.rell.base.runtime.truffle.values.Tf_StructShapeRegistry.shapeFor
 import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger

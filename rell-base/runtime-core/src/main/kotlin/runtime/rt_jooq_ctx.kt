@@ -9,7 +9,7 @@ import org.jooq.QueryPart
 import org.jooq.SQLDialect
 import org.jooq.conf.*
 import org.jooq.impl.DSL
-import java.util.Locale
+import java.util.*
 
 /**
  * jOOQ render context shared across the runtime SQL emitter:

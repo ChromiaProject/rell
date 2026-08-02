@@ -4,10 +4,7 @@
 
 package net.postchain.rell.base.compiler.ast
 
-import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
-import net.postchain.rell.base.compiler.base.core.C_LambdaBlock
-import net.postchain.rell.base.compiler.base.core.C_Name
-import net.postchain.rell.base.compiler.base.core.C_Statement
+import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_Errors
@@ -15,15 +12,8 @@ import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.expr.*
 import net.postchain.rell.base.model.stmt.*
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.toImmSet
-import net.postchain.rell.base.utils.immSetOf
-import net.postchain.rell.base.utils.MutableTypedKeyMap
-import net.postchain.rell.base.compiler.base.core.C_StatementVars
+import net.postchain.rell.base.utils.*
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.mapNotNullToImmList
-import net.postchain.rell.base.utils.mapToImmList
 
 internal class C_UpdateTarget(val rTarget: R_UpdateTarget, val cFrom: C_AtFrom_Entities)
 

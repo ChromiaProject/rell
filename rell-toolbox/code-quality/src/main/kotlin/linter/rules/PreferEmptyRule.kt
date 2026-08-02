@@ -6,13 +6,7 @@ package net.postchain.rell.toolbox.linter.rules
 
 import net.postchain.rell.base.compiler.parser.antlr.RellParser
 import net.postchain.rell.toolbox.indexer.Resource
-import net.postchain.rell.toolbox.linter.LinterContext
-import net.postchain.rell.toolbox.linter.LinterOptions
-import net.postchain.rell.toolbox.linter.asArgFreeMethodCall
-import net.postchain.rell.toolbox.linter.asIntLiteral
-import net.postchain.rell.toolbox.linter.asSimpleComparison
-import net.postchain.rell.toolbox.linter.containsAtOperation
-import net.postchain.rell.toolbox.linter.singleBaseExpr
+import net.postchain.rell.toolbox.linter.*
 import net.postchain.rell.toolbox.linter.issues.PreferEmptyIssue
 import org.antlr.v4.runtime.RuleContext
 

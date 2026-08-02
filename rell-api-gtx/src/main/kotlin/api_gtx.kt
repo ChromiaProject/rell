@@ -4,12 +4,7 @@
 
 package net.postchain.rell.api.gtx
 
-import net.postchain.rell.api.base.RellApiBaseInternal
-import net.postchain.rell.api.base.RellApiBaseUtils
-import net.postchain.rell.api.base.RellApiCompile
-import net.postchain.rell.api.base.RellApiInterpreterBackend
-import net.postchain.rell.api.base.RellCliEnv
-import net.postchain.rell.api.base.RellInterpreterFactory
+import net.postchain.rell.api.base.*
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.lib.test.Lib_RellTest

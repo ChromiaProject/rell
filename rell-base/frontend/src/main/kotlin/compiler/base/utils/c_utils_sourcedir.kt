@@ -14,11 +14,7 @@ import net.postchain.rell.base.utils.toImmMap
 import java.io.File
 import java.nio.file.Path
 import java.util.*
-import kotlin.io.path.isDirectory
-import kotlin.io.path.isRegularFile
-import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.name
-import kotlin.io.path.readText
+import kotlin.io.path.*
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 

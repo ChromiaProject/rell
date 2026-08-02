@@ -9,11 +9,7 @@ import net.postchain.rell.base.compiler.base.expr.*
 import net.postchain.rell.base.compiler.base.utils.C_Errors
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
-import net.postchain.rell.base.compiler.vexpr.V_ConstantValueEvalContext
-import net.postchain.rell.base.compiler.vexpr.V_Expr
-import net.postchain.rell.base.compiler.vexpr.V_ValueBlockExpr
-import net.postchain.rell.base.compiler.vexpr.V_WhenChooserDetails
-import net.postchain.rell.base.compiler.vexpr.V_WhenExpr
+import net.postchain.rell.base.compiler.vexpr.*
 import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.rr.RR_ConstantValue
 import net.postchain.rell.base.model.rr.displayStr

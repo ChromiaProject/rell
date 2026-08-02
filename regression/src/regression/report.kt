@@ -14,7 +14,9 @@ import net.postchain.rell.performance.report.*
 import org.intellij.lang.annotations.Language
 import java.nio.file.Path
 import java.time.Instant
-import kotlin.io.path.*
+import kotlin.io.path.createDirectories
+import kotlin.io.path.div
+import kotlin.io.path.writeText
 
 class ReportCommand: CliktCommand(name = "report") {
     override fun help(context: Context) =

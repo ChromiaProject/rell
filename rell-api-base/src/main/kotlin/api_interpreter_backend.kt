@@ -4,6 +4,7 @@
 
 package net.postchain.rell.api.base
 
+import net.postchain.rell.api.base.RellApiInterpreterBackend.SYSTEM_PROPERTY
 import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.runtime.Rt_Interpreter
 import net.postchain.rell.base.runtime.Rt_InterpreterImpl
