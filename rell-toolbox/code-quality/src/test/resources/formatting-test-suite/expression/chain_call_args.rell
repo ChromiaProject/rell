@@ -1,0 +1,5 @@
+function t() {
+    rell.test.tx().op(
+        submit_chat_inference_request_op("two", messages)
+    ).run();
+}

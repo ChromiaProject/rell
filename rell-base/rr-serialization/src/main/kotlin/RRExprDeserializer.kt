@@ -81,7 +81,7 @@ private fun deserializeExprUnion(fb: FbExpr): RR_Expr = when (fb.exprType) {
 
     ExprUnion.NotNullExpr -> {
         val e = NotNullExpr().also { fb.expr(it) }
-        RR_Expr.NotNull(deserializeType(e.type), deserializeExpr(e.expr), deserializeErrorPos(e.errPos))
+        RR_Expr.NotNull(deserializeType(e.type), deserializeExpr(e.expr), deserializeErrorPos(e.errPos), e.valueName)
     }
 
     ExprUnion.TupleExpr -> {

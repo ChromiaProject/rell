@@ -1,0 +1,12 @@
+function f(id: text): inference_result? {
+    return if (result.result != null)
+        inference_result(
+            result = response.from_gtv_pretty(result.result).text,
+            error = null
+        )
+    else
+        inference_result(
+            result = null,
+            error = result.error
+        );
+}

@@ -103,10 +103,12 @@ private fun SerializerContext.serializeRRExprUnion(expr: RR_Expr): Pair<UByte, I
         is RR_Expr.NotNull -> {
             val inner = serializeExpr(expr.expr)
             val errPos = serializeErrorPos(expr.errPos)
+            val valueName = expr.valueName?.let { builder.createString(it) }
             NotNullExpr.startNotNullExpr(builder)
             NotNullExpr.addType(builder, type)
             NotNullExpr.addExpr(builder, inner)
             NotNullExpr.addErrPos(builder, errPos)
+            if (valueName != null) NotNullExpr.addValueName(builder, valueName)
             ExprUnion.NotNullExpr to NotNullExpr.endNotNullExpr(builder)
         }
 
@@ -916,4 +918,3 @@ private fun serializeMetaDefinitionKind(kind: String): UByte = when (kind) {
     "query" -> MetaDefinitionKind.QUERY
     else -> error("Unknown meta definition kind: $kind")
 }
-

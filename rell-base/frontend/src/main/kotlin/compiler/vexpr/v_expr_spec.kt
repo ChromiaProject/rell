@@ -115,7 +115,9 @@ class V_SmartNullableExpr private constructor(
 
     override fun toRExpr(): R_Expr {
         val rExpr = subExpr.toRExpr()
-        return if (smartType == null) rExpr else R_NotNullExpr(smartType, rExpr, pos.toErrorPos())
+        if (smartType == null) return rExpr
+        val valueName = targetVarKey?.takeIf { it.isFull }?.nameMsg()
+        return R_NotNullExpr(smartType, rExpr, pos.toErrorPos(), valueName)
     }
 
     override fun asNullable(): V_ExprWrapper {

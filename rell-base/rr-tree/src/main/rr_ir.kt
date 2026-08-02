@@ -39,7 +39,13 @@ sealed interface RR_Expr {
     @JvmRecord
     data class Elvis(override val type: RR_Type, val left: RR_Expr, val right: RR_Expr): RR_Expr
     @JvmRecord
-    data class NotNull(override val type: RR_Type, val expr: RR_Expr, val errPos: ErrorPos): RR_Expr
+    data class NotNull(
+        override val type: RR_Type,
+        val expr: RR_Expr,
+        val errPos: ErrorPos,
+        /** Source name of the asserted value (variable/member path), when statically known. */
+        val valueName: String? = null,
+    ): RR_Expr
     @JvmRecord
     data class TupleLiteral(override val type: RR_Type, val exprs: ImmList<RR_Expr>): RR_Expr
     @JvmRecord

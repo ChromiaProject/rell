@@ -119,6 +119,7 @@ class R_NotNullExpr(
     type: R_Type,
     val expr: R_Expr,
     val errPos: ErrorPos,
+    val valueName: String? = null,
 ): R_BaseExpr(type)
 
 class R_IfExpr(

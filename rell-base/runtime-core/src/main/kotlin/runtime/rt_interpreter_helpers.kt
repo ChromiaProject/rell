@@ -16,3 +16,7 @@ fun RR_Type.elementType(): RR_Type = when (this) {
     is RR_Type.Nullable -> value.elementType()
     else -> this
 }
+
+/** User-facing message for a failed not-null assertion (`!!` or an implicit null check). */
+fun rtNullValueMsg(valueName: String?): String =
+    if (valueName != null) "Value of '$valueName' is null" else "Null value"

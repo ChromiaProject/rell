@@ -1,0 +1,2 @@
+/** A starting string for configuration errors */
+val _CONFIG_ERROR_TEXT_TEMPLATE: text = "CONFIG ERROR: %s";

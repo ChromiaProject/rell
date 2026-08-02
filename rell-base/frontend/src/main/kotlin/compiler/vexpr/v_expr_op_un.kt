@@ -55,13 +55,13 @@ class V_UnaryOp_Not: V_UnaryOp(R_BooleanType) {
     override fun compileDb(pos: S_Pos, expr: Db_Expr) = Db_UnaryExpr(R_BooleanType, Db_UnaryOp_Not, expr)
 }
 
-class V_UnaryOp_NotNull(resType: R_Type): V_UnaryOp(resType) {
+class V_UnaryOp_NotNull(resType: R_Type, private val valueName: String?): V_UnaryOp(resType) {
     override fun canBeDbExpr() = false
     override fun preserveVarKey() = true
 
     override fun compileR(pos: S_Pos, expr: R_Expr): R_Expr {
         val errPos = pos.toErrorPos()
-        return R_NotNullExpr(resType, expr, errPos)
+        return R_NotNullExpr(resType, expr, errPos, valueName)
     }
 
     override fun compileDb(pos: S_Pos, expr: Db_Expr): Db_Expr =

@@ -179,21 +179,24 @@ internal open class Tf_ElvisNode(
 internal open class Tf_NotNullNode(
     @field:Child private var expr: Tf_ExprNode,
     @field:CompilationFinal private val errPos: ErrorPos,
+    @field:CompilationFinal private val valueName: String?,
 ): Tf_ExprNode() {
     override fun execute(frame: VirtualFrame): Rt_Value {
         val v = expr.execute(frame)
         if (v === Rt_NullValue) {
-            tfRtFrame(frame).error(errPos, "null_value", "Null value")
+            tfRtFrame(frame).error(errPos, "null_value", rtNullValueMsg(valueName))
         }
         return v
     }
 
-    internal class IntNotNull(expr: Tf_ExprNode, errPos: ErrorPos) : Tf_NotNullNode(expr, errPos) {
+    internal class IntNotNull(expr: Tf_ExprNode, errPos: ErrorPos, valueName: String?) :
+        Tf_NotNullNode(expr, errPos, valueName) {
         override fun executeLong(frame: VirtualFrame): Long =
             Tf_Unchecked.cast<Rt_IntValue>(execute(frame)).value
     }
 
-    internal class BoolNotNull(expr: Tf_ExprNode, errPos: ErrorPos) : Tf_NotNullNode(expr, errPos) {
+    internal class BoolNotNull(expr: Tf_ExprNode, errPos: ErrorPos, valueName: String?) :
+        Tf_NotNullNode(expr, errPos, valueName) {
         override fun executeBoolean(frame: VirtualFrame): Boolean =
             Tf_Unchecked.cast<Rt_BooleanValue>(execute(frame)).value
     }

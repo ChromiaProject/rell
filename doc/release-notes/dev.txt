@@ -46,3 +46,38 @@ Four cases where the formatter moved code away from where the author put it:
   This shape is now stable across saves instead of drifting one level right each time.
 - The else arm of a multiline if expression indents its interior the same way as the then arm. Previously a
   call in the else arm had its arguments flush with the callee and its closing parenthesis dedented past it.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Compiler: Plain-language syntax error messages
+
+Syntax errors no longer expose the parser's internal token names and phrasing. A message that used to read
+
+    Syntax error: mismatched input '=' expecting {'(', RULE_ID}
+
+now reads
+
+    Syntax error: unexpected '=', expecting '(' or a name
+
+Grammar token names are translated to plain terms (a name, a number, a string, a byte array, end of file),
+keywords and punctuation are quoted as written, and a long list of alternatives is cut off after the first
+eight. The error code (syntax) and error positions are unchanged.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Runtime: Null-assertion errors name the value
+
+When a not-null assertion fails and the asserted value is a variable or a member path, the error names it:
+
+    ERROR Value of 'x' is null
+
+Previously the message was just "Null value", which on a line with several nullable accesses did not say which
+one failed. For an asserted expression with no stable name (for example a call result) the old message is kept.
+The error code (null_value) is unchanged, so code and tests matching on it are unaffected.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+6. Runtime: The no-database error says how to fix it
+
+Running code that touches entities or other database features without a configured database now reports
+
+    No database connection: database features require a database URL (e.g. --db-url in the Rell CLI)
+
+instead of the bare "No database connection". The error code (no_sql) is unchanged.

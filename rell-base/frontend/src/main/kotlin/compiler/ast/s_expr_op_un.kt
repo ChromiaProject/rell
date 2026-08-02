@@ -127,7 +127,8 @@ internal data object S_UnaryOp_NotNull: S_UnaryOp("!!") {
         val alwaysVarStates = exprN.varStatesDelta.always.and(notNullVarStates)
         val resExprVarStates = C_ExprVarStatesDelta.make(always = alwaysVarStates)
 
-        return V_UnaryExpr(ctx, startPos, V_UnaryOp_NotNull(valueType), exprN, resExprVarStates)
+        val valueName = exprN.varKey()?.takeIf { it.isFull }?.nameMsg()
+        return V_UnaryExpr(ctx, startPos, V_UnaryOp_NotNull(valueType, valueName), exprN, resExprVarStates)
     }
 }
 

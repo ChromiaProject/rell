@@ -703,6 +703,7 @@ table NotNullExpr {
     type: Type (required);
     expr: Expr (required);
     err_pos: SourcePos (required);
+    value_name: string;
 }
 
 table TupleExpr {

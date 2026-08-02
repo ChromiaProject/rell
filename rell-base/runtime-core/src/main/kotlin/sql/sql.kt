@@ -259,7 +259,10 @@ object NoConnSqlExecutor: SqlExecutor() {
     override fun execute(sql: String, preparator: SqlPreparator) = err()
     override fun executeQuery(sql: String, preparator: SqlPreparator, consumer: (ResultSetRow) -> Unit) = err()
 
-    private fun err(): Nothing = throw Rt_Exception.common("no_sql", "No database connection")
+    private fun err(): Nothing = throw Rt_Exception.common(
+        "no_sql",
+        "No database connection: database features require a database URL (e.g. --db-url in the Rell CLI)",
+    )
 }
 
 interface SqlManagerConnection {

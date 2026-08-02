@@ -90,7 +90,7 @@ internal class RR_IrResolver(
                 expr.exprs.mapToImmList { resolveExpr(it) })
 
             is R_ElvisExpr -> RR_Expr.Elvis(type, resolveExpr(expr.left), resolveExpr(expr.right))
-            is R_NotNullExpr -> RR_Expr.NotNull(type, resolveExpr(expr.expr), expr.errPos)
+            is R_NotNullExpr -> RR_Expr.NotNull(type, resolveExpr(expr.expr), expr.errPos, expr.valueName)
             is R_TupleExpr -> RR_Expr.TupleLiteral(type, expr.exprs.mapToImmList { resolveExpr(it) })
             is R_ListLiteralExpr -> RR_Expr.ListLiteral(type, expr.exprs.mapToImmList { resolveExpr(it) })
             is R_MapLiteralExpr -> RR_Expr.MapLiteral(

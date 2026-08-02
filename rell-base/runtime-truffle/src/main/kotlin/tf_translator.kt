@@ -247,9 +247,9 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
         is RR_Expr.NotNull -> {
             val innerNode = translateExpr(expr.expr)
             when {
-                isInt(expr.type) -> Tf_NotNullNode.IntNotNull(innerNode, expr.errPos)
-                isBool(expr.type) -> Tf_NotNullNode.BoolNotNull(innerNode, expr.errPos)
-                else -> Tf_NotNullNode(innerNode, expr.errPos)
+                isInt(expr.type) -> Tf_NotNullNode.IntNotNull(innerNode, expr.errPos, expr.valueName)
+                isBool(expr.type) -> Tf_NotNullNode.BoolNotNull(innerNode, expr.errPos, expr.valueName)
+                else -> Tf_NotNullNode(innerNode, expr.errPos, expr.valueName)
             }
         }
 

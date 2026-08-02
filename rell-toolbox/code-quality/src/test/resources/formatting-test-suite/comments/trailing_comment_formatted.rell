@@ -1,0 +1,4 @@
+function t() {
+    assert_equals(j.action, "");
+    assert_equals(j.verdict, "pass"); // to_dashboard_verdict maps GREEN to pass
+}

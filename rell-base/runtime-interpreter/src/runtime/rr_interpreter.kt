@@ -176,7 +176,7 @@ class Rt_InterpreterImpl(
         is RR_Expr.NotNull -> {
             val value = evaluateExpr(expr.expr, frame)
             if (value == Rt_NullValue) {
-                frame.error(expr.errPos, "null_value", "Null value")
+                frame.error(expr.errPos, "null_value", rtNullValueMsg(expr.valueName))
             }
             value
         }
