@@ -20,8 +20,7 @@ internal class TokenAnalyzer(private val parser: RellParser) {
             val child = node.getChild(i)
 
             if (child is TerminalNode) {
-                val token = child.symbol
-                if (token.text == tokenText) return child
+                if (child.symbol.text == tokenText) return child
             }
         }
 
@@ -44,10 +43,12 @@ internal class TokenAnalyzer(private val parser: RellParser) {
      */
     fun directTokenFor(node: ParserRuleContext?, tokenText: String): TerminalNode? {
         if (node == null) return null
+
         for (i in 0..<node.childCount) {
             val child = node.getChild(i)
             if (child is TerminalNode && child.symbol.text == tokenText) return child
         }
+
         return null
     }
 

@@ -99,10 +99,13 @@ class FormattingStyleLinterTest {
                 textEdit = TextEdit(range = Range(Position(4, 0), Position(5, 0)), newText = "")
             ),
             FormatterIssue(
+                // The insert sits at the very end of the document; the highlight anchors on the
+                // last character so editors never widen it past the document end, while the text
+                // edit keeps the true insert offset.
                 message = "Insert: `⏎` at line 6, column 18",
                 type = DeltaType.INSERT,
                 line = 6,
-                column = 17,
+                column = 16,
                 textEdit = TextEdit(range = Range(Position(5, 17), Position(5, 17)), newText = "\n")
             )
         )

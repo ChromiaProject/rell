@@ -120,7 +120,9 @@ The ranges the language server reports to editors are now well-formed in error s
   zero-width range at the very end of the document. Editors widen such a range forwards to make it
   visible, which lands past the end of the document — IntelliJ-based IDEs rejected the annotation with
   an exception on every highlighting pass. The range now anchors backwards onto the last visible
-  character instead.
+  character instead. The formatting linter's insert-at-end-of-file issue (a missing final newline)
+  had the same problem and now anchors its highlight on the last character too, while its quick fix
+  keeps inserting at the true position.
 
 - The document symbols for an incomplete definition without a name (for example a bare class { } left over
   while typing) used to cover the whole definition with the name range and could point past the end of a

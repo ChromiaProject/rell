@@ -39,14 +39,15 @@ class FormattingStyleLinter : AbstractFormattingStyleLinter() {
             when (delta.type) {
                 com.github.difflib.patch.DeltaType.INSERT -> {
                     val position = offsetToPosition(fileContent, delta.source.position)
+                    val highlight = highlightPosition(fileContent, delta.source.position)
                     formatterIssues.add(
                         FormatterIssue(
                             "Insert: `${getFormatterMessage(
                                 delta.target
                             )}` at line ${position.line + 1}, column ${position.character + 1}",
                             DeltaType.INSERT,
-                            position.line + 1,
-                            position.character,
+                            highlight.line + 1,
+                            highlight.character,
                             getTextEditForInsert(delta.target, position.line, position.character)
                         )
                     )
@@ -93,6 +94,17 @@ class FormattingStyleLinter : AbstractFormattingStyleLinter() {
         }
 
         return formatterIssues
+    }
+
+    /**
+     * Where the issue is highlighted. An insert at the very end of the document would get a
+     * zero-width highlight there, which editors widen forwards past the document end — IntelliJ
+     * rejects such an annotation with an exception on every highlighting pass — so anchor it on
+     * the last character instead. The text edit keeps the true insert offset.
+     */
+    private fun highlightPosition(fileContent: String, offset: Int): Position {
+        val clamped = if (offset >= fileContent.length && fileContent.isNotEmpty()) fileContent.length - 1 else offset
+        return offsetToPosition(fileContent, clamped)
     }
 
     private fun getFormatterMessage(chunk: Chunk<String>): String {
