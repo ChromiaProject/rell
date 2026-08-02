@@ -1,0 +1,127 @@
+UNRELEASED NOTES
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Tools: Linter inspection suggesting the null-check operator
+
+A new inspection, rule_prefer_null_check_operator, reports a comparison of the form x != null and offers to
+rewrite it as x??, the null-check operator. Both operand orders are recognized, so null != x is reported as well.
+The inspection is on by default, like the other style suggestions.
+
+Comparisons inside an at-expression where-clause are left alone: a where-clause is compiled to SQL, where the two
+forms are not interchangeable.
+
+The inspection yields to rule_simplify_nullable_if. When the whole conditional collapses to an elvis or
+safe-access expression - if (x != null) x else y, or if (x != null) x.f else null - rewriting only its condition
+is the worse of the two suggestions, so only the rewrite of the whole if is reported.
+
+rule_simplify_nullable_if in turn now recognizes conditions written with the null-check operator, so applying one
+suggestion does not hide the other. if (x??) x else y is reported as an elvis expression just like the
+comparison spelling, and a guard written as if (not x??) return null; is merged into the declaration above it,
+giving val x = f() ?: return null;.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Tools: Compact arms in the if-to-when quick fix
+
+The quick fix of rule_replace_if_with_when now writes an arm without braces when the branch is a block holding a
+single statement, or a value block holding nothing but its result expression. Branches that need the braces keep
+them, so a when can mix compact and block arms. A block around a single val or var declaration is also kept:
+dropping it would move the name into the enclosing scope.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tools: Formatter placement fixes
+
+Four cases where the formatter moved code away from where the author put it:
+
+- A file opening with a doc comment no longer gets a blank line inserted above it; the comment stays on the
+  first line.
+- A comment written at the end of a statement line stays there. Previously it was pushed onto its own line
+  below the statement.
+- In a call chain where only the argument list spans lines, the arguments are indented one level and the
+  closing parenthesis sits at the statement's level. Previously both were pushed one level deeper:
+
+      rell.test.tx().op(
+          my_operation(x)
+      ).run();
+
+  This shape is now stable across saves instead of drifting one level right each time.
+- The else arm of a multiline if expression indents its interior the same way as the then arm. Previously a
+  call in the else arm had its arguments flush with the callee and its closing parenthesis dedented past it.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Compiler: Friendlier error messages
+
+Several error messages produced by the compiler and the runtime were rewritten in plain language. Error codes
+and error positions are unchanged throughout, so code and tests matching on them are unaffected.
+
+(a) Syntax errors no longer expose the parser's internal token names and phrasing, and read the way an IDE user
+expects. A message that used to read
+
+    Syntax error: mismatched input '=' expecting {'(', RULE_ID}
+
+now reads
+
+    Syntax error: '(' or name expected, got '='
+
+and an entity declaration missing its name is reported simply as
+
+    Name expected
+
+Grammar token names are translated to plain terms (name, number, string, byte array, end of file), keywords and
+punctuation are quoted as written. When the set of acceptable tokens is too wide to enumerate (more than eight
+alternatives), the message degrades to a plain form such as
+
+    Unexpected token ';'
+
+The language server reports the same messages, so diagnostics in the IDE match the compiler.
+
+(b) When a not-null assertion fails and the asserted value is a variable or a member path, the error names it:
+
+    ERROR Value of 'x' is null
+
+Previously the message was just "Null value", which on a line with several nullable accesses did not say which
+one failed. For an asserted expression with no stable name (for example a call result) the old message is kept.
+
+(c) Running code that touches entities or other database features without a configured database now reports
+
+    No database connection: database features require a database URL (e.g. --db-url in the Rell CLI)
+
+instead of the bare "No database connection".
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Tools: Linter inspection flagging row-by-row entity attribute reads in loops
+
+A new inspection, rule_prefer_at_projection, reports a for loop over an unprojected entity at-expression whose
+body only reads attributes of the loop variable. Each such read runs its own SQL query per row, while projecting
+the attributes in the at-expression fetches everything in a single query:
+
+    for (u in user @* {}) { print(u.name); }          // 1 + N queries
+    for (name in user @* {} (.name)) { print(name); } // 1 query
+
+The suggestion lists the attributes actually read, including reference paths (user @* {} (.company.name)).
+Besides the plain form, the inspection recognizes the @+ cardinality, a what-clause projecting the entity
+itself (user @* {} (user)), a single aliased from-clause ((u: user) @* {}), and a val holding the
+at-expression result that is used only as the loop source.
+
+The loop stays unreported when the whole entity is needed: the variable is used bare (passed to a
+function, an update or delete target), an attribute is assigned to, an entity method is called, or only .rowid
+is read, which costs no extra query.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+6. Tools: Correct source ranges in editor diagnostics and outline
+
+The ranges the language server reports to editors are now well-formed in error scenarios:
+
+- Compiler and syntax errors underline the whole token at the error position, not just its first
+  character.
+
+- End-of-file errors (unexpected end of file, the missing-final-newline lint) anchor onto the last
+  visible character instead of producing a zero-width range past it, which crashed highlighting in
+  IntelliJ-based IDEs.
+
+- Published diagnostics carry the document version they were computed against, so editors discard
+  stale diagnostics instead of applying them to newer text, where their ranges could point past the
+  end of the document and crash IntelliJ-based IDEs.
+
+- Document symbols for an incomplete definition without a name no longer report a name range covering
+  the whole definition, which crashed sticky lines and breadcrumbs; the name range collapses to the
+  leading keyword.
