@@ -12,7 +12,7 @@ This codebase is too large for grep-based Kotlin work — symbol search, referen
 2. **Kotlin LSP — fallback.** The checked-in `.claude/settings.json` enables the `kotlin-lsp` plugin. Use the `LSP` tool against `kotlin-lsp` (JetBrains Kotlin LSP server on `PATH`) when no IDE is running — and always in git worktrees, where the IDE index covers the wrong tree.
 3. Do not degrade to `grep`/`rg` for Kotlin symbol work; plain text search remains fine for non-Kotlin files, string literals, config, and docs.
 
-The shared hooks in `.claude/settings.json` reinforce this: a session-start reminder, an advisory nudge on `.kt`/`.kts` edits, and a stop-hook reminder about `doc/release-notes/dev.txt` for user-facing changes.
+The shared hooks in `.claude/settings.json` reinforce this: a session-start reminder, an advisory nudge on `.kt`/`.kts` edits, a stop-hook reminder about `doc/release-notes/dev.txt` for user-facing changes, and a stop hook that runs `./gradlew apiCheck` whenever sources of ABI-checked modules changed and blocks until it passes (see "ABI stability" below).
 
 ## Quick Reference
 
@@ -79,6 +79,21 @@ Tests live inside each sub-module (there is no `rell-base:tests`).
 - **coverage-report-aggregate** — aggregate JaCoCo report (`./gradlew testCodeCoverageReport`)
 - **doc/** — Guide (`doc/guide/`), architecture notes (`doc/rell-architecture.md`), release notes (`doc/release-notes/`, dev changes in `dev.txt`), release guides
 - **work/** — Scripts and manual test projects
+
+### ABI stability
+
+More modules are ABI-checked than the two called out above: any module with a checked-in `api/*.api` dump is
+(currently also `rell-base/rr-tree` and every `rell-toolbox` sub-module — `git ls-files '*/api/*.api'` is the
+authoritative list). Changing any public declaration in one of them — including adding a parameter to a public
+function — fails the build until the dump matches. Before declaring work done that touches these modules:
+
+1. Run `./gradlew apiCheck` and make it pass.
+2. If the public-API change is intentional, run `./gradlew apiDump` and review the resulting `*.api` diff — it is
+   part of the change and must be committed with it. Never regenerate dumps blindly to silence an accidental
+   API leak; make the declaration `internal` instead.
+
+A stop hook (`.claude/hooks/stop_apicheck.py`) runs `apiCheck` automatically when ABI-checked sources changed and
+blocks completion until it passes, but do not rely on it — verify yourself as part of the normal test run.
 
 CI is GitLab (`.gitlab-ci.yml` + `.gitlab/ci/`); the canonical repo is GitLab, GitHub is a read-only mirror.
 

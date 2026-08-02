@@ -34,6 +34,12 @@
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_devtxt_check.py\"",
             "timeout": 10,
             "statusMessage": "Checking dev.txt + verification reminder"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_apicheck.py\"",
+            "timeout": 300,
+            "statusMessage": "Running apiCheck for ABI-checked modules"
           }
         ]
       }

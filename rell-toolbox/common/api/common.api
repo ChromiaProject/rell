@@ -322,10 +322,10 @@ public final class net/postchain/rell/toolbox/indexer/RellIssue {
 }
 
 public final class net/postchain/rell/toolbox/indexer/RellIssue$Companion {
-	public final fun fromCMessage (Lnet/postchain/rell/base/compiler/base/utils/C_Message;)Lnet/postchain/rell/toolbox/indexer/RellIssue;
+	public final fun fromCMessage (Lnet/postchain/rell/base/compiler/base/utils/C_Message;Lnet/postchain/rell/toolbox/parser/AbstractRellCommonTokenStream;)Lnet/postchain/rell/toolbox/indexer/RellIssue;
 	public final fun fromFormatterIssue (Lnet/postchain/rell/toolbox/formatter/FormatterIssue;)Lnet/postchain/rell/toolbox/indexer/RellIssue;
 	public final fun fromLinterIssue (Lnet/postchain/rell/toolbox/linter/LinterIssue;)Lnet/postchain/rell/toolbox/indexer/RellIssue;
-	public final fun fromSyntaxError (Lnet/postchain/rell/toolbox/parser/SyntaxError;)Lnet/postchain/rell/toolbox/indexer/RellIssue;
+	public final fun fromSyntaxError (Lnet/postchain/rell/toolbox/parser/SyntaxError;Lnet/postchain/rell/toolbox/parser/AbstractRellCommonTokenStream;)Lnet/postchain/rell/toolbox/indexer/RellIssue;
 }
 
 public final class net/postchain/rell/toolbox/indexer/RellIssueSeverity : java/lang/Enum {

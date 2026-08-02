@@ -181,7 +181,7 @@ class WorkspaceIndexer(
         for (fileUri in rellUris) {
             val fileContent = try {
                 File(fileUri).readText()
-            } catch (@Suppress("SwallowedException") e: Exception) {
+            } catch (@Suppress("SwallowedException") _: Exception) {
                 logger.warn { "Could not read file ${fileUri.fileName()}" }
                 continue
             }
