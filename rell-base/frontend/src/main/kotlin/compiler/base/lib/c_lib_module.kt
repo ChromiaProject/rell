@@ -8,7 +8,7 @@ import net.postchain.rell.base.lmodel.L_Module
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.associateByToImmMap
 
-class C_LibModule constructor(
+class C_LibModule(
     val lModule: L_Module,
     typeDefs: List<C_LibTypeDef>,
     val namespace: C_LibNamespace,

@@ -167,7 +167,7 @@ private object KotlinBaselines {
         left.sort()
         right.sort()
         var sum = 0L
-        for (i in 0 until input.size) {
+        for (i in input.indices) {
             sum += abs(left[i] - right[i])
         }
         return sum
@@ -241,7 +241,7 @@ private object KotlinBaselines {
 
     private fun day2IsSafeWithDampener(report: List<Long>): Boolean {
         if (day2IsSafe(report)) return true
-        for (i in 0 until report.size) {
+        for (i in report.indices) {
             val r = ArrayList(report)
             r.removeAt(i)
             if (day2IsSafe(r)) return true
@@ -281,7 +281,7 @@ private object KotlinBaselines {
 
     private fun day3a(input: String): Long {
         var sum = 0L
-        for (i in 0 until input.length) {
+        for (i in input.indices) {
             if (input.substring(i).matches(MUL_RE)) {
                 val comma = input.indexOf(",", i + 4)
                 sum += input.substring(i + 4, comma).toLong() *
@@ -294,7 +294,7 @@ private object KotlinBaselines {
     private fun day3b(input: String): Long {
         var enabled = true
         var sum = 0L
-        for (i in 0 until input.length) {
+        for (i in input.indices) {
             if (input.substring(i).matches(DO_RE)) {
                 enabled = true
             } else if (input.substring(i).matches(DONT_RE)) {
@@ -341,25 +341,25 @@ private object KotlinBaselines {
         val wordSize = word.length
 
         var occurances = 0L
-        for (row in 0 until input.size) {
-            for (col in 0 until input[row].length) {
-                if (col <= input[row].length - wordSize) {
-                    val part = "" + input[row][col] + input[row][col + 1] + input[row][col + 2] + input[row][col + 3]
+        for ((row, element) in input.withIndex()) {
+            for ((col, element1) in element.withIndex()) {
+                if (col <= element.length - wordSize) {
+                    val part = "" + element1 + element[col + 1] + element[col + 2] + element[col + 3]
                     if (part == word) occurances += 1L
                     if (part == reversedWord) occurances += 1L
                 }
                 if (row <= input.size - wordSize) {
-                    val part = "" + input[row][col] + input[row + 1][col] + input[row + 2][col] + input[row + 3][col]
+                    val part = "" + element1 + input[row + 1][col] + input[row + 2][col] + input[row + 3][col]
                     if (part == word) occurances += 1L
                     if (part == reversedWord) occurances += 1L
                 }
-                if ((row <= input.size - wordSize) && (col <= input[row].length - wordSize)) {
-                    val part = "" + input[row][col] + input[row + 1][col + 1] + input[row + 2][col + 2] + input[row + 3][col + 3]
+                if ((row <= input.size - wordSize) && (col <= element.length - wordSize)) {
+                    val part = "" + element1 + input[row + 1][col + 1] + input[row + 2][col + 2] + input[row + 3][col + 3]
                     if (part == word) occurances += 1L
                     if (part == reversedWord) occurances += 1L
                 }
                 if ((row <= input.size - wordSize) && (col >= wordSize - 1)) {
-                    val part = "" + input[row][col] + input[row + 1][col - 1] + input[row + 2][col - 2] + input[row + 3][col - 3]
+                    val part = "" + element1 + input[row + 1][col - 1] + input[row + 2][col - 2] + input[row + 3][col - 3]
                     if (part == word) occurances += 1L
                     if (part == reversedWord) occurances += 1L
                 }
@@ -513,9 +513,9 @@ private object KotlinBaselines {
     )
 
     private fun day6FindStartPos(input: List<String>): D6PosDir {
-        for (row in 0 until input.size) {
-            for (col in 0 until input[row].length) {
-                if (input[row][col] == '^') return D6PosDir(row, col, D6.N)
+        for ((row, element) in input.withIndex()) {
+            for (col in element.indices) {
+                if (element[col] == '^') return D6PosDir(row, col, D6.N)
             }
         }
         return D6PosDir(-1, -1, D6.N)

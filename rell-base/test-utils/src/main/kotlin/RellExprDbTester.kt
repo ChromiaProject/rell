@@ -29,27 +29,23 @@ class RellExprDbTester: RellExprTester(), AutoCloseable {
     private val dataAttrCount = 4
 
     private val defaultValues = dataAttrs
-            .flatMap { attr -> ( 1 .. dataAttrCount ).map { Pair(attr, it) } }
-            .map { (attr, i) ->
-                val (field, _, value) = attr
-                Pair(field + i, value)
-            }
-            .toMap()
+        .flatMap { attr -> (1..dataAttrCount).map { Pair(attr, it) } }
+        .associate { (attr, i) ->
+            val (field, _, value) = attr
+            Pair(field + i, value)
+        }
 
-    private val typeToField = dataAttrs
-            .map { attr ->
-                val (field, type, _) = attr
-                Pair(type, field)
-            }
-            .toMap()
+    private val typeToField = dataAttrs.associate { attr ->
+        val (field, type, _) = attr
+        Pair(type, field)
+    }
 
     private val dataAttrDefs = dataAttrs
-            .flatMap { attr -> ( 1 .. dataAttrCount ).map { Pair(attr, it) } }
-            .map { (attr, i) ->
-                val (field, type, _) = attr
-                "$field$i: $type;"
-            }
-            .joinToString("")
+        .flatMap { attr -> (1..dataAttrCount).map { Pair(attr, it) } }
+        .joinToString("") { (attr, i) ->
+            val (field, type, _) = attr
+            "$field$i: $type;"
+        }
 
     private val entityDefs = listOf(
             "entity company { name: text; }",
@@ -120,9 +116,8 @@ class RellExprDbTester: RellExprTester(), AutoCloseable {
 
     private fun calcExprWhere(expr: String, args: List<Pair<String, String>>): String {
         val values = makeValues(args)
-        val res = calc(values, "= optest @* { $expr };")
 
-        val resValue = when (res) {
+        val resValue = when (val res = calc(values, "= optest @* { $expr };")) {
             "list<optest>[optest[5]]" -> Rt_BooleanValue.TRUE
             "list<optest>[]" -> Rt_BooleanValue.FALSE
             else -> error(res)
@@ -143,18 +138,19 @@ class RellExprDbTester: RellExprTester(), AutoCloseable {
     }
 
     private fun makeValues(args: List<Pair<String, String>>): Map<String, String> {
-        val values = mutableMapOf<String, String>()
-        values.putAll(defaultValues)
+        val values = defaultValues.toMutableMap()
+
         for ((name, value) in args) {
-            values.put(name, value)
+            values[name] = value
         }
+
         return values
     }
 
     private fun makeInserts(values: Map<String, String>): List<String> {
         val columns = values.keys.toList()
         val insColumns = columns.joinToString(",")
-        val insValues = "5," + columns.map{ values[it] }.joinToString(",")
+        val insValues = "5," + columns.joinToString(",") { values[it].toString() }
         val insert = SqlTestUtils.mkins("c0.optest", insColumns, insValues)
         return this.inserts + insert
     }

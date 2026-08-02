@@ -95,17 +95,16 @@ internal class FieldValueGenerator(
             Distribution.RANDOM -> config.values[random.nextInt(config.values.size)]
             Distribution.WEIGHTED -> selectWeightedValue(config)
         }
-        val type = attribute.type
 
-        return when {
-            type is RR_Type.Enum -> {
+        return when (val type = attribute.type) {
+            is RR_Type.Enum -> {
                 val enumDef = checkNotNull(attribute.enumDefinition) {
                     "Enum definition not found for type $type"
                 }
                 FieldValue(getOrdinalValue(value as String, enumDef))
             }
 
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.DECIMAL -> FieldValue(value.toString())
+            is RR_Type.Primitive if type.kind == RR_PrimitiveKind.DECIMAL -> FieldValue(value.toString())
             else -> FieldValue(value)
         }
     }

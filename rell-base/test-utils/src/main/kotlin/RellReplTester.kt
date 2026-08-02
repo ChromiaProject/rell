@@ -126,7 +126,7 @@ class RellReplTester(
             }
 
             override fun printCompilerMessage(message: C_Message) {
-                val s = RellTestUtils.errToString(message.pos, message.code, false, true)
+                val s = RellTestUtils.errToString(message.pos, message.code, forcePos = false, forceFile = true)
                 output.add("CTE:$s")
             }
 

@@ -24,9 +24,9 @@ internal class CompletionItemFactory {
     private val defaultSnippets = listOf(
         Snippet(
             prefix = "entity",
-            body = """
-            entity ${'$'}{1:name} {
-                ${'$'}{2:fields}
+            body = $$"""
+            entity ${1:name} {
+                ${2:fields}
             }
             """.trimIndent(),
             description = "Entity declaration",
@@ -34,9 +34,9 @@ internal class CompletionItemFactory {
         ),
         Snippet(
             prefix = "enum",
-            body = """
-            enum ${'$'}{1:name} {
-                ${'$'}{2:field},
+            body = $$"""
+            enum ${1:name} {
+                ${2:field},
             }
             """.trimIndent(),
             description = "Enum declaration",
@@ -44,9 +44,9 @@ internal class CompletionItemFactory {
         ),
         Snippet(
             prefix = "function",
-            body = """
-            function ${'$'}{1:name} () {
-                ${'$'}{2:body}
+            body = $$"""
+            function ${1:name} () {
+                ${2:body}
             }
             """.trimIndent(),
             description = "Function declaration",
@@ -54,9 +54,9 @@ internal class CompletionItemFactory {
         ),
         Snippet(
             prefix = "if",
-            body = """
-            if (${'$'}{1:condition}) {
-                ${'$'}{2:body}
+            body = $$"""
+            if (${1:condition}) {
+                ${2:body}
             }
             """.trimIndent(),
             description = "If statement with bracketed body",
@@ -64,11 +64,11 @@ internal class CompletionItemFactory {
         ),
         Snippet(
             prefix = "if_else",
-            body = """
-            if (${'$'}{1:condition}) {
-                ${'$'}{2:body_if}
+            body = $$"""
+            if (${1:condition}) {
+                ${2:body_if}
             } else {
-                ${'$'}{3:body_else}
+                ${3:body_else}
             }
             """.trimIndent(),
             description = "If/else statement",
@@ -76,13 +76,13 @@ internal class CompletionItemFactory {
         ),
         Snippet(
             prefix = "if_else_if",
-            body = """
-            if (${'$'}{1:condition}) {
-                ${'$'}{2:body_if}
-            } else if (${'$'}{3:condition_else_if}) {
-                ${'$'}{4:body_else_if}
+            body = $$"""
+            if (${1:condition}) {
+                ${2:body_if}
+            } else if (${3:condition_else_if}) {
+                ${4:body_else_if}
             } else {
-                ${'$'}{5:body_else}
+                ${5:body_else}
             }
             """.trimIndent(),
             description = "If else/if else statement",
@@ -90,15 +90,15 @@ internal class CompletionItemFactory {
         ),
         Snippet(
             prefix = "if_oneline",
-            body = "if (${'$'}{1:condition}) ${'$'}{2:action};",
+            body = $$"if (${1:condition}) ${2:action};",
             description = "If statement one-liner",
             labelDetail = "if_oneline + condition + action"
         ),
         Snippet(
             prefix = "object",
-            body = """
-            object ${'$'}{1:name} {
-                ${'$'}{2:field};
+            body = $$"""
+            object ${1:name} {
+                ${2:field};
             }
             """.trimIndent(),
             description = "Object",
@@ -106,9 +106,9 @@ internal class CompletionItemFactory {
         ),
         Snippet(
             prefix = "operation",
-            body = """
-            operation ${'$'}{1:name} (${'$'}{2:args}) {
-                ${'$'}{3:body}
+            body = $$"""
+            operation ${1:name} (${2:args}) {
+                ${3:body}
             }
             """.trimIndent(),
             description = "Operation statement",
@@ -116,21 +116,21 @@ internal class CompletionItemFactory {
         ),
         Snippet(
             prefix = "print",
-            body = "print(${'$'}{1:value});",
+            body = $$"print(${1:value});",
             description = "Print statement",
             labelDetail = "print + value"
         ),
         Snippet(
             prefix = "query",
-            body = "query ${'$'}{1:name} () = ${'$'}{2:from} @ { ${'$'}{3:where} } ( ${'$'}{4:select} );",
+            body = $$"query ${1:name} () = ${2:from} @ { ${3:where} } ( ${4:select} );",
             description = "Query declaration",
             labelDetail = "query + name + from + where + select"
         ),
         Snippet(
             prefix = "struct",
-            body = """
-            struct ${'$'}{1:name} {
-                ${'$'}{2:field};
+            body = $$"""
+            struct ${1:name} {
+                ${2:field};
             }
             """.trimIndent(),
             description = "Struct declaration",
@@ -247,7 +247,7 @@ internal class CompletionItemFactory {
         return buildString {
             append("(")
             params?.forEachIndexed { index, param ->
-                append("\${${index + 1}:${param.name}}")
+                append($$"${$${index + 1}:$${param.name}}")
                 if (index < params.size - 1) {
                     append(", ")
                 }

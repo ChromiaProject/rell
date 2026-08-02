@@ -19,6 +19,8 @@ profile:
       enabled: false
     - inspection: LocalVariableName
       enabled: false
+    - inspection: DuplicatedCode
+      enabled: false
 
 # Exclude build output and Gradle/IDE caches from all inspections. The `build` entry also covers ANTLR-generated Java.
 exclude:

@@ -22,7 +22,7 @@ abstract class RellBackendBenchmark {
     lateinit var exeCtx: Rt_ExecutionContext
         protected set
 
-    public fun setUpBackend(backend: String, resourcePath: String): RR_App {
+    fun setUpBackend(backend: String, resourcePath: String): RR_App {
         val rellSource = loadRellResource(resourcePath)
         val sourceDir = C_SourceDir.mapDirOf(RellTestUtils.MAIN_FILE to rellSource)
         val modSel = C_CompilerModuleSelection(immListOf(ModuleName.EMPTY), immListOf())

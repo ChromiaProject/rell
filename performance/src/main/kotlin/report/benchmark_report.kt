@@ -13,6 +13,9 @@ import org.intellij.lang.annotations.Language
 import java.nio.file.Path
 import java.time.Instant
 import kotlin.io.path.*
+import kotlin.math.floor
+import kotlin.math.log10
+import kotlin.math.pow
 import kotlin.system.exitProcess
 
 private data class JmhMetric(
@@ -509,8 +512,8 @@ private fun FlowContent.renderAocResults(
     // ×22 / ×44 ratio consistent across days", not "how wide is each day's CI".
     val ys = pivot.values.flatMap { it.values.map { r -> r.primaryMetric.score } }
         .filter { it.isFinite() && it > 0.0 }
-    val yMinLog = if (ys.isEmpty()) -3.0 else kotlin.math.floor(kotlin.math.log10(ys.min()))
-    val yMaxLog = if (ys.isEmpty()) 2.0 else kotlin.math.ceil(kotlin.math.log10(ys.max()))
+    val yMinLog = if (ys.isEmpty()) -3.0 else floor(log10(ys.min()))
+    val yMaxLog = if (ys.isEmpty()) 2.0 else kotlin.math.ceil(log10(ys.max()))
 
     // Median ratio vs kotlin, per non-kotlin engine. Median of *ratios*, not ratio of medians:
     // each sample's per-engine slowdown contributes one number to the median, which makes the
@@ -648,14 +651,14 @@ private fun aocSlopegraphSvg(
     // works; if we had 2 it splits the plot in half. The single-column degenerate case is
     // handled by clamping the divisor.
     val n = backends.size
-    val colX = backends.mapIndexed { i, _ ->
+    val colX = List(backends.size) { i ->
         if (n == 1) padL + plotW / 2.0
         else padL + plotW.toDouble() * i / (n - 1)
     }
 
     // Larger y → larger time → lower on screen ("lower is better" → top).
     fun yFor(v: Double): Double {
-        val L = kotlin.math.log10(v.coerceAtLeast(1e-12)).coerceIn(yMinLog, yMaxLog)
+        val L = log10(v.coerceAtLeast(1e-12)).coerceIn(yMinLog, yMaxLog)
         return padT + plotH * (yMaxLog - L) / ySpan
     }
 
@@ -666,7 +669,7 @@ private fun aocSlopegraphSvg(
     // Y-axis decade gridlines + tick labels (1µs .. 100ms).
     var dec = yMinLog.toInt()
     while (dec.toDouble() <= yMaxLog + 1e-9) {
-        val y = yFor(Math.pow(10.0, dec.toDouble()))
+        val y = yFor(10.0.pow(dec.toDouble()))
         sb.append("""<line class="grid" x1="$padL" y1="${"%.2f".formatRoot(y)}" x2="${padL + plotW}" y2="${"%.2f".formatRoot(y)}"/>""")
         sb.append("""<text class="tick" x="${padL - 8}" y="${"%.2f".formatRoot(y + 3)}" text-anchor="end">${decadeLabel(dec)}</text>""")
         dec += 1
@@ -820,7 +823,7 @@ private fun barsSvgPerMethod(
 
 private fun niceCeilingBench(v: Double): Double {
     if (v <= 0) return 1.0
-    val mag = Math.pow(10.0, Math.floor(Math.log10(v)))
+    val mag = 10.0.pow(floor(log10(v)))
     val n = v / mag
     val nice = when {
         n <= 1.0 -> 1.0
@@ -835,7 +838,7 @@ private fun niceCeilingBench(v: Double): Double {
 private fun formatScoreBench(v: Double): String {
     if (v == 0.0 || !v.isFinite()) return "%.1f".formatRoot(v)
     val abs = kotlin.math.abs(v)
-    val decimals = if (abs >= 0.1) 1 else kotlin.math.ceil(-kotlin.math.log10(abs)).toInt().coerceAtLeast(1)
+    val decimals = if (abs >= 0.1) 1 else kotlin.math.ceil(-log10(abs)).toInt().coerceAtLeast(1)
     return "%.${decimals}f".formatRoot(v)
 }
 

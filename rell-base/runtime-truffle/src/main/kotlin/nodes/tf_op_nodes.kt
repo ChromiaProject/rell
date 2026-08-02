@@ -305,30 +305,39 @@ internal sealed class Tf_BinaryNode: Tf_ExprNode() {
         final override fun execute(frame: VirtualFrame): Rt_Value {
             val lv: Rt_DecimalValue = Tf_Unchecked.cast(left.execute(frame))
             val rv: Rt_DecimalValue = Tf_Unchecked.cast(right.execute(frame))
+
             // Tier 1: long-scale fast path (both sides Tf_LongScaleDecimal).
-            if (lv is Tf_LongScaleDecimal && rv is Tf_LongScaleDecimal) {
-                fastLongScale(lv, rv)?.let {
-                    return it
+            when (lv) {
+                is Tf_LongScaleDecimal if rv is Tf_LongScaleDecimal -> {
+                    fastLongScale(lv, rv)?.let {
+                        return it
+                    }
+                    // Tier 2 (long-scale overflow path): widen both to 128-bit and retry.
+                    fastInt128Scale(
+                        Tf_Int128ScaleDecimal.fromLongScale(lv),
+                        Tf_Int128ScaleDecimal.fromLongScale(rv),
+                    )?.let {
+                        return it
+                    }
                 }
-                // Tier 2 (long-scale overflow path): widen both to 128-bit and retry.
-                fastInt128Scale(
-                    Tf_Int128ScaleDecimal.fromLongScale(lv),
-                    Tf_Int128ScaleDecimal.fromLongScale(rv),
-                )?.let {
-                    return it
+
+                is Tf_Int128ScaleDecimal if rv is Tf_Int128ScaleDecimal -> {
+                    // Tier 2 direct: both sides already at 128-bit.
+                    fastInt128Scale(lv, rv)?.let {
+                        return it
+                    }
                 }
-            } else if (lv is Tf_Int128ScaleDecimal && rv is Tf_Int128ScaleDecimal) {
-                // Tier 2 direct: both sides already at 128-bit.
-                fastInt128Scale(lv, rv)?.let {
-                    return it
+
+                is Tf_LongScaleDecimal if rv is Tf_Int128ScaleDecimal -> {
+                    fastInt128Scale(Tf_Int128ScaleDecimal.fromLongScale(lv), rv)?.let {
+                        return it
+                    }
                 }
-            } else if (lv is Tf_LongScaleDecimal && rv is Tf_Int128ScaleDecimal) {
-                fastInt128Scale(Tf_Int128ScaleDecimal.fromLongScale(lv), rv)?.let {
-                    return it
-                }
-            } else if (lv is Tf_Int128ScaleDecimal && rv is Tf_LongScaleDecimal) {
-                fastInt128Scale(lv, Tf_Int128ScaleDecimal.fromLongScale(rv))?.let {
-                    return it
+
+                is Tf_Int128ScaleDecimal if rv is Tf_LongScaleDecimal -> {
+                    fastInt128Scale(lv, Tf_Int128ScaleDecimal.fromLongScale(rv))?.let {
+                        return it
+                    }
                 }
             }
             return try {

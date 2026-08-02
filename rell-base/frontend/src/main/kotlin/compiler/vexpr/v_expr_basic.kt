@@ -241,7 +241,7 @@ class V_GlobalConstantExpr(
     override fun implicitTargetAttrName() = name
 }
 
-class V_ParameterDefaultValueExpr constructor(
+class V_ParameterDefaultValueExpr(
         exprCtx: C_ExprContext,
         pos: S_Pos,
         private val resType: R_Type,

@@ -16,12 +16,12 @@ internal class NumberValueGenerator(val generatorFactory: FakerGeneratorFactory)
         if (ctx.attributeConfig !is AttributeConfig.Range) {
             throw DataGenerationException("Wrong Range configuration for ${ctx.attribute.name}")
         }
-        val type = ctx.attribute.type
-        return when {
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.INTEGER -> generatorFactory.callGenerator("random.integer", ctx) as Long
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BIG_INTEGER -> BigInteger.valueOf(generatorFactory.callGenerator("random.integer", ctx) as Long)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.DECIMAL -> BigDecimal(generatorFactory.callGenerator("random.decimal", ctx) as Double)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.ROWID -> generatorFactory.callGenerator("random.integer", ctx) as Long
+
+        return when (val type = ctx.attribute.type) {
+            is RR_Type.Primitive if type.kind == RR_PrimitiveKind.INTEGER -> generatorFactory.callGenerator("random.integer", ctx) as Long
+            is RR_Type.Primitive if type.kind == RR_PrimitiveKind.BIG_INTEGER -> BigInteger.valueOf(generatorFactory.callGenerator("random.integer", ctx) as Long)
+            is RR_Type.Primitive if type.kind == RR_PrimitiveKind.DECIMAL -> BigDecimal(generatorFactory.callGenerator("random.decimal", ctx) as Double)
+            is RR_Type.Primitive if type.kind == RR_PrimitiveKind.ROWID -> generatorFactory.callGenerator("random.integer", ctx) as Long
             else -> throw DataGenerationException("Range configuration not applicable for type ${ctx.attribute.type}")
         }
     }

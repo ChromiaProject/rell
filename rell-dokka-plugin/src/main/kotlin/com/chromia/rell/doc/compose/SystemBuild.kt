@@ -58,7 +58,7 @@ internal object SystemBuild {
     }
 
     private fun walkLib(
-        ns: net.postchain.rell.base.lmodel.L_Namespace,
+        ns: L_Namespace,
         parentQname: String,
         buckets: MutableMap<String, MutableList<Doc_Def>>,
         includeAliases: Boolean,
@@ -360,17 +360,17 @@ internal object SystemBuild {
 }
 
 /** Renders a stdlib constant's `L_ConstantDocSource` into the literal source text. */
-private fun net.postchain.rell.base.lmodel.L_ConstantDocSource.toLiteralText(): String = when (val s = this) {
-    is net.postchain.rell.base.lmodel.L_ConstantDocSource.Null -> "null"
-    is net.postchain.rell.base.lmodel.L_ConstantDocSource.Unit -> "unit"
-    is net.postchain.rell.base.lmodel.L_ConstantDocSource.Bool -> s.value.toString()
-    is net.postchain.rell.base.lmodel.L_ConstantDocSource.Int -> s.value.toString()
-    is net.postchain.rell.base.lmodel.L_ConstantDocSource.BigInt -> s.value.toString()
-    is net.postchain.rell.base.lmodel.L_ConstantDocSource.Decimal -> s.value.toString()
-    is net.postchain.rell.base.lmodel.L_ConstantDocSource.Text -> "\"${s.value}\""
-    is net.postchain.rell.base.lmodel.L_ConstantDocSource.Bytes -> bytesHex(s.value)
-    is net.postchain.rell.base.lmodel.L_ConstantDocSource.Rowid -> "rowid(${s.value})"
-    is net.postchain.rell.base.lmodel.L_ConstantDocSource.Complex -> s.fallbackStr
+private fun L_ConstantDocSource.toLiteralText(): String = when (val s = this) {
+    is L_ConstantDocSource.Null -> "null"
+    is L_ConstantDocSource.Unit -> "unit"
+    is L_ConstantDocSource.Bool -> s.value.toString()
+    is L_ConstantDocSource.Int -> s.value.toString()
+    is L_ConstantDocSource.BigInt -> s.value.toString()
+    is L_ConstantDocSource.Decimal -> s.value.toString()
+    is L_ConstantDocSource.Text -> "\"${s.value}\""
+    is L_ConstantDocSource.Bytes -> bytesHex(s.value)
+    is L_ConstantDocSource.Rowid -> "rowid(${s.value})"
+    is L_ConstantDocSource.Complex -> s.fallbackStr
 }
 
 private fun bytesHex(bytes: ByteArray): String = buildString {

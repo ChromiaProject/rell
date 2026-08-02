@@ -60,13 +60,12 @@ internal class AttributeConfigParser {
         // Use typeStr() for structural matching: attribute.typeStr() gives a lowercase name
         val attrTypeStr = attribute.typeStr()
         val genTypeStr = genType.str()
-        if (attrTypeStr == genTypeStr) return true
 
-        return when {
-            attrType is RR_Type.Primitive && attrType.kind == RR_PrimitiveKind.BIG_INTEGER && genType is R_IntegerType -> true
-            attrType is RR_Type.Primitive && attrType.kind == RR_PrimitiveKind.DECIMAL && genType is R_IntegerType -> true
-            attrType is RR_Type.Primitive && attrType.kind == RR_PrimitiveKind.JSON && generator.identifier == "random.json" -> true
-            attrType is RR_Type.Enum && generator.identifier == "random.enum" -> true
+        return attrTypeStr == genTypeStr || when (attrType) {
+            is RR_Type.Primitive if attrType.kind == RR_PrimitiveKind.BIG_INTEGER && genType is R_IntegerType -> true
+            is RR_Type.Primitive if attrType.kind == RR_PrimitiveKind.DECIMAL && genType is R_IntegerType -> true
+            is RR_Type.Primitive if attrType.kind == RR_PrimitiveKind.JSON && generator.identifier == "random.json" -> true
+            is RR_Type.Enum if generator.identifier == "random.enum" -> true
             else -> false
         }
     }
@@ -134,12 +133,11 @@ internal class AttributeConfigParser {
     }
 
     private fun validateNumberRange(value: BigInteger, attribute: Attribute) {
-        val type = attribute.type
-        when {
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BIG_INTEGER -> inRange(value, BIG_INTEGER_MIN_VALUE, BIG_INTEGER_MAX_VALUE)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.INTEGER -> inRange(value, INTEGER_MIN_VALUE, INTEGER_MAX_VALUE)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.ROWID -> inRange(value, BigInteger.ONE, INTEGER_MAX_VALUE)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.DECIMAL -> inRange(value, BIG_INTEGER_MIN_VALUE, BIG_INTEGER_MAX_VALUE)
+        when (val type = attribute.type) {
+            is RR_Type.Primitive if type.kind == RR_PrimitiveKind.BIG_INTEGER -> inRange(value, BIG_INTEGER_MIN_VALUE, BIG_INTEGER_MAX_VALUE)
+            is RR_Type.Primitive if type.kind == RR_PrimitiveKind.INTEGER -> inRange(value, INTEGER_MIN_VALUE, INTEGER_MAX_VALUE)
+            is RR_Type.Primitive if type.kind == RR_PrimitiveKind.ROWID -> inRange(value, BigInteger.ONE, INTEGER_MAX_VALUE)
+            is RR_Type.Primitive if type.kind == RR_PrimitiveKind.DECIMAL -> inRange(value, BIG_INTEGER_MIN_VALUE, BIG_INTEGER_MAX_VALUE)
             else -> throw ConfigurationValidationException(
                 "range generator requires min and max to be within the range of the type"
             )

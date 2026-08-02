@@ -10,6 +10,7 @@ import net.postchain.rell.toolbox.formatter.FormattableDocument
 import net.postchain.rell.toolbox.formatter.NodeFormatter
 import net.postchain.rell.toolbox.formatter.util.*
 import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.tree.TerminalNode
 
 internal class MapExprFormatter(
     val braceFormatter: BraceFormatter,
@@ -76,7 +77,7 @@ internal class MirrorStructExprFormatterImpl(
         braceFormatter.formatBracePairWithoutSpace(node, doc, BracePairTypes.ANGLE)
         // Walk children: 'struct' '<' 'mutable'? type '>'.
         node.children?.forEachIndexed { i, c ->
-            if (c is org.antlr.v4.runtime.tree.TerminalNode) {
+            if (c is TerminalNode) {
                 when (c.symbol.text) {
                     "struct" -> doc.append(c) {
                         it.noSpace()
@@ -99,7 +100,7 @@ internal class MirrorStructTypeFormatter(
     override fun format(node: MirrorStructTypeContext, doc: FormattableDocument) {
         braceFormatter.formatBracePairWithoutSpace(node, doc, BracePairTypes.ANGLE)
         node.children?.forEach { c ->
-            if (c is org.antlr.v4.runtime.tree.TerminalNode) {
+            if (c is TerminalNode) {
                 when (c.symbol.text) {
                     "struct" -> doc.append(c) {
                         it.noSpace()
@@ -136,7 +137,7 @@ internal class TupleHeadFormatter(
         // RULE_ID '=' field labels: surround '=' with one space and ensure the label is on
         // the same line as the value.
         node.children?.forEach { c ->
-            if (c is org.antlr.v4.runtime.tree.TerminalNode && c.symbol.text == "=") {
+            if (c is TerminalNode && c.symbol.text == "=") {
                 doc.prepend(c) {
                     it.oneSpace()
                     it.setNewLines(0)
@@ -180,14 +181,14 @@ internal class TupleHeadFormatter(
         var atItemStart = false
         while (i < n) {
             val c = node.getChild(i)
-            if (c is org.antlr.v4.runtime.tree.TerminalNode) {
+            if (c is TerminalNode) {
                 val txt = c.symbol.text
                 when (txt) {
                     "(" -> atItemStart = true
                     "," -> atItemStart = true
                     ")" -> atItemStart = false
                     else -> {
-                        if (atItemStart && c.symbol.type == net.postchain.rell.base.compiler.parser.antlr.RellParser.RULE_ID) {
+                        if (atItemStart && c.symbol.type == RULE_ID) {
                             result.add(ItemAnchor.Term(c))
                             atItemStart = false
                         }
@@ -205,7 +206,7 @@ internal class TupleHeadFormatter(
     }
 
     private sealed class ItemAnchor {
-        class Term(val node: org.antlr.v4.runtime.tree.TerminalNode) : ItemAnchor()
+        class Term(val node: TerminalNode) : ItemAnchor()
         class Rule(val ctx: ParserRuleContext) : ItemAnchor()
 
         fun applyPrepend(doc: FormattableDocument, mod: (net.postchain.rell.toolbox.formatter.Changes) -> Unit) {
