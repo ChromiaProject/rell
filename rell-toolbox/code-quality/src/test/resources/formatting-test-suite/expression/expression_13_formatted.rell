@@ -24,10 +24,10 @@ function trailingComma() {
     a_chain.with_method_calls.call0("arg0",).call1("arg1", "arg2",).call2("arg1, arg2",);
     a_chain.with_method_calls.call0(
         "arg0",
-        ).call1(
-            "arg1",
-            "arg2",
-        ).call2("arg1", "arg2",);
+    ).call1(
+        "arg1",
+        "arg2",
+    ).call2("arg1", "arg2",);
 
     components_structure.put(
         c

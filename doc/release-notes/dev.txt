@@ -26,3 +26,23 @@ The quick fix of rule_replace_if_with_when now writes an arm without braces when
 single statement, or a value block holding nothing but its result expression. Branches that need the braces keep
 them, so a when can mix compact and block arms. A block around a single val or var declaration is also kept:
 dropping it would move the name into the enclosing scope.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tools: Formatter placement fixes
+
+Four cases where the formatter moved code away from where the author put it:
+
+- A file opening with a doc comment no longer gets a blank line inserted above it; the comment stays on the
+  first line.
+- A comment written at the end of a statement line stays there. Previously it was pushed onto its own line
+  below the statement.
+- In a call chain where only the argument list spans lines, the arguments are indented one level and the
+  closing parenthesis sits at the statement's level. Previously both were pushed one level deeper:
+
+      rell.test.tx().op(
+          my_operation(x)
+      ).run();
+
+  This shape is now stable across saves instead of drifting one level right each time.
+- The else arm of a multiline if expression indents its interior the same way as the then arm. Previously a
+  call in the else arm had its arguments flush with the callee and its closing parenthesis dedented past it.

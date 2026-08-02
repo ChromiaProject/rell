@@ -26,7 +26,6 @@ class FormattingStyleLinterTest {
     fun `should be disabled when enabled is false`() {
         assertThat(
             lint(
-                "formatter.rell",
                 LinterOptions(enabled = false, ruleFormatter = true),
                 FormatterOptions()
             )
@@ -37,7 +36,6 @@ class FormattingStyleLinterTest {
     fun `should be disabled when rule is false`() {
         assertThat(
             lint(
-                "formatter.rell",
                 LinterOptions(enabled = true, ruleFormatter = false),
                 FormatterOptions()
             )
@@ -48,7 +46,6 @@ class FormattingStyleLinterTest {
     fun `should be disabled when rule is null`() {
         assertThat(
             lint(
-                "formatter.rell",
                 LinterOptions(enabled = true, ruleFormatter = null),
                 FormatterOptions()
             )
@@ -57,7 +54,7 @@ class FormattingStyleLinterTest {
 
     @Test
     fun `should find formatting violations`() {
-        val result = lint("formatter.rell", LinterOptions(enabled = true, ruleFormatter = true), FormatterOptions())
+        val result = lint(LinterOptions(enabled = true, ruleFormatter = true), FormatterOptions())
         val expectedIssues = listOf(
             FormatterIssue(
                 message = "Insert: `⏎` at line 2, column 1",
@@ -102,23 +99,22 @@ class FormattingStyleLinterTest {
                 textEdit = TextEdit(range = Range(Position(4, 0), Position(5, 0)), newText = "")
             ),
             FormatterIssue(
-                message = "Change: `·` to '⏎' at line 6, column 2",
-                type = DeltaType.CHANGE,
+                message = "Insert: `⏎` at line 6, column 18",
+                type = DeltaType.INSERT,
                 line = 6,
-                column = 1,
-                textEdit = TextEdit(range = Range(Position(5, 1), Position(5, 2)), newText = "\n")
+                column = 17,
+                textEdit = TextEdit(range = Range(Position(5, 17), Position(5, 17)), newText = "\n")
             )
         )
         assertThat(result).containsExactly(*expectedIssues.toTypedArray())
     }
 
     private fun lint(
-        fileName: String,
         linterOptions: LinterOptions,
         formatterOptions: FormatterOptions
     ): List<FormatterIssue> {
         val formattingStyleLinter = FormattingStyleLinter()
-        val fileContent = javaClass.getResource("/linter/$fileName")!!.readText()
+        val fileContent = javaClass.getResource("/linter/formatter.rell")!!.readText()
         return formattingStyleLinter.lint(linterOptions, formatterOptions, fileContent)
     }
 

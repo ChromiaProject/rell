@@ -106,7 +106,7 @@ internal class ExpressionFormatter(
     private val lineAnalyzer: LineAnalyzer,
     private val braceFormatter: BraceFormatter,
     private val whitespaceFormatter: WhitespaceFormatter,
-    private val argumentFormatter: ArgumentFormatter
+    @Suppress("unused") private val argumentFormatter: ArgumentFormatter
 ) {
 
     internal fun formatExprTailMultiline(
@@ -234,7 +234,7 @@ internal class ExpressionFormatter(
             for (i in 0 until parent.childCount) {
                 val c = parent.getChild(i)
                 if (c is TerminalNode &&
-                    c.symbol.type == net.postchain.rell.base.compiler.parser.antlr.RellParser.RULE_ID &&
+                    c.symbol.type == RULE_ID &&
                     c.symbol.tokenIndex < itemStartIdx
                 ) {
                     // Check that the token before this RULE_ID is `(` or `,`.
@@ -401,9 +401,33 @@ internal class ExpressionFormatter(
                     doc.prepend(before) { it.indent() }
                 }
             } else {
-                doc.interiorIndentRangeIncludeLast(exprHead, lastNode)
+                if (chainBrokenAtTailBoundary(exprHead, tails) || lineAnalyzer.exceedsMaxLineWidth(lastNode)) {
+                    doc.interiorIndentRangeIncludeLast(exprHead, lastNode)
+                } else {
+                    // Only the argument lists break lines. A first-tail call follows the head, so
+                    // formatExprTailCall never interior-indents it — do it here.
+                    val firstCall = tails.first()
+                    if (firstCall is BaseExprTail.Call && firstCall.ctx.start.line != firstCall.ctx.stop.line) {
+                        doc.interiorIndent(firstCall.ctx)
+                    }
+                }
             }
         }
+    }
+
+    /**
+     * True when a line break sits at a chain boundary — some tail starts on a different line than
+     * the previous chain element ends. When the breaks are only inside a tail (e.g. a call's
+     * argument list spanning lines), the tail's own interior indent is enough and the whole chain
+     * must not be indented again.
+     */
+    private fun chainBrokenAtTailBoundary(exprHead: BaseExprHeadContext, tails: List<BaseExprTail>): Boolean {
+        var prevStopLine = exprHead.stop.line
+        for (tail in tails) {
+            if (tail.first.start.line != prevStopLine) return true
+            prevStopLine = tail.last.stop.line
+        }
+        return false
     }
 
     private fun tailOnlyConsistOfOneTailCall(tails: List<BaseExprTail>): Boolean {

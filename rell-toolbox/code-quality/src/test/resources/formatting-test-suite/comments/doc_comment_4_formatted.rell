@@ -1,4 +1,3 @@
-
 /**
  * Allows a caller to hook into outgoing tokens and apply custom logic that has to be executed before.
  *

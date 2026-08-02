@@ -118,6 +118,7 @@ internal class IfExprFormatter(
                     it.indent()
                     it.highPriority()
                 }
+                doc.interiorIndentRangeIncludeLast(conditionalElseExpr, conditionalElseExpr)
                 doc.append(conditionalElseExpr) { it.noSpace() }
             } else {
                 doc.surround(elseKeyword) { it.oneSpace() }

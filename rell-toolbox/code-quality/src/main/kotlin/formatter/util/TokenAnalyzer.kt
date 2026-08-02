@@ -86,6 +86,12 @@ internal class TokenAnalyzer(private val parser: RellParser) {
         return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellLexer.HIDDEN)?.lastOrNull()
     }
 
+    fun nextCommentRegion(token: Token): Token? {
+        val commonTokenStream = parser.tokenStream as CommonTokenStream
+        return commonTokenStream.getHiddenTokensToRight(token.tokenIndex, RellCustomTokenChannels.COMMENTS.channel)
+            ?.firstOrNull()
+    }
+
     fun previousCommentRegion(token: Token): Token? {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
         return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellCustomTokenChannels.COMMENTS.channel)

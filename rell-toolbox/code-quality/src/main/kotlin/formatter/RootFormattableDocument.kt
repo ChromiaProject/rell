@@ -26,6 +26,7 @@ internal class RootFormattableDocument(
         if (appendAfterNode == null) return
         val change = Changes(appendAfterNode.stop.stopIndex + 1, appendAfterNode.stop.stopIndex + 1, formatterOptions)
         changeModifier(change)
+        commentRegionChangeAppend(change, appendAfterNode.stop)
         hiddenRegionChangeAppendModifier(change, appendAfterNode.stop)
         changes.add(change)
     }
@@ -35,6 +36,7 @@ internal class RootFormattableDocument(
         val change =
             Changes(appendAfterNode.symbol.stopIndex + 1, appendAfterNode.symbol.stopIndex + 1, formatterOptions)
         changeModifier(change)
+        commentRegionChangeAppend(change, appendAfterNode.symbol)
         hiddenRegionChangeAppendModifier(change, appendAfterNode.symbol)
         changes.add(change)
     }
@@ -84,6 +86,10 @@ internal class RootFormattableDocument(
                 highPriority()
             }
             hiddenRegionChangePrependModifier(prependChange, token)
+            if (prependChange.startOffset == 0) {
+                // The doc comment is the first thing in the file: no forced leading newline.
+                prependChange.setNewLines(0)
+            }
             changes.add(prependChange)
 
             val appendChange = Changes(token.stopIndex + 1, token.stopIndex + 1, formatterOptions).apply {
@@ -242,6 +248,30 @@ internal class RootFormattableDocument(
             change.stopOffset = prevHiddenRegion.startIndex + prevHiddenRegion.text.length
             change.previousHiddenText = prevHiddenRegion.text
         }
+    }
+
+    /**
+     * If [token] is followed on the same line by a comment, a change that forces newlines after
+     * [token] would push that comment onto the next line. Instead, keep the comment where it is
+     * (one space after the token) and emit the requested newlines after the comment.
+     */
+    private fun commentRegionChangeAppend(change: Changes, token: Token) {
+        if ((change.newLineMin ?: 0) < 1) return
+        var comment = tokenAnalyzer.nextCommentRegion(token) ?: return
+        if (comment.line != token.line) return
+        while (true) {
+            val next = tokenAnalyzer.nextCommentRegion(comment)
+            comment = if (next != null && next.line == comment.line) next else break
+        }
+
+        val moved = Changes(comment.stopIndex + 1, comment.stopIndex + 1, formatterOptions, priority = change.priority)
+        val minNewLines = change.newLineMin!!
+        moved.setNewLines(minNewLines, change.newLineDefault ?: minNewLines, change.newLineMax ?: minNewLines)
+        hiddenRegionChangeAppendModifier(moved, comment)
+        changes.add(moved)
+
+        change.setNewLines(0)
+        change.oneSpace()
     }
 
     private fun commentRegionChangePrepend(token: Token) {
