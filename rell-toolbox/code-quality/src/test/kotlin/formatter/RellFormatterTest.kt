@@ -109,4 +109,22 @@ class RellFormatterTest {
             formatterOptions,
         )
     }
+
+    // Regression test: ANTLR error recovery synthesizes a "missing" name token (tokenIndex == -1)
+    // for an unnamed definition; TokenAnalyzer used to pass that index straight to the token
+    // stream and throw an IndexOutOfBoundsException, failing workspace indexing (and with it
+    // documentSymbol etc.) for files being actively edited.
+    @Test
+    fun `Format unnamed definitions does not throw`() {
+        val formatterOptions = FormatterOptions()
+        val sources = listOf(
+            "module;\n\nentity {\n\n}\n",
+            "entity {\n}",
+            "module;\n\nfunction () {\n}\n",
+            "module;\n\nobject {\n}\n",
+        )
+        for (source in sources) {
+            RellFormatter.formatString(source, formatterOptions)
+        }
+    }
 }

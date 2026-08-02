@@ -13,30 +13,27 @@ import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.TerminalNode
 
 internal class TokenAnalyzer(private val parser: RellParser) {
-
     fun tokenFor(node: ParserRuleContext?, tokenText: String): TerminalNode? {
-        if (node == null) {
-            return null
-        }
-        for (i in 0 until node.childCount) {
+        if (node == null) return null
+
+        for (i in 0..<node.childCount) {
             val child = node.getChild(i)
+
             if (child is TerminalNode) {
                 val token = child.symbol
-                if (token.text == tokenText) {
-                    return child
-                }
+                if (token.text == tokenText) return child
             }
         }
 
-        for (i in 0 until node.childCount) {
+        for (i in 0..<node.childCount) {
             val child = node.getChild(i)
+
             if (child is ParserRuleContext) {
                 val token = tokenFor(child, tokenText)
-                if (token != null) {
-                    return token
-                }
+                if (token != null) return token
             }
         }
+
         return null
     }
 
@@ -47,11 +44,9 @@ internal class TokenAnalyzer(private val parser: RellParser) {
      */
     fun directTokenFor(node: ParserRuleContext?, tokenText: String): TerminalNode? {
         if (node == null) return null
-        for (i in 0 until node.childCount) {
+        for (i in 0..<node.childCount) {
             val child = node.getChild(i)
-            if (child is TerminalNode && child.symbol.text == tokenText) {
-                return child
-            }
+            if (child is TerminalNode && child.symbol.text == tokenText) return child
         }
         return null
     }
@@ -59,8 +54,9 @@ internal class TokenAnalyzer(private val parser: RellParser) {
     fun nextSemanticRegion(token: Token): Token? {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
         if (token.tokenIndex < 0 || token.tokenIndex >= commonTokenStream.tokens.size) return null
+
         return try {
-            commonTokenStream.get(token.tokenIndex + 1)
+            commonTokenStream[token.tokenIndex + 1]
         } catch (_: IndexOutOfBoundsException) {
             null
         }
@@ -69,37 +65,38 @@ internal class TokenAnalyzer(private val parser: RellParser) {
     fun previousSemanticRegion(token: Token): Token? {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
         if (token.tokenIndex <= 0 || token.tokenIndex >= commonTokenStream.tokens.size) return null
+
         return try {
-            commonTokenStream.get(token.tokenIndex - 1)
+            commonTokenStream[token.tokenIndex - 1]
         } catch (_: IndexOutOfBoundsException) {
             null
         }
     }
 
-    fun nextHiddenRegion(token: Token): Token? {
+    fun nextHiddenRegion(token: Token): Token? = hiddenTokensToRight(token, RellLexer.HIDDEN)?.firstOrNull()
+    fun previousHiddenRegion(token: Token): Token? = hiddenTokensToLeft(token, RellLexer.HIDDEN)?.lastOrNull()
+
+    fun nextCommentRegion(token: Token): Token? =
+        hiddenTokensToRight(token, RellCustomTokenChannels.COMMENTS.channel)?.firstOrNull()
+
+    fun previousCommentRegion(token: Token): Token? =
+        hiddenTokensToLeft(token, RellCustomTokenChannels.COMMENTS.channel)?.lastOrNull()
+
+    fun previousHiddenRegionList(token: Token): List<Token> = hiddenTokensToLeft(token, RellLexer.HIDDEN) ?: listOf()
+
+    /**
+     * Error recovery synthesizes "missing" tokens with tokenIndex == -1 (e.g. the name of
+     * `entity { }`); asking the stream about their neighbours must yield nothing, not throw.
+     */
+    private fun hiddenTokensToLeft(token: Token, channel: Int): List<Token>? {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
-        return commonTokenStream.getHiddenTokensToRight(token.tokenIndex, RellLexer.HIDDEN)?.firstOrNull()
+        if (token.tokenIndex < 0 || token.tokenIndex >= commonTokenStream.tokens.size) return null
+        return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, channel)
     }
 
-    fun previousHiddenRegion(token: Token): Token? {
+    private fun hiddenTokensToRight(token: Token, channel: Int): List<Token>? {
         val commonTokenStream = parser.tokenStream as CommonTokenStream
-        return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellLexer.HIDDEN)?.lastOrNull()
-    }
-
-    fun nextCommentRegion(token: Token): Token? {
-        val commonTokenStream = parser.tokenStream as CommonTokenStream
-        return commonTokenStream.getHiddenTokensToRight(token.tokenIndex, RellCustomTokenChannels.COMMENTS.channel)
-            ?.firstOrNull()
-    }
-
-    fun previousCommentRegion(token: Token): Token? {
-        val commonTokenStream = parser.tokenStream as CommonTokenStream
-        return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellCustomTokenChannels.COMMENTS.channel)
-            ?.lastOrNull()
-    }
-
-    fun previousHiddenRegionList(token: Token): List<Token> {
-        val commonTokenStream = parser.tokenStream as CommonTokenStream
-        return commonTokenStream.getHiddenTokensToLeft(token.tokenIndex, RellLexer.HIDDEN) ?: listOf()
+        if (token.tokenIndex < 0 || token.tokenIndex >= commonTokenStream.tokens.size) return null
+        return commonTokenStream.getHiddenTokensToRight(token.tokenIndex, channel)
     }
 }

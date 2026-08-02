@@ -385,8 +385,14 @@ class WorkspaceIndexer(
     }
 
     private fun runLinter(resource: Resource, fileContent: String) {
-        rellLinter.enhanceWithLintIssues(linterOptions, resource)
-        formattingStyleLinter.enhanceWithFormatterIssues(linterOptions, formatterOptions, resource, fileContent)
+        // Lint results are decoration: a linter/formatter crash on one file must not fail
+        // indexing or the LSP request that triggered it.
+        try {
+            rellLinter.enhanceWithLintIssues(linterOptions, resource)
+            formattingStyleLinter.enhanceWithFormatterIssues(linterOptions, formatterOptions, resource, fileContent)
+        } catch (e: Exception) {
+            logger.warn(e) { "Linting failed for ${resource.fileUri}" }
+        }
     }
 
     fun isConfigFile(uri: URI) =
