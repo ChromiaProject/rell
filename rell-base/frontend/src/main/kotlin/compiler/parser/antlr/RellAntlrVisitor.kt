@@ -1330,8 +1330,7 @@ class RellAntlrVisitor(
             }
             // value
             require(j < children.size) { "create arg: missing value" }
-            val valChild = children[j]
-            val argValue: S_CallArgumentValue = when (valChild) {
+            val argValue: S_CallArgumentValue = when (val valChild = children[j]) {
                 is TerminalNode -> {
                     require(valChild.text == "*") { "create arg: unexpected terminal ${valChild.text}" }
                     S_CallArgumentValue_Wildcard(valChild.symbol.toPos())
@@ -1421,8 +1420,7 @@ class RellAntlrVisitor(
                 argName = idTokenToName(children[j] as TerminalNode)
                 j += 2
             }
-            val valChild = children[j]
-            val argValue: S_CallArgumentValue = when (valChild) {
+            val argValue: S_CallArgumentValue = when (val valChild = children[j]) {
                 is TerminalNode -> {
                     require(valChild.text == "*") { "callArg: unexpected terminal ${valChild.text}" }
                     S_CallArgumentValue_Wildcard(valChild.symbol.toPos())

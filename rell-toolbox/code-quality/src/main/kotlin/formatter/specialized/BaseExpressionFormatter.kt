@@ -72,14 +72,14 @@ internal class ExpressionInlineOpFormatter : NodeFormatter<BinaryExprContext> {
         var afterOperand = false
         var i = 0
         while (i < n) {
-            val c = node.getChild(i)
-            when {
-                c is ParserRuleContext -> {
+            when (val c = node.getChild(i)) {
+                is ParserRuleContext -> {
                     previousOperand = c
                     afterOperand = true
                     doc.format(c)
                 }
-                c is TerminalNode -> {
+
+                is TerminalNode -> {
                     val txt = c.symbol.text
                     if (afterOperand) {
                         // Binary operator, possibly the two-token `not in`.
@@ -150,6 +150,7 @@ internal class ExpressionInlineOpFormatter : NodeFormatter<BinaryExprContext> {
                 is TerminalNode -> return c.symbol.line
             }
         }
+
         return null
     }
 }

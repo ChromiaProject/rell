@@ -87,19 +87,6 @@ data class Tf_Int128ScaleDecimal(val hi: Long, val lo: Long, val scale: Int): Rt
         return Tf_Int128ScaleDecimal(resultHi, resultLo, scale)
     }
 
-    /**
-     * Floor (round toward negative infinity, scale 0). At 128 bits this is non-trivial — the
-     * divisor `10^scale` and the result both span 128 bits in general. Defer to the BigDecimal
-     * fallback. The `fastFloor` win comes from the binary ops; floor is a rare hot-path op.
-     */
-    override fun fastFloor(): Rt_DecimalValue = super.fastFloor()
-
-    /**
-     * Truncate-to-Long. The 128-bit mantissa rarely fits Long after truncation, so defer to the
-     * BigDecimal fallback (which handles the range check and overflow error uniformly).
-     */
-    override fun fastToInteger(): Long = super.fastToInteger()
-
     /** True when the 128-bit mantissa is zero. */
     private fun isZero(): Boolean = hi == 0L && lo == 0L
 
@@ -326,7 +313,7 @@ internal fun mul128by64Unsigned(hi: Long, lo: Long, m: Long): LongArray? {
  */
 internal fun mul128by10Pow(hi: Long, lo: Long, k: Int): LongArray? {
     if (k == 0) return longArrayOf(hi, lo)
-    if (k < 0 || k > MAX_LONG_POW10) return null
+    if (k !in 0..MAX_LONG_POW10) return null
     return mul128by64Unsigned(hi, lo, POW10_LONG[k])
 }
 

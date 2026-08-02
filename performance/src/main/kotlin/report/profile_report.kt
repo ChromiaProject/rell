@@ -14,6 +14,9 @@ import org.intellij.lang.annotations.Language
 import java.nio.file.Path
 import java.util.*
 import kotlin.io.path.*
+import kotlin.math.floor
+import kotlin.math.log10
+import kotlin.math.pow
 
 // ─── Component classification ────────────────────────────────────────────────────────────
 
@@ -1089,7 +1092,7 @@ internal fun barsSvg(
 
 private fun niceCeiling(v: Double): Double {
     if (v <= 0) return 1.0
-    val mag = Math.pow(10.0, Math.floor(Math.log10(v)))
+    val mag = 10.0.pow(floor(log10(v)))
     val n = v / mag
     val nice = when {
         n <= 1.0 -> 1.0

@@ -43,7 +43,7 @@ class L_ParamImplication private constructor(val kind: Kind, val since: R_LangVe
     }
 }
 
-class L_FunctionParam constructor(
+class L_FunctionParam(
     val name: Name,
     val mParam: M_FunctionParam,
     val lazy: Boolean,
@@ -96,9 +96,7 @@ abstract class L_CommonFunctionHeader(
     val params: ImmList<L_FunctionParam>,
 )
 
-class L_FunctionHeader constructor(
-    val intHeader: L_InternalFunctionHeader,
-): L_CommonFunctionHeader(intHeader.params) {
+class L_FunctionHeader(val intHeader: L_InternalFunctionHeader): L_CommonFunctionHeader(intHeader.params) {
     val typeParams = intHeader.typeParams
     val resultType: M_Type by lazy { intHeader.rResultType.mType }
 
@@ -225,10 +223,12 @@ class L_FunctionParamsMatch(
                         val paramType = L_TypeUtils.getRType(param.bounds.boundType)
                         paramType.isAssignableFrom(typeArg)
                     }
+
                     is M_TypeSet_SuperOf -> {
                         val paramType = L_TypeUtils.getRType(param.bounds.boundType)
                         typeArg.isAssignableFrom(paramType)
                     }
+
                     else -> true
                 }
                 if (!valid) {
@@ -258,14 +258,23 @@ class L_FunctionParamsMatch(
                 is R_NullableType -> matchParamType(paramType.valueType, argType.valueType, map)
                 else -> matchParamType(paramType.valueType, argType, map)
             }
+
             paramType is R_FunctionType -> when (argType) {
                 is R_FunctionType -> {
                     paramType.params.size == argType.params.size
                             && matchTypeArg(paramType.result, argType.result, map)
-                            && paramType.params.indices.all { matchTypeArg(paramType.params[it], argType.params[it], map) }
+                            && paramType.params.indices.all {
+                        matchTypeArg(
+                            paramType.params[it],
+                            argType.params[it],
+                            map,
+                        )
+                    }
                 }
+
                 else -> false
             }
+
             paramType is R_VariableType -> {
                 val old = map[paramType.name]
                 val common = when {
@@ -277,6 +286,7 @@ class L_FunctionParamsMatch(
                     true
                 } ?: false
             }
+
             else -> paramType.getTypeAdapter(argType) != null
         }
     }
@@ -302,12 +312,8 @@ class L_FunctionParamsMatch(
         return true
     }
 
-    private fun matchTypeArg(dstType: R_Type, srcType: R_Type, map: MutableMap<String, R_Type>): Boolean {
-        if (dstType.isAssignableArg(srcType)) {
-            return true
-        }
-
-        return when (dstType) {
+    private fun matchTypeArg(dstType: R_Type, srcType: R_Type, map: MutableMap<String, R_Type>): Boolean =
+        dstType.isAssignableArg(srcType) || when (dstType) {
             is R_SubType -> matchTypeArg(dstType.valueType, srcType, map)
             is R_VariableType -> {
                 val old = map[dstType.name]
@@ -317,16 +323,18 @@ class L_FunctionParamsMatch(
                     true
                 } ?: false
             }
+
             is R_GenericType -> when (dstType.typeName) {
                 "map_entry" -> srcType is R_TupleType
                         && srcType.fields.size == 2
                         && matchTypeArg(dstType.args[0], srcType.fields[0].type, map)
                         && matchTypeArg(dstType.args[1], srcType.fields[1].type, map)
+
                 else -> false
             }
+
             else -> false
         }
-    }
 
     private fun matchResultType(formalType: R_Type, actualType: R_Type, map: MutableMap<String, R_Type>) {
         when (formalType) {
@@ -345,6 +353,7 @@ class L_FunctionParamsMatch(
                     }
                 }
             }
+
             is R_VariableType -> {
                 val old = map[formalType.name]
                 val common = when {
@@ -387,6 +396,7 @@ class L_FunctionParamsMatch(
             }
             commonType?.let { R_NullableType(commonType) }
         }
+
         else -> null
     }
 
@@ -428,7 +438,7 @@ class L_FunctionFlags(
     val isPure: Boolean,
 )
 
-class L_Function constructor(
+class L_Function(
     val fullName: FullName,
     val header: L_FunctionHeader,
     val flags: L_FunctionFlags,

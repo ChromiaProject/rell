@@ -72,13 +72,13 @@ internal class PreferEmptyRule(config: LinterOptions, resource: Resource, linter
     }
 
     /** true = `.empty()`, false = `not .empty()`, null = not an empty/non-empty check. */
-    private fun emptinessFor(op: String, literal: Long): Boolean? = when {
-        op == "==" && literal == 0L -> true
-        op == "!=" && literal == 0L -> false
-        op == "<=" && literal == 0L -> true
-        op == "<" && literal == 1L -> true
-        op == ">" && literal == 0L -> false
-        op == ">=" && literal == 1L -> false
+    private fun emptinessFor(op: String, literal: Long): Boolean? = when (op) {
+        "==" if literal == 0L -> true
+        "!=" if literal == 0L -> false
+        "<=" if literal == 0L -> true
+        "<" if literal == 1L -> true
+        ">" if literal == 0L -> false
+        ">=" if literal == 1L -> false
         else -> null
     }
 

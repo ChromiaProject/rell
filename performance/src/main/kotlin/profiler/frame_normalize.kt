@@ -38,7 +38,7 @@ internal fun normalizeFrames(text: String): String {
 //  - HotSpot numbered:   `Foo$$Lambda$42/0x000000d8013d6a68`
 //  - jfr-converter norm: `Foo$$Lambda$1341083539cb284cc904e7c5082c4127000b41db`
 private val LAMBDA_HEX: Pattern = Pattern.compile(
-    "\\\$\\\$Lambda(?:[./\\\$]?(?:0x)?[0-9a-fA-F]{8,})+",
+    $$"\\$\\$Lambda(?:[./$]?(?:0x)?[0-9a-fA-F]{8,})+",
 )
 
 // Trailing `_<32+ hex chars>` glued onto an identifier — HotSpot / Graal generated suffix.
@@ -48,6 +48,6 @@ private val LAMBDA_HEX: Pattern = Pattern.compile(
 //  - We use a "next char is not hex" lookahead instead of `\b` because some libgraal
 //    frames append a suffix like `_<hash>_[0]` (frame-type marker), where `\b` between
 //    hex and the underscore fails (both are word chars) but the hash IS what we want gone.
-private val STUB_HEX_SUFFIX: Pattern = Pattern.compile("(?:_[0-9a-f]{32,})+(?=[^0-9a-f]|\$)")
+private val STUB_HEX_SUFFIX: Pattern = Pattern.compile("(?:_[0-9a-f]{32,})+(?=[^0-9a-f]|$)")
 
-private const val LITERAL_LAMBDA = "\$\$Lambda"
+private const val LITERAL_LAMBDA = $$$"$$Lambda"

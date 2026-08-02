@@ -37,7 +37,7 @@ class SimpleJavascriptBuiltinTest {
             "assertObject,object",
     )
     fun primitiveTypeCheckTest(builtin: String, jsType: String) {
-        val builtinType = assertNotNull(JavascriptBuiltinType.values().firstOrNull { it.builtin.functionName == builtin }, "Builtin type does not exist")
+        val builtinType = assertNotNull(JavascriptBuiltinType.entries.firstOrNull { it.builtin.functionName == builtin }, "Builtin type does not exist")
         val formatted = builtinType.createBuiltin().format()
         assertThat(formatted).all {
             contains("""
@@ -55,7 +55,7 @@ class SimpleJavascriptBuiltinTest {
             "assertArray,Array",
     )
     fun complexTypeCheckTest(builtin: String, jsType: String) {
-        val builtinType = assertNotNull(JavascriptBuiltinType.values().firstOrNull { it.builtin.functionName == builtin }, "Builtin type does not exist")
+        val builtinType = assertNotNull(JavascriptBuiltinType.entries.firstOrNull { it.builtin.functionName == builtin }, "Builtin type does not exist")
         val formatted = builtinType.createBuiltin().format()
         assertThat(formatted).all {
             contains("""

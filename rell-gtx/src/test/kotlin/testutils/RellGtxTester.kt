@@ -149,11 +149,7 @@ class RellGtxTester(
 
             val module = eval.wrapCt { createGtxModule(moduleCode) }
 
-            val dummyEventSink = object : TxEventSink {
-                override fun processEmittedEvent(ctxt: TxEContext, type: String, data: Gtv) {
-                    TODO("Not yet implemented")
-                }
-            }
+            val dummyEventSink = TxEventSink { _, _, _ -> TODO("Not yet implemented") }
 
             val res = withEContext(true) { ctx ->
                 val blkCtx = BaseBlockEContext(ctx, 0, 0, System.currentTimeMillis(), mapOf(), dummyEventSink)
