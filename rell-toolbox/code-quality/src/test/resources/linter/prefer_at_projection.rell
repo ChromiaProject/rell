@@ -1,0 +1,96 @@
+entity company { cname: name; }
+entity person { name; mutable value: integer; company; }
+
+function consume(p: person) {}
+
+function bad_direct(): integer {
+    var s = 0;
+    for (p in person @* {}) { s += p.value; }
+    return s;
+}
+
+function bad_plus(): integer {
+    var s = 0;
+    for (p in person @+ {}) { s += p.value; }
+    return s;
+}
+
+function bad_self_projection(): integer {
+    var s = 0;
+    for (p in person @* {} (person)) { s += p.value; }
+    return s;
+}
+
+function bad_aliased_from(): integer {
+    var s = 0;
+    for (p in (q: person) @* { q.value > 5 }) { s += p.value; }
+    return s;
+}
+
+function bad_via_val(): integer {
+    val rows = person @* {};
+    var s = 0;
+    for (p in rows) { s += p.value; }
+    return s;
+}
+
+function bad_multi_attr(): text {
+    var t = '';
+    for (p in person @* {}) { t += p.name; t += p.company.cname; }
+    return t;
+}
+
+function ok_projected(): integer {
+    var s = 0;
+    for (v in person @* {} (.value)) { s += v; }
+    return s;
+}
+
+function ok_tuple(): text {
+    var t = '';
+    for ((n, v) in person @* {} (.name, .value)) { t += n; if (v > 0) t += '.'; }
+    return t;
+}
+
+function ok_collection(): integer {
+    val values = [1, 2, 3];
+    var s = 0;
+    for (x in values @* { $ > 1 }) { s += x; }
+    return s;
+}
+
+function ok_update_target() {
+    for (p in person @* {}) { update p ( value = 0 ); }
+}
+
+function ok_attr_assignment() {
+    for (p in person @* {}) { p.value = 0; }
+}
+
+function ok_whole_entity_use() {
+    for (p in person @* {}) { consume(p); }
+}
+
+function ok_entity_method() {
+    for (p in person @* {}) { print(p.to_struct()); }
+}
+
+function ok_rowid_only(): integer {
+    var s = 0;
+    for (p in person @* {}) { s += p.rowid.to_integer(); }
+    return s;
+}
+
+function ok_val_reused(): integer {
+    val rows = person @* {};
+    var s = 0;
+    for (p in rows) { s += p.value; }
+    return s + rows.size();
+}
+
+function ok_suppressed(): integer {
+    var s = 0;
+    // rell-lint-disable-next-line
+    for (p in person @* {}) { s += p.value; }
+    return s;
+}

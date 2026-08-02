@@ -29,6 +29,7 @@ internal class LinterVisitor(
         PreferNullCheckOperatorRule(config, resource, linterContext),
         PreferEmptyRule(config, resource, linterContext),
         AtCardinalityMisuseRule(config, resource, linterContext),
+        PreferAtProjectionRule(config, resource, linterContext),
     )
 
     override fun visitChildren(node: RuleNode) {

@@ -31,6 +31,7 @@ data class LinterOptions(
     var rulePreferNullCheckOperator: Boolean? = true,
     var rulePreferEmpty: Boolean? = true,
     var ruleAtCardinalityMisuse: Boolean? = true,
+    var rulePreferAtProjection: Boolean? = true,
 ) {
     fun updateOptionsFromFile(configFile: File) {
         // Reset first: the same instance is mutated across reloads, so a key removed from the
@@ -61,6 +62,7 @@ data class LinterOptions(
                         "rule_prefer_null_check_operator" -> rulePreferNullCheckOperator = parseBoolean(value)
                         "rule_prefer_empty" -> rulePreferEmpty = parseBoolean(value)
                         "rule_at_cardinality_misuse" -> ruleAtCardinalityMisuse = parseBoolean(value)
+                        "rule_prefer_at_projection" -> rulePreferAtProjection = parseBoolean(value)
                     }
                 }
             }
@@ -85,6 +87,7 @@ data class LinterOptions(
         rulePreferNullCheckOperator = defaults.rulePreferNullCheckOperator
         rulePreferEmpty = defaults.rulePreferEmpty
         ruleAtCardinalityMisuse = defaults.ruleAtCardinalityMisuse
+        rulePreferAtProjection = defaults.rulePreferAtProjection
     }
 
     private fun parseBoolean(value: Property): Boolean? = when (value.sourceValue.trim()) {

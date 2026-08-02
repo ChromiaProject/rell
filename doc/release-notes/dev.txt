@@ -81,3 +81,22 @@ Running code that touches entities or other database features without a configur
     No database connection: database features require a database URL (e.g. --db-url in the Rell CLI)
 
 instead of the bare "No database connection". The error code (no_sql) is unchanged.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+7. Tools: Linter inspection flagging row-by-row entity attribute reads in loops
+
+A new inspection, rule_prefer_at_projection, reports a for loop over an unprojected entity at-expression whose
+body only reads attributes of the loop variable. Each such read runs its own SQL query per row, while projecting
+the attributes in the at-expression fetches everything in a single query:
+
+    for (u in user @* {}) { print(u.name); }          // 1 + N queries
+    for (name in user @* {} (.name)) { print(name); } // 1 query
+
+The suggestion lists the attributes actually read, including reference paths (user @* {} (.company.name)).
+Besides the plain form, the inspection recognizes the @+ cardinality, a what-clause projecting the entity
+itself (user @* {} (user)), a single aliased from-clause ((u: user) @* {}), and a val holding the
+at-expression result that is used only as the loop source.
+
+The loop stays unreported when the whole entity is needed: the variable is used bare (passed to a
+function, an update or delete target), an attribute is assigned to, an entity method is called, or only .rowid
+is read, which costs no extra query.

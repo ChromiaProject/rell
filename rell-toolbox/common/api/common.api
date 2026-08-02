@@ -437,8 +437,8 @@ public final class net/postchain/rell/toolbox/linter/LinterOptions {
 	public static final field CONFIG_FILE_NAME Ljava/lang/String;
 	public static final field Companion Lnet/postchain/rell/toolbox/linter/LinterOptions$Companion;
 	public fun <init> ()V
-	public fun <init> (ZLnet/postchain/rell/toolbox/linter/Quote;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;)V
-	public synthetic fun <init> (ZLnet/postchain/rell/toolbox/linter/Quote;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZLnet/postchain/rell/toolbox/linter/Quote;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;)V
+	public synthetic fun <init> (ZLnet/postchain/rell/toolbox/linter/Quote;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
 	public final fun component10 ()Ljava/lang/Boolean;
 	public final fun component11 ()Ljava/lang/Boolean;
@@ -446,6 +446,7 @@ public final class net/postchain/rell/toolbox/linter/LinterOptions {
 	public final fun component13 ()Ljava/lang/Boolean;
 	public final fun component14 ()Ljava/lang/Boolean;
 	public final fun component15 ()Ljava/lang/Boolean;
+	public final fun component16 ()Ljava/lang/Boolean;
 	public final fun component2 ()Lnet/postchain/rell/toolbox/linter/Quote;
 	public final fun component3 ()Ljava/lang/Boolean;
 	public final fun component4 ()Ljava/lang/Boolean;
@@ -454,8 +455,8 @@ public final class net/postchain/rell/toolbox/linter/LinterOptions {
 	public final fun component7 ()Ljava/lang/Boolean;
 	public final fun component8 ()Ljava/lang/Boolean;
 	public final fun component9 ()Ljava/lang/Boolean;
-	public final fun copy (ZLnet/postchain/rell/toolbox/linter/Quote;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;)Lnet/postchain/rell/toolbox/linter/LinterOptions;
-	public static synthetic fun copy$default (Lnet/postchain/rell/toolbox/linter/LinterOptions;ZLnet/postchain/rell/toolbox/linter/Quote;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;ILjava/lang/Object;)Lnet/postchain/rell/toolbox/linter/LinterOptions;
+	public final fun copy (ZLnet/postchain/rell/toolbox/linter/Quote;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;)Lnet/postchain/rell/toolbox/linter/LinterOptions;
+	public static synthetic fun copy$default (Lnet/postchain/rell/toolbox/linter/LinterOptions;ZLnet/postchain/rell/toolbox/linter/Quote;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;Ljava/lang/Boolean;ILjava/lang/Object;)Lnet/postchain/rell/toolbox/linter/LinterOptions;
 	public final fun disable ()V
 	public final fun enable ()V
 	public fun equals (Ljava/lang/Object;)Z
@@ -466,6 +467,7 @@ public final class net/postchain/rell/toolbox/linter/LinterOptions {
 	public final fun getRuleImportFromNonModule ()Ljava/lang/Boolean;
 	public final fun getRuleNamingConvention ()Ljava/lang/Boolean;
 	public final fun getRuleOuterJoinCartesianProduct ()Ljava/lang/Boolean;
+	public final fun getRulePreferAtProjection ()Ljava/lang/Boolean;
 	public final fun getRulePreferEmpty ()Ljava/lang/Boolean;
 	public final fun getRulePreferNullCheckOperator ()Ljava/lang/Boolean;
 	public final fun getRuleQuoteFormat ()Lnet/postchain/rell/toolbox/linter/Quote;
@@ -482,6 +484,7 @@ public final class net/postchain/rell/toolbox/linter/LinterOptions {
 	public final fun setRuleImportFromNonModule (Ljava/lang/Boolean;)V
 	public final fun setRuleNamingConvention (Ljava/lang/Boolean;)V
 	public final fun setRuleOuterJoinCartesianProduct (Ljava/lang/Boolean;)V
+	public final fun setRulePreferAtProjection (Ljava/lang/Boolean;)V
 	public final fun setRulePreferEmpty (Ljava/lang/Boolean;)V
 	public final fun setRulePreferNullCheckOperator (Ljava/lang/Boolean;)V
 	public final fun setRuleQuoteFormat (Lnet/postchain/rell/toolbox/linter/Quote;)V

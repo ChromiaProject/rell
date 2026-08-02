@@ -33,4 +33,5 @@ fun testLinterOptions(enabled: Boolean = true, configure: LinterOptions.() -> Un
         rulePreferNullCheckOperator = false,
         rulePreferEmpty = false,
         ruleAtCardinalityMisuse = false,
+        rulePreferAtProjection = false,
     ).apply(configure)
