@@ -218,11 +218,11 @@ class WorkspaceIndexer(
     ).flatten()
 
     private fun getSyntaxErrors(resource: Resource): List<RellIssue> {
-        return resource.syntaxErrors.map(RellIssue::fromSyntaxError)
+        return resource.syntaxErrors.map { RellIssue.fromSyntaxError(it, resource.tokenStream) }
     }
 
     private fun getSemanticErrors(resource: Resource): List<RellIssue> {
-        return resource.fileSpecificSemanticErrors.map(RellIssue::fromCMessage)
+        return resource.fileSpecificSemanticErrors.map { RellIssue.fromCMessage(it, resource.tokenStream) }
     }
 
     private fun getLinterIssues(resource: Resource): List<RellIssue> {

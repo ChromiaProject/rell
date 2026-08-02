@@ -468,7 +468,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         assertThat(diagnostics.keys).containsOnly(rellFile.toString())
         assertThat(diagnostics[rellFile.toString()]!!).containsOnly(
             Diagnostic(
-                Range(Position(10, 11), Position(10, 11)),
+                Range(Position(10, 11), Position(10, 14)),
                 "Variable 'abc' cannot be null at this location",
                 DiagnosticSeverity.Warning,
                 null,

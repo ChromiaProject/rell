@@ -100,3 +100,12 @@ at-expression result that is used only as the loop source.
 The loop stays unreported when the whole entity is needed: the variable is used bare (passed to a
 function, an update or delete target), an attribute is assigned to, an entity method is called, or only .rowid
 is read, which costs no extra query.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+8. Tools: Editor diagnostics underline the whole token
+
+Compiler errors and syntax errors reported by the language server used to carry only a start position, so
+editors rendered them as a one-character underline. The diagnostic range now extends to the end of the token at
+the error position: for example, the deprecation warning on the class keyword underlines all of class instead
+of just its first letter. Errors with no token at their position (such as an unexpected end of file) keep the
+old one-character rendering.
