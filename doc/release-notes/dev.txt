@@ -114,8 +114,13 @@ The ranges the language server reports to editors are now well-formed in error s
 - Compiler errors and syntax errors used to carry only a start position, so editors rendered them as a
   one-character underline. The diagnostic range now extends to the end of the token at the error position:
   for example, the deprecation warning on the class keyword underlines all of class instead of just its
-  first letter. Errors with no token at their position (such as an unexpected end of file) keep the old
-  one-character rendering.
+  first letter.
+
+- An error reported at the end of the file (such as an unexpected end of file) used to produce a
+  zero-width range at the very end of the document. Editors widen such a range forwards to make it
+  visible, which lands past the end of the document — IntelliJ-based IDEs rejected the annotation with
+  an exception on every highlighting pass. The range now anchors backwards onto the last visible
+  character instead.
 
 - The document symbols for an incomplete definition without a name (for example a bare class { } left over
   while typing) used to cover the whole definition with the name range and could point past the end of a

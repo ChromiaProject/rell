@@ -35,9 +35,7 @@ data class RellIssue(
 
     companion object {
         fun fromCMessage(message: C_Message, tokenStream: AbstractRellCommonTokenStream): RellIssue {
-            val line = message.pos.line()
-            val column = message.pos.column()
-            val end = tokenSpanEnd(tokenStream, line, column - 1)
+            val span = issueSpan(tokenStream, message.pos.line(), message.pos.column() - 1)
             return RellIssue(
                 message = message.text,
                 code = message.code,
@@ -45,31 +43,41 @@ data class RellIssue(
                     C_MessageType.ERROR -> RellIssueSeverity.ERROR
                     C_MessageType.WARNING -> RellIssueSeverity.WARNING
                 },
-                line = line,
-                column = column,
-                endLine = end?.first ?: line,
-                endColumn = end?.second ?: column,
+                line = span.line,
+                column = span.column,
+                endLine = span.endLine,
+                endColumn = span.endColumn,
             )
         }
 
         fun fromSyntaxError(syntaxError: SyntaxError, tokenStream: AbstractRellCommonTokenStream): RellIssue {
-            val line = syntaxError.line
-            val column = syntaxError.charPositionInLine + 1
-            val end = tokenSpanEnd(tokenStream, line, syntaxError.charPositionInLine)
+            val span = issueSpan(tokenStream, syntaxError.line, syntaxError.charPositionInLine)
             return RellIssue(
                 message = syntaxError.message,
                 code = "Syntax Error",
                 severity = RellIssueSeverity.ERROR,
-                line = line,
-                column = column,
-                endLine = end?.first ?: line,
-                endColumn = end?.second ?: column,
+                line = span.line,
+                column = span.column,
+                endLine = span.endLine,
+                endColumn = span.endColumn,
             )
+        }
+
+        private data class IssueSpan(val line: Int, val column: Int, val endLine: Int, val endColumn: Int)
+
+        private fun issueSpan(
+            tokenStream: AbstractRellCommonTokenStream,
+            line: Int,
+            column0: Int,
+        ): IssueSpan {
+            val end = tokenSpanEnd(tokenStream, line, column0)
+            if (end != null) return IssueSpan(line, column0 + 1, end.first, end.second)
+            return eofSpan(tokenStream, line, column0 + 1)
         }
 
         /**
          * Exclusive 1-based end of the token containing the given position, or null when no token
-         * covers it (e.g. an error reported at end of file), which keeps the zero-width fallback.
+         * covers it (e.g. an error reported at end of file).
          */
         private fun tokenSpanEnd(
             tokenStream: AbstractRellCommonTokenStream,
@@ -82,7 +90,31 @@ data class RellIssue(
                     column0 >= token.charPositionInLine &&
                     column0 < token.charPositionInLine + length
             } ?: return null
-            val text = token.text
+            return tokenEnd(token)
+        }
+
+        /**
+         * Span for an error with no covering token — one reported at end of file. A zero-width
+         * span at the very end of the document makes editors widen it forwards past the document
+         * end (IntelliJ refuses such an annotation), so widen one character backwards instead,
+         * anchoring to the last visible token when the error sits at a line start.
+         */
+        private fun eofSpan(
+            tokenStream: AbstractRellCommonTokenStream,
+            line: Int,
+            column: Int,
+        ): IssueSpan {
+            if (column > 1) return IssueSpan(line, column - 1, line, column)
+            val lastVisible = tokenStream.tokens.lastOrNull {
+                it.type != Token.EOF && it.text?.isNotBlank() == true
+            } ?: return IssueSpan(line, column, line, column)
+            val (endLine, endColumn) = tokenEnd(lastVisible)
+            val startColumn = if (endColumn > 1) endColumn - 1 else endColumn
+            return IssueSpan(endLine, startColumn, endLine, endColumn)
+        }
+
+        private fun tokenEnd(token: Token): Pair<Int, Int> {
+            val text = token.text ?: ""
             val lastNewline = text.lastIndexOf('\n')
             return if (lastNewline < 0) {
                 token.line to token.charPositionInLine + text.length + 1

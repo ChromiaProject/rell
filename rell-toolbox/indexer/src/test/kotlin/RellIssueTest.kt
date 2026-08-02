@@ -41,6 +41,20 @@ class RellIssueTest {
         assertThat(issue.endColumn - issue.column).isEqualTo("create".length)
     }
 
+    // An error reported at end of file must not produce a zero-width span at the document end:
+    // editors widen such a span forwards past EOF, which IntelliJ rejects with an exception per
+    // highlighting pass. The span anchors backwards onto the last visible character instead.
+    @Test
+    fun syntaxErrorAtEofAnchorsToLastVisibleCharacter() {
+        val resource = TestUtils().createTestResource("eof_error.rell", "rellDappWithErrors")
+        assertThat(resource.syntaxErrors).isNotEmpty()
+        val issue = RellIssue.fromSyntaxError(resource.syntaxErrors.first(), resource.tokenStream)
+        assertThat(issue.endColumn - issue.column).isEqualTo(1)
+        assertThat(issue.line).isEqualTo(3)
+        assertThat(issue.endLine).isEqualTo(3)
+        assertThat(issue.endColumn).isEqualTo("function f() {".length + 1)
+    }
+
     @Test
     fun cMessageIfFileNameIsNotCompliant() {
         val resource = TestUtils().createTestResource("naming-issue.rell", "rellDappWithErrors")
