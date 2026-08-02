@@ -41,11 +41,15 @@ internal data class Document(val fileUri: URI, val version: Int, val content: St
      * https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textEditArray
      * https://github.com/microsoft/vscode/issues/23173#issuecomment-289378160 for details.
      *
-     * @return a new document with an incremented version and the text document changes applied.
+     * The version must be the client's `textDocument.version` from the didChange notification, not
+     * a self-incremented counter: published diagnostics carry it back to the client, which matches
+     * it against its own document version to discard stale diagnostics — and client versions can
+     * advance by more than one per notification.
+     *
+     * @return a new document with the given version and the text document changes applied.
      */
-    fun applyTextDocumentChanges(changes: Iterable<TextDocumentContentChangeEvent>): Document {
+    fun applyTextDocumentChanges(newVersion: Int, changes: Iterable<TextDocumentContentChangeEvent>): Document {
         var currentDocument = this
-        val newVersion = currentDocument.version + 1
 
         for (change in changes) {
             val newContent: String = if (change.range == null) {

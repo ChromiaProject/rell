@@ -124,6 +124,14 @@ The ranges the language server reports to editors are now well-formed in error s
   had the same problem and now anchors its highlight on the last character too, while its quick fix
   keeps inserting at the true position.
 
+- Published diagnostics now carry the version of the document they were computed against (the LSP
+  publishDiagnostics version field), taken from the client's own didChange version numbers instead
+  of a server-side counter. While typing, the server publishes per keystroke; without the version
+  the editor could apply diagnostics from one edit behind to the current text, where their ranges
+  may point past the end of the document — IntelliJ-based IDEs rejected such an annotation with an
+  exception. With the version attached, the editor discards outdated diagnostics and waits for the
+  next publish.
+
 - The document symbols for an incomplete definition without a name (for example a bare class { } left over
   while typing) used to cover the whole definition with the name range and could point past the end of a
   line, which crashed editor features built on symbol ranges, such as sticky lines and breadcrumbs in

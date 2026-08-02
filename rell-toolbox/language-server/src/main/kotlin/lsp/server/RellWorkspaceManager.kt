@@ -66,10 +66,13 @@ internal class RellWorkspaceManager(
         documentManager.closeDocument(fileUri)
     }
 
-    fun didChangeTextDocumentContent(fileUri: URI, contentChanges: List<TextDocumentContentChangeEvent>) {
-        val updatedDocument = documentManager.applyTextDocumentChanges(fileUri, contentChanges)
+    fun didChangeTextDocumentContent(fileUri: URI, version: Int, contentChanges: List<TextDocumentContentChangeEvent>) {
+        val updatedDocument = documentManager.applyTextDocumentChanges(fileUri, version, contentChanges)
         indexingManager.updateFileContent(fileUri, updatedDocument.content)
     }
+
+    /** The client-reported version of an open document, for stamping published diagnostics. */
+    fun documentVersion(fileUri: URI): Int? = documentManager.getOpenDocument(fileUri)?.version
 
     fun didChangeFiles(dirtyFiles: List<URI>, deletedFiles: List<URI>, updateAffectedFiles: Boolean = false) {
         indexingManager.handleFileChanges(dirtyFiles, deletedFiles, updateAffectedFiles)

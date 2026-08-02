@@ -93,6 +93,29 @@ class DiagnosticsPublisherTest {
         assertThat(sentParams.diagnostics[1].message).isEqualTo("Error 3")
     }
 
+    // The version lets the client discard diagnostics that raced with a newer edit; without it,
+    // stale ranges can point past the end of the changed document.
+    @Test
+    fun `publishDiagnostics should stamp the document version when known`() {
+        val publisher = DiagnosticsPublisher(mockClient, initialized, documentVersion = { 7 })
+        val paramsSlot = slot<PublishDiagnosticsParams>()
+
+        publisher.publishDiagnostics(testUri, listOf(createTestIssue("Error 1")))
+
+        verify { mockClient.publishDiagnostics(capture(paramsSlot)) }
+        assertThat(paramsSlot.captured.version).isEqualTo(7)
+    }
+
+    @Test
+    fun `publishDiagnostics should leave the version unset for documents not open in the editor`() {
+        val paramsSlot = slot<PublishDiagnosticsParams>()
+
+        publisherWithInitialized.publishDiagnostics(testUri, listOf(createTestIssue("Error 1")))
+
+        verify { mockClient.publishDiagnostics(capture(paramsSlot)) }
+        assertThat(paramsSlot.captured.version).isEqualTo(null)
+    }
+
     @Test
     fun `clearDiagnostics should send empty diagnostics list for specified URI`() {
         val issues = listOf(createTestIssue("Error 1"), createTestIssue("Error 2"))

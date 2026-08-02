@@ -215,7 +215,12 @@ internal class RellLanguageServer(
 
     override fun connect(client: LanguageClient) {
         languageClient = client
-        diagnosticsPublisher = DiagnosticsPublisher(client, initialized, lspSystemPropertiesProvider.getIssueCaching())
+        diagnosticsPublisher = DiagnosticsPublisher(
+            client,
+            initialized,
+            lspSystemPropertiesProvider.getIssueCaching(),
+            workspaceManager::documentVersion,
+        )
         workspaceService.connect(client)
     }
 

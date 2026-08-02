@@ -41,6 +41,7 @@ internal class RellTextDocumentService(
         if (uri.isRellFile()) {
             workspaceManager.didChangeTextDocumentContent(
                 uri,
+                textDocument.version,
                 params.contentChanges
             )
         }

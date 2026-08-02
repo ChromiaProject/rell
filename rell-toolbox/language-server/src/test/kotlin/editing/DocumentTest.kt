@@ -56,6 +56,7 @@ internal class DocumentTest {
     @Test
     fun `Changes are applied`() {
         val updatedDocument = document.applyTextDocumentChanges(
+            1,
             listOf(
                 TextDocumentContentChangeEvent(Range(Position(0, 0), Position(0, 9)), "New String"),
                 TextDocumentContentChangeEvent(Range(Position(2, 0), Position(2, 0)), "Another"),
@@ -71,6 +72,7 @@ internal class DocumentTest {
     @Test
     fun `Content is replaced`() {
         val updatedDocument = document.applyTextDocumentChanges(
+            1,
             listOf(TextDocumentContentChangeEvent(null, "New content"))
         )
         assertThat(updatedDocument.fileUri).isEqualTo(document.fileUri)

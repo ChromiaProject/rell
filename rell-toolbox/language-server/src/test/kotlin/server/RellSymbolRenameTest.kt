@@ -1237,6 +1237,7 @@ class RellSymbolRenameTest {
                 .sortedByDescending { it.range.end.character }
 
             val changedDocument = document.applyTextDocumentChanges(
+                document.version + 1,
                 sortedTextEdits.map {
                     TextDocumentContentChangeEvent(
                         it.range,

@@ -68,7 +68,7 @@ class RellDocumentManagerTest {
                 updatedContent
             )
         )
-        val updatedDocument = documentManager.applyTextDocumentChanges(mainFileUri, changes)
+        val updatedDocument = documentManager.applyTextDocumentChanges(mainFileUri, 2, changes)
 
         assertThat(updatedDocument).isEqualTo(Document(mainFileUri, 2, updatedContent))
         assertThat(documentManager.getOpenDocument(mainFileUri)).isEqualTo(updatedDocument)
@@ -88,7 +88,7 @@ class RellDocumentManagerTest {
             )
         )
         val exception = assertThrows<IllegalStateException> {
-            documentManager.applyTextDocumentChanges(mainFileUri, changes)
+            documentManager.applyTextDocumentChanges(mainFileUri, 2, changes)
         }
         assertThat(exception.message).isEqualTo("Document $mainFileUri not opened")
     }

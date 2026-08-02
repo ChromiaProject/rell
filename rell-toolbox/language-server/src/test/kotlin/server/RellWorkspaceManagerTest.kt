@@ -318,7 +318,7 @@ internal class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
             }
         )
 
-        workspaceManager.didChangeTextDocumentContent(rellFile.toURI(), updateEvents)
+        workspaceManager.didChangeTextDocumentContent(rellFile.toURI(), 2, updateEvents)
 
         val rellFileUri = rellFile.toURI()
         val expectedRellFileContent = """
@@ -347,7 +347,7 @@ internal class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
             TextDocumentContentChangeEvent(Range(Position(2, 7), Position(2, 7)), " "),
         )
 
-        workspaceManager.didChangeTextDocumentContent(rellFile.toURI(), updateEvents)
+        workspaceManager.didChangeTextDocumentContent(rellFile.toURI(), 2, updateEvents)
 
         val rellFileUri = rellFile.toURI()
         val expectedRellFileContent = """

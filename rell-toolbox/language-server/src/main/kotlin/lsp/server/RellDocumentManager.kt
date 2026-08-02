@@ -32,10 +32,14 @@ internal class RellDocumentManager {
 
     fun getOpenDocument(uri: URI): Document? = openDocuments[uri]
 
-    fun applyTextDocumentChanges(fileUri: URI, contentChanges: List<TextDocumentContentChangeEvent>): Document {
+    fun applyTextDocumentChanges(
+        fileUri: URI,
+        version: Int,
+        contentChanges: List<TextDocumentContentChangeEvent>,
+    ): Document {
         val document = getOpenDocument(fileUri)
         checkNotNull(document) { "Document $fileUri not opened" }
-        val updatedDocument = document.applyTextDocumentChanges(contentChanges)
+        val updatedDocument = document.applyTextDocumentChanges(version, contentChanges)
         openDocuments[fileUri] = updatedDocument
         return updatedDocument
     }

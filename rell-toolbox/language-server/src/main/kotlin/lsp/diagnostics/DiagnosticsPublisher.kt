@@ -17,7 +17,14 @@ import java.util.concurrent.ConcurrentHashMap
 internal open class DiagnosticsPublisher(
     private val languageClient: LanguageClient?,
     private val initialized: CompletableFuture<*>?,
-    private val checkCacheBeforeSend : Boolean = true
+    private val checkCacheBeforeSend : Boolean = true,
+    /**
+     * The client-reported version of the document the diagnostics were computed against, or null
+     * for documents not open in the editor. Stamped on every publish so the client can discard
+     * diagnostics that raced with a newer edit — without it, stale ranges can point past the end
+     * of the changed document, which IntelliJ rejects with an exception.
+     */
+    private val documentVersion: (URI) -> Int? = { null },
 ) {
     private val diagnosticsCache = ConcurrentHashMap<URI, Set<RellIssue>>()
     private val logger = KotlinLogging.logger {}
@@ -49,10 +56,14 @@ internal open class DiagnosticsPublisher(
 
     private fun sendDiagnosticsToClient(uri: URI, issues: List<RellIssue>) {
         if (languageClient != null && initialized != null) {
+            // Captured before the async send: the version the analysis ran against, not whatever
+            // the document has advanced to by the time the future completes.
+            val version = documentVersion(uri)
             initialized.thenAccept { _ ->
                 val publishDiagnosticsParams = PublishDiagnosticsParams()
                 publishDiagnosticsParams.uri = uri.toString()
                 publishDiagnosticsParams.diagnostics = DiagnosticsConverter.toDiagnostics(issues)
+                publishDiagnosticsParams.version = version
 
                 logger.debug { "Publishing ${issues.size} diagnostics for ${uri.fileName()}" }
                 languageClient.publishDiagnostics(publishDiagnosticsParams)
