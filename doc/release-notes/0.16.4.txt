@@ -1,4 +1,4 @@
-UNRELEASED NOTES
+RELEASE NOTES 0.16.4 (2026-08-02)
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 1. Tools: Linter inspection suggesting the null-check operator
