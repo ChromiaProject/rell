@@ -111,29 +111,17 @@ is read, which costs no extra query.
 
 The ranges the language server reports to editors are now well-formed in error scenarios:
 
-- Compiler errors and syntax errors used to carry only a start position, so editors rendered them as a
-  one-character underline. The diagnostic range now extends to the end of the token at the error position:
-  for example, the deprecation warning on the class keyword underlines all of class instead of just its
-  first letter.
+- Compiler and syntax errors underline the whole token at the error position, not just its first
+  character.
 
-- An error reported at the end of the file (such as an unexpected end of file) used to produce a
-  zero-width range at the very end of the document. Editors widen such a range forwards to make it
-  visible, which lands past the end of the document — IntelliJ-based IDEs rejected the annotation with
-  an exception on every highlighting pass. The range now anchors backwards onto the last visible
-  character instead. The formatting linter's insert-at-end-of-file issue (a missing final newline)
-  had the same problem and now anchors its highlight on the last character too, while its quick fix
-  keeps inserting at the true position.
+- End-of-file errors (unexpected end of file, the missing-final-newline lint) anchor onto the last
+  visible character instead of producing a zero-width range past it, which crashed highlighting in
+  IntelliJ-based IDEs.
 
-- Published diagnostics now carry the version of the document they were computed against (the LSP
-  publishDiagnostics version field), taken from the client's own didChange version numbers instead
-  of a server-side counter. While typing, the server publishes per keystroke; without the version
-  the editor could apply diagnostics from one edit behind to the current text, where their ranges
-  may point past the end of the document — IntelliJ-based IDEs rejected such an annotation with an
-  exception. With the version attached, the editor discards outdated diagnostics and waits for the
-  next publish.
+- Published diagnostics carry the document version they were computed against, so editors discard
+  stale diagnostics instead of applying them to newer text, where their ranges could point past the
+  end of the document and crash IntelliJ-based IDEs.
 
-- The document symbols for an incomplete definition without a name (for example a bare class { } left over
-  while typing) used to cover the whole definition with the name range and could point past the end of a
-  line, which crashed editor features built on symbol ranges, such as sticky lines and breadcrumbs in
-  IntelliJ-based IDEs. The name range of such a definition now collapses to its leading keyword, and the
-  full range ends at the closing brace.
+- Document symbols for an incomplete definition without a name no longer report a name range covering
+  the whole definition, which crashed sticky lines and breadcrumbs; the name range collapses to the
+  leading keyword.
