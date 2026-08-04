@@ -1,0 +1,3 @@
+function message(flags: text, account_id: text): text {
+    return "Please sign the message\nto add auth descriptor\nwith flags:\n%s\n\nto account:\n{account_id}".format(flags);
+}

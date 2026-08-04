@@ -119,3 +119,51 @@ function terse_guard_other_name(y: integer?): integer? {
     if (not y??) return null;
     return x;
 }
+
+// Positive guards returning early, merged into the return that follows.
+function early_return_elvis(x: integer?, y: integer): integer {
+    if (x != null) return x;
+    return y;
+}
+function early_return_member(a: account?): integer? {
+    if (a != null) return a.balance;
+    return null;
+}
+function early_return_member_default(a: account?, y: integer): integer {
+    if (a != null) return a.balance;
+    return y;
+}
+function early_return_redundant(x: integer?): integer? {
+    if (x != null) return x;
+    return null;
+}
+function early_return_compound_fallback(flag: boolean?, a: boolean, b: boolean): boolean {
+    if (flag != null) return flag;
+    return a or b;
+}
+function early_return_block(x: integer?, y: integer): integer {
+    if (x != null) { return x; }
+    return y;
+}
+function early_return_terse(x: integer?, y: integer): integer {
+    if (x??) return x;
+    return y;
+}
+function early_return_with_comment(x: integer?, y: integer): integer {
+    if (x != null) return x;
+    // fallback
+    return y;
+}
+function early_return_call(): integer? {
+    if (find() != null) return find();
+    return null;
+}
+function early_return_not_adjacent(x: integer?, y: integer): integer {
+    if (x != null) return x;
+    print('missing');
+    return y;
+}
+function early_return_unrelated(x: integer?, y: integer): integer {
+    if (x != null) return y;
+    return 0;
+}

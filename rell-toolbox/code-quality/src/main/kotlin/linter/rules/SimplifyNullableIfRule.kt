@@ -17,8 +17,10 @@ import org.antlr.v4.runtime.misc.Interval
  * Rewrites pure-expression null guards:
  *   `if (x != null) x else y`   → `x ?: y`
  *   `if (x != null) x.f else null` → `x?.f`
- * and the statement form, where the guard only jumps out of the enclosing function or loop:
+ * and the statement forms, where the guard only jumps out of the enclosing function or loop:
  *   `val x = f(); if (x == null) return null;` → `val x = f() ?: return null;`
+ *   `if (x != null) return x; return y;`       → `return x ?: y;`
+ *   `if (x != null) return x.f; return null;`  → `return x?.f;`
  * Either condition may equally be spelled with the null-check operator, `x??` and `not x??`.
  */
 internal class SimplifyNullableIfRule(config: LinterOptions, resource: Resource, linterContext: LinterContext) :
@@ -44,9 +46,7 @@ internal class SimplifyNullableIfRule(config: LinterOptions, resource: Resource,
                 // `?:` binds tighter than or/and/comparisons/in, so a compound (or lambda) else arm must
                 // be parenthesized to keep its grouping: `f ?: a or b` would otherwise reparse as
                 // `(f ?: a) or b`, and a bare lambda arm (`f ?: x -> x`) would not parse at all.
-                val elseText = guard.elseExpr.sourceText()
-                val wrappedElse = if (elseArmNeedsParens(guard.elseExpr)) "($elseText)" else elseText
-                val replacement = "$checkedText ?: $wrappedElse"
+                val replacement = "$checkedText ?: ${wrappedElseArm(guard.elseExpr)}"
                 val newText = if (needsParens(ctx)) "($replacement)" else replacement
                 report(SimplifyNullableIfIssue(ctx, ruleId, ELVIS_MESSAGE, ELVIS_TITLE, newText))
             }
@@ -66,7 +66,14 @@ internal class SimplifyNullableIfRule(config: LinterOptions, resource: Resource,
         if (stmts.size != 1) {
             return
         }
-        val jumpText = jumpText(stmts[0]) ?: return
+        val body = unwrapSingleStmtBlock(stmts[0])
+        // The two forms cannot both match: their guards have opposite polarity.
+        reportGuardMergedIntoDeclaration(ctx, body)
+        reportGuardMergedIntoNextReturn(ctx, body)
+    }
+
+    private fun reportGuardMergedIntoDeclaration(ctx: RellParser.IfStmtAltContext, body: RellParser.StatementContext) {
+        val jumpText = jumpText(body) ?: return
         // The guard has to name the declaration above it, so only a plain variable is a candidate.
         val name = ctx.expression().nullGuardedName() ?: return
         val decl = guardedDeclaration(ctx, name) ?: return
@@ -82,16 +89,69 @@ internal class SimplifyNullableIfRule(config: LinterOptions, resource: Resource,
     }
 
     /**
+     * A positive guard that returns the checked value, directly followed by the fallback return:
+     *   `if (x != null) return x; return y;`      → `return x ?: y;`
+     *   `if (x != null) return x.f; return null;` → `return x?.f;`
+     * When the guard returns a member and the fallback is not `null`, the member itself may be
+     * nullable — `x?.f ?: y` would then also replace that null with `y` — so the issue is reported
+     * without an automatic fix.
+     */
+    private fun reportGuardMergedIntoNextReturn(ctx: RellParser.IfStmtAltContext, body: RellParser.StatementContext) {
+        val thenExpr = (body as? RellParser.ReturnStmtAltContext)?.expression() ?: return
+        val check = ctx.expression().asNullCheck() ?: return
+        // The checked expression is repeated in the guard body; with a call inside, the two
+        // occurrences are two different values, which the rewrite would collapse into one.
+        if (check.hasCall) {
+            return
+        }
+        val nextReturn = nextSibling(ctx) as? RellParser.ReturnStmtAltContext ?: return
+        val fallback = nextReturn.expression() ?: return
+        val checkedText = check.text
+        val thenText = thenExpr.sourceText()
+        val member = when {
+            thenText == checkedText -> ""
+            thenText.startsWith(checkedText) && SINGLE_MEMBER.matches(thenText.substring(checkedText.length)) ->
+                thenText.substring(checkedText.length)
+            else -> return
+        }
+        if (hasIgnoreCommentOnTop(ctx.start) || hasIgnoreCommentOnTop(nextReturn.start)) {
+            return
+        }
+        val fallbackIsNull = fallback.text == "null"
+        val newText = when {
+            // The fix replaces both statements, so a comment between them would be lost: report it,
+            // but leave the rewrite to the reader.
+            hasCommentsBetween(ctx.stop, nextReturn.stop) -> null
+            // With a null fallback the guard is redundant: `x ?: null` is just `x`.
+            member.isEmpty() && fallbackIsNull -> "return $checkedText;"
+            member.isEmpty() -> "return $checkedText ?: ${wrappedElseArm(fallback)};"
+            fallbackIsNull -> "return $checkedText?$member;"
+            else -> null
+        }
+        report(SimplifyNullableIfIssue(ctx, ruleId, RETURN_MESSAGE, RETURN_TITLE, newText, ctx.start, nextReturn.stop))
+    }
+
+    /** The statements of the block directly containing [ctx], or null when it is not in a block. */
+    private fun siblingStatements(ctx: RellParser.IfStmtAltContext): List<RellParser.StatementContext>? =
+        when (val parent = ctx.parent) {
+            is RellParser.BlockStmtContext -> parent.statement()
+            is RellParser.ValueBlockContext -> parent.statement()
+            else -> null
+        }
+
+    private fun nextSibling(ctx: RellParser.IfStmtAltContext): RellParser.StatementContext? {
+        val siblings = siblingStatements(ctx) ?: return null
+        val index = siblings.indexOfFirst { it === ctx }
+        return if (index < 0) null else siblings.getOrNull(index + 1)
+    }
+
+    /**
      * The `val` declaration of [name] directly above the guard, when merging the two is safe.
      * Requires the initialiser to be a single operand: `?:` binds tighter than `or`, `and`, `in` and
      * the comparisons, so appending it to a compound initialiser would regroup the expression.
      */
     private fun guardedDeclaration(ctx: RellParser.IfStmtAltContext, name: String): RellParser.VarStmtAltContext? {
-        val siblings = when (val parent = ctx.parent) {
-            is RellParser.BlockStmtContext -> parent.statement()
-            is RellParser.ValueBlockContext -> parent.statement()
-            else -> return null
-        }
+        val siblings = siblingStatements(ctx) ?: return null
         val index = siblings.indexOfFirst { it === ctx }
         // `var` is left alone: the rewrite drops the null from the inferred type, which a later
         // assignment of null would no longer accept.
@@ -114,21 +174,18 @@ internal class SimplifyNullableIfRule(config: LinterOptions, resource: Resource,
     }
 
     /** The guard body as a jump expression, when it is nothing but a jump. */
-    private fun jumpText(stmt: RellParser.StatementContext): String? {
-        val jump = if (stmt is RellParser.BlockStmtAltContext) {
-            stmt.blockStmt().statement().singleOrNull()
-        } else {
-            stmt
-        }
-        return when (jump) {
-            // A `return` value needs no parentheses: as the right operand of `?:` it extends to the
-            // end of the expression anyway.
-            is RellParser.ReturnStmtAltContext -> jump.expression()?.let { "return ${it.sourceText()}" } ?: "return"
-            is RellParser.BreakStmtAltContext -> "break"
-            is RellParser.ContinueStmtAltContext -> "continue"
-            else -> null
-        }
+    private fun jumpText(stmt: RellParser.StatementContext): String? = when (stmt) {
+        // A `return` value needs no parentheses: as the right operand of `?:` it extends to the
+        // end of the expression anyway.
+        is RellParser.ReturnStmtAltContext -> stmt.expression()?.let { "return ${it.sourceText()}" } ?: "return"
+        is RellParser.BreakStmtAltContext -> "break"
+        is RellParser.ContinueStmtAltContext -> "continue"
+        else -> null
     }
+
+    /** The single statement of a one-statement block, or the statement itself. */
+    private fun unwrapSingleStmtBlock(stmt: RellParser.StatementContext): RellParser.StatementContext =
+        if (stmt is RellParser.BlockStmtAltContext) stmt.blockStmt().statement().singleOrNull() ?: stmt else stmt
 
     private fun hasCommentsBetween(from: Token, to: Token): Boolean {
         val tokens = resource.tokenStream
@@ -152,6 +209,11 @@ internal class SimplifyNullableIfRule(config: LinterOptions, resource: Resource,
         return bin.childCount != 1
     }
 
+    private fun wrappedElseArm(elseExpr: RellParser.ExpressionContext): String {
+        val text = elseExpr.sourceText()
+        return if (elseArmNeedsParens(elseExpr)) "($text)" else text
+    }
+
     companion object {
         const val RULE_ID = "rule_simplify_nullable_if"
         private const val ELVIS_MESSAGE = "Replace 'if' with the elvis operator '?:'"
@@ -160,5 +222,7 @@ internal class SimplifyNullableIfRule(config: LinterOptions, resource: Resource,
         private const val SAFE_ACCESS_TITLE = "Replace 'if' with '?.'"
         private const val GUARD_MESSAGE = "Null guard can be merged into the declaration with '?:'"
         private const val GUARD_TITLE = "Merge the null guard into the declaration with '?:'"
+        private const val RETURN_MESSAGE = "Null guard can be merged into the 'return' that follows"
+        private const val RETURN_TITLE = "Merge the null guard into the following 'return'"
     }
 }

@@ -18,32 +18,31 @@ the middle of it. The example above now fixes to:
         val x = 5;
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-2. Tools: Formatter no longer splits attribute names from their values, or misplaces closing parentheses
+2. Tools: Better line breaks when the formatter splits argument lists and method chains
 
-When the formatter broke an at-expression selector list over several lines, it put the line break after the
-attribute name instead of before it, and indented the closing parenthesis one level too deep:
+When the formatter broke an at-expression selector list, a from-item list, a call argument list or a
+create-expression argument list over several lines, it put the line break after an item's leading tokens —
+attribute names, sort annotations, source aliases — instead of before the item, and indented the closing
+parenthesis one level too deep:
 
     return entries @* { } ( data =
         extract(entry = $).to_gtv_pretty(), rowid =
         .rowid
         );
 
-The same happened to the sort annotations of a selector list and to the aliases of a multi-source at-expression,
-which were left stranded on the opening line. Each item of a selector list, a from-item list, a call argument
-list or a create-expression argument list now starts a line at its own first token, annotations and labels
-included, and the closing parenthesis lines up with the line that opened the list:
+Each item now starts a line at its own first token, annotations and labels included, nested lists are indented
+relative to the item rather than to the enclosing list, and the closing parenthesis lines up with the line that
+opened the list:
 
     return entries @* { } (
         data = extract(entry = $).to_gtv_pretty(),
         rowid = .rowid
     );
 
-Nested lists inside such an item are now indented relative to the item rather than to the enclosing list, so a
-call spanning several lines inside a selector list lines its arguments and its closing parenthesis up correctly.
-
-A method chain whose first call spans several lines had the same problem: the continuation indent applied to the
-chain also moved that call's closing parenthesis one level in. The parenthesis now stays at the indentation of
-the line that opened the call, while the chained calls keep their continuation indent:
+Breaking a method chain had two related problems. When the chain's first call itself spans several lines, the
+continuation indent applied to the chain also moved that call's closing parenthesis one level in; the
+parenthesis now stays at the indentation of the line that opened the call, while the chained calls keep their
+continuation indent:
 
     admin.external.mint(
         account.id,
@@ -52,6 +51,15 @@ the line that opened the call, while the chained calls keep their continuation i
     )
         .sign(admin_priv_key())
         .run();
+
+And a chain break used to explode the argument list of every chained call, even when the call fit comfortably
+on its own continuation line. Such a call now keeps its arguments inline when the continuation line fits within
+the maximum width:
+
+    return "Please sign the message\nto add auth descriptor\nwith flags:\n%s\n\nto account:\n{account_id}"
+        .format(flags);
+
+An argument list the author already spread over several lines is preserved as before.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 3. Tools: Annotation highlighting no longer swallows the annotation's arguments

@@ -28,14 +28,14 @@ class SimplifyNullableIfRuleTest : AbstractRuleTest() {
     @Test
     fun `should highlight only the if keyword`() {
         val result = lint(fileName, testLinterOptions { ruleSimplifyNullableIf = true })
-        assertThat(result).hasSize(15)
+        assertThat(result).hasSize(23)
         assertThat(result[0]).highlightsRange(6, 12, 6, 14)
     }
 
     @Test
     fun `should rewrite null guards to elvis and safe-access`() {
         val result = lint(fileName, testLinterOptions { ruleSimplifyNullableIf = true })
-        assertThat(result).hasSize(15)
+        assertThat(result).hasSize(23)
         for (issue in result) {
             assertThat(issue.ruleId).isEqualTo(SimplifyNullableIfRule.RULE_ID)
         }
@@ -70,5 +70,23 @@ class SimplifyNullableIfRuleTest : AbstractRuleTest() {
         assertThat(result[12].fix()!!.newText).isEqualTo("a?.balance")
         assertThat(result[13].fix()!!.newText).isEqualTo("val x = find() ?: return null;")
         assertThat(result[14].fix()!!.newText).isEqualTo("val x = find() ?: return 0;")
+    }
+
+    @Test
+    fun `should merge positive guards into the following return`() {
+        val result = lint(fileName, testLinterOptions { ruleSimplifyNullableIf = true })
+
+        assertThat(result[15].fix()!!.newText).isEqualTo("return x ?: y;")
+        assertThat(result[16].fix()!!.newText).isEqualTo("return a?.balance;")
+        // The member may itself be nullable, so a non-null fallback gets no automatic fix.
+        assertThat(result[17].fix()).isNull()
+        // A null fallback makes the guard redundant.
+        assertThat(result[18].fix()!!.newText).isEqualTo("return x;")
+        // Compound fallback is parenthesized so `?:` grouping is preserved.
+        assertThat(result[19].fix()!!.newText).isEqualTo("return flag ?: (a or b);")
+        assertThat(result[20].fix()!!.newText).isEqualTo("return x ?: y;")
+        assertThat(result[21].fix()!!.newText).isEqualTo("return x ?: y;")
+        // The fix would swallow the comment sitting between the guard and the fallback.
+        assertThat(result[22].fix()).isNull()
     }
 }

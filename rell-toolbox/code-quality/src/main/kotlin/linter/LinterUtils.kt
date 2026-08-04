@@ -182,7 +182,7 @@ internal class NullGuardExpr(
     val kind: NullGuardKind,
 )
 
-private val SINGLE_MEMBER = Regex("^\\.[A-Za-z_][A-Za-z0-9_]*$")
+internal val SINGLE_MEMBER = Regex("^\\.[A-Za-z_][A-Za-z0-9_]*$")
 
 /**
  * Recognises the pure-expression null guards that collapse to a null-aware operator:

@@ -149,7 +149,7 @@ internal class ExpressionFormatter(
         val callArgs = callTail.ctx
         braceFormatter.formatBracePairWithoutSpace(callArgs, doc, BracePairTypes.PARENTHESES)
         val (args, trailingComma) = callArgs.getCallArgsItems()
-        val lineSeparate = formatCallArgsAsMultiLine(callArgs)
+        val lineSeparate = formatCallArgsAsMultiLine(callArgs, previousNode)
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
         formatLabeledParenList(callArgs, args, doc, multiLine = lineSeparate, indent = indent)
         // Surround item-internal '=' too (already covered by formatLabeledParenList).
@@ -519,8 +519,14 @@ internal class ExpressionFormatter(
         }
     }
 
-    private fun formatCallArgsAsMultiLine(callArgs: CallArgsContext): Boolean {
+    private fun formatCallArgsAsMultiLine(callArgs: CallArgsContext, previousNode: ParserRuleContext?): Boolean {
+        if (callArgs.start.line != callArgs.stop.line) return true
         val (args, _) = callArgs.getCallArgsItems()
-        return lineAnalyzer.formatAsMultiLine(args) || callArgs.start.line != callArgs.stop.line
+        if (!lineAnalyzer.formatAsMultiLine(args)) return false
+        // The source line is too long, but when the call follows a member the chain breaks
+        // before that member, moving `.member(args)` to its own continuation line. Keep the
+        // arguments inline if that line fits on its own.
+        return !(previousNode is BaseExprTailMemberContext &&
+            lineAnalyzer.fitsWhenMovedToContinuationLine(previousNode, callArgs))
     }
 }

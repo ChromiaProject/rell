@@ -60,6 +60,25 @@ internal class LineAnalyzer(
         return if (lineEndOffset != -1) lineEndOffset - lineStartOffset else node.text.length
     }
 
+    /**
+     * Width the chain segment [from]..[to] would occupy once moved to its own continuation
+     * line: the current line's indentation plus one extra level, plus the segment text. Lets
+     * a call keep its arguments inline when breaking the chain before [from] already makes
+     * the line fit.
+     */
+    fun fitsWhenMovedToContinuationLine(from: ParserRuleContext, to: ParserRuleContext): Boolean {
+        val start = from.start
+        val lineStartOffset = start.startIndex - start.charPositionInLine
+        var indent = 0
+        var i = lineStartOffset
+        while (i < source.length && (source[i] == ' ' || source[i] == '\t')) {
+            indent += if (source[i] == '\t') formatterOptions.tabSize else 1
+            i++
+        }
+        val segmentWidth = to.stop.stopIndex + 1 - start.startIndex
+        return indent + formatterOptions.tabSize + segmentWidth <= formatterOptions.maxLineWidth
+    }
+
     fun formatAsMultiLine(args: List<ParserRuleContext>?): Boolean {
         var lineLength = 0
         if (args == null) {
