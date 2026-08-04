@@ -69,6 +69,14 @@ class AutoFixerTest {
         )
     }
 
+    @Test
+    fun `should combine a val rewrite with a re-indent of the same line`() {
+        checkAutofix(
+            "constant_indent.rell",
+            testLinterOptions { ruleFormatter = true; ruleConstantDetection = true }
+        )
+    }
+
     private fun checkAutofix(fileName: String, linterOptions: LinterOptions) {
         val fixedContent = autofix(fileName, linterOptions)
         val expectedContent = getExpectedContent(fileName)

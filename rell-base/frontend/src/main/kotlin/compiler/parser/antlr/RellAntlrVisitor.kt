@@ -158,7 +158,12 @@ class RellAntlrVisitor(
 
     private fun toAnnotation(ctx: RellParser.AnnotationContext): S_Annotation = withCtx(ctx) {
         val nameTok = ctx.RULE_ID()
-        val name = S_Name(nameTok.symbol.toPos(), Name.of(nameTok.text))
+        // Same synthetic single-token scope as idTokenToName: without it the name's position node
+        // would be the whole annotation, so consumers that measure `pos.node` would treat every
+        // token of `@mount('ft4')` as part of the annotation name.
+        val name = withCtx(TokenRuleContext(nameTok.symbol)) {
+            S_Name(nameTok.symbol.toPos(), Name.of(nameTok.text))
+        }
         val args = ctx.annotationArgs()?.annotationArg()?.map { toAnnotationArg(it) } ?: emptyList()
         return S_Annotation(name, args.toImmList())
     }
@@ -1823,4 +1828,3 @@ class RellAntlrVisitor(
         )
     }
 }
-

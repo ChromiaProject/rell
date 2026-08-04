@@ -13,7 +13,7 @@ function mint_avatar_original(
         Minter
         .I(
             interface_name = assets.IAvatar.interface,
-          [
+            [
                 assets.IAvatar.skin_color: Integer.T(skin_color),
                 assets.IAvatar.hair_color: Integer.T(hair_color),
                 assets.IAvatar.face: Integer.T(face),

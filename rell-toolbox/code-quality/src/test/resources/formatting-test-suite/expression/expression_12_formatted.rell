@@ -46,12 +46,12 @@ function a() {
 
     val ordered_products = product @* { .id in ordered_product_ids } (
         struct<product_order>(
-        order = order,
-        product = $,
-        quantity = customer_order.products @ { $.id == .id } (
-            .id == 2
+            order = order,
+            product = $,
+            quantity = customer_order.products @ { $.id == .id } (
+                .id == 2
+            )
         )
-    )
     );
 
     assets
@@ -60,7 +60,7 @@ function a() {
         op_index
     } (
         extract_details_from_transfer_history_entry(
-        $
-    )
+            $
+        )
     );
 }

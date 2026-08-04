@@ -67,7 +67,7 @@ class RellFormatter internal constructor(
                     lineAnalyzer,
                     braceFormatter,
                     whitespaceFormatter,
-                    argumentFormatter,
+                    expressionFormatter,
                 )
             )
             register(AtExprModifiersContext::class.java, AtExprModFormatter(tokenAnalyzer))
@@ -126,7 +126,7 @@ class RellFormatter internal constructor(
                     lineAnalyzer,
                     braceFormatter,
                     whitespaceFormatter,
-                    argumentFormatter
+                    expressionFormatter
                 )
             )
 

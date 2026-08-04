@@ -456,7 +456,7 @@ class RellLanguageServerDidChangeWatchedFilesTest {
         assertThat(testClient.progressNotifications).containsExactly(
             ProgressParams(
                 Either.forLeft(token),
-                Either.forLeft(WorkDoneProgressBegin().apply { title = token })
+                Either.forLeft(WorkDoneProgressBegin().apply { title = "Indexing Rell files" })
             ),
             ProgressParams(
                 Either.forLeft(token),

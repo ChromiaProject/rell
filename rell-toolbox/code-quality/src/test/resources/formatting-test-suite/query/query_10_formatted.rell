@@ -1,0 +1,15 @@
+query get_transfer_history(page_size: integer) {
+    return extract_data_from_transfer_history_list(entries) @* { } (
+        utils.pagination_result(
+            data = .data,
+            rowid = .rowid
+        )
+    );
+}
+
+function extract_data_from_transfer_history_list(entries: list<transfer_history_entry>): list<(data:gtv,rowid:rowid)> {
+    return entries @* { } (
+        data = extract_data_from_transfer_history_entry(entry = $).to_gtv_pretty(),
+        rowid = .rowid
+    );
+}

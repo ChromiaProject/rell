@@ -1,1 +1,42 @@
 UNRELEASED NOTES
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Tools: Applying linter fixes no longer corrupts re-indented lines
+
+When a linter fix and a formatting fix landed on the same line, applying them wrote invalid Rell back to the
+file. A var that is never reassigned on a line the formatter also wanted to re-indent came out as:
+
+    query Hello() {
+    val var x = 5;
+
+The two edits were applied back to front, so the inserted indentation was overwritten by the val rewrite
+instead of preceding it. Fixes are now ordered so that an insertion lands in front of the text replaced at
+the same position, and a fix whose range overlaps one already applied is dropped rather than spliced into
+the middle of it. The example above now fixes to:
+
+    query Hello() {
+        val x = 5;
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Tools: Formatter no longer splits attribute names from their values, or misplaces closing parentheses
+
+When the formatter broke an at-expression selector list over several lines, it put the line break after the
+attribute name instead of before it, and indented the closing parenthesis one level too deep:
+
+    return entries @* { } ( data =
+        extract(entry = $).to_gtv_pretty(), rowid =
+        .rowid
+        );
+
+The same happened to the sort annotations of a selector list and to the aliases of a multi-source at-expression,
+which were left stranded on the opening line. Each item of a selector list, a from-item list, a call argument
+list or a create-expression argument list now starts a line at its own first token, annotations and labels
+included, and the closing parenthesis lines up with the line that opened the list:
+
+    return entries @* { } (
+        data = extract(entry = $).to_gtv_pretty(),
+        rowid = .rowid
+    );
+
+Nested lists inside such an item are now indented relative to the item rather than to the enclosing list, so a
+call spanning several lines inside a selector list lines its arguments and its closing parenthesis up correctly.

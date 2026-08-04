@@ -1,5 +1,6 @@
 function createNFAClass(name, desc: text, max_entities: integer): nfa {
-    return create nfa ( .name =     name.lower_case(),
+    return create nfa (
+        .name = name.lower_case(),
         (name, chain_context.blockchain_rid).hash(),
         desc,
         max_entities
@@ -8,7 +9,8 @@ function createNFAClass(name, desc: text, max_entities: integer): nfa {
 }
 
 function createNFAClass(name, desc: text, max_entities: integer): nfa {
-    return create nfa ( .name =     name.lower_case(),
+    return create nfa (
+        .name = name.lower_case(),
         (name, chain_context.blockchain_rid).hash(),
         desc,
         max_entities

@@ -1,0 +1,6 @@
+module;
+
+query Hello() {
+    val x = 5;
+    return x;
+}

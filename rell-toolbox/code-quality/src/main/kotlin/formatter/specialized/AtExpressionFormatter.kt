@@ -36,7 +36,7 @@ internal class AtExprFromFormatter(
     val lineAnalyzer: LineAnalyzer,
     val braceFormatter: BraceFormatter,
     val whitespaceFormatter: WhitespaceFormatter,
-    val argumentFormatter: ArgumentFormatter,
+    val expressionFormatter: ExpressionFormatter,
 ) : NodeFormatter<AtExprContext> {
     override fun format(node: AtExprContext, doc: FormattableDocument) {
         // Walk children to find: opening '(', list of items, closing ')', then atExprAt/where/what/modifiers.
@@ -64,7 +64,7 @@ internal class AtExprFromFormatter(
             }
         }
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
-        argumentFormatter.formatArguments(items, doc, formatAsMultiLine = lineSeparate)
+        expressionFormatter.formatLabeledParenList(node, items, doc, multiLine = lineSeparate)
 
         // Format children that follow.
         doc.format(node.atExprAt())
@@ -132,7 +132,8 @@ internal class AtExprWhereFormatter(
             braceFormatter.formatBracePairWithSpace(node, doc, BracePairTypes.CURLY)
         }
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, formatAsMultiLine)
-        argumentFormatter.formatArguments(expressionRef, doc, formatAsMultiLine = formatAsMultiLine)
+        if (formatAsMultiLine) doc.interiorIndent(node)
+        argumentFormatter.formatArguments(expressionRef, doc, formatAsMultiLine = formatAsMultiLine, indent = false)
     }
 }
 
@@ -140,7 +141,7 @@ internal class AtExprWhatCmplxFormatter(
     val lineAnalyzer: LineAnalyzer,
     val braceFormatter: BraceFormatter,
     val whitespaceFormatter: WhitespaceFormatter,
-    val argumentFormatter: ArgumentFormatter,
+    val expressionFormatter: ExpressionFormatter,
 ) : NodeFormatter<AtExprWhatComplexContext> {
     override fun format(node: AtExprWhatComplexContext, doc: FormattableDocument) {
         doc.prepend(node) { it.oneSpace() }
@@ -155,15 +156,12 @@ internal class AtExprWhatCmplxFormatter(
             braceFormatter.formatBracePairWithSpace(node, doc, BracePairTypes.PARENTHESES)
         }
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, formatAsMultiLine)
-        argumentFormatter.formatArguments(items, doc, formatAsMultiLine = formatAsMultiLine)
+        if (formatAsMultiLine) doc.interiorIndent(node)
+        expressionFormatter.formatLabeledParenList(node, items, doc, multiLine = formatAsMultiLine, indent = false)
 
-        // Annotations between commas: collapse to one space before and after each annotation.
+        // An annotation is the anchor of its item, so its own line break is already set; only the
+        // gap between the annotation and the expression it annotates needs collapsing.
         node.annotation().forEach { ann ->
-            doc.prepend(ann) {
-                it.setNewLines(0)
-                it.oneSpace()
-                it.highPriority()
-            }
             doc.append(ann) {
                 it.setNewLines(0)
                 it.oneSpace()

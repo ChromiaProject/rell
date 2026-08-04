@@ -9,16 +9,18 @@ function trailingComma() {
     val user4b = user4 @* {
         .first_name == "",
         .age == 2,
-    } ( @sort     .salary,
+    } (
+        @sort .salary,
         .first_name,
     );
 
     val user4b = user4 @* { .first_name == "", } ( @sort( arg, arg2 , ) .salary, );
-    val user4b = user4 @* { .first_name == "", } ( @sort(
+    val user4b = user4 @* { .first_name == "", } (
+        @sort(
                 arg,
                 arg2
                 ,
-            )     .salary,
+            ) .salary,
     );
 
     a_chain.with_method_calls.call0("arg0",).call1("arg1", "arg2",).call2("arg1, arg2",);

@@ -184,7 +184,7 @@ internal class ExpressionFormatter(
 
     /**
      * Format a labeled paren-list like `(name = expr, name = expr, ...)`. Each item's anchor
-     * is the leading `RULE_ID` (when present) or the expression (when not). Layouts:
+     * is the first token of the item, label or annotation prefix included. Layouts:
      *
      *  - [multiLine] = true: each anchor preceded by a newline + indent; last expression
      *    appended with a newline (closes the list).
@@ -221,39 +221,38 @@ internal class ExpressionFormatter(
         formatLabelEquals(parent, doc)
     }
 
+    /**
+     * The anchor of a list item is the first child of its span, not the expression: the grammar
+     * spells the prefixes (`annotation*`, `RULE_ID '='`, `RULE_ID ':'`) as flat siblings of the
+     * expression, so anchoring on the expression would break the line between a label and its
+     * value. Walk back from the expression to the child right after the preceding `(` or `,`.
+     */
     private fun collectLabeledItemAnchors(
         parent: ParserRuleContext,
         items: List<ParserRuleContext>,
-    ): List<LabeledAnchor> {
-        val anchors = mutableListOf<LabeledAnchor>()
-        for (item in items) {
-            val itemStartIdx = item.start.tokenIndex
-            // Walk children of parent looking for the closest preceding RULE_ID with an
-            // item-boundary terminal immediately before it.
-            var foundLabel: TerminalNode? = null
-            for (i in 0 until parent.childCount) {
-                val c = parent.getChild(i)
-                if (c is TerminalNode &&
-                    c.symbol.type == RULE_ID &&
-                    c.symbol.tokenIndex < itemStartIdx
-                ) {
-                    // Check that the token before this RULE_ID is `(` or `,`.
-                    if (i == 0) continue
-                    val prev = parent.getChild(i - 1)
-                    if (prev is TerminalNode &&
-                        (prev.symbol.text == "(" || prev.symbol.text == ",")
-                    ) {
-                        foundLabel = c
-                        // Don't break - we want the latest one before itemStartIdx.
-                    }
-                }
+    ): List<LabeledAnchor> = items.map { item -> itemAnchor(parent, item) }
+
+    private fun itemAnchor(parent: ParserRuleContext, item: ParserRuleContext): LabeledAnchor {
+        var idx = -1
+        for (i in 0 until parent.childCount) {
+            if (parent.getChild(i) === item) {
+                idx = i
+                break
             }
-            anchors.add(
-                if (foundLabel != null) LabeledAnchor.Term(foundLabel)
-                else LabeledAnchor.Rule(item)
-            )
         }
-        return anchors
+        if (idx < 0) return LabeledAnchor.Rule(item)
+
+        var anchorIdx = idx
+        while (anchorIdx > 0) {
+            val prev = parent.getChild(anchorIdx - 1)
+            if (prev is TerminalNode && (prev.symbol.text == "(" || prev.symbol.text == ",")) break
+            anchorIdx--
+        }
+        return when (val anchor = parent.getChild(anchorIdx)) {
+            is TerminalNode -> LabeledAnchor.Term(anchor)
+            is ParserRuleContext -> LabeledAnchor.Rule(anchor)
+            else -> LabeledAnchor.Rule(item)
+        }
     }
 
     /**
@@ -393,10 +392,11 @@ internal class ExpressionFormatter(
                     doc.interiorIndentRangeIncludeLast(exprHead, lastNode)
                 }
             } else if (tailEndsWithAtExpression(tails)) {
-                indentTailAtExpression(tails.last() as BaseExprTail.AtExpr, doc)
-                if (shouldIndentBeforeAt(tails, exprHead) ||
-                    lineAnalyzer.exceedsMaxLineWidth(lastNode)
-                ) {
+                formatTailAtTrailingComma(tails.last() as BaseExprTail.AtExpr, doc)
+                // Only when the chain is actually broken before that tail: `indent()` emits its
+                // indentation whether or not the region carries a line break, so applying it to a
+                // region that stays inline injects stray spaces mid-expression.
+                if (shouldIndentBeforeAt(tails, exprHead)) {
                     val before = tails[tails.lastIndex - 1].first
                     doc.prepend(before) { it.indent() }
                 }
@@ -456,20 +456,13 @@ internal class ExpressionFormatter(
         }
     }
 
-    private fun indentTailAtExpression(tailAt: BaseExprTail.AtExpr, doc: FormattableDocument) {
-        val whereExpr = tailAt.where
-        val (expressionRef, trailingComma) = whereExpr.getWhereItems()
+    /**
+     * The where and what clauses indent their own interiors, so a chained at-tail adds no indent of
+     * its own; only the where clause's trailing comma is left to handle here.
+     */
+    private fun formatTailAtTrailingComma(tailAt: BaseExprTail.AtExpr, doc: FormattableDocument) {
+        val (_, trailingComma) = tailAt.where.getWhereItems()
         whitespaceFormatter.formatTrailingComma(trailingComma, doc)
-        if (lineAnalyzer.formatAsMultiLine(expressionRef)) {
-            doc.interiorIndentRangeIncludeLast(whereExpr, whereExpr)
-        }
-
-        val whatExpr = tailAt.what
-        if (whatExpr != null) {
-            if (whatExpr.start.line != whatExpr.stop.line || lineAnalyzer.exceedsMaxLineWidth(whatExpr)) {
-                doc.interiorIndentRangeIncludeLast(whatExpr, whatExpr)
-            }
-        }
     }
 
     fun formatOpeningClosingLines(

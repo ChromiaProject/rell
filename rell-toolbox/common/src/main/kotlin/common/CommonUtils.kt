@@ -60,13 +60,22 @@ fun positionToOffset(content: String, position: Position): Int {
 fun applyTextReplacements(source: String, replacements: List<TextReplacement>): String {
     val result = StringBuilder(source)
 
-    // Apply replacements in reverse order to avoid issues with changing offsets
-    val sortedReplacements = replacements.sortedByDescending { it.startOffset }
+    // Apply replacements in reverse order to avoid issues with changing offsets. Among replacements
+    // starting at the same offset, the widest one goes first: an insertion at that offset must land
+    // in front of the text it replaces, not inside it.
+    val sortedReplacements = replacements
+        .filter { isValidReplacement(it, source) }
+        .sortedWith(compareByDescending<TextReplacement> { it.startOffset }.thenByDescending { it.stopOffset })
+
+    // Replacements come from independent producers (formatter and linter rules), so their ranges can
+    // overlap. Applying both would splice one into the middle of the other and corrupt the source, so
+    // the first one wins and the conflicting ones are dropped.
+    var appliedStart = source.length + 1
 
     for (replacement in sortedReplacements) {
-        if (isValidReplacement(replacement, source)) {
-            result.replace(replacement.startOffset, replacement.stopOffset, replacement.text)
-        }
+        if (replacement.stopOffset > appliedStart) continue
+        result.replace(replacement.startOffset, replacement.stopOffset, replacement.text)
+        appliedStart = replacement.startOffset
     }
 
     return result.toString()

@@ -211,7 +211,7 @@ internal class RellWorkspaceService(
         if (state == IndexingState.BEGIN) {
             val startIndexingProgress = ProgressParams(
                 Either.forLeft(token),
-                Either.forLeft(WorkDoneProgressBegin().apply { title = token }),
+                Either.forLeft(WorkDoneProgressBegin().apply { title = "Indexing Rell files" }),
             )
             languageClient.notifyProgress(startIndexingProgress)
         }
