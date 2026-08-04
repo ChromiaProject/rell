@@ -389,7 +389,7 @@ internal class ExpressionFormatter(
                 if (exprHead.stop.line != tails.last().first.start.line ||
                     lineAnalyzer.exceedsMaxLineWidth(lastNode)
                 ) {
-                    doc.interiorIndentRangeIncludeLast(exprHead, lastNode)
+                    indentChain(exprHead, tails, lastNode, doc)
                 }
             } else if (tailEndsWithAtExpression(tails)) {
                 formatTailAtTrailingComma(tails.last() as BaseExprTail.AtExpr, doc)
@@ -402,7 +402,7 @@ internal class ExpressionFormatter(
                 }
             } else {
                 if (chainBrokenAtTailBoundary(exprHead, tails) || lineAnalyzer.exceedsMaxLineWidth(lastNode)) {
-                    doc.interiorIndentRangeIncludeLast(exprHead, lastNode)
+                    indentChain(exprHead, tails, lastNode, doc)
                 } else {
                     // Only the argument lists break lines. A first-tail call follows the head, so
                     // formatExprTailCall never interior-indents it — do it here.
@@ -412,6 +412,32 @@ internal class ExpressionFormatter(
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Block-indent the continuation lines of a broken chain. Normally that is the whole span from the
+     * head to the last tail, but a multi-line call attached to the head — `f(` in `f(\n a\n).g().h()` —
+     * has its closing `)` on a line of its own that belongs to the head's line, not to the
+     * continuation. In that case the call indents its own arguments and the chain block starts after
+     * its closing paren.
+     */
+    private fun indentChain(
+        exprHead: BaseExprHeadContext,
+        tails: List<BaseExprTail>,
+        lastNode: ParserRuleContext,
+        doc: FormattableDocument
+    ) {
+        val first = tails.first()
+        if (first is BaseExprTail.Call &&
+            first.ctx !== lastNode &&
+            exprHead.stop.line == first.ctx.start.line &&
+            first.ctx.start.line != first.ctx.stop.line
+        ) {
+            doc.interiorIndent(first.ctx)
+            doc.interiorIndentAfter(first.ctx, lastNode)
+        } else {
+            doc.interiorIndentRangeIncludeLast(exprHead, lastNode)
         }
     }
 

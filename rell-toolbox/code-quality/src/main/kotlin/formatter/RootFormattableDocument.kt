@@ -162,6 +162,19 @@ internal class RootFormattableDocument(
         }
     }
 
+    override fun interiorIndentAfter(afterNode: ParserRuleContext?, endNode: ParserRuleContext?) {
+        if (afterNode == null || endNode == null) return
+        val interiorStartToken = tokenAnalyzer.nextSemanticRegion(afterNode.stop) ?: return
+        changes.add(
+            Changes(
+                interiorStartToken.startIndex,
+                endNode.stop.stopIndex,
+                formatterOptions,
+                blockIndent = true
+            )
+        )
+    }
+
     fun createReplacements(): List<TextReplacement> {
         val sortedChanges = changes.filter { !it.blockIndent }.sortedBy { it.startOffset }
 

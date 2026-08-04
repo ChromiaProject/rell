@@ -30,4 +30,11 @@ internal interface FormattableDocument {
     fun interiorIndentRange(startNode: ParserRuleContext?, endNode: ParserRuleContext?)
 
     fun interiorIndentRangeIncludeLast(startNode: ParserRuleContext?, endNode: ParserRuleContext?)
+
+    /**
+     * Block-indent from the token right after [afterNode] through the last token of [endNode].
+     * Unlike [interiorIndentRangeIncludeLast], [afterNode] itself stays outside the block, so a
+     * multi-line construct that ends at [afterNode] keeps its own indentation.
+     */
+    fun interiorIndentAfter(afterNode: ParserRuleContext?, endNode: ParserRuleContext?)
 }

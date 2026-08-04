@@ -155,6 +155,24 @@ internal class RellSemanticTokensManagerTest {
     }
 
     @Test
+    fun `Annotation token covers only the annotation name`(@TempDir tempDir: File) {
+        val testDataBuilder = testData(tempDir) {
+            addFile(rellFile, "@mount('ft4')\nmodule;\n")
+        }
+        val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
+        val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
+        val rellFileUri = testDataBuilder.sourceFile(rellFile).toURI()
+        val resource = resourceFactory.buildRellResource(rellFileUri, fileMap)
+
+        val tokens = RellSemanticTokensManager().getSemanticTokens(resource)
+
+        // The `@`, the parentheses and the string argument must keep their own highlighting;
+        // only `mount` is the annotation.
+        assertThat(tokens).extracting { listOf(it.line, it.col, it.len, it.tokenType) }
+            .containsExactly(listOf(0, 1, 5, RellTokenType.ANNOTATION))
+    }
+
+    @Test
     fun `Most common method mappings are covered`(@TempDir tempDir: File) {
         val testDataBuilder = testData(tempDir) {
             addFile(

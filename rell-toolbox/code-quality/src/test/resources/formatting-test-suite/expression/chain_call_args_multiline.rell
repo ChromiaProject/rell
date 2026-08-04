@@ -1,0 +1,9 @@
+function mint(account: accounts.account, asset: assets.asset, amount: big_integer) {
+    admin.external.mint(
+        account.id,
+        asset.id,
+        amount
+    )
+    .sign(admin_priv_key())
+    .run();
+}

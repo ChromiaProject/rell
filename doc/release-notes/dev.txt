@@ -40,3 +40,24 @@ included, and the closing parenthesis lines up with the line that opened the lis
 
 Nested lists inside such an item are now indented relative to the item rather than to the enclosing list, so a
 call spanning several lines inside a selector list lines its arguments and its closing parenthesis up correctly.
+
+A method chain whose first call spans several lines had the same problem: the continuation indent applied to the
+chain also moved that call's closing parenthesis one level in. The parenthesis now stays at the indentation of
+the line that opened the call, while the chained calls keep their continuation indent:
+
+    admin.external.mint(
+        account.id,
+        asset.id,
+        amount
+    )
+        .sign(admin_priv_key())
+        .run();
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tools: Annotation highlighting no longer swallows the annotation's arguments
+
+The language server marked every token of an annotation as part of the annotation name, so an editor colouring
+Rell from semantic tokens painted the `@`, the parentheses and the arguments in the annotation colour too — in
+`@mount('ft4')` the string literal lost its string colour. The annotation's name position now spans just the
+name, and only `mount` is reported as an annotation. Go-to-definition and find-usages ranges anchored at an
+annotation name shrink to the name for the same reason.
