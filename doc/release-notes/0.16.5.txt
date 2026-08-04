@@ -1,0 +1,131 @@
+RELEASE NOTES 0.16.5 (2026-08-04)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Tools: Applying linter fixes no longer corrupts re-indented lines
+
+When a linter fix and a formatting fix landed on the same line, applying them wrote invalid Rell back to the
+file. A var that is never reassigned on a line the formatter also wanted to re-indent came out as:
+
+    query Hello() {
+    val var x = 5;
+
+The two edits were applied back to front, so the inserted indentation was overwritten by the val rewrite
+instead of preceding it. Fixes are now ordered so that an insertion lands in front of the text replaced at
+the same position, and a fix whose range overlaps one already applied is dropped rather than spliced into
+the middle of it. The example above now fixes to:
+
+    query Hello() {
+        val x = 5;
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Tools: Better line breaks when the formatter splits argument lists and method chains
+
+When the formatter broke an at-expression selector list, a from-item list, a call argument list or a
+create-expression argument list over several lines, it put the line break after an item's leading tokens -
+attribute names, sort annotations, source aliases - instead of before the item, and indented the closing
+parenthesis one level too deep:
+
+    return entries @* { } ( data =
+        extract(entry = $).to_gtv_pretty(), rowid =
+        .rowid
+        );
+
+Each item now starts a line at its own first token, annotations and labels included, nested lists are indented
+relative to the item rather than to the enclosing list, and the closing parenthesis lines up with the line that
+opened the list:
+
+    return entries @* { } (
+        data = extract(entry = $).to_gtv_pretty(),
+        rowid = .rowid
+    );
+
+Breaking a method chain had two related problems. When the chain's first call itself spans several lines, the
+continuation indent applied to the chain also moved that call's closing parenthesis one level in; the
+parenthesis now stays at the indentation of the line that opened the call, while the chained calls keep their
+continuation indent:
+
+    admin.external.mint(
+        account.id,
+        asset.id,
+        amount
+    )
+        .sign(admin_priv_key())
+        .run();
+
+And a chain break used to explode the argument list of every chained call, even when the call fit comfortably
+on its own continuation line. Such a call now keeps its arguments inline when the continuation line fits within
+the maximum width:
+
+    return "Please sign the message\nto add auth descriptor\nwith flags:\n%s\n\nto account:\n{account_id}"
+        .format(flags);
+
+An argument list the author already spread over several lines is preserved as before.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tools: Annotation highlighting no longer swallows the annotation's arguments
+
+The language server marked every token of an annotation as part of the annotation name, so an editor colouring
+Rell from semantic tokens painted the @, the parentheses and the arguments in the annotation colour too - in
+@mount('ft4') the string literal lost its string colour. The annotation's name position now spans just the
+name, and only mount is reported as an annotation. Go-to-definition and find-usages ranges anchored at an
+annotation name shrink to the name for the same reason.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Tools: rule_simplify_nullable_if recognizes a positive guard returning early
+
+The inspection only knew the negated guard, if (x == null) return null;, merged into the declaration above it.
+The mirrored shape - a positive guard that returns the checked value, directly followed by the fallback return -
+went unreported:
+
+    if (x != null) return x;
+    return y;
+
+Both statements are now merged into a single return:
+
+    return x ?: y;
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Compiler: Error messages that gave no help, or leaked compiler internals
+
+Several diagnostics named the problem without saying anything a user could act on, and two of them printed
+names that exist only inside the compiler.
+
+Calling a library member of an entity with wrong arguments reported the member under its internal
+registration name, which cannot be written in Rell:
+
+    Function 'rell.entity_ext(user).to_struct' undefined for arguments (integer)
+
+It is now reported the way the call was written, as Function 'user.to_struct' undefined for arguments
+(integer). The internal name is still used for the error code, so nothing changes for tests.
+
+The remaining messages state the rule they enforce instead of only refusing:
+
+    Not supported for SQL
+        -> Operator '!!' cannot be converted to SQL
+    Invalid outer join expression
+        -> Annotation @outer is allowed only after the first from-expression of a database at-expression
+    Cannot access attribute 'name'
+        -> Cannot access attribute 'name': an attribute can only be accessed on an entity of the
+           at-expression or an entity linked to it by attributes
+
+A character that starts no valid token was reported as a bare Syntax error; it now names the character and
+its code point, so an invisible one can be identified: Invalid character ' ' (U+200B).
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+6. Tools: Run-time failures no longer print a Java stack trace
+
+A run-time error while initializing a global constant escaped the command-line tool as a raw Java exception,
+burying the Rell error under twenty frames of compiler internals and never showing the source position:
+
+    net.postchain.rell.base.runtime.Rt_Exception: Division by zero: 1 / 0
+            at net.postchain.rell.base.runtime.Rt_Exception$Companion.common(rt_error.kt:76)
+            ... 18 more frames
+
+It is now reported like any other Rell run-time error, with the position of the failing constant:
+
+    ERROR Division by zero: 1 / 0
+            at t:k(t.rell:2)
+
+Infinite recursion printed java.lang.StackOverflowError followed by hundreds of JVM frames, in both the
+command-line tool and the shell. Both now print that the call stack is too deep. A compile-time evaluation
+failure also no longer puts the Java exception class name into the error code.
