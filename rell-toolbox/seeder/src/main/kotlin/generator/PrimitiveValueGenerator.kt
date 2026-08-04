@@ -26,41 +26,37 @@ internal class PrimitiveValueGenerator(
         const val BYTE_ARRAY_MAX_SIZE = 32
     }
 
-    fun generateForType(ctx: DataGeneratorContext): Any {
-        val type = ctx.attribute.type
-        return when {
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.INTEGER -> generatorFactory.callGenerator(
+    fun generateForType(ctx: DataGeneratorContext): Any = when (val type = ctx.attribute.type) {
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.INTEGER -> generatorFactory.callGenerator(
+            "random.integer",
+            ctx.copy(attributeConfig = AttributeConfig.Range(NUMBER_MIN_VALUE, NUMBER_MAX_VALUE))
+        )
+
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.BIG_INTEGER -> BigInteger.valueOf(
+            generatorFactory.callGenerator(
                 "random.integer",
                 ctx.copy(attributeConfig = AttributeConfig.Range(NUMBER_MIN_VALUE, NUMBER_MAX_VALUE))
-            )
+            ) as Long
+        )
 
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BIG_INTEGER -> BigInteger.valueOf(
-                generatorFactory.callGenerator(
-                    "random.integer",
-                    ctx.copy(attributeConfig = AttributeConfig.Range(NUMBER_MIN_VALUE, NUMBER_MAX_VALUE))
-                ) as Long
-            )
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.DECIMAL -> BigDecimal(
+            generatorFactory.callGenerator(
+                "random.decimal",
+                ctx.copy(attributeConfig = AttributeConfig.Range(NUMBER_MIN_VALUE, NUMBER_MAX_VALUE))
+            ) as Double
+        )
 
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.DECIMAL -> BigDecimal(
-                generatorFactory.callGenerator(
-                    "random.decimal",
-                    ctx.copy(attributeConfig = AttributeConfig.Range(NUMBER_MIN_VALUE, NUMBER_MAX_VALUE))
-                ) as Double
-            )
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.BOOLEAN -> generatorFactory.callGenerator("random.boolean", ctx)
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.TEXT -> generatorFactory.callGenerator("random.text", ctx)
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.BYTE_ARRAY -> generateRandomBytes(ctx)
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.JSON -> generatorFactory.callGenerator("random.json", ctx)
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.ROWID -> generatorFactory.callGenerator(
+            "random.integer",
+            ctx.copy(attributeConfig = AttributeConfig.Range(ROWID_MIN_VALUE, ROWID_MAX_VALUE))
+        )
 
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BOOLEAN -> generatorFactory.callGenerator("random.boolean", ctx)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.TEXT -> generatorFactory.callGenerator("random.text", ctx)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BYTE_ARRAY -> generateRandomBytes(ctx)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.JSON -> generatorFactory.callGenerator("random.json", ctx)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.ROWID -> generatorFactory.callGenerator(
-                "random.integer",
-                ctx.copy(attributeConfig = AttributeConfig.Range(ROWID_MIN_VALUE, ROWID_MAX_VALUE))
-            )
-
-            type is RR_Type.Enum -> generatorFactory.callGenerator("random.enum", ctx)
-
-            else -> throw IllegalArgumentException("Unsupported type: ${ctx.attribute.type}")
-        }
+        is RR_Type.Enum -> generatorFactory.callGenerator("random.enum", ctx)
+        else -> throw IllegalArgumentException("Unsupported type: ${ctx.attribute.type}")
     }
 
     private fun generateRandomBytes(ctx: DataGeneratorContext): WrappedByteArray {

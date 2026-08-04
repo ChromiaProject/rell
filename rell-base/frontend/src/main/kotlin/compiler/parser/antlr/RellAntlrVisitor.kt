@@ -19,6 +19,7 @@ import org.antlr.v4.runtime.Lexer
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.ErrorNode
+import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
 
 /**
@@ -112,17 +113,20 @@ class RellAntlrVisitor(
         modifiers: S_Modifiers,
         outerCtx: ParserRuleContext,
     ): S_Definition = withCtx(ctx) {
-        ctx.entityDef()?.let { return@withCtx toEntityDef(it, modifiers, outerCtx) }
-        ctx.objectDef()?.let { return@withCtx toObjectDef(it, modifiers, outerCtx) }
-        ctx.structDef()?.let { return@withCtx toStructDef(it, modifiers, outerCtx) }
-        ctx.enumDef()?.let { return@withCtx toEnumDef(it, modifiers, outerCtx) }
-        ctx.functionDef()?.let { return@withCtx toFunctionDef(it, modifiers, outerCtx) }
-        ctx.namespaceDef()?.let { return@withCtx toNamespaceDef(it, modifiers, outerCtx) }
-        ctx.importDef()?.let { return@withCtx toImportDef(it, modifiers, outerCtx) }
-        ctx.opDef()?.let { return@withCtx toOpDef(it, modifiers, outerCtx) }
-        ctx.queryDef()?.let { return@withCtx toQueryDef(it, modifiers, outerCtx) }
-        ctx.includeDef()?.let { return@withCtx toIncludeDef(it, modifiers, outerCtx) }
-        error("unknown replDef alt")
+        toDefAlternative(
+            modifiers,
+            outerCtx,
+            entityDef = ctx.entityDef(),
+            objectDef = ctx.objectDef(),
+            structDef = ctx.structDef(),
+            enumDef = ctx.enumDef(),
+            functionDef = ctx.functionDef(),
+            namespaceDef = ctx.namespaceDef(),
+            importDef = ctx.importDef(),
+            opDef = ctx.opDef(),
+            queryDef = ctx.queryDef(),
+            includeDef = ctx.includeDef(),
+        )
     }
 
     fun toModuleHeader(ctx: RellParser.ModuleHeaderContext): S_ModuleHeader = withCtx(ctx) {
@@ -176,26 +180,11 @@ class RellAntlrVisitor(
     }
 
     private fun literalFromAnnotationArg(ctx: RellParser.AnnotationArgContext): S_LiteralExpr = withCtx(ctx) {
-        ctx.RULE_NUMBER()?.let { tk ->
-            val pos = tk.symbol.toPos()
-            return S_IntegerLiteralExpr(pos, RellTokenizer.decodeInteger(pos, tk.text))
-        }
-        ctx.RULE_BIG_INTEGER()?.let { tk ->
-            val pos = tk.symbol.toPos()
-            return S_CommonLiteralExpr(pos, RellTokenizer.decodeBigInteger(pos, tk.text))
-        }
-        ctx.RULE_DECIMAL()?.let { tk ->
-            val pos = tk.symbol.toPos()
-            return S_CommonLiteralExpr(pos, RellTokenizer.decodeDecimal(pos, tk.text))
-        }
-        ctx.RULE_STRING()?.let { tk ->
-            val pos = tk.symbol.toPos()
-            return S_StringLiteralExpr(pos, decodeStringTokenText(pos, tk.text))
-        }
-        ctx.RULE_BYTES()?.let { tk ->
-            val pos = tk.symbol.toPos()
-            return S_ByteArrayLiteralExpr(pos, RellTokenizer.decodeByteArray(pos, decodeBytesTokenText(tk.text)))
-        }
+        ctx.RULE_NUMBER()?.let { return integerLiteral(it) }
+        ctx.RULE_BIG_INTEGER()?.let { return bigIntegerLiteral(it) }
+        ctx.RULE_DECIMAL()?.let { return decimalLiteral(it) }
+        ctx.RULE_STRING()?.let { return stringLiteral(it) }
+        ctx.RULE_BYTES()?.let { return byteArrayLiteral(it) }
         // false/true/null
         val tok = ctx.children.first { it is TerminalNode } as TerminalNode
         val pos = tok.symbol.toPos()
@@ -220,18 +209,54 @@ class RellAntlrVisitor(
         modifiers: S_Modifiers,
         outerCtx: ParserRuleContext,
     ): S_Definition = withCtx(ctx) {
-        ctx.entityDef()?.let { return toEntityDef(it, modifiers, outerCtx) }
-        ctx.objectDef()?.let { return toObjectDef(it, modifiers, outerCtx) }
-        ctx.structDef()?.let { return toStructDef(it, modifiers, outerCtx) }
-        ctx.enumDef()?.let { return toEnumDef(it, modifiers, outerCtx) }
-        ctx.functionDef()?.let { return toFunctionDef(it, modifiers, outerCtx) }
-        ctx.namespaceDef()?.let { return toNamespaceDef(it, modifiers, outerCtx) }
-        ctx.importDef()?.let { return toImportDef(it, modifiers, outerCtx) }
-        ctx.opDef()?.let { return toOpDef(it, modifiers, outerCtx) }
-        ctx.queryDef()?.let { return toQueryDef(it, modifiers, outerCtx) }
-        ctx.includeDef()?.let { return toIncludeDef(it, modifiers, outerCtx) }
-        ctx.constantDef()?.let { return toConstantDef(it, modifiers, outerCtx) }
-        error("unknown anyDef")
+        toDefAlternative(
+            modifiers,
+            outerCtx,
+            entityDef = ctx.entityDef(),
+            objectDef = ctx.objectDef(),
+            structDef = ctx.structDef(),
+            enumDef = ctx.enumDef(),
+            functionDef = ctx.functionDef(),
+            namespaceDef = ctx.namespaceDef(),
+            importDef = ctx.importDef(),
+            opDef = ctx.opDef(),
+            queryDef = ctx.queryDef(),
+            includeDef = ctx.includeDef(),
+            constantDef = ctx.constantDef(),
+        )
+    }
+
+    /**
+     * Dispatches over the definition alternatives shared by `anyDef` and `replDef` (the latter has
+     * no `constantDef`). Exactly one of the arguments is non-null in a well-formed parse tree.
+     */
+    private fun toDefAlternative(
+        modifiers: S_Modifiers,
+        outerCtx: ParserRuleContext,
+        entityDef: RellParser.EntityDefContext?,
+        objectDef: RellParser.ObjectDefContext?,
+        structDef: RellParser.StructDefContext?,
+        enumDef: RellParser.EnumDefContext?,
+        functionDef: RellParser.FunctionDefContext?,
+        namespaceDef: RellParser.NamespaceDefContext?,
+        importDef: RellParser.ImportDefContext?,
+        opDef: RellParser.OpDefContext?,
+        queryDef: RellParser.QueryDefContext?,
+        includeDef: RellParser.IncludeDefContext?,
+        constantDef: RellParser.ConstantDefContext? = null,
+    ): S_Definition {
+        entityDef?.let { return toEntityDef(it, modifiers, outerCtx) }
+        objectDef?.let { return toObjectDef(it, modifiers, outerCtx) }
+        structDef?.let { return toStructDef(it, modifiers, outerCtx) }
+        enumDef?.let { return toEnumDef(it, modifiers, outerCtx) }
+        functionDef?.let { return toFunctionDef(it, modifiers, outerCtx) }
+        namespaceDef?.let { return toNamespaceDef(it, modifiers, outerCtx) }
+        importDef?.let { return toImportDef(it, modifiers, outerCtx) }
+        opDef?.let { return toOpDef(it, modifiers, outerCtx) }
+        queryDef?.let { return toQueryDef(it, modifiers, outerCtx) }
+        includeDef?.let { return toIncludeDef(it, modifiers, outerCtx) }
+        constantDef?.let { return toConstantDef(it, modifiers, outerCtx) }
+        error("unknown definition alt")
     }
 
     private fun makeDefBase(kwToken: Token, modifiers: S_Modifiers, outerCtx: ParserRuleContext): S_DefinitionBase {
@@ -383,11 +408,7 @@ class RellAntlrVisitor(
         if (firstChild is TerminalNode) {
             return when (firstChild.text) {
                 ";" -> null
-                "=" -> {
-                    val expr = toExpression(ctx.expression()!!)
-                    val endTok = ctx.children.last { it is TerminalNode && it.text == ";" } as TerminalNode
-                    S_FunctionBodyShort(S_PosRange(firstChild.symbol.toPos(), endTok.symbol.toPos()), expr)
-                }
+                "=" -> toShortFunctionBody(ctx, firstChild)
                 else -> error("unknown functionBody first token: ${firstChild.text}")
             }
         }
@@ -399,12 +420,18 @@ class RellAntlrVisitor(
     private fun toQueryBody(ctx: RellParser.QueryBodyContext): S_FunctionBody = withCtx(ctx) {
         val firstChild = ctx.children.first()
         if (firstChild is TerminalNode && firstChild.text == "=") {
-            val expr = toExpression(ctx.expression()!!)
-            val endTok = ctx.children.last { it is TerminalNode && it.text == ";" } as TerminalNode
-            return S_FunctionBodyShort(S_PosRange(firstChild.symbol.toPos(), endTok.symbol.toPos()), expr)
+            return toShortFunctionBody(ctx, firstChild)
         }
         val stmt = toBlockStatement(ctx.blockStmt()!!)
         return S_FunctionBodyFull(stmt)
+    }
+
+    /** Expression body of a function or a query: `'=' expression ';'`, [eqNode] being the `'='`. */
+    private fun toShortFunctionBody(ctx: ParserRuleContext, eqNode: TerminalNode): S_FunctionBodyShort {
+        val exprCtx = ctx.getRuleContext(RellParser.ExpressionContext::class.java, 0)
+        val expr = toExpression(exprCtx)
+        val endTok = ctx.children.last { it is TerminalNode && it.text == ";" } as TerminalNode
+        return S_FunctionBodyShort(S_PosRange(eqNode.symbol.toPos(), endTok.symbol.toPos()), expr)
     }
 
     private fun toNamespaceDef(
@@ -436,7 +463,7 @@ class RellAntlrVisitor(
         val moduleCtx = ctx.importModule()
         val module = if (moduleCtx != null) toImportModule(moduleCtx) else {
             val pos = ctx.start?.toPos() ?: errorPos()
-            S_ImportModulePath(null, S_QualifiedName(immListOf(S_Name(pos, PLACEHOLDER_NAME))))
+            S_ImportModulePath(null, placeholderName(pos))
         }
         val target = ctx.importTarget()?.let { toImportTarget(it) } ?: S_DefaultImportTarget
         return S_ImportDefinition(makeDefBase(kwTok, modifiers, outerCtx), alias, module, target)
@@ -564,47 +591,9 @@ class RellAntlrVisitor(
                 }
             }
             is RellParser.TupleTypeContext -> {
-                // Children form: '(' (RULE_ID ':')? type (',' (RULE_ID ':')? type)* ','? ')'
-                // We need each field: optional name + type, in declaration order.
-                val fields = mutableListOf<S_GenericTupleAttr<S_Type>>()
-                val children = ctx.children
-                var trailingComma = false
-                var idx = 1 // skip '('
-                while (idx < children.size) {
-                    val cur = children[idx]
-                    if (cur is TerminalNode) {
-                        when (cur.text) {
-                            ")" -> break
-                            "," -> {
-                                if (idx + 1 < children.size && children[idx + 1] is TerminalNode
-                                    && (children[idx + 1] as TerminalNode).text == ")") {
-                                    trailingComma = true
-                                }
-                                idx++
-                            }
-                            else -> idx++
-                        }
-                        continue
-                    }
-                    // cur is a TypeContext — but maybe preceded by RULE_ID ':'. Check at children[idx-2..idx-1].
-                    var fieldName: S_Name? = null
-                    if (idx >= 2) {
-                        val tn1 = children[idx - 2]
-                        val tn0 = children[idx - 1]
-                        if (tn1 is TerminalNode && tn0 is TerminalNode && tn0.text == ":"
-                            && tn1.symbol.type == RellParser.RULE_ID) {
-                            fieldName = idTokenToName(tn1)
-                        }
-                    }
-                    // Match grammar.kt: doc-comment attaches only when the field has a name.
-                    val fieldComment = if (fieldName != null) {
-                        docCommentForToken((children[idx - 2] as TerminalNode).symbol)
-                    } else null
-                    fields.add(S_GenericTupleAttr(fieldName, toType(cur as RellParser.TypeContext), fieldComment))
-                    idx++
-                }
-                val singleField = getTupleSingleField(fields, trailingComma)
-                singleField ?: S_TupleType(ctx.start.toPos(), fields.toImmList())
+                // '(' (RULE_ID ':')? type (',' (RULE_ID ':')? type)* ','? ')'
+                val fields = parseTupleFields(ctx, ":") { toType(it as RellParser.TypeContext) }
+                fields.singleField ?: S_TupleType(ctx.start.toPos(), fields.list)
             }
             is RellParser.VirtualTypeContext -> {
                 val kwTok = ctx.start
@@ -791,38 +780,16 @@ class RellAntlrVisitor(
                     else -> { i++; continue }
                 }
             }
-            // cur is an ExpressionContext.
-            // Look back for `('.'? RULE_ID assignOp)?`.
-            var nameTok: TerminalNode? = null
-            var opTok: TerminalNode? = null
-            // Walk backward from i-1 to either ',' or '(' to find the prefix tokens.
-            var j = i - 1
-            val prefixTokens = mutableListOf<TerminalNode>()
-            while (j > updateTargetIdx) {
-                val pc = children[j]
-                if (pc is TerminalNode && (pc.text == "," || pc.text == "(")) break
-                if (pc is TerminalNode) prefixTokens.add(0, pc)
-                else break
-                j--
-            }
-            // Patterns:
-            //  []                     -> no name
-            //  [ID, op]               -> name=ID
-            //  [., ID, op]            -> name=ID (dot prefix ignored for AST)
-            if (prefixTokens.size >= 2) {
-                val maybeOp = prefixTokens.last()
-                val maybeId = prefixTokens[prefixTokens.size - 2]
-                if (maybeOp.text in ASSIGN_OP_TEXTS && maybeId.symbol.type == RellParser.RULE_ID) {
-                    nameTok = maybeId
-                    opTok = maybeOp
-                }
-            }
+            // cur is an ExpressionContext, optionally preceded by `'.'? RULE_ID assignOp`
+            // (the '.' prefix is not represented in the AST).
+            val nameTok = precedingNameToken(children, i) { it in ASSIGN_OP_TEXTS }
             val expr = toExpression(cur as RellParser.ExpressionContext)
             val item = if (nameTok == null) {
                 S_UpdateWhat(expr.startPos, null, null, expr)
             } else {
                 val sName = idTokenToName(nameTok)
-                S_UpdateWhat(sName.pos, sName, assignOpCode(opTok!!.text), expr)
+                val opTok = children[i - 1] as TerminalNode
+                S_UpdateWhat(sName.pos, sName, assignOpCode(opTok.text), expr)
             }
             items.add(item)
             i++
@@ -865,19 +832,10 @@ class RellAntlrVisitor(
         for (qnCtx in qNames) {
             // Find this qnCtx's index in children, look back at preceding terminals for alias.
             val idxInChildren = ctx.children.indexOf(qnCtx)
-            var alias: S_Name? = null
-            var aliasTok: Token? = null
-            if (idxInChildren >= 2) {
-                val tn1 = ctx.children[idxInChildren - 2]
-                val tn0 = ctx.children[idxInChildren - 1]
-                if (tn1 is TerminalNode && tn0 is TerminalNode && tn0.text == ":"
-                    && tn1.symbol.type == RellParser.RULE_ID) {
-                    alias = idTokenToName(tn1)
-                    aliasTok = tn1.symbol
-                }
-            }
+            val aliasTok = precedingNameToken(ctx.children, idxInChildren) { it == ":" }
+            val alias = aliasTok?.let { idTokenToName(it) }
             // Match grammar.kt: comment only when alias is present.
-            val itemComment = aliasTok?.let { docCommentForToken(it) }
+            val itemComment = aliasTok?.let { docCommentForToken(it.symbol) }
             items.add(S_UpdateFromItem(alias, toQualifiedName(qnCtx), itemComment))
         }
         return items.toImmList()
@@ -989,7 +947,7 @@ class RellAntlrVisitor(
             // TerminalNode; synthesize a placeholder S_NameExpr in those cases.
             if (i >= children.size) {
                 val pos = ctx.start?.toPos() ?: errorPos()
-                operands.add(S_NameExpr(S_QualifiedName(immListOf(S_Name(pos, PLACEHOLDER_NAME)))))
+                operands.add(placeholderNameExpr(pos))
                 break
             }
             val opCtx = children[i]
@@ -1006,7 +964,7 @@ class RellAntlrVisitor(
                         ?: (opCtx as? ParserRuleContext)?.start?.toPos()
                         ?: ctx.start?.toPos()
                         ?: errorPos()
-                    S_NameExpr(S_QualifiedName(immListOf(S_Name(pos, PLACEHOLDER_NAME))))
+                    placeholderNameExpr(pos)
                 }
             }
             // Apply prefix operators (right-to-left): outermost first.
@@ -1167,31 +1125,11 @@ class RellAntlrVisitor(
             is RellParser.NameExprContext -> S_NameExpr(toQualifiedName(ctx.qualifiedName()))
             is RellParser.DollarExprContext -> S_DollarExpr(ctx.start.toPos())
             is RellParser.AttrExprContext -> S_AttrExpr(ctx.start.toPos(), idTokenToName(ctx.RULE_ID()))
-            is RellParser.IntExprContext -> {
-                val tk = ctx.RULE_NUMBER()
-                val pos = tk.symbol.toPos()
-                S_IntegerLiteralExpr(pos, RellTokenizer.decodeInteger(pos, tk.text))
-            }
-            is RellParser.BigIntExprContext -> {
-                val tk = ctx.RULE_BIG_INTEGER()
-                val pos = tk.symbol.toPos()
-                S_CommonLiteralExpr(pos, RellTokenizer.decodeBigInteger(pos, tk.text))
-            }
-            is RellParser.DecimalExprContext -> {
-                val tk = ctx.RULE_DECIMAL()
-                val pos = tk.symbol.toPos()
-                S_CommonLiteralExpr(pos, RellTokenizer.decodeDecimal(pos, tk.text))
-            }
-            is RellParser.StringExprContext -> {
-                val tk = ctx.RULE_STRING()
-                val pos = tk.symbol.toPos()
-                S_StringLiteralExpr(pos, decodeStringTokenText(pos, tk.text))
-            }
-            is RellParser.BytesExprContext -> {
-                val tk = ctx.children.first { it is TerminalNode } as TerminalNode
-                val pos = tk.symbol.toPos()
-                S_ByteArrayLiteralExpr(pos, RellTokenizer.decodeByteArray(pos, decodeBytesTokenText(tk.text)))
-            }
+            is RellParser.IntExprContext -> integerLiteral(ctx.RULE_NUMBER())
+            is RellParser.BigIntExprContext -> bigIntegerLiteral(ctx.RULE_BIG_INTEGER())
+            is RellParser.DecimalExprContext -> decimalLiteral(ctx.RULE_DECIMAL())
+            is RellParser.StringExprContext -> stringLiteral(ctx.RULE_STRING())
+            is RellParser.BytesExprContext -> byteArrayLiteral(ctx.children.first { it is TerminalNode } as TerminalNode)
             is RellParser.TrueExprContext -> S_BooleanLiteralExpr(ctx.start.toPos(), true)
             is RellParser.FalseExprContext -> S_BooleanLiteralExpr(ctx.start.toPos(), false)
             is RellParser.NullExprContext -> S_NullLiteralExpr(ctx.start.toPos())
@@ -1224,129 +1162,22 @@ class RellAntlrVisitor(
     }
 
     private fun toTupleHead(ctx: RellParser.TupleHeadContext): S_Expr = withCtx(ctx) {
-        // Walk children, gathering optional `RULE_ID '='` followed by expression.
-        val fields = mutableListOf<S_GenericTupleAttr<S_Expr>>()
-        val children = ctx.children
-        var i = 1 // skip '('
-        var trailingComma = false
-        while (i < children.size) {
-            val ch = children[i]
-            if (ch is TerminalNode) {
-                when (ch.text) {
-                    ")" -> break
-                    "," -> {
-                        if (i + 1 < children.size && children[i + 1] is TerminalNode
-                            && (children[i + 1] as TerminalNode).text == ")") {
-                            trailingComma = true
-                        }
-                        i++
-                    }
-                    else -> i++
-                }
-                continue
-            }
-            // Expression context — preceded by optional (RULE_ID '=').
-            var fieldName: S_Name? = null
-            if (i >= 2) {
-                val tn1 = children[i - 2]
-                val tn0 = children[i - 1]
-                if (tn1 is TerminalNode && tn0 is TerminalNode && tn0.text == "="
-                    && tn1.symbol.type == RellParser.RULE_ID) {
-                    fieldName = idTokenToName(tn1)
-                }
-            }
-            // Match grammar.kt: doc-comment attaches only when the field has a name.
-            val fieldComment = if (fieldName != null) {
-                docCommentForToken((children[i - 2] as TerminalNode).symbol)
-            } else null
-            fields.add(S_GenericTupleAttr(fieldName, toExpression(ch as RellParser.ExpressionContext), fieldComment))
-            i++
-        }
-        val singleField = getTupleSingleField(fields, trailingComma)
+        // '(' (RULE_ID '=')? expression (',' (RULE_ID '=')? expression)* ','? ')'
+        val fields = parseTupleFields(ctx, "=") { toExpression(it as RellParser.ExpressionContext) }
+        val singleField = fields.singleField
         return if (singleField != null) S_ParenthesesExpr(ctx.start.toPos(), singleField)
-        else S_TupleExpr(ctx.start.toPos(), fields.toImmList())
+        else S_TupleExpr(ctx.start.toPos(), fields.list)
     }
 
     private fun toCreateExpr(ctx: RellParser.CreateExprContext): S_Expr = withCtx(ctx) {
         val kwTok = ctx.start
         val qName = toQualifiedName(ctx.qualifiedName())
-        // args: each `(('.'? RULE_ID '=')? ('*' | expression))`
+        // The argument list's '(' is the first one after the qualifiedName.
         val children = ctx.children
-        val args = mutableListOf<S_CallArgument>()
-        // Find opening '(' of args (after qualifiedName).
-        val qnIdx = children.indexOfFirst { it is RellParser.QualifiedNameContext }
-        var i = qnIdx + 1
-        while (i < children.size && !(children[i] is TerminalNode && (children[i] as TerminalNode).text == "(")) i++
-        val lpar = children[i] as TerminalNode
-        i++
-        var rparPos = lpar.symbol.toPos()
-        while (i < children.size) {
-            val ch = children[i]
-            if (ch is TerminalNode) {
-                when (ch.text) {
-                    ")" -> { rparPos = ch.symbol.toPos(); break }
-                    "," -> { i++; continue }
-                    else -> { i++; continue }
-                }
-            }
-            // Determine arg name and value.
-            var argName: S_Name? = null
-            // Look back for `('.'? RULE_ID '=')?`
-            if (i >= 2) {
-                val tn0 = children[i - 1]
-                val tn1 = children[i - 2]
-                if (tn0 is TerminalNode && tn0.text == "=" && tn1 is TerminalNode
-                    && tn1.symbol.type == RellParser.RULE_ID) {
-                    argName = idTokenToName(tn1)
-                }
-            }
-            val value = if (ch is RellParser.ExpressionContext) {
-                S_CallArgumentValue_Expr(toExpression(ch))
-            } else {
-                error("create arg: unexpected child ${ch.javaClass.simpleName}")
-            }
-            args.add(S_CallArgument(argName, value))
-            i++
-        }
-        // Handle '*' wildcard args: those appear as TerminalNodes in children, not Expression.
-        // We need a unified pass — redo, walking and tracking name+value per arg.
-        // To keep things consistent, redo from scratch:
-        args.clear()
-        i = qnIdx + 1
-        while (i < children.size && !(children[i] is TerminalNode && (children[i] as TerminalNode).text == "(")) i++
-        i++ // past '('
-        while (i < children.size) {
-            val cur = children[i]
-            if (cur is TerminalNode && cur.text == ")") { rparPos = cur.symbol.toPos(); break }
-            if (cur is TerminalNode && cur.text == ",") { i++; continue }
-            // Try to read `('.'? RULE_ID '=')?` then `('*' | expression)`.
-            var argName: S_Name? = null
-            // Skip optional '.'
-            var j = i
-            if (j < children.size && children[j] is TerminalNode && (children[j] as TerminalNode).text == ".") j++
-            // optional RULE_ID '='
-            if (j + 1 < children.size && children[j] is TerminalNode
-                && (children[j] as TerminalNode).symbol.type == RellParser.RULE_ID
-                && children[j + 1] is TerminalNode
-                && (children[j + 1] as TerminalNode).text == "="
-            ) {
-                argName = idTokenToName(children[j] as TerminalNode)
-                j += 2
-            }
-            // value
-            require(j < children.size) { "create arg: missing value" }
-            val argValue: S_CallArgumentValue = when (val valChild = children[j]) {
-                is TerminalNode -> {
-                    require(valChild.text == "*") { "create arg: unexpected terminal ${valChild.text}" }
-                    S_CallArgumentValue_Wildcard(valChild.symbol.toPos())
-                }
-                is RellParser.ExpressionContext -> S_CallArgumentValue_Expr(toExpression(valChild))
-                else -> error("create arg: unexpected ${valChild.javaClass.simpleName}")
-            }
-            args.add(S_CallArgument(argName, argValue))
-            i = j + 1
-        }
-        return S_CreateExpr(kwTok.toPos(), qName, args.toImmList(), S_PosRange(lpar.symbol.toPos(), rparPos))
+        var lparIdx = children.indexOfFirst { it is RellParser.QualifiedNameContext } + 1
+        while (lparIdx < children.size && (children[lparIdx] as? TerminalNode)?.text != "(") lparIdx++
+        val args = parseCallArguments(children, lparIdx)
+        return S_CreateExpr(kwTok.toPos(), qName, args.list, args.posRange)
     }
 
     private fun toGenericTypeExpr(ctx: RellParser.GenericTypeExprContext): S_Expr = withCtx(ctx) {
@@ -1405,38 +1236,46 @@ class RellAntlrVisitor(
 
     private fun toCallArgs(ctx: RellParser.CallArgsContext): S_CallArguments = withCtx(ctx) {
         // callArgs: '(' (((RULE_ID '=')? ('*' | expression)) (',' ...)* ','?)? ')'
-        val children = ctx.children
+        return parseCallArguments(ctx.children, 0)
+    }
+
+    /**
+     * Parses a parenthesised, comma-separated argument list `('.'? RULE_ID '=')? ('*' | expression)`
+     * whose `'('` sits at [lparIdx]. Shared by `callArgs` and the `create(...)` argument list; only
+     * the latter allows the leading `'.'`.
+     */
+    private fun parseCallArguments(children: List<ParseTree>, lparIdx: Int): S_CallArguments {
+        val lparPos = (children[lparIdx] as TerminalNode).symbol.toPos()
+        var rparPos = lparPos
         val args = mutableListOf<S_CallArgument>()
-        val lpar = children[0] as TerminalNode
-        var i = 1
-        var rparPos = lpar.symbol.toPos()
+        var i = lparIdx + 1
         while (i < children.size) {
             val cur = children[i]
             if (cur is TerminalNode && cur.text == ")") { rparPos = cur.symbol.toPos(); break }
             if (cur is TerminalNode && cur.text == ",") { i++; continue }
-            var argName: S_Name? = null
             var j = i
-            // optional RULE_ID '='
-            if (j + 1 < children.size && children[j] is TerminalNode
-                && (children[j] as TerminalNode).symbol.type == RellParser.RULE_ID
-                && children[j + 1] is TerminalNode
-                && (children[j + 1] as TerminalNode).text == "="
+            if ((children[j] as? TerminalNode)?.text == ".") j++
+            var argName: S_Name? = null
+            val nameTok = children.getOrNull(j) as? TerminalNode
+            if (nameTok != null && nameTok.symbol.type == RellParser.RULE_ID
+                && (children.getOrNull(j + 1) as? TerminalNode)?.text == "="
             ) {
-                argName = idTokenToName(children[j] as TerminalNode)
+                argName = idTokenToName(nameTok)
                 j += 2
             }
+            require(j < children.size) { "call arg: missing value" }
             val argValue: S_CallArgumentValue = when (val valChild = children[j]) {
                 is TerminalNode -> {
-                    require(valChild.text == "*") { "callArg: unexpected terminal ${valChild.text}" }
+                    require(valChild.text == "*") { "call arg: unexpected terminal ${valChild.text}" }
                     S_CallArgumentValue_Wildcard(valChild.symbol.toPos())
                 }
                 is RellParser.ExpressionContext -> S_CallArgumentValue_Expr(toExpression(valChild))
-                else -> error("callArg: unexpected ${valChild.javaClass.simpleName}")
+                else -> error("call arg: unexpected ${valChild.javaClass.simpleName}")
             }
             args.add(S_CallArgument(argName, argValue))
             i = j + 1
         }
-        return S_CallArguments(args.toImmList(), S_PosRange(lpar.symbol.toPos(), rparPos))
+        return S_CallArguments(args.toImmList(), S_PosRange(lparPos, rparPos))
     }
 
     private fun toAtCardinality(ctx: RellParser.AtExprAtContext): S_PosValue<AtCardinality> = withCtx(ctx) {
@@ -1482,51 +1321,9 @@ class RellAntlrVisitor(
     private fun parseAtExprWhatComplexFields(
         ctx: RellParser.AtExprWhatComplexContext,
     ): List<S_AtExprWhatComplexField> {
-        // Children: '(' (annotation* (RULE_ID '=')? expression) (',' annotation* (RULE_ID '=')? expression)* ','? ')'
-        val children = ctx.children
-        val fields = mutableListOf<S_AtExprWhatComplexField>()
-        var i = 1 // skip '('
-        while (i < children.size) {
-            val cur = children[i]
-            // Skip separators / closing paren. Other terminals (RULE_ID for explicit field name) fall through.
-            if (cur is TerminalNode) {
-                if (cur.text == ")") break
-                if (cur.text == ",") { i++; continue }
-            }
-            // Collect annotations until RULE_ID '=' or expression
-            val anns = mutableListOf<S_Annotation>()
-            var j = i
-            while (j < children.size && children[j] is RellParser.AnnotationContext) {
-                anns.add(toAnnotation(children[j] as RellParser.AnnotationContext))
-                j++
-            }
-            // optional RULE_ID '='
-            var attrName: S_Name? = null
-            var attrNameTokIdx = -1
-            if (j + 1 < children.size && children[j] is TerminalNode
-                && (children[j] as TerminalNode).symbol.type == RellParser.RULE_ID
-                && children[j + 1] is TerminalNode
-                && (children[j + 1] as TerminalNode).text == "="
-            ) {
-                attrNameTokIdx = j
-                attrName = idTokenToName(children[j] as TerminalNode)
-                j += 2
-            }
-            // expression
-            val exprCtx = children[j] as RellParser.ExpressionContext
-            val expr = toExpression(exprCtx)
-            val sMods = if (anns.isEmpty()) S_Modifiers() else S_Modifiers(anns.toImmList())
-            // Match grammar.kt: doc-comment from the first annotation or the name token (none if neither).
-            val firstTok: Token? = when {
-                anns.isNotEmpty() -> (children[i] as RellParser.AnnotationContext).start
-                attrNameTokIdx >= 0 -> (children[attrNameTokIdx] as TerminalNode).symbol
-                else -> null
-            }
-            val fieldComment = firstTok?.let { docCommentForToken(it) }
-            fields.add(S_AtExprWhatComplexField(attrName, expr, sMods, null, fieldComment))
-            i = j + 1
+        return parseAnnotatedItems(ctx, "=").map {
+            S_AtExprWhatComplexField(it.name, it.expr, it.modifiers, null, it.comment)
         }
-        return fields
     }
 
     private fun toAtExprModifiers(ctx: RellParser.AtExprModifiersContext): Pair<S_Expr?, S_Expr?> = withCtx(ctx) {
@@ -1557,19 +1354,41 @@ class RellAntlrVisitor(
     }
 
     private fun parseAtExprFromItems(ctx: RellParser.AtExprContext): List<S_AtExprFromItem> = withCtx(ctx) {
-        // Children: '(' (annotation* (RULE_ID ':')? expression) (',' annotation* (RULE_ID ':')? expression)* ','? ')'
-        // followed by atExprAt atExprWhere atExprWhat? atExprModifiers?
+        val items = parseAnnotatedItems(ctx, ":").map { S_AtExprFromItem(it.modifiers, it.name, it.expr, it.comment) }
+        if (items.isNotEmpty()) return items
+        // Error-recovery path: ANTLR may produce an `AtExprContext` whose `(...)` parens are
+        // empty (or contain only synthesized error tokens). Synthesize a placeholder item so
+        // `parseWithErrors` can return a usable partial AST instead of throwing.
+        val pos = ctx.start?.toPos() ?: errorPos()
+        return immListOf(S_AtExprFromItem(S_Modifiers(), null, placeholderNameExpr(pos), null))
+    }
+
+    /** One `annotation* (RULE_ID <sep>)? expression` item parsed by [parseAnnotatedItems]. */
+    private class AnnotatedItem(
+        val modifiers: S_Modifiers,
+        val name: S_Name?,
+        val expr: S_Expr,
+        val comment: S_Comment?,
+    )
+
+    /**
+     * Walks a parenthesised comma-separated list of `annotation* (RULE_ID nameSep)? expression`
+     * items: at-expression `from` items (`nameSep` = ":") and complex `what` fields (`nameSep` = "=").
+     * In the `from` case the list is followed by `atExprAt atExprWhere atExprWhat? atExprModifiers?`,
+     * which the walk stops before.
+     */
+    private fun parseAnnotatedItems(ctx: ParserRuleContext, nameSep: String): List<AnnotatedItem> {
         val children = ctx.children
-        val items = mutableListOf<S_AtExprFromItem>()
+        val items = mutableListOf<AnnotatedItem>()
         var i = 1 // skip '('
         while (i < children.size) {
             val cur = children[i]
-            // Skip separators / closing paren. Other terminals (RULE_ID for alias) fall through.
+            // Skip separators / closing paren. Other terminals (the item's name) fall through.
             if (cur is TerminalNode) {
                 if (cur.text == ")") break
                 if (cur.text == ",") { i++; continue }
             }
-            // Past the atExpr's `)`: subsequent children belong to the at-tail (atExprAt etc.) — bail.
+            // Past the at-expr's `)`: subsequent children belong to the at-tail — bail.
             if (cur is RellParser.AtExprAtContext) break
             val anns = mutableListOf<S_Annotation>()
             var j = i
@@ -1577,37 +1396,26 @@ class RellAntlrVisitor(
                 anns.add(toAnnotation(children[j] as RellParser.AnnotationContext))
                 j++
             }
-            var alias: S_Name? = null
-            var aliasTokIdx = -1
-            if (j + 1 < children.size && children[j] is TerminalNode
-                && (children[j] as TerminalNode).symbol.type == RellParser.RULE_ID
-                && children[j + 1] is TerminalNode
-                && (children[j + 1] as TerminalNode).text == ":"
+            var name: S_Name? = null
+            var nameTokIdx = -1
+            val nameTok = children.getOrNull(j) as? TerminalNode
+            if (nameTok != null && nameTok.symbol.type == RellParser.RULE_ID
+                && (children.getOrNull(j + 1) as? TerminalNode)?.text == nameSep
             ) {
-                aliasTokIdx = j
-                alias = idTokenToName(children[j] as TerminalNode)
+                nameTokIdx = j
+                name = idTokenToName(nameTok)
                 j += 2
             }
-            val exprCtx = children[j] as RellParser.ExpressionContext
-            val expr = toExpression(exprCtx)
-            val sMods = if (anns.isEmpty()) S_Modifiers() else S_Modifiers(anns.toImmList())
-            // Match grammar.kt: comment from first annotation or alias token (none if neither).
+            val expr = toExpression(children[j] as RellParser.ExpressionContext)
+            val mods = if (anns.isEmpty()) S_Modifiers() else S_Modifiers(anns.toImmList())
+            // Match grammar.kt: comment from the first annotation or the name token (none if neither).
             val firstTok: Token? = when {
                 anns.isNotEmpty() -> (children[i] as RellParser.AnnotationContext).start
-                aliasTokIdx >= 0 -> (children[aliasTokIdx] as TerminalNode).symbol
+                nameTokIdx >= 0 -> (children[nameTokIdx] as TerminalNode).symbol
                 else -> null
             }
-            val itemComment = firstTok?.let { docCommentForToken(it) }
-            items.add(S_AtExprFromItem(sMods, alias, expr, itemComment))
+            items.add(AnnotatedItem(mods, name, expr, firstTok?.let { docCommentForToken(it) }))
             i = j + 1
-        }
-        if (items.isEmpty()) {
-            // Error-recovery path: ANTLR may produce an `AtExprContext` whose `(...)` parens are
-            // empty (or contain only synthesized error tokens). Synthesize a placeholder item so
-            // `parseWithErrors` can return a usable partial AST instead of throwing.
-            val pos = ctx.start?.toPos() ?: errorPos()
-            val placeholder = S_NameExpr(S_QualifiedName(immListOf(S_Name(pos, PLACEHOLDER_NAME))))
-            items.add(S_AtExprFromItem(S_Modifiers(), null, placeholder, null))
         }
         return items
     }
@@ -1622,7 +1430,7 @@ class RellAntlrVisitor(
             // Synthesize a single placeholder S_Name so downstream code has something to
             // anchor on instead of crashing on an empty parts list.
             val pos = ctx.start?.toPos() ?: errorPos()
-            return S_QualifiedName(immListOf(S_Name(pos, PLACEHOLDER_NAME)))
+            return placeholderName(pos)
         }
         val parts = ids.map { idTokenToName(it) }.toImmList()
         return S_QualifiedName(parts)
@@ -1635,7 +1443,7 @@ class RellAntlrVisitor(
     ): S_QualifiedName {
         if (ctx != null) return toQualifiedName(ctx)
         val pos = anchor.start?.toPos() ?: errorPos()
-        return S_QualifiedName(immListOf(S_Name(pos, PLACEHOLDER_NAME)))
+        return placeholderName(pos)
     }
 
     private fun errorPos(): S_Pos {
@@ -1698,13 +1506,87 @@ class RellAntlrVisitor(
         else -> error("unknown assign op: $text")
     }
 
-    private fun <T> getTupleSingleField(items: List<S_GenericTupleAttr<T>>, trailingComma: Boolean): T? {
-        if (items.size != 1) return null
-        if (trailingComma) return null
-        val first = items[0]
-        if (first.name != null) return null
-        return first.value
+    /** Fields of a parenthesised tuple-like list, as produced by [parseTupleFields]. */
+    private class TupleFields<T>(val list: ImmList<S_GenericTupleAttr<T>>, trailingComma: Boolean) {
+        /** The sole unnamed field of a list without a trailing comma — parentheses rather than a tuple. */
+        val singleField: T? = list.singleOrNull()?.takeIf { !trailingComma && it.name == null }?.value
     }
+
+    /**
+     * Walks the children of a parenthesised comma-separated list of `(RULE_ID nameSep)? element`
+     * items, in declaration order. Shared by tuple types (`nameSep` = ":", elements are types) and
+     * tuple expressions (`nameSep` = "=", elements are expressions).
+     */
+    private fun <T> parseTupleFields(
+        ctx: ParserRuleContext,
+        nameSep: String,
+        convert: (ParserRuleContext) -> T,
+    ): TupleFields<T> {
+        val children = ctx.children
+        val fields = mutableListOf<S_GenericTupleAttr<T>>()
+        var trailingComma = false
+        var i = 1 // skip '('
+        while (i < children.size) {
+            val cur = children[i]
+            if (cur is TerminalNode) {
+                if (cur.text == ")") break
+                if (cur.text == ",") {
+                    trailingComma = (children.getOrNull(i + 1) as? TerminalNode)?.text == ")"
+                }
+                i++
+                continue
+            }
+            val nameTok = precedingNameToken(children, i) { it == nameSep }
+            val fieldName = nameTok?.let { idTokenToName(it) }
+            // Match grammar.kt: doc-comment attaches only when the field has a name.
+            val fieldComment = nameTok?.let { docCommentForToken(it.symbol) }
+            fields.add(S_GenericTupleAttr(fieldName, convert(cur as ParserRuleContext), fieldComment))
+            i++
+        }
+        return TupleFields(fields.toImmList(), trailingComma)
+    }
+
+    /**
+     * The `RULE_ID` of a `RULE_ID <separator>` prefix immediately preceding `children[idx]`, or null
+     * when the item at [idx] is unnamed. [sepMatches] tests the separator's text.
+     */
+    private fun precedingNameToken(children: List<ParseTree>, idx: Int, sepMatches: (String) -> Boolean): TerminalNode? {
+        if (idx < 2) return null
+        val nameTok = children[idx - 2] as? TerminalNode ?: return null
+        val sepTok = children[idx - 1] as? TerminalNode ?: return null
+        if (nameTok.symbol.type != RellParser.RULE_ID || !sepMatches(sepTok.text)) return null
+        return nameTok
+    }
+
+    private fun integerLiteral(tk: TerminalNode): S_LiteralExpr {
+        val pos = tk.symbol.toPos()
+        return S_IntegerLiteralExpr(pos, RellTokenizer.decodeInteger(pos, tk.text))
+    }
+
+    private fun bigIntegerLiteral(tk: TerminalNode): S_LiteralExpr {
+        val pos = tk.symbol.toPos()
+        return S_CommonLiteralExpr(pos, RellTokenizer.decodeBigInteger(pos, tk.text))
+    }
+
+    private fun decimalLiteral(tk: TerminalNode): S_LiteralExpr {
+        val pos = tk.symbol.toPos()
+        return S_CommonLiteralExpr(pos, RellTokenizer.decodeDecimal(pos, tk.text))
+    }
+
+    private fun stringLiteral(tk: TerminalNode): S_LiteralExpr {
+        val pos = tk.symbol.toPos()
+        return S_StringLiteralExpr(pos, decodeStringTokenText(pos, tk.text))
+    }
+
+    private fun byteArrayLiteral(tk: TerminalNode): S_LiteralExpr {
+        val pos = tk.symbol.toPos()
+        return S_ByteArrayLiteralExpr(pos, RellTokenizer.decodeByteArray(pos, decodeBytesTokenText(tk.text)))
+    }
+
+    /** Single-part qualified name used wherever ANTLR error recovery dropped a real name. */
+    private fun placeholderName(pos: S_Pos): S_QualifiedName = S_QualifiedName(immListOf(S_Name(pos, PLACEHOLDER_NAME)))
+
+    private fun placeholderNameExpr(pos: S_Pos): S_Expr = S_NameExpr(placeholderName(pos))
 
     /**
      * Decode an ANTLR RULE_STRING token. ANTLR captures the raw source text including quotes and

@@ -110,7 +110,7 @@ internal class RellApiRunTestsOnSqlTest: BaseRellApiRunTestsTest() {
                 module;
                 entity data { key k: integer; }
                 operation new_data(n: integer) {
-                    create data(range(n) @*{} (struct<data>(${'$'}*100)));
+                    create data(range(n) @*{} (struct<data>($*100)));
                 }
             """,
             "test.rell" to """

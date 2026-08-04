@@ -158,18 +158,20 @@ internal fun getNameRegion(node: S_Node): Range {
     val attachment = node.attachment as AntlrRellNodeAttachment
     val nodeLength = attachment.node.text.length
     val startPos = Position(attachment.node.start.line - 1, attachment.node.start.charPositionInLine)
-    val endPos = if (attachment.node.start.line == attachment.node.stop.line &&
-        attachment.node.start.charPositionInLine == attachment.node.stop.charPositionInLine
-    ) {
-        Position(attachment.node.stop.line - 1, attachment.node.stop.charPositionInLine + nodeLength)
-    } else if (attachment.node.start.line == attachment.node.stop.line) {
-        Position(attachment.node.stop.line - 1, attachment.node.stop.charPositionInLine)
-    } else {
-        // A synthesized name (unnamed definition under error recovery) is attached to the whole
-        // multi-line context - collapse the selection range to the first token so it stays
-        // within one line and inside the full region.
-        val start = attachment.node.start
-        Position(start.line - 1, start.charPositionInLine + (start.text?.length ?: 1))
+
+    val endPos = when (attachment.node.start.line) {
+        attachment.node.stop.line if attachment.node.start.charPositionInLine == attachment.node.stop.charPositionInLine
+            -> Position(attachment.node.stop.line - 1, attachment.node.stop.charPositionInLine + nodeLength)
+
+        attachment.node.stop.line -> Position(attachment.node.stop.line - 1, attachment.node.stop.charPositionInLine)
+
+        else -> {
+            // A synthesized name (unnamed definition under error recovery) is attached to the whole
+            // multi-line context - collapse the selection range to the first token so it stays
+            // within one line and inside the full region.
+            val start = attachment.node.start
+            Position(start.line - 1, start.charPositionInLine + (start.text?.length ?: 1))
+        }
     }
 
     return Range(startPos, endPos)

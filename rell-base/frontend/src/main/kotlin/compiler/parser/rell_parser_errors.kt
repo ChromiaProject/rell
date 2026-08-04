@@ -6,11 +6,7 @@ package net.postchain.rell.base.compiler.parser
 
 import net.postchain.rell.base.compiler.parser.antlr.RellLexer
 import net.postchain.rell.base.compiler.parser.antlr.RellParser
-import org.antlr.v4.runtime.DefaultErrorStrategy
-import org.antlr.v4.runtime.InputMismatchException
-import org.antlr.v4.runtime.NoViableAltException
-import org.antlr.v4.runtime.Parser
-import org.antlr.v4.runtime.Token
+import org.antlr.v4.runtime.*
 import org.antlr.v4.runtime.misc.IntervalSet
 
 /**
