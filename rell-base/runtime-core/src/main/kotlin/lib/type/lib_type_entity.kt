@@ -280,7 +280,8 @@ private object EntityUtils {
         val res = dbExpr as? Db_TableExpr
         if (res == null) {
             ctx.msgCtx.error(attrPos, "expr:entity_attr:no_table:${attrRef.attrName}",
-                "Cannot access attribute '${attrRef.attrName}'")
+                "Cannot access attribute '${attrRef.attrName}': an attribute can only be accessed on " +
+                        "an entity of the at-expression or an entity linked to it by attributes")
         }
         return res
     }

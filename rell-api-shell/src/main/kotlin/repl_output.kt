@@ -41,6 +41,11 @@ private object CliReplOutputChannel: ReplOutputChannel {
     }
 
     override fun printPlatformRuntimeError(e: Throwable) {
+        if (e is StackOverflowError) {
+            println("Run-time error: Call stack too deep: possible infinite recursion")
+            return
+        }
+
         val s = e.stackTraceToString().trim()
         println("Run-time error: $s")
     }

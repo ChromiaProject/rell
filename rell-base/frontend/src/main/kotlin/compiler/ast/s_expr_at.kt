@@ -169,7 +169,8 @@ internal class S_AtExprFromItem(
         val isJoin = isDb == true
         val outerPos = modOuter.pos()
         if (outerPos != null && !isJoin) {
-            ctx.msgCtx.error(outerPos, "expr:at:from:bad_outer_join", "Invalid outer join expression")
+            ctx.msgCtx.error(outerPos, "expr:at:from:bad_outer_join",
+                "Annotation @outer is allowed only after the first from-expression of a database at-expression")
         }
 
         val outerJoinPos = if (isJoin) outerPos else null

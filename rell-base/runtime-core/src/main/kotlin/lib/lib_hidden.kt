@@ -148,7 +148,8 @@ private object C_SysFn_GetNulled: C_SpecialLibGlobalFunctionBody() {
 
         val varKey = vArg.varKey()
         if (varKey == null) {
-            ctx.msgCtx.error(name.pos, "lib:$name:no_var_key", "No variable state key")
+            ctx.msgCtx.error(name.pos, "lib:$name:no_var_key",
+                "Argument must be a variable, parameter or constant, or an attribute or field of one")
             return C_ExprUtils.errorVExpr(ctx, name.pos)
         }
 

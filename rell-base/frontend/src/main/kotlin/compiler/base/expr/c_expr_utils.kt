@@ -33,14 +33,13 @@ object C_ExprUtils {
         }
     }
 
-    fun makeDbBinaryExpr(type: R_Type, rOp: R_BinaryOp, dbOp: Db_BinaryOp, left: Db_Expr, right: Db_Expr): Db_Expr {
-        return if (left is Db_InterpretedExpr && right is Db_InterpretedExpr) {
+    fun makeDbBinaryExpr(type: R_Type, rOp: R_BinaryOp, dbOp: Db_BinaryOp, left: Db_Expr, right: Db_Expr): Db_Expr =
+        if (left is Db_InterpretedExpr && right is Db_InterpretedExpr) {
             val rExpr = R_BinaryExpr(type, rOp, left.expr, right.expr, errPos = null)
             Db_InterpretedExpr(rExpr)
         } else {
             Db_BinaryExpr(type, dbOp, left, right)
         }
-    }
 
     fun makeDbBinaryExprEq(left: Db_Expr, right: Db_Expr): Db_Expr {
         val nullable = C_Types.isNullOrNullable(left.type) || C_Types.isNullOrNullable(right.type)
@@ -145,8 +144,8 @@ object C_ExprUtils {
         try {
             return code()
         } catch (e: Throwable) {
-            val msg = e.message ?: "Evaluation failed"
-            throw C_Error.stop(pos, "eval_fail:${e.javaClass.simpleName}", msg)
+            val details = e.message?.let { ": $it" } ?: ""
+            throw C_Error.stop(pos, "eval_fail", "Failed to evaluate expression at compile time$details")
         }
     }
 }

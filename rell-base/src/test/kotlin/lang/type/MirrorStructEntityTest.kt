@@ -176,6 +176,14 @@ class MirrorStructEntityTest: BaseRellTest() {
         chk("(user@{}).to_error()", "ct_err:unknown_member:[user]:to_error")
     }
 
+    @Test fun testToStructEntityBadArgsMessage() {
+        initToStructEntity()
+
+        chk("(user@{}).to_struct(123)", "ct_err:expr_call_badargs:[rell.entity_ext(user).to_struct]:[integer]")
+        chkMsg("ERROR|expr_call_badargs:[rell.entity_ext(user).to_struct]:[integer]" +
+                "|Function 'user.to_struct' undefined for arguments (integer)")
+    }
+
     @Test fun testToStructEntityDbExpr() {
         initToStructEntity()
 

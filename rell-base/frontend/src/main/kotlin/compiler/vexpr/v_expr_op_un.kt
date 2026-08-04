@@ -34,6 +34,7 @@ class V_UnaryOp_Minus(resType: R_Type, val rOp: R_UnaryOp, val dbOp: Db_UnaryOp)
         is RR_ConstantValue.Decimal -> RR_ConstantValue.Decimal(java.math.BigDecimal(value.value).negate().toPlainString())
         else -> null
     }
+
     override fun compileR(pos: S_Pos, expr: R_Expr): R_Expr {
         val errPos = pos.toErrorPos()
         return R_UnaryExpr(resType, rOp, expr, errPos)
@@ -65,7 +66,7 @@ class V_UnaryOp_NotNull(resType: R_Type, private val valueName: String?): V_Unar
     }
 
     override fun compileDb(pos: S_Pos, expr: Db_Expr): Db_Expr =
-        throw C_Error.stop(pos, "expr:is_null:nodb", "Not supported for SQL")
+        throw C_Error.stop(pos, "expr:is_null:nodb", "Operator '!!' cannot be converted to SQL")
 }
 
 class V_UnaryOp_IsNull(private val not: Boolean): V_UnaryOp(R_BooleanType) {

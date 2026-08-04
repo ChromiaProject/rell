@@ -169,7 +169,11 @@ class RellTokenizer(version: R_LangVersion = RellVersions.VERSION) {
                 val s = scanStringLiteral(seq)
                 seq.tokenRec(tokens.string, s)
             }
-            else -> throw seq.err("lex:token", "Syntax error")
+
+            else -> {
+                val hex = k.code.toString(16).uppercase().padStart(4, '0')
+                throw seq.err("lex:token", "Invalid character '$k' (U+$hex)")
+            }
         }
     }
 

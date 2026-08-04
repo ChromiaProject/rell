@@ -18,8 +18,10 @@ import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.model.rr.RR_FunctionDefinition
+import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_Interpreter
 import net.postchain.rell.base.runtime.Rt_RellVersion
+import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.*
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -39,6 +41,12 @@ object RellToolsUtils: KLogging() {
         } catch (e: RellCliException) {
             System.err.println("ERROR: ${e.message}")
             exitProcess(2)
+        } catch (e: Rt_Exception) {
+            System.err.println(Rt_Utils.appendStackTrace("ERROR ${e.message}", e.info.stack))
+            exitProcess(1)
+        } catch (_: StackOverflowError) {
+            System.err.println("ERROR: Call stack too deep: possible infinite recursion or too deeply nested code")
+            exitProcess(3)
         } catch (e: Throwable) {
             e.printStackTrace()
             exitProcess(3)

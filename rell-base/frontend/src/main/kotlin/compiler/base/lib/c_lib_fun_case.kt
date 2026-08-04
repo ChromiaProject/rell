@@ -52,9 +52,19 @@ object C_LibFuncCaseUtils {
             if (argName == null) typeStr else "$argName: $typeStr"
         }
 
-        val msg = "Function '$name' undefined for arguments ($argsStr)"
+        val msg = "Function '${nameMsg(name)}' undefined for arguments ($argsStr)"
         msgCtx.error(pos, "expr_call_badargs:[$name]:[$argsStrShort]", msg)
     }
+
+    // A member of a library type extension has an internal name like "rell.entity_ext(user).to_struct",
+    // which cannot be written in Rell code; the user knows it as "user.to_struct".
+    private fun nameMsg(name: String): String {
+        val m = TYPE_EXTENSION_MEMBER_REGEX.matchEntire(name) ?: return name
+        return "${m.groupValues[1]}.${m.groupValues[2]}"
+    }
+
+    private val TYPE_EXTENSION_MEMBER_REGEX =
+        Regex("[A-Za-z_][A-Za-z_0-9]*(?:\\.[A-Za-z_][A-Za-z_0-9]*)*\\((.+)\\)\\.([A-Za-z_][A-Za-z_0-9]*)")
 }
 
 class C_LibFuncCaseCtx(val linkPos: S_Pos, val fullNameLazy: Lazy<String>) {
