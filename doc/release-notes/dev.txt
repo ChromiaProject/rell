@@ -69,3 +69,17 @@ Rell from semantic tokens painted the `@`, the parentheses and the arguments in 
 `@mount('ft4')` the string literal lost its string colour. The annotation's name position now spans just the
 name, and only `mount` is reported as an annotation. Go-to-definition and find-usages ranges anchored at an
 annotation name shrink to the name for the same reason.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Tools: rule_simplify_nullable_if recognizes a positive guard returning early
+
+The inspection only knew the negated guard, if (x == null) return null;, merged into the declaration above it.
+The mirrored shape - a positive guard that returns the checked value, directly followed by the fallback return -
+went unreported:
+
+    if (x != null) return x;
+    return y;
+
+Both statements are now merged into a single return:
+
+    return x ?: y;
