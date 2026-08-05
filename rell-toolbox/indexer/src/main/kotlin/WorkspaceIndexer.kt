@@ -31,7 +31,7 @@ class WorkspaceIndexer(
     private val rellLinter: AbstractRellLinter,
     private val linterOptions: LinterOptions,
     private val formattingStyleLinter: AbstractFormattingStyleLinter,
-    private val formatterOptions: FormatterOptions,
+    val formatterOptions: FormatterOptions,
     val projectRootUri: URI? = null,
     val excludeFolders: Set<Path> = emptySet(),
     /** The settings file governing this index root when it is not a `chromia.yml` found by name. */

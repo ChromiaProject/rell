@@ -124,10 +124,16 @@ class CodeActionServiceTest {
 
     @Test
     fun `should offer no quick fix for a diagnostic-only issue`() {
-        // The issue is reported on this line, but it has no fix, so only the disable actions remain.
+        // The issue is reported on this line, but it has no fix, so only the disable actions remain
+        // (plus the body-conversion rewrite, which is offered anywhere inside a single-return function).
         val titles = codeActionsAt(diagnosticOnlyLine).map { it.title }
+
         assertThat(titles).isEqualTo(
-            listOf(DISABLE_REDUNDANT_COMPARISON_TITLE, CodeActionTitles.DISABLE_LINTER.title)
+            listOf(
+                DISABLE_REDUNDANT_COMPARISON_TITLE,
+                CodeActionTitles.DISABLE_LINTER.title,
+                BodyConversionService.TO_EXPRESSION_TITLE,
+            )
         )
     }
 

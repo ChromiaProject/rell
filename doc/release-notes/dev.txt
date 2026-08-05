@@ -1,1 +1,18 @@
 UNRELEASED NOTES
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Tools: New code actions convert a function or query body between block and expression form
+
+The language server now offers the refactoring pair "Convert to expression body" and "Convert to block
+body" (LSP code actions of kind refactor.rewrite) for the function or query under the cursor, mirroring
+the Kotlin intentions of the same names:
+
+    function f(x: integer): integer {
+        return x + 1;
+    }
+
+converts to
+
+    function f(x: integer): integer = x + 1;
+
+and back.

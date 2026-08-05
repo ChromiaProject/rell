@@ -48,7 +48,12 @@ internal object CodeActionService {
         val resource = indexer.getResource(fileUri) ?: return mutableListOf()
         val linterIssues = findLinterIssuesForRange(range, resource)
         val formatterIssues = findFormatterIssuesForRange(range, resource)
-        return createCodeActions(fileUri, linterIssues, formatterIssues, range)
+
+        val bodyConversions = BodyConversionService
+            .getCodeActions(fileUri, range, resource, indexer.formatterOptions)
+            .map { Either.forRight<Command, CodeAction>(it) }
+
+        return (createCodeActions(fileUri, linterIssues, formatterIssues, range) + bodyConversions)
             .filter { it.isLeft || matchesKindFilter(it.right.kind, only) }
     }
 
