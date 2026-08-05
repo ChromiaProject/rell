@@ -30,7 +30,14 @@ class ModuleDirTest: BaseRellTest() {
         chkFileDirConflict("a/foo.txt", "", "a/foo/sub.rell", "module;", "a.foo", "ct_err:import:not_found:a.foo")
     }
 
-    private fun chkFileDirConflict(path1: String, text1: String, path2: String, text2: String, imp: String, exp: String) {
+    private fun chkFileDirConflict(
+        path1: String,
+        text1: String,
+        path2: String,
+        text2: String,
+        @Suppress("SameParameterValue") imp: String,
+        exp: String
+    ) {
         val c = RellTestContext(useSql = false)
         val t = RellCodeTester(c)
         t.file(path1, text1)

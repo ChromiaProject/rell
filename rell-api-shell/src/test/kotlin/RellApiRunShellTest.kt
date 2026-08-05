@@ -17,6 +17,7 @@ import net.postchain.rell.base.testutils.SqlTestUtils
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.plus
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -273,7 +274,7 @@ internal class RellApiRunShellTest: BaseRellApiTest() {
         )
     }
 
-    private fun chkSingleNoCtx(code: String, expected: String) {
+    private fun chkSingleNoCtx(@Language("Rell") code: String, expected: String) {
         chkShell(C_SourceDir.EMPTY, immListOf(code), expected)
     }
 }

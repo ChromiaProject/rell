@@ -8,6 +8,7 @@ import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
 import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.testutils.unwrap
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -50,7 +51,7 @@ class IdeCompletionNamespaceTest: BaseIdeCompletionTest() {
         chkDefLoc("namespace ns {}", "ns|NAMESPACE|foo.bar:a.b.ns||-|$ns")
     }
 
-    private fun chkDefLoc(code: String, vararg exp: String) {
+    private fun chkDefLoc(@Language("Rell") code: String, vararg exp: String) {
         resetTst()
         file("foo/bar.rell", "module; namespace a.b { $code }")
         chkComps("import foo.bar.{a.b.*};", *exp)
@@ -188,7 +189,7 @@ class IdeCompletionNamespaceTest: BaseIdeCompletionTest() {
     @Test fun testNamespaceComplex() {
         fullCompStr = false
         val code = "val A = 123; ^0 namespace x.y.z ^1 { ^2 val B = 456; ^3 } ^4"
-        val (a, b) = arrayOf("A|CONSTANT|:A", "B|CONSTANT|:x.y.z.B")
+        val (a, _) = arrayOf("A|CONSTANT|:A", "B|CONSTANT|:x.y.z.B")
         chkComps(code, -1, a, "x|NAMESPACE|:x")
         chkComps(code, 0, a, "x|NAMESPACE|:x")
         chkComps(code, 1, a, "x|NAMESPACE|:x")

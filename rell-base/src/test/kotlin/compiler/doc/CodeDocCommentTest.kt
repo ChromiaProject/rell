@@ -5,6 +5,7 @@
 package net.postchain.rell.base.compiler.doc
 
 import net.postchain.rell.base.testutils.unwrap
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -447,7 +448,7 @@ class CodeDocCommentTest: BaseCodeDocTest() {
         chkEntityAttr("entity data { x: integer; y: text; $c4 key y, x; $c3 key x; }", "x" to "DDD", "y" to "DDD")
     }
 
-    private fun chkEntityAttr(code: String, vararg exps: Pair<String, String>) {
+    private fun chkEntityAttr(@Language("Rell") code: String, vararg exps: Pair<String, String>) {
         for ((name, exp) in exps) {
             chkComment(code, ":data.$name", exp)
             chkComment(code.replace("key", "index"), ":data.$name", exp)
@@ -813,7 +814,7 @@ class CodeDocCommentTest: BaseCodeDocTest() {
         }
     }
 
-    private fun chkComment(code: String, name: String, exp: String, vararg warns: String) {
+    private fun chkComment(@Language("Rell") code: String, name: String, exp: String, vararg warns: String) {
         val act = processDocDef(code, name) { def ->
             def.docSymbol.comment?.strCode() ?: "n/a"
         }

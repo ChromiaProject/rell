@@ -2,9 +2,10 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
-package net.postchain.rell.base.lang.def;
+package net.postchain.rell.base.lang.def
 
 import net.postchain.rell.base.testutils.BaseRellTest
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 
 internal class AttributeAnnotationTest: BaseRellTest() {
@@ -306,7 +307,7 @@ internal class AttributeAnnotationTest: BaseRellTest() {
         chkCompile("struct foo { entity x: integer; }", "ct_err:syntax")
     }
 
-    private fun chkCompileDummyWarn(code: String, warningSuffix: String) {
+    private fun chkCompileDummyWarn(@Language("Rell") code: String, warningSuffix: String) {
         val warningPrefix = "param:dummy_annotation:annotation_present:ATTRIBUTE"
         chkCompile(code, "OK")
         chkWarn("$warningPrefix:$warningSuffix")

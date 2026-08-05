@@ -45,7 +45,10 @@ class ObjectTest: BaseRellTest(useSql = true) {
     }
 
     @Test fun testKeyIndex() {
+        //language=TEXT
         chkCompile("object foo { x: integer = 123; key x; }", "ct_err:syntax")
+
+        //language=TEXT
         chkCompile("object foo { x: integer = 123; index x; }", "ct_err:syntax")
     }
 

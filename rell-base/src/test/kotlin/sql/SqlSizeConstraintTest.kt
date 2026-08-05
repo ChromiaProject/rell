@@ -7,6 +7,7 @@ package net.postchain.rell.base.sql
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.sql.SqlUtils.getExistingSizeConstraints
 import net.postchain.rell.base.utils.immMapOf
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -25,7 +26,7 @@ internal class SqlSizeConstraintTest: BaseSqlInitTest() {
             immMapOf("foo" to (11L to 12L), "x" to (3L to null)))
     }
 
-    private fun chkSizeConstraints(defName: String, code: String, expected: Map<String, Pair<Long?, Long?>>) {
+    private fun chkSizeConstraints(defName: String, @Language("Rell") code: String, expected: Map<String, Pair<Long?, Long?>>) {
         tstCtx.sqlMgr().transaction { SqlUtils.dropAll(it, false) }
         chkInit(code)
         val table = "c0.$defName"
@@ -340,6 +341,7 @@ internal class SqlSizeConstraintTest: BaseSqlInitTest() {
             "a_size_constrained_entity_attribute_OTHER_TRUNCATED_NAME:validator:size:too_large")
     }
 
+    @Suppress("SameParameterValue")
     private fun chkInsertViolatesCheckConstraint(table: String, columns: String, values: String) {
         assertThrows<Rt_Exception>("violates check constraint") { insert(table, columns, values) }
     }

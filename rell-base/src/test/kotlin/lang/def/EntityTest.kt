@@ -11,6 +11,7 @@ import net.postchain.rell.base.runtime.Rt_Interpreter
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestUtils
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -618,12 +619,13 @@ class EntityTest: BaseRellTest() {
             "ct_err:[modifier:invalid:kw:abstract][modifier:invalid:kw:override]")
     }
 
-    private fun chkEntity(code: String, exp: String) {
+    private fun chkEntity(@Language("Rell") code: String, exp: String) {
         val act = tst.processApp(code) { app ->
             val interp = RellTestUtils.forCompilation(app.rrApp, app.compilationSysFns)
             val e = app.rrApp.module(ModuleName.EMPTY)!!.entities.getValue("data")
             entityToString(e, interp)
         }
+
         assertEquals(exp, act)
     }
 

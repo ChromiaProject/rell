@@ -12,6 +12,7 @@ import net.postchain.rell.base.lmodel.dsl.Ld_CommonFunctionDsl
 import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.runtime.Rt_UnitValue
 import net.postchain.rell.base.testutils.LibModuleTester
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 
 class CLibVersionTest: BaseCLibTest() {
@@ -355,7 +356,7 @@ class CLibVersionTest: BaseCLibTest() {
         chkCompile("function f() = rec(x = '');", "ct_err:attr_missing:[rec]:y")
     }
 
-    private fun chkVer(code: String, expErr: String) {
+    private fun chkVer(@Language("Rell") code: String, expErr: String) {
         chkVer0(code, null, "OK")
         chkVer0(code, "0.10.6", "OK")
         chkVer0(code, "0.10.5", "OK")

@@ -9,11 +9,12 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.immListOf
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 import kotlin.test.*
 
 class RR_ResolveTest {
-    private fun resolve(code: String): RR_App {
+    private fun resolve(@Language("Rell") code: String): RR_App {
         val sourceDir = C_SourceDir.mapDirOf(RellTestUtils.MAIN_FILE to code)
         val modSel = C_CompilerModuleSelection(immListOf(ModuleName.EMPTY), immListOf())
         val cRes = RellTestUtils.compileApp(sourceDir, modSel, RellTestUtils.DEFAULT_COMPILER_OPTIONS)

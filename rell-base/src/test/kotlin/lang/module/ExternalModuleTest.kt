@@ -10,6 +10,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
 import net.postchain.rell.base.utils.formatEx
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 
 class ExternalModuleTest: BaseRellTest(useSql = true) {
@@ -438,11 +439,11 @@ class ExternalModuleTest: BaseRellTest(useSql = true) {
         chkOp("{ delete ext.user @ {}; }", "ct_err:stmt_delete_cant:user")
     }
 
-    private fun chkModule(code: String, expected: String) {
+    private fun chkModule(@Language("Rell") code: String, expected: String) {
         chkModuleFull("@external module; $code", expected)
     }
 
-    private fun chkModuleFull(code: String, expected: String) {
+    private fun chkModuleFull(@Language("Rell") code: String, expected: String) {
         val t = RellCodeTester(tstCtx)
         t.file("ext.rell", code)
         t.chkCompile("import ext;", expected)
@@ -522,15 +523,18 @@ class ExternalModuleTest: BaseRellTest(useSql = true) {
         val nTxPerBlock = 4
         val b = RellTestContext.BlockBuilder(chainId)
         var iTx = 0
-        for (iBlock in 0 until nBlocks) {
+
+        for (iBlock in 0..<nBlocks) {
             val blockIid = calcBlockId(iChain, iBlock)
             b.block(blockIid, iBlock.toLong(), "$blockIid", 1500000000000 + 1000000 * iBlock)
-            for (k in 0 until nTxPerBlock) {
+
+            repeat(nTxPerBlock) {
                 val txIid = calcTxId(iChain, iTx++)
                 val sTx = "%02d".formatEx(iTx)
                 b.tx(txIid, blockIid, "$txIid", "DEAF${chainId}0$iBlock$sTx", "BEEF${chainId}0$iBlock$sTx")
             }
         }
+
         return b.list()
     }
 

@@ -5,6 +5,7 @@
 package net.postchain.rell.base.lang.misc
 
 import net.postchain.rell.base.testutils.BaseRellTest
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 
 class CompilerErrorsTest: BaseRellTest() {
@@ -382,5 +383,5 @@ class CompilerErrorsTest: BaseRellTest() {
         chkEx("{ val x: integer; x = foo(); return 0; }", "ct_err:[stmt_assign_type:[integer]:[<error>]][unknown_name:foo]")
     }
 
-    private fun chkStmt(code: String, expected: String) = chkCompile("function f() { $code }", expected)
+    private fun chkStmt(@Language("Rell") code: String, expected: String) = chkCompile("function f() { $code }", expected)
 }

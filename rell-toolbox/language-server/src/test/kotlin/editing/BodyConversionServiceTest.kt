@@ -19,6 +19,7 @@ import net.postchain.rell.toolbox.lsp.TestTextEdit
 import net.postchain.rell.toolbox.testing.testData
 import net.postchain.rell.toolbox.testing.testLinterOptions
 import org.eclipse.lsp4j.*
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -31,7 +32,6 @@ import java.net.URI
  * call is known to return unit.
  */
 class BodyConversionServiceTest {
-
     @TempDir
     private lateinit var tempDir: File
     private lateinit var mainFileUri: URI
@@ -53,7 +53,7 @@ class BodyConversionServiceTest {
         assertThat(action.kind).isEqualTo(CodeActionKind.RefactorRewrite)
         assertThat(action.isPreferred).isEqualTo(false)
         assertThat(editsOf(action)).isEqualTo(
-            listOf(TestTextEdit(TestRange(TestPosition(1, 32), TestPosition(3, 1)), "= x + 1;"))
+            listOf(TestTextEdit(TestRange(TestPosition(1, 32), TestPosition(3, 1)), "= x + 1;")),
         )
     }
 
@@ -75,8 +75,8 @@ class BodyConversionServiceTest {
                 TestTextEdit(
                     TestRange(TestPosition(1, 23), TestPosition(1, 31)),
                     "{\n    return x + 1;\n}",
-                )
-            )
+                ),
+            ),
         )
     }
 
@@ -93,7 +93,7 @@ class BodyConversionServiceTest {
         val action = actions.single { it.title == BodyConversionService.TO_BLOCK_TITLE }
 
         assertThat(editsOf(action)).isEqualTo(
-            listOf(TestTextEdit(TestRange(TestPosition(2, 13), TestPosition(2, 19)), "{\n    b();\n}"))
+            listOf(TestTextEdit(TestRange(TestPosition(2, 13), TestPosition(2, 19)), "{\n    b();\n}")),
         )
 
         assertConvertedCompiles(code, action)
@@ -112,7 +112,7 @@ class BodyConversionServiceTest {
         val action = actions.single { it.title == BodyConversionService.TO_BLOCK_TITLE }
 
         assertThat(editsOf(action)).isEqualTo(
-            listOf(TestTextEdit(TestRange(TestPosition(2, 19), TestPosition(2, 25)), "{\n    b();\n}"))
+            listOf(TestTextEdit(TestRange(TestPosition(2, 19), TestPosition(2, 25)), "{\n    b();\n}")),
         )
 
         assertConvertedCompiles(code, action)
@@ -133,7 +133,7 @@ class BodyConversionServiceTest {
         val action = actions.single { it.title == BodyConversionService.TO_EXPRESSION_TITLE }
 
         assertThat(editsOf(action)).isEqualTo(
-            listOf(TestTextEdit(TestRange(TestPosition(2, 13), TestPosition(4, 1)), "= b();"))
+            listOf(TestTextEdit(TestRange(TestPosition(2, 13), TestPosition(4, 1)), "= b();")),
         )
 
         assertConvertedCompiles(code, action)
@@ -185,7 +185,7 @@ class BodyConversionServiceTest {
 
         // A query must return a value, so its block form always uses `return`.
         assertThat(editsOf(toBlock)).isEqualTo(
-            listOf(TestTextEdit(TestRange(TestPosition(1, 10), TestPosition(1, 14)), "{\n    return 1;\n}"))
+            listOf(TestTextEdit(TestRange(TestPosition(1, 10), TestPosition(1, 14)), "{\n    return 1;\n}")),
         )
 
         val toExpression = actionsAt(
@@ -198,7 +198,7 @@ class BodyConversionServiceTest {
             line = 2,
         ).single { it.title == BodyConversionService.TO_EXPRESSION_TITLE }
         assertThat(editsOf(toExpression)).isEqualTo(
-            listOf(TestTextEdit(TestRange(TestPosition(1, 10), TestPosition(3, 1)), "= 1;"))
+            listOf(TestTextEdit(TestRange(TestPosition(1, 10), TestPosition(3, 1)), "= 1;")),
         )
     }
 
@@ -222,8 +222,8 @@ class BodyConversionServiceTest {
                 TestTextEdit(
                     TestRange(TestPosition(2, 26), TestPosition(2, 30)),
                     "{\n        return 1;\n    }",
-                )
-            )
+                ),
+            ),
         )
     }
 
@@ -314,8 +314,8 @@ class BodyConversionServiceTest {
                 TestTextEdit(
                     TestRange(TestPosition(1, 32), TestPosition(3, 1)),
                     "= if (x > 0) 1 else 2;",
-                )
-            )
+                ),
+            ),
         )
         assertConvertedCompiles(blockCode, toExpression)
 
@@ -330,8 +330,8 @@ class BodyConversionServiceTest {
                 TestTextEdit(
                     TestRange(TestPosition(1, 23), TestPosition(1, 45)),
                     "{\n    return if (x > 0) 1 else 2;\n}",
-                )
-            )
+                ),
+            ),
         )
         assertConvertedCompiles(expressionCode, toBlock)
     }
@@ -356,8 +356,8 @@ class BodyConversionServiceTest {
                 TestTextEdit(
                     TestRange(TestPosition(1, 32), TestPosition(6, 1)),
                     "= when (x) {\n        0 -> 1;\n        else -> 2\n    };",
-                )
-            )
+                ),
+            ),
         )
         assertConvertedCompiles(code, action)
     }
@@ -377,8 +377,8 @@ class BodyConversionServiceTest {
                 TestTextEdit(
                     TestRange(TestPosition(1, 33), TestPosition(1, 49)),
                     "{\n    return x ?: return 0;\n}",
-                )
-            )
+                ),
+            ),
         )
         assertConvertedCompiles(expressionCode, toBlock)
 
@@ -391,7 +391,7 @@ class BodyConversionServiceTest {
         val toExpression = actionsAt(blockCode, line = 2)
             .single { it.title == BodyConversionService.TO_EXPRESSION_TITLE }
         assertThat(editsOf(toExpression)).isEqualTo(
-            listOf(TestTextEdit(TestRange(TestPosition(1, 33), TestPosition(3, 1)), "= x ?: return 0;"))
+            listOf(TestTextEdit(TestRange(TestPosition(1, 33), TestPosition(3, 1)), "= x ?: return 0;")),
         )
         assertConvertedCompiles(blockCode, toExpression)
     }
@@ -421,7 +421,9 @@ class BodyConversionServiceTest {
         assertThat(toExpressionTitles).doesNotContain(BodyConversionService.TO_EXPRESSION_TITLE)
     }
 
-    private fun actionsAt(code: String, line: Int, character: Int = 0, only: List<String>? = null): List<CodeAction> {
+    private fun actionsAt(
+        @Language("Rell") code: String, line: Int, character: Int = 0, only: List<String>? = null
+    ): List<CodeAction> {
         val workspaceFolder = testData(tempDir) { addMainFile(code) }.workspaceFolder
         mainFileUri = workspaceFolder.resolve("src/main.rell").toURI()
 
@@ -445,6 +447,7 @@ class BodyConversionServiceTest {
     private fun assertConvertedCompiles(code: String, action: CodeAction) {
         val edit = action.edit.changes[mainFileUri.toString()]!!.single()
         val workspaceFolder = testData(tempDir) { addMainFile(applyEdit(code, edit)) }.workspaceFolder
+
         val checkIndexer = WorkspaceIndexer(
             workspaceFolder.toURI(),
             RellLinter(),
@@ -452,9 +455,11 @@ class BodyConversionServiceTest {
             FormattingStyleLinter(),
             FormatterOptions(),
         )
+
         checkIndexer.initialFileIndexBuild()
         val resource = checkIndexer.getResource(workspaceFolder.resolve("src/main.rell").toURI())!!
         assertThat(resource.syntaxErrors.map { it.message }).isEqualTo(listOf())
+
         assertThat(resource.semanticErrors.filter { it.type == C_MessageType.ERROR }.map { it.code })
             .isEqualTo(listOf())
     }

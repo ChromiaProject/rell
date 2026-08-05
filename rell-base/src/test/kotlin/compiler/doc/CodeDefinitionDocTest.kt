@@ -5,6 +5,7 @@
 package net.postchain.rell.base.compiler.doc
 
 import net.postchain.rell.base.lmodel.dsl.BaseLTest
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 
 class CodeDefinitionDocTest: BaseCodeDocTest() {
@@ -463,14 +464,14 @@ class CodeDefinitionDocTest: BaseCodeDocTest() {
         chkMountNameNamespace("@mount('foo') namespace { $defs }", "", "foo")
     }
 
-    private fun chkMountNameNamespace(code: String, namePrefix: String, mountPrefix: String) {
+    private fun chkMountNameNamespace(@Language("Rell") code: String, namePrefix: String, mountPrefix: String) {
         chkDoc(code, ":${namePrefix}data", "ENTITY|:${namePrefix}data|$mountPrefix.data", "<entity> data")
         chkDoc(code, ":${namePrefix}state", "OBJECT|:${namePrefix}state|$mountPrefix.state", "<object> state")
         chkDoc(code, ":${namePrefix}op", "OPERATION|:${namePrefix}op|$mountPrefix.op", "<operation> op()")
         chkDoc(code, ":${namePrefix}q", "QUERY|:${namePrefix}q|$mountPrefix.q", "<query> q(): [integer]")
     }
 
-    private fun chkDoc(code: String, name: String, expectedHeader: String, expectedCode: String) {
+    private fun chkDoc(@Language("Rell") code: String, name: String, expectedHeader: String, expectedCode: String) {
         val def = getDocDef(code, name)
         BaseLTest.chkDoc(def.docSymbol, expectedHeader, expectedCode)
     }

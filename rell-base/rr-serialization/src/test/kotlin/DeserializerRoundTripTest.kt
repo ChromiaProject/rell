@@ -4,19 +4,12 @@
 
 package net.postchain.rell.serialization
 
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-/**
- * True round-trip tests: `deserialize(serialize(RR_App))` produces a structurally equal [RR_App].
- *
- * Unlike [RoundTripSerializerTest] (which compares RR_ against raw FlatBuffer accessors),
- * these tests exercise the full `RR_App → bytes → RR_App` pipeline and assert equality
- * on the reconstructed data classes.
- */
 class DeserializerRoundTripTest: BaseSerializerTest() {
-
-    private fun roundTrip(code: String) {
+    private fun roundTrip(@Language("Rell") code: String) {
         val original = compileApp(code)
         val bytes = serializeRellApp(original)
         val deserialized = deserializeRellApp(bytes)
@@ -61,6 +54,7 @@ class DeserializerRoundTripTest: BaseSerializerTest() {
             assertEquals(oe.sqlMapping.mountName, de.sqlMapping.mountName, "entity[$i].sqlMapping.mountName")
             assertEquals(oe.sqlMapping.kind, de.sqlMapping.kind, "entity[$i].sqlMapping.kind")
             assertEquals(oe.attributes.keys, de.attributes.keys, "entity[$i].attributes.keys")
+
             for (attrName in oe.attributes.keys) {
                 val oa = oe.attributes[attrName]!!
                 val da = de.attributes[attrName]!!
@@ -84,6 +78,7 @@ class DeserializerRoundTripTest: BaseSerializerTest() {
             val de = deserialized.allEnums[i]
             assertEquals(oe.base.defId, de.base.defId, "enum[$i].defId")
             assertEquals(oe.attrs.size, de.attrs.size, "enum[$i].attrs.size")
+
             for (j in oe.attrs.indices) {
                 assertEquals(oe.attrs[j].name, de.attrs[j].name, "enum[$i].attr[$j].name")
                 assertEquals(oe.attrs[j].value, de.attrs[j].value, "enum[$i].attr[$j].value")
@@ -109,6 +104,7 @@ class DeserializerRoundTripTest: BaseSerializerTest() {
             deserialized.nativeFunctions.keys,
             "nativeFunctions.keys",
         )
+
         for (name in original.nativeFunctions.keys) {
             val oh = original.nativeFunctions.getValue(name)
             val dh = deserialized.nativeFunctions.getValue(name)

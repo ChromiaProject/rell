@@ -20,19 +20,21 @@ import net.postchain.rell.base.utils.flatEntries
 import net.postchain.rell.base.utils.ide.IdeCompletion
 import net.postchain.rell.base.utils.immListOf
 import net.postchain.rell.base.utils.toImmMultimap
+import org.intellij.lang.annotations.Language
 import kotlin.test.assertEquals
 
 abstract class BaseIdeCompletionTest: BaseRellTest() {
     protected var fullCompStr = true
     protected var defaultLib = false
 
+    @Suppress("SameParameterValue")
     protected fun chkCompKeys(vararg expected: String) {
         val map = calcComps0("", null)
         val actual = map.keys.sorted()
         assertEquals(expected.toList(), actual)
     }
 
-    protected fun chkComps(code: String, vararg expected: String) {
+    protected fun chkComps(@Language("Rell") code: String, vararg expected: String) {
         chkComps(code, -1, *expected)
     }
 

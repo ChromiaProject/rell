@@ -9,6 +9,7 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestContext
 import net.postchain.rell.base.testutils.RellTestUtils
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 
 class ExternalTest: BaseRellTest(useSql = true) {
@@ -218,7 +219,7 @@ class ExternalTest: BaseRellTest(useSql = true) {
         chkHeight(1000, "local @? {} ( .user )", "[foo]:user[1]")
     }
 
-    private fun chkHeight(height: Long, code: String, expected: String) {
+    private fun chkHeight(height: Long, @Language("Rell") code: String, expected: String) {
         initExternalChain(inserts = LibBlockTransactionTest.BLOCK_INSERTS_333)
         run {
             val t = RellCodeTester(tstCtx)

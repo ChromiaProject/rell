@@ -2,7 +2,7 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
-package net.postchain.rell.base.lang.def;
+package net.postchain.rell.base.lang.def
 
 import net.postchain.rell.base.testutils.BaseRellTest
 import kotlin.test.Test
@@ -16,7 +16,7 @@ internal class ParameterAnnotationTest: BaseRellTest() {
         def("function quam(@dummy_annotation dec: decimal) = dec * 3.1415;")
         def("function thud(@dummy_annotation text?) = \"Riders in black\";")
         chk("foo(0)", "int[17]")
-        chk("bar(2, \"abc\")", "text[abcabc]");
+        chk("bar(2, \"abc\")", "text[abcabc]")
         chk("baz((45).to_gtv(), 0L)", "bigint[10]")
         chk("quix(\"Hello world!\")", "text[We're here.]")
         chk("quam(2.0)", "dec[6.283]")

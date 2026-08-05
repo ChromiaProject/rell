@@ -5,6 +5,7 @@
 package net.postchain.rell.base.lang.expr.expr
 
 import net.postchain.rell.base.testutils.BaseRellTest
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 
 class WhenTest: BaseRellTest() {
@@ -329,10 +330,10 @@ class WhenTest: BaseRellTest() {
     }
 
     private fun chkWhenRet(type: String, retType: String, code: String, vararg cases: Pair<String, String>) {
-        val fnCode = "function f(a: $type): $retType $code"
-        for (case in cases) {
-            val fullCode = "$fnCode query q() = f(${case.first});"
-            chkFull(fullCode, case.second)
+        @Language("Rell") val fnCode = "function f(a: $type): $retType $code"
+
+        for ((code, expected) in cases) {
+            chkFull("$fnCode query q() = f($code);", expected)
         }
     }
 
@@ -342,8 +343,9 @@ class WhenTest: BaseRellTest() {
         insert("c0.foo", "x,s1,s2", "100,$value,'Yes','No'")
     }
 
-    private fun chkWhenAt(expr: String, vararg cases: Pair<String, String>) {
+    private fun chkWhenAt(@Language("Rell") expr: String, vararg cases: Pair<String, String>) {
         val fullExpr = "foo @{} ( _ = $expr )"
+
         for ((arg, expected) in cases) {
             chkOp("update foo@{} ( x = $arg );")
             chk(fullExpr, expected)

@@ -8,6 +8,7 @@ import net.postchain.rell.base.sql.SqlConstants
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
 import net.postchain.rell.base.testutils.RellTestUtils
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -159,7 +160,7 @@ class MountTest: BaseRellTest(useSql = true) {
     @Test fun testNamespaces() {
         val def = "object obj { x: integer = 123; }"
 
-        chkMountName("$def", "c0.obj")
+        chkMountName(def, "c0.obj")
         chkMountName("@mount('foo.bar') $def", "c0.foo.bar")
 
         chkMountName("namespace ns { $def }", "c0.ns.obj")
@@ -187,7 +188,7 @@ class MountTest: BaseRellTest(useSql = true) {
 
     @Test fun testComplexNamespaces() {
         val def = "object obj { x: integer = 123; }"
-        chkMountName("$def", "c0.obj")
+        chkMountName(def, "c0.obj")
         chkMountName("@mount('foo.bar') $def", "c0.foo.bar")
         chkMountName("namespace ns1.ns2 { $def }", "c0.ns1.ns2.obj")
         chkMountName("@mount('') namespace ns1.ns2 { $def }", "c0.obj")
@@ -196,7 +197,7 @@ class MountTest: BaseRellTest(useSql = true) {
         chkMountName("@mount('foo.bar') namespace ns1.ns2 { @mount('bob.alice') $def }", "c0.bob.alice")
     }
 
-    private fun chkMountName(code: String, expected0: String) {
+    private fun chkMountName(@Language("Rell") code: String, expected0: String) {
         val t = RellCodeTester(tstCtx)
         t.def(code)
 
@@ -287,6 +288,7 @@ class MountTest: BaseRellTest(useSql = true) {
         )
     }
 
+    @Suppress("SameParameterValue")
     private fun chkFiles(module: String, expected: String, vararg files: Pair<String, String>) {
         val t = RellCodeTester(tstCtx)
         for ((path, text) in files) t.file(path, text)
@@ -307,7 +309,7 @@ class MountTest: BaseRellTest(useSql = true) {
         chkConflictGeneric("lib/a.rell", "lib/b.rell") { foo, bar, exp ->
             val t = RellCodeTester(tstCtx)
             t.errMsgPos = true
-            t.file("lib/a.rell", "$foo")
+            t.file("lib/a.rell", foo)
             t.file("lib/b.rell", "\n\n$bar")
             t.chkCompile("import lib;", exp)
         }
@@ -317,7 +319,7 @@ class MountTest: BaseRellTest(useSql = true) {
         chkConflictGeneric("a/lib.rell", "b/lib.rell") { foo, bar, exp ->
             val t = RellCodeTester(tstCtx)
             t.errMsgPos = true
-            t.file("a/lib.rell", "$foo")
+            t.file("a/lib.rell", foo)
             t.file("b/lib.rell", "\n\n$bar")
             t.chkCompile("import a; import b;", exp)
         }
@@ -354,7 +356,7 @@ class MountTest: BaseRellTest(useSql = true) {
         val fooName = "${td.fooModule}foo"
         val barName = "${td.barModule}bar"
 
-        td.testFn("$foo", "$bar", "OK")
+        td.testFn(foo, bar, "OK")
         td.testFn("@mount('bar')\n$foo", "@mount('foo')\n$bar", "OK")
 
         td.testFn("\n$foo","@mount('foo')\n$bar", """ct_err:
@@ -388,13 +390,13 @@ class MountTest: BaseRellTest(useSql = true) {
     }
 
     private fun chkConflictGenericOk(td: ConflictTestData, foo: String, bar: String) {
-        td.testFn("$foo", "$bar", "OK")
+        td.testFn(foo, bar, "OK")
 
-        td.testFn("@mount('bar') $foo", "$bar", "OK")
-        td.testFn("$bar", "@mount('bar') $foo", "OK")
+        td.testFn("@mount('bar') $foo", bar, "OK")
+        td.testFn(bar, "@mount('bar') $foo", "OK")
 
-        td.testFn("$foo", "@mount('foo') $bar", "OK")
-        td.testFn("@mount('foo') $bar", "$foo", "OK")
+        td.testFn(foo, "@mount('foo') $bar", "OK")
+        td.testFn("@mount('foo') $bar", foo, "OK")
 
         td.testFn("@mount('abc') $foo", "@mount('abc') $bar", "OK")
         td.testFn("@mount('abc') $bar", "@mount('abc') $foo", "OK")
@@ -688,9 +690,7 @@ class MountTest: BaseRellTest(useSql = true) {
         chkRelativePath0("@mount('a.b.c') namespace ns { @mount('$path') object foo { p: integer = 123; } }", expTable)
     }
 
-    private fun chkRelativePath0(code: String, expected: String) {
-        return chkMountName(code, expected)
-    }
+    private fun chkRelativePath0(code: String, expected: String): Unit = chkMountName(code, expected)
 
     @Test fun testRelativePathSyntaxMisc() {
         file("a/module.rell", "@mount('foo.') module;")

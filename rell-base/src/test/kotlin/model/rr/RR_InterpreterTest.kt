@@ -11,6 +11,7 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.NoConnSqlExecutor
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.utils.immListOf
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -18,8 +19,7 @@ import kotlin.test.assertEquals
  * Tests for [Rt_Interpreter]: compile → resolve → interpret via RR model.
  */
 class Rt_InterpreterTest {
-
-    private fun evalFunction(code: String, fnName: String = "test", args: List<Rt_Value> = listOf()): Rt_Value {
+    private fun evalFunction(@Language("Rell") code: String, fnName: String = "test", args: List<Rt_Value> = listOf()): Rt_Value {
         val sourceDir = C_SourceDir.mapDirOf(RellTestUtils.MAIN_FILE to code)
         val modSel = C_CompilerModuleSelection(immListOf(ModuleName.EMPTY), immListOf())
         val cRes = RellTestUtils.compileApp(sourceDir, modSel, RellTestUtils.DEFAULT_COMPILER_OPTIONS)
@@ -44,7 +44,7 @@ class Rt_InterpreterTest {
         return interpreter.callFunction(fn, exeCtx, args)
     }
 
-    private fun evalQuery(code: String, queryName: String = "test", args: List<Rt_Value> = listOf()): Rt_Value {
+    private fun evalQuery(@Language("Rell") code: String, queryName: String = "test", args: List<Rt_Value> = listOf()): Rt_Value {
         val sourceDir = C_SourceDir.mapDirOf(RellTestUtils.MAIN_FILE to code)
         val modSel = C_CompilerModuleSelection(immListOf(ModuleName.EMPTY), immListOf())
         val cRes = RellTestUtils.compileApp(sourceDir, modSel, RellTestUtils.DEFAULT_COMPILER_OPTIONS)

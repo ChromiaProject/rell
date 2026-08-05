@@ -5,6 +5,7 @@
 package net.postchain.rell.base.lang.def
 
 import net.postchain.rell.base.testutils.BaseRellTest
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -273,12 +274,11 @@ class StructTest: BaseRellTest() {
                 "bar[mut,cyc,inf],foo[mut,cyc,inf]")
     }
 
-    private fun chkFlags(code: String, expected: String) {
+    private fun chkFlags(@Language("Rell") code: String, expected: String) {
         val actual = tst.processApp(code) { app ->
             val lst = mutableListOf<String>()
             val structDefs = app.rrApp.modules.flatMap { it.structs.values }
-            for (structDef in structDefs.sortedBy { it.base.simpleName }) {
-                val struct = structDef.struct
+            for ((base, struct) in structDefs.sortedBy { it.base.simpleName }) {
 
                 val flags = mutableListOf<String>()
                 if (struct.flags.typeFlags.mutable) flags.add("mut")
@@ -291,7 +291,7 @@ class StructTest: BaseRellTest() {
 
                 if (struct.flags.cyclic) flags.add("cyc")
                 if (struct.flags.infinite) flags.add("inf")
-                lst.add("${structDef.base.simpleName}[${flags.joinToString(",")}]")
+                lst.add("${base.simpleName}[${flags.joinToString(",")}]")
             }
             lst.joinToString(",")
         }

@@ -9,6 +9,7 @@ import net.postchain.rell.base.runtime.Rt_ListValue
 import net.postchain.rell.base.runtime.Rt_PrimitiveTypes
 import net.postchain.rell.base.runtime.Rt_TextValue
 import net.postchain.rell.base.testutils.BaseRellTest
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 
 class LibQueriesTest: BaseRellTest() {
@@ -85,7 +86,7 @@ class LibQueriesTest: BaseRellTest() {
         chkMntNames("", listOf("quaries"), listOf(), "rt_err:rell.get_mount_names:bad_kind:quaries")
     }
 
-    private fun chkMntNames(code: String, kinds: List<String>, modules: List<String>, expected: String) {
+    private fun chkMntNames(@Language("Rell") code: String, kinds: List<String>, modules: List<String>, expected: String) {
         tst.strictToString = false
         chkFull(code, "rell.get_mount_names", listOf(kinds.toRtValue(), modules.toRtValue()), expected)
     }

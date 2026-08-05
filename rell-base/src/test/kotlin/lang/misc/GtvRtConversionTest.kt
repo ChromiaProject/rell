@@ -266,6 +266,7 @@ class GtvRtConversionTest: BaseRellTest(gtv = true) {
         chkRes(expected, actual)
     }
 
+    @Suppress("SameParameterValue")
     private fun chkOpArg(type: String, arg: Gtv, expected: String) {
         val code = "operation o(a: $type) { print(_strict_str(a)); }"
         val actual = tst.callOpGtv(code, listOf(arg))

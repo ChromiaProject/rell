@@ -6,6 +6,7 @@ package net.postchain.rell.base.lang.expr.atexpr
 
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.RellCodeTester
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 
 class AtExprExistsTest: BaseRellTest(useSql = true) {
@@ -436,7 +437,7 @@ class AtExprExistsTest: BaseRellTest(useSql = true) {
         chkUpdateDelete("user @* {exists( (c:company) @* { c.city == $.city } )}", "ct_err:at_expr:placeholder:belongs_to_outer")
     }
 
-    private fun chkUpdateDelete(code: String, exp: String) {
+    private fun chkUpdateDelete(@Language("Rell") code: String, exp: String) {
         if (exp.startsWith("ct_err:")) {
             chkOp("update $code ( .score += 1 );", exp)
             chkOp("delete $code;", exp)

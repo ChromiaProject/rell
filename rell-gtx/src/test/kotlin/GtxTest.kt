@@ -8,6 +8,7 @@ import net.postchain.gtv.GtvBigInteger
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.base.testutils.TestFixtures
 import net.postchain.rell.gtx.testutils.BaseGtxTest
+import org.intellij.lang.annotations.Language
 import java.math.BigInteger
 import kotlin.test.Test
 
@@ -190,7 +191,7 @@ class GtxTest: BaseGtxTest() {
         chkVer("function f(x: integer?) = x == 123;", "0.13.10", "VER:feature:binop_nullable_eq_value")
     }
 
-    private fun chkVer(code: String, v1: String, err: String) {
+    private fun chkVer(@Language("Rell") code: String, v1: String, err: String) {
         chkVerRt("$code query q() = 0;", v1, err, "0")
     }
 }

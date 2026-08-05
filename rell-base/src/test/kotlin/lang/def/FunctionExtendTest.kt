@@ -5,6 +5,7 @@
 package net.postchain.rell.base.lang.def
 
 import net.postchain.rell.base.testutils.BaseRellTest
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 
 class FunctionExtendTest: BaseRellTest() {
@@ -909,7 +910,7 @@ class FunctionExtendTest: BaseRellTest() {
         chkFull("@extend(foo.bar) function g() {}", "ct_err:unknown_name:foo")
     }
 
-    private fun chkFullOut(code: String, expectedRes: String, vararg expectedOut: String) {
+    private fun chkFullOut(@Language("Rell") code: String, expectedRes: String, vararg expectedOut: String) {
         chkOut()
         chkFull(code, expectedRes)
         chkOut(*expectedOut)

@@ -4,6 +4,7 @@
 
 package net.postchain.rell.base.compiler.doc
 
+import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -78,14 +79,20 @@ class CodeDefinitionDocPosTest: BaseCodeDocTest() {
         chkPos0("namespace ns {}", ":ns", "n/a")
     }
 
-    private fun chkPos(code: String, name: String) {
-        chkPos0("\nnamespace root {\n$code\n}", ":root.$name", "main.rell:3")
+    private fun chkPos(@Language("Rell") code: String, name: String) {
+        chkPos0(
+            """
+
+                namespace root {
+                $code
+                }
+                """.trimIndent(),
+            ":root.$name", "main.rell:3",
+        )
     }
 
-    private fun chkPos0(code: String, name: String, exp: String) {
-        val act = processDocDef(code, name) { def ->
-            def.docSourcePos?.str() ?: "n/a"
-        }
+    private fun chkPos0(@Language("Rell") code: String, name: String, exp: String) {
+        val act = processDocDef(code, name) { def -> def.docSourcePos?.str() ?: "n/a" }
         assertEquals(exp, act)
     }
 }

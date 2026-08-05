@@ -264,18 +264,16 @@ class RellGtxTester(
         }
     }
 
-    private fun getDefaultConfigTemplate(): String {
-        return """
-            {'gtx':{'rell':{
-                'compilerVersion':'{COMPILER_VERSION}',
-                'version':'{VERSION}',
-                'modules':'{MODULES}',
-                'sources':'{SOURCES}',
-                'moduleArgs':'{MODULE_ARGS}',
-                'strictGtvConversion':'{STRICT_GTV_CONVERSION}'
-            }}}
-        """.unwrap()
-    }
+    private fun getDefaultConfigTemplate(): String = """
+        {'gtx':{'rell':{
+            'compilerVersion':'{COMPILER_VERSION}',
+            'version':'{VERSION}',
+            'modules':'{MODULES}',
+            'sources':'{SOURCES}',
+            'moduleArgs':'{MODULE_ARGS}',
+            'strictGtvConversion':'{STRICT_GTV_CONVERSION}'
+        }}}
+    """.unwrap()
 
     private class TransactorTransaction(val transactor: Transactor): Transaction {
         override fun apply(ctx: TxEContext): Boolean = transactor.apply(ctx)
