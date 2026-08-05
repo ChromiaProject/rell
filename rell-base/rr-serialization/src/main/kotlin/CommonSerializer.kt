@@ -8,6 +8,7 @@ import net.postchain.rell.base.model.*
 import net.postchain.rell.base.model.rr.RR_FrameBlock
 import net.postchain.rell.base.model.rr.RR_FrameDescriptor
 import rell.ir.CallFrame as FbCallFrame
+import rell.ir.DefinitionId as FbDefinitionId
 import rell.ir.DefinitionName as FbDefinitionName
 import rell.ir.FrameBlock as FbFrameBlock
 import rell.ir.ModuleName as FbModuleName
@@ -31,6 +32,12 @@ fun SerializerContext.serializeDefinitionName(defName: DefinitionName): Int {
     return FbDefinitionName.createDefinitionName(builder, module, qualified, simple)
 }
 
+fun SerializerContext.serializeDefinitionId(defId: DefinitionId): Int {
+    val module = createString(defId.module)
+    val definition = createString(defId.definition)
+    return FbDefinitionId.createDefinitionId(builder, module, definition)
+}
+
 fun SerializerContext.serializeSourcePos(file: String, line: Int): Int {
     val fileOff = createString(file)
     FbSourcePos.startSourcePos(builder)
@@ -46,8 +53,8 @@ internal fun SerializerContext.serializeErrorPos(pos: ErrorPos): Int = serialize
 
 internal fun SerializerContext.serializeFrameBlock(block: RR_FrameBlock): Int {
     FbFrameBlock.startFrameBlock(builder)
-    block.parentUid?.let { builder.forcedScalar { FbFrameBlock.addParentUid(builder, it.toUInt()) } }
-    FbFrameBlock.addUid(builder, block.uid.toUInt())
+    block.parentUid?.let { builder.forcedScalar { FbFrameBlock.addParentUid(builder, it.toInt()) } }
+    FbFrameBlock.addUid(builder, block.uid.toInt())
     FbFrameBlock.addOffset(builder, block.offset)
     FbFrameBlock.addSize(builder, block.size)
     return FbFrameBlock.endFrameBlock(builder)

@@ -34,15 +34,11 @@ import rell.ir.StructDefinition as FbStructDefinition
 
 // --- Definition base ---
 
-private fun deserializeDefinitionBase(defName: DefinitionName): RR_DefinitionBase {
+private fun deserializeDefinitionBase(defName: DefinitionName, initFrame: CallFrame?): RR_DefinitionBase {
     return RR_DefinitionBase(
         defId = DefinitionId(defName.module, defName.qualifiedName),
         defName = defName,
-        initFrame = RR_FrameDescriptor(
-            size = 0,
-            rootBlock = RR_FrameBlock(parentUid = null, uid = 0, offset = 0, size = 0),
-            hasGuardBlock = false,
-        ),
+        initFrame = deserializeFrameDescriptor(initFrame),
     )
 }
 
@@ -50,16 +46,7 @@ private fun deserializeDefinitionBase(defName: DefinitionName): RR_DefinitionBas
 
 fun deserializeEntityDefinition(fb: FbEntityDefinition): RR_EntityDefinition {
     val defName = deserializeDefinitionName(fb.defName)
-    val initFrame = fb.initFrame?.let { deserializeFrameDescriptor(it) }
-    val base = if (initFrame != null) {
-        RR_DefinitionBase(
-            defId = DefinitionId(defName.module, defName.qualifiedName),
-            defName = defName,
-            initFrame = initFrame,
-        )
-    } else {
-        deserializeDefinitionBase(defName)
-    }
+    val base = deserializeDefinitionBase(defName, fb.initFrame)
     val flags = deserializeEntityFlags(fb.flags)
     val sqlMapping = deserializeEntitySqlMapping(fb.sqlMapping)
     val attrs = deserializeAttributes(fb)
@@ -129,7 +116,7 @@ private fun deserializeEntitySqlMapping(fb: EntitySqlMapping?): RR_EntitySqlMapp
 
 fun deserializeStructDefinition(fb: FbStructDefinition): RR_StructDefinition {
     val defName = deserializeDefinitionName(fb.defName)
-    val base = deserializeDefinitionBase(defName)
+    val base = deserializeDefinitionBase(defName, fb.initFrame)
     val name = fb.name
     val attrs = deserializeAttributes(fb)
     val attrMap = attrs.associateBy { it.rName }.toImmMap()
@@ -180,7 +167,7 @@ fun deserializeStructDefinition(fb: FbStructDefinition): RR_StructDefinition {
 
 fun deserializeEnumDefinition(fb: FbEnumDefinition): RR_EnumDefinition {
     val defName = deserializeDefinitionName(fb.defName)
-    val base = deserializeDefinitionBase(defName)
+    val base = deserializeDefinitionBase(defName, fb.initFrame)
     val attrs = (0 until fb.attrsLength).mapToImmList { i ->
         val a = fb.attrs(i)
         RR_EnumAttr(name = Name.of(a.name), value = a.value)
@@ -192,7 +179,7 @@ fun deserializeEnumDefinition(fb: FbEnumDefinition): RR_EnumDefinition {
 
 fun deserializeObjectDefinition(fb: FbObjectDefinition, entities: List<RR_EntityDefinition>): RR_ObjectDefinition {
     val defName = deserializeDefinitionName(fb.defName)
-    val base = deserializeDefinitionBase(defName)
+    val base = deserializeDefinitionBase(defName, fb.initFrame)
     val entityIdx = checkedUIntAsIndex(fb.entityDefIndex, entities.size, "ObjectDefinition.entity_def_index")
     return RR_ObjectDefinition(base = base, rEntity = entities[entityIdx])
 }
@@ -201,9 +188,9 @@ fun deserializeObjectDefinition(fb: FbObjectDefinition, entities: List<RR_Entity
 
 fun deserializeFunctionDefinition(fb: FbFunctionDefinition): RR_FunctionDefinition {
     val defName = deserializeDefinitionName(fb.defName)
-    val base = deserializeDefinitionBase(defName)
+    val base = deserializeDefinitionBase(defName, fb.initFrame)
     val fnBase = deserializeFunctionBody(fb.body, defName)
-    return RR_FunctionDefinition(base = base, fnBase = fnBase, isTest = fb.isTest, disabled = false)
+    return RR_FunctionDefinition(base = base, fnBase = fnBase, isTest = fb.isTest, disabled = fb.disabled)
 }
 
 internal fun deserializeFunctionBody(fb: FbFunctionBody?, fallbackDefName: DefinitionName): RR_FunctionBase {
@@ -216,7 +203,7 @@ internal fun deserializeFunctionBody(fb: FbFunctionBody?, fallbackDefName: Defin
         RR_ParamVar(paramType, RR_VarPtr(pv.blockUid.toLong(), pv.offset))
     }
     return RR_FunctionBase(
-        defId = DefinitionId(defName.module, defName.qualifiedName),
+        defId = deserializeDefinitionId(fb.defId) ?: DefinitionId(defName.module, defName.qualifiedName),
         defName = defName,
         params = params,
         resultType = deserializeType(fb.type),
@@ -230,7 +217,7 @@ internal fun deserializeFunctionBody(fb: FbFunctionBody?, fallbackDefName: Defin
 
 fun deserializeOperationDefinition(fb: FbOperationDefinition): RR_OperationDefinition {
     val defName = deserializeDefinitionName(fb.defName)
-    val base = deserializeDefinitionBase(defName)
+    val base = deserializeDefinitionBase(defName, fb.initFrame)
     val mountName = deserializeMountName(fb.mountName)
     val modifiers = fb.modifiers.let {
         OperationModifiers(isCompound = it.isCompound, isSingular = it.isSingular)
@@ -261,7 +248,7 @@ fun deserializeOperationDefinition(fb: FbOperationDefinition): RR_OperationDefin
 
 fun deserializeQueryDefinition(fb: FbQueryDefinition): RR_QueryDefinition {
     val defName = deserializeDefinitionName(fb.defName)
-    val base = deserializeDefinitionBase(defName)
+    val base = deserializeDefinitionBase(defName, fb.initFrame)
     val mountName = deserializeMountName(fb.mountName)
     val body = deserializeQueryBody(fb.body)
     return RR_QueryDefinition(base = base, mountName = mountName, body = body)
@@ -309,7 +296,7 @@ fun deserializeGlobalConstantDefinition(fb: FbGlobalConstantDefinition): RR_Glob
         initFrame = deserializeFrameDescriptor(fb.frame),
     )
     val constIndex = fb.constIndex.toInt()
-    val appUid = AppUid(0)
+    val appUid = AppUid(fb.appUid)
     val moduleKey = ModuleKey(ModuleName.of(defName.module), null)
     val metaGtvJson = if (fb.metaGtvLength > 0) {
         val len = checkedByteArrayLength(fb.metaGtvLength, "GlobalConstantDefinition.meta_gtv")

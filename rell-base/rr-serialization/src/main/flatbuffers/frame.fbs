@@ -11,9 +11,10 @@ struct VarPtr {
 }
 
 /// A block within a call frame (scoping unit).
+/// Uids are signed: definitions with no init frame carry a -1 placeholder block.
 table FrameBlock {
-    parent_uid: uint = null;  // null when this is a root block
-    uid: uint;
+    parent_uid: int = null;  // null when this is a root block
+    uid: int;
     offset: int;
     size: int;
 }

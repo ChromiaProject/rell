@@ -135,6 +135,7 @@ table StructDefinition {
     flags: StructFlags;
     mirror_info: MirrorStructInfo;
     has_default_constructor: bool = true;
+    init_frame: CallFrame;
 }
 
 // --- Enum definition ---
@@ -142,6 +143,7 @@ table StructDefinition {
 table EnumDefinition {
     def_name: DefinitionName (required);
     attrs: [EnumAttr] (required);
+    init_frame: CallFrame;
 }
 
 // --- Object definition ---
@@ -149,6 +151,7 @@ table EnumDefinition {
 table ObjectDefinition {
     def_name: DefinitionName (required);
     entity_def_index: uint;  // points to EntityDefinition in App
+    init_frame: CallFrame;
 }
 
 // --- Function parameter ---
@@ -170,6 +173,9 @@ table FunctionBody {
     body: Stmt (required);
     frame: CallFrame (required);
     def_name: DefinitionName;
+    /// Frame owner identity. Not derivable from def_name: a function without a body
+    /// (native, abstract) borrows the error frame and its placeholder id.
+    def_id: DefinitionId;
 }
 
 // --- Query body ---
@@ -210,6 +216,8 @@ table FunctionDefinition {
     def_name: DefinitionName (required);
     body: FunctionBody;  // may be absent for abstract functions
     is_test: bool = false;
+    disabled: bool = false;
+    init_frame: CallFrame;
 }
 
 // --- Operation definition ---
@@ -220,6 +228,7 @@ table OperationDefinition {
     modifiers: OperationModifiers (required);
     body: FunctionBody;
     guard_body: Stmt;  // optional guard statement
+    init_frame: CallFrame;
 }
 
 // --- Query definition ---
@@ -228,6 +237,7 @@ table QueryDefinition {
     def_name: DefinitionName (required);
     mount_name: MountName (required);
     body: QueryBody;
+    init_frame: CallFrame;
 }
 
 // --- Global constant definition ---
@@ -235,6 +245,7 @@ table QueryDefinition {
 table GlobalConstantDefinition {
     def_name: DefinitionName (required);
     const_index: uint;  // R_GlobalConstantId.index
+    app_uid: long;      // R_GlobalConstantId.app, part of the id the runtime checks on lookup
     type: Type (required);
     value: Expr;  // the initializer expression
     frame: CallFrame;

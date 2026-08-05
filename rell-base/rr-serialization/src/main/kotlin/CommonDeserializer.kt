@@ -10,6 +10,7 @@ import net.postchain.rell.base.model.rr.RR_FrameDescriptor
 import rell.ir.CallFrame
 import rell.ir.FrameBlock
 import rell.ir.SourcePos
+import rell.ir.DefinitionId as FbDefinitionId
 import rell.ir.DefinitionName as FbDefinitionName
 import rell.ir.ModuleName as FbModuleName
 import rell.ir.MountName as FbMountName
@@ -34,6 +35,9 @@ fun deserializeDefinitionName(fb: FbDefinitionName?): DefinitionName {
         simpleName = fb.simpleName,
     )
 }
+
+fun deserializeDefinitionId(fb: FbDefinitionId?): DefinitionId? =
+    if (fb == null) null else DefinitionId(fb.module, fb.definition)
 
 fun deserializeFilePos(fb: SourcePos?): FilePos {
     if (fb == null) return FilePos("?", 0)

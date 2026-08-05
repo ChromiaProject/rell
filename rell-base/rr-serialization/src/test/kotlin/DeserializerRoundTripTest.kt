@@ -4,117 +4,24 @@
 
 package net.postchain.rell.serialization
 
+import net.postchain.rell.base.model.rr.RR_App
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
+/**
+ * True round-trip tests: `deserialize(serialize(RR_App))` produces a structurally equal [RR_App].
+ *
+ * The whole RR_ tree consists of data classes referring to definitions by index rather than by
+ * reference, so plain equality is a complete check: anything the serializer drops or mangles
+ * shows up as a mismatch.
+ */
 class DeserializerRoundTripTest: BaseSerializerTest() {
     private fun roundTrip(@Language("Rell") code: String) {
         val original = compileApp(code)
         val bytes = serializeRellApp(original)
         val deserialized = deserializeRellApp(bytes)
-
-        // Flat array sizes must match.
-        assertEquals(original.allEntities.size, deserialized.allEntities.size, "entity count")
-        assertEquals(original.allStructs.size, deserialized.allStructs.size, "struct count")
-        assertEquals(original.allEnums.size, deserialized.allEnums.size, "enum count")
-        assertEquals(original.allObjects.size, deserialized.allObjects.size, "object count")
-        assertEquals(original.allOperations.size, deserialized.allOperations.size, "operation count")
-        assertEquals(original.allQueries.size, deserialized.allQueries.size, "query count")
-        assertEquals(original.allFunctions.size, deserialized.allFunctions.size, "function count")
-        assertEquals(original.allConstants.size, deserialized.allConstants.size, "constant count")
-        assertEquals(original.modules.size, deserialized.modules.size, "module count")
-        assertEquals(original.externalChains.size, deserialized.externalChains.size, "external chain count")
-
-        // Module names and structure.
-        for (i in original.modules.indices) {
-            val om = original.modules[i]
-            val dm = deserialized.modules[i]
-            assertEquals(om.name, dm.name, "module[$i].name")
-            assertEquals(om.directory, dm.directory, "module[$i].directory")
-            assertEquals(om.abstract, dm.abstract, "module[$i].abstract")
-            assertEquals(om.external, dm.external, "module[$i].external")
-            assertEquals(om.test, dm.test, "module[$i].test")
-            assertEquals(om.entities.keys, dm.entities.keys, "module[$i].entities.keys")
-            assertEquals(om.structs.keys, dm.structs.keys, "module[$i].structs.keys")
-            assertEquals(om.enums.keys, dm.enums.keys, "module[$i].enums.keys")
-            assertEquals(om.functions.keys, dm.functions.keys, "module[$i].functions.keys")
-            assertEquals(om.operations.keys, dm.operations.keys, "module[$i].operations.keys")
-            assertEquals(om.queries.keys, dm.queries.keys, "module[$i].queries.keys")
-        }
-
-        // Entity definitions.
-        for (i in original.allEntities.indices) {
-            val oe = original.allEntities[i]
-            val de = deserialized.allEntities[i]
-            assertEquals(oe.base.defId, de.base.defId, "entity[$i].defId")
-            assertEquals(oe.base.defName.qualifiedName, de.base.defName.qualifiedName, "entity[$i].defName")
-            assertEquals(oe.rName, de.rName, "entity[$i].rName")
-            assertEquals(oe.flags, de.flags, "entity[$i].flags")
-            assertEquals(oe.sqlMapping.mountName, de.sqlMapping.mountName, "entity[$i].sqlMapping.mountName")
-            assertEquals(oe.sqlMapping.kind, de.sqlMapping.kind, "entity[$i].sqlMapping.kind")
-            assertEquals(oe.attributes.keys, de.attributes.keys, "entity[$i].attributes.keys")
-
-            for (attrName in oe.attributes.keys) {
-                val oa = oe.attributes[attrName]!!
-                val da = de.attributes[attrName]!!
-                assertEquals(oa.type, da.type, "entity[$i].attr[$attrName].type")
-                assertEquals(oa.mutable, da.mutable, "entity[$i].attr[$attrName].mutable")
-            }
-        }
-
-        // Struct definitions.
-        for (i in original.allStructs.indices) {
-            val os = original.allStructs[i]
-            val ds = deserialized.allStructs[i]
-            assertEquals(os.base.defId, ds.base.defId, "struct[$i].defId")
-            assertEquals(os.struct.name, ds.struct.name, "struct[$i].name")
-            assertEquals(os.struct.attributes.keys, ds.struct.attributes.keys, "struct[$i].attributes.keys")
-        }
-
-        // Enum definitions.
-        for (i in original.allEnums.indices) {
-            val oe = original.allEnums[i]
-            val de = deserialized.allEnums[i]
-            assertEquals(oe.base.defId, de.base.defId, "enum[$i].defId")
-            assertEquals(oe.attrs.size, de.attrs.size, "enum[$i].attrs.size")
-
-            for (j in oe.attrs.indices) {
-                assertEquals(oe.attrs[j].name, de.attrs[j].name, "enum[$i].attr[$j].name")
-                assertEquals(oe.attrs[j].value, de.attrs[j].value, "enum[$i].attr[$j].value")
-            }
-        }
-
-        // Query/operation mount names from allQueries/allOperations must survive round-trip.
-        // Note: original.queries may contain extra system queries not in allQueries.
-        val originalQueryMounts = original.allQueries.map { it.mountName }.toSet()
-        val deserializedQueryMounts = deserialized.allQueries.map { it.mountName }.toSet()
-        assertEquals(originalQueryMounts, deserializedQueryMounts, "query mount names (from flat array)")
-
-        val originalOpMounts = original.allOperations.map { it.mountName }.toSet()
-        val deserializedOpMounts = deserialized.allOperations.map { it.mountName }.toSet()
-        assertEquals(originalOpMounts, deserializedOpMounts, "operation mount names (from flat array)")
-
-        // Definition ID index maps must match.
-        assertEquals(original.entityDefIdIndex, deserialized.entityDefIdIndex, "entityDefIdIndex")
-        assertEquals(original.enumDefIdIndex, deserialized.enumDefIdIndex, "enumDefIdIndex")
-
-        assertEquals(
-            original.nativeFunctions.keys,
-            deserialized.nativeFunctions.keys,
-            "nativeFunctions.keys",
-        )
-
-        for (name in original.nativeFunctions.keys) {
-            val oh = original.nativeFunctions.getValue(name)
-            val dh = deserialized.nativeFunctions.getValue(name)
-            assertEquals(oh.type, dh.type, "nativeFunctions[$name].type")
-            assertEquals(oh.params.size, dh.params.size, "nativeFunctions[$name].params.size")
-            for (i in oh.params.indices) {
-                assertEquals(oh.params[i].name, dh.params[i].name, "nativeFunctions[$name].params[$i].name")
-                assertEquals(oh.params[i].type, dh.params[i].type, "nativeFunctions[$name].params[$i].type")
-            }
-        }
+        assertEquals(original, deserialized)
     }
 
     // --- Tests ---
@@ -239,6 +146,19 @@ class DeserializerRoundTripTest: BaseSerializerTest() {
         """
         struct point { x: integer; y: integer; }
         function origin() = point(x = 0, y = 0);
+    """,
+    )
+
+    @Test fun testDefaultParameterValues() = roundTrip(
+        """
+        function f(x: integer = 42, y: text = "hi"): text = y + x;
+    """,
+    )
+
+    @Test fun testAttributeDefaultValues() = roundTrip(
+        """
+        entity user { name: text = "anon"; score: integer = 0; }
+        struct point { x: integer = 1; y: integer = 2; }
     """,
     )
 

@@ -70,6 +70,7 @@ fun SerializerContext.serializeStructDefinition(struct: RR_StructDefinition): In
         val defStr = createString(mi.definition)
         MirrorStructInfo.createMirrorStructInfo(builder, defKind, defStr, mi.mutable)
     }
+    val initFrame = serializeFrameDescriptor(struct.base.initFrame)
 
     FbStructDefinition.startStructDefinition(builder)
     FbStructDefinition.addDefName(builder, defName)
@@ -78,6 +79,7 @@ fun SerializerContext.serializeStructDefinition(struct: RR_StructDefinition): In
     FbStructDefinition.addFlags(builder, flags)
     if (mirrorInfo != null) FbStructDefinition.addMirrorInfo(builder, mirrorInfo)
     FbStructDefinition.addHasDefaultConstructor(builder, struct.hasDefaultConstructor)
+    FbStructDefinition.addInitFrame(builder, initFrame)
     return FbStructDefinition.endStructDefinition(builder)
 }
 
@@ -88,31 +90,38 @@ fun SerializerContext.serializeEnumDefinition(enum: RR_EnumDefinition): Int {
         FbEnumAttr.createEnumAttr(builder, attrName, attr.value)
     }.toIntArray()
     val attrsVec = builder.createVectorOfTables(attrs)
+    val initFrame = serializeFrameDescriptor(enum.base.initFrame)
 
     FbEnumDefinition.startEnumDefinition(builder)
     FbEnumDefinition.addDefName(builder, defName)
     FbEnumDefinition.addAttrs(builder, attrsVec)
+    FbEnumDefinition.addInitFrame(builder, initFrame)
     return FbEnumDefinition.endEnumDefinition(builder)
 }
 
 fun SerializerContext.serializeObjectDefinition(obj: RR_ObjectDefinition): Int {
     val defName = serializeDefinitionName(obj.base.defName)
     val entityIdx = resolveEntityIndex(obj.rEntity).toUInt()
+    val initFrame = serializeFrameDescriptor(obj.base.initFrame)
 
     FbObjectDefinition.startObjectDefinition(builder)
     FbObjectDefinition.addDefName(builder, defName)
     FbObjectDefinition.addEntityDefIndex(builder, entityIdx)
+    FbObjectDefinition.addInitFrame(builder, initFrame)
     return FbObjectDefinition.endObjectDefinition(builder)
 }
 
 fun SerializerContext.serializeFunctionDefinition(fn: RR_FunctionDefinition): Int {
     val defName = serializeDefinitionName(fn.base.defName)
     val bodyOff = serializeFunctionBody(fn.fnBase)
+    val initFrame = serializeFrameDescriptor(fn.base.initFrame)
 
     FbFunctionDefinition.startFunctionDefinition(builder)
     FbFunctionDefinition.addDefName(builder, defName)
     FbFunctionDefinition.addBody(builder, bodyOff)
     FbFunctionDefinition.addIsTest(builder, fn.isTest)
+    FbFunctionDefinition.addDisabled(builder, fn.disabled)
+    FbFunctionDefinition.addInitFrame(builder, initFrame)
     return FbFunctionDefinition.endFunctionDefinition(builder)
 }
 
@@ -124,6 +133,7 @@ fun SerializerContext.serializeOperationDefinition(op: RR_OperationDefinition): 
     )
     val body = serializeOperationBody(op)
     val guardBody = op.guardBody?.let { serializeStmt(it) }
+    val initFrame = serializeFrameDescriptor(op.base.initFrame)
 
     FbOperationDefinition.startOperationDefinition(builder)
     FbOperationDefinition.addDefName(builder, defName)
@@ -131,6 +141,7 @@ fun SerializerContext.serializeOperationDefinition(op: RR_OperationDefinition): 
     FbOperationDefinition.addModifiers(builder, modifiers)
     FbOperationDefinition.addBody(builder, body)
     if (guardBody != null) FbOperationDefinition.addGuardBody(builder, guardBody)
+    FbOperationDefinition.addInitFrame(builder, initFrame)
     return FbOperationDefinition.endOperationDefinition(builder)
 }
 
@@ -138,11 +149,13 @@ fun SerializerContext.serializeQueryDefinition(query: RR_QueryDefinition): Int {
     val defName = serializeDefinitionName(query.base.defName)
     val mountName = serializeMountName(query.mountName)
     val body = serializeQueryBody(query.body)
+    val initFrame = serializeFrameDescriptor(query.base.initFrame)
 
     FbQueryDefinition.startQueryDefinition(builder)
     FbQueryDefinition.addDefName(builder, defName)
     FbQueryDefinition.addMountName(builder, mountName)
     FbQueryDefinition.addBody(builder, body)
+    FbQueryDefinition.addInitFrame(builder, initFrame)
     return FbQueryDefinition.endQueryDefinition(builder)
 }
 
@@ -158,6 +171,7 @@ fun SerializerContext.serializeGlobalConstantDefinition(const: RR_GlobalConstant
     FbGlobalConstantDefinition.startGlobalConstantDefinition(builder)
     FbGlobalConstantDefinition.addDefName(builder, defName)
     FbGlobalConstantDefinition.addConstIndex(builder, const.constId.index.toUInt())
+    FbGlobalConstantDefinition.addAppUid(builder, const.constId.app.id)
     FbGlobalConstantDefinition.addType(builder, type)
     FbGlobalConstantDefinition.addValue(builder, value)
     FbGlobalConstantDefinition.addFrame(builder, frame)
@@ -281,6 +295,7 @@ internal fun SerializerContext.serializeFunctionBody(fnBase: RR_FunctionBase): I
     val stmt = serializeStmt(fnBase.body)
     val frame = serializeFrameDescriptor(fnBase.frame)
     val defName = serializeDefinitionName(fnBase.defName)
+    val defId = serializeDefinitionId(fnBase.defId)
 
     FbFunctionBody.startFunctionBody(builder)
     FbFunctionBody.addType(builder, type)
@@ -289,6 +304,7 @@ internal fun SerializerContext.serializeFunctionBody(fnBase: RR_FunctionBase): I
     FbFunctionBody.addBody(builder, stmt)
     FbFunctionBody.addFrame(builder, frame)
     FbFunctionBody.addDefName(builder, defName)
+    FbFunctionBody.addDefId(builder, defId)
     return FbFunctionBody.endFunctionBody(builder)
 }
 
