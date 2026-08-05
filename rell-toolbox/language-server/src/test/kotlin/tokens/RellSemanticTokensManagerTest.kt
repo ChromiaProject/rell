@@ -8,6 +8,7 @@ import assertk.assertThat
 import assertk.assertions.*
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
+import net.postchain.rell.base.model.Name
 import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolId
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
@@ -114,6 +115,53 @@ internal class RellSemanticTokensManagerTest {
         val defId = if (isCall) null else DUMMY_DEF_ID
         val info = IdeSymbolInfo.make(origin, defId, null, null)
         assertThat(tokenFromIdeSymbolInfo(info)).isEqualTo(target)
+    }
+
+    @Test
+    fun `Type symbol with attribute def id maps to attribute token`() {
+        fun typeInfo(defId: IdeSymbolId?) = IdeSymbolInfo.make(IdeSymbolKind.DEF_TYPE, defId, null, null)
+        fun attrId(root: IdeSymbolCategory) =
+            IdeSymbolId(root, "d").appendMember(IdeSymbolCategory.ATTRIBUTE, Name.of("name"))
+
+        assertThat(tokenFromIdeSymbolInfo(typeInfo(attrId(IdeSymbolCategory.ENTITY))))
+            .isEqualTo(RellTokenType.ENTITY_ATTR_NORMAL_VAL)
+        assertThat(tokenFromIdeSymbolInfo(typeInfo(attrId(IdeSymbolCategory.OBJECT))))
+            .isEqualTo(RellTokenType.ENTITY_ATTR_NORMAL_VAL)
+        assertThat(tokenFromIdeSymbolInfo(typeInfo(attrId(IdeSymbolCategory.STRUCT))))
+            .isEqualTo(RellTokenType.STRUCT_ATTR_VAL)
+        // Non-attribute def ids (e.g. a function parameter's) keep the type token.
+        val paramId = IdeSymbolId(IdeSymbolCategory.FUNCTION, "f")
+            .appendMember(IdeSymbolCategory.PARAMETER, Name.of("name"))
+        assertThat(tokenFromIdeSymbolInfo(typeInfo(paramId))).isEqualTo(RellTokenType.TYPE)
+        assertThat(tokenFromIdeSymbolInfo(typeInfo(null))).isEqualTo(RellTokenType.TYPE)
+    }
+
+    @Test
+    fun `Attribute declared by bare type name is an attribute token`(@TempDir tempDir: File) {
+        val testDataBuilder = testData(tempDir) {
+            addFile(
+                rellFile,
+                """
+                module;
+                entity e { name; }
+                object o { mutable name = "World"; }
+                struct s { text; }
+                """.trimIndent()
+            )
+        }
+        val fileMap: MutableMap<C_SourcePath, C_SourceFile> = mutableMapOf()
+        val resourceFactory = RellResourceFactory(tempDir.toURI(), AntlrRellParser(), ChromiaModelProvider(null))
+        val rellFileUri = testDataBuilder.sourceFile(rellFile).toURI()
+        val resource = resourceFactory.buildRellResource(rellFileUri, fileMap)
+
+        val tokens = RellSemanticTokensManager().getSemanticTokens(resource)
+
+        assertThat(tokens).extracting { listOf(it.line, it.col, it.len, it.tokenType) }
+            .containsAtLeast(
+                listOf(1, 11, 4, RellTokenType.ENTITY_ATTR_NORMAL_VAL),
+                listOf(2, 19, 4, RellTokenType.ENTITY_ATTR_NORMAL_VAL),
+                listOf(3, 11, 4, RellTokenType.STRUCT_ATTR_VAL),
+            )
     }
 
     @Test

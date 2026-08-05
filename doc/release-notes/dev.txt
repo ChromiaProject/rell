@@ -16,3 +16,15 @@ converts to
     function f(x: integer): integer = x + 1;
 
 and back.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Tools: Attributes declared by a bare type name are highlighted as attributes
+
+An attribute declared by a name with implicit type, such as `name` in
+
+    entity user { name; }
+    object greeting { mutable name = "World"; }
+
+used to get the semantic token of a type reference, so editors coloured it like a type. The
+language server now emits an attribute token for such declarations in entity, object and struct
+bodies, matching attributes declared with an explicit name (`name: text`).

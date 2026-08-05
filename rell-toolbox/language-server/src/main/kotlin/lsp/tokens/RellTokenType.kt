@@ -4,6 +4,7 @@
 
 package net.postchain.rell.toolbox.lsp.tokens
 
+import net.postchain.rell.base.utils.ide.IdeSymbolCategory
 import net.postchain.rell.base.utils.ide.IdeSymbolInfo
 import net.postchain.rell.base.utils.ide.IdeSymbolKind
 
@@ -121,7 +122,7 @@ internal fun tokenFromIdeSymbolInfo(info: IdeSymbolInfo): RellTokenType {
         IdeSymbolKind.DEF_OPERATION -> getCallOrDefault(info, RellTokenType.OPERATION_CALL, RellTokenType.OPERATION)
         IdeSymbolKind.DEF_QUERY -> getCallOrDefault(info, RellTokenType.QUERY_CALL, RellTokenType.QUERY)
         IdeSymbolKind.DEF_STRUCT -> RellTokenType.STRUCT
-        IdeSymbolKind.DEF_TYPE -> RellTokenType.TYPE
+        IdeSymbolKind.DEF_TYPE -> anonAttrToken(info) ?: RellTokenType.TYPE
         IdeSymbolKind.EXPR_CALL_ARG -> RellTokenType.NAMED_ARGUMENT
         IdeSymbolKind.EXPR_IMPORT_ALIAS -> RellTokenType.MODULE
         IdeSymbolKind.LOC_AT_ALIAS -> RellTokenType.AT_ALIAS
@@ -149,4 +150,20 @@ internal fun tokenFromIdeSymbolInfo(info: IdeSymbolInfo): RellTokenType {
 
 internal fun getCallOrDefault(info: IdeSymbolInfo, call: RellTokenType, default: RellTokenType): RellTokenType {
     return if (info.defId == null) call else default
+}
+
+/**
+ * An attribute declared by a bare type name (`entity user { name; }`) keeps the type's symbol kind,
+ * but unlike a plain type reference its def id identifies the attribute being declared. Highlight
+ * such names as attributes, not types. Mutability and key/index placement are not recoverable from
+ * the def id, so the plain VAL attribute token stands in for all of them.
+ */
+private fun anonAttrToken(info: IdeSymbolInfo): RellTokenType? {
+    val defId = info.defId
+    if (defId == null || defId.lastCategory != IdeSymbolCategory.ATTRIBUTE) return null
+    return if (defId.rootCategory == IdeSymbolCategory.STRUCT) {
+        RellTokenType.STRUCT_ATTR_VAL
+    } else {
+        RellTokenType.ENTITY_ATTR_NORMAL_VAL
+    }
 }

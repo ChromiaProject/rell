@@ -73,6 +73,12 @@ class IdeSymbolId(
         private val name: String,
         private val members: ImmList<Pair<IdeSymbolCategory, Name>> = immListOf(),
 ) {
+    /** Category of the root path element, e.g. ENTITY in `entity[user].attr[name]`. */
+    val rootCategory: IdeSymbolCategory get() = category
+
+    /** Category of the innermost path element: the last member's if any, else the root's. */
+    val lastCategory: IdeSymbolCategory get() = members.lastOrNull()?.first ?: category
+
     fun encode(): String {
         val path = listOf(category to name) + members.map { it.first to it.second.str }
         return path.joinToString(".") { "${it.first.code}[${it.second}]" }
