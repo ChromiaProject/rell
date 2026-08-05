@@ -49,6 +49,7 @@ public final class net/postchain/rell/toolbox/indexer/WorkspaceIndexer {
 	public final fun getFileMap ()Ljava/util/concurrent/ConcurrentHashMap;
 	public final fun getFileUriResourceMap ()Ljava/util/concurrent/ConcurrentHashMap;
 	public final fun getFileUrisWithPrefix (Ljava/net/URI;)Ljava/util/Collection;
+	public final fun getFormatterOptions ()Lnet/postchain/rell/toolbox/formatter/FormatterOptions;
 	public final fun getProjectRootUri ()Ljava/net/URI;
 	public final fun getResource (Ljava/net/URI;)Lnet/postchain/rell/toolbox/indexer/Resource;
 	public final fun getResources ()Ljava/util/Collection;
