@@ -331,7 +331,21 @@ class RellAntlrVisitor(
                 val nullable = ctx.children.any { it is TerminalNode && it.text == "?" }
                 S_AnonAttrHeader(qName, nullable)
             }
-            else -> error("unknown attrHeader: ${ctx.javaClass.simpleName}")
+            else -> {
+                // Error-recovery path: on a syntax error inside the header ANTLR instantiates the
+                // bare AttrHeaderContext instead of a labeled alternative. Salvage the attribute
+                // name from the first identifier so `parseWithErrors` can return a usable partial
+                // AST; the syntax error itself is reported by the parser's error listener.
+                val idTok = ctx.children.orEmpty()
+                    .filterIsInstance<TerminalNode>()
+                    .firstOrNull { it !is ErrorNode && it.symbol.type == RellParser.RULE_ID }
+                val qName = if (idTok != null) {
+                    S_QualifiedName(immListOf(idTokenToName(idTok)))
+                } else {
+                    placeholderName(ctx.start?.toPos() ?: errorPos())
+                }
+                S_AnonAttrHeader(qName, false)
+            }
         }
     }
 

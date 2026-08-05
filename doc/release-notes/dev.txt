@@ -28,3 +28,15 @@ An attribute declared by a name with implicit type, such as `name` in
 used to get the semantic token of a type reference, so editors coloured it like a type. The
 language server now emits an attribute token for such declarations in entity, object and struct
 bodies, matching attributes declared with an explicit name (`name: text`).
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tools: A syntax error in an attribute header no longer breaks all editor features for the file
+
+A syntax error inside an attribute header — for example a negative annotation argument, as in
+
+    struct s { @max_size(-2) l: text; }
+
+crashed the language server's indexing of the whole file ("Internal error: unknown attrHeader"),
+after which highlighting, completion and navigation stopped working for it. The AST builder now
+recovers from the malformed header and reports the syntax error normally, keeping every other
+feature alive for the rest of the file.

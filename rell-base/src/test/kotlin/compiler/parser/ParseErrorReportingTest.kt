@@ -104,6 +104,16 @@ class ParseErrorReportingTest {
         assertNull(err, "non-EOF errors must not trigger the JLine continuation prompt")
     }
 
+    @Test fun testMalformedAttrHeaderYieldsPartialAstNotCrash() {
+        // A syntax error inside an attribute header (here: a negative annotation argument, which
+        // the grammar rejects) makes ANTLR's recovery produce a bare AttrHeaderContext instead of
+        // a labeled alternative. The visitor must salvage a partial AST, not throw.
+        val errors = mutableListOf<C_Error>()
+        val ast = parse("struct s { @max_size(-2) l: text; }", errors)
+        assertNotNull(ast)
+        assertTrue(errors.isNotEmpty(), "expected syntax errors, got none")
+    }
+
     private fun parse(src: String, errors: MutableList<C_Error>) =
         C_Parser.parseWithErrors(
             filePath = C_SourcePath.parse("test.rell"),
