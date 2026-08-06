@@ -112,8 +112,9 @@ env_rows=$(printf '%s' "$envs_json" | jq -c \
             when: ((.updated_at // .created_at) | (.[0:10] // "")),
             ts: ((.updated_at // .created_at) // "")
           }
-        | if (.kind == "benchmarks" or .kind == "profile") and ($verified | index(data_url(.url)))
-          then . + {data: data_url(.url)}
+        | (data_url(.url)) as $du
+        | if (.kind == "benchmarks" or .kind == "profile") and ($verified | index($du))
+          then . + {data: $du}
           else . end
   ]')
 
