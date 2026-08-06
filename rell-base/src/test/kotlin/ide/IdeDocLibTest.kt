@@ -276,8 +276,8 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
             }
         }
 
-        chkSyms("function f(d: data) = d.foo();", "foo=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:data.foo")
-        chkSyms("function f(d: data) = d.spec();", "spec=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:data.spec")
+        chkSyms("function f(d: data) = d.foo();", "foo=MEM_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:data.foo")
+        chkSyms("function f(d: data) = d.spec();", "spec=MEM_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:data.spec")
         chkSyms("function f() = data.stat();", "stat=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:data.stat")
         chkSyms("function f() = data.stat_spec();", "stat_spec=DEF_FUNCTION_SYSTEM|-|-",
             "?head=FUNCTION|mod:data.stat_spec")
@@ -302,10 +302,10 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
             }
         }
 
-        chkSyms("function _f(d: data) = d.f();", "f=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:data.f",
+        chkSyms("function _f(d: data) = d.f();", "f=MEM_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:data.f",
             err = "deprecated:FUNCTION:[mod:data.f]:new_f",
         )
-        chkSyms("function _f(d: data) = d.g();", "g=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:data.g",
+        chkSyms("function _f(d: data) = d.g();", "g=MEM_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:data.g",
             warn = "deprecated:FUNCTION:[mod:data.g]:new_g",
         )
         chkSyms("function _f() = data.h();", "h=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|mod:data.h",
@@ -327,20 +327,20 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
         }
 
         chkSyms("function _f(d: data) = d.f();",
-            "f=DEF_FUNCTION_SYSTEM|-|-",
+            "f=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.f|<function> f(): [text]",
         )
         chkSyms("function _f(d: data) = d.g();",
-            "g=DEF_FUNCTION_SYSTEM|-|-",
+            "g=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=ALIAS|mod:data.g|<alias> g = [f]\n\n<function> f(): [text]",
         )
         chkSyms("function _f(d: data) = d.h();",
-            "h=DEF_FUNCTION_SYSTEM|-|-",
+            "h=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=ALIAS|mod:data.h|@deprecated\n<alias> h = [f]\n\n<function> f(): [text]",
             warn = "deprecated:ALIAS:[mod:data.h]:f",
         )
         chkSyms("function _f(d: data) = d.k();",
-            "k=DEF_FUNCTION_SYSTEM|-|-",
+            "k=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=ALIAS|mod:data.k|@deprecated(ERROR)\n<alias> k = [f]\n\n<function> f(): [text]",
             err = "deprecated:ALIAS:[mod:data.k]:f",
         )
@@ -380,9 +380,9 @@ class IdeDocLibTest: BaseIdeSymbolTest() {
         }
 
         chkSymsExpr("''.foo()",
-            "foo=DEF_FUNCTION_SYSTEM|-|-", "?doc=FUNCTION|mod:test_ext.foo|<function> foo(): [T]")
+            "foo=MEM_FUNCTION_SYSTEM|-|-", "?doc=FUNCTION|mod:test_ext.foo|<function> foo(): [T]")
         chkSymsExpr("''.spec()",
-            "spec=DEF_FUNCTION_SYSTEM|-|-", "?doc=FUNCTION|mod:test_ext.spec|<function> spec(...)")
+            "spec=MEM_FUNCTION_SYSTEM|-|-", "?doc=FUNCTION|mod:test_ext.spec|<function> spec(...)")
         chkSymsExpr("text.stat()",
             "stat=DEF_FUNCTION_SYSTEM|-|-", "?doc=FUNCTION|mod:test_ext.stat|<static> <function> stat(): [T]")
         chkSymsExpr("text.stat_spec()",

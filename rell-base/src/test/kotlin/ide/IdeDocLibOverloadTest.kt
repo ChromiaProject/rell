@@ -235,15 +235,15 @@ class IdeDocLibOverloadTest: BaseIdeSymbolTest() {
     @Test fun testTypeDefFunctionOverload() {
         initTypeFnOverload()
         chkSyms("function _f(d: data) = d.f();",
-            "f=DEF_FUNCTION_SYSTEM|-|-",
+            "f=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.f|<function> f(): [text]",
         )
         chkSyms("function _f(d: data) = d.f(0);",
-            "f=DEF_FUNCTION_SYSTEM|-|-",
+            "f=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.f|<function> f(\n\tx: [integer]\n): [boolean]",
         )
         chkSyms("function _f(d: data) = d.f(0.0, x'');",
-            "f=DEF_FUNCTION_SYSTEM|-|-",
+            "f=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.f|<function> f(\n\ta: [decimal],\n\tb: [byte_array]\n): [integer]",
         )
     }
@@ -253,17 +253,17 @@ class IdeDocLibOverloadTest: BaseIdeSymbolTest() {
 
         // TODO docs must have list of all function cases
         chkSyms("function _f(d: data) = d.f(false);",
-            "f=DEF_FUNCTION_SYSTEM|-|-",
+            "f=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.f|<function> f(): [text]",
             err = "expr_call_badargs:[data.f]:[boolean]",
         )
         chkSyms("function _f(d: data) = d.f(foo = 'hello');",
-            "f=DEF_FUNCTION_SYSTEM|-|-",
+            "f=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.f|<function> f(): [text]",
             err = "expr_call_badargs:[data.f]:[foo:text]",
         )
         chkSyms("function _f(d: data) = d.f;",
-            "f=DEF_FUNCTION_SYSTEM|-|-",
+            "f=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.f|<function> f(): [text]",
             err = "expr_novalue:function:[f]",
         )
@@ -273,20 +273,20 @@ class IdeDocLibOverloadTest: BaseIdeSymbolTest() {
         initTypeFnOverload()
         // TODO docs must have list of all function cases
         chkSyms("function _f(d: data) = d.f(*);",
-            "f=DEF_FUNCTION_SYSTEM|-|-",
+            "f=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.f|<function> f(): [text]",
             err = "expr:call:partial_ambiguous:[data.f]",
         )
         chkSyms("function _f(d: data): () -> text = d.f(*);",
-            "f=DEF_FUNCTION_SYSTEM|-|-",
+            "f=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.f|<function> f(): [text]",
         )
         chkSyms("function _f(d: data): (integer) -> boolean = d.f(*);",
-            "f=DEF_FUNCTION_SYSTEM|-|-",
+            "f=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.f|<function> f(\n\tx: [integer]\n): [boolean]",
         )
         chkSyms("function _f(d: data): (decimal, byte_array) -> integer = d.f(*);",
-            "f=DEF_FUNCTION_SYSTEM|-|-",
+            "f=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.f|<function> f(\n\ta: [decimal],\n\tb: [byte_array]\n): [integer]",
         )
     }
@@ -464,19 +464,19 @@ class IdeDocLibOverloadTest: BaseIdeSymbolTest() {
     @Test fun testTypeDefGenericFunctionOverload() {
         initTypeGenFnOverload()
         chkSyms("function _f(d: data<decimal>) = d.f(0.0);",
-            "f=DEF_FUNCTION_SYSTEM|-|-",
+            "f=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.f|<function> f(\n\tx: [T]\n): [boolean]",
         )
         chkSyms("function _f(d: data<decimal>) = d.f(0.0, '');",
-            "f=DEF_FUNCTION_SYSTEM|-|-",
+            "f=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.f|<function> f(\n\ta: [T],\n\tb: [text]\n): [integer]",
         )
         chkSyms("function _f(d: data<decimal>) = d.g(0.0, 1L);",
-            "g=DEF_FUNCTION_SYSTEM|-|-",
+            "g=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.g|<function> <R> g(\n\tx: [T],\n\ty: [R]\n): [boolean]",
         )
         chkSyms("function _f(d: data<decimal>) = d.g(1L, 0.0, '');",
-            "g=DEF_FUNCTION_SYSTEM|-|-",
+            "g=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=FUNCTION|mod:data.g|<function> <R> g(\n\ta: [R],\n\tb: [T],\n\tc: [text]\n): [integer]",
         )
     }
@@ -485,16 +485,16 @@ class IdeDocLibOverloadTest: BaseIdeSymbolTest() {
     /*@Test*/ fun testTypeDefGenericFunctionOverloadPartCall() {
         initTypeGenFnOverload()
         chkSyms("function _f(d: data<decimal>) = d.g(*);",
-            "g=DEF_FUNCTION_SYSTEM|-|-",
+            "g=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=mod:data.g|<function> <R> g(\n\tx: [T],\n\ty: [R]): [boolean]",
             err = "...",
         )
         chkSyms("function _f(d: data<decimal>): (decimal, big_integer) -> boolean = d.g(*);",
-            "g=DEF_FUNCTION_SYSTEM|-|-",
+            "g=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=mod:data.g|<function> <R> g(\n\tx: [T],\n\ty: [R]): [boolean]",
         )
         chkSyms("function _f(d: data<decimal>): (big_integer, decimal, text) -> integer = d.g(*);",
-            "g=DEF_FUNCTION_SYSTEM|-|-",
+            "g=MEM_FUNCTION_SYSTEM|-|-",
             "?doc=mod:data.g|<function> <R> g(\n\ta: [R],\n\tb: [T],\n\tc: [text]\n): [integer]",
         )
     }

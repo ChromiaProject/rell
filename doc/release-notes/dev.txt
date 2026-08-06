@@ -20,22 +20,31 @@ and back.
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 2. Tools: Several editor highlighting mismatches fixed
 
-An attribute declared by a name with implicit type, such as `name` in
+An attribute declared by a name with implicit type, such as name in
 
     entity user { name; }
     object greeting { mutable name = "World"; }
 
 used to get the semantic token of a type reference, so editors coloured it like a type. The
 language server now emits an attribute token for such declarations in entity, object and struct
-bodies, matching attributes declared with an explicit name (`name: text`).
+bodies, matching attributes declared with an explicit name (name: text).
 
-The alias name in an import declaration, such as `hc` in
+The alias name in an import declaration, such as hc in
 
     import hc: ^^^.hybridcompute;
 
-used to get the semantic token of a keyword, so editors coloured it the same as `import` itself.
+used to get the semantic token of a keyword, so editors colored it the same as import itself.
 The language server now emits a namespace token for the alias declaration, matching the token
 already used at the alias's usage sites.
+
+A call to a member function on a value, such as to_gtv_pretty in
+
+    x.to_gtv_pretty()
+
+used to get the same semantic token as a call to a declared or global system function, so editors
+that italicize function calls (to set them apart from calling a function value held in a variable)
+italicized member calls too. The language server now emits a dedicated method token for these
+calls, letting editors style them differently.
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 3. Tools: A syntax error in an attribute header no longer breaks all editor features for the file

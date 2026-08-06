@@ -371,8 +371,8 @@ class IdeSymbolDefTest: BaseIdeSymbolTest() {
     @Test fun testFunctionRefSys() {
         chkSymsExpr("print()", "print=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|rell:print")
         chkSymsExpr("log()", "log=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|rell:log")
-        chkSymsExpr("'hello'.size()", "size=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|rell:text.size")
-        chkSymsExpr("'hello'.index_of('world')", "index_of=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|rell:text.index_of")
+        chkSymsExpr("'hello'.size()", "size=MEM_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|rell:text.size")
+        chkSymsExpr("'hello'.index_of('world')", "index_of=MEM_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|rell:text.index_of")
 
         chkSymsExpr("crypto.sha256(x'1234')",
             "crypto=DEF_NAMESPACE|-|-", "?head=NAMESPACE|rell:crypto",

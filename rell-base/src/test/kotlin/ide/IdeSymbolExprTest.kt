@@ -18,20 +18,21 @@ class IdeSymbolExprTest: BaseIdeSymbolTest() {
         val rec = arrayOf("rec=DEF_STRUCT|-|module.rell/struct[rec]", "?head=STRUCT|:rec")
         val g = arrayOf("g=DEF_FUNCTION|-|module.rell/function[g]", "?head=FUNCTION|:g")
         val fnKind = "DEF_FUNCTION_SYSTEM"
+        val memFnKind = "MEM_FUNCTION_SYSTEM"
 
         chkSymsExpr("data.from_gtv(g())", *data, "from_gtv=$fnKind|-|-", "?head=FUNCTION|rell:rell.gtv_ext.from_gtv", *g)
         chkSymsExpr("rec.from_gtv(g())", *rec, "from_gtv=$fnKind|-|-", "?head=FUNCTION|rell:rell.gtv_ext.from_gtv", *g)
-        chkSymsExpr("(data@{}).to_gtv()", *data, "to_gtv=$fnKind|-|-", "?head=FUNCTION|rell:rell.gtv_ext.to_gtv")
-        chkSymsExpr("rec().to_gtv()", *rec, "to_gtv=$fnKind|-|-", "?head=FUNCTION|rell:rell.gtv_ext.to_gtv")
+        chkSymsExpr("(data@{}).to_gtv()", *data, "to_gtv=$memFnKind|-|-", "?head=FUNCTION|rell:rell.gtv_ext.to_gtv")
+        chkSymsExpr("rec().to_gtv()", *rec, "to_gtv=$memFnKind|-|-", "?head=FUNCTION|rell:rell.gtv_ext.to_gtv")
 
         chkSymsExpr("gtv.from_json('')",
             "gtv=DEF_TYPE|-|-", "?head=TYPE|rell:gtv",
             "from_json=$fnKind|-|-", "?head=FUNCTION|rell:gtv.from_json",
         )
-        chkSymsExpr("g().to_bytes()", *g, "to_bytes=$fnKind|-|-", "?head=FUNCTION|rell:gtv.to_bytes")
+        chkSymsExpr("g().to_bytes()", *g, "to_bytes=$memFnKind|-|-", "?head=FUNCTION|rell:gtv.to_bytes")
 
-        chkSymsExpr("(123).to_gtv()", "to_gtv=$fnKind|-|-", "?head=FUNCTION|rell:rell.gtv_ext.to_gtv")
-        chkSymsExpr("(123).to_hex()", "to_hex=$fnKind|-|-", "?head=FUNCTION|rell:integer.to_hex")
+        chkSymsExpr("(123).to_gtv()", "to_gtv=$memFnKind|-|-", "?head=FUNCTION|rell:rell.gtv_ext.to_gtv")
+        chkSymsExpr("(123).to_hex()", "to_hex=$memFnKind|-|-", "?head=FUNCTION|rell:integer.to_hex")
     }
 
     @Test fun testGlobalDef() {
@@ -117,13 +118,13 @@ class IdeSymbolExprTest: BaseIdeSymbolTest() {
         )
 
         chkSymsExpr("'Hello'.size(x = 123)",
-            "size=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|rell:text.size",
+            "size=MEM_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|rell:text.size",
             "x=UNKNOWN|-|-", "?head=-",
             err = "expr:call:unknown_named_arg:[text.size]:x",
         )
 
         chkSymsExpr("'Hello'.char_at(x = 123)",
-            "char_at=DEF_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|rell:text.char_at",
+            "char_at=MEM_FUNCTION_SYSTEM|-|-", "?head=FUNCTION|rell:text.char_at",
             "x=UNKNOWN|-|-", "?head=-",
             err = "[expr:call:missing_args:[text.char_at]:[0:index]][expr:call:unknown_named_arg:[text.char_at]:x]",
         )

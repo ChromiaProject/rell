@@ -346,7 +346,7 @@ private class C_LibTypeBodyBuilder(
     }
 
     fun addFunction(header: C_LibTypeMemberHeader, fn: C_SpecialLibMemberFunctionBody) {
-        val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_FUNCTION_SYSTEM, doc = header.docSymbol)
+        val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.MEM_FUNCTION_SYSTEM, doc = header.docSymbol)
         val cFn = C_SpecialLibMemberFunction(fn, ideInfo, header.restrictions)
         val naming = namingFactory(header.simpleName)
         val cMember = C_TypeValueMember_Function(header.simpleName, cFn, naming)
@@ -369,7 +369,7 @@ private class C_LibTypeBodyBuilder(
             .map { (name, mems) ->
                 val naming = namingFactory(name)
                 val cases = mems.mapToImmList { m ->
-                    val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.DEF_FUNCTION_SYSTEM, doc = m.docSymbol)
+                    val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.MEM_FUNCTION_SYSTEM, doc = m.docSymbol)
                     C_LibFuncCaseUtils.makeMemberCase(m.member, ideInfo, naming, m.restrictions)
                 }
                 val fn = C_LibFunctionUtils.makeMemberFunction(cases)

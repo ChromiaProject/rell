@@ -202,6 +202,7 @@ internal class RellSymbolService {
             IdeSymbolKind.DEF_TYPE,
             IdeSymbolKind.UNKNOWN,
             IdeSymbolKind.DEF_FUNCTION_SYSTEM,
+            IdeSymbolKind.MEM_FUNCTION_SYSTEM,
         )
     }
 }
