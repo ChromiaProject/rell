@@ -7,19 +7,23 @@
 # these jobs now publish their HTML report as a plain job artifact instead (browsable via
 # `$CI_JOB_URL/artifacts/file/...`), consuming no Pages deployment slots at all. Reports already
 # published under `$CI_PAGES_URL` from before this change are untouched and keep resolving —
-# GitLab Pages deployments are not deleted or re-expired retroactively.
+# GitLab Pages deployments are not deleted or re-expired retroactively. The portal index below
+# still discovers new runs too — via the Jobs API instead of the Environments API — so it isn't
+# frozen, it just no longer costs a Pages slot per run.
 
-# Client-side portal index listing the `pages:docs` / `pages:benchmarks` / `pages:profile` /
-# `pages:lsp` / `pages:regression` deployments published before those jobs moved off GitLab Pages
-# (see the file-level comment above), plus a profile-diff tool. It is now a frozen historical
-# archive: those five jobs no longer create new Pages deployments, so nothing adds to this list
-# going forward — it exists purely so old report links keep resolving and stay browsable. The
-# project is private, so anonymous client-side fetches against the Environments API 401 —
-# build-index.sh bakes the list into `manifest.json` at publish time via `glab api`, and the app
-# fetches that + per-deployment /data/main.json from the browser.
+# Client-side portal index listing recent `pages:docs` / `pages:benchmarks` / `pages:profile` /
+# `pages:lsp` / `pages:regression` runs, plus a profile-diff tool. Two sources feed it, per the
+# file-level comment above: historical GitLab Pages deployments (from before those jobs moved off
+# Pages) via the Environments API, and current job-artifact runs via the Jobs API (bounded to the
+# most recent pages of job history — see `JOB_SCAN_PAGES` in build-index.sh). Both APIs require
+# authentication even on public projects, and job artifacts additionally require authentication to
+# fetch on this private project — build-index.sh bakes the merged list into `manifest.json` at
+# publish time via `glab api`, and the app fetches that + per-deployment /data/main.json from the
+# browser; clicking through to a job-artifact link still requires the viewer to be logged into
+# GitLab with project access, unlike the old anonymously-served Pages links.
 #
 # Requires GITLAB_TOKEN (project access token with `read_api`, masked + dev-branch-protected).
-# CI_JOB_TOKEN's allowlist excludes the Environments API, so it 403s.
+# CI_JOB_TOKEN's allowlist excludes the Environments/Jobs API, so it 403s.
 #
 # Restricted to dev and version-* release branches so feature branches can't overwrite the root
 # deployment.

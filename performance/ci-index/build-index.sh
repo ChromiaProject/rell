@@ -1,15 +1,18 @@
 #!/bin/sh
 # Builds the Rell Developer Portal index: a static client-side app (index.html) plus a
 # manifest.json describing every currently-available docs / benchmark / profile / lsp / regression
-# Pages deployment. The Environments API requires authentication even on public projects, so the
-# manifest is baked here at publish time; the browser app then fetches it — and the
-# per-deployment data/main.json files it points at — anonymously.
+# report — some served as GitLab Pages deployments (historical, from before those jobs moved off
+# Pages — see the file-level comment in .gitlab/ci/pages.yml), some as plain CI job artifacts
+# (current). Both sources require authentication even on this private project, so the manifest is
+# baked here at publish time; the browser app then fetches it anonymously — but note that clicking
+# through to a job-artifact link still requires the viewer to be logged into GitLab with project
+# access, unlike the old Pages links which were served anonymously.
 #
 # Auth: requires GITLAB_TOKEN (a project/group access token with `read_api` scope) exposed
 # as a masked CI variable on the protected dev and version-* branches. CI_JOB_TOKEN can't read
-# the Environments API — it's not on GitLab's allowlist for that endpoint and returns 403.
+# the Environments/Jobs API — it's not on GitLab's allowlist for those endpoints and returns 403.
 #
-# Inputs (from GitLab CI):  CI_PROJECT_ID, GITLAB_TOKEN.
+# Inputs (from GitLab CI):  CI_PROJECT_ID, CI_PROJECT_URL, GITLAB_TOKEN.
 # Usage:   build-index.sh <output-dir>
 # Outputs: writes <output-dir>/index.html (the app) and <output-dir>/manifest.json (the data).
 set -eu
@@ -36,7 +39,7 @@ envs_json=$(printf '%s' "$envs_json" | jq -s 'add // []')
 # deployments — match by path_prefix to drop ones whose content is gone.
 #
 # Best-effort: /projects/:id/pages requires Maintainer role, while GITLAB_TOKEN only needs
-# `read_api` (Reporter) for the Environments API. On 403, fall back to no filtering — new
+# `read_api` (Reporter) for the Environments API. On 403, fall back to no filtering — these
 # deployments use `expire_in: never` so they don't rot, and stale historical entries will
 # age out as their environments are removed.
 if pages_json=$(glab api "projects/${CI_PROJECT_ID}/pages" 2>/dev/null); then
@@ -46,10 +49,11 @@ else
   active_prefixes=null
 fi
 
-# Resolve each deployment's commit SHA to its commit title via the Commits API, so the index
-# shows commit messages rather than bare SHAs. `read_api` scope covers repository commits.
+# Resolve each Pages deployment's commit SHA to its commit title via the Commits API, so the
+# index shows commit messages rather than bare SHAs. `read_api` scope covers repository commits.
 # One call per unique commit — fine for a manually-published index. A SHA that no longer
-# resolves (force-push, deleted branch) is simply left without a title.
+# resolves (force-push, deleted branch) is simply left without a title. (Job-artifact rows below
+# already carry their commit title straight from the Jobs API, no separate lookup needed.)
 commit_titles="{}"
 for sha in $(printf '%s' "$envs_json" | jq -r '
   [ .[] | select(.name | test("^(docs|benchmarks|profile|lsp|regression)/[^/]+/[^/]+$"))
@@ -61,103 +65,172 @@ for sha in $(printf '%s' "$envs_json" | jq -r '
   fi
 done
 
-# Verify which benchmark/profile deployments actually serve `data/main.json`. Older runs
-# predate the structured-data export, so the derived URL would 404 — and the compare tool
-# must never offer a profile selection that can't be fetched. Probe each candidate over HTTP
-# (Pages is served anonymously, the same assumption the browser app relies on) and keep only
-# the URLs that resolve; jq attaches `data` only for these.
-verified_data="[]"
+# Verify which historical Pages benchmark/profile deployments actually serve `data/main.json`.
+# Older runs predate the structured-data export, so the derived URL would 404 — and the compare
+# tool must never offer a selection that can't be fetched. Probe each candidate over HTTP (Pages
+# content is served anonymously, the same assumption the browser app relies on) and keep only the
+# URLs that resolve.
+verified_pages_data="[]"
 for url in $(printf '%s' "$envs_json" | jq -r '
   [ .[] | select(.name | test("^(benchmarks|profile)/[^/]+/[^/]+$"))
         | select(.external_url != null)
         | (.external_url | sub("/report\\.html$"; "")) + "/data/main.json" ] | unique | .[]'); do
   code=$(curl -o /dev/null -s -L -w '%{http_code}' --max-time 15 "$url" || echo "000")
   if [ "$code" = "200" ]; then
-    verified_data=$(printf '%s' "$verified_data" | jq --arg u "$url" '. + [$u]')
+    verified_pages_data=$(printf '%s' "$verified_pages_data" | jq --arg u "$url" '. + [$u]')
   else
     echo "note: no data/main.json at $url (HTTP $code) — omitting from manifest" >&2
   fi
 done
 
-generated_at=$(date -u +"%Y-%m-%d %H:%M UTC")
-
-# Env names follow the schema `benchmarks/<branch>/<sha>`, `profile/<branch>/<sha>`,
-# `lsp/<branch>/<sha>` and `regression/<branch>/<sha>` — per-commit so that same-branch reruns
-# don't clobber each other (diffing two profiles needs both deployments coexisting). Group by
-# (branch, sha)
-# into one entry per commit; sort newest first within each branch, dev/master pinned to the
-# top. `data` is the deployment's machine-readable JSON (kotlinx-benchmark scores for
-# benchmarks, the profile summary written by writeProfileData() for profiles) — the app
-# fetches those to diff two commits. It is attached only for deployments whose data URL was
-# verified above; deployments that predate the export are left with just a `url`.
-printf '%s' "$envs_json" | jq \
+# Normalise the Environments API records (one per historical Pages deployment) into flat rows:
+# {kind, branch, sha, title, url, when, ts, data?}. `env_prefix`/`data_url` mirror the CI config's
+# path_prefix scheme so the liveness filter and the data/main.json derivation match what pages.yml
+# actually publishes (publishing has since moved to job artifacts, but old deployments are frozen
+# in place and keep this shape).
+env_rows=$(printf '%s' "$envs_json" | jq -c \
   --argjson active "$active_prefixes" \
   --argjson titles "$commit_titles" \
-  --argjson verified "$verified_data" \
-  --arg ts "$generated_at" '
-  def branch_rank(b): if b == "dev" then 0 elif b == "master" then 1 else 2 end;
-  # path_prefix mirrors the CI config: `benchmarks/dev/<sha>` -> `bench-dev-<sha>`,
-  # `profile/dev/<sha>` -> `profile-dev-<sha>`, `regression/dev/<sha>` -> `regression-dev-<sha>`,
-  # `docs/dev/<sha>` -> `docs-dev-<sha>`, `lsp/dev/<sha>` -> `lsp-dev-<sha>`.
+  --argjson verified "$verified_pages_data" '
   def env_prefix(k; b; s):
     (if k == "benchmarks" then "bench"
      elif k == "regression" then "regression"
      elif k == "docs" then "docs"
      elif k == "lsp" then "lsp"
      else "profile" end) + "-" + b + "-" + s;
-  # Every deployment serves its report at `<root>/report.html`; the parseable JSON sits at
-  # `<root>/data/main.json`.
   def data_url(u): (u | sub("/report\\.html$"; "")) + "/data/main.json";
-  # `data` is attached only when `withData` is set (benchmarks / profiles, not lsp / regression)
-  # AND the data URL was confirmed reachable by the HTTP probe — `index` is null (falsy)
-  # for an unverified URL, so the deployment falls through to a `url`-only entry.
-  def link(entry; withData):
-    if entry == null then null
-    elif withData and (data_url(entry.url) as $d | $verified | index($d))
-      then { url: entry.url, data: data_url(entry.url) }
-    else { url: entry.url }
-    end;
+  [ .[] | select(.name | test("^(docs|benchmarks|profile|lsp|regression)/[^/]+/[^/]+$"))
+        | select(.external_url != null)
+        | (.name | capture("^(?<k>docs|benchmarks|profile|lsp|regression)/(?<b>[^/]+)/(?<s>[^/]+)$")) as $c
+        | select($active == null or (env_prefix($c.k; $c.b; $c.s) as $p | $active | index($p)))
+        | {
+            kind: $c.k,
+            branch: $c.b,
+            sha: $c.s,
+            title: ($titles[$c.s] // ""),
+            url: .external_url,
+            when: ((.updated_at // .created_at) | (.[0:10] // "")),
+            ts: ((.updated_at // .created_at) // "")
+          }
+        | if (.kind == "benchmarks" or .kind == "profile") and ($verified | index(data_url(.url)))
+          then . + {data: data_url(.url)}
+          else . end
+  ]')
 
-  {
-    generated_at: $ts,
-    commits: (
-      map(select(.name | test("^(docs|benchmarks|profile|lsp|regression)/[^/]+/[^/]+$")))
-      | map(select(.external_url != null))
-      | map(
-          (.name | capture("^(?<k>docs|benchmarks|profile|lsp|regression)/(?<b>[^/]+)/(?<s>[^/]+)$")) as $c
+# New runs of the report jobs no longer create GitLab Pages deployments (see the file-level
+# comment in .gitlab/ci/pages.yml); they publish their HTML/JSON purely as job artifacts.
+# Discover recent ones via the Jobs API instead — it has no name/ref filter, so scan newest-first
+# and stop after $JOB_SCAN_PAGES pages. This is a bounded, best-effort layer: a report job that
+# hasn't been clicked in a very long time simply won't surface here, the same trade-off as the
+# /pages liveness filter above.
+JOB_SCAN_PAGES=${JOB_SCAN_PAGES:-10}
+job_rows_file=$(mktemp)
+echo '[]' > "$job_rows_file"
+scanned=0
+page=1
+while [ "$page" -le "$JOB_SCAN_PAGES" ]; do
+  batch=$(glab api "projects/${CI_PROJECT_ID}/jobs?scope[]=success&per_page=100&page=${page}")
+  count=$(printf '%s' "$batch" | jq 'length')
+  [ "$count" -eq 0 ] && break
+  scanned=$((scanned + count))
+
+  matched=$(printf '%s' "$batch" | jq -c '
+    # GitLab timestamps carry millisecond fractions (".000Z"); fromdateiso8601 only accepts
+    # whole seconds, so strip the fraction before parsing.
+    def parse_ts: sub("[.][0-9]+Z$"; "Z") | fromdateiso8601;
+    [ .[] | select(.name | test("^pages:(benchmarks|profile|lsp|regression|docs)$"))
+          | select(.artifacts_file != null)
+          | select(.artifacts_expire_at == null or (.artifacts_expire_at | parse_ts) > now)
           | {
-              kind: $c.k,
-              branch: $c.b,
-              sha: $c.s,
-              url: .external_url,
-              when: ((.updated_at // .created_at) | (.[0:10] // "")),
-              ts: ((.updated_at // .created_at) // "")
+              kind: (.name | sub("^pages:"; "")),
+              branch: .ref,
+              sha: .commit.short_id,
+              title: (.commit.title // ""),
+              when: ((.finished_at // .created_at) | .[0:10]),
+              ts: (.finished_at // .created_at),
+              job_id: .id
             }
-        )
-      | map(select($active == null or (env_prefix(.kind; .branch; .sha) as $p | $active | index($p))))
-      | group_by([.branch, .sha])
-      | map({
-          branch: .[0].branch,
-          sha: .[0].sha,
-          title: ($titles[.[0].sha] // ""),
-          when: (map(.when) | max),
-          ts: (map(.ts) | max),
-          docs:       link((map(select(.kind == "docs"))       | first); false),
-          benchmarks: link((map(select(.kind == "benchmarks")) | first); true),
-          profile:    link((map(select(.kind == "profile"))    | first); true),
-          lsp:        link((map(select(.kind == "lsp"))        | first); false),
-          regression: link((map(select(.kind == "regression")) | first); false)
-        })
-      # Order newest-first within a branch. Sort on the full deployment timestamp `ts`,
-      # not the date-only `when`: same-day commits would otherwise tie and fall back to an
-      # arbitrary lexical SHA order. `ts` holds the environment `updated_at` field — GitLab
-      # returns it as a UTC ISO-8601 string, so a plain lexical sort is chronological.
-      | sort_by([branch_rank(.branch), .branch, .ts])
-      | reverse
-      | sort_by(branch_rank(.branch))   # stable sort preserves time-desc within branch
-      | map(del(.ts))
-    )
-  }
+    ]')
+  tmp=$(mktemp)
+  jq -c --argjson m "$matched" '. + $m' "$job_rows_file" > "$tmp" && mv "$tmp" "$job_rows_file"
+
+  [ "$count" -lt 100 ] && break
+  page=$((page + 1))
+done
+if [ "$page" -gt "$JOB_SCAN_PAGES" ]; then
+  echo "note: stopped job scan after ${JOB_SCAN_PAGES} pages (${scanned} jobs) — older report-job runs beyond this window won't appear in the portal" >&2
+fi
+
+# Turn job_id into the artifact link (report.html, or index.html for docs — Dokka's landing page).
+job_rows_file2=$(mktemp)
+jq -c --arg proj "$CI_PROJECT_URL" '
+  def entry_file(k): if k == "docs" then "index.html" else "report.html" end;
+  map(. + { url: ($proj + "/-/jobs/" + (.job_id | tostring) + "/artifacts/file/public/" + entry_file(.kind)) } | del(.job_id))
+' "$job_rows_file" > "$job_rows_file2"
+
+# Probe benchmark/profile job-artifact runs for their data/main.json. Unlike Pages content, job
+# artifacts on a private project aren't served anonymously, so this needs the same GITLAB_TOKEN
+# used for the API calls above rather than a plain curl.
+job_rows_final_file=$(mktemp)
+echo '[]' > "$job_rows_final_file"
+jq -c '.[]' "$job_rows_file2" | while IFS= read -r row; do
+  kind=$(printf '%s' "$row" | jq -r '.kind')
+  if [ "$kind" = "benchmarks" ] || [ "$kind" = "profile" ]; then
+    url=$(printf '%s' "$row" | jq -r '.url')
+    data_url=$(printf '%s' "$url" | sed 's|/report\.html$|/data/main.json|')
+    code=$(curl -o /dev/null -s -L -w '%{http_code}' --max-time 15 --header "PRIVATE-TOKEN: $GITLAB_TOKEN" "$data_url" || echo "000")
+    if [ "$code" = "200" ]; then
+      row=$(printf '%s' "$row" | jq -c --arg d "$data_url" '. + {data: $d}')
+    fi
+  fi
+  tmp=$(mktemp)
+  jq -c --argjson r "$row" '. + [$r]' "$job_rows_final_file" > "$tmp" && mv "$tmp" "$job_rows_final_file"
+done
+job_rows=$(cat "$job_rows_final_file")
+rm -f "$job_rows_file" "$job_rows_file2" "$job_rows_final_file"
+
+generated_at=$(date -u +"%Y-%m-%d %H:%M UTC")
+
+# Combine both sources into one flat row list and group into one manifest entry per (branch,
+# sha) commit, with per-kind links. This is the same shape build-index.sh has always produced —
+# it just now draws rows from two sources instead of one.
+printf '%s' "$env_rows" | jq \
+  --argjson job_rows "$job_rows" \
+  --arg ts "$generated_at" '
+  def branch_rank(b): if b == "dev" then 0 elif b == "master" then 1 else 2 end;
+  def linkify(rows; k):
+    (rows | map(select(.kind == k)) | first) as $r
+    | if $r == null then null
+      elif $r.data then {url: $r.url, data: $r.data}
+      else {url: $r.url} end;
+  (. + $job_rows) as $rows
+  | {
+      generated_at: $ts,
+      commits: (
+        $rows
+        | group_by([.branch, .sha])
+        | map({
+            branch: .[0].branch,
+            sha: .[0].sha,
+            title: ((map(.title) | map(select(. != "")) | .[0]) // ""),
+            when: (map(.when) | max),
+            ts: (map(.ts) | max),
+            docs:       linkify(.; "docs"),
+            benchmarks: linkify(.; "benchmarks"),
+            profile:    linkify(.; "profile"),
+            lsp:        linkify(.; "lsp"),
+            regression: linkify(.; "regression")
+          })
+        # Order newest-first within a branch. Sort on the full timestamp `ts`, not the date-only
+        # `when`: same-day commits would otherwise tie and fall back to an arbitrary lexical SHA
+        # order. `ts` is a UTC ISO-8601 string (from either the environment or the job), so a
+        # plain lexical sort is chronological.
+        | sort_by([branch_rank(.branch), .branch, .ts])
+        | reverse
+        | sort_by(branch_rank(.branch))   # stable sort preserves time-desc within branch
+        | map(del(.ts))
+      )
+    }
 ' > "$out_dir/manifest.json"
 
 cp "$script_dir/index.html" "$out_dir/index.html"
