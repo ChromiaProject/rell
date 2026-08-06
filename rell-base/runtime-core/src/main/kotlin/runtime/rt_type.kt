@@ -95,7 +95,7 @@ internal fun createComparator(rrType: RR_Type): Comparator<Rt_Value>? = when (rr
     is RR_Type.Tuple -> {
         val fieldComparators = rrType.fields.map { createComparator(it.type) }
         if (fieldComparators.all { it != null }) {
-            Rt_TupleComparator(fieldComparators.map { it!! }.toImmList())
+            Rt_TupleComparator(fieldComparators.mapToImmList { it!! })
         } else null
     }
 

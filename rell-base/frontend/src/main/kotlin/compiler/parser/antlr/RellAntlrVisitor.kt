@@ -11,9 +11,7 @@ import net.postchain.rell.base.compiler.parser.RellTokenizer
 import net.postchain.rell.base.model.AtCardinality
 import net.postchain.rell.base.model.KeyIndexKind
 import net.postchain.rell.base.model.Name
-import net.postchain.rell.base.utils.ImmList
-import net.postchain.rell.base.utils.immListOf
-import net.postchain.rell.base.utils.toImmList
+import net.postchain.rell.base.utils.*
 import org.antlr.v4.runtime.BufferedTokenStream
 import org.antlr.v4.runtime.Lexer
 import org.antlr.v4.runtime.ParserRuleContext
@@ -51,8 +49,9 @@ class RellAntlrVisitor(
     /** Push [ctx] for the duration of [block]; pop on exit (try/finally so non-local returns are safe). */
     private inline fun <T> withCtx(ctx: ParserRuleContext, block: () -> T): T {
         if (!attachmentMode) return block()
-        contextStack.addLast(ctx)
+        contextStack += ctx
         attachmentProvider!!.node = ctx
+
         try {
             return block()
         } finally {
@@ -65,9 +64,11 @@ class RellAntlrVisitor(
     private inline fun <T> withAttachmentScope(crossinline block: () -> T): T {
         if (!attachmentMode) return block()
         var result: Any? = null
+
         S_Node.runWithAttachmentProvider(attachmentProvider!!) {
             result = block()
         }
+
         @Suppress("UNCHECKED_CAST")
         return result as T
     }
@@ -77,16 +78,16 @@ class RellAntlrVisitor(
 
     fun toFile(ctx: RellParser.FileContext): S_RellFile = withAttachmentScope {
         withCtx(ctx) {
-            val header = ctx.moduleHeader()?.let { toModuleHeader(it) }
-            val defs = ctx.annotatedDef().map { toAnnotatedDef(it) }.toImmList()
+            val header = ctx.moduleHeader()?.let(::toModuleHeader)
+            val defs = ctx.annotatedDef().mapToImmList(::toAnnotatedDef)
             S_RellFile(header, defs)
         }
     }
 
     fun toReplCommand(ctx: RellParser.ReplCommandContext): S_ReplCommand = withAttachmentScope {
         withCtx(ctx) {
-            val steps = ctx.replStep().map { toReplStep(it) }
-            val expr = ctx.expression()?.let { toExpression(it) }
+            val steps = ctx.replStep().map(::toReplStep)
+            val expr = ctx.expression()?.let(::toExpression)
             S_ReplCommand(steps, expr)
         }
     }
@@ -98,12 +99,14 @@ class RellAntlrVisitor(
                 val def = toReplDef(ctx.replDef(), mods, ctx)
                 S_DefinitionReplStep(def)
             }
+
             is RellParser.StmtReplStepContext -> S_StatementReplStep(toStatement(ctx.statement()))
             is RellParser.ExprReplStepContext -> {
                 val expr = toExpression(ctx.expression())
                 val semiTok = ctx.children.last { it is TerminalNode && it.text == ";" } as TerminalNode
                 S_StatementReplStep(S_ExprStatement(expr, semiTok.symbol.toPos()))
             }
+
             else -> error("unknown replStep alt: ${ctx.javaClass.simpleName}")
         }
     }
@@ -139,7 +142,7 @@ class RellAntlrVisitor(
     // Modifiers / annotations
 
     private fun toModifiers(ctx: RellParser.ModifiersContext): S_Modifiers = withCtx(ctx) {
-        val mods = ctx.modifier().map { toModifier(it) }
+        val mods = ctx.modifier().map(::toModifier)
         return if (mods.isEmpty()) S_Modifiers() else S_Modifiers(mods.toImmList())
     }
 
@@ -168,7 +171,7 @@ class RellAntlrVisitor(
         val name = withCtx(TokenRuleContext(nameTok.symbol)) {
             S_Name(nameTok.symbol.toPos(), Name.of(nameTok.text))
         }
-        val args = ctx.annotationArgs()?.annotationArg()?.map { toAnnotationArg(it) } ?: emptyList()
+        val args = ctx.annotationArgs()?.annotationArg()?.map(::toAnnotationArg).orEmpty()
         return S_Annotation(name, args.toImmList())
     }
 
@@ -188,6 +191,7 @@ class RellAntlrVisitor(
         // false/true/null
         val tok = ctx.children.first { it is TerminalNode } as TerminalNode
         val pos = tok.symbol.toPos()
+
         return when (tok.text) {
             "true" -> S_BooleanLiteralExpr(pos, true)
             "false" -> S_BooleanLiteralExpr(pos, false)
@@ -259,9 +263,8 @@ class RellAntlrVisitor(
         error("unknown definition alt")
     }
 
-    private fun makeDefBase(kwToken: Token, modifiers: S_Modifiers, outerCtx: ParserRuleContext): S_DefinitionBase {
-        return S_DefinitionBase(kwToken.toPos(), modifiers, docCommentFor(outerCtx))
-    }
+    private fun makeDefBase(kwToken: Token, modifiers: S_Modifiers, outerCtx: ParserRuleContext): S_DefinitionBase =
+        S_DefinitionBase(kwToken.toPos(), modifiers, docCommentFor(outerCtx))
 
     private fun toEntityDef(
         ctx: RellParser.EntityDefContext,
@@ -272,9 +275,13 @@ class RellAntlrVisitor(
         val deprecated = kwTok.text == "class"
         val deprecatedKwPos = if (deprecated) kwTok.toPos() else null
         val name = idTokenToName(ctx.RULE_ID())
-        val annotations = ctx.entityAnnotations()?.RULE_ID()?.map { tk ->
-            S_Name(tk.symbol.toPos(), Name.of(tk.text))
-        }?.toImmList() ?: immListOf()
+
+        val annotations = ctx.entityAnnotations()
+            ?.RULE_ID()
+            ?.map { tk -> S_Name(tk.symbol.toPos(), Name.of(tk.text)) }
+            ?.toImmList()
+            .orEmpty()
+
         val body = toEntityBody(ctx.entityBody())
         val base = makeDefBase(kwTok, modifiers, outerCtx)
         return S_EntityDefinition(base, deprecatedKwPos, name, annotations, body)
@@ -285,10 +292,11 @@ class RellAntlrVisitor(
         // body alts: ';' (no clauses) or '{' relClause* '}'
         // The semicolon-only form is `null` body in the original grammar.kt (entityBodyShort).
         val firstChild = ctx.children?.firstOrNull()
-        if (firstChild is TerminalNode && firstChild.text == ";") {
-            return null
-        }
-        return ctx.relClause().map { toRelClause(it) }.toImmList()
+
+        return if (firstChild is TerminalNode && firstChild.text == ";")
+            null
+        else
+            ctx.relClause().mapToImmList(::toRelClause)
     }
 
     private fun toRelClause(ctx: RellParser.RelClauseContext): S_RelClause = withCtx(ctx) {
@@ -309,16 +317,17 @@ class RellAntlrVisitor(
             "index" -> KeyIndexKind.INDEX
             else -> error("unknown key/index keyword: ${kwTok.text}")
         }
-        val attrs = ctx.baseAttributeDefinition().map { toAttributeDefinition(it) }.toImmList()
+        val attrs = ctx.baseAttributeDefinition().mapToImmList(::toAttributeDefinition)
         return S_KeyIndexClause(kwTok.toPos(), kind, attrs, docCommentForToken(kwTok))
     }
 
-    private fun toAttributeDefinition(ctx: RellParser.BaseAttributeDefinitionContext): S_AttributeDefinition = withCtx(ctx) {
-        val mods = toModifiers(ctx.modifiers())
-        val header = toAttrHeader(ctx.attrHeader())
-        val expr = ctx.expression()?.let { toExpression(it) }
-        return S_AttributeDefinition(mods, header, expr)
-    }
+    private fun toAttributeDefinition(ctx: RellParser.BaseAttributeDefinitionContext): S_AttributeDefinition =
+        withCtx(ctx) {
+            val mods = toModifiers(ctx.modifiers())
+            val header = toAttrHeader(ctx.attrHeader())
+            val expr = ctx.expression()?.let(::toExpression)
+            return S_AttributeDefinition(mods, header, expr)
+        }
 
     private fun toAttrHeader(ctx: RellParser.AttrHeaderContext): S_AttrHeader = withCtx(ctx) {
         return when (ctx) {
@@ -326,11 +335,13 @@ class RellAntlrVisitor(
                 val name = idTokenToName(ctx.RULE_ID())
                 S_NamedAttrHeader(name, toType(ctx.type()))
             }
+
             is RellParser.AnonAttrHeaderContext -> {
                 val qName = toQualifiedName(ctx.qualifiedName())
                 val nullable = ctx.children.any { it is TerminalNode && it.text == "?" }
                 S_AnonAttrHeader(qName, nullable)
             }
+
             else -> {
                 // Error-recovery path: on a syntax error inside the header ANTLR instantiates the
                 // bare AttrHeaderContext instead of a labeled alternative. Salvage the attribute
@@ -338,12 +349,14 @@ class RellAntlrVisitor(
                 // AST; the syntax error itself is reported by the parser's error listener.
                 val idTok = ctx.children.orEmpty()
                     .filterIsInstance<TerminalNode>()
-                    .firstOrNull { it !is ErrorNode && it.symbol.type == RellParser.RULE_ID }
+                    .find { it !is ErrorNode && it.symbol.type == RellParser.RULE_ID }
+
                 val qName = if (idTok != null) {
                     S_QualifiedName(immListOf(idTokenToName(idTok)))
                 } else {
                     placeholderName(ctx.start?.toPos() ?: errorPos())
                 }
+
                 S_AnonAttrHeader(qName, false)
             }
         }
@@ -356,7 +369,7 @@ class RellAntlrVisitor(
     ): S_Definition = withCtx(ctx) {
         val kwTok = ctx.start
         val name = idTokenToName(ctx.RULE_ID())
-        val attrs = ctx.attributeClause().map { toAttributeClause(it) }.toImmList()
+        val attrs = ctx.attributeClause().mapToImmList(::toAttributeClause)
         return S_ObjectDefinition(makeDefBase(kwTok, modifiers, outerCtx), name, attrs)
     }
 
@@ -369,7 +382,7 @@ class RellAntlrVisitor(
         val deprecated = kwTok.text == "record"
         val deprecatedKwPos = if (deprecated) kwTok.toPos() else null
         val name = idTokenToName(ctx.RULE_ID())
-        val attrs = ctx.attributeClause().map { toAttributeClause(it) }.toImmList()
+        val attrs = ctx.attributeClause().mapToImmList(::toAttributeClause)
         return S_StructDefinition(makeDefBase(kwTok, modifiers, outerCtx), deprecatedKwPos, name, attrs)
     }
 
@@ -382,9 +395,11 @@ class RellAntlrVisitor(
         val ids = ctx.RULE_ID()
         // First RULE_ID is the enum name; remaining are values.
         val name = idTokenToName(ids[0])
-        val values = ids.drop(1).map { tk ->
-            S_EnumValue(idTokenToName(tk), docCommentForToken(tk.symbol))
-        }.toImmList()
+
+        val values = ids
+            .drop(1)
+            .mapToImmList { tk -> S_EnumValue(idTokenToName(tk), docCommentForToken(tk.symbol)) }
+
         return S_EnumDefinition(makeDefBase(kwTok, modifiers, outerCtx), name, values)
     }
 
@@ -394,31 +409,32 @@ class RellAntlrVisitor(
         outerCtx: ParserRuleContext,
     ): S_Definition = withCtx(ctx) {
         val kwTok = ctx.start
-        val qName = ctx.qualifiedName()?.let { toQualifiedName(it) }
+        val qName = ctx.qualifiedName()?.let(::toQualifiedName)
         val params = toFormalParameters(ctx.formalParameters())
         val retType = ctx.type()?.let { toType(it) }
         // Tolerate ANTLR error recovery: functionBody may be null when the parser inserted a
         // missing-rule placeholder for malformed input.
-        val body = ctx.functionBody()?.let { toFunctionBody(it) }
+        val body = ctx.functionBody()?.let(::toFunctionBody)
         return S_FunctionDefinition(makeDefBase(kwTok, modifiers, outerCtx), qName, params, retType, body)
     }
 
     private fun toFormalParameters(ctx: RellParser.FormalParametersContext?): ImmList<S_FormalParameter> {
         if (ctx == null) return immListOf()
         return withCtx(ctx) {
-            ctx.formalParameter().map { toFormalParameter(it) }.toImmList()
+            ctx.formalParameter().mapToImmList(::toFormalParameter)
         }
     }
 
     private fun toFormalParameter(ctx: RellParser.FormalParameterContext): S_FormalParameter = withCtx(ctx) {
         val mods = toModifiers(ctx.modifiers())
         val attr = toAttrHeader(ctx.attrHeader())
-        val expr = ctx.expression()?.let { toExpression(it) }
+        val expr = ctx.expression()?.let(::toExpression)
         return S_FormalParameter(mods, attr, expr, docCommentFor(ctx))
     }
 
     private fun toFunctionBody(ctx: RellParser.FunctionBodyContext): S_FunctionBody? = withCtx(ctx) {
         val firstChild = ctx.children.first()
+
         if (firstChild is TerminalNode) {
             return when (firstChild.text) {
                 ";" -> null
@@ -426,6 +442,7 @@ class RellAntlrVisitor(
                 else -> error("unknown functionBody first token: ${firstChild.text}")
             }
         }
+
         // blockStmt
         val stmt = toBlockStatement(ctx.blockStmt()!!)
         return S_FunctionBodyFull(stmt)
@@ -454,8 +471,8 @@ class RellAntlrVisitor(
         outerCtx: ParserRuleContext,
     ): S_Definition = withCtx(ctx) {
         val kwTok = ctx.start
-        val qName = ctx.qualifiedName()?.let { toQualifiedName(it) }
-        val defs = ctx.annotatedDef().map { toAnnotatedDef(it) }.toImmList()
+        val qName = ctx.qualifiedName()?.let(::toQualifiedName)
+        val defs = ctx.annotatedDef().mapToImmList(::toAnnotatedDef)
         // Body pos range = '{' .. '}'
         val lcurl = ctx.children.first { it is TerminalNode && it.text == "{" } as TerminalNode
         val rcurl = ctx.children.last { it is TerminalNode && it.text == "}" } as TerminalNode
@@ -471,15 +488,19 @@ class RellAntlrVisitor(
         val kwTok = ctx.start
         // alias appears as RULE_ID iff there's a colon after it; but the only RULE_ID directly
         // under importDef is the alias if present (qualifiedName is a sub-rule).
-        val alias = ctx.RULE_ID()?.let { idTokenToName(it) }
+        val alias = ctx.RULE_ID()?.let(::idTokenToName)
         // Tolerate ANTLR error recovery: importModule may be null when the parser inserted a
         // missing-rule placeholder for malformed input.
         val moduleCtx = ctx.importModule()
-        val module = if (moduleCtx != null) toImportModule(moduleCtx) else {
+
+        val module = if (moduleCtx != null) {
+            toImportModule(moduleCtx)
+        } else {
             val pos = ctx.start?.toPos() ?: errorPos()
             S_ImportModulePath(null, placeholderName(pos))
         }
-        val target = ctx.importTarget()?.let { toImportTarget(it) } ?: S_DefaultImportTarget
+
+        val target = ctx.importTarget()?.let(::toImportTarget) ?: S_DefaultImportTarget
         return S_ImportDefinition(makeDefBase(kwTok, modifiers, outerCtx), alias, module, target)
     }
 
@@ -488,39 +509,43 @@ class RellAntlrVisitor(
             is RellParser.AbsoluteImportModuleContext -> {
                 S_ImportModulePath(null, toQualifiedName(ctx.qualifiedName()))
             }
+
             is RellParser.RelativeImportModuleContext -> {
                 val dot = ctx.children.first { it is TerminalNode && it.text == "." } as TerminalNode
-                val qName = ctx.qualifiedName()?.let { toQualifiedName(it) }
+                val qName = ctx.qualifiedName()?.let(::toQualifiedName)
                 S_ImportModulePath(S_RelativeImportModulePath(dot.symbol.toPos(), 0), qName)
             }
+
             is RellParser.UpImportModuleContext -> {
                 val carets = ctx.children.filter { it is TerminalNode && it.text == "^" }
                 val firstCaret = carets.first() as TerminalNode
-                val qName = ctx.qualifiedName()?.let { toQualifiedName(it) }
+                val qName = ctx.qualifiedName()?.let(::toQualifiedName)
                 S_ImportModulePath(S_RelativeImportModulePath(firstCaret.symbol.toPos(), carets.size), qName)
             }
+
             else -> error("unknown importModule: ${ctx.javaClass.simpleName}")
         }
     }
 
     private fun toImportTarget(ctx: RellParser.ImportTargetContext): S_ImportTarget = withCtx(ctx) {
         ctx.importTargetExact()?.let { exact ->
-            val items = exact.importTargetExactItem().map { toImportTargetExactItem(it) }.toImmList()
+            val items = exact.importTargetExactItem().mapToImmList(::toImportTargetExactItem)
             return S_ExactImportTarget(items)
         }
         // wildcard '*'
         return S_WildcardImportTarget
     }
 
-    private fun toImportTargetExactItem(ctx: RellParser.ImportTargetExactItemContext): S_ExactImportTargetItem = withCtx(ctx) {
-        // Generated `RULE_ID()` returns only the directly-owned alias token (qualifiedName has its own).
-        val alias = ctx.RULE_ID()?.let { idTokenToName(it) }
-        // Tolerate ANTLR error recovery: qualifiedName() may be null when the parser inserted a
-        // missing-rule placeholder. Synthesize an empty qualified-name anchored at the item's start.
-        val name = toQualifiedNameOrPlaceholder(ctx.qualifiedName(), ctx)
-        val wildcard = ctx.children?.any { it is TerminalNode && it.text == "*" } ?: false
-        return S_ExactImportTargetItem(alias, name, wildcard, docCommentFor(ctx))
-    }
+    private fun toImportTargetExactItem(ctx: RellParser.ImportTargetExactItemContext): S_ExactImportTargetItem =
+        withCtx(ctx) {
+            // Generated `RULE_ID()` returns only the directly-owned alias token (qualifiedName has its own).
+            val alias = ctx.RULE_ID()?.let(::idTokenToName)
+            // Tolerate ANTLR error recovery: qualifiedName() may be null when the parser inserted a
+            // missing-rule placeholder. Synthesize an empty qualified-name anchored at the item's start.
+            val name = toQualifiedNameOrPlaceholder(ctx.qualifiedName(), ctx)
+            val wildcard = ctx.children?.any { it is TerminalNode && it.text == "*" } ?: false
+            return S_ExactImportTargetItem(alias, name, wildcard, docCommentFor(ctx))
+        }
 
     private fun toOpDef(
         ctx: RellParser.OpDefContext,
@@ -542,7 +567,7 @@ class RellAntlrVisitor(
         val kwTok = ctx.start
         val name = idTokenToName(ctx.RULE_ID())
         val params = toFormalParameters(ctx.formalParameters())
-        val retType = ctx.type()?.let { toType(it) }
+        val retType = ctx.type()?.let(::toType)
         val body = toQueryBody(ctx.queryBody())
         return S_QueryDefinition(makeDefBase(kwTok, modifiers, outerCtx), name, params, retType, body)
     }
@@ -563,7 +588,7 @@ class RellAntlrVisitor(
     ): S_Definition = withCtx(ctx) {
         val kwTok = ctx.start
         val name = idTokenToName(ctx.RULE_ID())
-        val type = ctx.type()?.let { toType(it) }
+        val type = ctx.type()?.let(::toType)
         val expr = toExpression(ctx.expression())
         return S_GlobalConstantDefinition(makeDefBase(kwTok, modifiers, outerCtx), name, type, expr)
     }
@@ -575,11 +600,12 @@ class RellAntlrVisitor(
         return when (ctx) {
             is RellParser.FunctionTypeContext -> {
                 val types = ctx.type()
-                val params = types.dropLast(1).map { toType(it) }.toImmList()
+                val params = types.dropLast(1).mapToImmList(::toType)
                 val result = toType(types.last())
                 val startPos = ctx.start.toPos()
                 S_FunctionType(startPos, params, result)
             }
+
             is RellParser.BasicTypeAltContext -> {
                 var res = toPrimaryType(ctx.primaryType())
                 for (child in ctx.children) {
@@ -589,6 +615,7 @@ class RellAntlrVisitor(
                 }
                 res
             }
+
             else -> error("unknown type: ${ctx.javaClass.simpleName}")
         }
     }
@@ -601,23 +628,27 @@ class RellAntlrVisitor(
                 if (typeArgs.isEmpty()) {
                     S_NameType(qName)
                 } else {
-                    S_GenericType(qName, typeArgs.map { toType(it) }.toImmList())
+                    S_GenericType(qName, typeArgs.mapToImmList(::toType))
                 }
             }
+
             is RellParser.TupleTypeContext -> {
                 // '(' (RULE_ID ':')? type (',' (RULE_ID ':')? type)* ','? ')'
                 val fields = parseTupleFields(ctx, ":") { toType(it as RellParser.TypeContext) }
                 fields.singleField ?: S_TupleType(ctx.start.toPos(), fields.list)
             }
+
             is RellParser.VirtualTypeContext -> {
                 val kwTok = ctx.start
                 S_VirtualType(kwTok.toPos(), toType(ctx.type()))
             }
+
             is RellParser.MirrorStructTypeContext -> {
                 val kwTok = ctx.start
                 val mutable = ctx.children.any { it is TerminalNode && it.text == "mutable" }
                 S_MirrorStructType(kwTok.toPos(), mutable, toType(ctx.type()))
             }
+
             else -> error("unknown primaryType: ${ctx.javaClass.simpleName}")
         }
     }
@@ -631,10 +662,11 @@ class RellAntlrVisitor(
             is RellParser.VarStmtAltContext -> toVarStatement(ctx)
             is RellParser.ReturnStmtAltContext -> {
                 val kwTok = ctx.start
-                val expr = ctx.expression()?.let { toExpression(it) }
+                val expr = ctx.expression()?.let(::toExpression)
                 val end = ctx.stop
                 S_ReturnStatement(kwTok.toPos(), end.toPos(), expr)
             }
+
             is RellParser.BlockStmtAltContext -> toBlockStatement(ctx.blockStmt())
             is RellParser.IfStmtAltContext -> {
                 val kwTok = ctx.start
@@ -644,21 +676,24 @@ class RellAntlrVisitor(
                 val falseStmt = if (stmts.size > 1) toStatement(stmts[1]) else null
                 S_IfStatement(kwTok.toPos(), cond, trueStmt, falseStmt)
             }
+
             is RellParser.WhenStmtAltContext -> {
                 val kwTok = ctx.start
-                val expr = ctx.expression()?.let { toExpression(it) }
-                val conds = ctx.whenCondition().map { toWhenCondition(it) }
-                val stmts = ctx.statement().map { toStatement(it) }
+                val expr = ctx.expression()?.let(::toExpression)
+                val conds = ctx.whenCondition().map(::toWhenCondition)
+                val stmts = ctx.statement().map(::toStatement)
                 val cases = conds.zip(stmts) { c, s -> S_WhenStatementCase(c, s) }.toImmList()
                 val end = ctx.stop
                 S_WhenStatement(kwTok.toPos(), end.toPos(), expr, cases)
             }
+
             is RellParser.WhileStmtAltContext -> {
                 val kwTok = ctx.start
                 val expr = toExpression(ctx.expression())
                 val stmt = toStatement(ctx.statement())
                 S_WhileStatement(kwTok.toPos(), expr, stmt)
             }
+
             is RellParser.ForStmtAltContext -> {
                 val kwTok = ctx.start
                 val decl = toVarDeclarator(ctx.varDeclarator())
@@ -668,16 +703,19 @@ class RellAntlrVisitor(
                 val rpar = ctx.children.first { it is TerminalNode && it.text == ")" } as TerminalNode
                 S_ForStatement(kwTok.toPos(), decl, expr, stmt, rpar.symbol.toPos())
             }
+
             is RellParser.BreakStmtAltContext -> {
                 val start = ctx.start
                 val end = ctx.stop
                 S_BreakStatement(start.toPos(), end.toPos())
             }
+
             is RellParser.ContinueStmtAltContext -> {
                 val start = ctx.start
                 val end = ctx.stop
                 S_ContinueStatement(start.toPos(), end.toPos())
             }
+
             is RellParser.UpdateStmtAltContext -> toUpdateStatement(ctx)
             is RellParser.DeleteStmtAltContext -> {
                 val kwTok = ctx.start
@@ -685,11 +723,13 @@ class RellAntlrVisitor(
                 val end = ctx.stop
                 S_DeleteStatement(kwTok.toPos(), end.toPos(), target)
             }
+
             is RellParser.GuardStmtAltContext -> {
                 val kwTok = ctx.start
                 val block = toBlockStatement(ctx.blockStmt())
                 S_GuardStatement(kwTok.toPos(), block)
             }
+
             is RellParser.IncrementStmtAltContext -> {
                 val opTok = ctx.start
                 val baseExpr = toBaseExpr(ctx.baseExpr())
@@ -700,6 +740,7 @@ class RellAntlrVisitor(
                 val sExpr = S_UnaryExpr(opPos, sOp, baseExpr)
                 S_ExprStatement(sExpr, end.toPos())
             }
+
             is RellParser.ExprStmtAltContext -> toExprStmt(ctx)
             else -> error("unknown statement: ${ctx.javaClass.simpleName}")
         }
@@ -708,7 +749,7 @@ class RellAntlrVisitor(
     private fun toBlockStatement(ctx: RellParser.BlockStmtContext): S_BlockStatement = withCtx(ctx) {
         val lcurl = ctx.start
         val rcurl = ctx.stop
-        val stmts = ctx.statement().map { toStatement(it) }.toImmList()
+        val stmts = ctx.statement().mapToImmList(::toStatement)
         return S_BlockStatement(S_PosRange(lcurl.toPos(), rcurl.toPos()), stmts)
     }
 
@@ -716,7 +757,7 @@ class RellAntlrVisitor(
         val kwTok = ctx.start
         val mutable = kwTok.text == "var"
         val decl = toVarDeclarator(ctx.varDeclarator())
-        val expr = ctx.expression()?.let { toExpression(it) }
+        val expr = ctx.expression()?.let(::toExpression)
         val end = ctx.stop
         return S_VarStatement(kwTok.toPos(), end.toPos(), decl, expr, mutable, docCommentForToken(kwTok))
     }
@@ -726,9 +767,10 @@ class RellAntlrVisitor(
             is RellParser.SimpleVarDeclaratorContext -> S_SimpleVarDeclarator(toAttrHeader(ctx.attrHeader()))
             is RellParser.TupleVarDeclaratorContext -> {
                 val pos = ctx.start.toPos()
-                val subs = ctx.varDeclarator().map { toVarDeclarator(it) }.toImmList()
+                val subs = ctx.varDeclarator().mapToImmList(::toVarDeclarator)
                 S_TupleVarDeclarator(pos, subs)
             }
+
             else -> error("unknown varDeclarator: ${ctx.javaClass.simpleName}")
         }
     }
@@ -737,9 +779,10 @@ class RellAntlrVisitor(
         return when (ctx) {
             is RellParser.WhenConditionElseContext -> S_WhenConditionElse(ctx.start.toPos())
             is RellParser.WhenConditionExprContext -> {
-                val exprs = ctx.binaryExpr().map { toBinaryExpr(it) }.toImmList()
+                val exprs = ctx.binaryExpr().mapToImmList(::toBinaryExpr)
                 S_WhenConditionExpr(exprs)
             }
+
             else -> error("unknown whenCondition: ${ctx.javaClass.simpleName}")
         }
     }
@@ -784,30 +827,40 @@ class RellAntlrVisitor(
         while (i < children.size && !(children[i] is TerminalNode && (children[i] as TerminalNode).text == "(")) i++
         require(i < children.size)
         i++ // skip '('
-        val items = mutableListOf<S_UpdateWhat>()
-        while (i < children.size) {
-            val cur = children[i]
-            if (cur is TerminalNode) {
-                when (cur.text) {
-                    ")" -> break
-                    "," -> { i++; continue }
-                    else -> { i++; continue }
+
+        val items = buildList {
+            while (i < children.size) {
+                val cur = children[i]
+                if (cur is TerminalNode) {
+                    when (cur.text) {
+                        ")" -> break
+                        "," -> {
+                            i++; continue
+                        }
+
+                        else -> {
+                            i++; continue
+                        }
+                    }
                 }
+                // cur is an ExpressionContext, optionally preceded by `'.'? RULE_ID assignOp`
+                // (the '.' prefix is not represented in the AST).
+                val nameTok = precedingNameToken(children, i) { it in ASSIGN_OP_TEXTS }
+                val expr = toExpression(cur as RellParser.ExpressionContext)
+
+                val item = if (nameTok == null) {
+                    S_UpdateWhat(expr.startPos, null, null, expr)
+                } else {
+                    val sName = idTokenToName(nameTok)
+                    val opTok = children[i - 1] as TerminalNode
+                    S_UpdateWhat(sName.pos, sName, assignOpCode(opTok.text), expr)
+                }
+
+                add(item)
+                i++
             }
-            // cur is an ExpressionContext, optionally preceded by `'.'? RULE_ID assignOp`
-            // (the '.' prefix is not represented in the AST).
-            val nameTok = precedingNameToken(children, i) { it in ASSIGN_OP_TEXTS }
-            val expr = toExpression(cur as RellParser.ExpressionContext)
-            val item = if (nameTok == null) {
-                S_UpdateWhat(expr.startPos, null, null, expr)
-            } else {
-                val sName = idTokenToName(nameTok)
-                val opTok = children[i - 1] as TerminalNode
-                S_UpdateWhat(sName.pos, sName, assignOpCode(opTok.text), expr)
-            }
-            items.add(item)
-            i++
         }
+
         return items
     }
 
@@ -819,12 +872,14 @@ class RellAntlrVisitor(
                 val from = parseUpdateFromList(ctx)
                 S_UpdateTarget_Simple(cardinality.value, from, where)
             }
+
             is RellParser.UpdateTargetExprContext -> {
                 val head = toBaseExprHead(ctx.baseExprHead())
-                val tails = ctx.baseExprTailNoCallNoAt().map { toTailNoCallNoAt(it) }
+                val tails = ctx.baseExprTailNoCallNoAt().map(::toTailNoCallNoAt)
                 val expr = applyTails(head, tails)
                 S_UpdateTarget_Expr(expr)
             }
+
             else -> error("unknown updateTarget: ${ctx.javaClass.simpleName}")
         }
     }
@@ -840,18 +895,21 @@ class RellAntlrVisitor(
             val qn = toQualifiedName(qNames[0])
             return immListOf(S_UpdateFromItem(null, qn, null))
         }
+
         // Multi: walk children, picking each `(RULE_ID ':')?` alias before each qualifiedName,
         // until we hit the atExprAt child.
-        val items = mutableListOf<S_UpdateFromItem>()
-        for (qnCtx in qNames) {
-            // Find this qnCtx's index in children, look back at preceding terminals for alias.
-            val idxInChildren = ctx.children.indexOf(qnCtx)
-            val aliasTok = precedingNameToken(ctx.children, idxInChildren) { it == ":" }
-            val alias = aliasTok?.let { idTokenToName(it) }
-            // Match grammar.kt: comment only when alias is present.
-            val itemComment = aliasTok?.let { docCommentForToken(it.symbol) }
-            items.add(S_UpdateFromItem(alias, toQualifiedName(qnCtx), itemComment))
+        val items = buildList {
+            for (qnCtx in qNames) {
+                // Find this qnCtx's index in children, look back at preceding terminals for alias.
+                val idxInChildren = ctx.children.indexOf(qnCtx)
+                val aliasTok = precedingNameToken(ctx.children, idxInChildren) { it == ":" }
+                val alias = aliasTok?.let(::idTokenToName)
+                // Match grammar.kt: comment only when alias is present.
+                val itemComment = aliasTok?.let { docCommentForToken(it.symbol) }
+                add(S_UpdateFromItem(alias, toQualifiedName(qnCtx), itemComment))
+            }
         }
+
         return items.toImmList()
     }
 
@@ -866,13 +924,17 @@ class RellAntlrVisitor(
     private fun toLambdaExpr(ctx: RellParser.LambdaExprContext): S_Expr = withCtx(ctx) {
         val lp = ctx.lambdaParams()
         val bare = lp.RULE_ID()
+
         val params = if (bare != null) {
             // Bare single parameter: never type-annotated.
             immListOf(S_LambdaParam(idTokenToName(bare), null))
         } else {
             // Parenthesised parameters, each with an optional explicit type.
-            lp.lambdaParam().map { S_LambdaParam(idTokenToName(it.RULE_ID()), it.type()?.let { t -> toType(t) }) }.toImmList()
+            lp.lambdaParam()
+                .map { S_LambdaParam(idTokenToName(it.RULE_ID()), it.type()?.let { t -> toType(t) }) }
+                .toImmList()
         }
+
         val body = toLambdaBody(ctx.lambdaBody())
         // Collect every simple identifier textually present in the body; the compiler intersects
         // this with the enclosing scope's initialized locals to decide what to capture by value.
@@ -894,9 +956,10 @@ class RellAntlrVisitor(
                 is TerminalNode -> {
                     if (ch.symbol.type == RellParser.RULE_ID) {
                         val prevText = if (i > 0) (children[i - 1] as? TerminalNode)?.text else null
-                        if (prevText != "." && prevText != "?.") sink.add(ch.text)
+                        if (prevText != "." && prevText != "?.") sink += ch.text
                     }
                 }
+
                 is ParserRuleContext -> collectRefNames(ch, sink)
             }
         }
@@ -911,8 +974,8 @@ class RellAntlrVisitor(
     }
 
     private fun toValueBlock(ctx: RellParser.ValueBlockContext): S_LambdaBody_Block = withCtx(ctx) {
-        val stmts = ctx.statement().map { toStatement(it) }.toImmList()
-        val result = ctx.expression()?.let { toExpression(it) }
+        val stmts = ctx.statement().mapToImmList(::toStatement)
+        val result = ctx.expression()?.let(::toExpression)
         S_LambdaBody_Block(S_PosRange(ctx.start.toPos(), ctx.stop.toPos()), stmts, result)
     }
 
@@ -927,7 +990,11 @@ class RellAntlrVisitor(
 
     private fun toJumpExpr(ctx: RellParser.JumpExprContext): S_Expr = withCtx(ctx) {
         when (ctx) {
-            is RellParser.ReturnExprContext -> S_ReturnExpr(ctx.start.toPos(), ctx.expression()?.let { toExpression(it) })
+            is RellParser.ReturnExprContext -> S_ReturnExpr(
+                ctx.start.toPos(),
+                ctx.expression()?.let(::toExpression),
+            )
+
             is RellParser.BreakExprContext -> S_BreakExpr(ctx.start.toPos())
             is RellParser.ContinueExprContext -> S_ContinueExpr(ctx.start.toPos())
             else -> error("unknown jumpExpr: ${ctx.javaClass.simpleName}")
@@ -952,7 +1019,7 @@ class RellAntlrVisitor(
             while (i < children.size) {
                 val ch = children[i]
                 if (ch is TerminalNode && ch.text in PREFIX_OP_TEXTS) {
-                    prefix.add(ch)
+                    prefix += ch
                     i++
                 } else break
             }
@@ -961,7 +1028,7 @@ class RellAntlrVisitor(
             // TerminalNode; synthesize a placeholder S_NameExpr in those cases.
             if (i >= children.size) {
                 val pos = ctx.start?.toPos() ?: errorPos()
-                operands.add(placeholderNameExpr(pos))
+                operands += placeholderNameExpr(pos)
                 break
             }
             val opCtx = children[i]
@@ -994,7 +1061,7 @@ class RellAntlrVisitor(
                 }
                 opExpr = S_UnaryExpr(pos, S_PosValue(pos, unaryOp), opExpr)
             }
-            operands.add(opExpr)
+            operands += opExpr
 
             // Read possible binary operator and continue.
             if (i < children.size) {
@@ -1005,12 +1072,12 @@ class RellAntlrVisitor(
                     // Must be followed by 'in'
                     val tn2 = children[i + 1] as TerminalNode
                     require(tn2.text == "in")
-                    operators.add(S_PosValue(opPos, S_BinaryOp.NOT_IN))
+                    operators += S_PosValue(opPos, S_BinaryOp.NOT_IN)
                     i += 2
                 } else {
                     val sym = ch.text
                     val op = BIN_OP_BY_SYMBOL[sym] ?: error("unknown binary op: $sym")
-                    operators.add(S_PosValue(opPos, op))
+                    operators += S_PosValue(opPos, op)
                     i += 1
                 }
             }
@@ -1041,14 +1108,17 @@ class RellAntlrVisitor(
 
     private fun toWhenExpr(ctx: RellParser.WhenExprContext): S_Expr = withCtx(ctx) {
         val kwTok = ctx.start
-        val subject = ctx.expression()?.let { toExpression(it) }
+        val subject = ctx.expression()?.let(::toExpression)
         val cases = mutableListOf<S_WhenExprCase>()
+
         for (caseCtx in ctx.whenExprCase()) {
-            toWhenExprCase(caseCtx.whenCondition(), caseCtx.valueBlock(), caseCtx.expression())?.let { cases.add(it) }
+            toWhenExprCase(caseCtx.whenCondition(), caseCtx.valueBlock(), caseCtx.expression())?.let(cases::add)
         }
+
         ctx.whenExprLastCase()?.let { lastCtx ->
-            toWhenExprCase(lastCtx.whenCondition(), lastCtx.valueBlock(), lastCtx.expression())?.let { cases.add(it) }
+            toWhenExprCase(lastCtx.whenCondition(), lastCtx.valueBlock(), lastCtx.expression())?.let(cases::add)
         }
+
         return S_WhenExpr(kwTok.toPos(), subject, cases.toImmList())
     }
 
@@ -1060,11 +1130,13 @@ class RellAntlrVisitor(
         // Under ANTLR error recovery the condition or the arm may be missing; drop the incomplete
         // case so the visitor keeps building a partial AST (see toBinaryExpr).
         condCtx ?: return null
+
         val arm = when {
             blockCtx != null -> toValueBlockExpr(blockCtx)
             exprCtx != null -> toExpression(exprCtx)
             else -> return null
         }
+
         return S_WhenExprCase(toWhenCondition(condCtx), arm)
     }
 
@@ -1085,11 +1157,13 @@ class RellAntlrVisitor(
                     expr = applyTail(expr, toTailNoCallNoAt(ch))
                     i++
                 }
+
                 is RellParser.CallArgsContext -> {
                     val args = toCallArgs(ch)
                     expr = S_CallExpr(expr, args)
                     i++
                 }
+
                 is RellParser.AtExprAtContext -> {
                     // Sequence: atExprAt atExprWhere atExprWhat? atExprModifiers?
                     val cardinality = toAtCardinality(ch)
@@ -1119,6 +1193,7 @@ class RellAntlrVisitor(
                         offset,
                     )
                 }
+
                 else -> i++
             }
         }
@@ -1131,11 +1206,12 @@ class RellAntlrVisitor(
                 val fromItems = parseAtExprFromItems(ctx)
                 val cardinality = toAtCardinality(ctx.atExprAt())
                 val where = toAtExprWhere(ctx.atExprWhere())
-                val what = ctx.atExprWhat()?.let { toAtExprWhat(it) } ?: S_AtExprWhat_Default()
+                val what = ctx.atExprWhat()?.let(::toAtExprWhat) ?: S_AtExprWhat_Default()
                 val mods = ctx.atExprModifiers()?.let { toAtExprModifiers(it) }
                 val from = S_AtExprFrom_Complex(ctx.start.toPos(), fromItems.toImmList())
                 S_AtExpr(from, cardinality, where, what, mods?.first, mods?.second)
             }
+
             is RellParser.NameExprContext -> S_NameExpr(toQualifiedName(ctx.qualifiedName()))
             is RellParser.DollarExprContext -> S_DollarExpr(ctx.start.toPos())
             is RellParser.AttrExprContext -> S_AttrExpr(ctx.start.toPos(), idTokenToName(ctx.RULE_ID()))
@@ -1149,28 +1225,34 @@ class RellAntlrVisitor(
             is RellParser.NullExprContext -> S_NullLiteralExpr(ctx.start.toPos())
             is RellParser.TupleHeadContext -> toTupleHead(ctx)
             is RellParser.CreateExprContext -> toCreateExpr(ctx)
+
             is RellParser.MirrorStructExprContext -> {
                 val mutable = ctx.children.any { it is TerminalNode && it.text == "mutable" }
                 S_MirrorStructExpr(ctx.start.toPos(), mutable, toType(ctx.type()))
             }
+
             is RellParser.VirtualTypeExprContext -> {
                 val virtType = S_VirtualType(ctx.start.toPos(), toType(ctx.type()))
                 S_SpecialTypeExpr(virtType)
             }
+
             is RellParser.GenericTypeExprContext -> toGenericTypeExpr(ctx)
             is RellParser.EmptyMapLiteralExprContext -> {
                 S_MapLiteralExpr(ctx.start.toPos(), immListOf())
             }
+
             is RellParser.NonEmptyMapLiteralExprContext -> {
-                val exprs = ctx.expression().map { toExpression(it) }
+                val exprs = ctx.expression().map(::toExpression)
                 require(exprs.size % 2 == 0)
-                val entries = (exprs.indices step 2).map { idx -> Pair(exprs[idx], exprs[idx + 1]) }.toImmList()
+                val entries = (exprs.indices step 2).mapToImmList { idx -> exprs[idx] to exprs[idx + 1] }
                 S_MapLiteralExpr(ctx.start.toPos(), entries)
             }
+
             is RellParser.ListLiteralExprContext -> {
-                val exprs = ctx.expression().map { toExpression(it) }.toImmList()
+                val exprs = ctx.expression().mapToImmList(::toExpression)
                 S_ListLiteralExpr(ctx.start.toPos(), exprs)
             }
+
             else -> error("unknown baseExprHead: ${ctx.javaClass.simpleName}")
         }
     }
@@ -1196,7 +1278,7 @@ class RellAntlrVisitor(
 
     private fun toGenericTypeExpr(ctx: RellParser.GenericTypeExprContext): S_Expr = withCtx(ctx) {
         val qName = toQualifiedName(ctx.qualifiedName())
-        val typeArgs = ctx.type().map { toType(it) }.toImmList()
+        val typeArgs = ctx.type().mapToImmList(::toType)
         val genType = S_GenericType(qName, typeArgs)
         val baseExpr = S_GenericTypeExpr(genType)
         // Followed by `callArgs | '.' RULE_ID`
@@ -1217,6 +1299,7 @@ class RellAntlrVisitor(
                 val lbrack = ctx.start
                 TailDescriptor.Subscript(lbrack.toPos(), toExpression(ctx.expression()))
             }
+
             is RellParser.BaseExprTailNotNullContext -> TailDescriptor.NotNull(ctx.start.toPos())
             is RellParser.BaseExprTailUnaryPostfixOpContext -> {
                 val tok = ctx.start
@@ -1228,6 +1311,7 @@ class RellAntlrVisitor(
                 }
                 TailDescriptor.PostfixOp(tok.toPos(), op)
             }
+
             else -> error("unknown tailNoCallNoAt: ${ctx.javaClass.simpleName}")
         }
     }
@@ -1263,30 +1347,45 @@ class RellAntlrVisitor(
         var rparPos = lparPos
         val args = mutableListOf<S_CallArgument>()
         var i = lparIdx + 1
+
         while (i < children.size) {
             val cur = children[i]
-            if (cur is TerminalNode && cur.text == ")") { rparPos = cur.symbol.toPos(); break }
-            if (cur is TerminalNode && cur.text == ",") { i++; continue }
+
+            if (cur is TerminalNode && cur.text == ")") {
+                rparPos = cur.symbol.toPos()
+                break
+            }
+
+            if (cur is TerminalNode && cur.text == ",") {
+                i++
+                continue
+            }
+
             var j = i
             if ((children[j] as? TerminalNode)?.text == ".") j++
             var argName: S_Name? = null
             val nameTok = children.getOrNull(j) as? TerminalNode
+
             if (nameTok != null && nameTok.symbol.type == RellParser.RULE_ID
                 && (children.getOrNull(j + 1) as? TerminalNode)?.text == "="
             ) {
                 argName = idTokenToName(nameTok)
                 j += 2
             }
+
             require(j < children.size) { "call arg: missing value" }
+
             val argValue: S_CallArgumentValue = when (val valChild = children[j]) {
                 is TerminalNode -> {
                     require(valChild.text == "*") { "call arg: unexpected terminal ${valChild.text}" }
                     S_CallArgumentValue_Wildcard(valChild.symbol.toPos())
                 }
+
                 is RellParser.ExpressionContext -> S_CallArgumentValue_Expr(toExpression(valChild))
                 else -> error("call arg: unexpected ${valChild.javaClass.simpleName}")
             }
-            args.add(S_CallArgument(argName, argValue))
+
+            args += S_CallArgument(argName, argValue)
             i = j + 1
         }
         return S_CallArguments(args.toImmList(), S_PosRange(lparPos, rparPos))
@@ -1309,7 +1408,7 @@ class RellAntlrVisitor(
     private fun toAtExprWhere(ctx: RellParser.AtExprWhereContext): S_AtExprWhere = withCtx(ctx) {
         val lcurl = ctx.start
         val rcurl = ctx.stop
-        val exprs = ctx.expression().map { toExpression(it) }.toImmList()
+        val exprs = ctx.expression().mapToImmList(::toExpression)
         return S_AtExprWhere(exprs, S_PosRange(lcurl.toPos(), rcurl.toPos()))
     }
 
@@ -1317,10 +1416,11 @@ class RellAntlrVisitor(
         return when (ctx) {
             is RellParser.AtExprWhatSimpleContext -> {
                 val ids = ctx.RULE_ID()
-                val path = ids.map { idTokenToName(it) }.toImmList()
+                val path = ids.mapToImmList(::idTokenToName)
                 val dotTok = ctx.start
                 S_AtExprWhat_Simple(dotTok.toPos(), path)
             }
+
             is RellParser.AtExprWhatComplexContext -> {
                 // walk children to collect fields
                 val fields = parseAtExprWhatComplexFields(ctx)
@@ -1328,16 +1428,15 @@ class RellAntlrVisitor(
                 val rpar = ctx.stop
                 S_AtExprWhat_Complex(S_PosRange(lpar.toPos(), rpar.toPos()), fields.toImmList())
             }
+
             else -> error("unknown atExprWhat: ${ctx.javaClass.simpleName}")
         }
     }
 
     private fun parseAtExprWhatComplexFields(
         ctx: RellParser.AtExprWhatComplexContext,
-    ): List<S_AtExprWhatComplexField> {
-        return parseAnnotatedItems(ctx, "=").map {
-            S_AtExprWhatComplexField(it.name, it.expr, it.modifiers, null, it.comment)
-        }
+    ): List<S_AtExprWhatComplexField> = parseAnnotatedItems(ctx, "=").map {
+        S_AtExprWhatComplexField(it.name, it.expr, it.modifiers, null, it.comment)
     }
 
     private fun toAtExprModifiers(ctx: RellParser.AtExprModifiersContext): Pair<S_Expr?, S_Expr?> = withCtx(ctx) {
@@ -1356,10 +1455,12 @@ class RellAntlrVisitor(
                         limit = toExpression(children[i + 1] as RellParser.ExpressionContext)
                         i += 2
                     }
+
                     "offset" -> {
                         offset = toExpression(children[i + 1] as RellParser.ExpressionContext)
                         i += 2
                     }
+
                     else -> i++
                 }
             } else i++
@@ -1395,24 +1496,33 @@ class RellAntlrVisitor(
         val children = ctx.children
         val items = mutableListOf<AnnotatedItem>()
         var i = 1 // skip '('
+
         while (i < children.size) {
             val cur = children[i]
             // Skip separators / closing paren. Other terminals (the item's name) fall through.
             if (cur is TerminalNode) {
                 if (cur.text == ")") break
-                if (cur.text == ",") { i++; continue }
+
+                if (cur.text == ",") {
+                    i++
+                    continue
+                }
             }
+
             // Past the at-expr's `)`: subsequent children belong to the at-tail — bail.
             if (cur is RellParser.AtExprAtContext) break
             val anns = mutableListOf<S_Annotation>()
             var j = i
+
             while (j < children.size && children[j] is RellParser.AnnotationContext) {
-                anns.add(toAnnotation(children[j] as RellParser.AnnotationContext))
+                anns += toAnnotation(children[j] as RellParser.AnnotationContext)
                 j++
             }
+
             var name: S_Name? = null
             var nameTokIdx = -1
             val nameTok = children.getOrNull(j) as? TerminalNode
+
             if (nameTok != null && nameTok.symbol.type == RellParser.RULE_ID
                 && (children.getOrNull(j + 1) as? TerminalNode)?.text == nameSep
             ) {
@@ -1420,15 +1530,18 @@ class RellAntlrVisitor(
                 name = idTokenToName(nameTok)
                 j += 2
             }
+
             val expr = toExpression(children[j] as RellParser.ExpressionContext)
             val mods = if (anns.isEmpty()) S_Modifiers() else S_Modifiers(anns.toImmList())
+
             // Match grammar.kt: comment from the first annotation or the name token (none if neither).
             val firstTok: Token? = when {
                 anns.isNotEmpty() -> (children[i] as RellParser.AnnotationContext).start
                 nameTokIdx >= 0 -> (children[nameTokIdx] as TerminalNode).symbol
                 else -> null
             }
-            items.add(AnnotatedItem(mods, name, expr, firstTok?.let { docCommentForToken(it) }))
+
+            items += AnnotatedItem(mods, name, expr, firstTok?.let(::docCommentForToken))
             i = j + 1
         }
         return items
@@ -1446,7 +1559,7 @@ class RellAntlrVisitor(
             val pos = ctx.start?.toPos() ?: errorPos()
             return placeholderName(pos)
         }
-        val parts = ids.map { idTokenToName(it) }.toImmList()
+        val parts = ids.map(::idTokenToName).toImmList()
         return S_QualifiedName(parts)
     }
 
@@ -1501,7 +1614,7 @@ class RellAntlrVisitor(
     }
 
     /** Synthetic single-token ParserRuleContext: lets `attachment.node.text/start/stop` reflect just one token. */
-    private class TokenRuleContext(val token: Token) : ParserRuleContext() {
+    private class TokenRuleContext(val token: Token): ParserRuleContext() {
         init {
             start = token
             stop = token
@@ -1551,12 +1664,13 @@ class RellAntlrVisitor(
                 continue
             }
             val nameTok = precedingNameToken(children, i) { it == nameSep }
-            val fieldName = nameTok?.let { idTokenToName(it) }
+            val fieldName = nameTok?.let(::idTokenToName)
             // Match grammar.kt: doc-comment attaches only when the field has a name.
             val fieldComment = nameTok?.let { docCommentForToken(it.symbol) }
-            fields.add(S_GenericTupleAttr(fieldName, convert(cur as ParserRuleContext), fieldComment))
+            fields += S_GenericTupleAttr(fieldName, convert(cur as ParserRuleContext), fieldComment)
             i++
         }
+
         return TupleFields(fields.toImmList(), trailingComma)
     }
 
@@ -1564,7 +1678,11 @@ class RellAntlrVisitor(
      * The `RULE_ID` of a `RULE_ID <separator>` prefix immediately preceding `children[idx]`, or null
      * when the item at [idx] is unnamed. [sepMatches] tests the separator's text.
      */
-    private fun precedingNameToken(children: List<ParseTree>, idx: Int, sepMatches: (String) -> Boolean): TerminalNode? {
+    private fun precedingNameToken(
+        children: List<ParseTree>,
+        idx: Int,
+        sepMatches: (String) -> Boolean
+    ): TerminalNode? {
         if (idx < 2) return null
         val nameTok = children[idx - 2] as? TerminalNode ?: return null
         val sepTok = children[idx - 1] as? TerminalNode ?: return null
@@ -1612,29 +1730,66 @@ class RellAntlrVisitor(
         // Decode escapes.
         val sb = StringBuilder(inner.length)
         var i = 0
+
         while (i < inner.length) {
             val c = inner[i]
+
             if (c != '\\') {
                 sb.append(c)
                 i++
                 continue
             }
+
             require(i + 1 < inner.length) { "bad escape at end of string: $raw" }
+
             when (val n = inner[i + 1]) {
-                'b' -> { sb.append('\b'); i += 2 }
-                't' -> { sb.append('\t'); i += 2 }
-                'n' -> { sb.append('\n'); i += 2 }
-                'f' -> { sb.append(''); i += 2 }
-                'r' -> { sb.append('\r'); i += 2 }
-                '"' -> { sb.append('"'); i += 2 }
-                '\'' -> { sb.append('\''); i += 2 }
-                '\\' -> { sb.append('\\'); i += 2 }
+                'b' -> {
+                    sb.append('\b')
+                    i += 2
+                }
+
+                't' -> {
+                    sb.append('\t')
+                    i += 2
+                }
+
+                'n' -> {
+                    sb.append('\n')
+                    i += 2
+                }
+
+                'f' -> {
+                    sb.append('')
+                    i += 2
+                }
+
+                'r' -> {
+                    sb.append('\r')
+                    i += 2
+                }
+
+                '"' -> {
+                    sb.append('"')
+                    i += 2
+                }
+
+                '\'' -> {
+                    sb.append('\'')
+                    i += 2
+                }
+
+                '\\' -> {
+                    sb.append('\\')
+                    i += 2
+                }
+
                 'u' -> {
                     require(i + 6 <= inner.length) { "bad unicode escape: $raw" }
                     val hex = inner.substring(i + 2, i + 6)
                     sb.append(hex.toInt(16).toChar())
                     i += 6
                 }
+
                 else -> error("bad escape: \\$n")
             }
         }
@@ -1671,7 +1826,11 @@ class RellAntlrVisitor(
         while (i >= 0) {
             val tok = tokens.get(i)
             when (tok.channel) {
-                Lexer.HIDDEN -> { i--; continue }
+                Lexer.HIDDEN -> {
+                    i--
+                    continue
+                }
+
                 2 -> {
                     val text = tok.text ?: return null
                     if (!text.startsWith("/**")) return null
@@ -1680,6 +1839,7 @@ class RellAntlrVisitor(
                     val pos = S_BasicPos(filePath, tok.startIndex, tok.line, tok.charPositionInLine + 1)
                     return S_Comment(pos, text)
                 }
+
                 else -> return null
             }
         }
@@ -1688,11 +1848,11 @@ class RellAntlrVisitor(
 
     // Tail descriptor for chained baseExpr suffixes.
     private sealed class TailDescriptor {
-        class Member(val name: S_Name) : TailDescriptor()
-        class SafeMember(val name: S_Name) : TailDescriptor()
-        class Subscript(val opPos: S_Pos, val expr: S_Expr) : TailDescriptor()
-        class NotNull(val opPos: S_Pos) : TailDescriptor()
-        class PostfixOp(val opPos: S_Pos, val op: S_UnaryOp) : TailDescriptor()
+        class Member(val name: S_Name): TailDescriptor()
+        class SafeMember(val name: S_Name): TailDescriptor()
+        class Subscript(val opPos: S_Pos, val expr: S_Expr): TailDescriptor()
+        class NotNull(val opPos: S_Pos): TailDescriptor()
+        class PostfixOp(val opPos: S_Pos, val op: S_UnaryOp): TailDescriptor()
     }
 
     companion object {

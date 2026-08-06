@@ -64,8 +64,8 @@ fun deserializeEntityDefinition(fb: FbEntityDefinition): RR_EntityDefinition {
         sqlMapping = sqlMapping,
         external = external,
         type = RR_Type.Error, // Will be set to Entity(defIndex) by the app deserializer.
-        keys = keys.map { Key(it.toImmList()) }.toImmList(),
-        indexes = indexes.map { Index(it.toImmList()) }.toImmList(),
+        keys = keys.mapToImmList { Key(it.toImmList()) },
+        indexes = indexes.mapToImmList { Index(it.toImmList()) },
         attributes = attrMap,
     )
 }

@@ -335,11 +335,11 @@ object C_Utils {
         val docGetter = cDefBase.docGetter(C_LateGetter.const(DocDeclarationProto.NONE))
         val defBase = cDefBase.rBase(R_CallFrame.NONE_INIT_FRAME_GETTER, null, docGetter)
 
-        val attrs = values.mapIndexed { index, valueName ->
+        val attrs = values.mapIndexedToImmList { index, valueName ->
             val rName = Name.of(valueName)
             val ideInfo = C_IdeSymbolInfo.direct(IdeSymbolKind.MEM_ENUM_VALUE)
             R_EnumAttr(rName, index, ideInfo, null)
-        }.toImmList()
+        }
 
         return R_EnumDefinition(defBase, attrs)
     }

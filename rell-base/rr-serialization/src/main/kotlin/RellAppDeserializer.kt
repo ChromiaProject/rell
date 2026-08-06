@@ -201,7 +201,7 @@ fun deserializeRellApp(bytes: ByteArray): RR_App = safeDeserialize {
             .associate { (i, c) -> c.base.defId to i }.toImmMap()
 
         // 8. Build SQL defs.
-        val sqlEntities = patchedEntities.filter { !it.flags.isObject }.toImmList()
+        val sqlEntities = patchedEntities.filterToImmList { !it.flags.isObject }
         val topologicalEntities = topologicalSortEntities(sqlEntities)
         val sqlDefs = RR_AppSqlDefs(
             entities = sqlEntities,
