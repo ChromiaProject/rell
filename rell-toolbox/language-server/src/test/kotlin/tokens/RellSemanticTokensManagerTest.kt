@@ -188,6 +188,7 @@ internal class RellSemanticTokensManagerTest {
 
         val mappingTypes = listOf(
             RellTokenType.DEFAULT,
+            RellTokenType.MODULE,
             RellTokenType.GLOBAL_CONSTANT,
             RellTokenType.TYPE,
             RellTokenType.FUNCTION,
@@ -289,7 +290,7 @@ internal class RellSemanticTokensManagerTest {
         @JvmStatic
         fun provideParameters(): Stream<Arguments> {
             return Stream.of(
-                makeArguments(IdeSymbolKind.DEF_IMPORT_ALIAS, RellTokenType.DEFAULT),
+                makeArguments(IdeSymbolKind.DEF_IMPORT_ALIAS, RellTokenType.MODULE),
                 makeArguments(IdeSymbolKind.DEF_CONSTANT, RellTokenType.GLOBAL_CONSTANT),
                 makeArguments(IdeSymbolKind.DEF_ENTITY, RellTokenType.ENTITY),
                 makeArguments(IdeSymbolKind.DEF_ENUM, RellTokenType.ENUM),
@@ -322,6 +323,7 @@ internal class RellSemanticTokensManagerTest {
                 makeArguments(IdeSymbolKind.MEM_ENTITY_ATTR_NORMAL_VAR, RellTokenType.ENTITY_ATTR_NORMAL_VAR),
                 makeArguments(IdeSymbolKind.MEM_ENTITY_ATTR_ROWID, RellTokenType.ENTITY_ATTR_KEYINDEX_VAL),
                 makeArguments(IdeSymbolKind.MEM_ENUM_VALUE, RellTokenType.ENUM_VALUE),
+                makeArguments(IdeSymbolKind.MEM_FUNCTION_SYSTEM, RellTokenType.MEMBER_FUNCTION_CALL),
                 makeArguments(IdeSymbolKind.MEM_STRUCT_ATTR, RellTokenType.STRUCT_ATTR_VAL),
                 makeArguments(IdeSymbolKind.MEM_STRUCT_ATTR_VAR, RellTokenType.STRUCT_ATTR_VAR),
                 makeArguments(IdeSymbolKind.MEM_SYS_PROPERTY, RellTokenType.DEFAULT),

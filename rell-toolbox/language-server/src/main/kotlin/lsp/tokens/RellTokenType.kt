@@ -98,7 +98,8 @@ internal enum class RellTokenType(
     LOCAL_PARAMETER("variable", RellTokenModifier.LOCAL_VAL, RellTokenModifier.PARAMETER),
     FUNCTION_CALL("function", RellTokenModifier.FUNCTION, RellTokenModifier.CALL),
     OPERATION_CALL("function", RellTokenModifier.OPERATION, RellTokenModifier.CALL),
-    QUERY_CALL("function", RellTokenModifier.QUERY, RellTokenModifier.CALL);
+    QUERY_CALL("function", RellTokenModifier.QUERY, RellTokenModifier.CALL),
+    MEMBER_FUNCTION_CALL("method", RellTokenModifier.FUNCTION, RellTokenModifier.CALL);
 
     val modifiersAsList: List<RellTokenModifier> = modifiers.toList()
     val tokenId: Int = this.ordinal
@@ -107,7 +108,7 @@ internal enum class RellTokenType(
 internal fun tokenFromIdeSymbolInfo(info: IdeSymbolInfo): RellTokenType {
     val kind = info.kind
     return when (kind) {
-        IdeSymbolKind.DEF_IMPORT_ALIAS -> RellTokenType.DEFAULT
+        IdeSymbolKind.DEF_IMPORT_ALIAS -> RellTokenType.MODULE
         IdeSymbolKind.DEF_CONSTANT -> RellTokenType.GLOBAL_CONSTANT
         IdeSymbolKind.DEF_ENTITY -> RellTokenType.ENTITY
         IdeSymbolKind.DEF_ENUM -> RellTokenType.ENUM
@@ -116,6 +117,7 @@ internal fun tokenFromIdeSymbolInfo(info: IdeSymbolInfo): RellTokenType {
         IdeSymbolKind.DEF_FUNCTION_EXTENDABLE -> RellTokenType.FUNCTION_EXTENDABLE
         IdeSymbolKind.DEF_FUNCTION -> getCallOrDefault(info, RellTokenType.FUNCTION_CALL, RellTokenType.FUNCTION)
         IdeSymbolKind.DEF_FUNCTION_SYSTEM -> RellTokenType.FUNCTION_CALL
+        IdeSymbolKind.MEM_FUNCTION_SYSTEM -> RellTokenType.MEMBER_FUNCTION_CALL
         IdeSymbolKind.DEF_IMPORT_MODULE -> RellTokenType.MODULE
         IdeSymbolKind.DEF_NAMESPACE -> RellTokenType.NAMESPACE
         IdeSymbolKind.DEF_OBJECT -> RellTokenType.OBJECT
