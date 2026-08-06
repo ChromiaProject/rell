@@ -56,8 +56,7 @@ internal class TypeInferenceVisitor(
     }
 
     override fun visitForStmtAlt(ctx: RellParser.ForStmtAltContext) {
-        val declarator = ctx.varDeclarator()
-        when (declarator) {
+        when (val declarator = ctx.varDeclarator()) {
             is RellParser.SimpleVarDeclaratorContext -> processSimpleDeclarator(declarator) {
                 extractTypeForAnonName(declarator)
             }

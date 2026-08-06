@@ -449,7 +449,7 @@ internal data object S_WildcardImportTarget: S_ImportTarget() {
     }
 }
 
-internal class S_ImportDefinition constructor(
+internal class S_ImportDefinition(
     base: S_DefinitionBase,
     private val alias: S_Name?,
     private val modulePath: S_ImportModulePath,

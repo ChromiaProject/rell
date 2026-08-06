@@ -82,6 +82,7 @@ internal fun createComparator(rrType: RR_Type): Comparator<Rt_Value>? = when (rr
     is RR_Type.Entity -> Rt_Comparator.create { (it as Rt_EntityValue).rowid }
     is RR_Type.Enum -> Rt_Comparator.create { (it as Rt_RR_EnumValue).rrAttr.value }
     is RR_Type.Null -> Rt_Comparator.create { 0 }
+
     is RR_Type.Nullable -> createComparator(rrType.value)?.let { inner ->
         Comparator { a, b ->
             when {
@@ -92,11 +93,15 @@ internal fun createComparator(rrType: RR_Type): Comparator<Rt_Value>? = when (rr
             }
         }
     }
+
     is RR_Type.Tuple -> {
         val fieldComparators = rrType.fields.map { createComparator(it.type) }
+
         if (fieldComparators.all { it != null }) {
             Rt_TupleComparator(fieldComparators.mapToImmList { it!! })
-        } else null
+        } else {
+            null
+        }
     }
 
     is RR_Type.List -> createComparator(rrType.element)?.let { Rt_ListComparator(it) }

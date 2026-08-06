@@ -91,7 +91,7 @@ class V_AtWhatFieldFlags(
     }
 }
 
-class V_DbAtWhatField constructor(
+class V_DbAtWhatField(
     private val appCtx: C_AppContext,
     val name: R_IdeName?,
     val resultType: R_Type,
@@ -171,7 +171,7 @@ class V_AtExprBase(
     }
 }
 
-class V_TopDbAtExpr constructor(
+class V_TopDbAtExpr(
     exprCtx: C_ExprContext,
     pos: S_Pos,
     private val resultType: R_Type,

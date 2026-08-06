@@ -67,12 +67,14 @@ object GtvTestUtils {
             GtvType.DICT -> {
                 val m1 = v1.asDict()
                 val m2 = v2.asDict()
-                val m = (m1.keys + m2.keys).toSet().map {
+
+                val m = (m1.keys + m2.keys).toSet().associateWith {
                     val x1 = m1[it]
                     val x2 = m2[it]
                     val x = if (x1 == null) x2 else if (x2 == null) x1 else merge(x1, x2)
-                    it to x!!
-                }.toMap()
+                    x!!
+                }
+
                 GtvFactory.gtv(m)
             }
             else -> v2

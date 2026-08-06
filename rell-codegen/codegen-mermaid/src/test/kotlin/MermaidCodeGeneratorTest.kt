@@ -29,12 +29,13 @@ import kotlin.io.path.exists
 @Disabled
 @Testcontainers
 internal class MermaidCodeGeneratorTest {
+    private val rellCliEnv = CachedRellCliEnv(RellCliEnv.DEFAULT, cacheOutput = true, cacheError = true)
 
-    private val rellCliEnv = CachedRellCliEnv(RellCliEnv.DEFAULT, true, true)
     private val config = object : MermaidCodeGeneratorConfig {
         override fun mdx() = false
         override fun erDiagram() = true
     }
+
     private val generator = CodeGenerator(MermaidDocumentFactory(config), config, rellCliEnv)
 
     private fun generateSvg(rellPath: String, vararg baseModule: String): Pair<List<DocumentSection>, Map<String, StringSerializable>> {

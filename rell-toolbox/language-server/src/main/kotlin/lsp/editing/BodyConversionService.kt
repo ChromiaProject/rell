@@ -140,11 +140,13 @@ internal object BodyConversionService {
      */
     private fun isUnitCall(expr: RellParser.BaseExprContext, resource: Resource): Boolean {
         if (expr.childCount < 2 || expr.getChild(expr.childCount - 1) !is RellParser.CallArgsContext) return false
+
         val calleeToken = when (val callee = expr.getChild(expr.childCount - 2)) {
             is RellParser.NameExprContext -> callee.qualifiedName()?.stop
             is RellParser.BaseExprTailMemberContext -> callee.RULE_ID()?.symbol
             else -> null
         } ?: return false
+
         return symbolResultType(resource, calleeToken) == UNIT_TYPE
     }
 

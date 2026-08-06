@@ -60,9 +60,8 @@ object SqlMeta {
         return metaExists
     }
 
-    private fun metaTables(mapping: Rt_ChainSqlMapping): List<String> {
-        return listOf(mapping.metaEntitiesTable, mapping.metaAttributesTable)
-    }
+    private fun metaTables(mapping: Rt_ChainSqlMapping): List<String> =
+        listOf(mapping.metaEntitiesTable, mapping.metaAttributesTable)
 
     fun loadMetaData(sqlExec: SqlExecutor, mapping: Rt_ChainSqlMapping, msgs: Rt_Messages): ImmMap<String, MetaEntity> {
         val metaEntities = selectMetaEntities(mapping, sqlExec, msgs)

@@ -191,7 +191,7 @@ class C_LibTypeBody(
     val valueMembers: C_LibTypeMembers<C_TypeValueMember>,
 )
 
-class C_LibTypeDef constructor(
+class C_LibTypeDef(
     val typeName: String,
     val lTypeDef: L_TypeDef,
     body: C_LibTypeBody,

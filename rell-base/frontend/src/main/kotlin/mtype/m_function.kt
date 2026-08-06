@@ -286,7 +286,7 @@ class M_FunctionParamsMatch(
     )
 }
 
-class M_FunctionHeaderMatch constructor(
+class M_FunctionHeaderMatch(
     val typeArgs: ImmMap<String, M_Type>,
     val actualHeader: M_FunctionHeader,
 )

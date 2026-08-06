@@ -124,7 +124,7 @@ class L_TypeDefParent(val typeDef: L_TypeDef, val args: ImmList<M_Type>) {
     }
 }
 
-class L_TypeDef constructor(
+class L_TypeDef(
     val fullName: FullName,
     flags: L_TypeDefFlags,
     val mGenericType: M_GenericType,

@@ -79,7 +79,6 @@ internal fun BaseExprContext.tails(): List<BaseExprTail> {
                 i++
             }
             is AtExprAtContext -> {
-                val at = c
                 val where = getChild(i + 1) as AtExprWhereContext
                 var j = i + 2
                 var what: AtExprWhatContext? = null
@@ -92,7 +91,7 @@ internal fun BaseExprContext.tails(): List<BaseExprTail> {
                     mods = getChild(j) as AtExprModifiersContext
                     j++
                 }
-                result.add(BaseExprTail.AtExpr(at, where, what, mods))
+                result.add(BaseExprTail.AtExpr(at = c, where, what, mods))
                 i = j
             }
             else -> i++

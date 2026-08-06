@@ -1732,6 +1732,7 @@ internal sealed class Tf_WhenChooserNode: Tf_ExprNode() {
             for (idx in condExprs.indices) {
                 // Use `equals` over `==` to avoid `Intrinsics.areEqual` on the Truffle hot path.
                 // `key` is non-null per the `Tf_ExprNode.execute` contract.
+                @Suppress("ReplaceCallWithBinaryOperator")
                 if (key.equals(condExprs[idx].execute(frame)))
                     return condIndices[idx]
             }
@@ -1752,6 +1753,7 @@ internal sealed class Tf_WhenChooserNode: Tf_ExprNode() {
             for (i in keys.indices) {
                 // Use `equals` over `==` to avoid `Intrinsics.areEqual` on the Truffle hot path.
                 // `keys[i]` originates from `delegate.toRtValue(...)` at translate time, non-null.
+                @Suppress("ReplaceCallWithBinaryOperator")
                 if (keys[i].equals(key)) return values[i]
             }
             return elseIndex

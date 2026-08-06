@@ -217,8 +217,9 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                 is Rt_DecimalValue -> Tf_ConstantNode.Generic(
                     Tf_LongScaleDecimal.tryFrom(rtValue.value)
                         ?: Tf_Int128ScaleDecimal.tryFrom(rtValue.value)
-                        ?: rtValue
+                        ?: rtValue,
                 )
+
                 else -> Tf_ConstantNode.Generic(rtValue)
             }
         }
@@ -768,8 +769,8 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
         // translator honest if a malformed RR ever lands here.
         var fastPath = paramVars.size == params.size && argTypes.size == paramVars.size
         if (fastPath) {
-            for (param in params) {
-                if (param.sizeConstraint != null) {
+            for ((_, _, _, _, sizeConstraint) in params) {
+                if (sizeConstraint != null) {
                     fastPath = false
                     break
                 }
@@ -927,11 +928,12 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
     ): Tf_ExprNode? {
         val unwrapped = unwrapNullable(receiverType)
         return when {
-            argNodes.isEmpty() && displayName.endsWith(".size") -> when {
-                unwrapped is RR_Type.List -> Tf_StdlibMemberNode.ListSize(baseNode, safe)
-                unwrapped is RR_Type.Set -> Tf_StdlibMemberNode.SetSize(baseNode, safe)
-                unwrapped is RR_Type.Primitive && unwrapped.kind === RR_PrimitiveKind.TEXT ->
+            argNodes.isEmpty() && displayName.endsWith(".size") -> when (unwrapped) {
+                is RR_Type.List -> Tf_StdlibMemberNode.ListSize(baseNode, safe)
+                is RR_Type.Set -> Tf_StdlibMemberNode.SetSize(baseNode, safe)
+                is RR_Type.Primitive if unwrapped.kind === RR_PrimitiveKind.TEXT ->
                     Tf_StdlibMemberNode.TextSize(baseNode, safe)
+
                 else -> null
             }
 
@@ -939,7 +941,7 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                 Tf_StdlibMemberNode.ListGet(baseNode, argNodes[0], callPos, displayName, safe)
 
             argNodes.size == 1 && displayName.endsWith(".add") &&
-                (unwrapped is RR_Type.List || unwrapped is RR_Type.Set) ->
+                    (unwrapped is RR_Type.List || unwrapped is RR_Type.Set) ->
                 Tf_StdlibMemberNode.CollectionAdd(baseNode, argNodes[0], safe)
 
             else -> null
@@ -972,7 +974,7 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                 Tf_StdlibMemberNode.EnumName(baseNode, safe)
 
             displayName.endsWith(".type") &&
-                unwrapped is RR_Type.Primitive && unwrapped.kind === RR_PrimitiveKind.GTV ->
+                    unwrapped is RR_Type.Primitive && unwrapped.kind === RR_PrimitiveKind.GTV ->
                 Tf_StdlibMemberNode.GtvType(baseNode, safe)
 
             else -> null
@@ -1040,10 +1042,8 @@ internal class Tf_Translator(private val backend: Tf_Backend) {
                     Tf_FallbackExprNode(backend, expr)
                 } else {
                     val displayName = resolveSysFnDisplayName(calc.fnName)
-                    val native = translateNativeStdlibProperty(baseNode, displayName, safe, expr.base.type)
-                    if (native != null) {
-                        native
-                    } else when {
+
+                    translateNativeStdlibProperty(baseNode, displayName, safe, expr.base.type) ?: when {
                         resultIsInt -> Tf_MemberAccessNode.SysFn.IntResult(baseNode, fn, displayName, safe)
                         resultIsBool -> Tf_MemberAccessNode.SysFn.BoolResult(baseNode, fn, displayName, safe)
                         else -> Tf_MemberAccessNode.SysFn(baseNode, fn, displayName, safe)

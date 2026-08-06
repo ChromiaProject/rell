@@ -27,8 +27,7 @@ import java.io.File
 import java.nio.file.Files
 
 internal class KotlinCodeGeneratorTest {
-
-    private val rellCliEnv = CachedRellCliEnv(RellCliEnv.DEFAULT, true, true)
+    private val rellCliEnv = CachedRellCliEnv(RellCliEnv.DEFAULT, cacheOutput = true, cacheError = true)
     private val config = object : KotlinCodeGeneratorConfig { override fun packageName() = "com.example" }
     private val generator = CodeGenerator(KotlinDocumentFactory(config), config, rellCliEnv)
 

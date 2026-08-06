@@ -86,14 +86,12 @@ internal class ReplaceIfStmtWithWhenIssue(
 
     // A block wrapping a single statement adds nothing in a `when` arm, so unwrap it. A variable
     // declaration keeps its block: without it the name would leak into the enclosing scope.
-    private fun armText(stmt: RellParser.StatementContext): String {
-        val single = (stmt as? RellParser.BlockStmtAltContext)?.blockStmt()?.statement()?.singleOrNull()
-        return when (single) {
+    private fun armText(stmt: RellParser.StatementContext): String =
+        when (val single = (stmt as? RellParser.BlockStmtAltContext)?.blockStmt()?.statement()?.singleOrNull()) {
             null, is RellParser.VarStmtAltContext, is RellParser.EmptyStmtContext -> reindent(sourceText(stmt))
             // The unwrapped statement already sits at the arm's indentation, so it is not reindented.
             else -> sourceText(single)
         }
-    }
 }
 
 internal class ReplaceIfExprWithWhenIssue(
@@ -128,8 +126,7 @@ internal class ReplaceIfExprWithWhenIssue(
     // A `when` expression arm is ';'-terminated unless it is a value block. A value block holding
     // nothing but its result expression is unwrapped: the block buys nothing in an arm.
     private fun armText(branch: RellParser.ExprOrValueBlockContext): String {
-        val block = branch.valueBlock()
-        if (block == null) return reindent(sourceText(branch)) + ";"
+        val block = branch.valueBlock() ?: return reindent(sourceText(branch)) + ";"
         val result = block.expression()
         // The unwrapped expression already sits at the arm's indentation, so it is not reindented.
         return if (result != null && block.statement().isEmpty()) sourceText(result) + ";" else reindent(sourceText(branch))
