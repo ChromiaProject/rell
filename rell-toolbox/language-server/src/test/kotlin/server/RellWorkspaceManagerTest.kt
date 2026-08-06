@@ -489,6 +489,29 @@ internal class RellWorkspaceManagerTest : WorkspaceManagerTestBase() {
     }
 
     @Test
+    fun `Go to definition when cursor is on the declaration name itself`() {
+        val testDataBuilder = testData(workspace) {
+            addFile(
+                rellFilePath,
+                """
+                    module;
+                    function some_function() {
+                        return "main";
+                    }
+                """.trimIndent()
+            )
+        }
+        val rellFile = testDataBuilder.sourceFile(rellFilePath)
+
+        initializeWorkspace()
+        workspaceManager.didOpen(rellFile.toURI(), 1, rellFile.readText())
+        val candidate = workspaceManager.getDefinitionLocations(rellFile.toURI(), Position(1, 15))
+        assertThat(candidate.left!![0].uri).isEqualTo(rellFile.toURI().toString())
+        assertThat(candidate.left!![0].range.start).isEqualTo(Position(1, 9))
+        assertThat(candidate.left!![0].range.end).isEqualTo(Position(1, 22))
+    }
+
+    @Test
     fun `Go to definition for local link`() {
         val localLinkFilePath = "local_link.rell"
         val testDataBuilder = testData(workspace) {

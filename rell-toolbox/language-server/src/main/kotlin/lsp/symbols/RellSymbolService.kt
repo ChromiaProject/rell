@@ -20,9 +20,19 @@ internal class RellSymbolService {
     fun getSymbolLocations(document: Document, indexer: WorkspaceIndexer, position: Position): MutableList<Location> {
         val resource = indexer.getResource(document.fileUri) ?: return mutableListOf()
         val workspaceUri = formatWorkspaceUri(indexer.workspaceUri)
-        val symbol = getSymbolForDocument(document, resource, position)?.ideSymbolInfo
+        val symbolWithInterval = getSymbolForDocument(document, resource, position)
+        val symbol = symbolWithInterval?.ideSymbolInfo ?: return mutableListOf()
 
-        val link = symbol?.link ?: return mutableListOf()
+        val link = symbol.link
+
+        // A definition's own name carries no link (only defId), unlike a usage referencing it; on
+        // that occurrence "go to definition" resolves to itself, the way most LSP servers respond
+        // when invoked on a declaration. Mirrors the defId/link fallback in getSymbolLocationsWithSymbol.
+        if (symbol.defId != null || link == null) {
+            val startPos = document.getPosition(symbolWithInterval.interval.a)
+            val endPos = document.getPosition(symbolWithInterval.interval.b + 1)
+            return mutableListOf(Location(document.fileUri.toString(), Range(startPos, endPos)))
+        }
 
         return when (link) {
             is IdeGlobalSymbolLink -> getGlobalLink(link.globalId(), workspaceUri, indexer)

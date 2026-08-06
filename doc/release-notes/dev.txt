@@ -76,3 +76,13 @@ other version-gated features:
 Note. This is a breaking change - it may break compilation of existing code on a node whose
 configured language version is older than 0.16.1. A node with no version restriction configured,
 or one already at 0.16.1 or later, is unaffected.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Tools: Go to definition invoked directly on a declaration's own name now returns its location
+
+Previously, asking the language server for the definition of a symbol while standing on the
+symbol's own declaration (e.g. a function's name in its own header) returned nothing, since only
+usages carried a link back to the declaration. IDEs that toggle between "go to declaration" and
+"find usages" based on whether the definition request resolves to the caret's own position could
+not detect this case and never switched to find usages. The language server now resolves such a
+request to the declaration's own location, matching the behavior of most LSP servers.
