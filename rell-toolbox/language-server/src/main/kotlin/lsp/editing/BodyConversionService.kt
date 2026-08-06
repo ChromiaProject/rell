@@ -27,7 +27,6 @@ import java.net.URI
  * semantic info needed for that judgement is missing — a broken file — no action is offered.
  */
 internal object BodyConversionService {
-
     const val TO_EXPRESSION_TITLE = "Convert to expression body"
     const val TO_BLOCK_TITLE = "Convert to block body"
 

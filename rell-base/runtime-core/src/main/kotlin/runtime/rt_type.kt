@@ -179,10 +179,7 @@ internal class Rt_NativeAdapter_Nullable(
         (valueTypes + nullableTypes).toImmSet()
     }
 
-    override fun rtToNative(value: Rt_Value): Any? {
-        return if (value == Rt_NullValue) null else valueAdapter.rtToNative(value)
-    }
-
+    override fun rtToNative(value: Rt_Value): Any? = if (value == Rt_NullValue) null else valueAdapter.rtToNative(value)
     override fun nativeToRt(value: Any?): Rt_Value = if (value == null) Rt_NullValue else valueAdapter.nativeToRt(value)
 }
 

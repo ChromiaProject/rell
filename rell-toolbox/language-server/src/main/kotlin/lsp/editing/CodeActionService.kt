@@ -26,7 +26,6 @@ internal enum class CodeActionTitles(val title: String) {
 }
 
 internal object CodeActionService {
-
     // The `.rell_lint` key gating the formatter diagnostics (see LinterOptions.updateOptionsFromFile).
     private const val FORMATTER_RULE_ID = "rule_formatter"
 
@@ -72,17 +71,11 @@ internal object CodeActionService {
         return codeAction
     }
 
-    private fun findLinterIssuesForRange(range: Range, resource: Resource): List<LinterIssue> {
-        return resource.linterIssues.filter {
-            it.ctx.start.line == range.start.line + 1
-        }
-    }
+    private fun findLinterIssuesForRange(range: Range, resource: Resource): List<LinterIssue> =
+        resource.linterIssues.filter { it.ctx.start.line == range.start.line + 1 }
 
-    private fun findFormatterIssuesForRange(range: Range, resource: Resource): List<FormatterIssue> {
-        return resource.formatterIssues.filter {
-            it.line == range.start.line + 1
-        }
-    }
+    private fun findFormatterIssuesForRange(range: Range, resource: Resource): List<FormatterIssue> =
+        resource.formatterIssues.filter { it.line == range.start.line + 1 }
 
     private fun createCodeActions(
         fileUri: URI,
@@ -117,13 +110,14 @@ internal object CodeActionService {
             for ((ruleId, issues) in linterIssues.groupBy { it.ruleId }) {
                 add(disableRuleGloballyAction(fileUri, ruleId, issues.map(RellIssue::fromLinterIssue)))
             }
+
             if (formatterIssues.isNotEmpty()) {
                 add(
                     disableRuleGloballyAction(
                         fileUri,
                         FORMATTER_RULE_ID,
                         formatterIssues.map(RellIssue::fromFormatterIssue),
-                    )
+                    ),
                 )
             }
         }.map { Either.forRight<Command, CodeAction>(it) }
@@ -197,6 +191,7 @@ internal object CodeActionService {
             Position(fix.line, fix.charPositionInLine),
             Position(fix.endLine, fix.endCharPositionInLine),
         )
+
         val edit = TextEdit(range, fix.newText)
         return mapOf(fileUri.toString() to listOf(edit))
     }
@@ -220,6 +215,7 @@ internal object CodeActionService {
             Position(range.start.line, 0),
             Position(range.start.line, 0),
         )
+
         val textEdits = listOf(TextEdit(lspRange, "// rell-lint-disable-next-line\n"))
         return WorkspaceEdit(mapOf(fileUri.toString() to textEdits))
     }

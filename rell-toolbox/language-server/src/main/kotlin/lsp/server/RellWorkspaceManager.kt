@@ -84,10 +84,12 @@ internal class RellWorkspaceManager(
 
     fun didSave(fileUri: URI) {
         val contents = documentManager.getOpenDocument(fileUri)
+
         if (contents == null) {
             logger.warn { "The document ${fileUri.fileName()} has not been opened." }
             return
         }
+
         val indexer = indexingManager.getIndexerFor(fileUri)
         val affectedUris = indexer.findAffectedFiles(fileUri)
         didChangeFiles(affectedUris.toList() + fileUri, listOf())
@@ -144,10 +146,8 @@ internal class RellWorkspaceManager(
     fun prepareRename(
         fileUri: URI,
         position: Position
-    ): Either3<Range, PrepareRenameResult, PrepareRenameDefaultBehavior> {
-        return renamingService.prepareRename(fileUri, position)
-    }
-
+    ): Either3<Range, PrepareRenameResult, PrepareRenameDefaultBehavior> =
+        renamingService.prepareRename(fileUri, position)
 
     fun getCodeActions(fileUri: URI, range: Range, only: List<String>? = null): List<Either<Command, CodeAction>> {
         val indexer = indexingManager.getIndexerFor(fileUri)
@@ -159,22 +159,15 @@ internal class RellWorkspaceManager(
         return CodeActionService.getCodeActionForFile(fileUri, indexer)
     }
 
-    fun rename(fileUri: URI, position: Position, newName: String): WorkspaceEdit {
-        return renamingService.rename(fileUri, position, newName) { uri, pos, includeDefinition ->
+    fun rename(fileUri: URI, position: Position, newName: String): WorkspaceEdit =
+        renamingService.rename(fileUri, position, newName) { uri, pos, includeDefinition ->
             getReferenceLocations(uri, pos, includeDefinition)
         }
-    }
-
-
-
-
-
 
     fun getCompletions(fileUri: URI, position: Position): List<CompletionItem> {
         val document = documentManager.getOpenDocument(fileUri) ?: return listOf()
         val indexer = indexingManager.getIndexerForOrNull(fileUri) ?: return listOf()
         val offset = document.getOffSet(position)
-
         return completionService.getCompletions(fileUri, offset, indexer, document)
     }
 
