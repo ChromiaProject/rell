@@ -6,7 +6,9 @@ package net.postchain.rell.base.compiler.ast
 
 import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.expr.*
+import net.postchain.rell.base.compiler.base.utils.C_FeatureRestrictions
 import net.postchain.rell.base.compiler.base.utils.C_LateGetter
+import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_CommonFunctionCall_Partial
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_FunctionCallExpr
@@ -39,8 +41,17 @@ internal class S_LambdaExpr(
     val body: S_LambdaBody,
     val bodyNames: Set<String>,
 ): S_Expr(pos) {
-    override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr =
-        C_LambdaCompiler.compile(ctx, hint, startPos, params, body, bodyNames)
+    override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
+        RESTRICTIONS_LAMBDA.access(ctx.msgCtx, startPos)
+        return C_LambdaCompiler.compile(ctx, hint, startPos, params, body, bodyNames)
+    }
+
+    companion object {
+        private val RESTRICTIONS_LAMBDA = C_FeatureRestrictions.make(
+            "0.16.1",
+            "expr_lambda" toCodeMsg "Lambda expressions are",
+        )
+    }
 }
 
 internal sealed interface S_LambdaBody

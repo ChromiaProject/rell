@@ -47,3 +47,23 @@ A syntax error inside an attribute header - for example a negative annotation ar
 crashed the language server's indexing of the whole file. The AST builder now
 recovers from the malformed header and reports the syntax error normally, keeping every other
 feature alive for the rest of the file.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Language: Lambdas, value-block if/when arms, and jump expressions are now version-restricted
+
+Three constructs introduced in 0.16.1 - lambda expressions (x -> x * 2), value blocks as if/when
+expression arms, and jump expressions (return/break/continue used as an expression) - compiled
+without checking the configured language version (see "Language version control" in 0.13.10),
+unlike other version-gated features. A node configured with an older language version (e.g. via
+the blockchain configuration option gtx.rell.version) could still compile code using them, even
+though a node actually running an older Rell release would not understand the result.
+
+These three constructs now require the configured language version to be 0.16.1 or later,
+matching the release they were introduced in - the same restriction that already applies to
+other version-gated features:
+
+    ct_err: version:expr_lambda:0.16.1:<configured version>
+
+Note. This is a breaking change - it may break compilation of existing code on a node whose
+configured language version is older than 0.16.1. A node with no version restriction configured,
+or one already at 0.16.1 or later, is unaffected.

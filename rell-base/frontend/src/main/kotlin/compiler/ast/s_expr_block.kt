@@ -8,6 +8,8 @@ import net.postchain.rell.base.compiler.base.core.C_BlockCodeBuilder
 import net.postchain.rell.base.compiler.base.core.C_BlockCodeProto
 import net.postchain.rell.base.compiler.base.core.C_StatementVarsBlock
 import net.postchain.rell.base.compiler.base.expr.*
+import net.postchain.rell.base.compiler.base.utils.C_FeatureRestrictions
+import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_Expr
 import net.postchain.rell.base.compiler.vexpr.V_ValueBlockExpr
 import net.postchain.rell.base.model.Name
@@ -29,6 +31,8 @@ import net.postchain.rell.base.utils.MutableTypedKeyMap
  */
 internal class S_ValueBlockExpr(val block: S_LambdaBody_Block): S_Expr(block.posRange.start) {
     override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
+        RESTRICTIONS_VALUE_BLOCK.access(ctx.msgCtx, startPos)
+
         val stmtCtx = C_StmtContext.forExpr(ctx)
         val (subCtx, subBlkCtx) = stmtCtx.subBlock(stmtCtx.loop)
 
@@ -97,5 +101,12 @@ internal class S_ValueBlockExpr(val block: S_LambdaBody_Block): S_Expr(block.pos
             varsBlock.modified(block.result.discoverVars(map))
         }
         return varsBlock.modified()
+    }
+
+    companion object {
+        private val RESTRICTIONS_VALUE_BLOCK = C_FeatureRestrictions.make(
+            "0.16.1",
+            "expr_value_block" toCodeMsg "Value blocks as if/when arms are",
+        )
     }
 }

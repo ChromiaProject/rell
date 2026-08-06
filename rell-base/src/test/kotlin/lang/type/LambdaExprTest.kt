@@ -14,6 +14,10 @@ import kotlin.test.Test
  * file that must compile.
  */
 class LambdaExprTest: BaseRellTest() {
+    @Test fun testVersionRestriction() {
+        chkVerCtExpr("((x: integer) -> x * 2)(5)", "0.16.1", "VER:feature:expr_lambda")
+    }
+
     @Test fun testNoExpectedTypeIsError() {
         chkEx("{ val f = x -> x * 2; return 0; }", "ct_err:lambda:no_type")
     }

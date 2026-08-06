@@ -5,6 +5,8 @@
 package net.postchain.rell.base.compiler.ast
 
 import net.postchain.rell.base.compiler.base.expr.*
+import net.postchain.rell.base.compiler.base.utils.C_FeatureRestrictions
+import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.compiler.vexpr.V_ValueBlockExpr
 import net.postchain.rell.base.model.Name
 import net.postchain.rell.base.model.R_NothingType
@@ -33,6 +35,8 @@ internal sealed class S_JumpExpr(pos: S_Pos): S_Expr(pos) {
     protected open fun operandExpr(): S_Expr? = null
 
     final override fun compile(ctx: C_ExprContext, hint: C_ExprHint): C_Expr {
+        RESTRICTIONS_JUMP_EXPR.access(ctx.msgCtx, startPos)
+
         val stmtCtx = C_StmtContext.forExpr(ctx)
         val (subCtx, subBlkCtx) = stmtCtx.subBlock(stmtCtx.loop)
         val rStmt = compileJump(subCtx)
@@ -53,6 +57,13 @@ internal sealed class S_JumpExpr(pos: S_Pos): S_Expr(pos) {
 
     final override fun discoverVars(map: MutableTypedKeyMap): Set<Name> {
         return operandExpr()?.discoverVars(map) ?: immSetOf()
+    }
+
+    companion object {
+        private val RESTRICTIONS_JUMP_EXPR = C_FeatureRestrictions.make(
+            "0.16.1",
+            "expr_jump" toCodeMsg "Jump expressions (return/break/continue as an expression) are",
+        )
     }
 }
 

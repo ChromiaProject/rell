@@ -15,6 +15,10 @@ import kotlin.test.Test
  * The positive compile-and-run tests live in `dynamic-tests/JumpExprTest.rell`.
  */
 class JumpExprTest: BaseRellTest() {
+    @Test fun testVersionRestriction() {
+        chkVerCt("function f(): integer = if (true) return 1 else 2;", "0.16.1", "VER:feature:expr_jump")
+    }
+
     @Test fun testBreakContinueExprOutsideLoopIsError() {
         chkEx("{ val q = if (true) break else 1; return q; }", "ct_err:stmt_break_noloop")
         chkEx("{ val q = if (true) continue else 1; return q; }", "ct_err:stmt_continue_noloop")

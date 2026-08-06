@@ -17,6 +17,10 @@ import kotlin.test.Test
  * that must compile.
  */
 class ValueBlockExprTest: BaseRellTest() {
+    @Test fun testVersionRestriction() {
+        chkVerCtExpr("if (true) { 1 } else 2", "0.16.1", "VER:feature:expr_value_block")
+    }
+
     @Test fun testUnitBlockArmInIfIsError() {
         // A block without a trailing expression (and that doesn't return on all paths) is
         // unit-typed, which an `if` expression arm cannot be.
