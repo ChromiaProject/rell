@@ -18,12 +18,14 @@ import net.postchain.rell.toolbox.parser.SyntaxErrorCollector
 internal object TestSourceDir {
     fun create(parser: AntlrRellParser, files: Map<String, String>): C_SourceDir {
         val map = mutableMapOf<C_SourcePath, C_SourceFile>()
+
         for (path in files.keys) {
             val srcPath = parseSourcePath(path)
             val text = files[path]
             val srcFile: C_SourceFile = TestSourceFile(parser, srcPath!!, text!!)
             map[srcPath] = srcFile
         }
+
         return mapDir(map)
     }
 }

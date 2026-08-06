@@ -14,7 +14,6 @@ import net.postchain.rell.base.utils.toImmList
 import org.antlr.v4.runtime.BufferedTokenStream
 
 object RellCompilerApi {
-
     /**
      * Build a Rell `S_RellFile` AST from a parse tree produced by the new `RellParser`.
      *
@@ -30,12 +29,14 @@ object RellCompilerApi {
     ): Pair<S_RellFile, List<C_Error>> = RellCompilerFilePathHolder.overrideCurrentFile(path) {
         val filePath = C_ParserFilePath(path.cPath, path.idePath)
         val visitor = RellAntlrVisitor(filePath, attachmentMode = true, tokenStream = tokenStream)
+
         val ast = try {
             visitor.toFile(antlrRootNode)
         } catch (e: C_Error) {
             // Visitor threw a compilation error; surface it as a message and return an empty file.
             return@overrideCurrentFile S_RellFile(null, emptyList<net.postchain.rell.base.compiler.ast.S_Definition>().toImmList()) to listOf(e)
         }
+
         ast to emptyList()
     }
 

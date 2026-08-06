@@ -38,7 +38,7 @@ internal class RellApiTokenizerTest {
 
     @Test fun testIsIdentifierBadIdentsFalse() {
         chkNotIdent("4bc")
-        chkNotIdent("\$myvar")
+        chkNotIdent($$"$myvar")
         chkNotIdent("$")
         chkNotIdent("bob$")
         chkNotIdent("Sehenswürdigkeit")

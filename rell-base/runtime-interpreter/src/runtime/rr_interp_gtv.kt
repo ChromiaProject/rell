@@ -2,6 +2,8 @@
  * Copyright (C) 2026 ChromaWay AB. See LICENSE for license information.
  */
 
+@file:Suppress("KotlinConstantConditions")
+
 package net.postchain.rell.base.runtime
 
 import net.postchain.common.exception.UserMistake

@@ -642,6 +642,7 @@ object C_Parser {
         parser.addErrorListener(collector)
         parser.errorHandler = RellParserErrorStrategy()
         parser.interpreter.predictionMode = PredictionMode.LL
+
         val tree = try {
             ruleEntry(parser)
         } catch (e: RecognitionException) {
@@ -659,6 +660,7 @@ object C_Parser {
             }
             null
         }
+
         val tokens = parser.tokenStream as CommonTokenStream
         return if (collector.errors.isNotEmpty()) {
             val errs = collector.errors.map { it.error }
@@ -691,9 +693,7 @@ private object BailLexerErrorListener : BaseErrorListener() {
         charPositionInLine: Int,
         msg: String,
         e: RecognitionException?,
-    ) {
-        throw ParseCancellationException(msg)
-    }
+    ): Unit = throw ParseCancellationException(msg)
 }
 
 private class AntlrErrorEntry(val error: C_Error, val eof: Boolean)
@@ -773,14 +773,17 @@ object C_GraphUtils {
                 continue
             } else if (entry.vert in visiting) {
                 var cycleEntry = entry
-                val cycle = mutableListOf<Pair<E, V>>()
-                while (true) {
-                    cycle.add(cycleEntry.edge!! to cycleEntry.vert)
-                    cycleEntry = cycleEntry.parent
-                    checkNotNull(cycleEntry)
-                    if (cycleEntry.vert == entry.vert) break
+
+                val cycle = buildList<Pair<E, V>> {
+                    while (true) {
+                        add(cycleEntry.edge!! to cycleEntry.vert)
+                        cycleEntry = cycleEntry.parent
+                        checkNotNull(cycleEntry)
+                        if (cycleEntry.vert == entry.vert) break
+                    }
                 }
-                cycles.add(cycle.toList())
+
+                cycles += cycle
                 continue
             }
 
@@ -842,8 +845,7 @@ object C_GraphUtils {
 
         for (vert in graph.keys) {
             for (adjVert in graph.getValue<T, Collection<T>>(vert)) {
-                val set = getOrPut(adjVert) { mutableSetOf() }
-                set.add(vert)
+                getOrPut(adjVert) { mutableSetOf() }.add(vert)
             }
         }
     }
@@ -855,9 +857,8 @@ object C_GraphUtils {
         while (!queue.isEmpty()) {
             val vert = queue.remove()
             if (visited.add(vert)) {
-                val adjVerts = graph(vert)
-                for (adjVert in adjVerts) {
-                    queue.add(adjVert)
+                for (adjVert in graph(vert)) {
+                    queue += adjVert
                 }
             }
         }
@@ -875,11 +876,9 @@ sealed class C_LateGetter<out T> {
         private val NULL: C_LateGetter<Any?> = C_ConstLateGetter(null)
 
         @Suppress("UNCHECKED_CAST")
-        fun <T> const(value: T): C_LateGetter<T> {
-            return when (value) {
-                null -> NULL as C_LateGetter<T>
-                else -> C_ConstLateGetter(value)
-            }
+        fun <T> const(value: T): C_LateGetter<T> = when (value) {
+            null -> NULL as C_LateGetter<T>
+            else -> C_ConstLateGetter(value)
         }
 
         fun <T> list(getters: ImmList<C_LateGetter<T>>): C_LateGetter<ImmList<T>> = C_ListLateGetter(getters)

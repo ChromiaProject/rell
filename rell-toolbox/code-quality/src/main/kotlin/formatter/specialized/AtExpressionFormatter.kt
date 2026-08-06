@@ -44,12 +44,9 @@ internal class AtExprFromFormatter(
         val trailingComma = node.findTrailingComma(")")
         val (open, close) = openCloseParens(node)
 
-        val lineSeparate = if (open != null && close != null) {
-            open.symbol.line != close.symbol.line ||
-                items.any { it.start.line != it.stop.line }
-        } else {
-            false
-        }
+        val lineSeparate = open != null && close != null &&
+                (open.symbol.line != close.symbol.line || items.any { it.start.line != it.stop.line })
+
         if (!lineSeparate || items.isEmpty()) {
             // Treat this paren pair like a normal one without space inside.
             if (open != null && close != null) {
@@ -63,6 +60,7 @@ internal class AtExprFromFormatter(
                 }
             }
         }
+
         whitespaceFormatter.formatTrailingComma(trailingComma, doc, lineSeparate)
         expressionFormatter.formatLabeledParenList(node, items, doc, multiLine = lineSeparate)
 

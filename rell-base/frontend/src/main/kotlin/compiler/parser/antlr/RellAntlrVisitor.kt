@@ -148,9 +148,8 @@ class RellAntlrVisitor(
 
     private fun toModifier(ctx: RellParser.ModifierContext): S_Modifier = withCtx(ctx) {
         val ann = ctx.annotation()
-        if (ann != null) {
-            return toAnnotation(ann)
-        }
+        if (ann != null) return toAnnotation(ann)
+
         // Keyword modifier: abstract / mutable / override
         val tok = ctx.children.first { it is TerminalNode } as TerminalNode
         val kind = when (tok.text) {
@@ -165,12 +164,14 @@ class RellAntlrVisitor(
 
     private fun toAnnotation(ctx: RellParser.AnnotationContext): S_Annotation = withCtx(ctx) {
         val nameTok = ctx.RULE_ID()
+
         // Same synthetic single-token scope as idTokenToName: without it the name's position node
         // would be the whole annotation, so consumers that measure `pos.node` would treat every
         // token of `@mount('ft4')` as part of the annotation name.
         val name = withCtx(TokenRuleContext(nameTok.symbol)) {
             S_Name(nameTok.symbol.toPos(), Name.of(nameTok.text))
         }
+
         val args = ctx.annotationArgs()?.annotationArg()?.map(::toAnnotationArg).orEmpty()
         return S_Annotation(name, args.toImmList())
     }
@@ -817,14 +818,14 @@ class RellAntlrVisitor(
         // Walk children, find the open '(' that starts the update-what list (the one AFTER the
         // updateTarget context). The structure is:
         //   'update' updateTarget '(' (whatItem (',' whatItem)* ','?) ')' ';'
-        val children = ctx.children
+        val children: List<ParseTree> = ctx.children
         // Find last '(' before any ')' close at top level — the one after updateTarget.
         // Easier: find index of updateTarget context, then the next child is '('.
         val updateTargetIdx = children.indexOfFirst { it is RellParser.UpdateTargetContext }
         require(updateTargetIdx >= 0)
         var i = updateTargetIdx + 1
         // Skip until '('
-        while (i < children.size && !(children[i] is TerminalNode && (children[i] as TerminalNode).text == "(")) i++
+        while (i < children.size && (children[i] as? TerminalNode)?.text != "(") i++
         require(i < children.size)
         i++ // skip '('
 
@@ -835,11 +836,13 @@ class RellAntlrVisitor(
                     when (cur.text) {
                         ")" -> break
                         "," -> {
-                            i++; continue
+                            i++
+                            continue
                         }
 
                         else -> {
-                            i++; continue
+                            i++
+                            continue
                         }
                     }
                 }
@@ -1174,16 +1177,19 @@ class RellAntlrVisitor(
                     var what: S_AtExprWhat = S_AtExprWhat_Default()
                     var limit: S_Expr? = null
                     var offset: S_Expr? = null
+
                     if (i < ctx.children.size && ctx.children[i] is RellParser.AtExprWhatContext) {
                         what = toAtExprWhat(ctx.children[i] as RellParser.AtExprWhatContext)
                         i++
                     }
+
                     if (i < ctx.children.size && ctx.children[i] is RellParser.AtExprModifiersContext) {
                         val mods = toAtExprModifiers(ctx.children[i] as RellParser.AtExprModifiersContext)
                         limit = mods.first
                         offset = mods.second
                         i++
                     }
+
                     expr = S_AtExpr(
                         S_AtExprFrom_Simple(expr),
                         cardinality,

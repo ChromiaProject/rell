@@ -51,10 +51,12 @@ class ParserBenchmark {
     // SLL + BailErrorStrategy + buildParseTree=false — the compiler's hot-path config.
     @Benchmark
     fun antlrSLL(blackhole: Blackhole) {
-        val parser = antlrParser.parserFor(source)
-        parser.errorHandler = BailErrorStrategy()
-        parser.buildParseTree = false
-        parser.interpreter.predictionMode = PredictionMode.SLL
-        blackhole.consume(parser.file())
+        blackhole.consume(
+            antlrParser.parserFor(source).apply {
+                errorHandler = BailErrorStrategy()
+                buildParseTree = false
+                interpreter.predictionMode = PredictionMode.SLL
+            }.file(),
+        )
     }
 }

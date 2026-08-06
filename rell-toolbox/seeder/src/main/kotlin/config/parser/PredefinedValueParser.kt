@@ -11,23 +11,20 @@ import net.postchain.rell.toolbox.seeder.schema.Attribute
 import java.math.BigInteger
 
 internal object PredefinedValueParser {
+    fun parse(attribute: Attribute, nodes: JsonNode): List<Any> = when (val type = attribute.type) {
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.BOOLEAN -> parseBooleanValues(nodes)
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.INTEGER -> parseIntegerValues(nodes)
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.BIG_INTEGER -> parseBigIntegerValues(nodes)
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.DECIMAL -> parseDecimalValues(nodes)
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.ROWID -> parseRowIdValues(nodes)
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.TEXT -> parseTextualValues(nodes)
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.JSON -> parseJsonValues(nodes)
+        is RR_Type.Primitive if type.kind == RR_PrimitiveKind.BYTE_ARRAY -> parseByteArrayValues(nodes)
+        is RR_Type.Enum -> parseEnumValues(attribute, nodes)
 
-    fun parse(attribute: Attribute, nodes: JsonNode): List<Any> {
-        val type = attribute.type
-        return when {
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BOOLEAN -> parseBooleanValues(nodes)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.INTEGER -> parseIntegerValues(nodes)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BIG_INTEGER -> parseBigIntegerValues(nodes)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.DECIMAL -> parseDecimalValues(nodes)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.ROWID -> parseRowIdValues(nodes)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.TEXT -> parseTextualValues(nodes)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.JSON -> parseJsonValues(nodes)
-            type is RR_Type.Primitive && type.kind == RR_PrimitiveKind.BYTE_ARRAY -> parseByteArrayValues(nodes)
-            type is RR_Type.Enum -> parseEnumValues(attribute, nodes)
-            else -> throw ConfigurationValidationException(
-                "predefined values type is not supported for type ${attribute.typeStr()}",
-            )
-        }
+        else -> throw ConfigurationValidationException(
+            "predefined values type is not supported for type ${attribute.typeStr()}",
+        )
     }
 
     private fun parseBooleanValues(nodes: JsonNode): List<Boolean> = nodes.map {
@@ -36,6 +33,7 @@ internal object PredefinedValueParser {
                 "predefined values must be boolean, but found: ${it.nodeType}",
             )
         }
+
         it.asBoolean()
     }
 
@@ -72,6 +70,7 @@ internal object PredefinedValueParser {
 
             it.isInt -> it.asInt().toBigInteger()
             it.isBigInteger -> it.asInt().toBigInteger()
+
             else -> throw ConfigurationValidationException(
                 "predefined values must be numbers or texts, but found: ${it.nodeType}",
             )
@@ -79,25 +78,22 @@ internal object PredefinedValueParser {
     }
 
     private fun parseDecimalValues(nodes: JsonNode): List<Double> = nodes.map {
-        if (!it.isNumber) {
-            throw ConfigurationValidationException(
-                "predefined values must be numbers, but found: ${it.nodeType}",
-            )
-        }
+        if (!it.isNumber) throw ConfigurationValidationException(
+            "predefined values must be numbers, but found: ${it.nodeType}",
+        )
+
         it.asDouble()
     }
 
     private fun parseRowIdValues(nodes: JsonNode): List<Int> = nodes.map {
-        if (!it.isInt) {
-            throw ConfigurationValidationException(
-                "predefined values must be of type integer, but found ${it.nodeType}",
-            )
-        }
-        if (it.asInt() < 0) {
-            throw ConfigurationValidationException(
-                "predefined values must be greater or equal to 0 value was '$it'",
-            )
-        }
+        if (!it.isInt) throw ConfigurationValidationException(
+            "predefined values must be of type integer, but found ${it.nodeType}",
+        )
+
+        if (it.asInt() < 0) throw ConfigurationValidationException(
+            "predefined values must be greater or equal to 0 value was '$it'",
+        )
+
         it.asInt()
     }
 
@@ -121,22 +117,18 @@ internal object PredefinedValueParser {
     }
 
     private fun parseByteArrayValues(nodes: JsonNode): List<Any> = nodes.map {
-        if (!it.isTextual) {
-            throw ConfigurationValidationException(
-                "predefined values must be strings, but found: ${it.nodeType}",
-            )
-        }
-        if (!it.asText().matches(Regex("[0-9A-Fa-f]+"))) {
-            throw ConfigurationValidationException(
-                "invalid hexadecimal value. Only characters 0-9, A-F, and a-f are allowed, but found '${it.asText()}'",
-            )
-        }
+        if (!it.isTextual) throw ConfigurationValidationException(
+            "predefined values must be strings, but found: ${it.nodeType}",
+        )
 
-        if (it.asText().length % 2 != 0) {
-            throw ConfigurationValidationException(
-                "invalid hexadecimal value. Length must be even, but found ${it.asText().length}",
-            )
-        }
+        if (!it.asText().matches(Regex("[0-9A-Fa-f]+"))) throw ConfigurationValidationException(
+            "invalid hexadecimal value. Only characters 0-9, A-F, and a-f are allowed, but found '${it.asText()}'",
+        )
+
+        if (it.asText().length % 2 != 0) throw ConfigurationValidationException(
+            "invalid hexadecimal value. Length must be even, but found ${it.asText().length}",
+        )
+
         it.asText()
     }
 
@@ -146,18 +138,20 @@ internal object PredefinedValueParser {
     ) = nodes.map { node ->
         val enumDef = attribute.enumDefinition
             ?: throw ConfigurationValidationException("Expected enum type for attribute '${attribute.name}'")
-        if (!node.isTextual) {
-            throw ConfigurationValidationException(
-                "predefined values must be strings, but found: ${node.nodeType}",
-            )
-        }
+
+        if (!node.isTextual) throw ConfigurationValidationException(
+            "predefined values must be strings, but found: ${node.nodeType}",
+        )
+
         val enumAttrNames = enumDef.attrs.map { it.nameStr }
+
         if (node.asText() !in enumAttrNames) {
             val validationErrorMessage = enumAttrNames.joinToString(prefix = "[", postfix = "]")
             throw ConfigurationValidationException(
                 "enum value '${node.asText()}' is not in enum set $validationErrorMessage",
             )
         }
+
         node.asText()
     }
 }

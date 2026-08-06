@@ -24,12 +24,12 @@ internal sealed class BaseExprTail {
     abstract val first: ParserRuleContext
     abstract val last: ParserRuleContext
 
-    class NoCallNoAt(val ctx: BaseExprTailNoCallNoAtContext) : BaseExprTail() {
+    class NoCallNoAt(val ctx: BaseExprTailNoCallNoAtContext): BaseExprTail() {
         override val first: ParserRuleContext get() = ctx
         override val last: ParserRuleContext get() = ctx
     }
 
-    class Call(val ctx: CallArgsContext) : BaseExprTail() {
+    class Call(val ctx: CallArgsContext): BaseExprTail() {
         override val first: ParserRuleContext get() = ctx
         override val last: ParserRuleContext get() = ctx
     }
@@ -39,7 +39,7 @@ internal sealed class BaseExprTail {
         val where: AtExprWhereContext,
         val what: AtExprWhatContext?,
         val modifiers: AtExprModifiersContext?,
-    ) : BaseExprTail() {
+    ): BaseExprTail() {
         override val first: ParserRuleContext get() = at
         override val last: ParserRuleContext get() = modifiers ?: what ?: where
     }
@@ -50,8 +50,8 @@ internal sealed class BaseExprTail {
  * expression context.
  */
 internal sealed class LabeledAnchor {
-    class Term(val node: TerminalNode) : LabeledAnchor()
-    class Rule(val ctx: ParserRuleContext) : LabeledAnchor()
+    class Term(val node: TerminalNode): LabeledAnchor()
+    class Rule(val ctx: ParserRuleContext): LabeledAnchor()
 
     fun applyPrepend(
         doc: FormattableDocument,
@@ -74,10 +74,12 @@ internal fun BaseExprContext.tails(): List<BaseExprTail> {
                 result.add(BaseExprTail.NoCallNoAt(c))
                 i++
             }
+
             is CallArgsContext -> {
                 result.add(BaseExprTail.Call(c))
                 i++
             }
+
             is AtExprAtContext -> {
                 val where = getChild(i + 1) as AtExprWhereContext
                 var j = i + 2
@@ -94,6 +96,7 @@ internal fun BaseExprContext.tails(): List<BaseExprTail> {
                 result.add(BaseExprTail.AtExpr(at = c, where, what, mods))
                 i = j
             }
+
             else -> i++
         }
     }
@@ -124,9 +127,11 @@ internal class ExpressionFormatter(
                     doc.format(currentTail.ctx)
                 }
             }
+
             is BaseExprTail.Call -> {
                 formatExprTailCall(currentTail, previousNode, doc, false)
             }
+
             is BaseExprTail.AtExpr -> {
                 doc.format(currentTail.at)
                 doc.format(currentTail.where)
@@ -162,6 +167,7 @@ internal class ExpressionFormatter(
                 doc.append(tail.ctx) { p -> p.noSpace() }
                 doc.format(tail.ctx)
             }
+
             is BaseExprTail.Call -> {
                 doc.prepend(tail.ctx) { p -> p.noSpace() }
                 val callArgs = tail.ctx
@@ -172,6 +178,7 @@ internal class ExpressionFormatter(
                 formatLabeledParenList(callArgs, args, doc, multiLine = false)
                 doc.format(callArgs)
             }
+
             is BaseExprTail.AtExpr -> {
                 doc.format(tail.at)
                 doc.format(tail.where)
@@ -499,7 +506,7 @@ internal class ExpressionFormatter(
 
             val fileStartsWithComment = tokenAnalyzer.previousHiddenRegionList(firstDef.start).any {
                 it.type == net.postchain.rell.base.compiler.parser.antlr.RellLexer.RULE_ML_COMMENT ||
-                    it.type == net.postchain.rell.base.compiler.parser.antlr.RellLexer.RULE_SL_COMMENT
+                        it.type == net.postchain.rell.base.compiler.parser.antlr.RellLexer.RULE_SL_COMMENT
             }
             val newLines = if (fileStartsWithComment) 1 else 0
 
@@ -521,11 +528,12 @@ internal class ExpressionFormatter(
     private fun formatCallArgsAsMultiLine(callArgs: CallArgsContext, previousNode: ParserRuleContext?): Boolean {
         if (callArgs.start.line != callArgs.stop.line) return true
         val (args, _) = callArgs.getCallArgsItems()
-        if (!lineAnalyzer.formatAsMultiLine(args)) return false
+
         // The source line is too long, but when the call follows a member the chain breaks
         // before that member, moving `.member(args)` to its own continuation line. Keep the
         // arguments inline if that line fits on its own.
-        return !(previousNode is BaseExprTailMemberContext &&
-            lineAnalyzer.fitsWhenMovedToContinuationLine(previousNode, callArgs))
+        return lineAnalyzer.formatAsMultiLine(args)
+                && !(previousNode is BaseExprTailMemberContext
+                && lineAnalyzer.fitsWhenMovedToContinuationLine(previousNode, callArgs))
     }
 }
