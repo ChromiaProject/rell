@@ -1,1 +1,21 @@
 UNRELEASED NOTES
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. API: Smaller dependency footprint
+
+The compiler and runtime artifacts pull in less third-party machinery than before. This mainly matters when
+embedding Rell in an environment that restricts reflection, such as a GraalVM native image, where every reflective
+library on the classpath is configuration to write and a source of run-time surprises.
+
+- jackson-databind is gone from the compiler and runtime chain; only jackson-core remains. JSON is now read and
+  written through Jackson's streaming parser and generator, which are hand-written and reflection-free, rather than
+  through databind's reflective object binding. The json type is unaffected: what it accepts, the text it produces,
+  and the error codes it raises are all unchanged.
+
+- The utils module no longer depends on postchain-gtv, so code that only uses the compiler front end no longer
+  drags in GTV. The dependency moved to the modules that actually need it - runtime-core and rr-serialization.
+
+- jOOQ is no longer re-exported by the compiler front end. It remains on the compile classpath of the three modules
+  that generate SQL, and is gone from the rest, including rell-api-base and rell-tools.
+
+No behavior changes are expected.
