@@ -5,6 +5,7 @@
 package net.postchain.rell.base.lmodel.dsl
 
 import net.postchain.rell.base.lmodel.L_Module
+import org.intellij.lang.annotations.Language
 
 @RellLibDsl
 interface Ld_ModuleDsl: Ld_NamespaceBodyDsl {
@@ -19,7 +20,7 @@ interface Ld_ModuleDsl: Ld_NamespaceBodyDsl {
 @RellLibDsl
 interface Ld_MemberDsl {
     fun since(version: String)
-    fun comment(text: String)
+    fun comment(@Language("Markdown") text: String)
 
     /**
      * Alias for [comment] with the text as the receiver: `"""...""".comment()`. Lets a
@@ -27,7 +28,7 @@ interface Ld_MemberDsl {
      * argument, which the code formatter handles far more gracefully. The receiver is
      * [CharSequence] rather than [String] so the JVM signature does not clash with [comment].
      */
-    fun CharSequence.comment() {
+    fun @receiver:Language("Markdown") CharSequence.comment() {
         comment(toString())
     }
 }
