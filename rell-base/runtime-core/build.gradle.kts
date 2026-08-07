@@ -20,6 +20,7 @@ kotlin.compilerOptions.freeCompilerArgs.addAll(
 dependencies {
     api(projects.rellBase.frontend)
 
+    api(libs.postchain.gtv)
     implementation(libs.jackson.databind)
     implementation(libs.jooq)
     implementation(libs.postgresql)

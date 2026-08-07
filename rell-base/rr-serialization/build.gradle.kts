@@ -208,6 +208,7 @@ kotlin.compilerOptions.optIn.add("kotlin.ExperimentalUnsignedTypes")
 dependencies {
     implementation(projects.rellBase.rrTree)
     implementation(libs.flatbuffers.java)
+    implementation(libs.postchain.gtv)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.platform.launcher)

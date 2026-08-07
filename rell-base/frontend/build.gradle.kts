@@ -20,6 +20,7 @@ dependencies {
     api(projects.rellBase.rrTree)
     api(libs.better.parse)
     api(libs.jooq)
+    implementation(libs.commons.configuration2)
     implementation(libs.jackson.databind)
 }
 

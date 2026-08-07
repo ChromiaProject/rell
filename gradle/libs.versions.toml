@@ -70,6 +70,7 @@ postchain-spi = { module = "net.postchain:postchain-spi" }
 postchain-base = { module = "net.postchain:postchain-base" }
 postchain-devtools = { module = "net.postchain:postchain-devtools" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
+commons-configuration2 = { module = "org.apache.commons:commons-configuration2" }
 postgresql = { module = "org.postgresql:postgresql" }
 bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on" }
 kotlinLogging = { module = "io.github.microutils:kotlin-logging-jvm" }

@@ -18,5 +18,4 @@ kotlin.compilerOptions.freeCompilerArgs.addAll(
 
 dependencies {
     api(libs.kotlinx.collections.immutable)
-    api(libs.postchain.gtv)
 }

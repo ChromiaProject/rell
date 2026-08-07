@@ -4,9 +4,7 @@
 
 package net.postchain.rell.base.utils
 
-import net.postchain.common.hexStringToByteArray
 import java.util.*
 
 fun String.hexStringToBytes(): Bytes = this.hexStringToByteArray().toBytes()
-
-fun String.formatEx(vararg args: Any?): String = format(Locale.ROOT, *args)
+fun String.formatEx(vararg args: Any?): String = this.format(Locale.ROOT, *args)

@@ -4,10 +4,41 @@
 
 package net.postchain.rell.base.utils
 
-import net.postchain.common.hexStringToByteArray
-import net.postchain.common.toHex
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
+private const val HEX_CHARS = "0123456789ABCDEF"
+private val HEX_CHAR_ARRAY = HEX_CHARS.toCharArray()
+
+fun ByteArray.toHex(): String {
+    val result = StringBuilder()
+
+    forEach {
+        val octet = it.toInt()
+        val firstIndex = (octet and 0xF0).ushr(4)
+        val secondIndex = octet and 0x0F
+        result.append(HEX_CHAR_ARRAY[firstIndex])
+        result.append(HEX_CHAR_ARRAY[secondIndex])
+    }
+
+    return result.toString()
+}
+
+fun String.hexStringToByteArray(): ByteArray {
+    require(length % 2 == 0) { "Invalid hex string: length is not an even number" }
+
+    val result = ByteArray(length / 2)
+
+    for (i in indices step 2) {
+        val firstIndex = HEX_CHARS.indexOf(this[i], ignoreCase = true)
+        require(firstIndex != -1) { "Char ${this[i]} is not a hex digit" }
+
+        val secondIndex = HEX_CHARS.indexOf(this[i + 1], ignoreCase = true)
+        require(secondIndex != -1) { "Char ${this[i + 1]} is not a hex digit" }
+
+        val octet = firstIndex.shl(4).or(secondIndex)
+        result[i.shr(1)] = octet.toByte()
+    }
+
+    return result
+}
 
 class Bytes private constructor(private val bytes: ByteArray) {
     fun size() = bytes.size
@@ -35,7 +66,6 @@ abstract class FixLenBytes(bytes: ByteArray) {
 
     fun toByteArray() = bytes.copyOf()
     fun toHex() = bytes.toHex()
-    fun toGtv(): Gtv = GtvFactory.gtv(bytes.copyOf())
 
     override fun equals(other: Any?) = other === this
             || (other is FixLenBytes && javaClass == other.javaClass && bytes.contentEquals(other.bytes))

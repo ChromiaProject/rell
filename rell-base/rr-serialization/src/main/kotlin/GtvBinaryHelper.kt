@@ -42,6 +42,5 @@ internal object GtvBinaryHelper {
     }
 
     fun base64ToBinary(b64: String): ByteArray = Base64.getDecoder().decode(b64)
-
     fun binaryToBase64(bytes: ByteArray): String = Base64.getEncoder().encodeToString(bytes)
 }
