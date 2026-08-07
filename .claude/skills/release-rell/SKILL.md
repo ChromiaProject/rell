@@ -9,7 +9,7 @@ The authoritative procedure is in [doc/release-guide.md](../../../doc/release-gu
 
 **Hard rules** before doing any of this:
 - Confirm with the user the exact `A.B.C` to release before mutating anything.
-- Never push to `origin/dev`, push the `version-A.B.C` branch, create the Git tag, or post to Zulip without an explicit go-ahead from the user. Ask once per push/tag/announce step.
+- **DO NOT INTERRUPT OR HOLD BACK PUSHES.** Once the user has confirmed the `A.B.C` to release, push to `origin/dev`, push the `version-A.B.C` branch, and create/push the Git tag as each phase reaches that step — do not stop to ask again. Stopping mid-procedure to re-confirm a push has been repeatedly problematic; treat the initial version confirmation as authorization for every push/tag in Phases 1-3 and 5. Zulip announcement (Phase 4) is the one exception: it stays manual, the user posts it themselves.
 - Never amend or force-push.
 - Never delete or rename files outside the steps below.
 - **The release is not done until the tag `A.B.C` exists on `origin`.** A green pipeline on `version-A.B.C` is not the finish line. Before declaring the release complete, run `git ls-remote --tags origin A.B.C` and confirm it returns a SHA. If it doesn't, you skipped Phase 3 — go back and tag.
@@ -27,7 +27,7 @@ On the `dev` branch:
 6. **Replace `RellVersions.SINCE_NOW` with `"A.B.C"`** in stdlib source files. Use `grep -rn --include='*.kt' 'RellVersions.SINCE_NOW' rell-base` (excluding the `SINCE_NOW` definition itself in `rell-base/utils/src/utils/RellVersions.kt`) to find every site, then replace each with the literal `"A.B.C"`. This must happen on `dev` (NOT only on the release branch) so the version-history annotations are preserved on `dev` after the branch cuts.
 7. Commit on `dev` with a clear message: `Finalize release notes and version annotations for A.B.C`.
 
-Stop and ask the user before pushing this commit.
+Push this commit — do not stop to ask (see hard rules above).
 
 ## Phase 2 — Cut the release branch and bump version
 
@@ -43,7 +43,7 @@ Bump the version in **three** places (all in one commit):
 
 Commit on `version-A.B.C` with: `Bump version to A.B.C`.
 
-**Pushing this branch triggers GitLab CI which auto-publishes the release** — confirm with the user before `git push -u origin version-A.B.C`.
+**Pushing this branch triggers GitLab CI which auto-publishes the release.** Push it — `git push -u origin version-A.B.C` — do not stop to ask (see hard rules above).
 
 ## Phase 3 — Tag the release commit (mandatory)
 
@@ -63,7 +63,7 @@ git ls-remote --tags origin A.B.C
 
 Push by SHA rather than `git tag A.B.C && git push origin A.B.C`: the two-step form dies on a stale local tag of the same name (see the hard rules above), and its failure is easy to misread as "already tagged".
 
-Confirm with the user before pushing the tag. After pushing, the `git ls-remote` check is the gate to Phase 4 — if the tag isn't on `origin`, the release is not done.
+Push the tag — do not stop to ask (see hard rules above). After pushing, the `git ls-remote` check is the gate to Phase 4 — if the tag isn't on `origin`, the release is not done.
 
 ## Phase 4 — Announce on Zulip
 
@@ -103,7 +103,7 @@ Switch back to `dev` and apply these follow-ups in one commit (or a tightly grou
 
    For a patch release (only `C` changed), leave the dev snapshot version alone.
 
-Commit with: `Post-release cleanup for A.B.C`. Ask the user before pushing.
+Commit with: `Post-release cleanup for A.B.C`. Push it — do not stop to ask (see hard rules above).
 
 ## Things that go wrong
 
