@@ -12,7 +12,8 @@
 # as a masked CI variable on the protected dev and version-* branches. CI_JOB_TOKEN can't read
 # the Environments/Jobs API — it's not on GitLab's allowlist for those endpoints and returns 403.
 #
-# Inputs (from GitLab CI):  CI_PROJECT_ID, CI_PROJECT_URL, GITLAB_TOKEN.
+# Inputs (from GitLab CI):  CI_PROJECT_ID, CI_PROJECT_URL, CI_PROJECT_PATH,
+#                            CI_PROJECT_ROOT_NAMESPACE, GITLAB_TOKEN.
 # Usage:   build-index.sh <output-dir>
 # Outputs: writes <output-dir>/index.html (the app) and <output-dir>/manifest.json (the data).
 set -eu
@@ -163,10 +164,16 @@ if [ "$page" -gt "$JOB_SCAN_PAGES" ]; then
 fi
 
 # Turn job_id into the artifact link (report.html, or index.html for docs — Dokka's landing page).
+# Use the GitLab Pages-domain artifact URL (https://<root-namespace>.gitlab.io/-/<rest-of-path>/-/
+# jobs/<id>/artifacts/<path>) rather than the "/-/jobs/<id>/artifacts/file/<path>" endpoint on
+# CI_PROJECT_URL — the latter is an interstitial "redirecting to the external file" page, not a
+# direct link.
+project_path_suffix=${CI_PROJECT_PATH#"${CI_PROJECT_ROOT_NAMESPACE}/"}
+artifacts_base="https://${CI_PROJECT_ROOT_NAMESPACE}.gitlab.io/-/${project_path_suffix}"
 job_rows_file2=$(mktemp)
-jq -c --arg proj "$CI_PROJECT_URL" '
+jq -c --arg base "$artifacts_base" '
   def entry_file(k): if k == "docs" then "index.html" else "report.html" end;
-  map(. + { url: ($proj + "/-/jobs/" + (.job_id | tostring) + "/artifacts/file/public/" + entry_file(.kind)) } | del(.job_id))
+  map(. + { url: ($base + "/-/jobs/" + (.job_id | tostring) + "/artifacts/public/" + entry_file(.kind)) } | del(.job_id))
 ' "$job_rows_file" > "$job_rows_file2"
 
 # Probe benchmark/profile job-artifact runs for their data/main.json. Unlike Pages content, job
