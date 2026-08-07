@@ -88,6 +88,7 @@
 #include "rell_runtime.h"
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include <llvm/IR/BasicBlock.h>
@@ -250,6 +251,9 @@ bool lowerWhile(EmitContext &ec, const ir::WhileStatement &stmt);
 bool lowerBreak(EmitContext &ec, const ir::BreakStatement &stmt);
 bool lowerContinue(EmitContext &ec, const ir::ContinueStatement &stmt);
 bool lowerGuard(EmitContext &ec, const ir::GuardStatement &stmt);
+bool lowerWhenStmt(EmitContext &ec, const ir::WhenStatement &stmt);
+bool lowerForStmt(EmitContext &ec, const ir::ForStatement &stmt);
+bool lowerForOverList(EmitContext &ec, const ir::ForStatement &stmt);
 bool lowerDbWrite(EmitContext &ec, const ir::Stmt &stmt);
 
 // =====================================================================================
@@ -361,11 +365,12 @@ bool lowerBlock(EmitContext &ec, const ir::BlockStatement &stmt) {
 //     the tuple value and project each field with the JVM's exact tuple-field semantics; the
 //     projection crosses the HANDLE boundary and is not yet reproduced inline. DETERMINISM:
 //     route the whole function to the JVM rather than guess field extraction.
-//   - A declarator carrying a non-trivial TypeAdapter (the `adapter()` field) implies an
-//     implicit conversion (e.g. integer->decimal) on the stored value. We only inline DIRECT
-//     (absent) adapters here; any present adapter soft-fails so the JVM applies the exact
-//     conversion. (lowerExpr may itself surface the adapter via TypeAdapterExpr; if so it is
-//     handled there and the declarator adapter is absent.)
+//   - A declarator carrying a value-changing TypeAdapter (the `adapter()` field with a non-DIRECT
+//     kind) implies an implicit conversion (e.g. integer->decimal) on the stored value. We inline
+//     a DIRECT adapter (the identity no-op the frontend attaches even for same-type initializers
+//     such as `var acc = 0;`) and an absent adapter; any non-DIRECT adapter soft-fails so the JVM
+//     applies the exact conversion. (lowerExpr may itself surface the adapter via TypeAdapterExpr;
+//     if so it is handled there and the declarator adapter is absent or DIRECT.)
 //
 // The alloca is hoisted to the function entry block so it dominates all uses regardless of the
 // control-flow position of the declaration (loops, branches). The slot type is valueType().
@@ -390,11 +395,35 @@ bool lowerVar(EmitContext &ec, const ir::VarStatement &stmt) {
             const auto *simple = declarator->declarator_as_SimpleVarDeclarator();
             if (simple == nullptr) return ec.fail("VarStatement: SimpleVarDeclarator null");
 
-            // A non-DIRECT type adapter means an implicit conversion on assignment. We do not
-            // reproduce conversions in the declarator; route to the JVM. DETERMINISM: the exact
-            // numeric/nullable adaptation (integer->decimal, etc.) must match the interpreter.
-            if (simple->adapter() != nullptr) {
-                return ec.fail("VarStatement: declarator has a type adapter (conversion)");
+            // A non-DIRECT type adapter means an implicit conversion on the stored value. We inline
+            // the closed set of MECHANICAL numeric-widening adapters and soft-fail the rest:
+            //   DIRECT                 — identity no-op the frontend attaches even for same-type
+            //                            initializers (e.g. `var acc = 0;` carries a DIRECT
+            //                            integer->integer adapter); accepted exactly as the i64
+            //                            oracle (jni_bridge.cpp Lowerer::lowerVarStmt) does.
+            //   INTEGER_TO_BIG_INTEGER — re-tag the i64 payload as BIGINT_LONG (scale 0). Bit-exact:
+            //                            an i64 integer always fits the inline big_integer slice
+            //                            (|v| <= Long.MAX), and to_jvm reboxes it via
+            //                            BigInteger.valueOf — identical to the interpreter's
+            //                            integer->big_integer conversion (value.cpp BIGINT_LONG).
+            //   INTEGER_TO_DECIMAL     — re-tag as DEC_LONG with mantissa = the i64, scale 0.
+            //                            Bit-exact: to_jvm reboxes via BigDecimal.valueOf(mantissa,
+            //                            0) -> Rt_DecimalValue.get, the interpreter's integer->
+            //                            decimal path (value.cpp DEC_LONG).
+            // SOFT-FAIL: BIG_INTEGER_TO_DECIMAL (the big_integer operand may be a HANDLE at runtime,
+            //   not an inline i64) and NULLABLE (carries an inner adapter + null handling). Both
+            //   route the whole function to the JVM for a bit-exact conversion.
+            const auto *adapter = simple->adapter();
+            ir::TypeAdapterKind adapterKind = ir::TypeAdapterKind_DIRECT;
+            if (adapter != nullptr) {
+                adapterKind = adapter->kind();
+                if (adapterKind != ir::TypeAdapterKind_DIRECT &&
+                    adapterKind != ir::TypeAdapterKind_INTEGER_TO_BIG_INTEGER &&
+                    adapterKind != ir::TypeAdapterKind_INTEGER_TO_DECIMAL) {
+                    return ec.fail(
+                        "VarStatement: declarator type adapter is not a mechanical integer-widening "
+                        "conversion (soft-fail)");
+                }
             }
 
             const auto *ptr = simple->ptr();  // NULLABLE — discarded binding behaves as wildcard.
@@ -426,10 +455,21 @@ bool lowerVar(EmitContext &ec, const ir::VarStatement &stmt) {
             // Register the slot so VarExpr reads and AssignStatement writes find it.
             ec.slots()[{ptr->block_uid(), ptr->offset()}] = slot;
 
-            // Store the initializer (if any) at the declaration point.
+            // Store the initializer (if any) at the declaration point, applying the mechanical
+            // integer-widening adapter inline. The init is integer-typed (so INTEGER-tagged at
+            // runtime); the widening is a pure re-tag of the same i64 payload — bit-exact with the
+            // interpreter's integer->big_integer / integer->decimal conversion (see the adapter
+            // note above and value.cpp's BIGINT_LONG / DEC_LONG rebox).
             if (initExpr != nullptr) {
                 llvm::Value *init = lowerExpr(ec, *initExpr);
                 if (init == nullptr) return false;
+                if (adapterKind == ir::TypeAdapterKind_INTEGER_TO_BIG_INTEGER) {
+                    init = ec.packInline(RellTag::BIGINT_LONG, b.getInt32(0),
+                                         ec.unpackPayloadI64(init));
+                } else if (adapterKind == ir::TypeAdapterKind_INTEGER_TO_DECIMAL) {
+                    init = ec.packInline(RellTag::DEC_LONG, b.getInt32(0),
+                                         ec.unpackPayloadI64(init));
+                }
                 b.CreateStore(init, slot);
             }
             return true;
@@ -451,10 +491,12 @@ bool lowerVar(EmitContext &ec, const ir::VarStatement &stmt) {
 // VarExpr resolving to an entry in ec.slots(). We lower the RHS to a runtime value and store it.
 //
 // SOFT-FAIL:
-//   - Compound assignment (`+=`, `-=`, ... — op() present): the read-modify-write must reproduce
-//     the operator's exact overflow/Rt_Exception semantics AND re-store; rather than re-run the
-//     binary-op overlay through an lvalue load here, we route the whole function to the JVM.
-//     DETERMINISM: avoids duplicating the checked-arithmetic envelope at an assignment site.
+//   - Compound assignment with a non-integer or div/mod op: the read-modify-write must reproduce
+//     the operator's exact overflow/Rt_Exception semantics. We reproduce only the wrapping/checked
+//     integer ADD/SUB/MUL family inline (via intrinsicInteger, exactly as lowerIntegerArith does);
+//     DIV/MOD and any non-integer compound op soft-fail to the JVM. DETERMINISM: this mirrors the
+//     i64 oracle (jni_bridge.cpp Lowerer::applyIntArith), which JITs the same integer ADD/SUB/MUL
+//     family for `+=`/`-=`/`*=` and soft-fails the rest.
 //   - Non-local destinations: subscript stores (list[i]=, map[k]=), member/attribute stores
 //     (struct.field=, entity attr writes), and anything that is not a plain VarExpr-to-slot.
 //     These either mutate heap/db state through JVM-defined semantics or are db writes; they
@@ -466,17 +508,8 @@ bool lowerAssign(EmitContext &ec, const ir::AssignStatement &stmt) {
     const auto *src = stmt.expr();
     if (dst == nullptr || src == nullptr) return ec.fail("AssignStatement: null dst/src");
 
-    // op() is a ::flatbuffers::Optional<BinaryOp>: PRESENT ⇒ compound assignment (`+=`, `-=`, ...);
-    // ABSENT ⇒ plain `=`. DETERMINISM: compound assignment is a read-modify-write that must
-    // reproduce the operator's exact overflow/Rt_Exception semantics; we do not duplicate the
-    // checked-arithmetic envelope at an assignment site, so any present op soft-fails (whole
-    // function -> JVM). Only the absent case (plain `=`) is lowered inline.
-    if (stmt.op().has_value()) {
-        return ec.fail("AssignStatement: compound assignment (soft-fail)");
-    }
-
-    // Plain `=`. The only inline-lowerable destination is a local/param slot (a VarExpr whose
-    // ptr is in ec.slots()). Anything else (subscript/member/attribute) is non-local -> soft-fail.
+    // The only inline-lowerable destination is a local/param slot (a VarExpr whose ptr is in
+    // ec.slots()). Anything else (subscript/member/attribute) is non-local -> soft-fail.
     if (dst->expr_type() != ir::ExprUnion_VarExpr) {
         return ec.fail("AssignStatement: non-local assignment target (soft-fail)");
     }
@@ -495,6 +528,31 @@ bool lowerAssign(EmitContext &ec, const ir::AssignStatement &stmt) {
 
     llvm::Value *value = lowerExpr(ec, *src);
     if (value == nullptr) return false;  // soft-fail propagated.
+
+    // op() is a ::flatbuffers::Optional<BinaryOp>: PRESENT ⇒ compound assignment (`+=`, `-=`,
+    // ...); ABSENT ⇒ plain `=`. For compound assignment we read-modify-write: load the current
+    // slot value, combine it with the rhs via the SAME checked integer envelope the standalone
+    // binary ops use, then store. DETERMINISM: only the wrapping ADD/SUB/MUL integer family is
+    // bit-reproducible inline (intrinsicInteger); DIV/MOD and any non-integer op soft-fail — the
+    // exact decision the i64 oracle's applyIntArith makes.
+    if (stmt.op().has_value()) {
+        const ir::BinaryOp op = stmt.op().value();
+        if (op != ir::BinaryOp_ADD_INTEGER && op != ir::BinaryOp_SUB_INTEGER &&
+            op != ir::BinaryOp_MUL_INTEGER) {
+            return ec.fail("AssignStatement: compound op not in wrapping integer ADD/SUB/MUL "
+                           "family (soft-fail)");
+        }
+        llvm::Value *cur = ec.builder().CreateLoad(ec.valueType(), slot, "compound.cur");
+        bool escaped = false;
+        llvm::Value *combined = intrinsicInteger(
+            ec, op, ec.unpackPayloadI64(cur), ec.unpackPayloadI64(value), &escaped);
+        if (escaped) {
+            return ec.fail("AssignStatement: compound integer arith escaped inline envelope");
+        }
+        if (combined == nullptr) return false;  // intrinsic already called ec.fail().
+        value = combined;
+    }
+
     ec.builder().CreateStore(value, slot);
     return true;
 }
@@ -660,6 +718,567 @@ bool lowerGuard(EmitContext &ec, const ir::GuardStatement &stmt) {
 }
 
 // =====================================================================================
+// WhenStatement — `when (key) { ... }` as a statement (rt_interp_stmt.kt executeWhenStmt).
+//
+// The interpreter evaluates the chooser to an arm INDEX (or -1 for "no match and no else"), then
+// runs stmts[idx]; on -1 it is a no-op (falls through). This is the value-less twin of WhenExpr:
+// we reuse the EXACT chooser semantics and the SAME inline-key-type restriction (lower_expr.cpp's
+// whenKeyTypeInlineComparable / emitWhenInlineEq), so a statement-`when` matches bit-for-bit with
+// an expression-`when`. Any non-inline key (ENUM is inline-comparable; text/decimal/bigint/etc. are
+// NOT) or a chooser shape we cannot reduce to inline equality soft-fails the whole function.
+//
+// DETERMINISM divergence from WhenExpr: a when-STATEMENT need NOT be exhaustive — `when (x) { 1 ->
+// ...; }` with no else and no match is a legal no-op (executeWhenStmt returns null). So a MISSING
+// else_index is NOT a soft-fail here (it is for the expression); it means "fall through to the
+// continuation with no arm executed", which we lower as the final test's else edge going straight
+// to the join block. (We still soft-fail a keyless guard chain — see below — only where bit-exact
+// reproduction is not provable.)
+//
+// Arm sequencing mirrors lowerIf/lowerWhile: each selected arm lowers into its own block and, if it
+// did not itself terminate (return/break/continue), branches to the shared join. If every reachable
+// path terminates, the join is erased.
+// =====================================================================================
+
+// Lower the statement arm at `armIndex` into the current block, then branch to joinBB iff the arm
+// did not already terminate. Shared by both chooser shapes.
+bool emitWhenStmtArm(EmitContext &ec, const ir::WhenStatement &stmt, int32_t armIndex,
+                     llvm::BasicBlock *joinBB) {
+    const auto *stmts = stmt.stmts();
+    if (stmts == nullptr || armIndex < 0 ||
+        static_cast<uint32_t>(armIndex) >= stmts->size()) {
+        return ec.fail("WhenStatement: selected arm index out of range");
+    }
+    const ir::Stmt *arm = stmts->Get(armIndex);
+    if (arm == nullptr) return ec.fail("WhenStatement: arm statement is null");
+    if (!lowerStmt(ec, *arm)) return false;
+    if (!currentBlockTerminated(ec)) ec.builder().CreateBr(joinBB);
+    return true;
+}
+
+bool lowerWhenStmt(EmitContext &ec, const ir::WhenStatement &stmt) {
+    const auto *chooserWrap = stmt.chooser();
+    if (chooserWrap == nullptr) return ec.fail("WhenStatement: null chooser");
+    if (stmt.stmts() == nullptr) return ec.fail("WhenStatement: null stmts");
+
+    auto &b = ec.builder();
+    llvm::Function *fn = currentFunction(ec);
+    if (fn == nullptr) return ec.fail("WhenStatement: no enclosing function");
+
+    auto *joinBB = llvm::BasicBlock::Create(ec.ctx(), "when_stmt_end", fn);
+
+    switch (chooserWrap->chooser_type()) {
+        case ir::WhenChooserUnion_IterativeWhenChooser: {
+            const auto *chooser = chooserWrap->chooser_as_IterativeWhenChooser();
+            if (chooser == nullptr) return ec.fail("WhenStatement: null iterative chooser");
+
+            const ir::Expr *keyExpr = chooser->key_expr();
+            llvm::Value *keyVal = nullptr;
+            if (keyExpr != nullptr) {
+                // DETERMINISM: only inline-canonical key carriers can be matched by tag+payload eq.
+                if (!whenKeyTypeInlineComparable(exprStaticResultType(keyExpr))) {
+                    return ec.fail("WhenStatement: key is not an inline-comparable type (soft-fail)");
+                }
+                keyVal = lowerExpr(ec, *keyExpr);
+                if (keyVal == nullptr) return false;
+            }
+
+            const auto *conds = chooser->conditions();
+            if (conds == nullptr) return ec.fail("WhenStatement: null conditions");
+
+            for (uint32_t i = 0; i < conds->size(); ++i) {
+                const auto *cond = conds->Get(i);
+                if (cond == nullptr) return ec.fail("WhenStatement: null WhenCondition");
+                const ir::Expr *condExpr = cond->expr();
+                if (condExpr == nullptr) return ec.fail("WhenStatement: null condition expr");
+
+                llvm::Value *condVal = lowerExpr(ec, *condExpr);
+                if (condVal == nullptr) return false;
+
+                // With a key: arm fires when key == condVal. Without a key (keyless guard chain):
+                // condExpr IS a boolean guard, fires when its payload is truthy. Both are bit-exact
+                // with evaluateWhenChooser (the interpreter's per-condition value equality / boolean
+                // test), the same shape lowerWhenIterative uses for the expression form.
+                llvm::Value *match;
+                if (keyVal != nullptr) {
+                    match = emitWhenInlineEq(ec, keyVal, condVal);
+                    if (match == nullptr) return false;
+                } else {
+                    llvm::Value *p = ec.unpackPayloadI64(condVal);
+                    match = b.CreateICmpNE(p, b.getInt64(0), "when_stmt_guard");
+                }
+
+                auto *armBB = llvm::BasicBlock::Create(ec.ctx(), "when_stmt_arm", fn);
+                auto *nextBB = llvm::BasicBlock::Create(ec.ctx(), "when_stmt_next", fn);
+                b.CreateCondBr(match, armBB, nextBB);
+
+                b.SetInsertPoint(armBB);
+                if (!emitWhenStmtArm(ec, stmt, cond->index(), joinBB)) return false;
+
+                b.SetInsertPoint(nextBB);
+            }
+
+            // Fallthrough = else (if present) or no-op (statement-`when` need not be exhaustive).
+            auto elseIndexOpt = chooser->else_index();
+            if (elseIndexOpt.has_value()) {
+                if (!emitWhenStmtArm(ec, stmt, *elseIndexOpt, joinBB)) return false;
+            } else {
+                // No else: no arm runs (executeWhenStmt returns null). Branch straight to the join.
+                b.CreateBr(joinBB);
+            }
+            break;
+        }
+        case ir::WhenChooserUnion_LookupWhenChooser: {
+            const auto *chooser = chooserWrap->chooser_as_LookupWhenChooser();
+            if (chooser == nullptr) return ec.fail("WhenStatement: null lookup chooser");
+
+            const ir::Expr *keyExpr = chooser->key_expr();
+            if (keyExpr == nullptr) return ec.fail("WhenStatement: lookup chooser null key_expr");
+            if (!whenKeyTypeInlineComparable(exprStaticResultType(keyExpr))) {
+                return ec.fail("WhenStatement: lookup key is not inline-comparable (soft-fail)");
+            }
+            llvm::Value *keyVal = lowerExpr(ec, *keyExpr);
+            if (keyVal == nullptr) return false;
+
+            const auto *keys = chooser->lookup_keys();
+            const auto *values = chooser->lookup_values();
+            if (keys == nullptr || values == nullptr || keys->size() != values->size()) {
+                return ec.fail("WhenStatement: lookup keys/values mismatch");
+            }
+
+            for (uint32_t i = 0; i < keys->size(); ++i) {
+                const auto *constKey = keys->Get(i);
+                if (constKey == nullptr) return ec.fail("WhenStatement: null lookup key");
+                llvm::Value *keyConst = lowerInlineConstant(ec, *constKey);
+                if (keyConst == nullptr) return false;  // non-inline key -> already soft-failed.
+
+                llvm::Value *match = emitWhenInlineEq(ec, keyVal, keyConst);
+                if (match == nullptr) return false;
+
+                auto *armBB = llvm::BasicBlock::Create(ec.ctx(), "lookup_stmt_arm", fn);
+                auto *nextBB = llvm::BasicBlock::Create(ec.ctx(), "lookup_stmt_next", fn);
+                b.CreateCondBr(match, armBB, nextBB);
+
+                b.SetInsertPoint(armBB);
+                if (!emitWhenStmtArm(ec, stmt, values->Get(i), joinBB)) return false;
+
+                b.SetInsertPoint(nextBB);
+            }
+
+            auto elseIndexOpt = chooser->else_index();
+            if (elseIndexOpt.has_value()) {
+                if (!emitWhenStmtArm(ec, stmt, *elseIndexOpt, joinBB)) return false;
+            } else {
+                b.CreateBr(joinBB);
+            }
+            break;
+        }
+        default:
+            return ec.fail("WhenStatement: unsupported chooser variant");
+    }
+
+    // Position the builder at the join for the following statements. If nothing reached it (every
+    // path terminated), erase it and leave the builder on the terminated block so the enclosing
+    // sequence sees currentBlockTerminated()==true.
+    if (joinBB->hasNPredecessorsOrMore(1)) {
+        b.SetInsertPoint(joinBB);
+    } else {
+        joinBB->eraseFromParent();
+    }
+    return true;
+}
+
+// =====================================================================================
+// ForStatement over an integer RANGE iterable (REVIEW_coverage target 4).
+//
+// Rell `for (i in <range>) <body>` where <range> is built by the `range(...)` constructor (the
+// `..` operator desugars to the same constructor). We lower ONLY this case natively; for-over-
+// collection (list/set/map, the LEGACY_MAP map-entry adapter) and any range value that does NOT
+// arrive as an inline range(...) construction soft-fail — those need JVM iterator/marshalling
+// semantics, not reproducible inline.
+//
+// WHY INLINE CONSTRUCTION (not a HANDLE): a `range(...)` call routes through the stdlib sysfn path,
+// which currently SOFT-FAILS the whole function (the rell_sysfn_call by-value return ABI is not yet
+// sret-wired — lower_call.cpp). So we cannot obtain a range HANDLE. Instead we recognise the
+// constructor call, lower its integer arguments inline, and reproduce the range bit-exactly:
+//
+// BIT-EXACTNESS (vs rt_interp_stmt.kt RR_Statement.For, lib_type_range.kt calcRange,
+// rt_value_range.kt Rt_RangeValue.RangeIterator, utils_number.kt saturatedAdd):
+//   * Argument layout matches the two `range` constructors (lib_type_range.kt):
+//       range(end)            -> start=0, end=end, step=1
+//       range(start,end)      -> step=1
+//       range(start,end,step) -> as given
+//     Args are integer-typed exprs (INTEGER-tagged at runtime); we lower each inline and unpack i64.
+//   * VALIDATION matches calcRange EXACTLY: invalid iff
+//       step == 0 || (step > 0 && start > end) || (step < 0 && start < end).
+//     On the invalid edge we emit rell_jit_escape() — the JVM RE-RUNS the whole call on the
+//     interpreter (Llvm_Backend.invokeValueNative), which raises the precise `fn_range_args:
+//     start:end:step` Rt_Exception. We do NOT synthesise that throw inline (its dynamic code/message
+//     cannot be reproduced); the escape channel makes the error bit-exact. The valid edge proceeds.
+//   * ITERATION mirrors RangeIterator EXACTLY:
+//       - element = current; current = saturatedAdd(current, step) BEFORE the body runs (the
+//         interpreter's `for (e in iterator)` calls next() — which reads then advances — before the
+//         body). So `continue` re-tests hasNext WITHOUT re-advancing: continue target == cond,
+//         identical to WhileStatement and to the Kotlin for-loop.
+//       - hasNext: step > 0 ? current < end : current > end  (exclusive end; sign-of-step bound).
+//         step != 0 is guaranteed on the valid (non-escape) path, so the two-way select is total.
+//       - empty range (range(n,n), or start==end): hasNext is false on entry -> 0 iterations.
+//       - advance = saturatedAdd: wrapping i64 add, then on signed overflow clamp to Long.MAX
+//         (element >= 0) / Long.MIN, using the SAME predicate ((element ^ sum) & (step ^ sum)) < 0
+//         and the SAME clamp, so a range whose advance would overflow terminates identically (the
+//         clamped value can never satisfy hasNext again).
+//   * Loop var: initializeDeclarator(Simple) sets the slot to the element, Rt_IntValue.get(res)
+//     (an INTEGER value); we pack the i64 as INTEGER. A non-DIRECT declarator adapter soft-fails
+//     (same gate as VarStatement) — the JVM applies the widening conversion.
+// =====================================================================================
+
+// Simple function name from a buildSysFnKey: the segment after the last '.' of <fullName>, before
+// the first '#'. (Mirrors lower_call.cpp's sysFnSimpleName; replicated to keep this file self-
+// contained.) Empty when the key has no '#'.
+std::string_view forSysFnSimpleName(std::string_view key) {
+    const std::size_t hash = key.find('#');
+    if (hash == std::string_view::npos) return {};
+    std::string_view fullName = key.substr(0, hash);
+    const std::size_t dot = fullName.rfind('.');
+    return dot == std::string_view::npos ? fullName : fullName.substr(dot + 1);
+}
+
+// Result-type strCode of a buildSysFnKey: the substring after "->" up to an optional "@pos" tail.
+std::string_view forSysFnResultType(std::string_view key) {
+    const std::size_t arrow = key.rfind("->");
+    if (arrow == std::string_view::npos) return {};
+    std::string_view tail = key.substr(arrow + 2);
+    const std::size_t at = tail.find('@');
+    if (at != std::string_view::npos) tail = tail.substr(0, at);
+    return tail;
+}
+
+// If `iterExpr` is a `range(...)` constructor call (SysGlobal target, simple name "range",
+// result type "range"), return its FullFunctionCall; else nullptr (the caller soft-fails). The
+// `..` operator desugars to this same constructor, so this covers `for (i in a..b)` too.
+const ir::FullFunctionCall *asRangeConstructorCall(const ir::Expr *iterExpr) {
+    if (iterExpr == nullptr || iterExpr->expr_type() != ir::ExprUnion_FunctionCallExpr) return nullptr;
+    const auto *callExpr = iterExpr->expr_as_FunctionCallExpr();
+    if (callExpr == nullptr) return nullptr;
+    const auto *call = callExpr->call();
+    if (call == nullptr) return nullptr;
+    const auto *full = call->call_as_FullFunctionCall();
+    if (full == nullptr) return nullptr;  // PartialFunctionCall -> not a direct range() ctor.
+    const auto *tgt = full->target();
+    if (tgt == nullptr || tgt->target_type() != ir::FunctionCallTargetUnion_FnTarget_SysGlobal) {
+        return nullptr;
+    }
+    const auto *sysGlobal = tgt->target_as_FnTarget_SysGlobal();
+    if (sysGlobal == nullptr) return nullptr;
+    const auto *fnName = sysGlobal->fn_name();
+    if (fnName == nullptr) return nullptr;
+    const std::string_view key(fnName->c_str());
+    return (forSysFnSimpleName(key) == "range" && forSysFnResultType(key) == "range") ? full
+                                                                                      : nullptr;
+}
+
+// =====================================================================================
+// ForStatement over a native LIST (the for-over-collection case DEFERRED in P6).
+//
+// Rell `for (x in <list>) <body>`. The iterable lowers to a native LIST runtime value (the LIST
+// carrier — value.cpp). We iterate elements by index in ITERATION order, EXACTLY as the interpreter
+// (rr_interpreter.kt RR_Statement.For -> DIRECT -> `for (element in iterator)` over Rt_ListValue's
+// element order):
+//   * size = rell_list_size(list)  (Rt_ListValue.elements.size).
+//   * i from 0; hasNext = i < size; element = rell_list_get(list, i); i = i + 1 BEFORE the body
+//     (so `continue` re-tests WITHOUT re-advancing: continue target == cond, like WhileStatement).
+//   * empty list (size 0): hasNext false on entry -> 0 iterations.
+//   * the loop var slot is bound to each element RellValue (initializeDeclarator(Simple) sets the
+//     slot to `element`); a non-DIRECT declarator adapter soft-fails (the element may need a widening
+//     conversion the JVM applies) — same gate as VarStatement / the range loop.
+// The element-get uses the SAME rell_list_get the subscript path uses, but indices are ALWAYS in
+// bounds here (i < size), so the bounds check never fires — no OOB error is possible from iteration.
+// =====================================================================================
+bool lowerForOverList(EmitContext &ec, const ir::ForStatement &stmt) {
+    const auto *iterExpr = stmt.expr();
+    const auto *varDecl = stmt.var_declarator();
+    const auto *body = stmt.body();
+    // (iterExpr/varDecl/body/frame_block/adapter were already null/DIRECT-checked by lowerForStmt.)
+
+    // Loop var must be a Simple declarator with a backing slot and a DIRECT/absent adapter.
+    if (varDecl->declarator_type() != ir::VarDeclaratorUnion_SimpleVarDeclarator) {
+        return ec.fail("ForStatement(list): loop var is not a simple declarator (soft-fail)");
+    }
+    const auto *simple = varDecl->declarator_as_SimpleVarDeclarator();
+    if (simple == nullptr) return ec.fail("ForStatement(list): SimpleVarDeclarator null");
+    const auto *varPtr = simple->ptr();
+    if (varPtr == nullptr) return ec.fail("ForStatement(list): loop var has no slot (soft-fail)");
+    const auto *adapter = simple->adapter();
+    if (adapter != nullptr && adapter->kind() != ir::TypeAdapterKind_DIRECT) {
+        return ec.fail("ForStatement(list): loop var has a non-DIRECT type adapter (soft-fail)");
+    }
+
+    FunctionLowering *fl = requireLowering(ec);
+    if (fl == nullptr) return false;
+    llvm::Function *fn = currentFunction(ec);
+    if (fn == nullptr) return ec.fail("ForStatement(list): no enclosing function");
+    auto &b = ec.builder();
+    auto *i64Ty = b.getInt64Ty();
+    auto *valTy = ec.valueType();
+    auto *ptrTy = llvm::PointerType::getUnqual(ec.ctx());
+
+    // Evaluate the iterable ONCE (observable: side-effecting/throwing iterable is evaluated before
+    // iterating, exactly as the interpreter evaluates `evaluateExpr(stmt.expr)` first).
+    llvm::Value *listVal = lowerExpr(ec, *iterExpr);
+    if (listVal == nullptr) return false;  // soft-fail propagated.
+
+    // Entry-block scratch: the live index `i`, the list value, and the loop-var runtime-value slot,
+    // hoisted so they dominate the loop blocks.
+    llvm::Value *idxSlot = nullptr;
+    llvm::Value *listSlot = nullptr;
+    llvm::Value *varSlot = nullptr;
+    {
+        llvm::BasicBlock *savedBlock = b.GetInsertBlock();
+        llvm::BasicBlock::iterator savedPt = b.GetInsertPoint();
+        llvm::BasicBlock &entry = fn->getEntryBlock();
+        if (entry.empty()) {
+            b.SetInsertPoint(&entry);
+        } else {
+            b.SetInsertPoint(&entry, entry.getFirstInsertionPt());
+        }
+        idxSlot = b.CreateAlloca(i64Ty, nullptr, "for.list.i");
+        listSlot = b.CreateAlloca(valTy, nullptr, "for.list.val");
+        varSlot = b.CreateAlloca(valTy, nullptr, "for.list.var");
+        b.SetInsertPoint(savedBlock, savedPt);
+    }
+    b.CreateStore(listVal, listSlot);
+    b.CreateStore(b.getInt64(0), idxSlot);
+
+    // Register the loop-var slot so the body's VarExpr reads resolve to it.
+    ec.slots()[{varPtr->block_uid(), varPtr->offset()}] = varSlot;
+
+    // size = rell_list_size(&list).  void rell_list_size(ptr out, ptr list)
+    llvm::Value *sizeI64 = nullptr;
+    {
+        llvm::Function *cf = b.GetInsertBlock()->getParent();
+        llvm::IRBuilder<> entryB(&cf->getEntryBlock(), cf->getEntryBlock().begin());
+        llvm::Value *sizeOut = entryB.CreateAlloca(valTy, nullptr, "for.list.size_out");
+        auto *fnTy = llvm::FunctionType::get(llvm::Type::getVoidTy(ec.ctx()), {ptrTy, ptrTy},
+                                             /*isVarArg=*/false);
+        llvm::FunctionCallee callee = ec.module().getOrInsertFunction("rell_list_size", fnTy);
+        b.CreateCall(callee, {sizeOut, listSlot});
+        llvm::Value *sizeRv = b.CreateLoad(valTy, sizeOut, "for.list.size_rv");
+        sizeI64 = ec.unpackPayloadI64(sizeRv);
+    }
+
+    auto *condBB = llvm::BasicBlock::Create(ec.ctx(), "for.list.cond", fn);
+    auto *bodyBB = llvm::BasicBlock::Create(ec.ctx(), "for.list.body", fn);
+    auto *afterBB = llvm::BasicBlock::Create(ec.ctx(), "for.list.after", fn);
+
+    b.CreateBr(condBB);
+
+    // cond: hasNext = i < size.
+    b.SetInsertPoint(condBB);
+    llvm::Value *i = b.CreateLoad(i64Ty, idxSlot, "for.list.cur");
+    llvm::Value *hasNext = b.CreateICmpSLT(i, sizeI64, "for.list.hasnext");
+    b.CreateCondBr(hasNext, bodyBB, afterBB);
+
+    // body: element = list[i]; i = i + 1 (advance BEFORE the body, like the range loop / next());
+    // bind the loop var; run body.
+    b.SetInsertPoint(bodyBB);
+    llvm::Value *iBody = b.CreateLoad(i64Ty, idxSlot, "for.list.ib");
+    llvm::Value *listForGet = b.CreateLoad(valTy, listSlot, "for.list.lv");
+    llvm::Value *element = emitListGet(ec, listForGet, iBody);  // i < size, so never OOB.
+    if (element == nullptr) return false;
+    // advance i (no overflow: i < size <= Int.MAX list length, +1 stays in range).
+    llvm::Value *iNext = b.CreateAdd(iBody, b.getInt64(1), "for.list.inext");
+    b.CreateStore(iNext, idxSlot);
+    // Bind the loop var to the element runtime value.
+    b.CreateStore(element, varSlot);
+
+    {
+        // break -> afterBB, continue -> condBB (re-test hasNext; advance already happened above).
+        LoopScope loop(*fl, afterBB, condBB);
+        if (!lowerStmt(ec, *body)) return false;
+    }
+    if (!currentBlockTerminated(ec)) b.CreateBr(condBB);
+
+    b.SetInsertPoint(afterBB);
+    return true;
+}
+
+bool lowerForStmt(EmitContext &ec, const ir::ForStatement &stmt) {
+    const auto *iterExpr = stmt.expr();
+    const auto *varDecl = stmt.var_declarator();
+    const auto *body = stmt.body();
+    if (iterExpr == nullptr || varDecl == nullptr || body == nullptr) {
+        return ec.fail("ForStatement: null expr/var_declarator/body");
+    }
+    if (stmt.frame_block() == nullptr) return ec.fail("ForStatement: null frame_block");
+
+    // Only DIRECT iteration is native. LEGACY_MAP (map-entry tuples) needs JVM iterator semantics.
+    if (stmt.iterable_adapter() != ir::IterableAdapterKind_DIRECT) {
+        return ec.fail("ForStatement: non-DIRECT iterable adapter (soft-fail)");
+    }
+
+    // The iterable must be an inline `range(...)` construction (see WHY INLINE CONSTRUCTION above).
+    // A range VALUE that is not constructed here (a VarExpr, a function result, ...) cannot be read
+    // inline (it is a HANDLE we cannot crack while the sysfn return ABI is unsret'd) -> soft-fail.
+    // for-over-LIST is handled natively below (the LIST carrier exposes size/element-get); set/map
+    // iteration still soft-fails (they stay HANDLEs).
+    const ir::FullFunctionCall *rangeCall = asRangeConstructorCall(iterExpr);
+    if (rangeCall == nullptr) {
+        const ir::Type *iterType = exprStaticResultType(iterExpr);
+        if (iterType != nullptr && iterType->type_type() == ir::TypeUnion_ListType) {
+            return lowerForOverList(ec, stmt);
+        }
+        return ec.fail("ForStatement: iterable is neither an inline range(...) nor a list (soft-fail)");
+    }
+    const auto *rangeArgs = rangeCall->args();
+    if (rangeArgs == nullptr || rangeArgs->size() < 1 || rangeArgs->size() > 3) {
+        return ec.fail("ForStatement: range() call has unexpected arity (soft-fail)");
+    }
+
+    // The loop variable must be a Simple declarator with a backing slot and a DIRECT/absent adapter
+    // (the element is an INTEGER value; a widening adapter would need the JVM conversion). Tuple /
+    // wildcard / adapter declarators soft-fail.
+    if (varDecl->declarator_type() != ir::VarDeclaratorUnion_SimpleVarDeclarator) {
+        return ec.fail("ForStatement: loop var is not a simple declarator (soft-fail)");
+    }
+    const auto *simple = varDecl->declarator_as_SimpleVarDeclarator();
+    if (simple == nullptr) return ec.fail("ForStatement: SimpleVarDeclarator null");
+    const auto *varPtr = simple->ptr();
+    if (varPtr == nullptr) return ec.fail("ForStatement: loop var has no slot (soft-fail)");
+    const auto *adapter = simple->adapter();
+    if (adapter != nullptr && adapter->kind() != ir::TypeAdapterKind_DIRECT) {
+        return ec.fail("ForStatement: loop var has a non-DIRECT type adapter (soft-fail)");
+    }
+
+    FunctionLowering *fl = requireLowering(ec);
+    if (fl == nullptr) return false;
+    llvm::Function *fn = currentFunction(ec);
+    if (fn == nullptr) return ec.fail("ForStatement: no enclosing function");
+    auto &b = ec.builder();
+    auto *i64Ty = b.getInt64Ty();
+
+    // Lower the range arguments inline, IN SOURCE ORDER (evaluation order is observable — a
+    // side-effecting/throwing arg must be evaluated before the loop, exactly as the interpreter
+    // evaluates `evaluateExpr(stmt.expr)` — the range() call — before iterating). Each arg is
+    // integer-typed, so INTEGER-tagged at runtime; unpack the i64 payload.
+    llvm::Value *argI64[3] = {nullptr, nullptr, nullptr};
+    for (flatbuffers::uoffset_t i = 0; i < rangeArgs->size(); ++i) {
+        const ir::Expr *argExpr = rangeArgs->Get(i);
+        if (argExpr == nullptr) return ec.fail("ForStatement: null range() argument");
+        llvm::Value *v = lowerExpr(ec, *argExpr);
+        if (v == nullptr) return false;  // soft-fail propagated.
+        argI64[i] = ec.unpackPayloadI64(v);
+    }
+
+    // Map args to (start, end, step) per the two range constructors (lib_type_range.kt):
+    //   range(end)            -> start=0, step=1
+    //   range(start,end)      -> step=1
+    //   range(start,end,step) -> as given
+    llvm::Value *start;
+    llvm::Value *end0;
+    llvm::Value *step0;
+    if (rangeArgs->size() == 1) {
+        start = b.getInt64(0);
+        end0 = argI64[0];
+        step0 = b.getInt64(1);
+    } else {
+        start = argI64[0];
+        end0 = argI64[1];
+        step0 = (rangeArgs->size() == 3) ? argI64[2] : b.getInt64(1);
+    }
+
+    // Entry-block scratch: the live `current` and the loop-var runtime-value slot, hoisted so they
+    // dominate the loop blocks.
+    llvm::Value *currentSlot = nullptr;
+    llvm::Value *varSlot = nullptr;
+    {
+        llvm::BasicBlock *savedBlock = b.GetInsertBlock();
+        llvm::BasicBlock::iterator savedPt = b.GetInsertPoint();
+        llvm::BasicBlock &entry = fn->getEntryBlock();
+        if (entry.empty()) {
+            b.SetInsertPoint(&entry);
+        } else {
+            b.SetInsertPoint(&entry, entry.getFirstInsertionPt());
+        }
+        currentSlot = b.CreateAlloca(i64Ty, nullptr, "for.current");
+        varSlot = b.CreateAlloca(ec.valueType(), nullptr, "for.var");
+        b.SetInsertPoint(savedBlock, savedPt);
+    }
+
+    // Register the loop-var slot so the body's VarExpr reads (and any assignments) resolve to it.
+    ec.slots()[{varPtr->block_uid(), varPtr->offset()}] = varSlot;
+
+    auto *escBB = llvm::BasicBlock::Create(ec.ctx(), "for.invalid", fn);
+    auto *preBB = llvm::BasicBlock::Create(ec.ctx(), "for.pre", fn);    // valid-edge preheader.
+    auto *condBB = llvm::BasicBlock::Create(ec.ctx(), "for.cond", fn);
+    auto *bodyBB = llvm::BasicBlock::Create(ec.ctx(), "for.body", fn);
+    auto *afterBB = llvm::BasicBlock::Create(ec.ctx(), "for.after", fn);
+
+    // VALIDATION (calcRange): invalid iff step==0 || (step>0 && start>end) || (step<0 && start<end).
+    // On the invalid edge, branch to escBB which marks the call for re-run on the interpreter (the
+    // exact fn_range_args Rt_Exception is raised there) and SKIPS the native loop entirely — never
+    // iterate with invalid bounds (step==0 would spin forever before the JVM discards the result).
+    {
+        llvm::Value *stepZero = b.CreateICmpEQ(step0, b.getInt64(0), "for.stepzero");
+        llvm::Value *stepPosV = b.CreateICmpSGT(step0, b.getInt64(0), "for.steppos.v");
+        llvm::Value *stepNegV = b.CreateICmpSLT(step0, b.getInt64(0), "for.stepneg.v");
+        llvm::Value *startGtEnd = b.CreateICmpSGT(start, end0, "for.sgte");
+        llvm::Value *startLtEnd = b.CreateICmpSLT(start, end0, "for.slte");
+        llvm::Value *badPos = b.CreateAnd(stepPosV, startGtEnd, "for.badpos");
+        llvm::Value *badNeg = b.CreateAnd(stepNegV, startLtEnd, "for.badneg");
+        llvm::Value *invalid =
+            b.CreateOr(stepZero, b.CreateOr(badPos, badNeg, "for.bad"), "for.invalid.cond");
+        b.CreateCondBr(invalid, escBB, preBB);
+    }
+
+    // invalid edge: escape (JVM re-runs and raises fn_range_args), then leave the loop unentered.
+    b.SetInsertPoint(escBB);
+    emitJitEscape(ec);
+    b.CreateBr(afterBB);
+
+    // valid-edge preheader: initialise current = start ONCE, then enter the loop test.
+    b.SetInsertPoint(preBB);
+    b.CreateStore(start, currentSlot);
+    b.CreateBr(condBB);
+
+    // cond: hasNext = step > 0 ? current < end : current > end. (step != 0 guaranteed by calcRange.)
+    b.SetInsertPoint(condBB);
+    llvm::Value *cur = b.CreateLoad(i64Ty, currentSlot, "cur");
+    llvm::Value *stepPos = b.CreateICmpSGT(step0, b.getInt64(0), "for.steppos");
+    llvm::Value *ltEnd = b.CreateICmpSLT(cur, end0, "for.lt");
+    llvm::Value *gtEnd = b.CreateICmpSGT(cur, end0, "for.gt");
+    llvm::Value *hasNext = b.CreateSelect(stepPos, ltEnd, gtEnd, "for.hasnext");
+    b.CreateCondBr(hasNext, bodyBB, afterBB);
+
+    // body: element = current; current = saturatedAdd(current, step); bind loop var; run body.
+    b.SetInsertPoint(bodyBB);
+    llvm::Value *element = b.CreateLoad(i64Ty, currentSlot, "for.elem");
+    // saturatedAdd(current, step): wrapping add, then clamp on signed overflow.
+    llvm::Value *sum = b.CreateAdd(element, step0, "for.sum");
+    // overflow iff ((element ^ sum) & (step ^ sum)) < 0  (utils_number.kt saturatedAdd).
+    llvm::Value *x1 = b.CreateXor(element, sum, "for.x1");
+    llvm::Value *x2 = b.CreateXor(step0, sum, "for.x2");
+    llvm::Value *ovfBits = b.CreateAnd(x1, x2, "for.ovfbits");
+    llvm::Value *ovf = b.CreateICmpSLT(ovfBits, b.getInt64(0), "for.ovf");
+    // clamp = (element >= 0) ? Long.MAX : Long.MIN.
+    llvm::Value *elemNonNeg = b.CreateICmpSGE(element, b.getInt64(0), "for.elemnn");
+    llvm::Value *clamp = b.CreateSelect(
+        elemNonNeg, b.getInt64(INT64_MAX), b.getInt64(INT64_MIN), "for.clamp");
+    llvm::Value *advanced = b.CreateSelect(ovf, clamp, sum, "for.advanced");
+    b.CreateStore(advanced, currentSlot);
+    // Bind the loop var to the element as an INTEGER runtime value (Rt_IntValue.get(res)).
+    b.CreateStore(ec.packInteger(element), varSlot);
+
+    {
+        // break -> afterBB, continue -> condBB (re-test hasNext; advance already happened above).
+        LoopScope loop(*fl, afterBB, condBB);
+        if (!lowerStmt(ec, *body)) return false;
+    }
+    if (!currentBlockTerminated(ec)) b.CreateBr(condBB);
+
+    b.SetInsertPoint(afterBB);
+    return true;
+}
+
+// =====================================================================================
 // Update / Delete — SQL writes routed to the JVM interpreter via sql_bridge.
 //
 // DETERMINISM / SQL: an UPDATE/DELETE generates PostgreSQL through DbSqlGen and runs against the
@@ -727,20 +1346,15 @@ bool lowerStmt(EmitContext &ec, const ir::Stmt &stmt) {
             return lowerDbWrite(ec, stmt);
 
         case ir::StmtUnion_WhenStatement:
-            // DETERMINISM: WhenStatement dispatch (IterativeWhenChooser / LookupWhenChooser) is a
-            // value-keyed multi-way branch whose chooser lowering (key compare, lookup-table
-            // semantics, else handling) is not reproduced here; a wrong branch is a consensus
-            // divergence. Route the whole function to the JVM. (A later pass may lower the
-            // iterative chooser as a chain of CmpInfo branches once the chooser overlay exists.)
-            return ec.fail("WhenStatement: chooser lowering not implemented (soft-fail)");
+            // Lowered with the SAME chooser semantics + inline-key restriction as WhenExpr (reusing
+            // lower_expr.cpp's whenKeyTypeInlineComparable/emitWhenInlineEq). Non-inline key (text/
+            // decimal/...), or a chooser shape we can't reduce to inline equality, soft-fails inside.
+            return lowerWhenStmt(ec, *stmt.stmt_as_WhenStatement());
 
         case ir::StmtUnion_ForStatement:
-            // DETERMINISM: For iterates an arbitrary iterable via IterableAdapterKind (DIRECT /
-            // LEGACY_MAP) — collections, ranges, maps — whose iteration order and per-element
-            // adaptation are JVM iterator semantics. Reproducing the iterator inline (and the
-            // per-element HANDLE marshalling) risks order/semantic divergence; soft-fail until a
-            // JNI-iterator-backed lowering exists. Whole function -> JVM.
-            return ec.fail("ForStatement: iterable lowering not implemented (soft-fail)");
+            // Native ONLY for DIRECT iteration over an integer RANGE (bit-exact with Rt_RangeValue's
+            // RangeIterator); for-over-collection / LEGACY_MAP / non-simple loop var soft-fails inside.
+            return lowerForStmt(ec, *stmt.stmt_as_ForStatement());
 
         case ir::StmtUnion_LambdaStatement:
             // DETERMINISM: a lambda-binding statement captures args into a frame block and runs a

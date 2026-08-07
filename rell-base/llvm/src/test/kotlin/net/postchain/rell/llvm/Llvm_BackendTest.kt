@@ -69,14 +69,16 @@ class Llvm_BackendTest {
     }
 
     @Test
-    fun `non-integer body falls back to the tree-walker`() {
+    fun `text body is JITed via the value ABI`() {
+        // text is admitted to the value ABI (P12: isTextType / arena TEXT carrier), so a text-literal
+        // body lowers natively and round-trips through to_jvm — it no longer forces a soft-fail.
         val (backend, exeCtx) = setup("function greet(): text = 'hello';")
         val fn = backend.rrApp.module(ModuleName.EMPTY)!!.functions["greet"]!!
         val result = backend.callFunction(fn, exeCtx, listOf())
 
         assertEquals("hello", (result as Rt_TextValue).value)
-        assertEquals(0, backend.jitHits)
-        assertEquals(1, backend.jitMisses)
+        assertEquals(1, backend.jitHits)
+        assertEquals(0, backend.jitMisses)
     }
 
     @Test

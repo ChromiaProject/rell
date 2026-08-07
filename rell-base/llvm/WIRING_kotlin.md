@@ -19,9 +19,12 @@ Ground truth this spec was written against:
 - `Llvm_Backend.delegate` is the wrapped `Rt_InterpreterImpl`; `outerInterp = this` is already wired.
 
 Naming note: the native side (`rell_runtime.h` §5) calls the JVM dispatch class
-**`Llvm_SysBridge`** with method **`dispatch(I[Ljava/lang/Object;J)Ljava/lang/Object;`**. The Kotlin
-class/method names below MUST match those JNI descriptors exactly — do not rename without updating
-the C++.
+**`Llvm_SysBridge`** with method **`dispatch`**. Because Kotlin does NOT erase `Array<Rt_Value>` /
+`Rt_Value` to `Object[]` / `Object`, the real JVM descriptor is
+**`(I[Lnet/postchain/rell/base/runtime/Rt_Value;J)Lnet/postchain/rell/base/runtime/Rt_Value;`** — the
+native `GetStaticMethodID` and the boxed-args `NewObjectArray` element class must both be Rt_Value-
+typed. The Kotlin class/method names below MUST match those JNI descriptors exactly — do not rename
+without updating the C++.
 
 ---
 
@@ -164,8 +167,10 @@ object Llvm_SysBridge {
     /**
      * Native entry: invoke the stdlib function interned at [sysfnId] with the reboxed [args].
      *
-     * Native JNI signature MUST be `dispatch(I[Ljava/lang/Object;J)Ljava/lang/Object;` — the
-     * `args` come boxed as `Object[]` of `Rt_Value`, the `ctxHandle` is the call-env handle. The
+     * Native JNI signature MUST be the Rt_Value-typed descriptor Kotlin actually compiles this to:
+     * `dispatch(I[Lnet/postchain/rell/base/runtime/Rt_Value;J)Lnet/postchain/rell/base/runtime/Rt_Value;`
+     * (Kotlin does NOT erase `Array<Rt_Value>`/`Rt_Value` to `Object[]`/`Object`). The `args` come
+     * boxed as an `Rt_Value[]`, the `ctxHandle` is the call-env handle. The
      * returned `Rt_Value` is unwrapped by `from_jvm` on the native side. Any `Rt_Exception` thrown
      * by the sysfn propagates out across JNI unchanged (the native trampoline aborts on the pending
      * exception — see `rell_runtime.h` §7).

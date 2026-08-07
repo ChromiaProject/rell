@@ -181,7 +181,7 @@ extern "C" RellValue rell_db_eval_expr(JNIEnv *env, DbNodeId nodeId, RellCallCtx
     // result through PopLocalFrame so the global ref the arena now owns is the survivor (the local
     // is discarded). from_jvm itself can leave a pending exception only via the hard-fault path,
     // which it raises as a Java exception; re-check after the pop to be safe.
-    RellValue value = from_jvm(env, *ctx->arena, result);
+    RellValue value = from_jvm(env, *ctx->arena, result, ctx->frameHandle);
     env->PopLocalFrame(nullptr);
     if (exceptionPending(env)) return rv_none();
     return value;

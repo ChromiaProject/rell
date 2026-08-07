@@ -84,27 +84,58 @@ namespace rell::llvm_rt {
 // goes through JNI.
 llvm::Value *intrinsicText(EmitContext &ec, ir::BinaryOp op, llvm::Value *a, llvm::Value *b,
                            bool *escaped) {
-    (void)ec;
-    (void)a;
-    (void)b;
+    // UPDATE (text became a native value-ABI carrier): the file header above predates the TEXT carrier.
+    // text now crosses the value ABI as an arena-owned TEXT carrier (a UTF-16 code-unit buffer; value.cpp
+    // from_jvm/to_jvm), so this overlay's operands carry RellTag::TEXT, NOT a HANDLE. CONCAT_TEXT is now
+    // a NATIVE buffer splice (rell_text_concat), bit-exact with rt_ops.kt R_BinaryOp_Concat_Text
+    // (Rt_TextValue.get(a.value + b.value)) — String concatenation is a pure code-unit splice. The
+    // non-trivial String stdlib ops (sub/upper_case/format/index_of/char_at/...) still route through the
+    // JVM via lower_call.cpp's rell_sysfn_call (the single source of truth for those semantics).
+    if (escaped == nullptr) {
+        return ec.failExpr("intrinsicText: null escaped sink");
+    }
+    if (a == nullptr || b == nullptr) {
+        *escaped = false;
+        return ec.failExpr("intrinsicText: null operand");
+    }
 
-    // The only BinaryOp that ever reaches the text overlay is CONCAT_TEXT (rt_ops.kt
-    // "R_BinaryOp_Concat_Text" -> Rt_TextValue.get(left.value + right.value)). Equality
-    // (EQ/NE) and comparisons (CmpInfo with cmp_type == TEXT) are dispatched elsewhere by
-    // lower_ops and likewise routed to the JVM. Anything else arriving here is a caller bug,
-    // but the safe response is identical: escape to the universal caller, never mis-lower.
     switch (op) {
-        case ir::BinaryOp_CONCAT_TEXT:
-            // DETERMINISM: java.lang.String concatenation is unambiguous, but materializing it
-            // needs a JNI round-trip anyway (GetStringChars + NewString + Rt_TextValue.get) with
-            // no compute win, and the result must re-enter the arena as a HANDLE. Route through
-            // rell_sysfn_call so the JVM stdlib owns the operation.
-            *escaped = true;
-            return nullptr;
+        case ir::BinaryOp_CONCAT_TEXT: {
+            // NATIVE concat on the TEXT carriers (value.cpp from_jvm cracks every text to a TEXT carrier,
+            // so both operands carry a native UTF-16 buffer). rell_text_concat splices a fresh arena
+            // buffer (a-units ++ b-units) and returns the result. Bit-exact with rt_ops.kt
+            // R_BinaryOp_Concat_Text (Rt_TextValue.get(a.value + b.value)). NOT escaped.
+            *escaped = false;
+            llvm::IRBuilder<> &ib = ec.builder();
+            auto *ptrTy = llvm::PointerType::getUnqual(ec.ctx());
+            llvm::StructType *valTy = ec.valueType();
+
+            llvm::Function *fn = ib.GetInsertBlock()->getParent();
+            llvm::IRBuilder<> entryB(&fn->getEntryBlock(), fn->getEntryBlock().begin());
+            llvm::Value *aSlot = entryB.CreateAlloca(valTy, nullptr, "txt_cat_a");
+            llvm::Value *bSlot = entryB.CreateAlloca(valTy, nullptr, "txt_cat_b");
+            llvm::Value *outSlot = entryB.CreateAlloca(valTy, nullptr, "txt_cat_out");
+            ib.CreateStore(a, aSlot);
+            ib.CreateStore(b, bSlot);
+
+            // The hidden trailing ctx pointer (last arg) — rell_text_concat allocates in its arena.
+            llvm::Value *ctx = nullptr;
+            if (!fn->arg_empty()) ctx = fn->getArg(fn->arg_size() - 1);
+            if (ctx == nullptr) {
+                return ec.failExpr("intrinsicText concat: no enclosing function ctx arg");
+            }
+
+            // void rell_text_concat(ptr out, ptr ctx, ptr a, ptr b)
+            auto *fnTy = llvm::FunctionType::get(llvm::Type::getVoidTy(ec.ctx()),
+                                                 {ptrTy, ptrTy, ptrTy, ptrTy}, /*isVarArg=*/false);
+            llvm::FunctionCallee callee = ec.module().getOrInsertFunction("rell_text_concat", fnTy);
+            ib.CreateCall(callee, {outSlot, ctx, aSlot, bSlot});
+            return ib.CreateLoad(valTy, outSlot, "txt_cat");
+        }
 
         default:
-            // Any non-concat text BinaryOp (should not occur — text equality/comparison do not
-            // come through here) is conservatively escaped, never approximated.
+            // Any non-concat text BinaryOp (should not occur — text equality/comparison are handled in
+            // lower_ops.cpp, not here) is conservatively escaped, never approximated.
             *escaped = true;
             return nullptr;
     }

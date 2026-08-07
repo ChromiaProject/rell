@@ -174,10 +174,15 @@ inline std::string to_json(const GtvPtr &v, bool support_big_integer = false) {
     return to_json(*v, support_big_integer);
 }
 
-// JSON text -> Gtv, mirroring GtvAdapter.deserialize:
-//   bool -> GtvInteger(0/1); number -> GtvInteger (must be an exact long, else GtvError);
+// JSON text -> Gtv, mirroring GtvAdapter.deserialize (via PostchainGtvUtils.jsonToGtv):
+//   bool -> GtvInteger(0/1); number -> GtvInteger via BigDecimal.longValueExact() — any
+//     number whose VALUE is an exact int64 is accepted regardless of textual form
+//     ("1.0", "1e2", "100.00" -> 1/100/100); non-integer value or out-of-range -> GtvError;
 //   string -> GtvString; array -> GtvArray; object -> GtvDictionary (keys sorted);
-//   null -> GtvNull. Never produces GtvByteArray or GtvBigInteger.
+//   null AND blank/empty input -> GtvNull. Never produces GtvByteArray or GtvBigInteger.
+// FIDELITY: this is a strict JSON parser; Gson's fromJson is lenient (single-quoted
+//   strings, unquoted keys, NaN/Infinity, leading '+'). That narrowed acceptance is a
+//   documented, not-fixed gap (review H1) — see rell_gtv.cpp from_json().
 GtvPtr from_json(const std::string &json);
 
 // Runs the inline encode/decode/json test vectors. Returns true on success; prints the

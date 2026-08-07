@@ -87,14 +87,42 @@ llvm::Value *intrinsicByteArray(EmitContext &ec, ir::BinaryOp op, llvm::Value *a
     }
 
     switch (op) {
-        case ir::BinaryOp_CONCAT_BYTE_ARRAY:
-            // DETERMINISM: defer to the JVM Bytes.concat (Rt_ByteArrayValue) via the universal JNI
-            // caller. Both operands are opaque HANDLEs with no native buffer to splice, and concat
-            // is consensus-critical: it enforces the Gtv/length size envelope, preserves exact byte
-            // order, and applies empty-operand identity. Reproducing any of that in C++ would
-            // duplicate canonical logic with no payload advantage. Escape to rell_sysfn_call.
-            *escaped = true;
-            return nullptr;
+        case ir::BinaryOp_CONCAT_BYTE_ARRAY: {
+            // NATIVE concat on the BYTEARRAY carriers (value.cpp from_jvm cracks every byte_array to a
+            // BYTEARRAY, so both operands carry a native buffer). rell_bytearray_concat splices a fresh
+            // arena buffer (a-bytes ++ b-bytes) and returns the result. Bit-exact with rt_ops.kt
+            // R_BinaryOp_Concat_ByteArray (Rt_ByteArrayValue.get(a.value + b.value)); the `+` operator
+            // has NO size envelope (size constraints are a struct/entity-attribute concern), so a pure
+            // native splice reproduces it exactly. NOT escaped.
+            *escaped = false;
+            llvm::IRBuilder<> &ib = ec.builder();
+            auto *ptrTy = llvm::PointerType::getUnqual(ec.ctx());
+            llvm::StructType *valTy = ec.valueType();
+
+            llvm::Function *fn = ib.GetInsertBlock()->getParent();
+            llvm::IRBuilder<> entryB(&fn->getEntryBlock(), fn->getEntryBlock().begin());
+            llvm::Value *aSlot = entryB.CreateAlloca(valTy, nullptr, "ba_cat_a");
+            llvm::Value *bSlot = entryB.CreateAlloca(valTy, nullptr, "ba_cat_b");
+            llvm::Value *outSlot = entryB.CreateAlloca(valTy, nullptr, "ba_cat_out");
+            ib.CreateStore(a, aSlot);
+            ib.CreateStore(b, bSlot);
+
+            // The hidden trailing ctx pointer (last arg) — rell_bytearray_concat allocates in its arena.
+            llvm::Value *ctx = nullptr;
+            if (!fn->arg_empty()) ctx = fn->getArg(fn->arg_size() - 1);
+            if (ctx == nullptr) {
+                *escaped = false;
+                return ec.failExpr("intrinsicByteArray concat: no enclosing function ctx arg");
+            }
+
+            // void rell_bytearray_concat(ptr out, ptr ctx, ptr a, ptr b)
+            auto *fnTy = llvm::FunctionType::get(llvm::Type::getVoidTy(ec.ctx()),
+                                                 {ptrTy, ptrTy, ptrTy, ptrTy}, /*isVarArg=*/false);
+            llvm::FunctionCallee callee =
+                ec.module().getOrInsertFunction("rell_bytearray_concat", fnTy);
+            ib.CreateCall(callee, {outSlot, ctx, aSlot, bSlot});
+            return ib.CreateLoad(valTy, outSlot, "ba_cat");
+        }
 
         default:
             // Comparisons (==, !=, <, <=, >, >=) on byte_array do NOT arrive here: equality is

@@ -21,7 +21,7 @@
 //      RellCallCtx, it: pushes a JNI local frame; reboxes each arg to a jobject Rt_Value via
 //      to_jvm() into a java/lang/Object[]; (re)attaches the current thread to the cached g_vm if
 //      it has no JNIEnv; invokes the cached static JVM entry
-//      Llvm_SysBridge.dispatch(I[Ljava/lang/Object;J)Ljava/lang/Object; with
+//      Llvm_SysBridge.dispatch(I[Lnet/postchain/rell/base/runtime/Rt_Value;J)L..Rt_Value; with
 //      (sysfnId, args, frameHandle); ExceptionChecks (on a pending Rt_Exception it returns
 //      rv_none() WITHOUT clearing — the JIT trampoline unwinds, §7); and otherwise unwraps the
 //      single Rt_Value result via from_jvm(), adopt()-ing an escaping result into ctx->arena.
@@ -83,7 +83,7 @@ namespace {
 std::once_flag g_sysBridgeInit;
 jclass g_sysBridgeClass = nullptr;   // global ref to net/postchain/rell/llvm/Llvm_SysBridge
 jmethodID g_dispatchMethod = nullptr;
-jclass g_objectClass = nullptr;      // global ref to java/lang/Object (boxed-args element type)
+jclass g_rtValueClass = nullptr;     // global ref to Rt_Value (boxed-args array element type)
 std::string g_sysBridgeInitError;
 
 // Resolve a class by name and promote it to a global ref. Returns nullptr (clearing any pending
@@ -112,8 +112,12 @@ void initSysBridgeOnce(JNIEnv *env) {
             resolveGlobalClass(env, "net/postchain/rell/llvm/Llvm_SysBridge", "Llvm_SysBridge class not found");
         if (bridgeCls == nullptr) return;
 
-        jmethodID mid = env->GetStaticMethodID(bridgeCls, "dispatch",
-                                               "(I[Ljava/lang/Object;J)Ljava/lang/Object;");
+        // Kotlin does NOT erase `Array<Rt_Value>` / `Rt_Value` to `Object[]` / `Object`: the real
+        // JVM descriptor of `dispatch(Int, Array<Rt_Value>, Long): Rt_Value` is the Rt_Value-typed
+        // one below. Looking up the Object-typed descriptor returns null -> "method not found".
+        jmethodID mid = env->GetStaticMethodID(
+            bridgeCls, "dispatch",
+            "(I[Lnet/postchain/rell/base/runtime/Rt_Value;J)Lnet/postchain/rell/base/runtime/Rt_Value;");
         if (mid == nullptr) {
             if (env->ExceptionCheck() == JNI_TRUE) env->ExceptionClear();
             env->DeleteGlobalRef(bridgeCls);
@@ -121,15 +125,18 @@ void initSysBridgeOnce(JNIEnv *env) {
             return;
         }
 
-        jclass objCls = resolveGlobalClass(env, "java/lang/Object", "java/lang/Object class not found");
-        if (objCls == nullptr) {
+        // The args array passed to dispatch must be a real Rt_Value[] (not Object[]) — the JVM
+        // verifies the array's component type against the `Array<Rt_Value>` parameter.
+        jclass rtValueCls =
+            resolveGlobalClass(env, "net/postchain/rell/base/runtime/Rt_Value", "Rt_Value class not found");
+        if (rtValueCls == nullptr) {
             env->DeleteGlobalRef(bridgeCls);
             return;
         }
 
         g_sysBridgeClass = bridgeCls;
         g_dispatchMethod = mid;
-        g_objectClass = objCls;
+        g_rtValueClass = rtValueCls;
     });
 }
 
@@ -173,7 +180,7 @@ extern "C" RellValue rell_sysfn_call(JNIEnv *env, SysFnId sysfnId, const RellVal
     }
 
     initSysBridgeOnce(env);
-    if (g_dispatchMethod == nullptr || g_sysBridgeClass == nullptr || g_objectClass == nullptr) {
+    if (g_dispatchMethod == nullptr || g_sysBridgeClass == nullptr || g_rtValueClass == nullptr) {
         throwRuntime(env, ("rell_sysfn_call: " +
                            (g_sysBridgeInitError.empty() ? std::string("dispatch unavailable")
                                                          : g_sysBridgeInitError))
@@ -191,8 +198,8 @@ extern "C" RellValue rell_sysfn_call(JNIEnv *env, SysFnId sysfnId, const RellVal
         return rv_none();
     }
 
-    // ---- box each RellValue arg into the Object[] -----------------------------------------
-    jobjectArray boxed = env->NewObjectArray(static_cast<jsize>(nargs), g_objectClass, nullptr);
+    // ---- box each RellValue arg into the Rt_Value[] ---------------------------------------
+    jobjectArray boxed = env->NewObjectArray(static_cast<jsize>(nargs), g_rtValueClass, nullptr);
     if (boxed == nullptr) {
         // OOM (pending exception) — pop the frame, leave the exception set, unwind.
         env->PopLocalFrame(nullptr);
@@ -204,7 +211,7 @@ extern "C" RellValue rell_sysfn_call(JNIEnv *env, SysFnId sysfnId, const RellVal
         // directly; SetObjectArrayElement creates its own internal ref, so we don't transfer
         // ownership). Inline factories (Rt_IntValue.get, the long-scale decimal ctor, ...) can
         // throw Rt_Exception (decimal overflow, negative rowid); §7 requires an ExceptionCheck.
-        jobject elem = to_jvm(env, *ctx->arena, args[i]);
+        jobject elem = to_jvm(env, *ctx->arena, args[i], ctx->frameHandle);
         if (env->ExceptionCheck() == JNI_TRUE) {
             // DETERMINISM: a factory-thrown Rt_Exception is a genuine Rell runtime error. Do NOT
             // clear it. Pop the frame (PopLocalFrame is exception-tolerant) and unwind so the JVM
@@ -244,7 +251,7 @@ extern "C" RellValue rell_sysfn_call(JNIEnv *env, SysFnId sysfnId, const RellVal
     // -ed into a HANDLE. A null result jobject where a value is required is a hard ABI fault
     // (from_jvm raises throwIllegalArgument): a well-formed R_SysFunction always returns an
     // Rt_Value (Rt_NullValue/Rt_UnitValue for void-ish), never a Java null.
-    RellValue out = from_jvm(env, *ctx->arena, resultObj);
+    RellValue out = from_jvm(env, *ctx->arena, resultObj, ctx->frameHandle);
 
     // from_jvm's own factory/helper back-calls (BigInteger.bitLength, Tf_LongScaleDecimal.tryFrom)
     // can leave a pending exception on a malformed value; honour §7 before returning.

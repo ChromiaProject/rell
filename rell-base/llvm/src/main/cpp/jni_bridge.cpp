@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -38,6 +39,7 @@
 
 #include "app_generated.h"
 #include "rell_numeric_ops.h"
+#include "rell_runtime.h"
 
 namespace ir = rell::ir;
 
@@ -224,11 +226,23 @@ namespace {
 // preserving consensus-identical behaviour. ADD/SUB/MUL/MINUS use llvm.{sadd,ssub,smul}.with.
 // overflow checks (and 0 - x for MINUS) and, on the overflow bit, call rell_int_overflow into this
 // channel before producing the wrapped value (which is then discarded by the pending check).
+//
+// The same channel also carries integer DIVISION-BY-ZERO (the `/` and `%` operators), which the
+// interpreter raises as Rt_Exception("expr:/:div0:<a>" / "expr:%:div0:<a>") — a DISTINCT code from
+// overflow. `kind` discriminates the two so pollIntOverflow can format the right code. This is what
+// lets a NESTED inline div/mod (intrinsics_integer.cpp) record its error and be caught by the same
+// poll the top-level op uses, rather than surfacing as a bare RuntimeException or a silent 0.
+// Enumerator is OVF, not OVERFLOW: <math.h> on the macOS SDK defines `#define OVERFLOW 3`, and that
+// macro is pulled in transitively when this TU is compiled, which would mangle the enumerator.
+enum class IntErrKind : uint8_t { OVF, DIV0 };
+
 struct IntOverflowState {
     bool pending = false;
-    char op = 0;       // '+', '-', '*'  (binary), or 'n' for unary negate
+    IntErrKind kind = IntErrKind::OVF;
+    char op = 0;       // overflow: '+','-','*' (binary), 'n' (unary negate), 'a' (integer.abs);
+                       // div0: '/' or '%'
     int64_t a = 0;
-    int64_t b = 0;
+    int64_t b = 0;     // div0 / unary / abs: unused (the interpreter's message embeds only `a`)
 };
 
 thread_local IntOverflowState g_intOverflow;
@@ -237,14 +251,165 @@ thread_local IntOverflowState g_intOverflow;
 
 // Back-call invoked by JIT'd integer arithmetic when an operation overflows. Records the operator
 // and operands so the JVM can raise the precise Rt_Exception. Must be extern "C" so the JIT's
-// process-symbol generator can resolve it by name. `op` is one of '+','-','*' (binary) or 'n'
-// (unary negate); for 'n' only `a` is meaningful.
+// process-symbol generator can resolve it by name. `op` is one of '+','-','*' (binary), 'n'
+// (unary negate) or 'a' (integer.abs); for 'n'/'a' only `a` is meaningful. First writer wins so the
+// outermost (earliest) failing op in an expression tree is the one reported, matching the
+// interpreter's eager evaluation order.
 extern "C" void rell_int_overflow(char op, int64_t a, int64_t b) {
     if (!g_intOverflow.pending) {
         g_intOverflow.pending = true;
+        g_intOverflow.kind = IntErrKind::OVF;
         g_intOverflow.op = op;
         g_intOverflow.a = a;
         g_intOverflow.b = b;
+    }
+}
+
+// Back-call invoked by JIT'd integer `/` or `%` when the divisor is zero. Records the operator and
+// dividend so the JVM raises Rt_Exception("expr:<op>:div0:<a>"), identical to evalIntArith
+// (rt_ops.kt). `op` is '/' or '%'. Extern "C" for JIT symbol resolution. First writer wins.
+extern "C" void rell_int_div0(char op, int64_t a) {
+    if (!g_intOverflow.pending) {
+        g_intOverflow.pending = true;
+        g_intOverflow.kind = IntErrKind::DIV0;
+        g_intOverflow.op = op;
+        g_intOverflow.a = a;
+        g_intOverflow.b = 0;
+    }
+}
+
+// --- JIT envelope-escape channel (decimal / big_integer long-fit fast paths) -------------------
+//
+// Distinct from the integer-error channel: an escape is NOT a Rell error, it is "this native fast
+// path left the long-fit envelope at RUNTIME (a wide HANDLE operand, an i64 mantissa overflow, a
+// scale-alignment overflow, or a DIV/MOD whose semantics only the JVM owns), so the WHOLE call must
+// re-run on the interpreter to stay bit-exact." JIT'd decimal/big_integer ops call rell_jit_escape()
+// on the escape edge and still produce a defined (meaningless) result; callValueFunction observes the
+// pending flag and signals the JVM to re-run via Rt_InterpreterImpl. This is the deterministic floor:
+// a native result is committed ONLY when no escape fired, so nothing ever wraps into consensus.
+//
+// Per-thread, matching the per-thread JNI invocation. First writer wins is irrelevant (it is a bare
+// flag with no payload), but we keep the set idempotent for clarity.
+namespace {
+thread_local bool g_jitEscape = false;
+}  // namespace
+
+// Back-call invoked by JIT'd decimal/big_integer arithmetic (and comparison) when an operand or an
+// intermediate leaves the long-fit envelope at runtime. Records the escape so callValueFunction
+// re-runs the call on the interpreter. extern "C" for the JIT's process-symbol generator.
+extern "C" void rell_jit_escape() { g_jitEscape = true; }
+
+// --- JIT list-error channel (out-of-bounds subscript) ------------------------------------------
+//
+// A list subscript OOB is a genuine Rell error (Rt_Exception), distinct from an envelope escape.
+// rell_list_get records (size, index) here and returns rv_none(); callValueFunction polls it after
+// the native run and raises the EXACT interpreter Rt_Exception (Rt_ListValue.checkIndex code/message)
+// via Llvm_Backend, identical to rr_interpreter.kt's ListSubscript. Channelling it (rather than a JNI
+// throw inside the native frame) keeps the OOB run COUNTED as a JIT hit — mirroring the integer-error
+// channel, whose comment notes a throw would otherwise escape callFunction's jitHits++. Per-thread,
+// first writer wins (the eagerly-first OOB in evaluation order is the one the interpreter would raise).
+namespace {
+struct ListErrState {
+    bool pending = false;
+    int32_t size = 0;
+    int64_t index = 0;
+};
+thread_local ListErrState g_listError;
+}  // namespace
+
+// Back-call invoked by JIT'd list subscript when the index is out of bounds. extern "C" for the JIT's
+// process-symbol generator. First writer wins so the earliest failing subscript is reported.
+extern "C" void rell_list_index_error(int32_t size, int64_t index) {
+    if (!g_listError.pending) {
+        g_listError.pending = true;
+        g_listError.size = size;
+        g_listError.index = index;
+    }
+}
+
+// --- JIT byte-array-error channel (out-of-bounds subscript) ------------------------------------
+//
+// A byte_array subscript OOB is a genuine Rell error (Rt_Exception) with a DIFFERENT code/message
+// from the list one (rr_interpreter.kt ByteArraySubscript: code "expr_bytearray_subscript_index:
+// <size>:<index>", msg "Byte array index out of range: <index> (size <size>)"), so it needs its own
+// channel. rell_bytearray_get records (size, index) here and returns rv_none(); callValueFunction
+// polls it after the native run and raises the EXACT Rt_Exception via Llvm_Backend. Channelling it
+// (rather than a JNI throw inside the native frame) keeps the OOB run COUNTED as a JIT hit — mirroring
+// the list-error channel. Per-thread, first writer wins.
+namespace {
+struct ByteArrayErrState {
+    bool pending = false;
+    int32_t size = 0;
+    int64_t index = 0;
+};
+thread_local ByteArrayErrState g_byteArrayError;
+}  // namespace
+
+// Back-call invoked by JIT'd byte_array subscript when the index is out of bounds. extern "C" for the
+// JIT's process-symbol generator. First writer wins so the earliest failing subscript is reported.
+extern "C" void rell_bytearray_index_error(int32_t size, int64_t index) {
+    if (!g_byteArrayError.pending) {
+        g_byteArrayError.pending = true;
+        g_byteArrayError.size = size;
+        g_byteArrayError.index = index;
+    }
+}
+
+// --- JIT text-error channel (out-of-bounds subscript) ------------------------------------------
+//
+// A text subscript OOB is a genuine Rell error (Rt_Exception) with its OWN code/message
+// (rr_interpreter.kt TextSubscript: code "expr_text_subscript_index:<len>:<index>", msg "Index out of
+// bounds: <index> (length <len>)"), distinct from the byte_array one ("Byte array index out of range")
+// and the list one, so it needs its own channel. rell_text_get records (len, index) here and returns
+// rv_none(); callValueFunction polls it after the native run and raises the EXACT Rt_Exception via
+// Llvm_Backend. Channelling it (rather than a JNI throw inside the native frame) keeps the OOB run
+// COUNTED as a JIT hit — mirroring the byte-array-error channel. Per-thread, first writer wins.
+namespace {
+struct TextErrState {
+    bool pending = false;
+    int32_t len = 0;
+    int64_t index = 0;
+};
+thread_local TextErrState g_textError;
+}  // namespace
+
+// Back-call invoked by JIT'd text subscript when the index is out of bounds. extern "C" for the JIT's
+// process-symbol generator. First writer wins so the earliest failing subscript is reported.
+extern "C" void rell_text_index_error(int32_t len, int64_t index) {
+    if (!g_textError.pending) {
+        g_textError.pending = true;
+        g_textError.len = len;
+        g_textError.index = index;
+    }
+}
+
+// --- JIT general text-op error channel (char_at / sub / index_of/2 / repeat custom Rt_Exceptions) ----
+//
+// Unlike the text-SUBSCRIPT channel (fixed "expr_text_subscript_index" code + a rebuilt message), the
+// member text ops raise EXCEPTIONS with op-specific codes AND messages (lib_type_text.kt: e.g.
+// "fn:text.sub:range:<len>:<start>:<end>" / "Invalid range: ...", "fn:text.char_at:index:..." /
+// "Index out of bounds: ...", "fn:text.repeat:n_negative:<n>" / "Negative count: <n>"). Rebuilding
+// those JVM-side from a packed numeric tuple would fork the message format per op — drift-prone
+// consensus logic. So this channel carries the FULL code + message strings the native helper built
+// (matching the Kotlin source verbatim); pollTextOpError hands BOTH back and Kotlin raises
+// Rt_Exception.common(code, message) directly. Per-thread, first writer wins (the earliest failing op).
+namespace {
+struct TextOpErrState {
+    bool pending = false;
+    std::string code;
+    std::string message;
+};
+thread_local TextOpErrState g_textOpError;
+}  // namespace
+
+// Back-call invoked by a JIT'd member text op (rell_text_sub*/char_at/index_of_from/repeat) on its error
+// path. extern "C" for the JIT's process-symbol generator. First writer wins. `code`/`message` are the
+// EXACT Rt_Exception code/message strings the native helper built (UTF-16-free ASCII/text; copied here).
+extern "C" void rell_text_op_error(const char *code, const char *message) {
+    if (!g_textOpError.pending) {
+        g_textOpError.pending = true;
+        g_textOpError.code = code != nullptr ? code : "";
+        g_textOpError.message = message != nullptr ? message : "";
     }
 }
 
@@ -1610,10 +1775,11 @@ Java_net_postchain_rell_llvm_RellLlvmNative_callI64Function(JNIEnv *env, jobject
     return static_cast<jlong>(result);
 }
 
-// Reports whether the most recent callI64Function overflowed and, if so, the exact Rell error code
-// for the raised Rt_Exception (`expr:<op>:overflow:<a>:<b>` for binary, `expr:-:overflow:<v>` for
-// unary negate). Returns null when there was no overflow. Clears the channel. The Kotlin caller
-// raises the Rt_Exception so the error object is consensus-identical to the tree-walker's.
+// Reports whether the most recent callI64Function hit an integer arithmetic error and, if so, the
+// exact Rell error code for the raised Rt_Exception: `expr:<op>:overflow:<a>:<b>` for a binary
+// overflow, `expr:-:overflow:<v>` for unary-negate overflow, or `expr:<op>:div0:<a>` for `/`/`%`
+// by zero. Returns null when there was none. Clears the channel. The Kotlin caller raises the
+// Rt_Exception so the error object is consensus-identical to the tree-walker's.
 extern "C" JNIEXPORT jstring JNICALL
 Java_net_postchain_rell_llvm_RellLlvmNative_pollIntOverflow(JNIEnv *env, jobject) {
     if (!g_intOverflow.pending) return nullptr;
@@ -1621,13 +1787,98 @@ Java_net_postchain_rell_llvm_RellLlvmNative_pollIntOverflow(JNIEnv *env, jobject
     g_intOverflow.pending = false;
 
     std::string code;
-    if (st.op == 'n') {
+    if (st.kind == IntErrKind::DIV0) {
+        // evalIntArith (rt_ops.kt): `/` -> "expr:/:div0:<a>", `%` -> "expr:%:div0:<a>".
+        code = std::string("expr:") + st.op + ":div0:" + std::to_string(st.a);
+    } else if (st.op == 'n') {
         code = "expr:-:overflow:" + std::to_string(st.a);
+    } else if (st.op == 'a') {
+        // Lib_Math.Abs_Integer (lib_math.kt): abs(Long.MIN_VALUE) -> "abs:integer:overflow:<v>".
+        code = "abs:integer:overflow:" + std::to_string(st.a);
     } else {
         code = std::string("expr:") + st.op + ":overflow:" + std::to_string(st.a) + ":" +
                std::to_string(st.b);
     }
     return env->NewStringUTF(code.c_str());
+}
+
+// Reports whether the most recent callValueFunction escaped the long-fit decimal/big_integer
+// envelope at runtime (and therefore returned a null result that the JVM must re-run on the
+// interpreter). Clears the channel. Thread-local, like pollIntOverflow.
+extern "C" JNIEXPORT jboolean JNICALL
+Java_net_postchain_rell_llvm_RellLlvmNative_pollJitEscape(JNIEnv *, jobject) {
+    const bool escaped = g_jitEscape;
+    g_jitEscape = false;
+    return escaped ? JNI_TRUE : JNI_FALSE;
+}
+
+// Reports whether the most recent callValueFunction hit a list out-of-bounds subscript and, if so,
+// the EXACT Rell error code the interpreter's Rt_ListValue.checkIndex raises:
+// "list:index:<size>:<index>". Returns null when there was none. Clears the channel. The Kotlin
+// caller raises the Rt_Exception so the error object is consensus-identical to the tree-walker's.
+extern "C" JNIEXPORT jstring JNICALL
+Java_net_postchain_rell_llvm_RellLlvmNative_pollListError(JNIEnv *env, jobject) {
+    if (!g_listError.pending) return nullptr;
+    const ListErrState st = g_listError;
+    g_listError.pending = false;
+    const std::string code =
+        "list:index:" + std::to_string(st.size) + ":" + std::to_string(st.index);
+    return env->NewStringUTF(code.c_str());
+}
+
+// Reports whether the most recent callValueFunction hit a byte_array out-of-bounds subscript and, if
+// so, the EXACT Rell error code the interpreter's ByteArraySubscript raises:
+// "expr_bytearray_subscript_index:<size>:<index>". Returns null when there was none. Clears the
+// channel. The Kotlin caller raises the Rt_Exception so the error object is consensus-identical to the
+// tree-walker's (it rebuilds the message "Byte array index out of range: <index> (size <size>)" from
+// the code's fields).
+extern "C" JNIEXPORT jstring JNICALL
+Java_net_postchain_rell_llvm_RellLlvmNative_pollByteArrayError(JNIEnv *env, jobject) {
+    if (!g_byteArrayError.pending) return nullptr;
+    const ByteArrayErrState st = g_byteArrayError;
+    g_byteArrayError.pending = false;
+    const std::string code = "expr_bytearray_subscript_index:" + std::to_string(st.size) + ":" +
+                             std::to_string(st.index);
+    return env->NewStringUTF(code.c_str());
+}
+
+// Reports whether the most recent callValueFunction hit a text out-of-bounds subscript and, if so, the
+// EXACT Rell error code the interpreter's TextSubscript raises:
+// "expr_text_subscript_index:<len>:<index>". Returns null when there was none. Clears the channel. The
+// Kotlin caller raises the Rt_Exception so the error object is consensus-identical to the tree-walker's
+// (it rebuilds the message "Index out of bounds: <index> (length <len>)" from the code's fields).
+extern "C" JNIEXPORT jstring JNICALL
+Java_net_postchain_rell_llvm_RellLlvmNative_pollTextError(JNIEnv *env, jobject) {
+    if (!g_textError.pending) return nullptr;
+    const TextErrState st = g_textError;
+    g_textError.pending = false;
+    const std::string code =
+        "expr_text_subscript_index:" + std::to_string(st.len) + ":" + std::to_string(st.index);
+    return env->NewStringUTF(code.c_str());
+}
+
+// Reports whether the most recent callValueFunction hit a member text-op error (char_at / sub /
+// index_of/2 / repeat) and, if so, returns a String[2] = {code, message} with the EXACT strings the
+// native helper built (verbatim from lib_type_text.kt). Returns null when there was none. Clears the
+// channel. The Kotlin caller raises Rt_Exception.common(code, message) so the error object is consensus-
+// identical to the tree-walker's.
+extern "C" JNIEXPORT jobjectArray JNICALL
+Java_net_postchain_rell_llvm_RellLlvmNative_pollTextOpError(JNIEnv *env, jobject) {
+    if (!g_textOpError.pending) return nullptr;
+    const std::string code = g_textOpError.code;
+    const std::string message = g_textOpError.message;
+    g_textOpError.pending = false;
+    g_textOpError.code.clear();
+    g_textOpError.message.clear();
+    jclass stringCls = env->FindClass("java/lang/String");
+    if (stringCls == nullptr) return nullptr;
+    jobjectArray arr = env->NewObjectArray(2, stringCls, nullptr);
+    if (arr == nullptr) return nullptr;
+    jstring jCode = env->NewStringUTF(code.c_str());
+    jstring jMsg = env->NewStringUTF(message.c_str());
+    env->SetObjectArrayElement(arr, 0, jCode);
+    env->SetObjectArrayElement(arr, 1, jMsg);
+    return arr;
 }
 
 // Compile a pure-decimal function (decimal return + decimal params, body = return <decimal arith>)
@@ -1746,6 +1997,719 @@ Java_net_postchain_rell_llvm_RellLlvmNative_callDecimalFunction(
     }
     rell_num_pool_reset();
     if (pending) { throwRuntime(env, errMsg.c_str()); return nullptr; }
+    return out;
+}
+
+// =====================================================================================
+// Extended value-ABI: compileFunctionExtended + callValueFunction.
+//
+// These are the value-ABI siblings of compileFunctionByIndex / callI64Function. Instead of the
+// prototype's i64(i64*) slice, they lower a function to the full-runtime callee ABI
+// (rell_runtime.h §6 / lower_call.cpp's userCalleeType): a function that returns a RellValue by
+// value and takes (ptr args /*RellValue[]*/, ptr ctx /*RellCallCtx*/). Over the SAME deterministic
+// RR-tree walk the lowerer performs, every reachable stdlib fn name is interned into the function's
+// SysFnTable and every DbAt/ColAt/Update/Delete node into its DbNodeTable; the JVM consumes the
+// id-ordered name list (and the db-node count) to build the dense dispatch arrays the native
+// rell_sysfn_call / SQL back-calls mirror by index.
+//
+// The soft-fail contract matches compileFunctionByIndex exactly: a body outside the lowerable
+// envelope returns 0 (out-params untouched); only hard ABI/JIT faults throw.
+// =====================================================================================
+
+namespace {
+
+namespace lrt = rell::llvm_rt;
+
+// The opaque CompiledFn record a compileFunctionExtended handle points at. Heap-allocated; the
+// non-zero handle is the record pointer cast to jlong. Owns the per-function interning tables that
+// callValueFunction threads into the RellCallCtx so back-calls index the same id spaces the JVM
+// built its dense arrays from.
+struct CompiledFn {
+    void *fnPtr = nullptr;       // JIT'd RellValue(*)(const RellValue*, lrt::RellCallCtx*).
+    int32_t paramCount = 0;      // arity (for the JVM-side args.size guard; defensive here too).
+    lrt::SysFnTable sysFns;      // dense sysfn name->id table; names() is id-ordered.
+    lrt::DbNodeTable dbNodes;    // dense db-node interning; size() is the node count.
+    lrt::ListTypeTable listTypes;  // dense list-literal-type interning; size() is the count.
+};
+
+// The JNI-entry callee IR type. The body computes a RellValue, but it is returned through a
+// hidden caller-allocated result pointer (`sret`), NOT by value: `void(ptr result, ptr args,
+// ptr ctx)`. Rationale: a by-value `{i8,i32,i64}` IR aggregate return is lowered by LLVM with its
+// own first-class-aggregate convention, which does NOT agree with the platform C ABI Clang uses
+// for the C++ `RellValue` POD (on AArch64 the two-register vs indirect return classification
+// differs) — so a C++ `RellValue(*)(...)` caller reads back a correct tag but a zeroed payload.
+// An sret pointer is ABI-stable: the body stores the full 16-byte RellValue, the C++ side reads it
+// straight out of its own stack slot. This entry is only ever called from C++ (callValueFunction),
+// so it intentionally differs from lower_call.cpp's by-value userCalleeType, which governs the
+// LLVM-to-LLVM user-call path where both sides share the JIT data layout and agree by construction.
+llvm::FunctionType *valueCalleeType(llvm::LLVMContext &ctx, llvm::Module &module) {
+    auto *ptrTy = llvm::PointerType::getUnqual(ctx);
+    (void)module;
+    return llvm::FunctionType::get(llvm::Type::getVoidTy(ctx), {ptrTy, ptrTy, ptrTy},
+                                   /*isVarArg=*/false);
+}
+
+// Up-front type gate for the value-ABI compile entry. Returns true iff the function is inside the
+// PROVEN-bit-exact envelope: the return type and EVERY parameter type is integer or boolean (the
+// i64 oracle's isIntOrBoolType set, extended for boolean per Llvm_ValueAbiGateTest), and no param
+// carries a default expression (a default-valued arg is resolved by the interpreter, not marshalled
+// across — matching the i64 Lowerer's `param has default expression` soft-fail). On a miss it sets
+// `errOut` and returns false; the caller soft-fails the whole function. This is a CHEAP cut before
+// any IR is emitted. ADMITTED: integer/boolean/decimal/big_integer/enum/struct/list (round-tripped
+// natively or via the inline lattice) and set/map (opaque HANDLE pass-through — see
+// isSetMapHandleType). EXCLUDED (still run on the interpreter, the correctness floor): tuple
+// (structural, not def-index-addressable), entity/object/virtual/gtv/json/range/text/byte_array and
+// any nullable signature — exactly as the i64 path defers everything non-int.
+// True iff `type` is the primitive decimal or big_integer type. These join integer/boolean in the
+// value-ABI envelope: their long-fit slice (DEC_LONG / BIGINT_LONG) is carried inline by the value
+// ABI, and any value outside that slice (a wide HANDLE) makes the JIT'd body ESCAPE at runtime
+// (rell_jit_escape -> the JVM re-runs the call). So a decimal/big_integer signature is admissible —
+// correctness is preserved by the runtime escape, not by rejecting the type up front.
+bool isDecimalOrBigIntegerType(const ir::Type *type) {
+    if (type == nullptr) return false;
+    const auto *prim = type->type_as_PrimitiveType();
+    if (prim == nullptr) return false;
+    return prim->kind() == ir::PrimitiveTypeKind_DECIMAL ||
+           prim->kind() == ir::PrimitiveTypeKind_BIG_INTEGER;
+}
+
+// True iff `type` is an enum type. Enums are carried inline by the value ABI (ENUM tag, payload =
+// Int ordinal, `scale` = enum-type index); from_jvm cracks and to_jvm reboxes via Llvm_SysBridge,
+// and EQ/NE/<><=/when compare the ordinal (bit-exact with rt_ops.kt R_CmpType_Enum). So an
+// enum-typed param/return/local is admissible — no runtime escape needed (enums never exceed the
+// inline envelope: an ordinal always fits i64).
+bool isEnumType(const ir::Type *type) {
+    return type != nullptr && type->type_type() == ir::TypeUnion_EnumType;
+}
+
+// True iff `type` is a (non-virtual) struct type WHOSE ATTRIBUTE TYPES are themselves value-ABI-
+// reboxable. A struct param/return crosses the value ABI as a COMPOSITE carrying its
+// RR_App.allStructs def-index (value.cpp from_jvm/to_jvm), so from_jvm∘to_jvm rebuilds the EXACT
+// Rt_StructValue (mirroring the enum rebox). Fields marshal RECURSIVELY through to_jvm — so a struct
+// with a tuple-typed attribute would build a tuple COMPOSITE field cell that to_jvm CANNOT
+// reconstruct (it hard-faults: tuple types are structural, not def-index-addressable). Gate that out
+// here by requiring every attribute type to be in the same admissible set (transitively, mirroring
+// isListType's element recursion), so `struct { x: integer }` / `struct { s: other_struct }` pass but
+// `struct { v: (integer,text) }` (and any struct transitively containing a tuple) soft-fails to the
+// interpreter. A TUPLE itself is deliberately NOT admitted: tuple types are structural, so a tuple
+// param/return cannot be reconstructed by index — it stays an interpreter case (a tuple is only ever
+// an in-body INTERMEDIATE, constructed + field-read, never reboxed).
+// `visited` tracks struct def-indices on the current recursion path so a legally recursive struct
+// (`struct s { x: list<s>; }`) terminates instead of looping. A back-edge to an in-progress struct
+// is treated as admissible (true) — the cycle does not introduce any new attribute type to gate, and
+// the runtime carrier is a finite COMPOSITE graph that to_jvm walks node-by-node.
+bool isStructType(const ir::App *app, const ir::Type *type, std::set<uint32_t> &visited);
+
+bool isValueAbiScalarType(const ir::App *app, const ir::Type *type,
+                          std::set<uint32_t> &visited);  // fwd: list/struct recurse.
+
+bool isStructType(const ir::App *app, const ir::Type *type) {
+    std::set<uint32_t> visited;
+    return isStructType(app, type, visited);
+}
+
+bool isValueAbiScalarType(const ir::App *app, const ir::Type *type) {
+    std::set<uint32_t> visited;
+    return isValueAbiScalarType(app, type, visited);
+}
+
+// True iff `type` is a (non-virtual) list type WHOSE ELEMENT TYPE is itself value-ABI-reboxable. A
+// list param/return crosses the value ABI as an arena-owned LIST carrying a global-ref to its JVM
+// Rt_ValueClass type (value.cpp from_jvm/to_jvm); from_jvm∘to_jvm rebuilds the EXACT Rt_ListValue and
+// marshals each element RECURSIVELY. A body-constructed ListLiteral builds the LIST natively, its
+// elements lowered inline — so a `list<(...)>` (tuple element) would build tuple COMPOSITE cells the
+// rebox path CANNOT reconstruct (to_jvm hard-faults on a tuple COMPOSITE: tuple types are structural,
+// not def-index-addressable). Gate that out here by requiring the element type to be in the same
+// admissible set, so `list<integer>` / `list<struct>` / `list<list<integer>>` pass but `list<tuple>`
+// (and any list transitively containing a tuple) soft-fails to the interpreter. List EQUALITY / stdlib
+// member-ops still soft-fail inside the lowering (the by-value rell_sysfn_call return ABI is not yet
+// sret). Set/Map ARE admitted but via a DIFFERENT mechanism — opaque HANDLE pass-through, NOT this
+// native LIST carrier (see isSetMapHandleType). VirtualList is NOT admitted (it stays a HANDLE).
+bool isListType(const ir::App *app, const ir::Type *type, std::set<uint32_t> &visited) {
+    if (type == nullptr || type->type_type() != ir::TypeUnion_ListType) return false;
+    const auto *lt = type->type_as_ListType();
+    return lt != nullptr && isValueAbiScalarType(app, lt->element(), visited);
+}
+
+// True iff `type` is a (non-virtual) set or map type. UNLIKE list/struct, a set/map crosses the
+// value ABI as an OPAQUE HANDLE (value.cpp from_jvm adopts the whole Rt_SetValue/Rt_MapValue as a
+// tracked global ref; to_jvm for a HANDLE hands that SAME global ref straight back). So the round
+// trip is the IDENTICAL JVM object — from_jvm∘to_jvm is trivially identity, with NO re-encoding of
+// elements, iteration order, key equality, hashing, or gtv. That is the whole reason we do NOT need
+// (and do NOT do) element-type recursion here the way isListType/isStructType do: the HANDLE is
+// never inspected, indexed, or reconstructed natively, so a set/map of ANY element type (decimal,
+// struct, nested collection, ...) is admissible as a signature.
+//
+// CONSENSUS-CRITICAL — why HANDLE, not a native container (the conservative decision, documented):
+//   Rt_MapValue (rt_value_map.kt) wraps whatever MutableMap it is built from; the literal path
+//   (rr_interpreter.kt MapLiteral) uses mutableMapOf() == LinkedHashMap (INSERTION ORDER). Rt_SetValue
+//   (rt_value_set.kt) wraps a MutableSet; the set() constructor uses mutableSetOf() == LinkedHashSet
+//   (INSERTION ORDER). Iteration order is OBSERVABLE (gtv array/dict encoding, for-iteration, str/
+//   to_gtv) and key identity is Rt_Value.equals/hashCode (delegated to the backing collection). A
+//   native C++ container would have to reproduce JVM LinkedHashMap/LinkedHashSet iteration order AND
+//   Rt_Value.hashCode()/equals() for EVERY value type bit-for-bit — which is NOT provable (it would
+//   require re-deriving the JVM hashCode of decimal/bigint/struct/gtv/nested-collection keys in C++).
+//   Per the correctness floor (rell_runtime.h: when a native behavior cannot be PROVEN bit-exact,
+//   keep it a HANDLE that routes through the JVM), we keep set/map as HANDLEs. The win is purely the
+//   GATE: a function with a set/map-typed param/return/local no longer forces a WHOLE-function soft-
+//   fail — it JITs its surrounding control flow while the set/map FLOWS as an opaque HANDLE.
+//
+//   Map/set OPERATIONS still soft-fail inside the body lowering (so a function that actually
+//   operates on the set/map is interpreter-run, never wrong): map subscript `m[k]` (MapSubscriptExpr)
+//   and map literals `[k:v]` (MapLiteralExpr) hit the lowerExpr default soft-fail; membership `k in m`
+//   / `m.size()` / `s.contains()` route through the stdlib back-call which soft-fails the whole
+//   function (the rell_sysfn_call by-value return ABI is not yet sret — lower_call.cpp); for-over-
+//   set/map uses the LEGACY_MAP/non-DIRECT iterable adapter which soft-fails (lower_stmt.cpp). So
+//   admitting a set/map signature does NOT weaken correctness — those bodies fall back to the JVM.
+bool isSetMapHandleType(const ir::Type *type) {
+    if (type == nullptr) return false;
+    const auto t = type->type_type();
+    return t == ir::TypeUnion_SetType || t == ir::TypeUnion_MapType;
+}
+
+// The full value-ABI envelope admitted UP FRONT: integer / boolean (proven i64), decimal /
+// big_integer (long-fit inline with runtime escape for the wide slice), enum (inline ordinal),
+// struct (def-index COMPOSITE round-trip), list (Rt_ValueClass-typeRef LIST carrier), and set/map
+// (opaque HANDLE pass-through). Body-level lowering additionally soft-fails any construct it cannot
+// reproduce bit-exactly (composite equality/to_gtv, list/map literals + map subscript, set/map
+// member-ops, set/map iteration, sizeConstraint'd struct create, mutable struct attr assignment,
+// etc.), so admitting these signatures does NOT weaken correctness — those bodies still fall back
+// to the interpreter.
+// True iff `type` is the primitive byte_array type. A byte_array param/return/local crosses the value
+// ABI as an arena-owned BYTEARRAY carrier (value.cpp from_jvm/to_jvm): from_jvm copies the bytes into
+// an arena buffer, to_jvm rebuilds the EXACT Rt_ByteArrayValue (via Rt_ByteArrayValue.get), so
+// from_jvm∘to_jvm is content-identity. byte_array is a pure value type with no element recursion, so —
+// unlike list — there is nothing to gate transitively. Native ops (constant / subscript / .size() /
+// == / != / </<=/>/>= / concat) are bit-exact; non-trivial stdlib ops (.to_hex/.sub/sha256/from_hex)
+// route through the JVM (rell_sysfn_call), which soft-fails the function today (still bit-exact — the
+// interpreter runs it). So admitting a byte_array signature does NOT weaken correctness.
+bool isByteArrayType(const ir::Type *type) {
+    if (type == nullptr) return false;
+    const auto *prim = type->type_as_PrimitiveType();
+    return prim != nullptr && prim->kind() == ir::PrimitiveTypeKind_BYTE_ARRAY;
+}
+
+// True iff `type` is the primitive text type. A text param/return/local crosses the value ABI as an
+// arena-owned TEXT carrier (a UTF-16 code-unit buffer; value.cpp from_jvm/to_jvm): from_jvm copies the
+// String's code units into an arena buffer, to_jvm rebuilds the EXACT Rt_TextValue (via Rt_TextValue.get),
+// so from_jvm∘to_jvm is content-identity (Rt_TextValue.equals == String content equality). text is a pure
+// value type with no element recursion (like byte_array). Native ops (constant / subscript / .size() /
+// == / != / </<=/>/>= / concat) are bit-exact (UTF-16 code-unit semantics, matching java.lang.String);
+// non-trivial String stdlib ops (sub/upper_case/format/char_at/index_of/to_bytes/...) route through the
+// JVM (rell_sysfn_call), which soft-fails the function today (still bit-exact — the interpreter runs it).
+// A @size-constrained text param soft-fails via the type-agnostic size_constraint check in
+// valueAbiTypeGate (the validator runs on the interpreter). So admitting a text signature is correctness-
+// preserving.
+bool isTextType(const ir::Type *type) {
+    if (type == nullptr) return false;
+    const auto *prim = type->type_as_PrimitiveType();
+    return prim != nullptr && prim->kind() == ir::PrimitiveTypeKind_TEXT;
+}
+
+bool isValueAbiScalarType(const ir::App *app, const ir::Type *type, std::set<uint32_t> &visited) {
+    return isIntOrBoolType(type) || isDecimalOrBigIntegerType(type) || isEnumType(type) ||
+           isStructType(app, type, visited) || isListType(app, type, visited) ||
+           isSetMapHandleType(type) || isByteArrayType(type) || isTextType(type);
+}
+
+bool isStructType(const ir::App *app, const ir::Type *type, std::set<uint32_t> &visited) {
+    if (type == nullptr || type->type_type() != ir::TypeUnion_StructType) return false;
+    const auto *st = type->type_as_StructType();
+    if (st == nullptr || app == nullptr) return false;
+    const auto *structs = app->structs();
+    const uint32_t defIndex = st->def_index();
+    if (structs == nullptr || defIndex >= structs->size()) return false;
+    // Back-edge to an in-progress struct on this path: admissible (no new attribute type to gate).
+    if (!visited.insert(defIndex).second) return true;
+    const auto *structDef = structs->Get(defIndex);
+    if (structDef == nullptr) { visited.erase(defIndex); return false; }
+    const auto *attrs = structDef->attributes();
+    if (attrs == nullptr) { visited.erase(defIndex); return false; }
+    // Every attribute type must be reboxable too (to_jvm marshals struct fields recursively); a tuple-
+    // typed attribute would build a tuple COMPOSITE cell to_jvm cannot reconstruct. Mirrors isListType.
+    bool ok = true;
+    for (flatbuffers::uoffset_t i = 0; i < attrs->size(); ++i) {
+        const auto *a = attrs->Get(i);
+        if (a == nullptr || !isValueAbiScalarType(app, a->type(), visited)) { ok = false; break; }
+    }
+    visited.erase(defIndex);
+    return ok;
+}
+
+bool valueAbiTypeGate(
+    const ir::App *app,
+    const ir::Type *retType,
+    const ::flatbuffers::Vector<::flatbuffers::Offset<ir::FunctionParam>> *params,
+    std::string &errOut) {
+    if (!isValueAbiScalarType(app, retType)) {
+        errOut = "value-ABI gate: return type is not integer/boolean/decimal/big_integer/enum/struct/list/set/map";
+        return false;
+    }
+    for (flatbuffers::uoffset_t i = 0; i < params->size(); ++i) {
+        const auto *p = params->Get(i);
+        if (p == nullptr) {
+            errOut = "value-ABI gate: null FunctionParam";
+            return false;
+        }
+        if (!isValueAbiScalarType(app, p->type())) {
+            errOut = "value-ABI gate: a parameter type is not integer/boolean/decimal/big_integer/enum/struct/list/set/map";
+            return false;
+        }
+        if (p->default_expr() != nullptr) {
+            errOut = "value-ABI gate: parameter has a default expression";
+            return false;
+        }
+        // CORRECTNESS FLOOR / oracle parity: a @size/@min_size/@max_size-constrained parameter is
+        // validated by the interpreter in callFunction/callQuery/callOperation (rr_interpreter.kt
+        // validateParams -> checkSizeConstraint, raising "...:validator:size:too_small/too_large").
+        // The value-ABI prologue copies args straight into param slots and emits NO validator, so a
+        // JIT'd body would silently accept an out-of-range arg (e.g. s(x'') returning the value
+        // instead of raising too_small). byte_array becoming value-ABI-eligible (P11) exposed this;
+        // text-typed twins never hit it because text is not in the gate. Soft-fail the WHOLE function
+        // so the interpreter runs it and applies the validator. Type-agnostic by design: covers every
+        // current and future constrained-param type the gate admits.
+        if (p->size_constraint() != nullptr) {
+            errOut = "value-ABI gate: parameter has a size constraint (validator runs on interpreter)";
+            return false;
+        }
+    }
+    return true;
+}
+
+}  // namespace
+
+// compileFunctionExtended — see the section header. Lowers functions[functionIndex] to the
+// value-ABI and returns an opaque CompiledFn handle, filling the id-ordered sysfn name list and
+// the db-node count for the JVM dispatch-array build.
+extern "C" JNIEXPORT jlong JNICALL
+Java_net_postchain_rell_llvm_RellLlvmNative_compileFunctionExtended(
+    JNIEnv *env, jobject, jbyteArray appBytes, jint functionIndex, jobject outSysFnNames,
+    jintArray outDbNodeCount, jintArray outListTypeCount) {
+    if (appBytes == nullptr) {
+        throwIllegalArgument(env, "appBytes is null");
+        return 0;
+    }
+    if (functionIndex < 0) {
+        throwIllegalArgument(env, "functionIndex is negative");
+        return 0;
+    }
+    if (outSysFnNames == nullptr || outDbNodeCount == nullptr || outListTypeCount == nullptr) {
+        throwIllegalArgument(env, "out-params are null");
+        return 0;
+    }
+
+    initJitOnce();
+    if (!g_jit) {
+        throwRuntime(env, ("LLJIT init failed: " + g_jitInitError).c_str());
+        return 0;
+    }
+
+    const jsize length = env->GetArrayLength(appBytes);
+    if (length <= 0) {
+        throwIllegalArgument(env, "appBytes is empty");
+        return 0;
+    }
+    jbyte *raw = env->GetByteArrayElements(appBytes, nullptr);
+    if (raw == nullptr) return 0;
+
+    std::lock_guard<std::mutex> lock(g_jitMutex);
+
+    // The compiled record is built on the lowering thread and only published (returned) on success.
+    auto compiled = std::make_unique<CompiledFn>();
+    std::string fnName;
+    std::string err;
+    bool softFail = false;
+    {
+        flatbuffers::Verifier verifier(reinterpret_cast<const uint8_t *>(raw),
+                                       static_cast<size_t>(length));
+        if (!ir::VerifyAppBuffer(verifier)) {
+            env->ReleaseByteArrayElements(appBytes, raw, JNI_ABORT);
+            throwIllegalArgument(env, "FlatBuffers verification failed");
+            return 0;
+        }
+        const auto *app = ir::GetApp(raw);
+        const auto *functions = app->functions();
+        if (functions == nullptr || static_cast<uint32_t>(functionIndex) >= functions->size()) {
+            env->ReleaseByteArrayElements(appBytes, raw, JNI_ABORT);
+            throwIllegalArgument(env, "functionIndex out of range");
+            return 0;
+        }
+        const auto *fnDef = functions->Get(functionIndex);
+        if (fnDef == nullptr) {
+            env->ReleaseByteArrayElements(appBytes, raw, JNI_ABORT);
+            throwRuntime(env, "FunctionDefinition is null");
+            return 0;
+        }
+        if (fnDef->is_test()) {
+            softFail = true;
+            err = "test functions are not JITed";
+        } else {
+            const auto *body = fnDef->body();
+            if (body == nullptr) {
+                softFail = true;
+                err = "abstract function (no body)";
+            } else {
+                const auto *params = body->params();
+                const auto *paramPtrs = body->param_ptrs();
+                const auto *bodyStmt = body->body();
+                if (params == nullptr || paramPtrs == nullptr ||
+                    paramPtrs->size() != params->size() || bodyStmt == nullptr) {
+                    softFail = true;
+                    err = "function body missing params/param_ptrs/body";
+                } else if (!valueAbiTypeGate(app, body->type(), params, err)) {
+                    // CORRECTNESS FLOOR / oracle parity: the value path admits a RETURN and every
+                    // PARAM type in the proven-bit-exact envelope (valueAbiTypeGate /
+                    // isValueAbiScalarType): integer/boolean (i64 oracle), decimal/big_integer (long-
+                    // fit inline + runtime escape), enum (inline ordinal), struct (def-index COMPOSITE),
+                    // list (Rt_ValueClass-typeRef carrier), and set/map (opaque HANDLE pass-through —
+                    // from_jvm∘to_jvm is the identical JVM instance). A tuple/entity/object/virtual/gtv/
+                    // json/range/text/byte_array/nullable param or return reaches a value rep the path
+                    // cannot reproduce bit-exactly, so we soft-fail the WHOLE function here (before
+                    // emitting any IR) and let the interpreter run it. Body-level constructs the path
+                    // cannot reproduce (stdlib calls, db, div/mod, composite consts/locals, map/set
+                    // literals + subscript + member-ops + iteration) additionally soft-fail inside the
+                    // lowering; this gate is the cheap up-front cut.
+                    softFail = true;  // err set by valueAbiTypeGate.
+                } else {
+                    auto ctx = std::make_unique<llvm::LLVMContext>();
+                    auto module = std::make_unique<llvm::Module>("rell_jit_val", *ctx);
+                    module->setDataLayout(g_jit->getDataLayout());
+                    module->setTargetTriple(g_jit->getTargetTriple());
+
+                    const uint64_t id = g_fnCounter.fetch_add(1);
+                    fnName = "rell_val_fn_" + std::to_string(id);
+                    compiled->paramCount = static_cast<int32_t>(params->size());
+
+                    llvm::IRBuilder<> builder(*ctx);
+                    lrt::EmitContext ec(*ctx, *module, builder, *app, compiled->sysFns,
+                                        compiled->dbNodes, compiled->listTypes, err);
+
+                    // Function: void @<name>(ptr %result, ptr %args, ptr %ctx). `result` is the
+                    // caller-allocated sret slot the body stores its RellValue into; `args` points
+                    // at a contiguous RellValue[paramCount]; `ctx` is the trailing RellCallCtx*
+                    // every back-call site (currentCtxArg in lower_call.cpp, which reads the LAST
+                    // arg) recovers. The sret form sidesteps the by-value aggregate-return ABI
+                    // mismatch between LLVM's IR convention and the C++ RellValue POD.
+                    auto *fnTy = valueCalleeType(*ctx, *module);
+                    auto *fn = llvm::Function::Create(fnTy, llvm::Function::ExternalLinkage, fnName,
+                                                      module.get());
+                    llvm::Value *resultPtr = fn->getArg(0);
+                    resultPtr->setName("result");
+                    llvm::Value *argsPtr = fn->getArg(1);
+                    argsPtr->setName("args");
+                    fn->getArg(2)->setName("ctx");
+
+                    // Register THIS function as the self-recursion target so lower_call.cpp can emit
+                    // a direct self-call (the only cross-call the i64 oracle supports too). The index
+                    // is this body's App.functions index; a RegularUser fn_def_index() equal to it
+                    // is provably the same function.
+                    ec.setSelfFunction(fn, fnTy, static_cast<int>(functionIndex));
+
+                    auto *entry = llvm::BasicBlock::Create(*ctx, "entry", fn);
+                    builder.SetInsertPoint(entry);
+
+                    // Prologue: copy each incoming RellValue arg into a per-param entry-block alloca
+                    // registered in ec.slots() keyed on {block_uid, offset} — the SAME key space
+                    // VarStatement/VarExpr use, so a param read resolves to its slot. The slot type
+                    // is valueType() ({i8,i32,i64}); a per-element GEP into the args array loads it.
+                    auto *valTy = ec.valueType();
+                    for (flatbuffers::uoffset_t i = 0; i < paramPtrs->size(); ++i) {
+                        const auto *vp = paramPtrs->Get(i);
+                        if (vp == nullptr) {
+                            err = "null param VarPtr";
+                            softFail = true;
+                            break;
+                        }
+                        auto *slot = builder.CreateAlloca(valTy, nullptr, "p" + std::to_string(i));
+                        auto *src = builder.CreateInBoundsGEP(
+                            valTy, argsPtr, builder.getInt64(i), "arg_slot_" + std::to_string(i));
+                        builder.CreateStore(
+                            builder.CreateLoad(valTy, src, "arg_" + std::to_string(i)), slot);
+                        ec.slots()[{vp->block_uid(), vp->offset()}] = slot;
+                    }
+
+                    if (!softFail) {
+                        llvm::Value *returnSlot = nullptr;
+                        llvm::BasicBlock *returnBlock = nullptr;
+                        if (!lrt::lowerFunctionBody(ec, *bodyStmt, &returnSlot, &returnBlock)) {
+                            softFail = true;  // ec set `err`.
+                        } else if (returnBlock == nullptr) {
+                            // No explicit ReturnStatement was lowered. The value-ABI requires every
+                            // path to return a value; a fall-off-end (unit) body has no value-slot
+                            // to read. We never emit an undef/poison return — soft-fail to the JVM.
+                            err = "value function has no return path";
+                            softFail = true;
+                        } else {
+                            // The body converged every explicit return into the shared returnBlock
+                            // (storing into returnSlot). Capture whether the body's straight-line
+                            // tail is still unterminated BEFORE we move the builder to returnBlock:
+                            // an unterminated tail means a path can fall off the end without
+                            // returning, which we cannot prove bit-exact — soft-fail rather than
+                            // emit UB. (We check the tail block's terminator, not returnBlock's.)
+                            const bool tailUnterminated =
+                                builder.GetInsertBlock()->getTerminator() == nullptr;
+                            if (tailUnterminated) {
+                                err = "value function may fall off end without return";
+                                softFail = true;
+                            } else {
+                                builder.SetInsertPoint(returnBlock);
+                                builder.CreateStore(
+                                    builder.CreateLoad(valTy, returnSlot, "ret"), resultPtr);
+                                builder.CreateRetVoid();
+                            }
+                        }
+                    }
+
+                    if (!softFail) {
+                        std::string verifyErr;
+                        llvm::raw_string_ostream verifyOs(verifyErr);
+                        if (llvm::verifyFunction(*fn, &verifyOs)) {
+                            err = "verifier: " + verifyErr;
+                            softFail = true;
+                        }
+                    }
+
+                    if (!softFail) {
+                        auto tsm = llvm::orc::ThreadSafeModule(
+                            std::move(module), llvm::orc::ThreadSafeContext(std::move(ctx)));
+                        if (auto addErr = g_jit->addIRModule(std::move(tsm))) {
+                            err = "addIRModule: " + llvm::toString(std::move(addErr));
+                            softFail = false;  // hard failure path
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    env->ReleaseByteArrayElements(appBytes, raw, JNI_ABORT);
+
+    if (softFail) {
+        // Soft fail: leave out-params untouched, Kotlin falls back to the interpreter. No exception.
+        return 0;
+    }
+    if (!err.empty()) {
+        throwRuntime(env, ("Llvm_Lowerer (extended): " + err).c_str());
+        return 0;
+    }
+
+    auto symOrErr = g_jit->lookup(fnName);
+    if (!symOrErr) {
+        throwRuntime(
+            env,
+            ("Llvm_Lowerer (extended): lookup failed: " + llvm::toString(symOrErr.takeError()))
+                .c_str());
+        return 0;
+    }
+    compiled->fnPtr = reinterpret_cast<void *>(static_cast<uintptr_t>(symOrErr->getValue()));
+
+    // Fill the out-params ONLY now that compilation succeeded (soft-fail leaves them untouched).
+    // outSysFnNames : java.util.ArrayList<String> — append each interned name in dense SysFnId order.
+    {
+        jclass arrayListCls = env->FindClass("java/util/ArrayList");
+        if (arrayListCls == nullptr) {
+            throwRuntime(env, "java/util/ArrayList not found");
+            return 0;
+        }
+        jmethodID addMid = env->GetMethodID(arrayListCls, "add", "(Ljava/lang/Object;)Z");
+        env->DeleteLocalRef(arrayListCls);
+        if (addMid == nullptr) {
+            throwRuntime(env, "ArrayList.add(Object) not found");
+            return 0;
+        }
+        const auto &names = compiled->sysFns.names();
+        for (const std::string &name : names) {
+            jstring js = env->NewStringUTF(name.c_str());
+            if (js == nullptr) {
+                // OOM pending; let it propagate (do not leak the record — it is not yet published).
+                return 0;
+            }
+            env->CallBooleanMethod(outSysFnNames, addMid, js);
+            env->DeleteLocalRef(js);
+            if (env->ExceptionCheck() == JNI_TRUE) return 0;  // propagate (e.g. wrong list type).
+        }
+    }
+
+    // outDbNodeCount[0] = db-node table size.
+    {
+        if (env->GetArrayLength(outDbNodeCount) < 1) {
+            throwIllegalArgument(env, "outDbNodeCount must have length >= 1");
+            return 0;
+        }
+        jint count = static_cast<jint>(compiled->dbNodes.size());
+        env->SetIntArrayRegion(outDbNodeCount, 0, 1, &count);
+        if (env->ExceptionCheck() == JNI_TRUE) return 0;
+    }
+
+    // outListTypeCount[0] = list-type table size. The JVM re-walks the function body RR tree in the
+    // SAME deterministic pre-order to build the dense Array<Rt_ValueClass> of list-literal types that
+    // Llvm_SysBridge.listType indexes — the count lets it size that array and assert walk-order parity.
+    {
+        if (env->GetArrayLength(outListTypeCount) < 1) {
+            throwIllegalArgument(env, "outListTypeCount must have length >= 1");
+            return 0;
+        }
+        jint count = static_cast<jint>(compiled->listTypes.size());
+        env->SetIntArrayRegion(outListTypeCount, 0, 1, &count);
+        if (env->ExceptionCheck() == JNI_TRUE) return 0;
+    }
+
+    // Publish the record: hand ownership to the JVM via the opaque handle. callValueFunction reads
+    // it back; there is currently no explicit free entry (the prototype caches handles for the
+    // process lifetime, matching the JIT'd code that also lives for the process lifetime).
+    return static_cast<jlong>(reinterpret_cast<uintptr_t>(compiled.release()));
+}
+
+// callValueFunction — invoke a previously-compiled value-ABI function. Opens a per-call RellArena,
+// unwraps each Rt_Value arg via from_jvm, threads `ctxHandle` as the hidden RellCallCtx so back-
+// calls (Llvm_SysBridge.dispatch / SQL) recover the live frame + sysfn table, runs the JIT'd body,
+// and reboxes the RellValue result via to_jvm. On a pending JVM exception from any back-call
+// (rell_runtime.h §7) it aborts and lets the exception propagate (returns null, exception pending).
+// The arena releases every global ref in all paths (RAII).
+extern "C" JNIEXPORT jobject JNICALL
+Java_net_postchain_rell_llvm_RellLlvmNative_callValueFunction(
+    JNIEnv *env, jobject, jlong fnHandle, jobjectArray args, jlong ctxHandle) {
+    if (fnHandle == 0) {
+        throwIllegalArgument(env, "function handle is null");
+        return nullptr;
+    }
+    if (args == nullptr) {
+        throwIllegalArgument(env, "args is null");
+        return nullptr;
+    }
+    auto *compiled = reinterpret_cast<CompiledFn *>(static_cast<uintptr_t>(fnHandle));
+    if (compiled->fnPtr == nullptr) {
+        throwIllegalArgument(env, "function handle has no compiled body");
+        return nullptr;
+    }
+
+    const jsize nargs = env->GetArrayLength(args);
+
+    // Per-call arena: owns every global ref from_jvm/to_jvm/back-calls adopt. RAII-released on every
+    // exit path below (normal return, exception-pending abort, hard fault) by the dtor.
+    lrt::RellArena arena(env);
+
+    // Unwrap each Rt_Value arg into a native RellValue. from_jvm adopt()s escaping handles into the
+    // arena. A factory/helper back-call inside from_jvm can leave a pending exception (§7); on that
+    // we abort and let it propagate (the arena dtor still runs).
+    std::vector<lrt::RellValue> argv(static_cast<size_t>(nargs));
+    for (jsize i = 0; i < nargs; ++i) {
+        jobject elem = env->GetObjectArrayElement(args, i);
+        if (env->ExceptionCheck() == JNI_TRUE) return nullptr;
+        argv[static_cast<size_t>(i)] = lrt::from_jvm(env, arena, elem, ctxHandle);
+        if (elem != nullptr) env->DeleteLocalRef(elem);
+        if (env->ExceptionCheck() == JNI_TRUE) return nullptr;
+    }
+
+    // The hidden trailing RellCallCtx. `frameHandle` is the opaque ctxHandle the JVM registry keys
+    // its live Llvm_CallEnv under; native code never dereferences it — it threads it straight back
+    // into Llvm_SysBridge.dispatch / the SQL bridge. The sysFns table is THIS function's interned
+    // table (its ids mirror the dense JVM dispatch array built from compileFunctionExtended's names).
+    lrt::RellCallCtx callCtx;
+    callCtx.env = env;
+    callCtx.arena = &arena;
+    callCtx.frameHandle = ctxHandle;
+    callCtx.sysFns = &compiled->sysFns;
+
+    // Clear the integer-arithmetic-error channel before running. JIT'd integer arithmetic in the
+    // value path (intrinsics_integer.cpp) records overflow/div0 into this thread-local channel and
+    // still stores a (wrapped, meaningless) RellValue into the sret slot — it does NOT poison the
+    // result. So unlike a back-call Rt_Exception, an integer error is invisible to the NONE check
+    // below; we must poll the channel explicitly and let Kotlin raise the exact Rt_Exception, the
+    // same contract callI64Function/invokeI64Native already use for the i64 path.
+    g_intOverflow.pending = false;
+    // Clear the envelope-escape channel: JIT'd decimal/big_integer long-fit fast paths set it when a
+    // runtime operand/intermediate leaves the envelope, so the JVM re-runs the call (see
+    // rell_jit_escape). Must be cleared before the run so a stale flag from a prior call can't make
+    // this one spuriously fall back.
+    g_jitEscape = false;
+    // Clear the list-error channel: JIT'd list subscript (rell_list_get) records an out-of-bounds
+    // index here and poisons its result; pollListError reads it after the run. Clear so a stale OOB
+    // from a prior call can't spuriously raise on this one.
+    g_listError.pending = false;
+    // Clear the byte-array-error channel for the same reason (JIT'd byte_array subscript records here).
+    g_byteArrayError.pending = false;
+    // Clear the text-error channel for the same reason (JIT'd text subscript records here via
+    // rell_text_get). A stale text OOB from a prior call must not leak into this one's result.
+    g_textError.pending = false;
+    // Clear the general text-op error channel (JIT'd member text ops record char_at/sub/index_of/2/
+    // repeat custom errors here). Same staleness guard.
+    g_textOpError.pending = false;
+
+    // The JIT'd entry returns its RellValue through a caller-allocated sret slot (see
+    // valueCalleeType): void(ptr result, ptr args, ptr ctx). Reading the result out of our own
+    // stack slot is ABI-stable, unlike a by-value 16-byte aggregate return.
+    using ValueFn = void (*)(lrt::RellValue *, const lrt::RellValue *, lrt::RellCallCtx *);
+    ValueFn fn = reinterpret_cast<ValueFn>(compiled->fnPtr);
+    lrt::RellValue result = lrt::rv_none();
+    fn(&result, nargs > 0 ? argv.data() : nullptr, &callCtx);
+
+    // §7: a back-call that raised an Rt_Exception leaves it pending and returns the NONE poison
+    // sentinel. Honour the pending exception first (it is the authoritative signal); abort with it
+    // set so the JVM sees the identical Rt_Exception the interpreter would have thrown.
+    if (env->ExceptionCheck() == JNI_TRUE) return nullptr;
+
+    // Envelope escape: a decimal/big_integer fast path left the long-fit envelope at runtime (wide
+    // HANDLE operand, mantissa/scale overflow, or DIV/MOD). The stored result is meaningless; return
+    // null with NO pending exception so invokeValueNative polls pollJitEscape() and re-runs the whole
+    // call on the interpreter (bit-exact). Checked before the int-overflow / NONE checks because an
+    // escaping op may also have produced a defined-but-junk result that is neither NONE nor flagged.
+    if (g_jitEscape) return nullptr;
+
+    // Integer overflow / div-by-zero recorded by the JIT'd body. The result slot holds the wrapped
+    // value (non-NONE), so this MUST be checked before reboxing. Return null with NO pending JVM
+    // exception: invokeValueNative polls pollIntOverflow() and raises the consensus-exact
+    // Rt_Exception, exactly as invokeI64Native does. (A genuine null Rt_Value can never be returned
+    // by a well-formed body — Rell null is the Rt_NullValue singleton — so null is unambiguous.)
+    if (g_intOverflow.pending) return nullptr;
+
+    // List subscript out of bounds recorded by the JIT'd body (rell_list_get). The result slot holds
+    // the NONE poison sentinel, so this MUST be checked before the generic NONE wiring-fault branch
+    // below — otherwise the OOB is misreported as a wiring fault. Return null with NO pending JVM
+    // exception: invokeValueNative polls pollListError() and raises the consensus-exact Rt_Exception
+    // (Rt_ListValue.checkIndex code/message), mirroring the int-overflow channel above.
+    if (g_listError.pending) return nullptr;
+
+    // byte_array subscript out of bounds recorded by the JIT'd body (rell_bytearray_get). Same poison/
+    // channel mechanism as the list case: return null with NO pending JVM exception so
+    // invokeValueNative polls pollByteArrayError() and raises the consensus-exact Rt_Exception
+    // (rr_interpreter.kt ByteArraySubscript code/message). Checked before the generic NONE branch.
+    if (g_byteArrayError.pending) return nullptr;
+
+    // text subscript out of bounds recorded by the JIT'd body (rell_text_get). Same poison/channel
+    // mechanism as the list/byte_array cases: return null with NO pending JVM exception so
+    // invokeValueNative polls pollTextError() and raises the consensus-exact Rt_Exception
+    // (expr_text_subscript_index code/message). Checked before the generic NONE wiring-fault branch.
+    if (g_textError.pending) return nullptr;
+
+    // General member text-op error recorded by the JIT'd body (rell_text_op_error from sub / char_at /
+    // index_of/2 / repeat). Same poison/channel mechanism: return null with NO pending JVM exception so
+    // invokeValueNative polls pollTextOpError() and raises the consensus-exact Rt_Exception (the op's
+    // exact code + message). Checked before the generic NONE wiring-fault branch.
+    if (g_textOpError.pending) return nullptr;
+
+    if (lrt::rv_is_none(result)) {
+        // NONE with no pending exception is a wiring fault (a back-call returned poison without
+        // setting an exception, or the body produced poison). Surface it rather than reboxing it.
+        throwRuntime(env, "callValueFunction: NONE/poison result with no pending exception");
+        return nullptr;
+    }
+
+    // Rebox the result. to_jvm returns a LOCAL ref (HANDLE returns the arena-owned global ref); the
+    // factory can throw (decimal overflow, negative rowid) — honour §7. The returned local ref
+    // outlives the arena teardown because it is in the caller's JNI frame, and a HANDLE result's
+    // backing global ref is owned by the arena only for the duration of this call — but the value
+    // we hand back must survive the arena dtor. For a HANDLE result we therefore re-localise it.
+    jobject out = lrt::to_jvm(env, arena, result, ctxHandle);
+    if (env->ExceptionCheck() == JNI_TRUE) return nullptr;
+    if (lrt::rv_is_handle(result) && out != nullptr) {
+        // The HANDLE's global ref is arena-owned and will be DeleteGlobalRef'd when `arena` goes out
+        // of scope at this function's return; promote a fresh LOCAL ref the caller's frame owns so
+        // the returned Rt_Value stays valid after the sweep.
+        jobject local = env->NewLocalRef(out);
+        out = local;
+    }
+    // arena dtor runs here (on return), releasing all tracked global refs.
     return out;
 }
 

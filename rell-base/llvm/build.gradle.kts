@@ -248,6 +248,14 @@ val buildNativeLibrary by tasks.registering(Exec::class) {
         // extern "C" handle-based native numeric ops the JIT'd code calls instead of
         // rell_sysfn_call — decimal/big_integer arithmetic with zero JVM callback.
         "rell_numeric_ops.cpp",
+        // Native crypto: self-contained FIPS 180-4 SHA-256 + Keccak-256 (0x01 pad, Ethereum)
+        // transcribed from the standards (bit-exact with lib_crypto.kt). Only the hashing entry
+        // points are wired into the JIT (lower_call.cpp); the file ALSO carries secp256k1 signing
+        // code that #includes <secp256k1.h> (compile-time only — see the -I below) and references
+        // libsecp256k1 symbols, which we deliberately DO NOT link. On macOS `-undefined
+        // dynamic_lookup` leaves those signing symbols unresolved; that is safe because no signing
+        // path is ever emitted natively (get_signature/verify_signature/eth_* stay on rell_sysfn_call).
+        "rell_crypto.cpp",
     ).map { cppDir.file(it) }
     val outFile = sharedLibFile
 
@@ -301,6 +309,17 @@ val buildNativeLibrary by tasks.registering(Exec::class) {
     val mac = isMac
     val libName = sharedLibName
 
+    // rell_crypto.cpp #includes <secp256k1.h> / <secp256k1_recovery.h> for its (un-wired) signing
+    // code. Hashing (sha256/keccak256 — the only entry points wired into the JIT) is self-contained
+    // and needs NO external crypto library, but the header must be on the include path for the TU to
+    // compile. We add the Homebrew secp256k1 include dir when present; we deliberately do NOT add
+    // -L/-lsecp256k1 — the signing symbols stay undefined and `-undefined dynamic_lookup` (macOS)
+    // tolerates them because signing is never called natively. No OpenSSL: the hashes are pure C++.
+    val secp256k1IncludeDir = listOf("/opt/homebrew/opt/secp256k1/include", "/usr/local/opt/secp256k1/include")
+        .map { file(it) }
+        .firstOrNull { it.exists() }
+        ?.absolutePath
+
     // Exec needs a valid commandLine at configuration time. Set a benign placeholder and
     // rebuild the real command in doFirst, where llvm-config providers can be resolved.
     commandLine("true")
@@ -313,6 +332,9 @@ val buildNativeLibrary by tasks.registering(Exec::class) {
         cmd += listOf("-I", llvmIncludeAbs)
         cmd += listOf("-I", flatbuffersHeadersAbs)
         cmd += listOf("-I", generatedCppAbs)
+        if (secp256k1IncludeDir != null) {
+            cmd += listOf("-I", secp256k1IncludeDir)
+        }
         for (dir in jniDirsAbs) {
             cmd += listOf("-I", dir)
         }

@@ -36,6 +36,8 @@
 // Mirrors jni_bridge.cpp style: namespace rell::llvm_rt, EmitContext emit helpers, defensive
 // failure, LLVM 19 IRBuilder API.
 
+#include <llvm/IR/Intrinsics.h>
+
 #include "rell_runtime.h"
 
 namespace rell::llvm_rt {
@@ -72,19 +74,42 @@ namespace rell::llvm_rt {
 // =====================================================================================
 llvm::Value *intrinsicBigInteger(EmitContext &ec, ir::BinaryOp op, llvm::Value *a, llvm::Value *b,
                                  bool *escaped) {
-    (void)a;
-    (void)b;
     *escaped = false;
+    auto &b_ = ec.builder();
 
     switch (op) {
         case ir::BinaryOp_ADD_BIG_INTEGER:
         case ir::BinaryOp_SUB_BIG_INTEGER:
-        case ir::BinaryOp_MUL_BIG_INTEGER:
+        case ir::BinaryOp_MUL_BIG_INTEGER: {
+            // LIVE long-fit fast path. Both operands are inline BIGINT_LONG (|v| <= Long.MAX); the
+            // true big_integer result is exact, so the ONLY thing that can go wrong inline is an i64
+            // overflow — which is NOT a Rell error, just a value that left the i64 slice into a still-
+            // valid wide big_integer the JVM must box. On the overflow bit we call rell_jit_escape so
+            // callValueFunction re-runs the WHOLE call on the interpreter (which computes the wide
+            // BigInteger and boxes it). The non-overflow result is bit-exact (BigInteger.add/subtract/
+            // multiply on two i64-fitting operands == i64 arithmetic when it doesn't overflow).
+            // DETERMINISM: never wrap, never throw — escape to the JVM oracle on the wide edge.
+            llvm::Intrinsic::ID id =
+                op == ir::BinaryOp_ADD_BIG_INTEGER   ? llvm::Intrinsic::sadd_with_overflow
+                : op == ir::BinaryOp_SUB_BIG_INTEGER ? llvm::Intrinsic::ssub_with_overflow
+                                                     : llvm::Intrinsic::smul_with_overflow;
+            auto *i64Ty = b_.getInt64Ty();
+            auto *decl = llvm::Intrinsic::getOrInsertDeclaration(&ec.module(), id, {i64Ty});
+            auto *agg = b_.CreateCall(decl, {a, b}, "bi.chk");
+            llvm::Value *res = b_.CreateExtractValue(agg, {0}, "bi.res");
+            llvm::Value *ovf = b_.CreateExtractValue(agg, {1}, "bi.ovf");
+            emitJitEscapeIf(ec, ovf);
+            return ec.packInline(RellTag::BIGINT_LONG, b_.getInt32(0), res);
+        }
+
         case ir::BinaryOp_DIV_BIG_INTEGER:
         case ir::BinaryOp_MOD_BIG_INTEGER:
-            // Escape to the universal JNI caller: bit-exact across the whole big_integer envelope.
-            *escaped = true;
-            return nullptr;
+            // DETERMINISM: div-by-zero raises Rt_Exception whose message embeds the FULL operand
+            // values, and Long.MIN/-1 overflows i64 while being a valid big_integer. Escape so the
+            // JVM re-runs the call via Lib_BigIntegerMath.divide/remainder (exact div0 message +
+            // truncate-toward-zero). Produce a defined dummy (discarded JVM-side after the escape).
+            emitJitEscape(ec);
+            return ec.packInline(RellTag::BIGINT_LONG, b_.getInt32(0), a);
 
         default:
             // Not a big_integer arithmetic op — this entry was mis-dispatched. Soft-fail the

@@ -529,6 +529,17 @@ bytes encode_to_bytes(const Gtv &v) {
 // =====================================================================================
 // DECODE (strict DER)
 // =====================================================================================
+// FIDELITY (review M3): this decoder is intentionally STRICT canonical DER — it rejects
+// non-canonical length forms and trailing bytes inside a tag. jasn1's BER decoder
+// (net.postchain.gtv.GtvFactory.decodeGtv) is more permissive about length encodings, so
+// a hand-crafted non-canonical-BER blob jasn1 accepts may be rejected here (decode-
+// acceptance can diverge on ADVERSARIAL bytes). This is safe in practice because Rell only
+// ever decodes bytes produced by the canonical DER encoder (verified byte-exact), and the
+// encoder + dict-key sort are confirmed correct. The encoder is deliberately left as-is.
+// The round-trip vectors in self_test() (incl. min/max i64, 2^63/2^64 big_integer leading
+// bytes, long-form length, dict key sort) form the golden corpus for encode/decode; a
+// jasn1-BER acceptance corpus would be needed to gate the decoder's permissiveness, which
+// is out of scope for this strict-DER narrowing.
 namespace {
 
 struct Reader {
@@ -675,29 +686,53 @@ void json_escape_string(std::string &out, const std::string &s) {
     // (escapeHtmlChars=true unless disabled). The postchain Gson builders use the
     // default builder (no disableHtmlEscaping), so HTML escaping IS active for the
     // strict/lenient instances. We mirror that.
+    //
+    // Gson additionally escapes the Unicode line/paragraph separators U+2028 / U+2029
+    // UNCONDITIONALLY (independent of htmlSafe), emitting   /   — verified
+    // against com.google.gson.stream.JsonWriter.string() (gson 2.13.1). These are the
+    // ONLY two non-ASCII code points Gson escapes; every other code point >= 0x80 is
+    // passed through verbatim as its UTF-8 bytes. We must decode code points (not raw
+    // bytes) to detect them, since they are 3-byte UTF-8 sequences (E2 80 A8/A9).
     out.push_back('"');
-    for (unsigned char c : s) {
-        switch (c) {
-            case '"': out += "\\\""; break;
-            case '\\': out += "\\\\"; break;
-            case '\b': out += "\\b"; break;
-            case '\f': out += "\\f"; break;
-            case '\n': out += "\\n"; break;
-            case '\r': out += "\\r"; break;
-            case '\t': out += "\\t"; break;
-            case '<': out += "\\u003c"; break;
-            case '>': out += "\\u003e"; break;
-            case '&': out += "\\u0026"; break;
-            case '=': out += "\\u003d"; break;
-            case '\'': out += "\\u0027"; break;
-            default:
-                if (c < 0x20) {
-                    char buf[7];
-                    std::snprintf(buf, sizeof(buf), "\\u%04x", c);
-                    out += buf;
-                } else {
-                    out.push_back(static_cast<char>(c));
-                }
+    size_t i = 0;
+    while (i < s.size()) {
+        unsigned char c = static_cast<unsigned char>(s[i]);
+        if (c < 0x80) {
+            switch (c) {
+                case '"': out += "\\\""; break;
+                case '\\': out += "\\\\"; break;
+                case '\b': out += "\\b"; break;
+                case '\f': out += "\\f"; break;
+                case '\n': out += "\\n"; break;
+                case '\r': out += "\\r"; break;
+                case '\t': out += "\\t"; break;
+                case '<': out += "\\u003c"; break;
+                case '>': out += "\\u003e"; break;
+                case '&': out += "\\u0026"; break;
+                case '=': out += "\\u003d"; break;
+                case '\'': out += "\\u0027"; break;
+                default:
+                    if (c < 0x20) {
+                        char buf[7];
+                        std::snprintf(buf, sizeof(buf), "\\u%04x", c);
+                        out += buf;
+                    } else {
+                        out.push_back(static_cast<char>(c));
+                    }
+            }
+            i++;
+            continue;
+        }
+        // Non-ASCII: decode the code point to detect U+2028 / U+2029, then emit either
+        // the Gson escape or the original UTF-8 bytes verbatim.
+        size_t start = i;
+        uint32_t cp = next_codepoint(s, i);
+        if (cp == 0x2028) {
+            out += "\\u2028";
+        } else if (cp == 0x2029) {
+            out += "\\u2029";
+        } else {
+            out.append(s, start, i - start);  // original UTF-8 bytes, unchanged
         }
     }
     out.push_back('"');
@@ -937,51 +972,160 @@ struct JsonParser {
         fail("bad literal");
     }
 
+    // Raised when a JSON number is well-formed but its value is not an exact int64.
+    // Mirrors BigDecimal.longValueExact() throwing ArithmeticException, which Rell
+    // surfaces as the range Programmer-Mistake (errorMsg) rather than fn_json_badstr.
+    struct NumberRangeError {
+        std::string msg;
+    };
+
     GtvPtr parse_number() {
+        // GtvAdapter: number -> BigDecimal(token).longValueExact(). longValueExact()
+        // succeeds for ANY number whose VALUE is an exact integer in [-2^63, 2^63-1],
+        // even when written with a fraction/exponent: "1.0"->1, "1e2"->100,
+        // "100.00"->100, "0.0"->0; "1.5" and out-of-range -> ArithmeticException.
+        //
+        // We therefore parse the full JSON number grammar, then decide exactness on the
+        // decimal value (digits + decimal point + exponent), never on float arithmetic.
         size_t start = i;
-        if (peek() == '-') i++;
-        bool is_int = true;
-        while (i < s.size()) {
-            char c = s[i];
-            if (c >= '0' && c <= '9') { i++; }
-            else if (c == '.' || c == 'e' || c == 'E' || c == '+' || c == '-') { is_int = false; i++; }
-            else break;
+
+        bool neg = false;
+        if (i < s.size() && s[i] == '-') { neg = true; i++; }
+
+        // Integer part (one or more digits).
+        std::string int_part;
+        while (i < s.size() && s[i] >= '0' && s[i] <= '9') int_part.push_back(s[i++]);
+
+        // Fraction part.
+        std::string frac_part;
+        if (i < s.size() && s[i] == '.') {
+            i++;
+            while (i < s.size() && s[i] >= '0' && s[i] <= '9') frac_part.push_back(s[i++]);
         }
+
+        // Exponent part.
+        bool has_exp = false;
+        bool exp_neg = false;
+        std::string exp_digits;
+        if (i < s.size() && (s[i] == 'e' || s[i] == 'E')) {
+            has_exp = true;
+            i++;
+            if (i < s.size() && (s[i] == '+' || s[i] == '-')) { exp_neg = (s[i] == '-'); i++; }
+            while (i < s.size() && s[i] >= '0' && s[i] <= '9') exp_digits.push_back(s[i++]);
+        }
+
         std::string tok = s.substr(start, i - start);
-        if (tok.empty() || tok == "-") fail("bad number");
-        // GtvAdapter: number -> BigDecimal.longValueExact(). Non-integer or out-of-range
-        // -> error. We accept only an exact int64 here (matches GtvInteger semantics).
-        if (!is_int) {
-            // Could still be an integer value expressed with exponent/decimal point;
-            // GtvAdapter would call longValueExact() and throw on any fractional part.
-            // We reject non-plain-integer forms to stay strict & deterministic.
-            fail("non-integer JSON number cannot become GtvInteger");
+        // Validate the grammar: a number must have at least one integer-part digit, and
+        // an exponent (if present) must have at least one digit.
+        if (int_part.empty()) fail("bad number");
+        if (has_exp && exp_digits.empty()) fail("bad number");
+
+        // Compute the unscaled digit string and scale, then apply the exponent, mirroring
+        // BigDecimal: value = (int_part || frac_part) * 10^(exp - frac_len).
+        std::string digits = int_part + frac_part;
+        long long exp = 0;
+        if (has_exp) {
+            // Bound the exponent magnitude; anything large is trivially out of int64 range
+            // (unless the value is zero, handled below).
+            if (exp_digits.size() > 18) exp = exp_neg ? -1000000000000LL : 1000000000000LL;
+            else {
+                exp = std::stoll(exp_digits);
+                if (exp_neg) exp = -exp;
+            }
         }
-        try {
-            size_t consumed = 0;
-            long long val = std::stoll(tok, &consumed);
-            if (consumed != tok.size()) fail("bad number");
-            return Gtv::make_integer(static_cast<int64_t>(val));
-        } catch (const std::out_of_range &) {
-            fail("JSON number out of int64 range");
-        } catch (const std::invalid_argument &) {
-            fail("bad number");
+        // Net power-of-ten applied to `digits`: positive => append zeros, negative => the
+        // last |net| digits are after the decimal point and must all be zero (else not an
+        // exact integer).
+        long long net = exp - static_cast<long long>(frac_part.size());
+
+        // Strip the value down to an integer if exact; otherwise it is not an int64.
+        std::string mag;  // unsigned decimal magnitude of the exact integer value
+        if (net >= 0) {
+            mag = digits;
+            for (long long k = 0; k < net; ++k) mag.push_back('0');
+        } else {
+            size_t drop = static_cast<size_t>(-net);
+            if (drop > digits.size()) {
+                // value is purely fractional (|value| < 1); exact integer only if zero.
+                // Any nonzero digit means a fractional value like 0.5 -> reject.
+                for (char d : digits) if (d != '0') {
+                    throw NumberRangeError{"JSON number is not an exact integer: " + tok};
+                }
+                mag = "0";
+            } else {
+                // The dropped (trailing) digits are the fractional part; all must be zero.
+                size_t keep = digits.size() - drop;
+                for (size_t k = keep; k < digits.size(); ++k) {
+                    if (digits[k] != '0') {
+                        throw NumberRangeError{"JSON number is not an exact integer: " + tok};
+                    }
+                }
+                mag = digits.substr(0, keep);
+            }
         }
+
+        // Normalize: an all-fractional-zeros result can leave mag empty (e.g. "0e-2");
+        // that is the value 0. Then strip leading zeros from the magnitude.
+        if (mag.empty()) mag = "0";
+        size_t nz = 0;
+        while (nz + 1 < mag.size() && mag[nz] == '0') nz++;
+        mag = mag.substr(nz);
+        bool is_zero = (mag == "0");
+
+        // Range check against [-2^63, 2^63-1] without overflow: compare decimal strings.
+        // 2^63     = 9223372036854775808 (the negative boundary magnitude)
+        // 2^63 - 1 = 9223372036854775807 (the positive boundary magnitude)
+        static const std::string kMaxPos = "9223372036854775807";
+        static const std::string kMaxNeg = "9223372036854775808";
+        const std::string &limit = (neg && !is_zero) ? kMaxNeg : kMaxPos;
+        bool out_of_range =
+            mag.size() > limit.size() || (mag.size() == limit.size() && mag > limit);
+        if (out_of_range) {
+            throw NumberRangeError{"JSON number out of int64 range: " + tok};
+        }
+
+        // Convert the in-range magnitude to int64. The magnitude can be exactly 2^63
+        // (= -kMaxNeg, the most-negative value), which does not fit in a positive long long,
+        // so build the negative directly from the unsigned magnitude to avoid overflow.
+        uint64_t umag = 0;
+        for (char d : mag) umag = umag * 10 + static_cast<uint64_t>(d - '0');
+        int64_t val = (neg && !is_zero)
+                          ? static_cast<int64_t>(~umag + 1)  // -umag in two's complement
+                          : static_cast<int64_t>(umag);
+        return Gtv::make_integer(val);
     }
 };
 
 }  // namespace
 
 GtvPtr from_json(const std::string &json) {
-    // Empty/blank -> error (mirrors Rt_JsonValue.parse on blank input, and Gson would
-    // return null which jsonToGtv maps to GtvNull; but the Rell `from_json` path requires
-    // non-blank). Match the stricter Rell stdlib behavior: blank -> badstr.
+    // Blank/empty -> GtvNull. The GTV path is gtv.from_json -> PostchainGtvUtils.jsonToGtv
+    // = (GSON.fromJson(s, Gtv) ?: GtvNull). Gson's fromJson("") and fromJson("   ") both
+    // return null, which jsonToGtv maps to GtvNull. (This is the OPPOSITE of rell_json.cpp's
+    // Jackson `json()` constructor, which rejects blank via require(!s.isBlank()); the two
+    // "from_json"s have intentionally opposite blank semantics — do not unify them.)
+    //
+    // FIDELITY: Gson's fromJson(String) reads in lenient legacy mode and accepts inputs
+    // this strict recursive-descent parser rejects (single-quoted strings, unquoted object
+    // keys, leading '+', NaN/Infinity, etc. — see review H1). NaN/Infinity then fail
+    // BigDecimal conversion on the JVM too, but single-quote / unquoted-key inputs succeed
+    // on the JVM and throw here. This narrowed acceptance is a DOCUMENTED, NOT-FIXED gap:
+    // matching full Gson leniency is out of scope for this codec; gate with JVM-captured
+    // golden vectors before relying on the acceptance set. The valid-JSON acceptance set
+    // (and all consensus-reachable inputs observed so far) is byte-exact.
     size_t k = 0;
     while (k < json.size() && (json[k] == ' ' || json[k] == '\t' || json[k] == '\n' || json[k] == '\r')) k++;
-    if (k == json.size()) throw GtvError("fn_json_badstr: blank input");
+    if (k == json.size()) return Gtv::make_null();
 
     JsonParser p(json);
-    GtvPtr g = p.parse_value();
+    GtvPtr g;
+    try {
+        g = p.parse_value();
+    } catch (const JsonParser::NumberRangeError &e) {
+        // Distinct from fn_json_badstr (a parse error): a well-formed number whose value is
+        // not an exact int64 is the BigDecimal.longValueExact() range Programmer-Mistake.
+        throw GtvError("errorMsg: " + e.msg);
+    }
     p.skip_ws();
     if (p.i != json.size()) throw GtvError("fn_json_badstr: trailing content");
     return g;
@@ -1190,6 +1334,16 @@ bool self_test() {
     // HTML escaping (Gson default)
     check_json("json html escape", to_json(*Gtv::make_string("a<b>&c")),
                "\"a\\u003cb\\u003e\\u0026c\"");
+    // B1: Gson escapes U+2028 / U+2029 UNCONDITIONALLY as   /  , even though
+    // they are >= 0x80. Every other non-ASCII code point passes through verbatim.
+    //   U+2028 = E2 80 A8, U+2029 = E2 80 A9.
+    check_json("json u2028", to_json(*Gtv::make_string("a\xE2\x80\xA8" "b")),
+               "\"a\\u2028b\"");
+    check_json("json u2029", to_json(*Gtv::make_string("a\xE2\x80\xA9" "b")),
+               "\"a\\u2029b\"");
+    // A neighbouring code point (U+2027, E2 80 A7) must NOT be escaped — passes through raw.
+    check_json("json u2027 passthrough", to_json(*Gtv::make_string("\xE2\x80\xA7")),
+               "\"\xE2\x80\xA7\"");
 
     // ---- JSON deserialize ----
     {
@@ -1229,20 +1383,70 @@ bool self_test() {
             std::fprintf(stderr, "[rell::gtv] from_json array FAIL\n");
             g_ok = false;
         }
-        // non-integer number must fail
-        bool threw = false;
-        try { from_json("1.5"); } catch (const GtvError &) { threw = true; }
-        if (!threw) {
-            std::fprintf(stderr, "[rell::gtv] from_json 1.5 should fail\n");
-            g_ok = false;
-        }
-        // blank must fail
-        threw = false;
-        try { from_json("   "); } catch (const GtvError &) { threw = true; }
-        if (!threw) {
-            std::fprintf(stderr, "[rell::gtv] from_json blank should fail\n");
-            g_ok = false;
-        }
+        // B2: integer-VALUED decimals/exponents accepted as GtvInteger (BigDecimal
+        // .longValueExact semantics), regardless of textual form.
+        auto check_int = [&](const std::string &json, int64_t expect) {
+            try {
+                GtvPtr v = from_json(json);
+                if (v->type() != GtvType::INTEGER || v->as_integer() != expect) {
+                    std::fprintf(stderr,
+                                 "[rell::gtv] from_json \"%s\" FAIL: expected GtvInteger(%lld)\n",
+                                 json.c_str(), static_cast<long long>(expect));
+                    g_ok = false;
+                }
+            } catch (const std::exception &e) {
+                std::fprintf(stderr, "[rell::gtv] from_json \"%s\" THREW: %s\n",
+                             json.c_str(), e.what());
+                g_ok = false;
+            }
+        };
+        check_int("1.0", 1);
+        check_int("1e2", 100);
+        check_int("100.00", 100);
+        check_int("1.0E1", 10);
+        check_int("0.0", 0);
+        check_int("1e3", 1000);
+        check_int("-2.50E2", -250);
+
+        // Non-integer VALUE must fail (range error, not parse error).
+        auto check_reject = [&](const std::string &json) {
+            bool threw = false;
+            try { from_json(json); } catch (const GtvError &) { threw = true; }
+            if (!threw) {
+                std::fprintf(stderr, "[rell::gtv] from_json \"%s\" should fail\n", json.c_str());
+                g_ok = false;
+            }
+        };
+        check_reject("1.5");
+        check_reject("0.1");
+        // out-of-range exact integers (just past 2^63-1 / -2^63).
+        check_reject("9223372036854775808");    // 2^63 (max+1)
+        check_reject("-9223372036854775809");    // -(2^63)-1 (min-1)
+        check_reject("1e19");                     // 10^19 > 2^63-1
+        // boundaries are accepted.
+        check_int("9223372036854775807", 0x7FFFFFFFFFFFFFFFLL);    // 2^63-1
+        check_int("-9223372036854775808",
+                  static_cast<int64_t>(0x8000000000000000ULL));     // -2^63
+
+        // B3: blank/empty -> GtvNull (Gson fromJson(null) -> jsonToGtv -> GtvNull).
+        auto check_blank_null = [&](const std::string &json) {
+            try {
+                GtvPtr v = from_json(json);
+                if (v->type() != GtvType::NULLV) {
+                    std::fprintf(stderr,
+                                 "[rell::gtv] from_json blank \"%s\" FAIL: expected GtvNull\n",
+                                 json.c_str());
+                    g_ok = false;
+                }
+            } catch (const std::exception &e) {
+                std::fprintf(stderr, "[rell::gtv] from_json blank \"%s\" THREW: %s\n",
+                             json.c_str(), e.what());
+                g_ok = false;
+            }
+        };
+        check_blank_null("");
+        check_blank_null("   ");
+        check_blank_null("\t\n  ");
     }
 
     // ---- UTF-16 dict ordering: supplementary char vs BMP char ----

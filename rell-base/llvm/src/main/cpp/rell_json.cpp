@@ -175,19 +175,31 @@ private:
                     case 'u': {
                         uint32_t cp = parse_hex4();
                         if (cp >= 0xD800 && cp <= 0xDBFF) {
-                            // high surrogate: require a following \uXXXX low surrogate
+                            // High surrogate. Jackson combines it with an IMMEDIATELY following
+                            // \uXXXX low surrogate into the astral code point; any other case
+                            // (no following \u, following \u is not a low surrogate, or this is a
+                            // lone low surrogate below) is an unpaired surrogate, which Jackson
+                            // substitutes with U+003F '?' (0x3F) on output. Verified against the
+                            // pinned Jackson 2.21.3: "\uD800"->?, "\uD800x"->?x, "\uD800A"->?A
+                            // (the second escape is reparsed independently), "\uD800\uD800"->??,
+                            // "􏿿"->U+10FFFF. See the M5 self-test block.
                             if (pos_ + 1 < n_ && s_[pos_] == '\\' && s_[pos_ + 1] == 'u') {
+                                size_t save = pos_;
                                 pos_ += 2;
                                 uint32_t lo = parse_hex4();
                                 if (lo >= 0xDC00 && lo <= 0xDFFF) {
                                     cp = 0x10000 + ((cp - 0xD800) << 10) + (lo - 0xDC00);
                                 } else {
-                                    // Jackson tolerates a lone/invalid surrogate by emitting the
-                                    // raw code units; encode both as-is.
-                                    append_utf8(out, cp);
-                                    cp = lo;
+                                    // Not a low surrogate: the high surrogate is unpaired ('?'),
+                                    // and the following escape must be reparsed from scratch.
+                                    pos_ = save;
+                                    cp = 0x3F;
                                 }
+                            } else {
+                                cp = 0x3F;  // lone high surrogate at EOF / before non-\u content
                             }
+                        } else if (cp >= 0xDC00 && cp <= 0xDFFF) {
+                            cp = 0x3F;  // lone low surrogate -> '?'
                         }
                         append_utf8(out, cp);
                         break;
@@ -335,6 +347,13 @@ namespace {
 //   - \b \t \n \f \r for 0x08,0x09,0x0A,0x0C,0x0D
 //   - other chars < 0x20 -> \u00XX with UPPERCASE hex
 //   - everything >= 0x20 (incl. '/', 0x7F, U+2028/2029, all non-ASCII UTF-8) passes through.
+//
+// CROSS-REF (do NOT "consistency-align" with GTV): Jackson's JsonStringEncoder does NOT escape
+// U+2028 (LINE SEPARATOR) / U+2029 (PARAGRAPH SEPARATOR) — they pass through as raw UTF-8, and the
+// " " self-test vector below pins this. This is the OPPOSITE of GTV/Gson, whose
+// JsonWriter.string() escapes both unconditionally to   /   (see rell_gtv.cpp
+// json_escape_string, review finding B1). The two JSON families intentionally diverge here; a
+// future refactor must keep them separate.
 void append_escaped_string(std::string &out, const std::string &s) {
     static const char HEX[] = "0123456789ABCDEF";
     out.push_back('"');
@@ -429,6 +448,25 @@ std::string to_text(const Json &node) {
 // does in effect: try increasing decimal precision with printf "%.*e" and pick the first that
 // strtod-round-trips. Shortest round-trippable is unique, so this yields Java's exact digit set
 // (verified against Double.toString on this machine). We then apply Java's layout rules.
+//
+// !!! CONSENSUS-CRITICAL LIBC ASSUMPTION (review finding M4) !!!
+// This routine's byte-exactness depends on the HOST C LIBRARY providing CORRECTLY-ROUNDED
+// IEEE-754 round-trip conversions:
+//   - snprintf("%.*e", p, x) must emit the correctly-rounded p-significant-digit decimal, and
+//   - strtod must parse decimal -> nearest double with round-half-to-even.
+// glibc, macOS libc (Apple/FreeBSD libm), and musl all satisfy this. It is NOT guaranteed by the
+// C standard for every libc the LLVM backend may someday target (some embedded / minimal libcs
+// round only to ~15 digits or use round-half-away). On such a libc the "shortest that round-trips"
+// search could pick a DIFFERENT digit string than Java's FloatingDecimal, producing divergent
+// canonical JSON text and therefore a CONSENSUS FORK.
+//
+// Mitigation status: DOCUMENTED-NOT-REPLACED. A self-contained Ryu/Grisu shortest-double formatter
+// would remove the libc dependency entirely and is the correct long-term fix, but it is out of
+// scope for a surgical change and must not be shipped half-correct. Until then, any port to a new
+// target MUST (a) gate CI on this file's self_test (including the boundary vectors below: the
+// 1e-3/1e7 layout cutoffs, max-finite, smallest-normal, and the 8 legacy-subnormal pins) passing
+// against java.lang.Double.toString, and (b) verify the target libc is correctly-rounded. If
+// either fails, replace this routine with Ryu before enabling the JSON family on that target.
 // =====================================================================================
 std::string java_double_to_string(double v) {
     if (std::isnan(v)) return "NaN";
@@ -656,8 +694,23 @@ bool self_test() {
     check_text("\"unicode\xC3\xA9\"", "\"unicode\xC3\xA9\"");  // é passes through
     check_text("\"\\u007f\"", "\"\x7F\"");          // DEL passes through literally
     check_text("\"\\b\\f\\r\"", "\"\\b\\f\\r\"");
-    check_text("\"\\u2028\"", "\"\xE2\x80\xA8\"");  // U+2028 passes through (UTF-8)
+    check_text("\"\\u2028\"", "\"\xE2\x80\xA8\"");  // U+2028 passes through (UTF-8); see B1 cross-ref
+    check_text("\"\\u2029\"", "\"\xE2\x80\xA9\"");  // U+2029 passes through (UTF-8); NOT escaped
     check_text("\"emoji\xF0\x9F\x98\x80\"", "\"emoji\xF0\x9F\x98\x80\"");  // surrogate pair / 4-byte
+    check_text("\"\\uD83D\\uDE00\"", "\"\xF0\x9F\x98\x80\"");  // 😀 -> U+1F600 (4-byte)
+
+    // ---- M5: lone / unpaired surrogate escapes (review finding M5) ----
+    // Golden bytes CAPTURED from ObjectMapper().readTree(IN).toString() on the pinned Jackson
+    // 2.21.3 (jackson-core/databind 2.21.3): every unpaired surrogate code unit is substituted with
+    // U+003F '?' (0x3F). A high surrogate combines ONLY with an immediately following \u low
+    // surrogate; otherwise it is '?' and the following escape is reparsed independently.
+    check_text("\"\\uD800\"", "\"?\"");          // lone high surrogate
+    check_text("\"\\uDC00\"", "\"?\"");          // lone low surrogate
+    check_text("\"\\uD800x\"", "\"?x\"");        // high + non-\u char
+    check_text("\"\\uD800\\u0041\"", "\"?A\"");  // high + \u BMP (reparsed): '?' then 'A'
+    check_text("\"\\uD800\\uD800\"", "\"??\"");  // high + high: both unpaired
+    check_text("\"\\uDC00x\"", "\"?x\"");        // lone low + char
+    check_text("\"\\uDBFF\\uDFFF\"", "\"\xF4\x8F\xBF\xBF\"");  // valid max pair -> U+10FFFF
 
     // ---- containers, key order (NOT sorted), whitespace stripping ----
     check_text("{\"b\":1,\"a\":2}", "{\"b\":1,\"a\":2}");  // insertion order preserved
@@ -720,6 +773,22 @@ bool self_test() {
     check_dbl(123456789.0, "1.23456789E8");
     check_dbl(100000000.0, "1.0E8");
     check_dbl(-1.0e8, "-1.0E8");
+
+    // ---- M4 boundary vectors: layout cutoffs (first_exp -3 and +7) + magnitude extremes ----
+    // Decimal-vs-scientific switch is at 1e-3 (<: scientific) and 1e7 (>=: scientific).
+    check_dbl(0.001, "0.001");          // first_exp = -3 -> decimal (boundary, included)
+    check_dbl(0.0009999999999999999, "9.999999999999998E-4");  // just below 1e-3 -> scientific
+    check_dbl(9999999.999999998, "9999999.999999998");          // first_exp = 6 -> decimal
+    check_dbl(10000000.0, "1.0E7");     // first_exp = 7 -> scientific (boundary)
+    check_dbl(9999999.0, "9999999.0");  // largest 7-digit integer in decimal range
+    // Smallest positive normal double (2^-1022).
+    check_dbl(2.2250738585072014e-308, "2.2250738585072014E-308");
+    // Largest subnormal (just below smallest normal) and smallest subnormal.
+    check_dbl(2.225073858507201e-308, "2.225073858507201E-308");
+    check_dbl(4.9e-324, "4.9E-324");    // smallest positive subnormal (legacy 2-digit pin)
+    // Max finite double.
+    check_dbl(1.7976931348623157e308, "1.7976931348623157E308");
+    check_dbl(-1.7976931348623157e308, "-1.7976931348623157E308");
 
     // ---- round-trip stability: to_text(parse(x)) is idempotent on canonical text ----
     {

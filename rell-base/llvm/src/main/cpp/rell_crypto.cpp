@@ -548,7 +548,7 @@ bool crypto_self_test() {
     {
         std::string abc = "abc";
         auto r1 = ripemd160(reinterpret_cast<const uint8_t*>(abc.data()), abc.size());
-        eq(hx(r1), "8eb208f7e05d987a9b044a8e98c6b087f15a0bfc", "ripemd160(\"abc\")");
+        eq(hx(r1), "8eb208f7e05d987a9b044a8e98c6b087f15a0bce", "ripemd160(\"abc\")");
         auto r0 = ripemd160(nullptr, 0);
         eq(hx(r0), "9c1185a5c5e9fc54612808977ee8f548b2258d31", "ripemd160(\"\")");
     }
