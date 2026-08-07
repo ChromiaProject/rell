@@ -1,0 +1,88 @@
+RELEASE NOTES 0.16.6 (2026-08-07)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. Tools: New code actions convert a function or query body between block and expression form
+
+The language server now offers the refactoring pair "Convert to expression body" and "Convert to block
+body" (LSP code actions of kind refactor.rewrite) for the function or query under the cursor, mirroring
+the Kotlin intentions of the same names:
+
+    function f(x: integer): integer {
+        return x + 1;
+    }
+
+converts to
+
+    function f(x: integer): integer = x + 1;
+
+and back.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Tools: Several editor highlighting mismatches fixed
+
+An attribute declared by a name with implicit type, such as name in
+
+    entity user { name; }
+    object greeting { mutable name = "World"; }
+
+used to get the semantic token of a type reference, so editors coloured it like a type. The
+language server now emits an attribute token for such declarations in entity, object and struct
+bodies, matching attributes declared with an explicit name (name: text).
+
+The alias name in an import declaration, such as hc in
+
+    import hc: ^^^.hybridcompute;
+
+used to get the semantic token of a keyword, so editors colored it the same as import itself.
+The language server now emits a namespace token for the alias declaration, matching the token
+already used at the alias's usage sites.
+
+A call to a member function on a value, such as to_gtv_pretty in
+
+    x.to_gtv_pretty()
+
+used to get the same semantic token as a call to a declared or global system function, so editors
+that italicize function calls (to set them apart from calling a function value held in a variable)
+italicized member calls too. The language server now emits a dedicated method token for these
+calls, letting editors style them differently.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tools: A syntax error in an attribute header no longer breaks all editor features for the file
+
+A syntax error inside an attribute header - for example a negative annotation argument, as in
+
+    struct s { @max_size(-2) l: text; }
+
+crashed the language server's indexing of the whole file. The AST builder now
+recovers from the malformed header and reports the syntax error normally, keeping every other
+feature alive for the rest of the file.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Language: Lambdas, value-block if/when arms, and jump expressions are now version-restricted
+
+Three constructs introduced in 0.16.1 - lambda expressions (x -> x * 2), value blocks as if/when
+expression arms, and jump expressions (return/break/continue used as an expression) - compiled
+without checking the configured language version (see "Language version control" in 0.13.10),
+unlike other version-gated features. A node configured with an older language version (e.g. via
+the blockchain configuration option gtx.rell.version) could still compile code using them, even
+though a node actually running an older Rell release would not understand the result.
+
+These three constructs now require the configured language version to be 0.16.1 or later,
+matching the release they were introduced in - the same restriction that already applies to
+other version-gated features:
+
+    ct_err: version:expr_lambda:0.16.1:<configured version>
+
+Note. This is a breaking change - it may break compilation of existing code on a node whose
+configured language version is older than 0.16.1. A node with no version restriction configured,
+or one already at 0.16.1 or later, is unaffected.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+5. Tools: Go to definition invoked directly on a declaration's own name now returns its location
+
+Previously, asking the language server for the definition of a symbol while standing on the
+symbol's own declaration (e.g. a function's name in its own header) returned nothing, since only
+usages carried a link back to the declaration. IDEs that toggle between "go to declaration" and
+"find usages" based on whether the definition request resolves to the caret's own position could
+not detect this case and never switched to find usages. The language server now resolves such a
+request to the declaration's own location, matching the behavior of most LSP servers.
