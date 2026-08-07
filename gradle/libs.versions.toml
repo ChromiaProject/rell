@@ -69,6 +69,7 @@ postchain-gtv = { module = "net.postchain:postchain-gtv" }
 postchain-spi = { module = "net.postchain:postchain-spi" }
 postchain-base = { module = "net.postchain:postchain-base" }
 postchain-devtools = { module = "net.postchain:postchain-devtools" }
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-core" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
 commons-configuration2 = { module = "org.apache.commons:commons-configuration2" }
 postgresql = { module = "org.postgresql:postgresql" }

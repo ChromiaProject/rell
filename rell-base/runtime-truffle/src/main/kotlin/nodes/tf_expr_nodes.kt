@@ -537,11 +537,9 @@ internal class Tf_VirtualMapSubscriptNode(
     }
 }
 
-// JSON subscript nodes intentionally fall back to the interpreter — `JsonUtils.arrayGet` and
-// `objectGet` return a Jackson `JsonNode` whose type isn't exposed on the runtime-truffle
-// classpath. Specialising them would require pulling Jackson onto our compile path purely for
-// one infrequently-used subscript variant; not worth the dep weight. The translator emits
-// Tf_FallbackExprNode for `RR_Expr.JsonArraySubscript` / `RR_Expr.JsonObjectSubscript`.
+// JSON subscript nodes intentionally fall back to the interpreter. Specialising them would buy
+// little for one infrequently-used subscript variant. The translator emits Tf_FallbackExprNode
+// for `RR_Expr.JsonArraySubscript` / `RR_Expr.JsonObjectSubscript`.
 
 /**
  * Lazy expression — `RR_Expr.Lazy`.

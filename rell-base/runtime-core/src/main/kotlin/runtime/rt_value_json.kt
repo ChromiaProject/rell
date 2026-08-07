@@ -4,9 +4,6 @@
 
 package net.postchain.rell.base.runtime
 
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvString
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
@@ -18,7 +15,7 @@ import org.jooq.JSONB
 import org.jooq.impl.SQLDataType
 import org.postgresql.util.PGobject
 
-class Rt_JsonValue(val node: JsonNode): Rt_Value {
+class Rt_JsonValue(val node: Rt_JsonNode): Rt_Value {
     override val name
         get() = Companion.name
 
@@ -38,27 +35,15 @@ class Rt_JsonValue(val node: JsonNode): Rt_Value {
 
         override val name
             get() = "json"
+
         override val rrType: RR_Type = RR_Type.Primitive(RR_PrimitiveKind.JSON)
 
         override val sqlType: DataType<JSONB>
             get() = SQLDataType.JSONB
 
-        // https://stackoverflow.com/questions/3907929/should-i-declare-jacksons-objectmapper-as-a-static-field
-        // `by lazy` (rather than eager `= ObjectMapper()`) keeps Jackson's static-init cascade
-        // out of the class-load path, which is needed for TeaVM compat
-        private val mapper by lazy { ObjectMapper() }
-
         fun parse(s: String): Rt_JsonValue {
-            require(!s.isBlank()) { s }
-
-            val json: JsonNode? = try {
-                mapper.readTree(s)
-            } catch (e: JsonProcessingException) {
-                throw IllegalArgumentException(s, e)
-            }
-
-            requireNotNull(json) { s }
-            return Rt_JsonValue(json)
+            require(s.isNotBlank()) { s }
+            return Rt_JsonValue(Rt_JsonNode.parse(s))
         }
 
         override fun toGtv(value: Rt_JsonValue, pretty: Boolean): Gtv = GtvString(value.str)

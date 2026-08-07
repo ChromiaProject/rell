@@ -19,9 +19,9 @@ dependencies {
     api(projects.rellBase.utils)
     api(projects.rellBase.rrTree)
     api(libs.better.parse)
-    api(libs.jooq)
+    implementation(libs.jooq)
     implementation(libs.commons.configuration2)
-    implementation(libs.jackson.databind)
+    implementation(libs.jackson.core)
 }
 
 tasks.compileKotlin {

@@ -23,7 +23,7 @@ dependencies {
     api(projects.rellBase.runtimeCore)
 
     implementation(libs.kotlinLogging)
-    implementation(libs.jackson.databind)
+    implementation(libs.jooq)
     implementation(libs.postgresql)
     implementation(libs.bouncycastle)
 }

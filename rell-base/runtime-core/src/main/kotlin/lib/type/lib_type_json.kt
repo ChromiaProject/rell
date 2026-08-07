@@ -6,7 +6,6 @@
 
 package net.postchain.rell.base.lib.type
 
-import com.fasterxml.jackson.databind.JsonNode
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.lmodel.dsl.Ld_BodyResult
@@ -181,7 +180,7 @@ object Lib_Type_Json {
                     @throws exception if this JSON value is not a boolean
                 """.comment()
                 dbFunctionCast("json.as_boolean", "BOOLEAN")
-                asTypeBody(this, JsonNode::isBoolean) { Rt_BooleanValue.get(it.asBoolean()) }
+                asTypeBody(this, Rt_JsonNode::isBoolean) { Rt_BooleanValue.get(it.asBoolean()) }
             }
 
             function("as_text", result = "text", pure = true, since = "0.14.16") {
@@ -195,7 +194,7 @@ object Lib_Type_Json {
                     @throws exception if this JSON value is not text
                 """.comment()
                 dbFunctionSimple("json.as_text", SqlConstants.FN_JSON_AS_TEXT)
-                asTypeBody(this, JsonNode::isTextual) { Rt_TextValue.get(it.asText()) }
+                asTypeBody(this, Rt_JsonNode::isTextual) { Rt_TextValue.get(it.asText()) }
             }
 
             function("as_integer_or_null", result = "integer?", pure = true, since = "0.14.16") {
@@ -232,7 +231,7 @@ object Lib_Type_Json {
                     @return this JSON boolean as a boolean, or null if this JSON value is not a boolean
                 """.comment()
                 dbFunctionSimple("json.as_boolean_or_null", SqlConstants.FN_JSON_AS_BOOLEAN_OR_NULL)
-                asTypeBody(this, JsonNode::isBoolean, nullOnError = true) { Rt_BooleanValue.get(it.asBoolean()) }
+                asTypeBody(this, Rt_JsonNode::isBoolean, nullOnError = true) { Rt_BooleanValue.get(it.asBoolean()) }
             }
 
             function("as_text_or_null", result = "text?", pure = true, since = "0.14.16") {
@@ -241,7 +240,7 @@ object Lib_Type_Json {
                     @return this JSON text as text, or null if this JSON value is not text
                 """.comment()
                 dbFunctionSimple("json.as_text_or_null", SqlConstants.FN_JSON_AS_TEXT_OR_NULL)
-                asTypeBody(this, JsonNode::isTextual, nullOnError = true) { Rt_TextValue.get(it.asText()) }
+                asTypeBody(this, Rt_JsonNode::isTextual, nullOnError = true) { Rt_TextValue.get(it.asText()) }
             }
 
             function("is_object", result = "boolean", pure = true, since = "0.14.16") {
@@ -250,7 +249,7 @@ object Lib_Type_Json {
                     @return true if this JSON value is an object, false otherwise
                 """.comment()
                 dbFunctionTemplate("json.is_object", 1, "(JSONB_TYPEOF(#0) = 'object')")
-                isTypeBody(this, JsonNode::isObject)
+                isTypeBody(this, Rt_JsonNode::isObject)
             }
 
             function("is_array", result = "boolean", pure = true, since = "0.14.16") {
@@ -259,7 +258,7 @@ object Lib_Type_Json {
                     @return true if this JSON value is an array, false otherwise
                 """.comment()
                 dbFunctionTemplate("json.is_array", 1, "(JSONB_TYPEOF(#0) = 'array')")
-                isTypeBody(this, JsonNode::isArray)
+                isTypeBody(this, Rt_JsonNode::isArray)
             }
 
             function("is_text", result = "boolean", pure = true, since = "0.14.16") {
@@ -268,7 +267,7 @@ object Lib_Type_Json {
                     @return true if this JSON value is text, false otherwise
                 """.comment()
                 dbFunctionTemplate("json.is_text", 1, "(JSONB_TYPEOF(#0) = 'string')")
-                isTypeBody(this, JsonNode::isTextual)
+                isTypeBody(this, Rt_JsonNode::isTextual)
             }
 
             function("is_null", result = "boolean", pure = true, since = "0.14.16") {
@@ -277,7 +276,7 @@ object Lib_Type_Json {
                     @return true if this JSON value is null, false otherwise
                 """.comment()
                 dbFunctionTemplate("json.is_null", 1, "(JSONB_TYPEOF(#0) = 'null')")
-                isTypeBody(this, JsonNode::isNull)
+                isTypeBody(this, Rt_JsonNode::isNull)
             }
 
             function("is_integer", result = "boolean", pure = true, since = "0.14.16") {
@@ -311,7 +310,7 @@ object Lib_Type_Json {
                     @return true if this JSON value is a boolean, false otherwise
                 """.comment()
                 dbFunctionTemplate("json.is_boolean", 1, "(JSONB_TYPEOF(#0) = 'boolean')")
-                isTypeBody(this, JsonNode::isBoolean)
+                isTypeBody(this, Rt_JsonNode::isBoolean)
             }
 
             function("size", pure = true, since = "0.14.16") {
@@ -325,10 +324,10 @@ object Lib_Type_Json {
                 dbFunctionSimple("json.size", SqlConstants.FN_JSON_SIZE)
                 body(Rt_IntValue) {
                     val jsonNode = self.node
-                    if (jsonNode.isContainerNode) {
+                    if (jsonNode.isContainer) {
                         jsonNode.size().toLong()
                     } else {
-                        val nodeTypeName = jsonNode.nodeType.name
+                        val nodeTypeName = jsonNode.nodeTypeName
                         val msg = "Tried to get the size of a JSON value that was not an object or array (got $nodeTypeName)."
                         throw Rt_Exception.common("json.$fnSimpleName:type_error:$nodeTypeName", msg)
                     }
@@ -351,7 +350,7 @@ object Lib_Type_Json {
                         val rtType = ctx.exeCtx.appCtx.interpreter.resolveType(SET_OF_TEXT_RR_TYPE)
                         Rt_SetValue(rtType, set)
                     } else {
-                        val nodeTypeName = jsonNode.nodeType.name
+                        val nodeTypeName = jsonNode.nodeTypeName
                         throw Rt_Exception.common("json.$fnSimpleName:type_error:$nodeTypeName",
                             "Tried to get the keys of a JSON value that was not an object (got $nodeTypeName).")
                     }
@@ -363,9 +362,9 @@ object Lib_Type_Json {
 
 private fun asTypeBody(
     m: Ld_MethodDsl<Rt_JsonValue>,
-    checkType: (JsonNode) -> Boolean,
+    checkType: (Rt_JsonNode) -> Boolean,
     nullOnError: Boolean = false,
-    getType: (JsonNode) -> Rt_Value,
+    getType: (Rt_JsonNode) -> Rt_Value,
 ): Ld_BodyResult = with(m) {
     val self by self()
     body {
@@ -374,7 +373,7 @@ private fun asTypeBody(
             checkType(jsonValue) -> getType(jsonValue)
             nullOnError -> Rt_NullValue
             else -> {
-                val nodeTypeName = jsonValue.nodeType.name
+                val nodeTypeName = jsonValue.nodeTypeName
                 throw Rt_Exception.common(
                     "json.${m.fnSimpleName}:type_error:$nodeTypeName",
                     "JSON ${m.fnSimpleName} failed because the JSON value was a different type (got $nodeTypeName)."
@@ -384,32 +383,31 @@ private fun asTypeBody(
     }
 }
 
-private fun isTypeBody(m: Ld_MethodDsl<Rt_JsonValue>, checkType: (JsonNode) -> Boolean): Ld_BodyResult = with(m) {
+private fun isTypeBody(m: Ld_MethodDsl<Rt_JsonValue>, checkType: (Rt_JsonNode) -> Boolean): Ld_BodyResult = with(m) {
     val self by self()
     body(Rt_BooleanValue) { checkType(self.node) }
 }
 
 object JsonUtils {
-    fun canBeRellInteger(node: JsonNode): Boolean = when {
-        node.isLong || node.isInt || node.isShort -> true
-        node.isBigInteger -> {
+    fun canBeRellInteger(node: Rt_JsonNode): Boolean = when {
+        node.isLongNumber -> true
+        node.isBigIntegerNumber -> {
             val value = node.bigIntegerValue()
-            value != null &&
-                    value <= Rt_IntValue.MAX_VALUE_AS_BIGINT &&    // Would be out of range in Kotlin
+            value <= Rt_IntValue.MAX_VALUE_AS_BIGINT &&    // Would be out of range in Kotlin
                     value >= Rt_IntValue.MIN_VALUE_AS_BIGINT       // or BigInteger would truncate
         }
         else -> false
     }
 
-    fun canBeRellBigInteger(node: JsonNode): Boolean = node.isIntegralNumber &&
+    fun canBeRellBigInteger(node: Rt_JsonNode): Boolean = node.isIntegral &&
             node.bigIntegerValue() <= Lib_BigIntegerMath.MAX_VALUE &&
             node.bigIntegerValue() >= Lib_BigIntegerMath.MIN_VALUE
 
     sealed interface GetOperationResult
-    data class Success(val value: JsonNode): GetOperationResult
+    data class Success(val value: Rt_JsonNode): GetOperationResult
     data class Failure(val codeMsg: C_CodeMsg): GetOperationResult
 
-    fun arrayGet(node: JsonNode, index: Int, userFnName: String): GetOperationResult {
+    fun arrayGet(node: Rt_JsonNode, index: Int, userFnName: String): GetOperationResult {
         val result = node.get(index)
         return when {
             result != null -> Success(result)
@@ -419,21 +417,21 @@ object JsonUtils {
                     "JSON array index out of bounds: $index (length $size)")
             }
             else -> {
-                val nodeType = node.nodeType.name
+                val nodeType = node.nodeTypeName
                 Failure("expr_json_array_${userFnName}_nodetype:$nodeType" toCodeMsg
                         "JSON array index on non-array (got $nodeType)")
             }
         }
     }
 
-    fun objectGet(node: JsonNode, key: String, userFnName: String): GetOperationResult {
-        val result = node[key]
+    fun objectGet(node: Rt_JsonNode, key: String, userFnName: String): GetOperationResult {
+        val result = node.get(key)
         return when {
             result != null -> Success(result)
             node.isObject -> Failure("expr_json_object_${userFnName}_key:novalue:$key" toCodeMsg
                 "JSON object key not found: $key")
             else -> {
-                val nodeType = node.nodeType.name
+                val nodeType = node.nodeTypeName
                 Failure("expr_json_object_${userFnName}_nodetype:$nodeType" toCodeMsg
                     "JSON object lookup on non-object (got $nodeType)")
             }

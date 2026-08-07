@@ -4,13 +4,9 @@
 
 package net.postchain.rell.base.lib
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.BigIntegerNode
-import com.fasterxml.jackson.databind.node.IntNode
-import com.fasterxml.jackson.databind.node.LongNode
-import com.fasterxml.jackson.databind.node.ShortNode
 import net.postchain.rell.base.lib.type.JsonUtils.canBeRellInteger
 import net.postchain.rell.base.runtime.Rt_IntValue
+import net.postchain.rell.base.runtime.Rt_JsonNode
 import net.postchain.rell.base.testutils.BaseRellTest
 import java.math.BigInteger
 import kotlin.test.Test
@@ -664,35 +660,27 @@ internal object LibJsonTest: BaseRellTest() {
     }
 
     @Test fun testToRellIntGood() {
-        chkToRellIntOk(BigIntegerNode(BigInteger.valueOf(0)), 0)
-        chkToRellIntOk(BigIntegerNode(BigInteger.valueOf(-1)), -1)
-        chkToRellIntOk(BigIntegerNode(BigInteger.valueOf(1)), 1)
-        chkToRellIntOk(BigIntegerNode(BigInteger.valueOf(Rt_IntValue.MIN_VALUE)), Rt_IntValue.MIN_VALUE)
-        chkToRellIntOk(BigIntegerNode(BigInteger.valueOf(Rt_IntValue.MAX_VALUE)), Rt_IntValue.MAX_VALUE)
-        chkToRellIntOk(LongNode(0), 0)
-        chkToRellIntOk(LongNode(-1), -1)
-        chkToRellIntOk(LongNode(1), 1)
-        chkToRellIntOk(LongNode(java.lang.Long.MIN_VALUE), java.lang.Long.MIN_VALUE)
-        chkToRellIntOk(LongNode(java.lang.Long.MAX_VALUE), java.lang.Long.MAX_VALUE)
-        chkToRellIntOk(ShortNode(0), 0)
-        chkToRellIntOk(ShortNode(-1), -1)
-        chkToRellIntOk(ShortNode(1), 1)
-        chkToRellIntOk(ShortNode(java.lang.Short.MIN_VALUE), java.lang.Short.MIN_VALUE.toLong())
-        chkToRellIntOk(ShortNode(java.lang.Short.MAX_VALUE), java.lang.Short.MAX_VALUE.toLong())
-        chkToRellIntOk(IntNode(0), 0)
-        chkToRellIntOk(IntNode(-1), -1)
-        chkToRellIntOk(IntNode(1), 1)
-        chkToRellIntOk(IntNode(Integer.MIN_VALUE), Integer.MIN_VALUE.toLong())
-        chkToRellIntOk(IntNode(Integer.MAX_VALUE), Integer.MAX_VALUE.toLong())
+        chkToRellIntOk("0", 0)
+        chkToRellIntOk("-1", -1)
+        chkToRellIntOk("1", 1)
+        chkToRellIntOk("${Rt_IntValue.MIN_VALUE}", Rt_IntValue.MIN_VALUE)
+        chkToRellIntOk("${Rt_IntValue.MAX_VALUE}", Rt_IntValue.MAX_VALUE)
+        chkToRellIntOk("${Integer.MIN_VALUE}", Integer.MIN_VALUE.toLong())
+        chkToRellIntOk("${Integer.MAX_VALUE}", Integer.MAX_VALUE.toLong())
+        chkToRellIntOk("${java.lang.Short.MIN_VALUE}", java.lang.Short.MIN_VALUE.toLong())
+        chkToRellIntOk("${java.lang.Short.MAX_VALUE}", java.lang.Short.MAX_VALUE.toLong())
     }
 
-    private fun chkToRellIntOk(node: JsonNode, expected: Long) {
+    private fun chkToRellIntOk(literal: String, expected: Long) {
+        val node = Rt_JsonNode.parse(literal)
         assert(canBeRellInteger(node))
         assertEquals(Rt_IntValue.get(node.asLong()), Rt_IntValue.get(expected))
     }
 
     @Test fun testToRellIntBad() {
-        assert(!canBeRellInteger(BigIntegerNode(BigInteger.valueOf(Rt_IntValue.MIN_VALUE).minus(BigInteger.ONE))))
-        assert(!canBeRellInteger(BigIntegerNode(BigInteger.valueOf(Rt_IntValue.MAX_VALUE).plus(BigInteger.ONE))))
+        val tooSmall = BigInteger.valueOf(Rt_IntValue.MIN_VALUE).minus(BigInteger.ONE)
+        val tooBig = BigInteger.valueOf(Rt_IntValue.MAX_VALUE).plus(BigInteger.ONE)
+        assert(!canBeRellInteger(Rt_JsonNode.parse("$tooSmall")))
+        assert(!canBeRellInteger(Rt_JsonNode.parse("$tooBig")))
     }
 }

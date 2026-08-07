@@ -4,15 +4,20 @@
 
 package net.postchain.rell.base.utils.ide
 
+import com.fasterxml.jackson.core.JsonFactory
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.core.util.DefaultIndenter
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.core.util.Separators
-import com.fasterxml.jackson.databind.ObjectMapper
 import net.postchain.rell.base.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.ide.IdeCodeSnippet.Companion.writeValue
+import java.io.StringWriter
 
 class IdeSnippetMessage(
     @JvmField val pos: String,
@@ -73,7 +78,7 @@ class IdeCodeSnippet(
             "comments" to comments,
         )
 
-        val res = mapper.writeValueAsString(obj)
+        val res = writeJson(obj) { }
         deserializeOne(res) // Verification
         return res
     }
@@ -84,8 +89,7 @@ class IdeCodeSnippet(
 
     @Suppress("UNCHECKED_CAST")
     companion object {
-        // https://stackoverflow.com/questions/3907929/should-i-declare-jacksons-objectmapper-as-a-static-field
-        private val mapper = ObjectMapper()
+        private val FACTORY = JsonFactory()
 
         @JvmStatic fun serialize(snippets: Collection<IdeCodeSnippet>): String {
             val json = snippets.joinToString(separator = ",", prefix = "[", postfix = "]") { it.serialized }
@@ -93,13 +97,12 @@ class IdeCodeSnippet(
         }
 
         @JvmStatic fun deserialize(s: String): List<IdeCodeSnippet> {
-            val any = mapper.readValue(s, Any::class.java)
-            val list = any as List<Any>
+            val list = readJson(s) as List<Any>
             return list.map { deserializeFromRaw(it as Map<String, Any>) }
         }
 
         private fun deserializeOne(s: String): IdeCodeSnippet {
-            val any = mapper.readValue(s, Any::class.java)
+            val any = readJson(s)
             return deserializeFromRaw(any as Map<String, Any>)
         }
 
@@ -143,8 +146,73 @@ class IdeCodeSnippet(
                 .withArrayIndenter(DefaultIndenter("    ", "\n"))
                 .withObjectIndenter(DefaultIndenter("    ", "\n"))
                 .withSeparators(separators)
-            val jsonObject = mapper.readValue(json, Any::class.java)
-            return mapper.writer().with(prettyPrinter).writeValueAsString(jsonObject)
+            return writeJson(readJson(json)) { it.prettyPrinter = prettyPrinter }
+        }
+
+        private fun writeJson(value: Any?, configure: (JsonGenerator) -> Unit): String {
+            val writer = StringWriter()
+            FACTORY.createGenerator(writer).use { gen ->
+                configure(gen)
+                writeValue(gen, value)
+            }
+            return writer.toString()
+        }
+
+        /** Writes a plain Kotlin value tree - maps, lists, strings, numbers, booleans - as JSON. */
+        private fun writeValue(gen: JsonGenerator, value: Any?) {
+            when (value) {
+                null -> gen.writeNull()
+                is String -> gen.writeString(value)
+                is Boolean -> gen.writeBoolean(value)
+                is Int -> gen.writeNumber(value)
+                is Long -> gen.writeNumber(value)
+                is Map<*, *> -> {
+                    gen.writeStartObject()
+                    for ((key, v) in value) {
+                        gen.writeFieldName(key as String)
+                        writeValue(gen, v)
+                    }
+                    gen.writeEndObject()
+                }
+                is Collection<*> -> {
+                    gen.writeStartArray()
+                    value.forEach { writeValue(gen, it) }
+                    gen.writeEndArray()
+                }
+                else -> throw IllegalArgumentException("Cannot serialize value of type ${value.javaClass.name}")
+            }
+        }
+
+        /** Inverse of [writeValue]. */
+        private fun readJson(s: String): Any? = FACTORY.createParser(s).use { parser ->
+            parser.nextToken()
+            readValue(parser)
+        }
+
+        private fun readValue(parser: JsonParser): Any? = when (val token = parser.currentToken()) {
+            JsonToken.VALUE_NULL -> null
+            JsonToken.VALUE_STRING -> parser.text
+            JsonToken.VALUE_TRUE -> true
+            JsonToken.VALUE_FALSE -> false
+            JsonToken.VALUE_NUMBER_INT -> parser.numberValue
+            JsonToken.VALUE_NUMBER_FLOAT -> parser.doubleValue
+            JsonToken.START_OBJECT -> {
+                val map = mutableMapOf<String, Any?>()
+                while (parser.nextToken() != JsonToken.END_OBJECT) {
+                    val name = parser.currentName()
+                    parser.nextToken()
+                    map[name] = readValue(parser)
+                }
+                map
+            }
+            JsonToken.START_ARRAY -> {
+                val list = mutableListOf<Any?>()
+                while (parser.nextToken() != JsonToken.END_ARRAY) {
+                    list.add(readValue(parser))
+                }
+                list
+            }
+            else -> throw IllegalArgumentException("Unexpected JSON token: $token")
         }
     }
 }

@@ -3,7 +3,7 @@ plugins {
 }
 
 description =
-    "Rell runtime core: shared runtime primitives, value types, stdlib, lmodel DSL, SQL generation, GTV plumbing"
+    "Rell runtime core: shared runtime primitives, value types, stdlib, SQL generation, GTV plumbing"
 
 // Strip Kotlin's auto-inserted null-check intrinsics from this module's bytecode.
 // `Intrinsics.checkNotNullParameter` and similar functions build error-message strings via `StringBuilder`,
@@ -19,9 +19,8 @@ kotlin.compilerOptions.freeCompilerArgs.addAll(
 
 dependencies {
     api(projects.rellBase.frontend)
-
     api(libs.postchain.gtv)
-    implementation(libs.jackson.databind)
+    implementation(libs.jackson.core)
     implementation(libs.jooq)
     implementation(libs.postgresql)
     implementation(libs.bouncycastle)
