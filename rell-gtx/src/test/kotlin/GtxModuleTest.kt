@@ -5,7 +5,7 @@
 package net.postchain.rell.gtx
 
 import net.postchain.common.exception.UserMistake
-import net.postchain.gtv.GtvInteger
+import net.postchain.gtvmin.GtvInteger
 import net.postchain.gtx.NON_STRICT_QUERY_ARGUMENT
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.SqlTestUtils

@@ -4,7 +4,7 @@
 
 package net.postchain.rell.gtx.testutils
 
-import net.postchain.gtv.Gtv
+import net.postchain.gtvmin.Gtv
 import net.postchain.rell.base.testutils.BaseTesterTest
 
 abstract class BaseGtxTest(useSql: Boolean = true): BaseTesterTest(useSql) {

@@ -5,8 +5,9 @@
 package net.postchain.rell.gtx.testutils
 
 import net.postchain.common.BlockchainRid
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtvmin.GtvFactory
 import net.postchain.rell.base.runtime.PostchainGtvUtils
+import net.postchain.rell.base.utils.GtvBridge
 import net.postchain.rell.base.utils.formatEx
 import net.postchain.rell.module.RellPostchainModuleFactory
 
@@ -38,6 +39,6 @@ fun main() {
     (0 .. 100).toList().parallelStream().forEach {
         val cfg = baseConfig.asDict().toMutableMap()
         cfg["make_unique"] = GtvFactory.gtv(it.toLong())
-        RellPostchainModuleFactory().makeModule(GtvFactory.gtv(cfg), BlockchainRid.buildRepeat(it.toByte()))
+        RellPostchainModuleFactory().makeModule(GtvBridge.toPostchain(GtvFactory.gtv(cfg)), BlockchainRid.buildRepeat(it.toByte()))
     }
 }

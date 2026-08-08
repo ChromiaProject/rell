@@ -4,6 +4,7 @@
 
 package net.postchain.rell.api.gtx
 
+import java.io.File
 import net.postchain.rell.api.base.*
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
@@ -14,7 +15,7 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.SqlInitLogging
 import net.postchain.rell.base.sql.SqlInterceptor
 import net.postchain.rell.base.utils.*
-import java.io.File
+import net.postchain.rell.base.utils.GtvBridge
 
 public class SqlExecutionEvent(
     public val startTimeMs: Long,
@@ -259,7 +260,10 @@ internal object RellApiGtxInternal {
                     globalCtx = globalCtx,
                     chainCtx = chainCtx,
                     blockRunner = blockRunner,
-                    moduleArgsSource = Rt_GtvModuleArgsSource(config.compileConfig.moduleArgs, options),
+                    moduleArgsSource = Rt_GtvModuleArgsSource(
+                        config.compileConfig.moduleArgs.mapValuesToImmMap { GtvBridge.toRell(it.value) },
+                        options,
+                    ),
                     interpreterFactory = { config.interpreterFactory(rrApp, compilationSysFns) },
                     printTestCases = config.printTestCases,
                     printPrettyLargeValues = config.printPrettyLargeValues,

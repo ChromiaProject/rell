@@ -6,8 +6,8 @@ package net.postchain.rell.base.runtime.utils
 
 import mu.KLogger
 import net.postchain.common.BlockchainRid
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvFactory
 import net.postchain.rell.base.model.R_StackPos
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.utils.ImmList

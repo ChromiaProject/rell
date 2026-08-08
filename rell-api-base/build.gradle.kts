@@ -29,6 +29,9 @@ artifacts {
 dependencies {
     api(projects.rellBase)
 
+    // This module's API speaks Postchain GTV, while the runtime underneath it speaks gtv-min.
+    api(libs.postchain.gtv)
+
     // Experimental Truffle execution backend. Kept off the compile classpath (selected reflectively
     // by RellApiInterpreterBackend); `runtimeOnly` puts it on the runtime classpath of every API
     // consumer, so the `-Drell.execution.backend=truffle` dev switch works without consumer changes.

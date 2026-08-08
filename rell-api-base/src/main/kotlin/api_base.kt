@@ -4,6 +4,8 @@
 
 package net.postchain.rell.api.base
 
+import java.io.File
+import kotlin.annotation.AnnotationTarget.*
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.compiler.base.core.C_CompilationResult
@@ -22,8 +24,7 @@ import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_GtvModuleArgsSource
 import net.postchain.rell.base.utils.*
-import java.io.File
-import kotlin.annotation.AnnotationTarget.*
+import net.postchain.rell.base.utils.GtvBridge
 
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Retention(AnnotationRetention.BINARY)
@@ -364,7 +365,7 @@ public object RellApiBaseInternal {
         try {
             PostchainGtvUtils.moduleArgsGtvToRt(
                 expectedStruct,
-                actualGtv,
+                GtvBridge.toRell(actualGtv),
                 validateOnly = true,
                 defaultValueEvaluator = null,
                 compilerOptions = compilerOptions,

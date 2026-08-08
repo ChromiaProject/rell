@@ -19,7 +19,14 @@ kotlin.compilerOptions.freeCompilerArgs.addAll(
 
 dependencies {
     api(projects.rellBase.frontend)
-    api(libs.postchain.gtv)
+    api(libs.gtv.min.core)
+    // Crypto (CryptoSystem, KeyPair, Signature) and BlockchainRid/WrappedByteArray, both of which
+    // appear in this module's public API.
+    api(libs.postchain.common)
+    implementation(libs.gtv.min.json.jackson)
+    // `Rt_ValueClass.nativeTypes` builds KTypes via `KClass.createType()`. Previously came in
+    // transitively through postchain-gtv's reflective object mapper.
+    implementation(kotlin("reflect"))
     implementation(libs.jackson.core)
     implementation(libs.jooq)
     implementation(libs.postgresql)

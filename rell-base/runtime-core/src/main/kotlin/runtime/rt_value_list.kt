@@ -4,8 +4,8 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvArray
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvArray
 import net.postchain.rell.base.model.ErrorPos
 
 class Rt_ListValue(override val type: Rt_ValueClass<*>, val elements: MutableList<Rt_Value> = mutableListOf()):

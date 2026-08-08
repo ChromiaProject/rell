@@ -4,14 +4,15 @@
 
 package net.postchain.rell.base.runtime
 
-import com.google.gson.Gson
 import net.postchain.crypto.CryptoSystem
 import net.postchain.crypto.Secp256K1CryptoSystem
-import net.postchain.gtv.*
-import net.postchain.gtv.gtvml.GtvMLEncoder
-import net.postchain.gtv.gtvml.GtvMLParser
-import net.postchain.gtv.merkle.GtvMerkleHashCalculatorBase
-import net.postchain.gtv.merkle.makeMerkleHashCalculator
+import net.postchain.gtvmin.*
+import net.postchain.gtvmin.gtvml.GtvMLEncoder
+import net.postchain.gtvmin.gtvml.GtvMLParser
+import net.postchain.gtvmin.json.GtvJsonConfig
+import net.postchain.gtvmin.json.jackson.GtvJson
+import net.postchain.gtvmin.merkle.GtvMerkleHashCalculatorBase
+import net.postchain.gtvmin.merkle.makeMerkleHashCalculator
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.model.R_StructDefinition
@@ -21,11 +22,19 @@ object PostchainGtvUtils {
 
     val cryptoSystem: CryptoSystem = Secp256K1CryptoSystem()
     val hashCalculator = HashCalculator()
-    val merkleHashCalculator: GtvMerkleHashCalculatorBase = makeMerkleHashCalculator(2)
 
-    private val GSON: Gson = make_gtv_gson()
-    private val LENIENT_GSON: Gson = makeLenientGtvGson()
-    private val PRETTY_GSON: Gson = makeLenientGtvGsonBuilder().setPrettyPrinting().create()
+    // `gsonCompatible` keeps reading the malformed JSON the Gson-based implementation read, so that
+    // `gtv.from_json()` accepts what it has always accepted. It affects reading only.
+    private val JSON: GtvJson = GtvJson(GtvJsonConfig(gsonCompatible = true))
+
+    private val LENIENT_JSON: GtvJson = GtvJson(
+        GtvJsonConfig(bigIntegerAsString = false, supportBigInteger = true, gsonCompatible = true),
+    )
+
+    private val PRETTY_JSON: GtvJson = GtvJson(
+        GtvJsonConfig(bigIntegerAsString = false, supportBigInteger = true, gsonCompatible = true),
+        prettyPrint = true,
+    )
 
     fun gtvToBytes(v: Gtv): ByteArray = GtvEncoder.encodeGtv(v)
     fun bytesToGtv(v: ByteArray): Gtv = GtvFactory.decodeGtv(v)
@@ -34,10 +43,10 @@ object PostchainGtvUtils {
     fun gtvToXml(v: Gtv): String = GtvMLEncoder.encodeXMLGtv(v)
 
     fun gtvToJson(v: Gtv, supportBigInteger: Boolean = false): String =
-        (if (supportBigInteger) LENIENT_GSON else GSON).toJson(v, Gtv::class.java)
+        (if (supportBigInteger) LENIENT_JSON else JSON).encodeToString(v)
 
-    fun jsonToGtv(s: String): Gtv = GSON.fromJson(s, Gtv::class.java) ?: GtvNull
-    fun gtvToJsonPretty(v: Gtv): String = PRETTY_GSON.toJson(v, Gtv::class.java)
+    fun jsonToGtv(s: String): Gtv = JSON.decodeFromString(s)
+    fun gtvToJsonPretty(v: Gtv): String = PRETTY_JSON.encodeToString(v)
 
     fun moduleArgsGtvToRt(
         struct: R_StructDefinition,

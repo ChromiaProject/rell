@@ -10,11 +10,12 @@ import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.crypto.devtools.KeyPairHelper
 import net.postchain.devtools.ConfigFileBasedIntegrationTest
 import net.postchain.devtools.PostchainTestNode
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory.gtv
-import net.postchain.gtv.GtvNull
+import net.postchain.gtv.merkle.makeMerkleHashCalculator
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvFactory.gtv
+import net.postchain.gtvmin.GtvNull
 import net.postchain.gtx.GtxBuilder
-import net.postchain.rell.base.runtime.PostchainGtvUtils
+import net.postchain.rell.base.utils.GtvBridge
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 
@@ -48,8 +49,8 @@ abstract class BaseGtxIntegrationTest: ConfigFileBasedIntegrationTest() {
     protected fun makeTxGtv(opName: String, vararg opArgs: Gtv): ByteArray {
         val ownerIdx = 0
         val owner = KeyPairHelper.pubKey(ownerIdx)
-        return GtxBuilder(blockchainRid!!, listOf(owner), myCS, PostchainGtvUtils.merkleHashCalculator)
-            .addOperation(opName, *opArgs.toList().toTypedArray())
+        return GtxBuilder(blockchainRid!!, listOf(owner), myCS, makeMerkleHashCalculator(2))
+            .addOperation(opName, *opArgs.map { GtvBridge.toPostchain(it) }.toTypedArray())
             .finish()
             .sign(myCS.buildSigMaker(KeyPair(owner, KeyPairHelper.privKey(ownerIdx))))
             .buildGtx()

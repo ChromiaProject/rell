@@ -4,8 +4,8 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvInteger
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvInteger
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.sql.PreparedStatementParams

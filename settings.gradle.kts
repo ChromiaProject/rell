@@ -15,6 +15,9 @@ dependencyResolutionManagement {
         maven("https://gitlab.com/api/v4/projects/32294340/packages/maven") {
             name = "postchain"
         }
+        maven("https://gitlab.com/api/v4/projects/85219256/packages/maven") {
+            name = "postchain-gtv-min"
+        }
         maven("https://gitlab.com/api/v4/projects/64941451/packages/maven") {
             name = "chromia-cli-tools"
         }

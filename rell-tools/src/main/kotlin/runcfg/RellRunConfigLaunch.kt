@@ -6,6 +6,11 @@ package net.postchain.rell.tools.runcfg
 
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import java.io.StringReader
+import java.nio.file.Path
+import kotlin.io.path.Path
+import kotlin.io.path.absolute
+import kotlin.io.path.div
 import mu.KotlinLogging
 import mu.withLoggingContext
 import net.postchain.PostchainNode
@@ -33,17 +38,13 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.SqlInitLogging
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.GtvBridge
 import net.postchain.rell.gtx.PostchainBaseUtils
 import net.postchain.rell.module.RellPostchainModuleEnvironment
 import net.postchain.rell.tools.RellCompiledApp
 import net.postchain.rell.tools.RellToolsLogUtils
 import net.postchain.rell.tools.RellToolsUtils
 import org.apache.commons.configuration2.PropertiesConfiguration
-import java.io.StringReader
-import java.nio.file.Path
-import kotlin.io.path.Path
-import kotlin.io.path.absolute
-import kotlin.io.path.div
 
 private val log = run {
     RellToolsLogUtils.initLogging()
@@ -199,7 +200,7 @@ private class RellRunConfigLaunchCommand : RellRunConfigCommand("RellRunConfigLa
             for (tChain in tChains) {
                 val globalCtx = RellApiBaseUtils.createGlobalContext(compilerOptions, typeCheck = true)
                 val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(tChain.compiled.rrApp, Rt_ChainSqlMapping(tChain.chain.iid))
-                val chainCtx = Rt_ChainContext(tChain.gtvConfig, tChain.chain.brid)
+                val chainCtx = Rt_ChainContext(GtvBridge.toRell(tChain.gtvConfig), tChain.chain.brid)
 
                 val moduleArgsSource = PostchainBaseUtils.createModuleArgsSource(
                     tChain.compiled.rrApp,

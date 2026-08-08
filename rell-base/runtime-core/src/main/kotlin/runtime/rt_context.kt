@@ -6,8 +6,8 @@ package net.postchain.rell.base.runtime
 
 import mu.KLogging
 import net.postchain.common.types.WrappedByteArray
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvNull
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvNull
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.lib.test.Rt_TestBlockClock
 import net.postchain.rell.base.model.*

@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.lib.type
 
-import net.postchain.gtv.Gtv
+import net.postchain.gtvmin.Gtv
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.lib.Lib_Rell
 import net.postchain.rell.base.lmodel.dsl.Ld_BodyResult

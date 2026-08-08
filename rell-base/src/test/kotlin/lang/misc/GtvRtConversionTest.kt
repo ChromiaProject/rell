@@ -4,9 +4,9 @@
 
 package net.postchain.rell.base.lang.misc
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvByteArray
-import net.postchain.gtv.GtvString
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvByteArray
+import net.postchain.gtvmin.GtvString
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.utils.CommonUtils
 import kotlin.test.Test

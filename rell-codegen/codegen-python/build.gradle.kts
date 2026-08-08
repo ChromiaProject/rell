@@ -5,6 +5,7 @@ plugins {
 dependencies {
     implementation(projects.rellCodegen.codegen)
     implementation(projects.rellApiBase)
+    implementation(kotlin("reflect"))
 
     testImplementation(kotlin("test-junit5"))
     testImplementation(libs.assertk)

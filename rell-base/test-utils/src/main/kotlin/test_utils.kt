@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.testutils
 
-import net.postchain.gtv.Gtv
+import net.postchain.gtvmin.Gtv
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.lib.Lib_OpContext
 import net.postchain.rell.base.model.ModuleName

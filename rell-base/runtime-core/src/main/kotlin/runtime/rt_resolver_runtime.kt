@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.GtvEncoder
+import net.postchain.gtvmin.GtvEncoder
 import net.postchain.rell.base.model.R_Type
 import net.postchain.rell.base.model.rr.RR_ConstantValue
 import net.postchain.rell.base.model.rr.RR_ResolverRuntime

@@ -4,8 +4,8 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.GtvFactory
-import net.postchain.gtv.GtvNull
+import net.postchain.gtvmin.GtvFactory
+import net.postchain.gtvmin.GtvNull
 import java.lang.reflect.Modifier
 import java.math.BigDecimal
 import java.math.BigInteger

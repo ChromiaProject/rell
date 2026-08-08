@@ -4,9 +4,9 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvArray
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvArray
+import net.postchain.gtvmin.GtvFactory
 import net.postchain.rell.base.model.R_Attribute
 import net.postchain.rell.base.model.R_Struct
 import net.postchain.rell.base.model.R_StructType
@@ -214,7 +214,7 @@ interface Rt_StructValue: Rt_Value {
             val type = struct.type
 
             fun decode(ctx: GtvToRtContext, gtv: Gtv): MutableList<Rt_Value> {
-                return if (ctx.pretty && gtv.type == net.postchain.gtv.GtvType.DICT) {
+                return if (ctx.pretty && gtv.type == net.postchain.gtvmin.GtvType.DICT) {
                     val gtvFields = GtvRtUtils.gtvToMap(ctx, gtv, type.name)
                     val rtAttrs = attrs.mapIndexed { i, attr ->
                         gtvToRtStructAttr(ctx, attrConversions, struct, attr, i, gtvFields[attr.name])

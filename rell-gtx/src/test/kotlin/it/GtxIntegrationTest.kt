@@ -4,14 +4,15 @@
 
 package net.postchain.rell.gtx.it
 
-import net.postchain.concurrent.util.get
-import net.postchain.devtools.PostchainTestNode
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
-import net.postchain.rell.api.nativ.RellNativeEnvironment
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import net.postchain.concurrent.util.get
+import net.postchain.devtools.PostchainTestNode
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvFactory
+import net.postchain.rell.api.nativ.RellNativeEnvironment
+import net.postchain.rell.base.utils.GtvBridge
 
 @Suppress("SameParameterValue")
 class GtxIntegrationTest: BaseGtxIntegrationTest() {
@@ -170,7 +171,7 @@ class GtxIntegrationTest: BaseGtxIntegrationTest() {
 
     private fun callQuery(node: PostchainTestNode, name: String, args: Gtv): Gtv {
         val blockQueries = node.getBlockchainInstance().blockchainEngine.getBlockQueries()
-        return blockQueries.query(name, args).get()
+        return GtvBridge.toRell(blockQueries.query(name, GtvBridge.toPostchain(args)).get())
     }
 
     @AfterTest

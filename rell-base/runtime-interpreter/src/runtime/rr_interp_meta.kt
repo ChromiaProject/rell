@@ -4,10 +4,10 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvDecoder
-import net.postchain.gtv.GtvFactory
-import net.postchain.gtv.GtvNull
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvDecoder
+import net.postchain.gtvmin.GtvFactory
+import net.postchain.gtvmin.GtvNull
 import net.postchain.rell.base.model.KeyIndex
 import net.postchain.rell.base.model.rr.RR_Attribute
 import net.postchain.rell.base.model.rr.RR_EntityDefinition

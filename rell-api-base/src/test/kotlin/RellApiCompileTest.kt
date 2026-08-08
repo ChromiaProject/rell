@@ -4,6 +4,8 @@
 
 package net.postchain.rell.api.base
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import net.postchain.gtv.GtvFactory
 import net.postchain.rell.api.base.testutils.TestRellCliEnv
 import net.postchain.rell.base.compiler.base.utils.C_CommonError
@@ -13,9 +15,8 @@ import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.unwrap
+import net.postchain.rell.base.utils.GtvBridge
 import net.postchain.rell.base.utils.immListOf
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 internal class RellApiCompileTest: BaseRellApiTest() {
     private val rellVer = RellTestUtils.RELL_VER
@@ -477,6 +478,6 @@ internal class RellApiCompileTest: BaseRellApiTest() {
         if (ctErr != null) return ctErr
 
         val gtv = RellApiBaseInternal.compileGtv0(config, sourceDir, rModules ?: listOf(), cRes.files)
-        return PostchainGtvUtils.gtvToJson(gtv)
+        return PostchainGtvUtils.gtvToJson(GtvBridge.toRell(gtv))
     }
 }

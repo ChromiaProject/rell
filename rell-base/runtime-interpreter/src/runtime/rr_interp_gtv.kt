@@ -6,10 +6,9 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.common.exception.UserMistake
-import net.postchain.gtv.*
-import net.postchain.gtv.merkle.proof.GtvMerkleProofTreeFactory
-import net.postchain.gtv.merkle.proof.toGtvVirtual
+import net.postchain.gtvmin.*
+import net.postchain.gtvmin.merkle.proof.GtvMerkleProofTreeFactory
+import net.postchain.gtvmin.merkle.proof.toGtvVirtual
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_StructDefinition
 import net.postchain.rell.base.model.rr.RR_TupleField
@@ -99,7 +98,7 @@ private fun decodeVirtualArrayElements(ctx: GtvToRtContext, gtv: Gtv): List<Gtv?
     if (gtv !is GtvVirtual) {
         return try {
             gtv.asArray().toList()
-        } catch (_: UserMistake) {
+        } catch (_: GtvException) {
             throw GtvRtUtils.errGtv(
                 ctx, "virtual:gtv_type:${gtv.type}",
                 "Expected ARRAY, got ${gtv.type}",
@@ -117,7 +116,7 @@ private fun decodeVirtualDictEntries(ctx: GtvToRtContext, gtv: Gtv): Map<String,
     !is GtvVirtual -> {
         try {
             gtv.asDict()
-        } catch (_: UserMistake) {
+        } catch (_: GtvException) {
             throw GtvRtUtils.errGtv(
                 ctx, "virtual:gtv_type:${gtv.type}",
                 "Expected DICT, got ${gtv.type}",
@@ -372,7 +371,7 @@ internal fun Rt_InterpreterImpl.buildStructGtvConversion(
         } else {
             val rawArray = try {
                 gtv.asArray()
-            } catch (_: UserMistake) {
+            } catch (_: GtvException) {
                 throw GtvRtUtils.errGtvType(
                     ctx, rtTypeSelf.name,
                     "${GtvType.ARRAY}:${gtv.type}",

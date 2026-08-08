@@ -4,6 +4,10 @@
 
 package net.postchain.rell.tools.runcfg
 
+import java.nio.file.Path
+import kotlin.io.path.absolute
+import kotlin.io.path.pathString
+import kotlin.io.path.readText
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvEncoder
 import net.postchain.gtv.builder.GtvBuilder
@@ -14,11 +18,8 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.utils.Bytes32
 import net.postchain.rell.base.utils.Bytes33
+import net.postchain.rell.base.utils.GtvBridge
 import net.postchain.rell.base.utils.toBytes
-import java.nio.file.Path
-import kotlin.io.path.absolute
-import kotlin.io.path.pathString
-import kotlin.io.path.readText
 
 class RellPostAppCliConfig(val sourceDir: C_SourceDir, val configDir: Path, val config: RellPostAppConfig)
 
@@ -152,7 +153,7 @@ object RellRunConfigGenerator {
             dirBuilder.put("$chainPath/brid.txt", chain.brid.toHex())
 
             for ((height, config) in chain.configs) {
-                val xml = PostchainGtvUtils.gtvToXml(config.gtvConfig)
+                val xml = PostchainGtvUtils.gtvToXml(GtvBridge.toRell(config.gtvConfig))
                 dirBuilder.put("$chainPath/$height.xml", xml)
 
                 val bytes = GtvEncoder.encodeGtv(config.gtvConfig).toBytes()

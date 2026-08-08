@@ -5,7 +5,7 @@
 package net.postchain.rell.base.runtime.truffle
 
 import com.oracle.truffle.api.RootCallTarget
-import net.postchain.gtv.Gtv
+import net.postchain.gtvmin.Gtv
 import net.postchain.rell.base.model.DefinitionId
 import net.postchain.rell.base.model.FilePos
 import net.postchain.rell.base.model.R_Type

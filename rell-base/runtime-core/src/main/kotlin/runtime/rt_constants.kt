@@ -4,8 +4,8 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvFactory
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_Constants

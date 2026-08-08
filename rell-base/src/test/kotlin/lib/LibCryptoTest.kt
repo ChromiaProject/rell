@@ -9,7 +9,7 @@ import net.postchain.common.toHex
 import net.postchain.crypto.KeyPair
 import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.crypto.secp256k1_derivePubKey
-import net.postchain.gtv.Gtv
+import net.postchain.gtvmin.Gtv
 import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.utils.CommonUtils

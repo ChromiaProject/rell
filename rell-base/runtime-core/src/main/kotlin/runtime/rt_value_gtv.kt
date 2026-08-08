@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.*
+import net.postchain.gtvmin.*
 import net.postchain.rell.base.model.rr.RR_PrimitiveKind
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.utils.immListOf

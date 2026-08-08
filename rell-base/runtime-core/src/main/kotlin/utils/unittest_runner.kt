@@ -4,8 +4,8 @@
 
 package net.postchain.rell.base.utils
 
-import net.postchain.gtv.GtvFactory
-import net.postchain.gtv.GtvType
+import net.postchain.gtvmin.GtvFactory
+import net.postchain.gtvmin.GtvType
 import net.postchain.rell.base.lib.test.Rt_AssertEqualsError
 import net.postchain.rell.base.model.DefinitionName
 import net.postchain.rell.base.model.rr.*

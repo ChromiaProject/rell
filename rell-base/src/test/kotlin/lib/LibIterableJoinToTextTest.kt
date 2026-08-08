@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.lib
 
-import net.postchain.gtv.Gtv
+import net.postchain.gtvmin.Gtv
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.VirtualTestUtils
 import kotlin.test.Test

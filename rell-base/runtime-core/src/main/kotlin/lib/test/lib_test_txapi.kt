@@ -6,8 +6,8 @@ package net.postchain.rell.base.lib.test
 
 import net.postchain.common.hexStringToByteArray
 import net.postchain.crypto.secp256k1_derivePubKey
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvFactory
 import net.postchain.rell.base.compiler.base.core.C_DefinitionName
 import net.postchain.rell.base.compiler.base.lib.C_LibModule
 import net.postchain.rell.base.compiler.base.utils.C_StringQualifiedName

@@ -4,8 +4,8 @@
 
 package net.postchain.rell.base.runtime.utils
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvFactory
 import net.postchain.rell.base.model.rr.RR_EntityDefinition
 import net.postchain.rell.base.model.rr.RR_ObjectDefinition
 import net.postchain.rell.base.runtime.*

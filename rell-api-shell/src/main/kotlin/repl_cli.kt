@@ -4,6 +4,7 @@
 
 package net.postchain.rell.api.shell
 
+import java.io.File
 import net.postchain.gtv.Gtv
 import net.postchain.rell.api.base.InternalRellApi
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
@@ -15,8 +16,8 @@ import net.postchain.rell.base.runtime.Rt_GtvModuleArgsSource
 import net.postchain.rell.base.runtime.Rt_RellVersion
 import net.postchain.rell.base.runtime.Rt_RellVersionProperty
 import net.postchain.rell.base.sql.SqlManager
-import net.postchain.rell.base.utils.toImmMap
-import java.io.File
+import net.postchain.rell.base.utils.GtvBridge
+import net.postchain.rell.base.utils.mapValuesToImmMap
 
 @InternalRellApi
 public class ReplShellOptions(
@@ -48,7 +49,10 @@ public object ReplShell {
             sqlMgr,
             projExt,
             outChannel,
-            Rt_GtvModuleArgsSource(options.moduleArgs.toImmMap(), options.compilerOptions),
+            Rt_GtvModuleArgsSource(
+                options.moduleArgs.mapValuesToImmMap { GtvBridge.toRell(it.value) },
+                options.compilerOptions,
+            ),
         )
 
         val repl = ReplInterpreter.create(config) ?: return

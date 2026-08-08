@@ -4,9 +4,9 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.common.exception.UserMistake
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvType
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvException
+import net.postchain.gtvmin.GtvType
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
@@ -310,13 +310,13 @@ object GtvRtUtils {
         return when {
             gtv.type === GtvType.BIGINTEGER -> try {
                 gtv.asBigInteger()
-            } catch (e: UserMistake) {
+            } catch (e: GtvException) {
                 throw errGtvType(ctx, typeName, gtv, GtvType.BIGINTEGER, e)
             }
 
             ctx.pretty && gtv.type === GtvType.INTEGER -> try {
                 gtv.asInteger().toBigInteger()
-            } catch (e: UserMistake) {
+            } catch (e: GtvException) {
                 throw errGtvType(ctx, typeName, gtv, GtvType.BIGINTEGER, e)
             }
 
@@ -327,7 +327,7 @@ object GtvRtUtils {
     fun gtvToBoolean(ctx: GtvToRtContext, gtv: Gtv, typeName: String): Boolean {
         val i = try {
             gtv.asInteger()
-        } catch (e: UserMistake) {
+        } catch (e: GtvException) {
             throw errGtvType(ctx, typeName, gtv, GtvType.INTEGER, e)
         }
         return when (i) {
@@ -340,7 +340,7 @@ object GtvRtUtils {
     fun gtvToString(ctx: GtvToRtContext, gtv: Gtv, typeName: String): String {
         try {
             return gtv.asString()
-        } catch (e: UserMistake) {
+        } catch (e: GtvException) {
             throw errGtvType(ctx, typeName, gtv, GtvType.STRING, e)
         }
     }
@@ -348,7 +348,7 @@ object GtvRtUtils {
     fun gtvToByteArray(ctx: GtvToRtContext, gtv: Gtv, typeName: String): ByteArray {
         try {
             return gtv.asByteArray(convert = !ctx.strictGtvConversion)
-        } catch (e: UserMistake) {
+        } catch (e: GtvException) {
             val exp = immListOf(GtvType.BYTEARRAY, GtvType.STRING)
             if (gtv.type in exp) {
                 throw errGtvType(ctx, typeName, "bad_value:${gtv.type}", e.message ?: "invalid value")
@@ -363,7 +363,7 @@ object GtvRtUtils {
     fun gtvToJson(ctx: GtvToRtContext, gtv: Gtv, typeName: String): Rt_Value {
         val str = try {
             gtv.asString()
-        } catch (e: UserMistake) {
+        } catch (e: GtvException) {
             throw errGtvType(ctx, typeName, gtv, GtvType.STRING, e)
         }
         try {
@@ -387,7 +387,7 @@ object GtvRtUtils {
     fun gtvToArrayAny(ctx: GtvToRtContext, gtv: Gtv, typeName: String): Array<out Gtv> {
         try {
             return gtv.asArray()
-        } catch (e: UserMistake) {
+        } catch (e: GtvException) {
             throw errGtvType(ctx, typeName, gtv, GtvType.ARRAY, e)
         }
     }
@@ -395,7 +395,7 @@ object GtvRtUtils {
     fun gtvToMap(ctx: GtvToRtContext, gtv: Gtv, typeName: String): Map<String, Gtv> {
         try {
             return gtv.asDict()
-        } catch (e: UserMistake) {
+        } catch (e: GtvException) {
             throw errGtvType(ctx, typeName, gtv, GtvType.DICT, e)
         }
     }
@@ -411,7 +411,7 @@ object GtvRtUtils {
         typeName: String,
         actualGtv: Gtv,
         expectedGtvType: GtvType,
-        e: UserMistake,
+        e: GtvException,
     ): Rt_Exception = errGtvType(ctx, typeName, actualGtv, expectedGtvType, e.message)
 
     private fun errGtvType(

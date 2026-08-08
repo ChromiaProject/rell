@@ -4,6 +4,7 @@
 
 package net.postchain.rell.tools
 
+import kotlin.test.*
 import net.postchain.gtv.GtvDecoder
 import net.postchain.rell.api.base.RellCliBasicException
 import net.postchain.rell.api.base.RellCliExitException
@@ -12,10 +13,10 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.testutils.GtvTestUtils
 import net.postchain.rell.base.testutils.RellTestUtils
 import net.postchain.rell.base.testutils.unwrap
+import net.postchain.rell.base.utils.GtvBridge
 import net.postchain.rell.base.utils.RellVersions
 import net.postchain.rell.base.utils.toImmMap
 import net.postchain.rell.tools.runcfg.*
-import kotlin.test.*
 
 class RunConfigGenTest {
     @Test fun testNodeConfig() {
@@ -1045,7 +1046,7 @@ class RunConfigGenTest {
 
         val bytes = actualFile.data.toByteArray()
         val gtv = GtvDecoder.decodeGtv(bytes)
-        val actual = GtvTestUtils.encodeGtvStr(gtv)
+        val actual = GtvTestUtils.encodeGtvStr(GtvBridge.toRell(gtv))
         assertEquals(expected, actual)
     }
 }

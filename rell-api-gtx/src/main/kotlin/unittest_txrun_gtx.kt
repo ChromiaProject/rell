@@ -4,6 +4,7 @@
 
 package net.postchain.rell.api.gtx
 
+import java.sql.Connection
 import net.postchain.base.BaseBlockchainContext
 import net.postchain.base.BaseEContext
 import net.postchain.base.configuration.BlockchainConfigurationData
@@ -19,6 +20,7 @@ import net.postchain.crypto.PubKey
 import net.postchain.crypto.SigMaker
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.mapper.GtvObjectMapper
+import net.postchain.gtv.merkle.makeMerkleHashCalculator
 import net.postchain.gtx.GTXBlockchainConfigurationFactory
 import net.postchain.gtx.GtxBuilder
 import net.postchain.rell.api.base.RellApiBaseInternal
@@ -33,10 +35,10 @@ import net.postchain.rell.base.runtime.*
 import net.postchain.rell.base.sql.SqlInterceptor
 import net.postchain.rell.base.sql.SqlUtils.withSavepoint
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.GtvBridge
 import net.postchain.rell.gtx.Rt_PostchainTxContext
 import net.postchain.rell.gtx.Rt_PostchainTxContextFactory
 import net.postchain.rell.module.RellPostchainModuleEnvironment
-import java.sql.Connection
 
 public class Rt_PostchainUnitTestBlockRunner(
     private val keyPair: BytesKeyPair,
@@ -108,11 +110,11 @@ public class Rt_PostchainUnitTestBlockRunner(
             bcConfig.blockchainRid,
             signers,
             PostchainGtvUtils.cryptoSystem,
-            PostchainGtvUtils.merkleHashCalculator,
+            makeMerkleHashCalculator(2),
         )
 
         for (op in tx.ops) {
-            dataBuilder.addOperation(op.name.str(), *op.args.toTypedArray())
+            dataBuilder.addOperation(op.name.str(), *op.args.map { GtvBridge.toPostchain(it) }.toTypedArray())
         }
         val sigBuilder = dataBuilder.finish()
         checkDuplicateTransaction(eCtx, sigBuilder.txRid)
@@ -241,7 +243,7 @@ private class Rt_UnitTestPostchainTxContextFactory: Rt_PostchainTxContextFactory
     private inner class Rt_UnitTestPostchainTxContext: Rt_PostchainTxContext() {
         override fun emitEvent(type: String, data: Gtv) {
             val rtType = Rt_TextValue.get(type)
-            val rtData = Rt_GtvValue.get(data)
+            val rtData = Rt_GtvValue.get(GtvBridge.toRell(data))
             val v = Rt_TupleValue(Lib_Test_Events.EVENT_TUPLE_TYPE, immListOf(rtType, rtData))
             events.add(v)
         }

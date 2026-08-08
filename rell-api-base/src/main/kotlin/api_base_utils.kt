@@ -4,7 +4,7 @@
 
 package net.postchain.rell.api.base
 
-import net.postchain.gtv.GtvNull
+import net.postchain.gtvmin.GtvNull
 import net.postchain.rell.base.compiler.base.core.C_CompilationResult
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_MessageType

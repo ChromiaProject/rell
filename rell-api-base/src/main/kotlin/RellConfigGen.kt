@@ -17,6 +17,7 @@ import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.GtvBridge
 
 public class RellConfigGen(
         private val sourceDir: C_SourceDir,
@@ -43,7 +44,7 @@ public class RellConfigGen(
     private fun getConfigTemplate(template: String?): Gtv {
         if (template == null) return GtvFactory.gtv(mapOf())
         try {
-            return PostchainGtvUtils.xmlToGtv(template)
+            return GtvBridge.toPostchain(PostchainGtvUtils.xmlToGtv(template))
         } catch (e: Exception) {
             throw RellCliBasicException("Failed to parse template XML: ${e.message}")
         }
@@ -106,7 +107,7 @@ public class RellConfigGen(
         }
 
         public fun configToText(gtvConfig: Gtv): String {
-            val xml = PostchainGtvUtils.gtvToXml(gtvConfig)
+            val xml = PostchainGtvUtils.gtvToXml(GtvBridge.toRell(gtvConfig))
             return xml
         }
 

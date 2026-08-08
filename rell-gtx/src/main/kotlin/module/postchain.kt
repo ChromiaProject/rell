@@ -4,6 +4,12 @@
 
 package net.postchain.rell.module
 
+import java.sql.SQLException
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.*
+import kotlin.math.max
 import mu.KLogging
 import net.postchain.base.BaseBlockBuilderExtension
 import net.postchain.base.data.DatabaseAccess
@@ -37,14 +43,9 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.runtime.utils.isPostgresQueryCanceled
 import net.postchain.rell.base.sql.*
 import net.postchain.rell.base.utils.*
+import net.postchain.rell.base.utils.GtvBridge
 import net.postchain.rell.gtx.*
 import org.jooq.impl.DSL
-import java.sql.SQLException
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.*
-import kotlin.math.max
 
 private class ErrorHandler(
     val printer: Rt_Printer,
@@ -374,7 +375,7 @@ private class RellPostchainModule(
 
         val resultType = interpreter.resolveType(rrQuery.type())
         val gtvResult = resultType.gtvConversion!!.rtToGtv(rtResult, GTV_QUERY_PRETTY)
-        return gtvResult
+        return GtvBridge.toPostchain(gtvResult)
     }
 
     private fun <T> getRoutine(kind: String, map: Map<MountName, T>, name: String): T {
@@ -487,7 +488,7 @@ private class RellPostchainModule(
         for (obj in rrApp.sqlDefs.objects) {
             val objRowid = objectSnapshotIds.getValue(obj.rEntity.sqlMapping.metaName)
             val objData = Rt_SnapshotSqlUtils.readObjectState(sqlCtx, sqlExec, obj.rEntity, interpreter)
-            datums.add(SnapshotDatum(objRowid, objData, false))
+            datums.add(SnapshotDatum(objRowid, GtvBridge.toPostchain(objData), false))
         }
 
         return datums
@@ -581,7 +582,8 @@ private class RellPostchainModule(
         val gtvCtx = GtvToRtContext.make(false)
         val rtValues = entity.attributes.values.map { attr ->
             val rtType = interpreter.resolveType(attr.type)
-            values[attr.name]?.let { rtType.gtvConversion!!.gtvToRt(gtvCtx, it) } ?: gtvCtx.getDefaultValue(entity, attr, interpreter)
+            values[attr.name]?.let { rtType.gtvConversion!!.gtvToRt(gtvCtx, GtvBridge.toRell(it)) }
+                ?: gtvCtx.getDefaultValue(entity, attr, interpreter)
         }
 
         if (isObject) {
@@ -636,6 +638,10 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
         val gtxNode = config.asDict().getValue("gtx").asDict()
         val rellNode = gtxNode.getValue("rell").asDict()
 
+        // The configuration crosses into Rell here, once per configuration load; everything on the Rell
+        // side reads it from this value rather than converting again.
+        val rellConfig = GtvBridge.toRell(config)
+
         val combinedPrinter = env.combinedPrinter ?: env.logPrinter
 
         val errorHandler = ErrorHandler(combinedPrinter, env.wrapCtErrors, env.wrapRtErrors)
@@ -643,7 +649,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
         return errorHandler.handleError({ "Module initialization failed" }) {
             val modApp = getApp(rellNode, errorHandler)
             val bcRid = Bytes32(blockchainRID.data)
-            val chainCtx = Rt_ChainContext(config, bcRid)
+            val chainCtx = Rt_ChainContext(rellConfig, bcRid)
             val chainDeps = getGtxChainDependencies(config)
             val moduleArgsSource = PostchainBaseUtils.createModuleArgsSource(modApp.rrApp, config, modApp.compilerOptions)
             val strictGtvConversion = (rellNode["strictGtvConversion"]?.asBoolean() ?: false)
@@ -955,6 +961,6 @@ private object RellPcUtils {
     fun convertArg(ctx: GtvToRtContext, interpreter: Rt_Interpreter, param: RR_FunctionParam, arg: Gtv): Rt_Value {
         val subCtx = ctx.updateSymbol(GtvToRtSymbol_ParamName(param.name), true)
         val rtType = interpreter.resolveType(param.type)
-        return rtType.gtvConversion!!.gtvToRt(subCtx, arg)
+        return rtType.gtvConversion!!.gtvToRt(subCtx, GtvBridge.toRell(arg))
     }
 }

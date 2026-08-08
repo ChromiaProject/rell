@@ -4,7 +4,9 @@
 
 package net.postchain.rell.serialization
 
-import net.postchain.gtv.*
+import net.postchain.gtvmin.*
+import net.postchain.gtvmin.json.GtvJsonConfig
+import net.postchain.gtvmin.json.jackson.GtvJson
 import java.util.*
 
 /**
@@ -17,9 +19,9 @@ import java.util.*
  * raw GTV bytes which C++ / native backends can consume directly without a JSON parser.
  */
 internal object GtvBinaryHelper {
-    private val GSON = make_gtv_gson()
+    private val JSON = GtvJson(GtvJsonConfig(gsonCompatible = true))
 
-    fun jsonToBinary(json: String): ByteArray = GtvEncoder.encodeGtv(GSON.fromJson(json, Gtv::class.java) ?: GtvNull)
+    fun jsonToBinary(json: String): ByteArray = GtvEncoder.encodeGtv(JSON.decodeFromString(json))
 
     fun binaryToJson(bytes: ByteArray): String {
         if (bytes.size > DeserLimits.MAX_GTV_SIZE) {
@@ -35,7 +37,7 @@ internal object GtvBinaryHelper {
             throw RRDeserializationException("malformed GTV: ${e.javaClass.simpleName}", e)
         }
         return try {
-            GSON.toJson(gtv, Gtv::class.java)
+            JSON.encodeToString(gtv)
         } catch (e: StackOverflowError) {
             throw RRDeserializationException("malformed GTV: JSON encoder recursion exceeded", e)
         }

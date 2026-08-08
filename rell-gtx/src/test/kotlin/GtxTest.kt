@@ -4,8 +4,8 @@
 
 package net.postchain.rell.gtx
 
-import net.postchain.gtv.GtvBigInteger
-import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtvmin.GtvBigInteger
+import net.postchain.gtvmin.GtvFactory.gtv
 import net.postchain.rell.base.testutils.TestFixtures
 import net.postchain.rell.gtx.testutils.BaseGtxTest
 import org.intellij.lang.annotations.Language

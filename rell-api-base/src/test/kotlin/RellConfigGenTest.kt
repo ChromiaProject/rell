@@ -4,6 +4,8 @@
 
 package net.postchain.rell.api.base
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import net.postchain.gtv.GtvFactory
 import net.postchain.rell.base.compiler.base.core.C_Compiler
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
@@ -11,9 +13,8 @@ import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.testutils.GtvTestUtils
 import net.postchain.rell.base.testutils.RellTestUtils
+import net.postchain.rell.base.utils.GtvBridge
 import net.postchain.rell.base.utils.RellVersions
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 internal class RellConfigGenTest {
     private val ver = RellTestUtils.RELL_VER
@@ -122,7 +123,8 @@ internal class RellConfigGenTest {
         val rrApp = cRes.rrApp
         checkNotNull(rrApp)
 
-        val templateGtv = if (templateXml == null) GtvFactory.gtv(mapOf()) else PostchainGtvUtils.xmlToGtv(templateXml)
+        val templateGtv = if (templateXml == null) GtvFactory.gtv(mapOf())
+            else GtvBridge.toPostchain(PostchainGtvUtils.xmlToGtv(templateXml))
         val configGen = RellConfigGen(sourceDir, RellVersions.VERSION, modules, cRes.files, rrApp)
 
         val actualGtv = configGen.makeConfig(templateGtv)

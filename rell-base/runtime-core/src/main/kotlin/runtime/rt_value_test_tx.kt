@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.Gtv
+import net.postchain.gtvmin.Gtv
 import net.postchain.rell.base.lib.test.R_TestBlockType
 import net.postchain.rell.base.lib.test.R_TestTxType
 import net.postchain.rell.base.lib.test.RawTestOpValue

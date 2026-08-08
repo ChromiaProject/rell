@@ -8,13 +8,14 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import java.io.OutputStream
+import kotlin.io.path.*
 import net.postchain.gtv.Gtv
 import net.postchain.rell.api.base.RellCliBasicException
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.api.base.RellConfigGen
 import net.postchain.rell.base.runtime.PostchainGtvUtils
-import java.io.OutputStream
-import kotlin.io.path.*
+import net.postchain.rell.base.utils.GtvBridge
 
 fun main(args: Array<String>) {
     RellToolsLogUtils.initLogging()
@@ -56,7 +57,7 @@ private class RellConfigGenCommand : RellBaseCommand("RellConfigGen") {
 
     private fun writeResult(os: OutputStream, config: Gtv) {
         val bytes = if (binaryOutput) {
-            PostchainGtvUtils.gtvToBytes(config)
+            PostchainGtvUtils.gtvToBytes(GtvBridge.toRell(config))
         } else {
             val text = RellConfigGen.configToText(config)
             text.toByteArray()

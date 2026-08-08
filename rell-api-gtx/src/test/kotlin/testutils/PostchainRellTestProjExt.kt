@@ -4,7 +4,7 @@
 
 package net.postchain.rell.api.gtx.testutils
 
-import net.postchain.gtv.Gtv
+import net.postchain.gtvmin.Gtv
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.gtx.*
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
@@ -15,6 +15,7 @@ import net.postchain.rell.base.repl.ReplInterpreterProjExt
 import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.sql.SqlInitProjExt
 import net.postchain.rell.base.testutils.RellTestProjExt
+import net.postchain.rell.base.utils.GtvBridge
 import net.postchain.rell.base.utils.Rt_UnitTestBlockRunner
 import net.postchain.rell.base.utils.mapToImmList
 import net.postchain.rell.gtx.PostchainBaseUtils
@@ -45,7 +46,9 @@ internal object PostchainRellTestProjExt: RellTestProjExt {
         val blkRunConfig = createBlockRunnerConfig()
 
         val modules = rrApp.modules.filter { !it.test && !it.abstract && !it.external }.mapToImmList { it.name }
-        val compileConfig = RellApiCompile.Config.Builder().moduleArgs0(moduleArgs).build()
+        val compileConfig = RellApiCompile.Config.Builder()
+            .moduleArgs0(moduleArgs.mapValues { GtvBridge.toPostchain(it.value) })
+            .build()
         val blkRunStrategy = Rt_DynamicBlockRunnerStrategy(sourceDir, keyPair, modules, compileConfig)
 
         return Rt_PostchainUnitTestBlockRunner(keyPair, blkRunConfig, blkRunStrategy)

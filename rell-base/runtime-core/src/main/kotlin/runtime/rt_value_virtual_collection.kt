@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.Gtv
+import net.postchain.gtvmin.Gtv
 
 sealed class Rt_VirtualCollectionValue(gtv: Gtv): Rt_VirtualValue(gtv) {
     abstract fun size(): Int

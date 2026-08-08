@@ -4,8 +4,8 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvNull
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvNull
 import net.postchain.rell.base.model.rr.RR_Type
 
 object Rt_NullValue: Rt_Value, Rt_ValueClass<Rt_NullValue> {

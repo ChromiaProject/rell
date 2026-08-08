@@ -4,6 +4,8 @@
 
 package net.postchain.rell.gtx.testutils
 
+import kotlin.test.assertEquals
+import kotlin.test.fail
 import net.postchain.base.BaseBlockEContext
 import net.postchain.base.BaseEContext
 import net.postchain.base.BaseTxEContext
@@ -17,10 +19,10 @@ import net.postchain.core.EContext
 import net.postchain.core.Transaction
 import net.postchain.core.Transactor
 import net.postchain.core.TxEContext
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
-import net.postchain.gtv.GtvString
-import net.postchain.gtv.GtvType
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvFactory
+import net.postchain.gtvmin.GtvString
+import net.postchain.gtvmin.GtvType
 import net.postchain.gtx.GTXModule
 import net.postchain.gtx.GTXSchemaManager
 import net.postchain.gtx.data.ExtOpData
@@ -28,10 +30,9 @@ import net.postchain.rell.base.model.rr.RR_App
 import net.postchain.rell.base.sql.SqlExecutor
 import net.postchain.rell.base.testutils.*
 import net.postchain.rell.base.utils.CommonUtils
+import net.postchain.rell.base.utils.GtvBridge
 import net.postchain.rell.module.RellPostchainModuleEnvironment
 import net.postchain.rell.module.RellPostchainModuleFactory
-import kotlin.test.assertEquals
-import kotlin.test.fail
 
 class RellGtxTester(
     tstCtx: RellTestContext,
@@ -120,9 +121,9 @@ class RellGtxTester(
 
         withEContext(false) { ctx ->
             val res = eval.wrapRt {
-                module.query(ctx, name, queryGtv)
+                module.query(ctx, name, GtvBridge.toPostchain(queryGtv))
             }
-            GtvTestUtils.gtvToStr(res)
+            GtvTestUtils.gtvToStr(GtvBridge.toRell(res))
         }
     }
 
@@ -154,7 +155,7 @@ class RellGtxTester(
             val res = withEContext(true) { ctx ->
                 val blkCtx = BaseBlockEContext(ctx, 0, 0, System.currentTimeMillis(), mapOf(), dummyEventSink)
                 val bcRid = hexToRid(blockchainRid)
-                val opData = ExtOpData(name, 0, args.toTypedArray(), bcRid, arrayOf(), arrayOf())
+                val opData = ExtOpData(name, 0, args.map { GtvBridge.toPostchain(it) }.toTypedArray(), bcRid, arrayOf(), arrayOf())
                 val transactor = module.makeTransactor(opData)
 
                 eval.wrapRt {
@@ -215,7 +216,7 @@ class RellGtxTester(
 
         val moduleCfg = getModuleConfig(moduleCode)
         val bcRid = hexToRid(blockchainRid)
-        val module = factory.makeModule(moduleCfg, bcRid)
+        val module = factory.makeModule(GtvBridge.toPostchain(moduleCfg), bcRid)
         return module
     }
 

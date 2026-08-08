@@ -18,4 +18,8 @@ kotlin.compilerOptions.freeCompilerArgs.addAll(
 
 dependencies {
     api(libs.kotlinx.collections.immutable)
+
+    // GtvBridge converts between the two GTV implementations, so both appear in its signatures.
+    api(libs.gtv.min.core)
+    api(libs.postchain.gtv)
 }

@@ -7,7 +7,7 @@
 package com.chromia.rell.doc.compose
 
 import com.chromia.rell.doc.model.*
-import net.postchain.gtv.Gtv
+import net.postchain.gtvmin.Gtv
 import net.postchain.rell.api.base.InternalRellApi
 import net.postchain.rell.api.base.RellApiBaseInternal
 import net.postchain.rell.api.base.RellApiCompile

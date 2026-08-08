@@ -4,9 +4,9 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.*
-import net.postchain.gtv.merkle.proof.GtvMerkleProofTreeFactory
-import net.postchain.gtv.merkle.proof.toGtvVirtual
+import net.postchain.gtvmin.*
+import net.postchain.gtvmin.merkle.proof.GtvMerkleProofTreeFactory
+import net.postchain.gtvmin.merkle.proof.toGtvVirtual
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_FeatureSwitch
 import net.postchain.rell.base.model.*

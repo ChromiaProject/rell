@@ -4,9 +4,9 @@
 
 package net.postchain.rell.base.testutils
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
-import net.postchain.gtv.GtvType
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvFactory
+import net.postchain.gtvmin.GtvType
 import net.postchain.rell.base.runtime.GtvToRtContext
 import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.runtime.Rt_Value

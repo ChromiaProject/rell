@@ -8,8 +8,8 @@ import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
 import net.postchain.common.toHex
 import net.postchain.common.types.WrappedByteArray
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvNull
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvNull
 import net.postchain.rell.base.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.base.compiler.base.utils.C_MessageType
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir

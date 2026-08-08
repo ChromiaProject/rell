@@ -4,8 +4,8 @@
 
 package net.postchain.rell.base.lib
 
-import net.postchain.gtv.GtvFactory.gtv
-import net.postchain.gtv.builder.GtvBuilder
+import net.postchain.gtvmin.GtvFactory.gtv
+import net.postchain.gtvmin.builder.GtvBuilder
 import net.postchain.rell.base.compiler.base.core.C_CompilerExecutor
 import net.postchain.rell.base.compiler.base.utils.C_Utils
 import net.postchain.rell.base.model.*

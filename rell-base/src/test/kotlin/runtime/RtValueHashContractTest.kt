@@ -73,7 +73,7 @@ class RtValueHashContractTest {
         val attrNames = listOf("a", "b")
         val attrs1: List<Rt_Value?> = listOf(Rt_IntValue.get(1), Rt_IntValue.get(2))
         val attrs2: List<Rt_Value?> = listOf(Rt_IntValue.get(1), Rt_IntValue.get(2))
-        val gtv = net.postchain.gtv.GtvFactory.gtv(net.postchain.gtv.GtvNull)
+        val gtv = net.postchain.gtvmin.GtvFactory.gtv(net.postchain.gtvmin.GtvNull)
 
         val v1 = Rt_VirtualStructValue(gtv, typeByDefIndex, innerType, "shared", attrNames, attrs1)
         val v2 = Rt_VirtualStructValue(gtv, typeByName, innerType, "shared", attrNames, attrs2)

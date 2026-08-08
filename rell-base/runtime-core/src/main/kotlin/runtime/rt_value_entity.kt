@@ -4,8 +4,8 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvInteger
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvInteger
 
 @JvmRecord
 data class Rt_EntityValue(override val type: Rt_ValueClass<*>, val rowid: Long): Rt_Value {

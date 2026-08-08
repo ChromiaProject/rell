@@ -18,4 +18,20 @@ library on the classpath is configuration to write and a source of run-time surp
 - jOOQ is no longer re-exported by the compiler front end. It remains on the compile classpath of the three modules
   that generate SQL, and is gone from the rest, including rell-api-base and rell-tools.
 
+- The compiler and runtime now do their GTV work through gtv-min, a reimplementation of the format whose core
+  depends on nothing but the Kotlin standard library, and take the crypto system and the shared value types from
+  postchain-common directly. This is a change of implementation rather than a reduction: postchain-gtv, and gson
+  with it, stay on the classpath, because the converter between the two representations lives in the utils module
+  that the whole tree depends on.
+
+  GTV is consensus-critical, so the two implementations are held to byte-for-byte agreement on ASN.1 DER, both
+  merkle hash versions and JSON by a differential test suite that runs them side by side. Encoding, hashes and
+  the text that gtv.to_json produces are unchanged, and gtv.from_json still reads everything it read before,
+  including the malformed JSON that Gson accepted.
+
+  The change stops at the compiler and runtime. Every published API still speaks Postchain's GTV, so no signature
+  in rell-api-base, rell-api-gtx, rell-api-shell or rell-api-native changed and embedding code needs no edit. The
+  two representations meet in a converter in the utils module, which the API layers use to convert at the calls
+  into the runtime.
+
 No behavior changes are expected.

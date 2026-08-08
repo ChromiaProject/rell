@@ -7,6 +7,7 @@ package net.postchain.rell.gtx
 import net.postchain.core.BlockEContext
 import net.postchain.core.TxEContext
 import net.postchain.gtv.Gtv
+import net.postchain.gtvmin.Gtv as RellGtv
 import net.postchain.gtx.SnapshotContext
 import net.postchain.gtx.data.OpData
 import net.postchain.rell.base.lib.Lib_OpContext
@@ -15,6 +16,7 @@ import net.postchain.rell.base.runtime.Rt_Interpreter
 import net.postchain.rell.base.runtime.Rt_OpContext
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.utils.Bytes
+import net.postchain.rell.base.utils.GtvBridge
 import net.postchain.rell.base.utils.ImmList
 import net.postchain.rell.base.utils.ImmMap
 import net.postchain.rell.base.utils.immMapOf
@@ -74,19 +76,19 @@ class Rt_PostchainOpContext(
     }
 
     private fun opToRtValue(interpreter: Rt_Interpreter, op: OpData): Rt_Value =
-        Lib_OpContext.gtxTransactionStructValue(interpreter, op.opName, op.args.asList())
+        Lib_OpContext.gtxTransactionStructValue(interpreter, op.opName, op.args.map { GtvBridge.toRell(it) })
 
-    override fun emitEvent(type: String, data: Gtv) {
-        txCtx.emitEvent(type, data)
+    override fun emitEvent(type: String, data: RellGtv) {
+        txCtx.emitEvent(type, GtvBridge.toPostchain(data))
     }
 
     override fun hasSnapshotContext() = eCtx != null && snapshotContext != null
 
     override fun objectSnapshotId(metaName: String): Long = objectSnapshotIds.getValue(metaName)
 
-    override fun emitDatum(datumId: Long, datum: Gtv, isPermanent: Boolean) {
+    override fun emitDatum(datumId: Long, datum: RellGtv, isPermanent: Boolean) {
         if (eCtx != null) {
-            snapshotContext?.emitDatum(eCtx, datumId, datum, isPermanent)
+            snapshotContext?.emitDatum(eCtx, datumId, GtvBridge.toPostchain(datum), isPermanent)
         }
     }
 }

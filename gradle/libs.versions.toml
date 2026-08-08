@@ -1,6 +1,7 @@
 [versions]
 kotlin = "2.3.0"
 postchain = "3.49.18"
+gtv-min = "0.1.1"
 kotlinx-benchmark = "0.4.17"
 async-profiler = "4.4"
 
@@ -59,12 +60,15 @@ jline = { module = "org.jline:jline", version.ref = "jline" }
 jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm", version.ref = "kotlinx-collections-immutable" }
 postchain-client = { module = "net.postchain.client:postchain-client", version = "3.39.6" }
+gtv-min-core = { module = "net.postchain.gtvmin:gtv-min-core", version.ref = "gtv-min" }
+gtv-min-json-jackson = { module = "net.postchain.gtvmin:gtv-min-json-jackson", version.ref = "gtv-min" }
 
 # common testing
 assertk = { module = "com.willowtreeapps.assertk:assertk-jvm", version.ref = "assertk" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 # versions from postchain-bom
+postchain-common = { module = "net.postchain:postchain-common" }
 postchain-gtv = { module = "net.postchain:postchain-gtv" }
 postchain-spi = { module = "net.postchain:postchain-spi" }
 postchain-base = { module = "net.postchain:postchain-base" }

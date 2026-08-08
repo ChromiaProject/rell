@@ -4,9 +4,9 @@
 
 package net.postchain.rell.base.lang.type
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
-import net.postchain.gtv.GtvNull
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvFactory
+import net.postchain.gtvmin.GtvNull
 import net.postchain.rell.base.testutils.BaseRellTest
 import net.postchain.rell.base.testutils.GtvTestUtils
 import net.postchain.rell.base.testutils.VirtualTestUtils

@@ -4,9 +4,9 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvArray
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvArray
+import net.postchain.gtvmin.GtvFactory
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.utils.toImmList
 
@@ -129,7 +129,7 @@ class Rt_TupleValue private constructor(
                 }
 
                 private fun decodeFields(ctx: GtvToRtContext, gtv: Gtv): List<Rt_Value> {
-                    return if (ctx.pretty && allFieldsNamed && gtv.type == net.postchain.gtv.GtvType.DICT) {
+                    return if (ctx.pretty && allFieldsNamed && gtv.type == net.postchain.gtvmin.GtvType.DICT) {
                         val gtvFields = GtvRtUtils.gtvToMap(ctx, gtv, typeName)
                         checkTupleFieldCount(ctx, gtvFields.size, fieldNames.size, "dictionary")
                         fieldNames.mapIndexed { i, name ->

@@ -4,6 +4,7 @@
 
 package net.postchain.rell.gtx
 
+import java.sql.Connection
 import net.postchain.base.configuration.BlockchainConfigurationData
 import net.postchain.base.data.DatabaseAccess
 import net.postchain.common.exception.UserMistake
@@ -15,9 +16,9 @@ import net.postchain.rell.base.runtime.PostchainGtvUtils
 import net.postchain.rell.base.runtime.Rt_GtvModuleArgsSource
 import net.postchain.rell.base.runtime.Rt_ModuleArgsSource
 import net.postchain.rell.base.utils.Bytes32
+import net.postchain.rell.base.utils.GtvBridge
 import net.postchain.rell.base.utils.mapKeysToImmMap
 import net.postchain.rell.base.utils.toIntExact
-import java.sql.Connection
 
 object PostchainBaseUtils {
     fun getBlockchainConfigHashVersion(config: Gtv): Int {
@@ -26,7 +27,7 @@ object PostchainBaseUtils {
 
     fun calcBlockchainRid(config: Gtv): Bytes32 {
         val version = getBlockchainConfigHashVersion(config)
-        val hash = PostchainGtvUtils.hashCalculator.hash(config, version)
+        val hash = PostchainGtvUtils.hashCalculator.hash(GtvBridge.toRell(config), version)
         return Bytes32(hash)
     }
 
@@ -39,6 +40,7 @@ object PostchainBaseUtils {
         val rellNode = gtxNode.getValue("rell").asDict()
 
         val gtvs = (rellNode["moduleArgs"]?.asDict() ?: mapOf())
+            .mapValues { GtvBridge.toRell(it.value) }
             .mapKeysToImmMap { ModuleName.of(it.key) }
 
         val defaultValuesSupported = Rt_GtvModuleArgsSource.DEFAULT_VALUES_SWITCH.isActive(compilerOptions)

@@ -4,13 +4,13 @@
 
 package net.postchain.rell.base.testutils
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvInteger
-import net.postchain.gtv.generateProof
-import net.postchain.gtv.merkle.GtvMerkleHashCalculatorV1
-import net.postchain.gtv.merkle.path.GtvPathFactory
-import net.postchain.gtv.merkle.path.GtvPathSet
-import net.postchain.rell.base.runtime.PostchainGtvUtils
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvInteger
+import net.postchain.gtvmin.generateProof
+import net.postchain.gtvmin.merkle.GtvMerkleHashCalculatorV1
+import net.postchain.gtvmin.merkle.Sha256Digester
+import net.postchain.gtvmin.merkle.path.GtvPathFactory
+import net.postchain.gtvmin.merkle.path.GtvPathSet
 
 object VirtualTestUtils {
     fun argToGtv(args: String) = GtvTestUtils.decodeGtvStr(args)
@@ -35,7 +35,7 @@ object VirtualTestUtils {
 
         val gtvPaths = GtvPathSet(pathsSet)
 
-        val calculator = GtvMerkleHashCalculatorV1(PostchainGtvUtils.cryptoSystem)
+        val calculator = GtvMerkleHashCalculatorV1(Sha256Digester)
         val merkleProofTree = gtv.generateProof(gtvPaths, calculator)
         val proofGtv = merkleProofTree.toGtv()
         return proofGtv

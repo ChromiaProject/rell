@@ -4,9 +4,9 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvArray
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvArray
+import net.postchain.gtvmin.GtvFactory
 import net.postchain.rell.base.model.rr.RR_TupleField
 import net.postchain.rell.base.model.rr.RR_Type
 import net.postchain.rell.base.utils.immListOf
@@ -100,7 +100,7 @@ class Rt_MapValue(override val type: Rt_ValueClass<*>, map: MutableMap<Rt_Value,
             val rtTypeRef by rtType
 
             fun decodeMap(ctx: GtvToRtContext, gtv: Gtv): MutableMap<Rt_Value, Rt_Value> {
-                return if (isTextKey && gtv.type == net.postchain.gtv.GtvType.DICT) {
+                return if (isTextKey && gtv.type == net.postchain.gtvmin.GtvType.DICT) {
                     GtvRtUtils.gtvToMap(ctx, gtv, typeName)
                         .mapKeys { (k, _) -> Rt_TextValue.get(k) as Rt_Value }
                         .mapValues { (_, v) -> valueConv.gtvToRt(ctx, v) }

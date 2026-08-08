@@ -4,8 +4,8 @@
 
 package net.postchain.rell.base.runtime
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvArray
+import net.postchain.gtvmin.Gtv
+import net.postchain.gtvmin.GtvArray
 
 class Rt_SetValue(override val type: Rt_ValueClass<*>, val elements: MutableSet<Rt_Value>):
     Rt_Value, Rt_CollectionValue {

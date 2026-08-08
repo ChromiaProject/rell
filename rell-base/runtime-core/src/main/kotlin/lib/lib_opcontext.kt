@@ -4,7 +4,7 @@
 
 package net.postchain.rell.base.lib
 
-import net.postchain.gtv.Gtv
+import net.postchain.gtvmin.Gtv
 import net.postchain.rell.base.compiler.ast.S_Pos
 import net.postchain.rell.base.compiler.base.core.C_DefinitionType
 import net.postchain.rell.base.compiler.base.core.C_QualifiedName
