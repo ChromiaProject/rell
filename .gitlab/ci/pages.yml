@@ -267,15 +267,14 @@ pages:regression:
       dotenv: mr-comment.env
     expire_in: 30 days
 
-# Manual Rell stdlib documentation publish: build local chr against the snapshot Rell, then run
-# `chr generate docs-site --system` (the chromia-build-tools docs entrypoint that drives the
-# rell-dokka-plugin against the bundled stdlib). HTML is published as a job artifact, entry point
-# `index.html` (Dokka's landing page). Mirrors `work/build-local-docs.sh` end-to-end.
+# Manual Rell stdlib documentation publish: runs the rell-dokka-plugin CLI directly against the
+# bundled stdlib (`--system`), the same entry point `chr generate docs-site --system` calls. HTML
+# is published as a job artifact, entry point `index.html`.
 #
-# Extends `.local-chr-cache-no-postgres`: docs generation is pure Dokka, no Postgres needed; we
-# still want the persistent ~/.m2 + chromia-cli-local cache so reruns skip the chr rebuild.
+# Deliberately not extending `.setup` / `.local-chr-cache`: docs generation needs neither
+# PostgreSQL nor Docker nor a chr build, so there is no reason to pay for `buildLocalChr` and the
+# persistent ~/.m2 cache it requires. Same shape as `pages:lsp` above.
 pages:docs:
-  extends: .local-chr-cache-no-postgres
   stage: portal
   tags: [ saas-linux-medium-amd64 ]
   interruptible: true
@@ -283,14 +282,12 @@ pages:docs:
     - when: manual
       allow_failure: true
   needs: []
+  before_script:
+    - !reference [ .setup-fragments, develocity-inject ]
   script:
-    - ./gradlew $GRADLE_FLAGS_MEDIUM :performance:buildLocalChr
-    - mkdir -p public
-    # `--enable-native-access=ALL-UNNAMED` mirrors work/build-local-docs.sh — chr's JVM startup
-    # logs Foreign API warnings without it. JAVA_ARGS is forwarded by the chr launcher.
-    - |
-      JAVA_ARGS="${JAVA_ARGS:-} --enable-native-access=ALL-UNNAMED" \
-        chromia-cli-local/chromia-cli/target/chromia-cli-dev-dist/bin/chr generate docs-site --system -d public
+    # Absolute target: the `run` task's working directory is the rell-dokka-plugin project dir,
+    # so a relative --target would land there instead of the job's `public/`.
+    - ./gradlew $GRADLE_FLAGS_MEDIUM :rell-dokka-plugin:run --args="--system --target $CI_PROJECT_DIR/public"
     - echo "Rell docs - $CI_JOB_URL/artifacts/file/public/index.html"
     # Hand the portal links to the MR-comment follow-up (consumed via dotenv on MR pipelines).
     - |
