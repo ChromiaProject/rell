@@ -2,7 +2,7 @@
 
 ## High-Level Features
 
-Rell Dokka Plugin generates HTML documentation for Rell code.
+Rell Docgen generates HTML documentation for Rell code.
 Two distinct sources of input &mdash; Rell project source trees and the in-process standard library &mdash; feed into the same model and the same renderer:
 
 ### 1. Project Documentation (`SourceBuild`)

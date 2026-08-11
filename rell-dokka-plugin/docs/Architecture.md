@@ -2,7 +2,7 @@
 
 ## High-Level Architecture
 
-Rell Dokka Plugin is split into two layers connected by an immutable model:
+Rell Docgen is split into two layers connected by an immutable model:
 
 ```mermaid
 flowchart TD

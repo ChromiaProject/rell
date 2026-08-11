@@ -1,25 +1,25 @@
 # Introduction
 
-**Project Name:** Rell Dokka Plugin
+**Project Name:** Rell Docgen
 
 ## Project Summary
 
-Rell Dokka Plugin is a **self-contained HTML documentation generator** for the Rell programming language. The "dokka"
-in the name and in the package layout is historical &mdash; earlier versions were implemented as a JetBrains Dokka plugin.
-The current implementation no longer depends on it: it walks the Rell compiler model directly, builds an internal
+Rell Docgen is a **self-contained HTML documentation generator** for the Rell programming language. The `rell-dokka-plugin`
+module name, the `dokka` package segments, and the `RellDokka*` class names are historical &mdash; earlier versions were
+implemented as a JetBrains Dokka plugin. The current implementation no longer depends on it: it walks the Rell compiler model directly, builds an internal
 site model (`Doc_Site`), and renders the whole site with kotlinx.html + a CSS/JS bundle shipped inside the jar.
 
-The plugin works by:
+Rell Docgen works by:
 
 1. **Loading a Rell program model** &mdash; either by compiling a user project through `RellApiBaseInternal.compileApp`(`SourceBuild`), or by walking the in-process standard library (`Lib_Rell.MODULE` + `Lib_RellTest.MODULE`) via the `L_Namespace` graph (`SystemBuild`).
 2. **Projecting it to a renderer-only model** &mdash; `R_Module` / `L_Namespace` definitions are converted to the immutable `Doc_*` data classes in `com.chromia.rell.doc.model`. The renderer never sees a compiler type.
 3. **Writing an HTML directory tree** &mdash; `SiteRender` walks the `Doc_Site` and emits `index.html`, `navigation.html`, `scripts/pages.json`, `styles/site.css`, per-module / per-package / per-def pages, and copies user-supplied stylesheets/assets plus bundled fonts.
 
-The plugin ships as a CLI (`com.chromia.rell.dokka.cli.MainKt`) and as a library: `RellDokkaGenerator(builder).generate()` is the entry point called from both chromia-cli and `rell-gradle-plugin`.
+It ships as a CLI (`com.chromia.rell.dokka.cli.MainKt`) and as a library: `RellDokkaGenerator(builder).generate()` is the entry point called from both chromia-cli and `rell-gradle-plugin`.
 
 ## Value Creation
 
-Rell Dokka Plugin enables developers to:
+Rell Docgen enables developers to:
 
 - **Generate API documentation automatically** from compiled Rell source and doc comments, with no manual maintenance.
 - **Publish a reference for the Rell standard library** directly from the in-process `L_NamespaceMember` graph &mdash; no source files needed, so the output always reflects the version of `rell-base` linked into the jar.
@@ -29,7 +29,7 @@ Rell Dokka Plugin enables developers to:
 
 ## Upstream and Downstream Projects
 
-### Upstream Dependencies (What Rell Dokka Plugin Consumes)
+### Upstream Dependencies (What Rell Docgen Consumes)
 
 **1. `rell-base` and `rell-api-base`**
 - **Role:** Provide the Rell compiler frontend, the runtime model (`R_Module`, `R_Function`, `R_Type`, …), the in-process standard library (`Lib_Rell`, `Lib_RellTest`), and `RellApiBaseInternal.compileApp` / `RellApiCompile`.
@@ -47,7 +47,7 @@ Rell Dokka Plugin enables developers to:
 **4. `clikt`**
 - **Role:** Command-line option parsing in `cli/main.kt`.
 
-### Downstream Projects (What Consumes Rell Dokka Plugin)
+### Downstream Projects (What Consumes Rell Docgen)
 
 **1. Chromia CLI**
 - Calls `RellDokkaGenerator(builder).generate()` from `GenerateDocsSiteCommand`. The constructor + `generate()` shape is part of the public contract and cannot change without coordinating a chromia-cli release. Chromia CLI passes its own `BuildCliEnv` (a `RellCliEnv` subtype) via `builder.cliEnv(...)`.
