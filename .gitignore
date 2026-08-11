@@ -56,5 +56,6 @@ CLAUDE.local.md
 .claude/hooks/*
 !.claude/hooks/edit_guard.py
 !.claude/hooks/stop_devtxt_check.py
+!.claude/hooks/stop_apicheck.py
 .junie/
 .ai/
