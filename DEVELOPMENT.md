@@ -278,7 +278,14 @@ that version, builds them, and syncs the fresh Rell jars into the distribution.
 chromia-cli-local/chromia-cli/target/chromia-cli-dev-dist/bin/chr --version
 ```
 
-To force a clean re-clone of the Chromia CLI repos, pass `-PchrRebuild`:
+Rebuilding the Chromia CLI itself is the expensive part, and it is almost never necessary: the
+task records a key covering the two CLI checkouts' HEAD, Rell's dependency footprint (its POMs in
+`~/.m2`) and Rell's ABI dumps. When that key is unchanged, the Maven build is skipped and only the
+fresh Rell jars are synced into the existing distribution, so `chr` still runs the Rell code you
+just built. A one-module smoke compile guards the cache-hit path; if it fails, the task rebuilds
+from scratch on its own.
+
+To force a clean re-clone and a full rebuild of the Chromia CLI repos, pass `-PchrRebuild`:
 
 ```shell
 ./gradlew :performance:buildLocalChr -PchrRebuild
