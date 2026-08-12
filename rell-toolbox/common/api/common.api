@@ -1,11 +1,10 @@
 public final class net/postchain/rell/toolbox/chromia/ChromiaModelProvider {
 	public static final field Companion Lnet/postchain/rell/toolbox/chromia/ChromiaModelProvider$Companion;
 	public static final field DEFAULT_CHROMIA_MODEL_FILENAME Ljava/lang/String;
-	public static final field DEFAULT_CHROMIA_MODEL_RELL_VERSION Ljava/lang/String;
 	public fun <init> (Ljava/net/URI;Ljava/nio/file/Path;)V
 	public synthetic fun <init> (Ljava/net/URI;Ljava/nio/file/Path;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getChromiaModel ()Lnet/postchain/rell/toolbox/chromia/model/ChromiaModel;
-	public final fun getRellLanguageVersion ()Ljava/lang/String;
+	public final fun getCompatibility ()Lnet/postchain/rell/toolbox/chromia/RellCompatibility;
 	public final fun loadChromiaModel ()Lnet/postchain/rell/toolbox/chromia/model/ChromiaModel;
 	public final fun resolveIgnoreReportingUris (Ljava/net/URI;)Ljava/util/Set;
 	public final fun updateChromiaModel (Ljava/net/URI;Lnet/postchain/rell/toolbox/chromia/model/ChromiaModel;)V
@@ -13,6 +12,39 @@ public final class net/postchain/rell/toolbox/chromia/ChromiaModelProvider {
 
 public final class net/postchain/rell/toolbox/chromia/ChromiaModelProvider$Companion {
 	public final fun loadChromiaModelFromFile (Ljava/nio/file/Path;)Lnet/postchain/rell/toolbox/chromia/model/ChromiaModel;
+}
+
+public final class net/postchain/rell/toolbox/chromia/RellCompatibility {
+	public static final field Companion Lnet/postchain/rell/toolbox/chromia/RellCompatibility$Companion;
+	public fun <init> (Ljava/lang/String;Lnet/postchain/rell/base/model/R_LangVersion;Lnet/postchain/rell/toolbox/chromia/RellCompatibility$Status;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lnet/postchain/rell/base/model/R_LangVersion;
+	public final fun component3 ()Lnet/postchain/rell/toolbox/chromia/RellCompatibility$Status;
+	public final fun copy (Ljava/lang/String;Lnet/postchain/rell/base/model/R_LangVersion;Lnet/postchain/rell/toolbox/chromia/RellCompatibility$Status;)Lnet/postchain/rell/toolbox/chromia/RellCompatibility;
+	public static synthetic fun copy$default (Lnet/postchain/rell/toolbox/chromia/RellCompatibility;Ljava/lang/String;Lnet/postchain/rell/base/model/R_LangVersion;Lnet/postchain/rell/toolbox/chromia/RellCompatibility$Status;ILjava/lang/Object;)Lnet/postchain/rell/toolbox/chromia/RellCompatibility;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDeclared ()Ljava/lang/String;
+	public final fun getStatus ()Lnet/postchain/rell/toolbox/chromia/RellCompatibility$Status;
+	public final fun getVersion ()Lnet/postchain/rell/base/model/R_LangVersion;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class net/postchain/rell/toolbox/chromia/RellCompatibility$Companion {
+	public final fun getMAX_VERSION ()Lnet/postchain/rell/base/model/R_LangVersion;
+	public final fun getMIN_VERSION ()Lnet/postchain/rell/base/model/R_LangVersion;
+	public final fun resolve (Ljava/lang/String;)Lnet/postchain/rell/toolbox/chromia/RellCompatibility;
+}
+
+public final class net/postchain/rell/toolbox/chromia/RellCompatibility$Status : java/lang/Enum {
+	public static final field ABSENT Lnet/postchain/rell/toolbox/chromia/RellCompatibility$Status;
+	public static final field DECLARED Lnet/postchain/rell/toolbox/chromia/RellCompatibility$Status;
+	public static final field MALFORMED Lnet/postchain/rell/toolbox/chromia/RellCompatibility$Status;
+	public static final field TOO_NEW Lnet/postchain/rell/toolbox/chromia/RellCompatibility$Status;
+	public static final field TOO_OLD Lnet/postchain/rell/toolbox/chromia/RellCompatibility$Status;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lnet/postchain/rell/toolbox/chromia/RellCompatibility$Status;
+	public static fun values ()[Lnet/postchain/rell/toolbox/chromia/RellCompatibility$Status;
 }
 
 public final class net/postchain/rell/toolbox/chromia/model/ChromiaModel {
@@ -28,10 +60,6 @@ public final class net/postchain/rell/toolbox/chromia/model/ChromiaModel {
 	public final fun getLibs ()Ljava/util/Map;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
-}
-
-public final class net/postchain/rell/toolbox/chromia/model/ChromiaModelKt {
-	public static final field DEFAULT_CHROMIA_MODEL_RELL_VERSION Ljava/lang/String;
 }
 
 public final class net/postchain/rell/toolbox/chromia/model/CompileSection {

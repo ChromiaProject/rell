@@ -426,7 +426,6 @@ class BodyConversionServiceTest {
     ): List<CodeAction> {
         val workspaceFolder = testData(tempDir) {
             addMainFile(code)
-            config { compile("compile:\n  rellVersion: $JUMP_EXPR_TEST_RELL_VERSION") }
         }.workspaceFolder
         mainFileUri = workspaceFolder.resolve("src/main.rell").toURI()
 
@@ -452,7 +451,6 @@ class BodyConversionServiceTest {
         val edit = action.edit.changes[mainFileUri.toString()]!!.single()
         val workspaceFolder = testData(tempDir) {
             addMainFile(applyEdit(code, edit))
-            config { compile("compile:\n  rellVersion: $JUMP_EXPR_TEST_RELL_VERSION") }
         }.workspaceFolder
 
         val checkIndexer = WorkspaceIndexer(
@@ -477,12 +475,5 @@ class BodyConversionServiceTest {
         val start = lines.take(edit.range.start.line).sumOf { it.length + 1 } + edit.range.start.character
         val end = lines.take(edit.range.end.line).sumOf { it.length + 1 } + edit.range.end.character
         return code.substring(0, start) + edit.newText + code.substring(end)
-    }
-
-    private companion object {
-        // Jump expressions (the `x ?: return 0` case exercised by this file) are version-gated;
-        // the default test fixture's rellVersion (0.14.5) predates the gate, so it must be
-        // pinned above the gate for the converted code to compile without a version error.
-        const val JUMP_EXPR_TEST_RELL_VERSION = "0.16.1"
     }
 }

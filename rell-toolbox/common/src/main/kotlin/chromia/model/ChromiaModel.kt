@@ -10,8 +10,6 @@ import net.postchain.common.types.WrappedByteArray
 import java.nio.file.Path
 import kotlin.io.path.readText
 
-const val DEFAULT_CHROMIA_MODEL_RELL_VERSION = "0.14.5"
-
 data class ChromiaModel(
     val compile: CompileSection = CompileSection(),
     val libs: Map<String, RellLibraryModel> = emptyMap(),

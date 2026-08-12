@@ -45,6 +45,7 @@ public final class net/postchain/rell/toolbox/indexer/WorkspaceIndexer {
 	public final fun getAllIssues ()Ljava/util/Map;
 	public final fun getAllLintAndFormatIssues ()Ljava/util/Map;
 	public final fun getChromiaConfigUri ()Ljava/net/URI;
+	public final fun getCompatibility ()Lnet/postchain/rell/toolbox/chromia/RellCompatibility;
 	public final fun getExcludeFolders ()Ljava/util/Set;
 	public final fun getFileMap ()Ljava/util/concurrent/ConcurrentHashMap;
 	public final fun getFileUriResourceMap ()Ljava/util/concurrent/ConcurrentHashMap;

@@ -9,6 +9,7 @@ import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.toolbox.chromia.ChromiaModelProvider
+import net.postchain.rell.toolbox.chromia.RellCompatibility
 import net.postchain.rell.toolbox.chromia.model.ChromiaModel
 import net.postchain.rell.toolbox.common.fileName
 import net.postchain.rell.toolbox.formatter.FormatterOptions
@@ -39,6 +40,11 @@ class WorkspaceIndexer(
 ) {
     private val logger = KotlinLogging.logger {}
     private val chromiaModelProvider = ChromiaModelProvider(projectRootUri, chromiaConfigUri?.toPath())
+
+    /** The Rell version this index root is analysed with — see `compile.rellVersion`. */
+    val compatibility: RellCompatibility
+        get() = chromiaModelProvider.getCompatibility()
+
     private var ignoreReportingUris: Set<URI> =
         chromiaModelProvider.resolveIgnoreReportingUris(workspaceUri)
     private val resourceFactory = RellResourceFactory(workspaceUri, AntlrRellParser(), chromiaModelProvider)

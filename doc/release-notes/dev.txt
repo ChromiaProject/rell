@@ -19,3 +19,51 @@ library on the classpath is configuration to write and a source of run-time surp
   that generate SQL, and is gone from the rest, including rell-api-base and rell-tools.
 
 No behavior changes are expected.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Tools: Language server honours compile.rellVersion
+
+The language server now analyses a project at the Rell version its settings file declares. The version in
+compile.rellVersion selects the compiler's compatibility mode, so a project pinned to an older release sees the
+diagnostics that release would have produced - a library function added later is reported as not existing yet, and
+so are the language constructs that carry a version gate.
+
+Code completion follows the same rule. Names the declared version does not have are no longer offered, down to the
+individual overload: a function whose newest signature postdates the declared version still completes, but that
+signature is not suggested.
+
+Three defects in the old behaviour are fixed:
+
+- A project with no settings file, or one that declares no compile.rellVersion, was analysed as Rell 0.14.5. Every
+  language feature added since - lambdas, value blocks and jump expressions among them - was reported as an error.
+  Such a project is now analysed at the language server's own version.
+
+- A compile.rellVersion the compiler cannot honour - not a version at all, older than the oldest compatibility mode
+  (0.10.9), or newer than the language server itself - aborted compilation of every file in the project, leaving it
+  with no diagnostics at all. The value is now clamped into the supported range and analysis proceeds.
+
+- The on-disk index cache recorded the language-server version but not the compatibility version, so editing
+  compile.rellVersion while the server was down brought back the previous version's diagnostics. The cache is now
+  discarded when the two disagree.
+
+New projects created through the language server's templates get the server's own version in their chromia.yml,
+instead of a hardcoded 0.14.5.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tools: Language server accepts a settings-file switch at runtime
+
+A new request lets an editor tell the language server which Chromia settings files the user has
+chosen, at any point in the session:
+
+    rell/setSettingsFiles  { "configFileUris": ["file:///.../contracts/dev.yml"] }  ->  boolean
+
+It replaces the set previously supplied by the chromiaConfigFiles initialization option and
+re-indexes the affected roots, answering once the new index is in place; the boolean says whether
+anything was re-indexed. Only files that differ from the chromia.yml of their own directory need
+listing - the server finds those by name - so an empty list means "use name-based discovery
+everywhere", which is what switching a directory back to its chromia.yml amounts to.
+
+This is what makes switching a project between, say, chromia.yml and dev.yml take effect: nothing
+changes on disk when the user picks a different settings file, so the server's file watcher cannot
+see it. Previously the editor had to restart the server to be sure, losing the index with it. The
+newly active file's compile.rellVersion and compile.source govern from then on.

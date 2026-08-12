@@ -8,6 +8,7 @@ import assertk.assertThat
 import assertk.assertions.containsOnly
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.toolbox.chromia.model.RellLibraryModel
 import net.postchain.rell.toolbox.testing.testData
 import org.junit.jupiter.api.Test
@@ -100,13 +101,14 @@ class ChromiaModelProviderTest {
     }
 
     @Test
-    fun `getRellLanguageVersion should return default version when chromia model is not loaded`() {
-        val rellVersion = ChromiaModelProvider(null).getRellLanguageVersion()
-        assertThat(rellVersion).isEqualTo(ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_RELL_VERSION)
+    fun `getCompatibility should return the bundled version when chromia model is not loaded`() {
+        val compatibility = ChromiaModelProvider(null).getCompatibility()
+        assertThat(compatibility.version).isEqualTo(RellCompatibility.MAX_VERSION)
+        assertThat(compatibility.status).isEqualTo(RellCompatibility.Status.ABSENT)
     }
 
     @Test
-    fun `getRellLanguageVersion should return rell version from chromia model`(@TempDir dir: File) {
+    fun `getCompatibility should return the version declared in the chromia model`(@TempDir dir: File) {
         testData(dir) {
             config {
                 blockchains(
@@ -121,12 +123,13 @@ class ChromiaModelProviderTest {
             }
         }
 
-        val rellVersion = ChromiaModelProvider(dir.toURI()).getRellLanguageVersion()
-        assertThat(rellVersion).isEqualTo("0.13.15")
+        val compatibility = ChromiaModelProvider(dir.toURI()).getCompatibility()
+        assertThat(compatibility.version).isEqualTo(R_LangVersion.of("0.13.15"))
+        assertThat(compatibility.status).isEqualTo(RellCompatibility.Status.DECLARED)
     }
 
     @Test
-    fun `getRellLanguageVersion should return default version from chromia model when version is empty`(
+    fun `getCompatibility should return the bundled version when the declared version is empty`(
         @TempDir dir: File
     ) {
         testData(dir) {
@@ -143,12 +146,13 @@ class ChromiaModelProviderTest {
             }
         }
 
-        val rellVersion = ChromiaModelProvider(dir.toURI()).getRellLanguageVersion()
-        assertThat(rellVersion).isEqualTo(ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_RELL_VERSION)
+        val compatibility = ChromiaModelProvider(dir.toURI()).getCompatibility()
+        assertThat(compatibility.version).isEqualTo(RellCompatibility.MAX_VERSION)
+        assertThat(compatibility.status).isEqualTo(RellCompatibility.Status.ABSENT)
     }
 
     @Test
-    fun `getRellLanguageVersion should return default version when compile version isn't specified`(
+    fun `getCompatibility should return the bundled version when compile version isn't specified`(
         @TempDir dir: File
     ) {
         testData(dir) {
@@ -163,8 +167,9 @@ class ChromiaModelProviderTest {
             }
         }
 
-        val rellVersion = ChromiaModelProvider(dir.toURI()).getRellLanguageVersion()
-        assertThat(rellVersion).isEqualTo(ChromiaModelProvider.DEFAULT_CHROMIA_MODEL_RELL_VERSION)
+        val compatibility = ChromiaModelProvider(dir.toURI()).getCompatibility()
+        assertThat(compatibility.version).isEqualTo(RellCompatibility.MAX_VERSION)
+        assertThat(compatibility.status).isEqualTo(RellCompatibility.Status.ABSENT)
     }
 
     @Test

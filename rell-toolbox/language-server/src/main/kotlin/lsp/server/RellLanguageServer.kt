@@ -46,7 +46,6 @@ internal class RellLanguageServer(
     private val lspSystemPropertiesProvider: LspSystemPropertiesProvider,
     private val inlayHintManager: RellInlayHintsManager,
 ) : LanguageServer, LanguageClientAware {
-
     private val logger = KotlinLogging.logger {}
 
     private lateinit var languageClient: LanguageClient
@@ -126,6 +125,7 @@ internal class RellLanguageServer(
             // Chromia settings files chosen by the client (chr -s/--settings), merged with
             // name-based discovery — see RellIndexingManager.explicitChromiaConfigFiles. A bad
             // entry must never fail initialize: the client would be left without any server.
+            // `rell/setSettingsFiles` replaces this set later, when the user switches file.
             indexingManager.explicitChromiaConfigFiles = initializationOptions.get("chromiaConfigFiles")
                 ?.takeIf { it.isJsonArray }?.asJsonArray
                 ?.mapNotNull { element -> parseConfigFileUri(element) }
@@ -163,6 +163,29 @@ internal class RellLanguageServer(
     @JsonRequest(useSegment = false, value = "rell/about")
     fun about(): CompletableFuture<RellAbout> {
         return CompletableFuture.completedFuture(RellVersionInfo.getAbout())
+    }
+
+    /**
+     * Replaces the settings files the client has chosen (`chromiaConfigFiles` at initialize) and
+     * re-indexes if the set changed, answering once the new index is in place. This is what makes
+     * switching a directory between `chromia.yml` and a sibling take effect: the declared
+     * `compile.rellVersion` and `compile.source` of the newly active file govern from then on.
+     *
+     * Returns whether a re-index happened. Unusable entries are dropped, as at initialize.
+     */
+    @JsonRequest(useSegment = false, value = "rell/setSettingsFiles")
+    fun setSettingsFiles(params: SetSettingsFilesParams): CompletableFuture<Boolean> {
+        val configFiles = params.configFileUris.orEmpty().mapNotNull { uri ->
+            try {
+                parseFileUri(uri)?.takeIf { File(it).isFile }
+            } catch (@Suppress("SwallowedException") e: Exception) {
+                logger.warn(e) { "Ignoring unusable settings file: $uri" }
+                null
+            }
+        }
+        return requestManager.runWrite {
+            workspaceManager.setSettingsFiles(configFiles, workspaceService::handleIndexingState)
+        }
     }
 
     @JsonRequest(useSegment = false, value = "rell/invalidateCaches")

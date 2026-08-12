@@ -11,7 +11,6 @@ import net.postchain.rell.base.compiler.base.utils.C_Error
 import net.postchain.rell.base.compiler.base.utils.C_SourceFile
 import net.postchain.rell.base.compiler.base.utils.C_SourcePath
 import net.postchain.rell.base.compiler.base.utils.IdeSourcePathFilePath
-import net.postchain.rell.base.model.R_LangVersion
 import net.postchain.rell.base.utils.ide.IdeApi
 import net.postchain.rell.base.utils.ide.IdeCompilationResult
 import net.postchain.rell.base.utils.ide.IdeDirApi
@@ -128,10 +127,8 @@ class RellResourceFactory(
             return null
         }
 
-        val rellLanguageVersion = chromiaModelProvider.getRellLanguageVersion()
-
         val options = C_CompilerOptions.builder().apply {
-            compatibility(R_LangVersion.of(rellLanguageVersion))
+            compatibility(chromiaModelProvider.getCompatibility().version)
             symbolInfoFile(compilerSrcPath)
             ideDocSymbolsEnabled(true)
             ide(true)

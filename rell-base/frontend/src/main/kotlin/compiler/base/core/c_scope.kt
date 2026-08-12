@@ -85,7 +85,7 @@ class C_Scope(
     ) {
         for (member in members) {
             if (!member.restrictions.isRestricted(compilerOptions)) {
-                res.putAll(name.str, member.ideCompletions)
+                res.putAll(name.str, member.ideCompletions(compilerOptions))
             }
         }
     }
@@ -103,7 +103,7 @@ class C_Scope(
                     val members = entry.directMembers.ifEmpty { entry.importMembers }
                     for (member in members) {
                         if (!member.restrictions.isRestricted(compilerOptions)) {
-                            res.putAll(name.str, member.ideCompletions)
+                            res.putAll(name.str, member.ideCompletions(compilerOptions))
                         }
                     }
                 }

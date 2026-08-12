@@ -43,6 +43,24 @@ internal class RellIndexingManager(
      */
     var explicitChromiaConfigFiles: List<URI> = emptyList()
 
+    /**
+     * Replaces the registered settings files and re-indexes when the set actually changed, so a
+     * client can switch a directory from `chromia.yml` to a sibling (or back) without restarting the
+     * server. Returns whether anything was re-indexed.
+     *
+     * The cache is skipped: the new settings file can declare a different `compile.rellVersion` or
+     * `compile.source`, and cached resources were compiled under the old one.
+     */
+    fun setExplicitChromiaConfigFiles(
+        configFiles: List<URI>,
+        indexingStateHandler: ((IndexingState) -> Unit)? = null,
+    ): Boolean {
+        if (configFiles.toSet() == explicitChromiaConfigFiles.toSet()) return false
+        explicitChromiaConfigFiles = configFiles
+        runIndexers(indexingStateHandler, skipCache = true)
+        return true
+    }
+
     val indexers: MutableMap<URI, WorkspaceIndexer> = ConcurrentHashMap()
     internal val orphanIndexers: MutableMap<URI, WorkspaceIndexer> = ConcurrentHashMap()
     private lateinit var workspaceFolders: List<WorkspaceFolder>

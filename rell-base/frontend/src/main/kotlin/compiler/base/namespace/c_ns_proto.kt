@@ -66,6 +66,9 @@ enum class C_NamespaceMemberTag {
     }
 }
 
+/** One completion offered for a namespace member, with the restrictions of the overload it stands for. */
+class C_MemberIdeCompletion(val completion: IdeCompletion, val restrictions: C_MemberRestrictions)
+
 sealed class C_NamespaceMember(base: C_NamespaceMemberBase) {
     val defName = base.defName
     val ideInfo = base.ideInfo
@@ -79,6 +82,9 @@ sealed class C_NamespaceMember(base: C_NamespaceMemberBase) {
     val ideCompletions: ImmList<IdeCompletion> by lazy {
         getIdeCompletions0().toImmList()
     }
+
+    /** Like [ideCompletions], minus what the compatibility version does not have yet. */
+    open fun ideCompletions(compilerOptions: C_CompilerOptions): List<IdeCompletion> = ideCompletions
 
     abstract fun declarationType(): C_DeclarationType
 
@@ -502,11 +508,19 @@ private sealed class C_NamespaceMember_Function(
 private class C_NamespaceMember_SysFunction(
     base: C_NamespaceMemberBase,
     fn: C_GlobalFunction,
-    ideCompletions: ImmList<IdeCompletion>?,
+    ideCompletions: ImmList<C_MemberIdeCompletion>?,
 ): C_NamespaceMember_Function(base, fn) {
     private val ideCompletions0 = ideCompletions
 
-    override fun getIdeCompletions0() = ideCompletions0 ?: super.getIdeCompletions0()
+    override fun getIdeCompletions0() =
+        ideCompletions0?.map { it.completion } ?: super.getIdeCompletions0()
+
+    override fun ideCompletions(compilerOptions: C_CompilerOptions): List<IdeCompletion> {
+        ideCompletions0 ?: return super.ideCompletions(compilerOptions)
+        return ideCompletions0
+            .filter { !it.restrictions.isRestricted(compilerOptions) }
+            .map { it.completion }
+    }
 }
 
 private class C_NamespaceMember_UserFunction(
@@ -640,7 +654,7 @@ class C_LibNsMemberFactory(private val basePath: C_RFullNamePath) {
             fn: C_GlobalFunction,
             ideInfo: C_IdeSymbolInfo,
             restrictions: C_MemberRestrictions,
-            ideCompletions: ImmList<IdeCompletion>?,
+            ideCompletions: ImmList<C_MemberIdeCompletion>?,
     ): C_NamespaceMember {
         val base = makeBase(name, ideInfo, restrictions)
         return C_NamespaceMember_SysFunction(base, fn, ideCompletions)

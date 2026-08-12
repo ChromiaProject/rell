@@ -64,7 +64,10 @@ internal class RellCompletionService(
         val filePath = rellCompilerUtils.createCompilerSourcePath(fileUri, indexer.workspaceUri)
         val resource = indexer.getResource(fileUri) ?: return emptyList()
 
+        // Same compatibility version the file is compiled with, so completion offers only what
+        // the project's Rell version actually has (C_Scope.ideCompletions filters on it).
         val options = C_CompilerOptions.builder()
+            .compatibility(indexer.compatibility.version)
             .defaultLib(true)
             .hiddenLib(false)
             .ideDocSymbolsEnabled(true)

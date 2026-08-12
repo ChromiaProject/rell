@@ -33,10 +33,12 @@ class ChromiaModelProvider(
         }
     }
 
-    fun getRellLanguageVersion(): String {
-        val model = getChromiaModel()
-        return model?.compile?.rellVersion ?: DEFAULT_CHROMIA_MODEL_RELL_VERSION
-    }
+    /**
+     * The compatibility version this project is compiled with. Resolved on every call: the model
+     * cache is replaced when the settings file changes, and callers must see the new version.
+     */
+    fun getCompatibility(): RellCompatibility =
+        RellCompatibility.resolve(getChromiaModel()?.compile?.rellVersion)
 
     fun getChromiaModel(): ChromiaModel? {
         chromiaModelCache = chromiaModelCache ?: loadChromiaModel()
@@ -73,7 +75,6 @@ class ChromiaModelProvider(
         private val logger = KotlinLogging.logger {}
 
         const val DEFAULT_CHROMIA_MODEL_FILENAME = "chromia.yml"
-        const val DEFAULT_CHROMIA_MODEL_RELL_VERSION = "0.14.5"
 
         fun loadChromiaModelFromFile(chromiaModelFile: Path): ChromiaModel? {
             return try {

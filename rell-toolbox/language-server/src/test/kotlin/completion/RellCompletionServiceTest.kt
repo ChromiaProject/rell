@@ -183,6 +183,39 @@ class RellCompletionServiceTest {
         }.containsAtLeast(*expectedLibraryFunctions)
     }
 
+    @Test
+    fun `Library functions are gated by the project's declared Rell version`() {
+        // try_call_catch() arrived in 0.14.16; try_call() has been there since 0.13.0.
+        val labelsAtOldVersion = completionLabelsForRellVersion("0.14.15")
+        assertThat(labelsAtOldVersion).contains("try_call")
+        assertThat(labelsAtOldVersion).doesNotContain("try_call_catch")
+
+        val labelsAtNewVersion = completionLabelsForRellVersion("0.14.16")
+        assertThat(labelsAtNewVersion).contains("try_call")
+        assertThat(labelsAtNewVersion).contains("try_call_catch")
+    }
+
+    private fun completionLabelsForRellVersion(rellVersion: String): List<String> {
+        val builder = testData(File(tempDir, "v$rellVersion")) {
+            addMainFile("module; query q() = 123;")
+            config { compile("compile:\n  rellVersion: $rellVersion") }
+        }
+        val versionedIndexer = WorkspaceIndexer(
+            builder.sourceFolderUri,
+            rellLinter,
+            linterOptions,
+            formattingStyleLinter,
+            formatterOptions,
+            builder.workspaceFolderUri,
+        )
+        versionedIndexer.initialFileIndexBuild()
+        
+        val fileUri = builder.mainFileUri
+        return completionService
+            .getCompletions(fileUri, BEGINNING_OF_FILE_OFFSET, versionedIndexer, fileUri.toDocument())
+            .map { it.label }
+    }
+
     data class CompletionItemData(
         val label: String?,
         val description: String?,

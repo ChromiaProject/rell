@@ -44,6 +44,7 @@ internal class RellIndexSerializer(
         val formatterOptions = formatterOptionsResolver.getWorkspaceFormattingOptions(indexer.workspaceUri)
         val metaData = SerializableMetaData(
             languageServerVersion = VersionInfo.getImplementationVersion(),
+            rellCompatibilityVersion = indexer.compatibility.version.str(),
         )
         return SerializableWorkspaceIndexer(
             indexer.workspaceUri,
@@ -108,6 +109,14 @@ internal class RellIndexSerializer(
         check(metaData?.languageServerVersion == currentVersion) {
             "The serialized indexer was created with a different version of the language server. " +
                 "Expected: $currentVersion, Found: ${metaData?.languageServerVersion}"
+        }
+
+        // Diagnostics, symbols and doc strings in the cache were produced under one compatibility
+        // version; editing `compile.rellVersion` while the server is down must not resurrect them.
+        val compatibilityVersion = indexer.compatibility.version.str()
+        check(metaData?.rellCompatibilityVersion == compatibilityVersion) {
+            "The serialized indexer was created for a different Rell version. " +
+                "Expected: $compatibilityVersion, Found: ${metaData?.rellCompatibilityVersion}"
         }
 
         indexer.fileUriResourceMap = ConcurrentHashMap(

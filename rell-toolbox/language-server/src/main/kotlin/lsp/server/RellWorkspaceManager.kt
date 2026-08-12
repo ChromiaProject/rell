@@ -99,6 +99,12 @@ internal class RellWorkspaceManager(
         indexingManager.indexFromRoots(chromiaConfigFiles)
     }
 
+    /** See [RellIndexingManager.setExplicitChromiaConfigFiles]. */
+    fun setSettingsFiles(
+        chromiaConfigFiles: List<URI>,
+        indexingStateHandler: (IndexingState) -> Unit = {},
+    ): Boolean = indexingManager.setExplicitChromiaConfigFiles(chromiaConfigFiles, indexingStateHandler)
+
     fun getDefinitionLocations(
         fileUri: URI,
         position: Position

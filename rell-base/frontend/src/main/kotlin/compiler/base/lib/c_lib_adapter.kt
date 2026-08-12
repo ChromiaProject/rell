@@ -79,7 +79,7 @@ private class C_LibNamespaceConverter {
                 val fnCase = convertFunctionCase(lMember, lMember.docSymbol, restrictions)
                 val defName = b.basePath.toDefPath().subName(lMember.simpleName)
                 val ideCompletion = C_IdeCompletionsUtils.makeIdeCompletion(defName, lMember.docSymbol)
-                b.addFunction(lMember.simpleName, fnCase, ideCompletion)
+                b.addFunction(lMember.simpleName, fnCase, ideCompletion, restrictions)
             }
             else -> {
                 val cMember = convertMemberCached(lMember)
@@ -97,7 +97,7 @@ private class C_LibNamespaceConverter {
             val fnCase = convertFunctionCase(lTargetMember, lMember.docSymbol, restrictions)
             val defName = b.basePath.toDefPath().subName(lMember.simpleName)
             val ideCompletion = C_IdeCompletionsUtils.makeIdeCompletion(defName, lMember.docSymbol, lTargetMember.docSymbol)
-            b.addFunction(lMember.simpleName, fnCase, ideCompletion)
+            b.addFunction(lMember.simpleName, fnCase, ideCompletion, restrictions)
             return
         }
 

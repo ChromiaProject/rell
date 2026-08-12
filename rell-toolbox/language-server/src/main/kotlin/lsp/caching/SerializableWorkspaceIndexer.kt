@@ -19,4 +19,6 @@ internal class SerializableWorkspaceIndexer(
 
 internal class SerializableMetaData(
     val languageServerVersion: String,
+    /** The `compile.rellVersion` the cached resources were compiled with. */
+    val rellCompatibilityVersion: String,
 )

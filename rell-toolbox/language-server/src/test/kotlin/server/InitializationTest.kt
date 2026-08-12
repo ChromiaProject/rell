@@ -8,6 +8,9 @@ import assertk.assertThat
 import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.hasSize
+import assertk.assertions.isEmpty
+import assertk.assertions.isFalse
+import assertk.assertions.isTrue
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import net.postchain.rell.toolbox.lsp.TestClient
@@ -151,6 +154,55 @@ class InitializationTest {
         val expectedSourceRoot = parseFileUri(alternateSource.parentFile.toURI().toString())
         assertThat(indexingManager.indexers.keys).containsOnly(expectedSourceRoot)
     }
+
+    /**
+     * Switching a directory between its `chromia.yml` and a sibling settings file must take effect
+     * without restarting the server, and must actually change how the sources are analysed — the
+     * newly active file's `compile.rellVersion` governs from then on.
+     */
+    @Test
+    fun `rell setSettingsFiles switches which settings file governs and re-analyses`(@TempDir tempDir: Path) {
+        val testDataBuilder = testData(tempDir) {
+            // A lambda: valid since 0.16.1, a version error below it.
+            addMainFile("module;\nfunction f(): integer { val g = (x: integer) -> x * 2; return g(5); }\n")
+            config { compile("compile:\n  rellVersion: 0.16.1") }
+        }
+        val devConfig = testDataBuilder.createWorkspaceFile(
+            "dev.yml",
+            """
+            blockchains:
+              hello:
+                module: main
+            compile:
+              rellVersion: 0.15.4
+            """.trimIndent(),
+        )
+
+        val initParams = InitializeParams()
+        initParams.workspaceFolders = listOf(
+            WorkspaceFolder(testDataBuilder.workspaceFolderUri.toString(), "testWorkspace")
+        )
+        client.initialize(initParams).get()
+        client.initialized(InitializedParams())
+        await().until { indexingManager.indexers.isNotEmpty() }
+
+        assertThat(versionErrorCodes()).isEmpty()
+
+        assertThat(workspaceManager.setSettingsFiles(listOf(devConfig.toURI()))).isTrue()
+        assertThat(versionErrorCodes()).containsOnly("version:feature:expr_lambda:0.16.1:0.15.4")
+
+        assertThat(workspaceManager.setSettingsFiles(listOf(devConfig.toURI())), "re-registering the same file")
+            .isFalse()
+
+        // An empty list is how a client says "back to chromia.yml": name-based discovery again.
+        assertThat(workspaceManager.setSettingsFiles(listOf())).isTrue()
+        assertThat(versionErrorCodes()).isEmpty()
+    }
+
+    private fun versionErrorCodes(): List<String> = indexingManager.getAllIndexers()
+        .flatMap { it.getAllIssues().values.flatten() }
+        .map { it.code }
+        .filter { it.startsWith("version:") }
 
     private fun connectToServer(attempt: Int = 0): Socket {
         val maxRetryAttempts = 5

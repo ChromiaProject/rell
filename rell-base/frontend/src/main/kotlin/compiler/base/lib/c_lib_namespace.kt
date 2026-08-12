@@ -6,6 +6,7 @@ package net.postchain.rell.base.compiler.base.lib
 
 import net.postchain.rell.base.compiler.base.core.C_IdeSymbolInfo
 import net.postchain.rell.base.compiler.base.namespace.C_LibNsMemberFactory
+import net.postchain.rell.base.compiler.base.namespace.C_MemberIdeCompletion
 import net.postchain.rell.base.compiler.base.namespace.C_NamespaceMember
 import net.postchain.rell.base.compiler.base.namespace.C_SysNsProto
 import net.postchain.rell.base.compiler.base.namespace.C_SysNsProtoBuilder
@@ -43,6 +44,7 @@ class C_LibNamespace private constructor(
                 name: Name,
                 fnCase: C_LibFuncCase<V_GlobalFunctionCall>,
                 ideCompletion: IdeCompletion,
+                restrictions: C_MemberRestrictions,
         )
 
         abstract fun addNamespace(
@@ -76,11 +78,12 @@ class C_LibNamespace private constructor(
                 name: Name,
                 fnCase: C_LibFuncCase<V_GlobalFunctionCall>,
                 ideCompletion: IdeCompletion,
+                restrictions: C_MemberRestrictions,
         ) {
             check(active)
             check(!done)
             checkNameConflict(name, members, namespaces)
-            functions.put(name, FuncCase(fnCase, ideCompletion))
+            functions.put(name, FuncCase(fnCase, ideCompletion, restrictions))
         }
 
         override fun addNamespace(
@@ -147,7 +150,10 @@ class C_LibNamespace private constructor(
             val fn = C_LibFunctionUtils.makeGlobalFunction(naming, libCases)
 
             val ideInfo = libCases.first().ideInfo
-            val ideComps = cases.mapToImmList { it.ideCompletion }
+            // Restrictions stay per overload rather than on the member: a name whose newest
+            // overload postdates the compatibility version still exists, only that one signature
+            // must not be offered. The member-level check would hide the name entirely.
+            val ideComps = cases.mapToImmList { C_MemberIdeCompletion(it.ideCompletion, it.restrictions) }
             return memberFactory.function(fullName.last, fn, ideInfo, C_MemberRestrictions.NULL, ideComps)
         }
 
@@ -166,6 +172,7 @@ class C_LibNamespace private constructor(
     private class FuncCase(
         val libCase: C_LibFuncCase<V_GlobalFunctionCall>,
         val ideCompletion: IdeCompletion,
+        val restrictions: C_MemberRestrictions,
     )
 
     companion object {

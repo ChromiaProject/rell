@@ -4,7 +4,7 @@
 
 package net.postchain.rell.toolbox.lsp.template
 
-import net.postchain.rell.toolbox.chromia.model.DEFAULT_CHROMIA_MODEL_RELL_VERSION
+import net.postchain.rell.base.utils.RellVersions
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import kotlin.io.path.*
@@ -46,7 +46,7 @@ internal class FileBuilder(
     inline fun createChromiaConfig(projectName: String, crossinline transform: (String) -> String = { it }) {
         createFile("chromia.yml") {
             it.replace("PROJECT_NAME", snakeCaseName(projectName))
-                .replace("RELL_VERSION", DEFAULT_CHROMIA_MODEL_RELL_VERSION)
+                .replace("RELL_VERSION", RellVersions.VERSION_STR)
                 .replace("RELL_SCHEMA", "schema_${snakeCaseName(projectName)}")
                 .let(transform)
         }
