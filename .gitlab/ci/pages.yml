@@ -244,6 +244,9 @@ pages:regression:
   stage: portal
   tags: [ saas-linux-xlarge-amd64 ]
   interruptible: true
+  # A full public run outgrows the project-wide 1 h limit (cloning and compiling every project,
+  # eight slots deep); 2 h leaves headroom without letting a wedged run burn a runner all day.
+  timeout: 2h
   rules:
     - when: manual
       allow_failure: true
