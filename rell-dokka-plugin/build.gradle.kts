@@ -3,6 +3,10 @@ plugins {
     application
 }
 
+// A logging backend for the `run` task only: the published artifact must not carry an SLF4J
+// provider, or consumers (chromia-cli's `chr doc`) end up with two on the classpath.
+val cliLogging: Configuration by configurations.creating
+
 dependencies {
     implementation(libs.kotlinx.html)
     implementation(libs.commonmark)
@@ -13,6 +17,7 @@ dependencies {
     implementation(projects.rellBase)
 
     implementation(libs.clikt)
+    cliLogging(libs.slf4j.simple)
 
     testImplementation(kotlin("test-junit5"))
     testImplementation(libs.assertk)
@@ -20,6 +25,10 @@ dependencies {
 }
 
 application.mainClass = "com.chromia.rell.dokka.cli.MainKt"
+
+tasks.named<JavaExec>("run") {
+    classpath += cliLogging
+}
 
 tasks.test {
     useJUnitPlatform()
