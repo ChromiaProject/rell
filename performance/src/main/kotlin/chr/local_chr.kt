@@ -5,7 +5,9 @@ package net.postchain.rell.performance.chr
 
 import java.io.File
 import java.nio.file.Path
+import java.security.MessageDigest
 import java.time.Duration
+import java.util.HexFormat
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.*
 
@@ -37,6 +39,10 @@ object LocalChr {
 
     private val GIT_TIMEOUT: Duration = Duration.ofMinutes(5)
     private val MVN_TIMEOUT: Duration = Duration.ofMinutes(60)
+    private val SMOKE_TIMEOUT: Duration = Duration.ofMinutes(5)
+
+    /** Records the [buildKey] the cached chromia-cli build was produced from. */
+    private fun sentinelFile(repoRoot: Path): Path = repoRoot / CHR_REPO_DIR / ".chr-build-key"
 
     /** Path the built chr binary lands at, relative to the Rell repo root. */
     fun chrExecutable(repoRoot: Path): Path =
@@ -46,6 +52,10 @@ object LocalChr {
      * Sync the chromia-cli repos, patch them to [rellVersion], build/install them, and copy the
      * freshly published Rell jars into the chr distribution. Assumes Rell [rellVersion] is already
      * in ~/.m2 (the caller task depends on `:publishRellToMavenLocal`). Returns the chr binary path.
+     *
+     * The Maven build is skipped when [buildKey] matches the sentinel left by the previous run —
+     * the jar sync and a [smokeTest] still run, so chr always carries the Rell code from this
+     * build. Pass [rebuild] (`-PchrRebuild`) to force the whole thing from a clean clone.
      */
     @OptIn(ExperimentalPathApi::class) fun ensureChr(
         repoRoot: Path,
@@ -65,6 +75,20 @@ object LocalChr {
         syncRepo(repoRoot / CHR_REPO_DIR, CHR_REPO_URL, GIT_BRANCH, "chromia-cli", repoRoot, log)
         syncRepo(repoRoot / CHR_TOOLS_DIR, CHR_TOOLS_REPO_URL, CHR_TOOLS_BRANCH, "chromia-cli-tools", repoRoot, log)
 
+        val chrBin = chrExecutable(repoRoot)
+        val key = buildKey(repoRoot, rellVersion)
+        val sentinel = sentinelFile(repoRoot)
+
+        if (chrBin.isExecutable() && runCatching { sentinel.readText().trim() }.getOrNull() == key) {
+            log("chromia-cli unchanged since its last build — reusing it (key $key)")
+            syncRellJars(repoRoot, rellVersion, log)
+            if (smokeTest(chrBin, log)) return chrBin
+            log("Smoke test failed: the cached chromia-cli no longer works against this Rell. Rebuilding.")
+        }
+        // Written only once a build has succeeded, so a build that dies half-way can never leave
+        // behind a sentinel claiming a working dist.
+        sentinel.deleteIfExists()
+
         log("Patching Rell version ($rellVersion) into chromia-cli…")
         patchVersions(repoRoot, rellVersion, log)
 
@@ -74,10 +98,10 @@ object LocalChr {
         log("Building chromia-cli distribution…")
         mvnInstall(repoRoot / CHR_REPO_DIR, log)
 
-        val chrBin = chrExecutable(repoRoot)
         syncRellJars(repoRoot, rellVersion, log)
 
         check(chrBin.isExecutable()) { "Expected chr at $chrBin after build, but it is missing or not executable" }
+        sentinel.writeText(key)
         return chrBin
     }
 
@@ -140,13 +164,36 @@ object LocalChr {
     private fun setProperty(dir: Path, property: String, value: String, log: (String) -> Unit) =
         mvnw(dir, listOf("versions:set-property", "-Dproperty=$property", "-DnewVersion=$value"), MVN_TIMEOUT, log)
 
-    // `clean` is critical: maven-assembly-plugin populates target/chromia-cli-dev-dist/lib/ but
-    // doesn't prune it between runs. Without a clean, jars from a previous build whose dependency
-    // is no longer resolved (e.g. the kotlinx-html-jvm 0.9.1 that came in transitively when
-    // rell-dokka-plugin still depended on Dokka) stay in lib/ and clobber the freshly-resolved
-    // version at runtime. The same logic applies to chromia-cli-tools.
-    private fun mvnInstall(dir: Path, log: (String) -> Unit) =
-        mvnw(dir, listOf("-DskipTests", "-DskipITs", "clean", "install"), MVN_TIMEOUT, log)
+    /**
+     * Delete every maven-assembly-plugin output directory (any `target` child named `*-dist`) under [dir].
+     *
+     * This used to be a reactor-wide `clean`, for a narrow reason: the assembly plugin populates
+     * target/chromia-cli-dev-dist/lib/ but doesn't prune it between runs, so a jar from a previous
+     * build whose dependency is no longer resolved (e.g. the kotlinx-html-jvm 0.9.1 that came in
+     * transitively when rell-dokka-plugin still depended on Dokka) stays in lib/ and clobbers the
+     * freshly-resolved version at runtime. `clean` also threw away every compiled class, so each
+     * run recompiled chromia-cli from scratch even when its sources hadn't moved. Pruning just the
+     * assembly output keeps that guarantee and lets Maven compile incrementally.
+     */
+    @OptIn(ExperimentalPathApi::class)
+    private fun pruneAssemblyOutput(dir: Path, log: (String) -> Unit) {
+        val modules = dir.listDirectoryEntries().filter { it.isDirectory() }.map { it / "target" }
+        for (target in modules.filter { it.isDirectory() }) {
+            for (dist in target.listDirectoryEntries("*-dist").filter { it.isDirectory() }) {
+                log("  pruning stale assembly output ${dist.relativeTo(dir)}")
+                dist.deleteRecursively()
+            }
+        }
+    }
+
+    // `-T 1C` parallelises the reactor; both reactors are small (2 and 4 modules) so the win is
+    // modest, but it costs nothing. Tests are skipped but still *compiled*: chromia-build-tools
+    // publishes a test-jar that chromia-cli depends on, so `-Dmaven.test.skip` would break the
+    // build.
+    private fun mvnInstall(dir: Path, log: (String) -> Unit) {
+        pruneAssemblyOutput(dir, log)
+        mvnw(dir, listOf("-T", "1C", "-DskipTests", "-DskipITs", "install"), MVN_TIMEOUT, log)
+    }
 
     /** Copy freshly published net.postchain.rell + com.chromia.rell.dokka jars into the chr dist lib/. */
     private fun syncRellJars(repoRoot: Path, rellVersion: String, log: (String) -> Unit) {
@@ -178,6 +225,126 @@ object LocalChr {
 
         if (synced == 0) log("Warning: no local Rell jars synced for version $rellVersion")
         else log("Synced $synced local Rell jars into the chromia-cli distribution")
+    }
+
+    // ─── Build-cache key ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Fingerprint of everything chromia-cli's *own bytecode* was compiled and assembled against.
+     *
+     * Deliberately blind to Rell's implementation: [syncRellJars] copies the freshly published Rell
+     * jars into the dist on every run, so reusing a cached build never means chr executes stale
+     * Rell code — only that chromia-cli's own classes are reused, which holds as long as the API
+     * surface they link against and the dependency set the assembly resolved `lib/` from are
+     * unchanged. That is the whole point: Rell changes on every commit, chromia-cli almost never
+     * does, and rebuilding it took 36 of the regression job's 78 minutes.
+     *
+     * Inputs:
+     *  - both chromia-cli checkouts' HEAD, covering their sources and POMs;
+     *  - the versions patched into those POMs;
+     *  - every Rell POM in ~/.m2 for this version — the dependency footprint, so an added or
+     *    dropped transitive dependency forces a rebuild;
+     *  - every checked-in `.api` dump under a module's `api` directory — Rell's
+     *    binary-compatibility-validated API surface.
+     *
+     * Known gap: chromia-cli also links against rell-base internals that carry no `.api` dump
+     * (`net.postchain.rell.base.utils.UnitTestCase` and friends), so a binary-incompatible change
+     * there is invisible here. [smokeTest] covers that on the cache-hit path.
+     */
+    private fun buildKey(repoRoot: Path, rellVersion: String): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        fun mix(label: String, value: String) = digest.update("$label=$value\n".toByteArray())
+
+        mix("chromia-cli", gitHead(repoRoot / CHR_REPO_DIR))
+        mix("chromia-cli-tools", gitHead(repoRoot / CHR_TOOLS_DIR))
+        mix("rell.version", rellVersion)
+        mix("chromia.cli.tools.version", CHR_TOOLS_VERSION)
+
+        for (file in rellPomFiles(rellVersion) + abiDumpFiles(repoRoot)) {
+            mix(file.name, hex(MessageDigest.getInstance("SHA-256").digest(file.readBytes())))
+        }
+
+        return hex(digest.digest()).take(16)
+    }
+
+    private fun hex(bytes: ByteArray): String = HexFormat.of().formatHex(bytes)
+
+    /** Rell POMs installed in ~/.m2 for [rellVersion]; same layout [syncRellJars] walks for jars. */
+    private fun rellPomFiles(rellVersion: String): List<Path> {
+        val home = Path.of(System.getProperty("user.home"))
+        val repos = sequenceOf(
+            home / ".m2" / "repository" / "net" / "postchain" / "rell",
+            home / ".m2" / "repository" / "com" / "chromia" / "rell" / "dokka",
+        )
+        return repos
+            .filter { it.isDirectory() }
+            .flatMap { repo -> repo.listDirectoryEntries().filter { it.isDirectory() } }
+            .map { it / rellVersion }
+            .filter { it.isDirectory() }
+            .flatMap { it.listDirectoryEntries("*.pom") }
+            .sortedBy { it.absolutePathString() }
+            .toList()
+    }
+
+    /** Checked-in binary-compatibility-validator dumps: `.api` files in a module's `api` dir, depth 1-2. */
+    private fun abiDumpFiles(repoRoot: Path): List<Path> {
+        val skip = setOf("build", "workdir", "src", "test", "doc", "work", "gradle", CHR_REPO_DIR, CHR_TOOLS_DIR)
+        val found = mutableListOf<Path>()
+
+        fun scan(dir: Path, depth: Int) {
+            val children = runCatching { dir.listDirectoryEntries() }.getOrDefault(emptyList())
+            for (child in children.filter { it.isDirectory() }) {
+                when {
+                    child.name.startsWith(".") || child.name in skip -> continue
+                    child.name == "api" -> found += child.listDirectoryEntries("*.api").filter { it.isRegularFile() }
+                    depth < 2 -> scan(child, depth + 1)
+                }
+            }
+        }
+
+        scan(repoRoot, 0)
+        return found.sortedBy { it.absolutePathString() }
+    }
+
+    private fun gitHead(dir: Path): String {
+        val pb = ProcessBuilder("git", "rev-parse", "HEAD").directory(dir.toFile())
+        pb.redirectErrorStream(true)
+        pb.environment().putAll(toolchainEnv())
+        val proc = pb.start()
+        val out = proc.inputStream.bufferedReader().use { it.readText() }.trim()
+        if (!proc.waitFor(GIT_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS)) {
+            proc.destroyForcibly()
+            error("git rev-parse HEAD timed out in $dir")
+        }
+        check(proc.exitValue() == 0) { "git rev-parse HEAD failed in $dir: $out" }
+        return out
+    }
+
+    /**
+     * Compile a throw-away one-module Rell project with the cached chr. Takes ~2 s and drives the
+     * real path — `chr build` into RellApiCompile — so a chromia-cli whose bytecode no longer links
+     * against the freshly synced Rell jars is caught here rather than as a wall of red across the
+     * regression sweep. Returns false instead of throwing so the caller falls back to a full
+     * rebuild and the breakage self-heals. A Rell regression bad enough to fail this trivial
+     * compile also costs one wasted rebuild before the sweep reports it — an acceptable trade for
+     * not needing `-PchrRebuild` by hand.
+     */
+    @OptIn(ExperimentalPathApi::class)
+    private fun smokeTest(chrBin: Path, log: (String) -> Unit): Boolean {
+        val dir = createTempDirectory("chr-smoke")
+        return try {
+            (dir / "chromia.yml").writeText("blockchains:\n  smoke:\n    module: smoke\n")
+            (dir / "src" / "smoke").createDirectories()
+            (dir / "src" / "smoke" / "module.rell").writeText("module;\nquery smoke_query() = 1;\n")
+            log("Smoke-testing the cached chr against the freshly synced Rell jars…")
+            runProcess(listOf(chrBin.absolutePathString(), "build"), dir, SMOKE_TIMEOUT)
+            true
+        } catch (e: Exception) {
+            log("  smoke test failed: ${e.message}")
+            false
+        } finally {
+            dir.deleteRecursively()
+        }
     }
 
     private fun git(dir: Path, args: List<String>) =
