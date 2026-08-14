@@ -51,6 +51,8 @@ abstract class RellBaseTester(
     var ideDocSymbolsEnabled = false
     var ideDefIdConflictError = true
     var compatibilityVer: R_LangVersion? = RellVersions.VERSION
+    /** Null means "compiled right now", which is what a test wants unless it is exercising a retroactive gate. */
+    var compilerVer: R_LangVersion? = null
     var blockchainRid = RellTestUtils.strToRidHex("DEADBEEF")
 
     var defs: List<String> = entityDefs
@@ -134,6 +136,7 @@ abstract class RellBaseTester(
     fun compilerOptions(): C_CompilerOptions {
         val opts = C_CompilerOptions(
             compatibility = compatibilityVer,
+            compilerVersion = compilerVer,
             gtv = gtv,
             deprecatedError = deprecatedError,
             atAttrShadowing = atAttrShadowing,
@@ -227,6 +230,10 @@ abstract class RellBaseTester(
 
     fun compatibilityVer(v: String?) {
         compatibilityVer = if (v == null) null else R_LangVersion.of(v)
+    }
+
+    fun compilerVer(v: String?) {
+        compilerVer = if (v == null) null else R_LangVersion.of(v)
     }
 
     fun getModuleArgs() = moduleArgs

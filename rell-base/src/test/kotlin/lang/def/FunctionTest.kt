@@ -9,6 +9,10 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class FunctionTest: BaseRellTest() {
+    @Test fun testVersionRestrictionNative() {
+        chkVerCt("@native function f(): integer;", "0.15.0", "VER:feature:ann:native")
+    }
+
     @Test fun testSimple() {
         chkFn("function f(): integer = 123;", "f()", "int[123]")
         chkFn("function f(): integer { return 123; }", "f()", "int[123]")

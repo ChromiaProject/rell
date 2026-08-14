@@ -9,6 +9,17 @@ import org.junit.jupiter.api.Disabled
 import kotlin.test.Test
 
 internal class AttributeSizeAnnotationTest: BaseRellTest() {
+    @Test fun testVersionRestrictionStructAttr() {
+        chkVerCt("struct s { @size(5) x: text; }", "0.14.13", "VER:feature:ann:size")
+        chkVerCt("struct s { @min_size(5) x: text; }", "0.14.13", "VER:feature:ann:min_size")
+        chkVerCt("struct s { @max_size(5) x: text; }", "0.14.13", "VER:feature:ann:max_size")
+    }
+
+    @Test fun testVersionRestrictionEntityAttr() {
+        chkVerCt("entity e { @size(5) x: text; }", "0.15.1", "VER:feature:ann:size")
+        chkVerCt("object o { @max_size(5) x: text = ''; }", "0.15.1", "VER:feature:ann:max_size")
+    }
+
     @Test fun testInvalidOnUnsupportedTypes() {
         chkCompile("struct s { @size(1, 5) l: boolean; }", "ct_err:modifier:invalid:ann:size:invalid_type")
         chkCompile("struct s { @size(1, 5) l: integer; }", "ct_err:modifier:invalid:ann:size:invalid_type")

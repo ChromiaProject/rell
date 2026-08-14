@@ -43,8 +43,8 @@ class S_OperationDefinition(
         val mods = C_ModifierValues(C_ModifierTargetType.OPERATION, cName)
         val modMount = mods.field(C_ModifierFields.MOUNT)
         val modDeprecated = mods.field(C_ModifierFields.DEPRECATED)
-        val modCompound = mods.field(C_ModifierFields.COMPOUND)
-        val modSingular = mods.field(C_ModifierFields.SINGULAR)
+        val modCompound = mods.field(C_ModifierFields.COMPOUND, "0.14.13")
+        val modSingular = mods.field(C_ModifierFields.SINGULAR, "0.14.13")
         val docModifiers = modifiers.compile(ctx, mods)
 
         val mountName = ctx.mountName(modMount, cName)

@@ -250,7 +250,7 @@ class RellGtxTester(
             GtvType.STRING -> {
                 val s = tpl.asString()
                 when (s) {
-                    "{COMPILER_VERSION}" -> GtvFactory.gtv(RellTestUtils.RELL_VER)
+                    "{COMPILER_VERSION}" -> GtvFactory.gtv(compilerVer?.str() ?: RellTestUtils.RELL_VER)
                     "{VERSION}" -> GtvFactory.gtv(compatibilityVer?.str() ?: RellTestUtils.RELL_VER)
                     "{MODULES}" -> {
                         if (parts.modules == null) null else GtvFactory.gtv(parts.modules.map { GtvFactory.gtv(it) })

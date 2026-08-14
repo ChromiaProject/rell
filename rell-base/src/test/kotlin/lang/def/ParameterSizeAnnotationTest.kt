@@ -8,6 +8,12 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import kotlin.test.Test
 
 internal class ParameterSizeAnnotationTest: BaseRellTest() {
+    @Test fun testVersionRestriction() {
+        chkVerCt("function f(@size(5) x: text) = x;", "0.14.14", "VER:feature:ann:size")
+        chkVerCt("function f(@min_size(5) x: text) = x;", "0.14.14", "VER:feature:ann:min_size")
+        chkVerCt("function f(@max_size(5) x: text) = x;", "0.14.14", "VER:feature:ann:max_size")
+    }
+
     @Test fun testBasic() {
         chkCompile("function f(@size(1) l: byte_array): integer { return 1; }", "OK")
         chkCompile("function f(@size(1) l: text): integer { return 1; }", "OK")

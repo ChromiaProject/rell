@@ -50,7 +50,7 @@ class S_FunctionDefinition(
         val modOverride = mods.field(C_ModifierFields.OVERRIDE)
         val modExtendable = mods.field(C_ModifierFields.EXTENDABLE)
         val modExtend = mods.field(C_ModifierFields.EXTEND)
-        val modNative = mods.field(C_ModifierFields.NATIVE)
+        val modNative = mods.field(C_ModifierFields.NATIVE, "0.15.0")
         val modTest = mods.field(C_ModifierFields.TEST)
         val modDeprecated = mods.field(C_ModifierFields.DEPRECATED)
         val modDisabled = mods.field(C_ModifierFields.DISABLED)

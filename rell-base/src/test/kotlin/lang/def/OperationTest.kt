@@ -8,6 +8,11 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import kotlin.test.Test
 
 class OperationTest: BaseRellTest(useSql = true) {
+    @Test fun testVersionRestrictionCompoundSingular() {
+        chkVerCt("@compound operation o(x: integer) {}", "0.14.13", "VER:feature:ann:compound")
+        chkVerCt("@singular operation o(x: integer) {}", "0.14.13", "VER:feature:ann:singular")
+    }
+
     @Test fun testReturn() {
         chkOp("print('Hello'); print('World');")
         chkOut("Hello", "World")

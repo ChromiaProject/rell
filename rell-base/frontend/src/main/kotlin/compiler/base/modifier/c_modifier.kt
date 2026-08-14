@@ -12,6 +12,7 @@ import net.postchain.rell.base.compiler.base.core.*
 import net.postchain.rell.base.compiler.base.namespace.C_DeclarationType
 import net.postchain.rell.base.compiler.base.utils.C_CodeMsg
 import net.postchain.rell.base.compiler.base.utils.C_DocUtils
+import net.postchain.rell.base.compiler.base.utils.C_FeatureRestrictions
 import net.postchain.rell.base.compiler.base.utils.toCodeMsg
 import net.postchain.rell.base.model.Name
 import net.postchain.rell.base.model.rr.RR_ConstantValue
@@ -144,12 +145,28 @@ private class C_ModifierEvaluator_Const<T: Any> private constructor(private val 
 
 class C_Modifier<T: Any>(val key: C_ModifierKey, val hidden: Boolean, val evaluator: C_ModifierEvaluator<T>)
 
-private class C_ModifierValueEntry<T: Any>(private val mod: C_Modifier<T>, private val value: C_ModifierValue_Impl<T>) {
+private class C_ModifierValueEntry<T: Any>(
+    private val mod: C_Modifier<T>,
+    private val value: C_ModifierValue_Impl<T>,
+    since: String?,
+) {
+    /**
+     * The version belongs to the registration rather than to the field, because an annotation can become valid on
+     * one target long after it appeared on another: @mount is as old as the language on a module but new on an
+     * attribute, and a single shared C_ModifierField instance serves both. Retroactive, since these annotations
+     * shipped without a version check - see C_FeatureRestrictions.makeRetroactive.
+     */
+    private val restrictions: C_FeatureRestrictions? = since?.let {
+        val codeMsg = mod.key.codeMsg()
+        C_FeatureRestrictions.makeRetroactive(it, codeMsg.code toCodeMsg "${codeMsg.msg.capitalizeEx()} is")
+    }
+
     fun isVisible(ctx: C_ModifierContext): Boolean {
         return !mod.hidden || ctx.msgCtx.globalCtx.compilerOptions.hiddenLib
     }
 
     fun compile(ctx: C_ModifierContext, modLink: C_ModifierLink, args: List<C_AnnotationArg>) {
+        restrictions?.access(ctx.msgCtx, modLink.pos)
         value.compile(ctx, modLink, mod, args)
     }
 }
@@ -163,13 +180,14 @@ class C_ModifierValues(
     private val mods = mutableMapOf<C_ModifierKey, C_ModifierValueEntry<*>>()
     private var fixed = false
 
-    fun <T: Any> field(f: C_ModifierField<T>): C_ModifierValue<T> {
+    /** [since] is the language version in which this modifier became valid on this particular target. */
+    fun <T: Any> field(f: C_ModifierField<T>, since: String? = null): C_ModifierValue<T> {
         check(!fixed)
         check(f !in fields) { f }
         val v = C_ModifierValue_Impl<T>()
         for (mod in f.mods) {
             check(mod.key !in mods) { mod.key }
-            mods[mod.key] = C_ModifierValueEntry(mod, v)
+            mods[mod.key] = C_ModifierValueEntry(mod, v, since)
         }
         fields.add(f)
         return v

@@ -10,6 +10,7 @@ import net.postchain.rell.base.compiler.base.core.C_GlobalContext
 import net.postchain.rell.base.compiler.base.core.C_MessageContext
 import net.postchain.rell.base.compiler.base.expr.C_ExprContext
 import net.postchain.rell.base.model.R_LangVersion
+import net.postchain.rell.base.utils.RellVersions
 
 fun C_FeatureSwitch.isActive(globalCtx: C_GlobalContext) = isActive(globalCtx.compilerOptions)
 fun C_FeatureSwitch.isActive(exprCtx: C_ExprContext) = isActive(exprCtx.globalCtx)
@@ -33,6 +34,22 @@ class C_FeatureRestrictions(
     companion object {
         fun make(since: String, code: String, msg: String): C_FeatureRestrictions {
             return make(since, code toCodeMsg msg)
+        }
+
+        /**
+         * A gate for a feature which shipped without one, so code could use it while declaring an older language
+         * version. Unlike [make], the check is skipped for code produced by a compiler which predates the gate: such
+         * code compiled cleanly when it was written, and a node recompiles every historical configuration when it
+         * replays a chain, so failing it now would break running blockchains. Newly compiled code is checked.
+         *
+         * See [RellVersions.RETROACTIVE_GATES_VERSION].
+         */
+        fun makeRetroactive(since: String, code: String, msg: String): C_FeatureRestrictions {
+            return makeRetroactive(since, code toCodeMsg msg)
+        }
+
+        fun makeRetroactive(since: String, codeMsg: C_CodeMsg): C_FeatureRestrictions {
+            return make(since, codeMsg) { it.predatesRetroactiveGates() }
         }
 
         fun make(

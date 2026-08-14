@@ -20,10 +20,12 @@ class C_SizeModifierHandler(
     private val defCtx: C_DefinitionContext,
     private val attrHeaderInfo: C_AttrHeaderInfo,
     mods: C_ModifierValues,
+    /** Language version in which size annotations became valid on the target being compiled. */
+    since: String,
 ) {
-    private val size = mods.field(C_ModifierFields.SIZE)
-    private val minSize = mods.field(C_ModifierFields.MIN_SIZE)
-    private val maxSize = mods.field(C_ModifierFields.MAX_SIZE)
+    private val size = mods.field(C_ModifierFields.SIZE, since)
+    private val minSize = mods.field(C_ModifierFields.MIN_SIZE, since)
+    private val maxSize = mods.field(C_ModifierFields.MAX_SIZE, since)
 
     fun getSizeConstraint(): C_SizeConstraint? {
         return C_SizeConstraint.checkAndCombine(

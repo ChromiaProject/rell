@@ -165,6 +165,26 @@ class GtxTest: BaseGtxTest() {
         chkCallQuery("qdec", mapOf("x" to GtvBigInteger(TestFixtures.DECIMAL_LIMIT)), "rt_err:decimal:overflow")
     }
 
+    @Test fun testOptionalParamsVersionRestriction() {
+        // Omitting arguments with default values in a blockchain call arrived in 0.14.3.
+        tst.wrapRtErrors = false
+        tst.compatibilityVer("0.14.2")
+        def("operation op(x: integer = 123) {} query q(x: integer = 123) = x;")
+        chkCallOperation("op", listOf(), "rt_err:operation:[op]:arg_count:0:1")
+        chkCallOperation("op", listOf("321"), "OK")
+        chkCallQuery("q", mapOf(), "rt_err:query:missing_args:q:x")
+        chkCallQuery("q", mapOf("x" to gtv(321)), "321")
+    }
+
+    @Test fun testOptionalParamsVersionRestrictionOldCompiler() {
+        // Compiled before the gate existed, so the call must still be accepted.
+        tst.compatibilityVer("0.14.2")
+        tst.compilerVer("0.16.6")
+        def("operation op(x: integer = 123) {} query q(x: integer = 123) = x;")
+        chkCallOperation("op", listOf(), "OK")
+        chkCallQuery("q", mapOf(), "123")
+    }
+
     @Test fun testOptionalParamsOperation() {
         def("operation op(x: integer = 123, y: text = 'hello', z: decimal = 45.67) {}")
         chkCallOperation("op", listOf(), "OK")

@@ -8,6 +8,13 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import kotlin.test.Test
 
 class LibSetTest: BaseRellTest() {
+    @Test fun testVersionRestrictionOperators() {
+        val err = "VER:feature:binop_collection"
+        chkVerCtExpr("set([1]) + set([2])", "0.14.16", err)
+        chkVerCtExpr("set([1]) - set([2])", "0.14.16", err)
+        chkVerCtExpr("set([1]) & set([2])", "0.14.16", err)
+    }
+
     @Test fun testConstructorRaw() {
         chk("set()", "ct_err:fn:sys:unresolved_type_params:[set]:T")
         chk("set([])", "ct_err:expr_list_no_type")

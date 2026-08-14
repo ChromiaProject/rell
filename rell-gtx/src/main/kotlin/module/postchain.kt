@@ -222,7 +222,8 @@ private class RellGTXOperation(
     private fun getOpArgs(gtvCtx: GtvToRtContext): List<Rt_Value> {
         val params = rrOperation.params
 
-        val minParams = params.dropLastWhile { it.defaultExpr != null }.size
+        val defaultArgs = RellPcUtils.DEFAULT_ARGS_SWITCH.isActive(module.config.compilerOptions)
+        val minParams = if (!defaultArgs) params.size else params.dropLastWhile { it.defaultExpr != null }.size
         if (gtvArgs.size < minParams || gtvArgs.size > params.size) {
             throw Rt_Exception.common(
                 "operation:[${rrOperation.base.appLevelName}]:arg_count:${data.args.size}:${params.size}",
@@ -448,7 +449,9 @@ private class RellPostchainModule(
             if (arg != null) {
                 val rtArg = RellPcUtils.convertArg(gtvToRtCtx, interpreter, param, arg)
                 rtArgsList.add(rtArg)
-            } else if (param.defaultExpr != null) {
+            } else if (param.defaultExpr != null &&
+                RellPcUtils.DEFAULT_ARGS_SWITCH.isActive(defCtx.globalCtx.compilerOptions)
+            ) {
                 val rtArg = interpreter.evaluateParamDefault(param, defCtx)
                 rtArgsList.add(rtArg)
             } else {
@@ -787,7 +790,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
         private val sourceCfg = SourceCodeConfig(rellNode)
 
         val sourceDir = sourceCfg.dir
-        val compilerOptions = getCompilerOptions(sourceCfg.version)
+        val compilerOptions = getCompilerOptions(sourceCfg.version, sourceCfg.compilerVersion)
 
         fun compile(): C_CompilationResult {
             return C_Compiler.compile(sourceDir, modules.toImmList(), compilerOptions)
@@ -804,10 +807,14 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
             return names.ifEmpty { env.fallbackModules }
         }
 
-        private fun getCompilerOptions(langVersion: R_LangVersion?): C_CompilerOptions {
+        private fun getCompilerOptions(
+            langVersion: R_LangVersion?,
+            compilerVersion: R_LangVersion?,
+        ): C_CompilerOptions {
             val actualVersion = if (env.useLatestRellVersion) RellVersions.VERSION else langVersion
             val baseOpts = actualVersion?.let { C_CompilerOptions.forLangVersion(it) } ?: C_CompilerOptions.DEFAULT
             return baseOpts.toBuilder()
+                .compilerVersion(compilerVersion)
                 .hiddenLib(env.hiddenLib)
                 .ideDocSymbolsEnabled(env.ideDocSymbolsEnabled)
                 .build()
@@ -820,6 +827,7 @@ class RellPostchainModuleFactory(env: RellPostchainModuleEnvironment? = null): G
 private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
     val dir: C_SourceDir
     val version: R_LangVersion?
+    val compilerVersion: R_LangVersion?
 
     init {
         val ver = getSourceVersion(rellNode)
@@ -851,6 +859,7 @@ private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
                 .mapValuesToImmMap { (k, v) -> C_TextSourceFile(k, v) }
 
         version = getCompatibilityVersion(rellNode, source.version)
+        compilerVersion = getCompilerVersion(rellNode)
         dir = C_SourceDir.mapDir(fileMap)
     }
 
@@ -952,6 +961,15 @@ private class SourceCodeConfig(rellNode: Map<String, Gtv>) {
 }
 
 private object RellPcUtils {
+    /**
+     * Operations and queries called from a blockchain may omit arguments whose parameters have default values since
+     * 0.14.3; before that every argument had to be supplied. Retroactive, because the check was never applied - a
+     * configuration compiled before the gate existed relies on the current behaviour and would start rejecting calls
+     * it used to accept, which for an operation means rejecting transactions. See
+     * RellVersions.RETROACTIVE_GATES_VERSION.
+     */
+    val DEFAULT_ARGS_SWITCH = C_FeatureSwitch("0.14.3", retroactive = true)
+
     fun convertArg(ctx: GtvToRtContext, interpreter: Rt_Interpreter, param: RR_FunctionParam, arg: Gtv): Rt_Value {
         val subCtx = ctx.updateSymbol(GtvToRtSymbol_ParamName(param.name), true)
         val rtType = interpreter.resolveType(param.type)

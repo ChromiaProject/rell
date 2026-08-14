@@ -23,6 +23,13 @@ enum class C_AtAttrShadowing {
 
 data class C_CompilerOptions(
     val compatibility: R_LangVersion?,
+    /**
+     * Version of the compiler which produced the code being compiled, as opposed to [compatibility], which is the
+     * language version the code declares. Comes from the blockchain configuration ("gtx.rell.compilerVersion").
+     * Null when unknown, which is the case for a plain compilation rather than a recompilation of an existing
+     * configuration. Used by the retroactive feature gates - see [predatesRetroactiveGates].
+     */
+    val compilerVersion: R_LangVersion?,
     val gtv: Boolean,
     val deprecatedError: Boolean,
     val atAttrShadowing: C_AtAttrShadowing,
@@ -50,6 +57,16 @@ data class C_CompilerOptions(
 
     fun toBuilder() = Builder(this)
 
+    /**
+     * Whether the code being compiled was produced by a compiler older than
+     * [RellVersions.RETROACTIVE_GATES_VERSION], and so predates the retroactive feature gates. Such code was never
+     * checked against those gates, so applying them now would reject configurations which used to compile.
+     */
+    fun predatesRetroactiveGates(): Boolean {
+        val version = compilerVersion
+        return version != null && version < RellVersions.RETROACTIVE_GATES_VERSION
+    }
+
     fun toPojoMap(): Map<String, Any> {
         val map = mutableMapOf<String, Any>(
             "gtv" to gtv,
@@ -71,6 +88,7 @@ data class C_CompilerOptions(
 
         putNotNull(map, "symbolInfoFile", symbolInfoFile?.str())
         putNotNull(map, "compatibility", compatibility?.str())
+        putNotNull(map, "compilerVersion", compilerVersion?.str())
         putNotDefault(map, "ideDocSymbolsEnabled") { it.ideDocSymbolsEnabled }
         putNotDefault(map, "ideDefIdConflictError") { it.ideDefIdConflictError }
         putNotNull(map, "ideCompletions", ideCompletions?.toPojo())
@@ -97,6 +115,7 @@ data class C_CompilerOptions(
     companion object {
         @JvmField val DEFAULT = C_CompilerOptions(
             compatibility = null,
+            compilerVersion = null,
             gtv = true,
             deprecatedError = false,
             atAttrShadowing = C_AtAttrShadowing.DEFAULT,
@@ -125,6 +144,7 @@ data class C_CompilerOptions(
         @JvmStatic fun fromPojoMap(map: Map<String, Any>): C_CompilerOptions {
             return C_CompilerOptions(
                 compatibility = (map["compatibility"] as String?)?.let { R_LangVersion.of(it) },
+                compilerVersion = (map["compilerVersion"] as String?)?.let { R_LangVersion.of(it) },
                 gtv = map.getValue("gtv") as Boolean,
                 deprecatedError = map.getValue("deprecatedError") as Boolean,
                 atAttrShadowing = (map["atAttrShadowing"] as String?)
@@ -161,6 +181,7 @@ data class C_CompilerOptions(
 
     class Builder(proto: C_CompilerOptions = DEFAULT) {
         private var compatibility = proto.compatibility
+        private var compilerVersion = proto.compilerVersion
         private var gtv = proto.gtv
         private var deprecatedError = proto.deprecatedError
         private var atAttrShadowing = proto.atAttrShadowing
@@ -181,6 +202,7 @@ data class C_CompilerOptions(
         private var ideCompletions = proto.ideCompletions
 
         @Suppress("UNUSED") fun compatibility(v: R_LangVersion) = apply { compatibility = v }
+        @Suppress("UNUSED") fun compilerVersion(v: R_LangVersion?) = apply { compilerVersion = v }
         @Suppress("UNUSED") fun gtv(v: Boolean) = apply { gtv = v }
         @Suppress("UNUSED") fun deprecatedError(v: Boolean) = apply { deprecatedError = v }
         @Suppress("UNUSED") fun atAttrShadowing(v: C_AtAttrShadowing) = apply { atAttrShadowing = v }
@@ -203,6 +225,7 @@ data class C_CompilerOptions(
 
         fun build() = C_CompilerOptions(
             compatibility = compatibility,
+            compilerVersion = compilerVersion,
             gtv = gtv,
             deprecatedError = deprecatedError,
             atAttrShadowing = atAttrShadowing,

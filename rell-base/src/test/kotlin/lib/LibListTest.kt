@@ -8,6 +8,15 @@ import net.postchain.rell.base.testutils.BaseRellTest
 import kotlin.test.Test
 
 class LibListTest: BaseRellTest() {
+    @Test fun testVersionRestrictionOperators() {
+        val err = "VER:feature:binop_collection"
+        chkVerCtExpr("[1, 2] + [3]", "0.14.16", err)
+        chkVerCtExpr("[1, 2] - [3]", "0.14.16", err)
+        chkVerCtExpr("[1, 2] & [3]", "0.14.16", err)
+        chkVerCt("function f() { var l = [1]; l += [2]; }", "0.14.16", err)
+        chkVerCt("function f() { var l = [1]; l -= [2]; }", "0.14.16", err)
+    }
+
     @Test fun testLiteral() {
         chk("[]", "ct_err:expr_list_no_type")
         chk("[123]", "list<integer>[int[123]]")

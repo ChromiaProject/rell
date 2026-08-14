@@ -41,6 +41,17 @@ object RellVersions {
     val MIN_COMPILER_VERSION: R_LangVersion by lazy { R_LangVersion.of("0.13.11") }
 
     /**
+     * Release which introduced the retroactive feature gates (see `C_FeatureRestrictions.makeRetroactive()`).
+     *
+     * Some language features shipped without a version check, so code could use them while declaring an older
+     * language version. Gating them now would reject configurations that compiled cleanly when they were written -
+     * and since a node recompiles every historical configuration when it replays a chain, that would break running
+     * blockchains. A configuration produced by a compiler older than this version is therefore exempt: it predates
+     * the gate, so it was never checked, while anything compiled by this version or later is.
+     */
+    val RETROACTIVE_GATES_VERSION: R_LangVersion by lazy { VERSION }
+
+    /**
      * To be used in the library to specify a yet unknown next version.
      * Occurrences will be (manually) replaced with an actual version on release.
      */

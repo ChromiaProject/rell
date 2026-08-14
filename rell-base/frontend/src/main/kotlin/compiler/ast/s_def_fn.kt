@@ -52,7 +52,7 @@ class S_FormalParameter(
 
         val mods = C_ModifierValues(C_ModifierTargetType.PARAMETER, name)
         mods.field(C_ModifierFields.DUMMY_ANNOTATION)
-        val sizeHandler = C_SizeModifierHandler(defCtx, attrHeader, mods)
+        val sizeHandler = C_SizeModifierHandler(defCtx, attrHeader, mods, "0.14.14")
         modifiers.compile(defCtx.mntCtx, mods)
 
         val sizeConstraint = sizeHandler.getSizeConstraint()

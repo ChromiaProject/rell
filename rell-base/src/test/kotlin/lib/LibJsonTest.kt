@@ -13,6 +13,12 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 internal object LibJsonTest: BaseRellTest() {
+    @Test fun testVersionRestrictionSubscript() {
+        val err = "VER:feature:expr_subscript_json"
+        chkVerCt("function f(j: json) = j[0];", "0.14.16", err)
+        chkVerCt("function f(j: json) = j['a'];", "0.14.16", err)
+    }
+
     @Test fun testJsonConstructor() {
         chk("""json('[]')""", "json[[]]")
         chk("""json('{}')""", "json[{}]")

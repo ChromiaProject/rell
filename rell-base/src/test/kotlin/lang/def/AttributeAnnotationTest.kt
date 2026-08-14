@@ -9,6 +9,10 @@ import org.intellij.lang.annotations.Language
 import kotlin.test.Test
 
 internal class AttributeAnnotationTest: BaseRellTest() {
+    @Test fun testVersionRestrictionMount() {
+        chkVerCt("entity e { @mount('foo') x: text; }", "0.15.1", "VER:feature:ann:mount")
+    }
+
     @Test fun testEntityHiddenAttrAnnotation() {
         tstCtx.useSql = true
         chkDefOpExp(

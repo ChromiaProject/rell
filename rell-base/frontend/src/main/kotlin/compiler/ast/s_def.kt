@@ -80,6 +80,10 @@ class S_AttributeClause(
             C_DefinitionType.ENTITY,
             C_DefinitionType.OBJECT,
         )
+
+        private const val MOUNT_SINCE = "0.15.1"
+        private const val SIZE_SINCE_STRUCT = "0.14.13"
+        private const val SIZE_SINCE = "0.15.1"
     }
 
     override fun compile(ctx: C_EntityContext) {
@@ -89,8 +93,9 @@ class S_AttributeClause(
         val mods = C_ModifierValues(C_ModifierTargetType.ATTRIBUTE, name)
         mods.field(C_ModifierFields.DUMMY_ANNOTATION)
         mods.field(C_ModifierFields.MUTABLE)
-        val modMount = mods.field(C_ModifierFields.MOUNT)
-        val sizeHandler = C_SizeModifierHandler(ctx.defCtx, attrHeader, mods)
+        val modMount = mods.field(C_ModifierFields.MOUNT, MOUNT_SINCE)
+        val sizeSince = if (ctx.defCtx.definitionType == C_DefinitionType.STRUCT) SIZE_SINCE_STRUCT else SIZE_SINCE
+        val sizeHandler = C_SizeModifierHandler(ctx.defCtx, attrHeader, mods, sizeSince)
         attr.modifiers.compile(ctx.defCtx.mntCtx, mods)
 
         val sizeConstraint = sizeHandler.getSizeConstraint()

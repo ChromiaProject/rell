@@ -189,8 +189,14 @@ internal class S_SubscriptExpr(
             is R_TupleType -> Subscript_Tuple(baseType)
             is R_VirtualTupleType -> Subscript_VirtualTuple(baseType)
             is R_JsonType -> when (exprType) {
-                is R_IntegerType -> Subscript_Common(R_IntegerType, V_CommonSubscriptKind_JsonArray)
-                is R_TextType -> Subscript_Common(R_TextType, V_CommonSubscriptKind_JsonObject)
+                is R_IntegerType -> {
+                    RESTRICTIONS_JSON_SUBSCRIPT.access(ctx.msgCtx, opPos)
+                    Subscript_Common(R_IntegerType, V_CommonSubscriptKind_JsonArray)
+                }
+                is R_TextType -> {
+                    RESTRICTIONS_JSON_SUBSCRIPT.access(ctx.msgCtx, opPos)
+                    Subscript_Common(R_TextType, V_CommonSubscriptKind_JsonObject)
+                }
                 else -> {
                     val typeStr = exprType.strCode()
                     ctx.msgCtx.error(opPos, "expr_subscript_key:$typeStr",
@@ -262,6 +268,18 @@ internal class S_SubscriptExpr(
         baseType: R_VirtualTupleType,
     ): Subscript_CommonTuple(baseType.innerType, V_TupleSubscriptKind_Virtual) {
         override fun resultType(fieldType: R_Type) = S_VirtualType.virtualMemberType(fieldType)
+    }
+
+    companion object {
+        /**
+         * Operator "[]" on json arrived in 0.14.16 alongside json.get(), which is version-controlled as a library
+         * member. The operator is compiled here and was not, hence a retroactive gate. Applies to json only - the
+         * other subscript bases are far older.
+         */
+        private val RESTRICTIONS_JSON_SUBSCRIPT = C_FeatureRestrictions.makeRetroactive(
+            "0.14.16",
+            "expr_subscript_json" toCodeMsg "Operator '[]' on json is",
+        )
     }
 }
 
