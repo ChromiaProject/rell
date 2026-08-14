@@ -1,9 +1,12 @@
 # Manual-only test suites deliberately kept out of `check`, and therefore out of the `build` /
-# `deploy` jobs. Each is either slow, narrowly scoped, or both. Trigger them when touching the relevant area.
+# `deploy` jobs. Each is either slow, narrowly scoped, or both. They also auto-trigger when a
+# change touches the area they cover; otherwise they stay available to trigger manually.
 #
-#   tests:round-trip - RR serialization round-trip; run when rr-tree / rr-serialization or the
-#                      R_ -> RR_ resolver changed.
-#   tests:grammar    - ANTLR grammar / hand-written parser correctness; run on grammar edits.
+#   tests:rr-serialization-round-trip - RR serialization round-trip; auto-runs on changes to
+#                      rell-base/utils, rell-base/rr-tree, rell-base/rr-serialization.
+#   tests:grammar    - ANTLR grammar / hand-written parser correctness; auto-runs on changes to
+#                      the ANTLR grammar, the ANTLR-to-S-tree visitor, or the canonical
+#                      better-parse grammar file.
 #   tests:locales    - the full `check` under Turkish / Arabic / Japanese locales; run when
 #                      touching string handling, formatting, or collation.
 
@@ -23,8 +26,16 @@
 
 # rell-base tests hit the shared DIND Postgres, so this extends `.setup` (xlarge + Postgres).
 # `testRoundTrip` re-runs the whole rell-base suite with `rell.test.roundtrip=true`.
-tests:round-trip:
+tests:rr-serialization-round-trip:
   extends: [ .setup, .optional-test ]
+  rules:
+    - changes:
+        - "rell-base/utils/**/*"
+        - "rell-base/rr-tree/**/*"
+        - "rell-base/rr-serialization/**/*"
+      when: on_success
+    - when: manual
+      allow_failure: true
   script:
     - ./gradlew $GRADLE_FLAGS_XLARGE :rell-base:testRoundTrip
 
@@ -33,6 +44,14 @@ tests:round-trip:
 # :rell-api-gtx:test)`.
 tests:grammar:
   extends: [ .setup, .optional-test ]
+  rules:
+    - changes:
+        - "rell-base/frontend/src/main/antlr/Rell.g4"
+        - "rell-base/frontend/src/main/kotlin/compiler/parser/antlr/RellAntlrVisitor.kt"
+        - "rell-base/frontend/src/main/kotlin/compiler/parser/grammar.kt"
+      when: on_success
+    - when: manual
+      allow_failure: true
   script: [ "./gradlew $GRADLE_FLAGS_XLARGE -Ptest.snippets.recorder.enabled=true :rell-toolbox:ast:grammarTest" ]
 
 # `-PwithLocales` registers testTurkish / testArabic / testJapanese in every blockchain module and
