@@ -1,0 +1,112 @@
+RELEASE NOTES 0.16.7 (2026-08-14)
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+1. API: Smaller dependency footprint
+
+The compiler and runtime artifacts pull in less third-party machinery than before. This mainly matters when
+embedding Rell in an environment that restricts reflection, such as a GraalVM native image, where every reflective
+library on the classpath is configuration to write and a source of run-time surprises.
+
+- jackson-databind is gone from the compiler and runtime chain; only jackson-core remains. JSON is now read and
+  written through Jackson's streaming parser and generator, which are hand-written and reflection-free, rather than
+  through databind's reflective object binding. The json type is unaffected: what it accepts, the text it produces,
+  and the error codes it raises are all unchanged.
+
+- The utils module no longer depends on postchain-gtv, so code that only uses the compiler front end no longer
+  drags in GTV. The dependency moved to the modules that actually need it - runtime-core and rr-serialization.
+
+- jOOQ is no longer re-exported by the compiler front end. It remains on the compile classpath of the three modules
+  that generate SQL, and is gone from the rest, including rell-api-base and rell-tools.
+
+No behavior changes are expected.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+2. Tools: Language server honours compile.rellVersion
+
+The language server now analyses a project at the Rell version its settings file declares. The version in
+compile.rellVersion selects the compiler's compatibility mode, so a project pinned to an older release sees the
+diagnostics that release would have produced - a library function added later is reported as not existing yet, and
+so are the language constructs that carry a version gate.
+
+Code completion follows the same rule. Names the declared version does not have are no longer offered, down to the
+individual overload: a function whose newest signature postdates the declared version still completes, but that
+signature is not suggested.
+
+Three defects in the old behaviour are fixed:
+
+- A project with no settings file, or one that declares no compile.rellVersion, was analysed as Rell 0.14.5. Every
+  language feature added since - lambdas, value blocks and jump expressions among them - was reported as an error.
+  Such a project is now analysed at the language server's own version.
+
+- A compile.rellVersion the compiler cannot honour - not a version at all, older than the oldest compatibility mode
+  (0.10.9), or newer than the language server itself - aborted compilation of every file in the project, leaving it
+  with no diagnostics at all. The value is now clamped into the supported range and analysis proceeds.
+
+- The on-disk index cache recorded the language-server version but not the compatibility version, so editing
+  compile.rellVersion while the server was down brought back the previous version's diagnostics. The cache is now
+  discarded when the two disagree.
+
+New projects created through the language server's templates get the server's own version in their chromia.yml,
+instead of a hardcoded 0.14.5.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+3. Tools: Language server accepts a settings-file switch at runtime
+
+A new request lets an editor tell the language server which Chromia settings files the user has
+chosen, at any point in the session:
+
+    rell/setSettingsFiles  { "configFileUris": ["file:///.../contracts/dev.yml"] }  ->  boolean
+
+It replaces the set previously supplied by the chromiaConfigFiles initialization option and
+re-indexes the affected roots, answering once the new index is in place; the boolean says whether
+anything was re-indexed. Only files that differ from the chromia.yml of their own directory need
+listing - the server finds those by name - so an empty list means "use name-based discovery
+everywhere", which is what switching a directory back to its chromia.yml amounts to.
+
+This is what makes switching a project between, say, chromia.yml and dev.yml take effect: nothing
+changes on disk when the user picks a different settings file, so the server's file watcher cannot
+see it. Previously the editor had to restart the server to be sure, losing the index with it. The
+newly active file's compile.rellVersion and compile.source govern from then on.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+4. Language: More constructs are version-restricted, without breaking existing configurations
+
+A sweep across the language found further constructs which compiled without checking the
+configured language version (see "Language version control" in 0.13.10), the same defect fixed for
+lambdas, value blocks and jump expressions in 0.16.6. A node configured with an older language
+version, via the blockchain configuration option gtx.rell.version, could still compile code using
+them, even though a node actually running that older Rell release would not understand it.
+
+Each construct now requires the language version it was introduced in:
+
+┌───────────────────────────────────────────────────────────────────────────────────────────┬─────────┐
+│ Construct                                                                                 │ Version │
+├───────────────────────────────────────────────────────────────────────────────────────────┼─────────┤
+│ Operators +, - and & on list, set and map (and += and -=)                                 │ 0.14.16 │
+│ Operator [] on json                                                                       │ 0.14.16 │
+│ Omitting operation and query arguments having default values, in a call from a blockchain │ 0.14.3  │
+│ Annotations @compound and @singular on an operation                                       │ 0.14.13 │
+│ Annotations @size, @min_size and @max_size on a struct attribute                          │ 0.14.13 │
+│ Annotations @size, @min_size and @max_size on a parameter                                 │ 0.14.14 │
+│ Annotation @native                                                                        │ 0.15.0  │
+│ Annotations @size, @min_size and @max_size on an entity or object attribute               │ 0.15.1  │
+│ Annotation @mount on an entity or object attribute                                        │ 0.15.1  │
+└───────────────────────────────────────────────────────────────────────────────────────────┴─────────┘
+
+The named equivalents of the collection operators - add_all_copy(), remove_all_copy(),
+retain_all_copy() and put_all_copy() - and json.get() are library members, so they were
+version-controlled all along; only the operator spellings were not.
+
+This one does not break existing configurations. A blockchain
+configuration records the compiler which produced it in gtx.rell.compilerVersion, and a
+configuration produced before these restrictions existed is exempt from them: such code compiled
+cleanly when it was written, and a node recompiles every historical configuration when it replays
+a chain, so rejecting it now would halt running blockchains. The restrictions apply to code
+compiled from this release on, where the developer is present to raise gtx.rell.version or stop
+using the construct:
+
+    ct_err: version:feature:binop_collection:0.14.16:<configured version>
+
+The same exemption governs the argument-count change, which decides whether a transaction is
+accepted rather than whether code compiles. A configuration compiled before this release keeps
+accepting calls that omit arguments with default values, whatever language version it declares.
