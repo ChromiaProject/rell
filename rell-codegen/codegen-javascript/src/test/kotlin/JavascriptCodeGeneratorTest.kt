@@ -41,7 +41,7 @@ internal class JavascriptCodeGeneratorTest {
 
     companion object {
         @Container
-        private val compilerContainer = GenericContainer("node:20")
+        private val compilerContainer = GenericContainer("node:22@sha256:0557ac14e0d45d02ed563067b82856ca5e7aa3437fa28d98d4350ea9c3d9494a")
                 .withCommand("tail", "-f", "/dev/null")
 
         @BeforeAll

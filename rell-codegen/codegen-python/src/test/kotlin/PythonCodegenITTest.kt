@@ -61,7 +61,7 @@ class PythonCodegenITTest {
 
             val network = Network.newNetwork()
 
-            GenericContainer("postgres:16.14-alpine3.23").apply {
+            GenericContainer("postgres:16.15-alpine3.24@sha256:ab5c955e9e57ae9879d4411ab49a912be9d162455676f7bf56e951b11ac73785").apply {
                 withEnv("POSTGRES_USER", "postchain")
                 withEnv("POSTGRES_PASSWORD", "postchain")
                 withEnv("POSTGRES_DB", "postchain")
@@ -71,7 +71,7 @@ class PythonCodegenITTest {
             }.start()
 
 
-            GenericContainer("registry.gitlab.com/chromaway/core-tools/chromia-cli/chr:latest").apply {
+            GenericContainer("registry.gitlab.com/chromaway/core-tools/chromia-cli/chr:latest@sha256:2ee7dc3a83afca0abd4cf150802e8ed0b36f6e3f4e5f43675b0a527800db6417").apply {
                 withFileSystemBind(
                     projectRellPath,
                     projectRellPathInContainer,
@@ -89,7 +89,7 @@ class PythonCodegenITTest {
             }.start()
 
 
-            pythonContainer = GenericContainer("python:3.12").apply {
+            pythonContainer = GenericContainer("python:3.12@sha256:3b524c305ebbec824b8b8f65b72d0f82527eae50c32998160f0a9fca5337f594").apply {
                 withWorkingDirectory(projectFrontendPathInContainer)
                 withNetwork(network)
                 withCommand("tail -f /dev/null")

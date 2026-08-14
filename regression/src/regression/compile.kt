@@ -22,7 +22,7 @@ private fun ProjectSpec.stepTimeout(): Duration =
     timeoutMinutes?.let { Duration.ofMinutes(it.toLong()) } ?: DEFAULT_PER_PROJECT_TIMEOUT
 
 private val POSTGRES_IMAGE: DockerImageName = DockerImageName.parse(
-    "postgres:16.14-alpine3.23@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416",
+    "postgres:16.15-alpine3.24@sha256:ab5c955e9e57ae9879d4411ab49a912be9d162455676f7bf56e951b11ac73785",
 )
 
 private const val POSTGRES_USER = "postchain"

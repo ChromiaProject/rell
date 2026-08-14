@@ -39,7 +39,7 @@ internal class PythonCodeGeneratorTest {
 
     companion object {
         @Container
-        private val compilerContainer = GenericContainer("python:3.11")
+        private val compilerContainer = GenericContainer("python:3.11@sha256:f80c0ac8a5e59aa4728216d7d6e2cc099cb1ea829651011e5fff672180242a8b")
                 .withCommand("tail", "-f", "/dev/null")
 
         @BeforeAll

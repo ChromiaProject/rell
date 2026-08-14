@@ -47,7 +47,7 @@ internal class MermaidCodeGeneratorTest {
         DocumentSaver(target.toFile()).saveDocuments(documents)
 
         val containerPath = "/data"
-        val container = GenericContainer("ghcr.io/mermaid-js/mermaid-cli/mermaid-cli")
+        val container = GenericContainer("ghcr.io/mermaid-js/mermaid-cli/mermaid-cli:latest@sha256:eddb559ae44da41de9e1adfa04687516de53c26016b258fd7ab35c9999313d7e")
                 .withCopyToContainer(MountableFile.forHostPath(target), containerPath)
                 .withCommand("-i rell.mmd -o out.svg")
         container.start()

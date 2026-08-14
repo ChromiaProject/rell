@@ -62,7 +62,7 @@ class JavascriptCodegenITTest {
 
             val network = Network.newNetwork()
 
-            GenericContainer("postgres:16.14-alpine3.23").apply {
+            GenericContainer("postgres:16.15-alpine3.24@sha256:ab5c955e9e57ae9879d4411ab49a912be9d162455676f7bf56e951b11ac73785").apply {
                 withEnv("POSTGRES_USER", "postchain")
                 withEnv("POSTGRES_PASSWORD", "postchain")
                 withEnv("POSTGRES_DB", "postchain")
@@ -73,7 +73,7 @@ class JavascriptCodegenITTest {
             }.start()
 
 
-            GenericContainer("registry.gitlab.com/chromaway/core-tools/chromia-cli/chr:latest").apply {
+            GenericContainer("registry.gitlab.com/chromaway/core-tools/chromia-cli/chr:latest@sha256:2ee7dc3a83afca0abd4cf150802e8ed0b36f6e3f4e5f43675b0a527800db6417").apply {
                 withFileSystemBind(
                     projectRellPath,
                     projectRellPathInContainer,
@@ -92,7 +92,7 @@ class JavascriptCodegenITTest {
             }.start()
 
 
-            nodeContainer = GenericContainer("node:20").apply {
+            nodeContainer = GenericContainer("node:22@sha256:0557ac14e0d45d02ed563067b82856ca5e7aa3437fa28d98d4350ea9c3d9494a").apply {
                 withWorkingDirectory(projectFrontendPathInContainer)
                 withNetwork(network)
                 withCommand("tail -f /dev/null")
