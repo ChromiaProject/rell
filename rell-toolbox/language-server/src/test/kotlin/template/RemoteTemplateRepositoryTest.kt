@@ -4,8 +4,10 @@
 
 package net.postchain.rell.toolbox.lsp.template
 
+import assertk.assertFailure
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isInstanceOf
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -37,4 +39,21 @@ class RemoteTemplateRepositoryTest {
         assertThat(resolved).isEqualTo(cached)
     }
 
+    @Test
+    fun `archive entries resolve inside the extraction directory`(@TempDir root: File) {
+        val base = root.toPath().toAbsolutePath().normalize()
+        assertThat(RemoteTemplateRepository.resolveArchiveEntry(root.toPath(), "plain/chromia.yml"))
+            .isEqualTo(base.resolve("plain/chromia.yml"))
+        assertThat(RemoteTemplateRepository.resolveArchiveEntry(root.toPath(), ".devcontainer/a/../b.json"))
+            .isEqualTo(base.resolve(".devcontainer/b.json"))
+    }
+
+    @Test
+    fun `archive entries that escape the extraction directory are rejected`(@TempDir root: File) {
+        val absolute = root.toPath().toAbsolutePath().resolve("x").toString()
+        listOf("../evil.rell", "plain/../../evil.rell", "..", absolute, "/tmp/evil.rell").forEach { name ->
+            assertFailure { RemoteTemplateRepository.resolveArchiveEntry(root.toPath(), name) }
+                .isInstanceOf(IllegalArgumentException::class)
+        }
+    }
 }

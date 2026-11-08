@@ -67,7 +67,7 @@ internal class RemoteTemplateRepository(
                             if (idx >= 0) {
                                 val rel = entry.name.substring(idx + marker.length)
                                 if (rel.isNotEmpty()) {
-                                    val outFile = tmp / rel
+                                    val outFile = resolveArchiveEntry(tmp, rel)
                                     outFile.parent?.createDirectories()
                                     outFile.outputStream().use { zis.copyTo(it) }
                                 }
@@ -92,6 +92,21 @@ internal class RemoteTemplateRepository(
 
     companion object {
         private const val READY_MARKER_FILE = ".ready"
+
+        /**
+         * Resolves an archive entry name against the extraction directory. Absolute names and names
+         * that climb out with `..` are rejected, so an archive entry can never be written outside [root].
+         */
+        internal fun resolveArchiveEntry(root: Path, entryName: String): Path {
+            val base = root.toAbsolutePath().normalize()
+            val relative = Path.of(entryName)
+            require(!relative.isAbsolute) { "Template archive entry has an absolute path: '$entryName'" }
+            val resolved = base.resolve(relative).normalize()
+            require(resolved != base && resolved.startsWith(base)) {
+                "Template archive entry points outside the extraction directory: '$entryName'"
+            }
+            return resolved
+        }
 
         fun defaultCacheDir(): Path = System.getenv("CHROMIA_HOME")?.let { Path.of(it, "template-cache") }
             ?: Path.of(System.getProperty("user.home"), ".chromia", "template-cache")
