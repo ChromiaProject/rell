@@ -40,6 +40,12 @@ qodana:
     paths: [ .qodana/cache ]
     policy: pull-push
   rules:
+    # MR mode also analyses the target branch, with the target's dependency verification metadata.
+    # An MR that adds checksums the target lacks would fail there before its own code is looked at,
+    # so analyse only the MR head in that case.
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: [ gradle/verification-metadata.xml ]
+      variables: { QODANA_MR_MODE: "false" }
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "dev"
       variables: { QODANA_MR_MODE: "false" }
