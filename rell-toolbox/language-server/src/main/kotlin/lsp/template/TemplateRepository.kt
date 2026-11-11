@@ -13,9 +13,11 @@ import kotlin.io.path.*
 
 // The templates live in chromia-cli-tools (public GitLab project 64941451). We pull a versioned
 // tarball/zip at runtime instead of vendoring ~3 MB of resources here. Bump CHROMIA_TEMPLATES_REF
-// when a new template release lands and CI/clients are ready to consume it.
+// when a new template release lands and CI/clients are ready to consume it. It is the commit of
+// the release tag, not the tag itself, so a moved or re-created tag can't change what is downloaded:
+//   git rev-list -n1 <tag>
 internal const val CHROMIA_TEMPLATES_PROJECT_ID = "64941451"
-internal const val CHROMIA_TEMPLATES_REF = "0.11.4"
+internal const val CHROMIA_TEMPLATES_REF = "b97f10374136c19ddb7b1f9fea5fda29b2457820" // 0.11.4
 internal const val CHROMIA_TEMPLATES_PATH =
     "chromia-build-tools/src/main/resources/com/chromia/build/tools/template"
 
