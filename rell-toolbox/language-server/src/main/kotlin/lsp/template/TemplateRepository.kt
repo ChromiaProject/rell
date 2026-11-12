@@ -13,9 +13,11 @@ import kotlin.io.path.*
 
 // The templates live in chromia-cli-tools (public GitLab project 64941451). We pull a versioned
 // tarball/zip at runtime instead of vendoring ~3 MB of resources here. Bump CHROMIA_TEMPLATES_REF
-// when a new template release lands and CI/clients are ready to consume it.
+// when a new template release lands and CI/clients are ready to consume it. It is the commit of
+// the release tag, not the tag itself, so a moved or re-created tag can't change what is downloaded:
+//   git rev-list -n1 <tag>
 internal const val CHROMIA_TEMPLATES_PROJECT_ID = "64941451"
-internal const val CHROMIA_TEMPLATES_REF = "0.11.4"
+internal const val CHROMIA_TEMPLATES_REF = "b97f10374136c19ddb7b1f9fea5fda29b2457820" // 0.11.4
 internal const val CHROMIA_TEMPLATES_PATH =
     "chromia-build-tools/src/main/resources/com/chromia/build/tools/template"
 
@@ -67,7 +69,7 @@ internal class RemoteTemplateRepository(
                             if (idx >= 0) {
                                 val rel = entry.name.substring(idx + marker.length)
                                 if (rel.isNotEmpty()) {
-                                    val outFile = tmp / rel
+                                    val outFile = resolveArchiveEntry(tmp, rel)
                                     outFile.parent?.createDirectories()
                                     outFile.outputStream().use { zis.copyTo(it) }
                                 }
@@ -92,6 +94,21 @@ internal class RemoteTemplateRepository(
 
     companion object {
         private const val READY_MARKER_FILE = ".ready"
+
+        /**
+         * Resolves an archive entry name against the extraction directory. Absolute names and names
+         * that climb out with `..` are rejected, so an archive entry can never be written outside [root].
+         */
+        internal fun resolveArchiveEntry(root: Path, entryName: String): Path {
+            val base = root.toAbsolutePath().normalize()
+            val relative = Path.of(entryName)
+            require(!relative.isAbsolute) { "Template archive entry has an absolute path: '$entryName'" }
+            val resolved = base.resolve(relative).normalize()
+            require(resolved != base && resolved.startsWith(base)) {
+                "Template archive entry points outside the extraction directory: '$entryName'"
+            }
+            return resolved
+        }
 
         fun defaultCacheDir(): Path = System.getenv("CHROMIA_HOME")?.let { Path.of(it, "template-cache") }
             ?: Path.of(System.getProperty("user.home"), ".chromia", "template-cache")
